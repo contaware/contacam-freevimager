@@ -3183,8 +3183,6 @@ BOOL CVideoDeviceDoc::CHttpGetFrameThread::Connect(BOOL bSignalEvents,
 
 	// Init TCP
 	return pNetCom->Init(
-					NULL,					// The Optional Owner Window to which send the Network Events.
-					NULL,					// The lParam to send with the Messages
 					NULL,					// The Optional Rx Buffer.
 					NULL,					// The Optional Critical Section for the Rx Buffer.
 					NULL,					// The Optional Rx Fifo.
@@ -3206,20 +3204,8 @@ BOOL CVideoDeviceDoc::CHttpGetFrameThread::Connect(BOOL bSignalEvents,
 					0,						// A combination of network events:
 											// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB
 											// A set value means that instead of setting an event it is reset.
-					0,						// A combination of network events:
-											// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB
-											// The Following messages will be sent to the pOwnerWnd (if pOwnerWnd != NULL):
-											// WM_NETCOM_ACCEPT_EVENT -> Notification of incoming connections.
-											// WM_NETCOM_CONNECT_EVENT -> Notification of completed connection or multipoint "join" operation.
-											// WM_NETCOM_CONNECTFAILED_EVENT -> Notification of connection failure.
-											// WM_NETCOM_CLOSE_EVENT -> Notification of socket closure.
-											// WM_NETCOM_READ_EVENT -> Notification of readiness for reading.
-											// WM_NETCOM_WRITE_EVENT -> Notification of readiness for writing.
-											// WM_NETCOM_OOB_EVENT -> Notification of the arrival of out-of-band data.
 					0,/*=uiRxMsgTrigger*/	// The number of bytes that triggers an hRxMsgTriggerEvent 
 											// (if hRxMsgTriggerEvent != NULL).
-											// And/Or the number of bytes that triggers a WM_NETCOM_RX Message
-											// (if pOwnerWnd != NULL).
 											// Upper bound for this value is NETCOM_MAX_RX_BUFFER_SIZE.
 					NULL,/*hRxMsgTriggerEvent*/	// Handle to an Event Object that will get an Event
 											// each time uiRxMsgTrigger bytes arrived.
@@ -6252,8 +6238,6 @@ BOOL CVideoDeviceDoc::MicroApacheIsPortUsed(int nPort)
 	hEventArray[0] = ::CreateEvent(NULL, TRUE, FALSE, NULL); // Http Connected Event						
 	hEventArray[1] = ::CreateEvent(NULL, TRUE, FALSE, NULL); // Http Connect Failed Event
 	if (NetCom.Init(
-				NULL,					// The Optional Owner Window to which send the Network Events.
-				NULL,					// The lParam to send with the Messages
 				NULL,					// The Optional Rx Buffer.
 				NULL,					// The Optional Critical Section for the Rx Buffer.
 				NULL,					// The Optional Rx Fifo.
@@ -6275,20 +6259,8 @@ BOOL CVideoDeviceDoc::MicroApacheIsPortUsed(int nPort)
 				0,						// A combination of network events:
 										// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB
 										// A set value means that instead of setting an event it is reset.
-				0,						// A combination of network events:
-										// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB
-										// The Following messages will be sent to the pOwnerWnd (if pOwnerWnd != NULL):
-										// WM_NETCOM_ACCEPT_EVENT -> Notification of incoming connections.
-										// WM_NETCOM_CONNECT_EVENT -> Notification of completed connection or multipoint "join" operation.
-										// WM_NETCOM_CONNECTFAILED_EVENT -> Notification of connection failure.
-										// WM_NETCOM_CLOSE_EVENT -> Notification of socket closure.
-										// WM_NETCOM_READ_EVENT -> Notification of readiness for reading.
-										// WM_NETCOM_WRITE_EVENT -> Notification of readiness for writing.
-										// WM_NETCOM_OOB_EVENT -> Notification of the arrival of out-of-band data.
 				0,/*=uiRxMsgTrigger*/	// The number of bytes that triggers an hRxMsgTriggerEvent 
 										// (if hRxMsgTriggerEvent != NULL).
-										// And/Or the number of bytes that triggers a WM_NETCOM_RX Message
-										// (if pOwnerWnd != NULL).
 										// Upper bound for this value is NETCOM_MAX_RX_BUFFER_SIZE.
 				NULL,/*hRxMsgTriggerEvent*/	// Handle to an Event Object that will get an Event
 										// each time uiRxMsgTrigger bytes arrived.
@@ -6374,8 +6346,6 @@ BOOL CVideoDeviceDoc::MicroApacheWaitCanConnect()
 		::ResetEvent(hEventArray[0]);
 		::ResetEvent(hEventArray[1]);
 		if (NetCom.Init(
-					NULL,					// The Optional Owner Window to which send the Network Events.
-					NULL,					// The lParam to send with the Messages
 					NULL,					// The Optional Rx Buffer.
 					NULL,					// The Optional Critical Section for the Rx Buffer.
 					NULL,					// The Optional Rx Fifo.
@@ -6397,20 +6367,8 @@ BOOL CVideoDeviceDoc::MicroApacheWaitCanConnect()
 					0,						// A combination of network events:
 											// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB
 											// A set value means that instead of setting an event it is reset.
-					0,						// A combination of network events:
-											// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB
-											// The Following messages will be sent to the pOwnerWnd (if pOwnerWnd != NULL):
-											// WM_NETCOM_ACCEPT_EVENT -> Notification of incoming connections.
-											// WM_NETCOM_CONNECT_EVENT -> Notification of completed connection or multipoint "join" operation.
-											// WM_NETCOM_CONNECTFAILED_EVENT -> Notification of connection failure.
-											// WM_NETCOM_CLOSE_EVENT -> Notification of socket closure.
-											// WM_NETCOM_READ_EVENT -> Notification of readiness for reading.
-											// WM_NETCOM_WRITE_EVENT -> Notification of readiness for writing.
-											// WM_NETCOM_OOB_EVENT -> Notification of the arrival of out-of-band data.
 					0,/*=uiRxMsgTrigger*/	// The number of bytes that triggers an hRxMsgTriggerEvent 
 											// (if hRxMsgTriggerEvent != NULL).
-											// And/Or the number of bytes that triggers a WM_NETCOM_RX Message
-											// (if pOwnerWnd != NULL).
 											// Upper bound for this value is NETCOM_MAX_RX_BUFFER_SIZE.
 					NULL,/*hRxMsgTriggerEvent*/	// Handle to an Event Object that will get an Event
 											// each time uiRxMsgTrigger bytes arrived.

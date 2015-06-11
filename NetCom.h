@@ -53,21 +53,6 @@
 // Tx Sleep in ms
 #define NETCOM_TX_SLEEP							10U
 
-// Network Communication Messages that may be sent
-// to the given Owner Window
-#define WM_NETCOM_READ_EVENT			WM_USER + 16	// Notification of readiness for reading 
-#define WM_NETCOM_WRITE_EVENT			WM_USER + 17	// Notification of readiness for writing 
-#define WM_NETCOM_OOB_EVENT				WM_USER + 18	// Notification of the arrival of out-of-band data 
-#define WM_NETCOM_ACCEPT_EVENT			WM_USER + 19	// Notification of incoming connections 
-#define WM_NETCOM_CONNECT_EVENT			WM_USER + 20	// Notification of completed connection or multipoint "join" operation
-#define WM_NETCOM_CONNECTFAILED_EVENT	WM_USER + 21	// Notification of connection failure
-#define WM_NETCOM_CLOSE_EVENT			WM_USER + 22	// Notification of socket closure 
-#define WM_NETCOM_RX					WM_USER + 23	// m_uiRxMsgTrigger characters were received and placed in the input buffer.
-														// The last received char is transmitted in the WPARAM of the message.
-														// (This may be useful if m_uiRxMsgTrigger is set to 1)
-#define WM_NETCOM_RXBUF_ADD				WM_USER + 24	// This Message is sent when a packet is added to the RxBuf
-#define WM_NETCOM_TXBUF_ADD				WM_USER + 25	// This Message is sent when a packet is added to the TxBuf
-
 ////////////////////////////
 // Event Masks From WinSock2
 //
@@ -248,9 +233,7 @@ public:
 	static DWORD EnumLAN(CStringArray* pHosts);
 
 	// Open a Network Connection								
-	BOOL Init(		HWND hOwnerWnd,						// The Optional Owner Window to which send the Network Events.
-					LPARAM	lParam,						// The lParam to send with the Messages
-					BUFARRAY* pRxBuf,					// The Optional Rx Buffer.
+	BOOL Init(		BUFARRAY* pRxBuf,					// The Optional Rx Buffer.
 					LPCRITICAL_SECTION pcsRxBufSync,	// The Optional Critical Section for the Rx Buffer.
 					BUFQUEUE* pRxFifo,					// The Optional Rx Fifo.
 					LPCRITICAL_SECTION pcsRxFifoSync,	// The Optional Critical Section fot the Rx Fifo.
@@ -271,20 +254,8 @@ public:
 					long lResetEventMask,				// A combination of network events:
 														// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB
 														// A set value means that instead of setting an event it is reset.
-					long lOwnerWndNetEvents,			// A combination of network events:
-														// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB
-														// The Following messages will be sent to the pOwnerWnd (if pOwnerWnd != NULL):
-														// WM_NETCOM_ACCEPT_EVENT -> Notification of incoming connections.
-														// WM_NETCOM_CONNECT_EVENT -> Notification of completed connection or multipoint "join" operation.
-														// WM_NETCOM_CONNECTFAILED_EVENT -> Notification of connection failure.
-														// WM_NETCOM_CLOSE_EVENT -> Notification of socket closure.
-														// WM_NETCOM_READ_EVENT -> Notification of readiness for reading.
-														// WM_NETCOM_WRITE_EVENT -> Notification of readiness for writing.
-														// WM_NETCOM_OOB_EVENT -> Notification of the arrival of out-of-band data.
 					UINT uiRxMsgTrigger,				// The number of bytes that triggers an hRxMsgTriggerEvent 
 														// (if hRxMsgTriggerEvent != NULL).
-														// And/Or the number of bytes that triggers a WM_NETCOM_RX Message
-														// (if pOwnerWnd != NULL).
 														// Upper bound for this value is NETCOM_MAX_RX_BUFFER_SIZE.
 					HANDLE hRxMsgTriggerEvent,			// Handle to an Event Object that will get an Event
 														// each time uiRxMsgTrigger bytes arrived.
@@ -470,22 +441,6 @@ public:
 	// Return the Rx packet timeout
 	__forceinline UINT GetRxTimeout() const {return (m_uiRxPacketTimeout == INFINITE) ? 0 : m_uiRxPacketTimeout;};
 
-	// Set this variables before calling the Init Function!
-	// If they have a value that differs from 0,
-	// then a WM_COMMAND with the specified ID is posted
-	// to the Parent Window.
-	WPARAM m_nIDAccept;
-	WPARAM m_nIDConnect;
-	WPARAM m_nIDConnectFailed;
-	WPARAM m_nIDRead;
-	WPARAM m_nIDWrite;
-	WPARAM m_nIDOOB;
-	WPARAM m_nIDClose;
-	WPARAM m_nIDRx;
-
-	// The Owner Window
-	HWND m_hOwnerWnd;
-
 	// Init() was called last time on
 	CTime m_InitTime;
 
@@ -494,9 +449,7 @@ protected:
 	BOOL InitAddr(volatile int& nSocketFamily, const CString& sAddress, UINT uiPort, sockaddr* paddr);
 
 	// Initialize All User Parameters (Parameters from Init Function)
-	void InitVars(HWND hOwnerWnd,
-				LPARAM	lParam,
-				BUFARRAY* pRxBuf,
+	void InitVars(BUFARRAY* pRxBuf,
 				LPCRITICAL_SECTION pcsRxBufSync,
 				BUFQUEUE* pRxFifo,
 				LPCRITICAL_SECTION pcsRxFifoSync,
@@ -515,7 +468,6 @@ protected:
 				HANDLE hWriteEvent,
 				HANDLE hOOBEvent,
 				long lResetEventMask,
-				long lOwnerWndNetEvents,
 				UINT uiRxMsgTrigger,
 				HANDLE hRxMsgTriggerEvent,
 				UINT uiMaxTxPacketSize,
@@ -588,16 +540,8 @@ protected:
 	// The Socket Handle
 	SOCKET m_hSocket;
 
-	// The lParam to send with the Messages
-	LPARAM m_lParam;
-
-	// The Network Events that are to be sent to the Owner Window
-	long m_lOwnerWndNetEvents;
-
 	// The number of bytes that triggers an m_hRxMsgTriggerEvent 
 	// (if m_hRxMsgTriggerEvent != NULL).
-	// And/Or the number of bytes that triggers a WM_NETCOM_RX Message
-	// (if m_pOwnerWnd != NULL).
 	// Upper bound for this value is NETCOM_MAX_RX_BUFFER_SIZE.
 	UINT m_uiRxMsgTrigger;
 

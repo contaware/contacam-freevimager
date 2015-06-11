@@ -149,19 +149,6 @@ void CNetCom::CMsgThread::SignalClosing()
 		else
 			::SetEvent(m_pNetCom->m_hCloseEvent);
 	}
-
-	// Send the Close Message to the Parent Window
-	if ((m_pNetCom->m_lOwnerWndNetEvents & FD_CLOSE) && m_pNetCom->m_hOwnerWnd)
-	{
-		::PostMessage(m_pNetCom->m_hOwnerWnd, WM_NETCOM_CLOSE_EVENT,
-			(WPARAM)m_pNetCom,
-			(LPARAM)m_pNetCom->m_lParam);
-
-		if (m_pNetCom->m_nIDClose)
-			::PostMessage(m_pNetCom->m_hOwnerWnd, WM_COMMAND,
-				(WPARAM)m_pNetCom->m_nIDClose, (LPARAM)NULL);
-
-	}
 }
 
 int CNetCom::CMsgThread::Work()
@@ -293,17 +280,6 @@ int CNetCom::CMsgThread::Work()
 										::SetEvent(m_pNetCom->m_hConnectFailedEvent);
 								}
 
-								// Send Connection failed Message to the Parent Window
-								if ((m_pNetCom->m_lOwnerWndNetEvents & FD_CONNECTFAILED) && m_pNetCom->m_hOwnerWnd)
-								{
-									::PostMessage(m_pNetCom->m_hOwnerWnd, WM_NETCOM_CONNECTFAILED_EVENT,
-												(WPARAM)m_pNetCom, (LPARAM)m_pNetCom->m_lParam);
-
-									if (m_pNetCom->m_nIDConnectFailed)
-										::PostMessage(m_pNetCom->m_hOwnerWnd, WM_COMMAND,
-											(WPARAM)m_pNetCom->m_nIDConnectFailed, (LPARAM)NULL);
-								}
-
 								// Note that connection may fail while closing, thus we have
 								// to make sure that the tx and rx threads are not running!
 								m_pNetCom->ShutdownTxThread();
@@ -334,17 +310,6 @@ int CNetCom::CMsgThread::Work()
 									else
 										::SetEvent(m_pNetCom->m_hConnectEvent);
 								}
-
-								// Send Connect Message to the Parent Window
-								if ((m_pNetCom->m_lOwnerWndNetEvents & FD_CONNECT) && m_pNetCom->m_hOwnerWnd)
-								{
-									::PostMessage(m_pNetCom->m_hOwnerWnd, WM_NETCOM_CONNECT_EVENT,
-												(WPARAM)m_pNetCom, (LPARAM)m_pNetCom->m_lParam);
-
-									if (m_pNetCom->m_nIDConnect)
-										::PostMessage(m_pNetCom->m_hOwnerWnd, WM_COMMAND,
-											(WPARAM)m_pNetCom->m_nIDConnect, (LPARAM)NULL);
-								}
 							}
 						}
 						if (NetworkEvents.lNetworkEvents & FD_READ)
@@ -359,17 +324,6 @@ int CNetCom::CMsgThread::Work()
 									::ResetEvent(m_pNetCom->m_hReadEvent);
 								else
 									::SetEvent(m_pNetCom->m_hReadEvent);
-							}
-							
-							// Send Read Message to the Parent Window
-							if ((m_pNetCom->m_lOwnerWndNetEvents & FD_READ) && m_pNetCom->m_hOwnerWnd)
-							{
-								::PostMessage(m_pNetCom->m_hOwnerWnd, WM_NETCOM_READ_EVENT,
-											(WPARAM)m_pNetCom, (LPARAM)m_pNetCom->m_lParam);
-							
-								if (m_pNetCom->m_nIDRead)
-									::PostMessage(m_pNetCom->m_hOwnerWnd, WM_COMMAND,
-										(WPARAM)m_pNetCom->m_nIDRead, (LPARAM)NULL);
 							}
 
 							// Trigger the RX Thread
@@ -388,17 +342,6 @@ int CNetCom::CMsgThread::Work()
 								else
 									::SetEvent(m_pNetCom->m_hWriteEvent);
 							}
-
-							// Send Write Message to the Parent Window
-							if ((m_pNetCom->m_lOwnerWndNetEvents & FD_WRITE) && m_pNetCom->m_hOwnerWnd)
-							{
-								::PostMessage(m_pNetCom->m_hOwnerWnd, WM_NETCOM_WRITE_EVENT,
-											(WPARAM)m_pNetCom, (LPARAM)m_pNetCom->m_lParam);
-							
-								if (m_pNetCom->m_nIDWrite)
-									::PostMessage(m_pNetCom->m_hOwnerWnd, WM_COMMAND,
-										(WPARAM)m_pNetCom->m_nIDWrite, (LPARAM)NULL);
-							}
 						}
 						if (NetworkEvents.lNetworkEvents & FD_OOB)
 						{
@@ -412,17 +355,6 @@ int CNetCom::CMsgThread::Work()
 									::ResetEvent(m_pNetCom->m_hOOBEvent);
 								else
 									::SetEvent(m_pNetCom->m_hOOBEvent);
-							}
-
-							// Send OOB Message to the Parent Window
-							if ((m_pNetCom->m_lOwnerWndNetEvents & FD_OOB) && m_pNetCom->m_hOwnerWnd)
-							{
-								::PostMessage(m_pNetCom->m_hOwnerWnd, WM_NETCOM_OOB_EVENT,
-												(WPARAM)m_pNetCom, (LPARAM)m_pNetCom->m_lParam);
-
-								if (m_pNetCom->m_nIDOOB)
-									::PostMessage(m_pNetCom->m_hOwnerWnd, WM_COMMAND,
-										(WPARAM)m_pNetCom->m_nIDOOB, (LPARAM)NULL);
 							}
 						}
 						if (NetworkEvents.lNetworkEvents & FD_CLOSE)
@@ -625,9 +557,6 @@ int CNetCom::CRxThread::Work()
 			// Timeout
 			case WAIT_TIMEOUT :
 				Timeout = INFINITE; // Reset Timeout
-				if (m_pNetCom->m_hOwnerWnd)
-					::PostMessage(m_pNetCom->m_hOwnerWnd, WM_NETCOM_RX,
-								(WPARAM)m_pNetCom, (LPARAM)m_pNetCom->m_lParam);
 				if (m_pNetCom->m_hRxMsgTriggerEvent != NULL)
 					::SetEvent(m_pNetCom->m_hRxMsgTriggerEvent);
 				break;
@@ -655,11 +584,6 @@ int CNetCom::CRxThread::Work()
 				::EnterCriticalSection(m_pNetCom->m_pcsRxFifoSync);
 				m_pNetCom->m_pRxFifo->AddTail(m_pCurrentBuf);
 				::LeaveCriticalSection(m_pNetCom->m_pcsRxFifoSync);
-
-				// Notify Parent that a Buffer was added to the RxBuf
-				if (m_pNetCom->m_hOwnerWnd)
-					::PostMessage(m_pNetCom->m_hOwnerWnd, WM_NETCOM_RXBUF_ADD,
-						(WPARAM)m_pNetCom, (LPARAM)m_pNetCom->m_lParam);
 			}
 			else
 			{
@@ -676,11 +600,6 @@ int CNetCom::CRxThread::Work()
 					::EnterCriticalSection(m_pNetCom->m_pcsRxBufSync);
 					m_pNetCom->m_pRxBuf->Add(m_pCurrentBuf);
 					::LeaveCriticalSection(m_pNetCom->m_pcsRxBufSync);
-
-					// Notify Parent that a Buffer was added to the RxBuf
-					if (m_pNetCom->m_hOwnerWnd)
-						::PostMessage(m_pNetCom->m_hOwnerWnd, WM_NETCOM_RXBUF_ADD,
-							(WPARAM)m_pNetCom, (LPARAM)m_pNetCom->m_lParam);
 				}
 				else
 					delete m_pCurrentBuf;
@@ -714,15 +633,6 @@ int CNetCom::CRxThread::Work()
 				{
 					Timeout = INFINITE; // Reset Timeout
 					TriggerBytesReceived = 0;
-					if (m_pNetCom->m_hOwnerWnd)
-					{
-						::PostMessage(m_pNetCom->m_hOwnerWnd, WM_NETCOM_RX,
-							(WPARAM)m_pNetCom, (LPARAM)m_pNetCom->m_lParam);
-
-						if (m_pNetCom->m_nIDRx)
-							::PostMessage(m_pNetCom->m_hOwnerWnd, WM_COMMAND,
-								(WPARAM)m_pNetCom->m_nIDRx, (LPARAM)NULL);
-					}
 					if (m_pNetCom->m_hRxMsgTriggerEvent != NULL)
 						::SetEvent(m_pNetCom->m_hRxMsgTriggerEvent);		
 				}
@@ -846,11 +756,6 @@ int CNetCom::CTxThread::Work()
 						::EnterCriticalSection(m_pNetCom->m_pcsTxBufSync);
 						m_pNetCom->m_pTxBuf->Add(m_pCurrentBuf);
 						::LeaveCriticalSection(m_pNetCom->m_pcsTxBufSync);
-
-						// Notify Parent that a Buffer was added to the TxBuf
-						if (m_pNetCom->m_hOwnerWnd)
-							::PostMessage(m_pNetCom->m_hOwnerWnd, WM_NETCOM_TXBUF_ADD,
-								(WPARAM)m_pNetCom, (LPARAM)m_pNetCom->m_lParam);
 					}
 					else
 						delete m_pCurrentBuf;
@@ -950,11 +855,6 @@ void CNetCom::CTxThread::Write()
 					::EnterCriticalSection(m_pNetCom->m_pcsTxBufSync);
 					m_pNetCom->m_pTxBuf->Add(m_pCurrentBuf);
 					::LeaveCriticalSection(m_pNetCom->m_pcsTxBufSync);
-
-					// Notify Parent that a Buffer was added to the TxBuf
-					if (m_pNetCom->m_hOwnerWnd)
-						::PostMessage(m_pNetCom->m_hOwnerWnd, WM_NETCOM_TXBUF_ADD,
-							(WPARAM)m_pNetCom, (LPARAM)m_pNetCom->m_lParam);
 				}
 				else
 					delete m_pCurrentBuf;
@@ -1012,11 +912,9 @@ CNetCom::CNetCom()
 	// Handles
 	m_hSocket					= INVALID_SOCKET;
 	m_hRxMsgTriggerEvent		= NULL;
-	m_hOwnerWnd					= NULL;
 
 	// Pointers
 	m_pParseProcess				= NULL;
-	m_lParam					= 0;
 	m_pRxBuf					= NULL;
 	m_pRxFifo					= NULL;
 	m_pTxBuf					= NULL;
@@ -1103,7 +1001,6 @@ CNetCom::CNetCom()
 	m_uiTxPacketTimeout = INFINITE;
 
 	m_lResetEventMask = 0;
-	m_lOwnerWndNetEvents = 0;
 
 	// Disable use of the Rx and Tx Buffers
 	m_bRxBufEnabled = FALSE;
@@ -1111,14 +1008,6 @@ CNetCom::CNetCom()
 
 	// Configuration Variables
 	m_uiMaxRxFifoSize = 0;	// No Rx size limit
-	m_nIDAccept = 0;
-	m_nIDConnect = 0;
-	m_nIDConnectFailed = 0;
-	m_nIDRead = 0;
-	m_nIDWrite = 0;
-	m_nIDOOB = 0;
-	m_nIDClose = 0;
-	m_nIDRx = 0;
 
 	// Socket Family
 	m_nSocketFamily = AF_UNSPEC;
@@ -1230,9 +1119,7 @@ BOOL CNetCom::InitAddr(volatile int& nSocketFamily, const CString& sAddress, UIN
 	return TRUE;
 }
 
-BOOL CNetCom::Init(	HWND hOwnerWnd,						// The Optional Owner Window to which send the Network Events.
-					LPARAM	lParam,						// The lParam to send with the Messages
-					BUFARRAY* pRxBuf,					// The Optional Rx Buffer.
+BOOL CNetCom::Init(	BUFARRAY* pRxBuf,					// The Optional Rx Buffer.
 					LPCRITICAL_SECTION pcsRxBufSync,	// The Optional Critical Section for the Rx Buffer.
 					BUFQUEUE* pRxFifo,					// The Optional Rx Fifo.
 					LPCRITICAL_SECTION pcsRxFifoSync,	// The Optional Critical Section fot the Rx Fifo.
@@ -1253,20 +1140,8 @@ BOOL CNetCom::Init(	HWND hOwnerWnd,						// The Optional Owner Window to which s
 					long lResetEventMask,				// A combination of network events:
 														// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB
 														// A set value means that instead of setting an event it is reset.
-					long lOwnerWndNetEvents,			// A combination of network events:
-														// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB
-														// The Following messages will be sent to the pOwnerWnd (if pOwnerWnd != NULL):
-														// WM_NETCOM_ACCEPT_EVENT -> Notification of incoming connections.
-														// WM_NETCOM_CONNECT_EVENT -> Notification of completed connection or multipoint "join" operation.
-														// WM_NETCOM_CONNECTFAILED_EVENT -> Notification of connection failure.
-														// WM_NETCOM_CLOSE_EVENT -> Notification of socket closure.
-														// WM_NETCOM_READ_EVENT -> Notification of readiness for reading.
-														// WM_NETCOM_WRITE_EVENT -> Notification of readiness for writing.
-														// WM_NETCOM_OOB_EVENT -> Notification of the arrival of out-of-band data. 
 					UINT uiRxMsgTrigger,				// The number of bytes that triggers an hRxMsgTriggerEvent 
 														// (if hRxMsgTriggerEvent != NULL).
-														// And/Or the number of bytes that triggers a WM_NETCOM_RX Message
-														// (if pOwnerWnd != NULL).
 														// Upper bound for this value is NETCOM_MAX_RX_BUFFER_SIZE.
 					HANDLE hRxMsgTriggerEvent,			// Handle to an Event Object that will get an Event
 														// each time uiRxMsgTrigger bytes arrived.
@@ -1329,10 +1204,10 @@ BOOL CNetCom::Init(	HWND hOwnerWnd,						// The Optional Owner Window to which s
 	m_uiTxByteCount = 0;
 
 	// Initialize the Member Variables
-	InitVars(	hOwnerWnd, lParam, pRxBuf, pcsRxBufSync, pRxFifo, pcsRxFifoSync,
+	InitVars(	pRxBuf, pcsRxBufSync, pRxFifo, pcsRxFifoSync,
 				pTxBuf, pcsTxBufSync, pTxFifo, pcsTxFifoSync, pParseProcess,
 				sPeerAddress, uiPeerPort, hAcceptEvent, hConnectEvent, hConnectFailedEvent, hCloseEvent,
-				hReadEvent, hWriteEvent, hOOBEvent, lResetEventMask, lOwnerWndNetEvents,
+				hReadEvent, hWriteEvent, hOOBEvent, lResetEventMask,
 				uiRxMsgTrigger, hRxMsgTriggerEvent, uiMaxTxPacketSize, uiRxPacketTimeout, uiTxPacketTimeout, pMsgOut);
 
 	// Init the Parser
@@ -2010,9 +1885,7 @@ CString CNetCom::GetName()
 	}
 }
 
-void CNetCom::InitVars(	HWND hOwnerWnd,
-						LPARAM	lParam,
-						BUFARRAY* pRxBuf,
+void CNetCom::InitVars(	BUFARRAY* pRxBuf,
 						LPCRITICAL_SECTION pcsRxBufSync,
 						BUFQUEUE* pRxFifo,
 						LPCRITICAL_SECTION pcsRxFifoSync,
@@ -2031,7 +1904,6 @@ void CNetCom::InitVars(	HWND hOwnerWnd,
 						HANDLE hWriteEvent,
 						HANDLE hOOBEvent,
 						long lResetEventMask,
-						long lOwnerWndNetEvents,
 						UINT uiRxMsgTrigger,
 						HANDLE hRxMsgTriggerEvent,
 						UINT uiMaxTxPacketSize,
@@ -2132,8 +2004,6 @@ void CNetCom::InitVars(	HWND hOwnerWnd,
 
 	// Init member vars
 	m_pParseProcess = pParseProcess;
-	m_hOwnerWnd = hOwnerWnd;
-	m_lParam = lParam;
 	m_sPeerAddress = sPeerAddress;
 	m_uiPeerPort = uiPeerPort;
 	m_hAcceptEvent = hAcceptEvent;
@@ -2144,7 +2014,6 @@ void CNetCom::InitVars(	HWND hOwnerWnd,
 	m_hWriteEvent = hWriteEvent;
 	m_hOOBEvent = hOOBEvent;
 	m_lResetEventMask = lResetEventMask;
-	m_lOwnerWndNetEvents = lOwnerWndNetEvents;
 	m_uiRxMsgTrigger = uiRxMsgTrigger;
 	m_hRxMsgTriggerEvent = hRxMsgTriggerEvent;
 	m_uiMaxTxPacketSize = uiMaxTxPacketSize;
