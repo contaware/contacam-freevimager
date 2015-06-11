@@ -1084,12 +1084,10 @@ CNetCom::CNetCom()
 	m_bFreeTxFifoSync			= FALSE;
 	m_bFreeMsgOut				= FALSE;
 
-	// Addresses
-	m_sLocalAddress = _T("");
+	// Address
 	m_sPeerAddress = _T("");
 	
-	// Ports
-	m_uiLocalPort = 0;
+	// Port
 	m_uiPeerPort = 0;
 
 	// Number of Rx Bytes that trigger a WM_NETCOM_RX Msg
@@ -1243,8 +1241,6 @@ BOOL CNetCom::Init(	HWND hOwnerWnd,						// The Optional Owner Window to which s
 					BUFQUEUE* pTxFifo,					// The Optional Tx Fifo.
 					LPCRITICAL_SECTION pcsTxFifoSync,	// The Optional Critical Section for the Tx Fifo.
 					CParseProcess* pParseProcess,		// Parser & Processor
-					CString sLocalAddress,				// Local Address (IP or Host Name), if _T("") Any Address is ok
-					UINT uiLocalPort,					// Local Port, if 0 -> Win Selects a Port
 					CString sPeerAddress,				// Peer Address (IP or Host Name), if _T("") Any Address is ok
 					UINT uiPeerPort,					// Peer Port, if 0 -> Win Selects a Port
 					HANDLE hAcceptEvent,				// Handle to an Event Object that will get Accept Events.
@@ -1334,7 +1330,7 @@ BOOL CNetCom::Init(	HWND hOwnerWnd,						// The Optional Owner Window to which s
 
 	// Initialize the Member Variables
 	InitVars(	hOwnerWnd, lParam, pRxBuf, pcsRxBufSync, pRxFifo, pcsRxFifoSync,
-				pTxBuf, pcsTxBufSync, pTxFifo, pcsTxFifoSync, pParseProcess, sLocalAddress, uiLocalPort,
+				pTxBuf, pcsTxBufSync, pTxFifo, pcsTxFifoSync, pParseProcess,
 				sPeerAddress, uiPeerPort, hAcceptEvent, hConnectEvent, hConnectFailedEvent, hCloseEvent,
 				hReadEvent, hWriteEvent, hOOBEvent, lResetEventMask, lOwnerWndNetEvents,
 				uiRxMsgTrigger, hRxMsgTriggerEvent, uiMaxTxPacketSize, uiRxPacketTimeout, uiTxPacketTimeout, pMsgOut);
@@ -2025,8 +2021,6 @@ void CNetCom::InitVars(	HWND hOwnerWnd,
 						BUFQUEUE* pTxFifo,
 						LPCRITICAL_SECTION pcsTxFifoSync,
 						CParseProcess* pParseProcess,
-						CString sLocalAddress,
-						UINT uiLocalPort,
 						CString sPeerAddress,
 						UINT uiPeerPort,
 						HANDLE hAcceptEvent,
@@ -2140,8 +2134,6 @@ void CNetCom::InitVars(	HWND hOwnerWnd,
 	m_pParseProcess = pParseProcess;
 	m_hOwnerWnd = hOwnerWnd;
 	m_lParam = lParam;
-	m_sLocalAddress = sLocalAddress;
-	m_uiLocalPort = uiLocalPort;
 	m_sPeerAddress = sPeerAddress;
 	m_uiPeerPort = uiPeerPort;
 	m_hAcceptEvent = hAcceptEvent;

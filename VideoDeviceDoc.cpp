@@ -3194,8 +3194,6 @@ BOOL CVideoDeviceDoc::CHttpGetFrameThread::Connect(BOOL bSignalEvents,
 					NULL,					// The Optional Tx Fifo.
 					NULL,					// The Optional Critical Section for the Tx Fifo.
 					pParseProcess,			// Parser
-					_T(""),					// Local Address (IP or Host Name).
-					0,						// Local Port, let the OS choose one
 					m_pDoc->m_sGetFrameVideoHost,// Peer Address (IP or Host Name).
 					m_pDoc->m_nGetFrameVideoPort,// Peer Port.
 					NULL,					// Handle to an Event Object that will get Accept Events.
@@ -6265,8 +6263,6 @@ BOOL CVideoDeviceDoc::MicroApacheIsPortUsed(int nPort)
 				NULL,					// The Optional Tx Fifo.
 				NULL,					// The Optional Critical Section for the Tx Fifo.
 				NULL,					// Parser
-				_T(""),					// Local Address (IP or Host Name).
-				0,						// Local Port, let the OS choose one
 				_T("localhost"),		// Peer Address (IP or Host Name).
 				nPort,					// Peer Port.
 				NULL,					// Handle to an Event Object that will get Accept Events.
@@ -6389,8 +6385,6 @@ BOOL CVideoDeviceDoc::MicroApacheWaitCanConnect()
 					NULL,					// The Optional Tx Fifo.
 					NULL,					// The Optional Critical Section for the Tx Fifo.
 					NULL,					// Parser
-					_T(""),					// Local Address (IP or Host Name).
-					0,						// Local Port, let the OS choose one
 					_T("localhost"),									// Peer Address (IP or Host Name).
 					((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort,	// Peer Port.
 					NULL,					// Handle to an Event Object that will get Accept Events.

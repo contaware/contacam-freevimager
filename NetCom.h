@@ -259,8 +259,6 @@ public:
 					BUFQUEUE* pTxFifo,					// The Optional Tx Fifo.
 					LPCRITICAL_SECTION pcsTxFifoSync,	// The Optional Critical Section for the Tx Fifo.
 					CParseProcess* pParseProcess,		// Parser & Processor
-					CString sLocalAddress,				// Local Address (IP or Host Name), if _T("") Any Address is ok
-					UINT uiLocalPort,					// Local Port, if 0 -> Win Selects a Port
 					CString sPeerAddress,				// Peer Address (IP or Host Name), if _T("") Any Address is ok
 					UINT uiPeerPort,					// Peer Port, if 0 -> Win Selects a Port
 					HANDLE hAcceptEvent,				// Handle to an Event Object that will get Accept Events.
@@ -507,8 +505,6 @@ protected:
 				BUFQUEUE* pTxFifo,
 				LPCRITICAL_SECTION pcsTxFifoSync,
 				CParseProcess* pParseProcess,
-				CString sLocalAddress,
-				UINT uiLocalPort,
 				CString sPeerAddress,
 				UINT uiPeerPort,
 				HANDLE hAcceptEvent,
@@ -629,12 +625,10 @@ protected:
 	BOOL m_bFreeTxFifo;
 	BOOL m_bFreeTxFifoSync;
 	
-	// The Internet Addresses (IPs or Host Names)
-	CString m_sLocalAddress;
+	// The Internet Address (IP or Host Name)
 	CString m_sPeerAddress;
 
-	// The Internet Ports
-	UINT m_uiLocalPort;
+	// The Internet Port
 	UINT m_uiPeerPort;
 
 	// Threads
