@@ -231,17 +231,6 @@ public:
 			CNetCom* m_pNetCom;
 	};
 
-	// Base Idle Generator Class
-	class CIdleGenerator
-	{
-		friend class CNetCom;
-		public:
-			CIdleGenerator(){;};
-			virtual ~CIdleGenerator(){;};
-			virtual BOOL Generate(CNetCom* pNetCom) = 0;	// Called at tx timeout,
-															// return FALSE if no more calls wanted! 
-	};
-
 	// Declare Friend Classes
 	friend class CMsgThread;
 	friend class CRxThread;
@@ -270,7 +259,6 @@ public:
 					BUFQUEUE* pTxFifo,					// The Optional Tx Fifo.
 					LPCRITICAL_SECTION pcsTxFifoSync,	// The Optional Critical Section for the Tx Fifo.
 					CParseProcess* pParseProcess,		// Parser & Processor
-					CIdleGenerator* pIdleGenerator,		// The Idle Generator, remember to enable it with EnableIdleGenerator(TRUE)!
 					CString sLocalAddress,				// Local Address (IP or Host Name), if _T("") Any Address is ok
 					UINT uiLocalPort,					// Local Port, if 0 -> Win Selects a Port
 					CString sPeerAddress,				// Peer Address (IP or Host Name), if _T("") Any Address is ok
@@ -308,8 +296,6 @@ public:
 														// even if the uiRxMsgTrigger size is not reached (A zero meens INFINITE Timeout).
 					UINT uiTxPacketTimeout,				// After this timeout a Packet is sent
 														// even if no Write Event Happened (A zero meens INFINITE Timeout).
-														// This is also the Generator rate if not sending through Write Events,
-														// Attention: if set to zero the Generator is never called!
 					CMsgOut* pMsgOut,					// Message Class for Debug, Notice, Warning, Error and Critical Visualization.
 					int nSocketFamily);					// Socket family
 
@@ -351,9 +337,6 @@ public:
 	// Get Parser & Processor
 	__forceinline CParseProcess* GetParseProcess() const {return m_pParseProcess;};
 
-	// Get Idle Generator
-	__forceinline CIdleGenerator* GetIdleGenerator() {return m_pIdleGenerator;};
-
 	// Return the Peer Socket IP
 	CString GetPeerSockIP();
 
@@ -361,12 +344,6 @@ public:
 	BOOL StartMsgThread();
 	BOOL StartRxThread();
 	BOOL StartTxThread();
-
-	// Enable / Disable The Idle Generator
-	void EnableIdleGenerator(BOOL bEnabled);
-
-	// Generator State
-	__forceinline BOOL IsIdleGeneratorEnabled() {return m_bIdleGeneratorEnabled;};
 
 	// Get The Tx Event Handle.
 	// This handle is used to trigger the TX Thread
@@ -534,7 +511,6 @@ protected:
 				BUFQUEUE* pTxFifo,
 				LPCRITICAL_SECTION pcsTxFifoSync,
 				CParseProcess* pParseProcess,
-				CIdleGenerator* pIdleGenerator,
 				CString sLocalAddress,
 				UINT uiLocalPort,
 				CString sPeerAddress,
@@ -616,12 +592,6 @@ protected:
 
 	// The Parser & Processor
 	CParseProcess* m_pParseProcess;
-
-	// The Idle Generator
-	CIdleGenerator* m_pIdleGenerator;
-
-	// The Idle Generator Enable Flag
-	BOOL m_bIdleGeneratorEnabled;
 
 	// The Socket Handle
 	SOCKET m_hSocket;

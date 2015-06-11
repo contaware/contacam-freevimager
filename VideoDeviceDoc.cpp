@@ -3194,7 +3194,6 @@ BOOL CVideoDeviceDoc::CHttpGetFrameThread::Connect(BOOL bSignalEvents,
 					NULL,					// The Optional Tx Fifo.
 					NULL,					// The Optional Critical Section for the Tx Fifo.
 					pParseProcess,			// Parser
-					NULL,					// Generator
 					_T(""),					// Local Address (IP or Host Name).
 					0,						// Local Port, let the OS choose one
 					m_pDoc->m_sGetFrameVideoHost,// Peer Address (IP or Host Name).
@@ -3232,8 +3231,6 @@ BOOL CVideoDeviceDoc::CHttpGetFrameThread::Connect(BOOL bSignalEvents,
 											// even if the uiRxMsgTrigger size is not reached (A zero meens INFINITE Timeout).
 					0,/*uiTxPacketTimeout*/	// After this timeout a Packet is sent
 											// even if no Write Event Happened (A zero meens INFINITE Timeout).
-											// This is also the Generator rate,
-											// if set to zero the Generator is never called!
 					NULL,					// Message Class for Notice, Warning and Error Visualization.
 					nSocketFamily);			// Socket family
 }
@@ -4039,7 +4036,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 CVideoDeviceDoc::~CVideoDeviceDoc()
 {
 	FreeVideoFile();
-	// Parsers and Generators always deleted after the related CNetCom objects!
+	// Parsers always deleted after the related CNetCom objects!
 	if (m_pHttpGetFrameParseProcess)
 	{
 		delete m_pHttpGetFrameParseProcess;
@@ -6268,7 +6265,6 @@ BOOL CVideoDeviceDoc::MicroApacheIsPortUsed(int nPort)
 				NULL,					// The Optional Tx Fifo.
 				NULL,					// The Optional Critical Section for the Tx Fifo.
 				NULL,					// Parser
-				NULL,					// Generator
 				_T(""),					// Local Address (IP or Host Name).
 				0,						// Local Port, let the OS choose one
 				_T("localhost"),		// Peer Address (IP or Host Name).
@@ -6306,8 +6302,6 @@ BOOL CVideoDeviceDoc::MicroApacheIsPortUsed(int nPort)
 										// even if the uiRxMsgTrigger size is not reached (A zero meens INFINITE Timeout).
 				0,/*uiTxPacketTimeout*/	// After this timeout a Packet is sent
 										// even if no Write Event Happened (A zero meens INFINITE Timeout).
-										// This is also the Generator rate,
-										// if set to zero the Generator is never called!
 				NULL,					// Message Class for Notice, Warning and Error Visualization.
 				AF_UNSPEC))				// Socket family
 	{
@@ -6395,7 +6389,6 @@ BOOL CVideoDeviceDoc::MicroApacheWaitCanConnect()
 					NULL,					// The Optional Tx Fifo.
 					NULL,					// The Optional Critical Section for the Tx Fifo.
 					NULL,					// Parser
-					NULL,					// Generator
 					_T(""),					// Local Address (IP or Host Name).
 					0,						// Local Port, let the OS choose one
 					_T("localhost"),									// Peer Address (IP or Host Name).
@@ -6433,8 +6426,6 @@ BOOL CVideoDeviceDoc::MicroApacheWaitCanConnect()
 											// even if the uiRxMsgTrigger size is not reached (A zero meens INFINITE Timeout).
 					0,/*uiTxPacketTimeout*/	// After this timeout a Packet is sent
 											// even if no Write Event Happened (A zero meens INFINITE Timeout).
-											// This is also the Generator rate,
-											// if set to zero the Generator is never called!
 					NULL,					// Message Class for Notice, Warning and Error Visualization.
 					AF_UNSPEC))				// Socket family
 		{

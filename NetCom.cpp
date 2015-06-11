@@ -887,10 +887,6 @@ int CNetCom::CTxThread::Work()
 			case WAIT_TIMEOUT :
 				if (m_pCurrentBuf == NULL) // If not sending
 					Write();
-	
-				// Call the Idle Generator
-				if (m_pNetCom->m_pIdleGenerator && m_pNetCom->m_bIdleGeneratorEnabled)
-					m_pNetCom->m_bIdleGeneratorEnabled = m_pNetCom->m_pIdleGenerator->Generate(m_pNetCom);
 				break;
 		}
 	}
@@ -1029,7 +1025,6 @@ CNetCom::CNetCom()
 
 	// Pointers
 	m_pParseProcess				= NULL;
-	m_pIdleGenerator			= NULL;
 	m_lParam					= 0;
 	m_pRxBuf					= NULL;
 	m_pRxFifo					= NULL;
@@ -1088,9 +1083,6 @@ CNetCom::CNetCom()
 
 	// Is the Client Connected?
 	m_bClientConnected			= FALSE;
-
-	// The Idle Generator is disabled
-	m_bIdleGeneratorEnabled		= FALSE;
 
 	// Must this Class Instance free or not
 	m_bFreeRxBufSync			= FALSE;
@@ -1261,7 +1253,6 @@ BOOL CNetCom::Init(	HWND hOwnerWnd,						// The Optional Owner Window to which s
 					BUFQUEUE* pTxFifo,					// The Optional Tx Fifo.
 					LPCRITICAL_SECTION pcsTxFifoSync,	// The Optional Critical Section for the Tx Fifo.
 					CParseProcess* pParseProcess,		// Parser & Processor
-					CIdleGenerator* pIdleGenerator,		// The Idle Generator, remember to enable it with EnableIdleGenerator(TRUE)!
 					CString sLocalAddress,				// Local Address (IP or Host Name), if _T("") Any Address is ok
 					UINT uiLocalPort,					// Local Port, if 0 -> Win Selects a Port
 					CString sPeerAddress,				// Peer Address (IP or Host Name), if _T("") Any Address is ok
@@ -1299,8 +1290,6 @@ BOOL CNetCom::Init(	HWND hOwnerWnd,						// The Optional Owner Window to which s
 														// even if the uiRxMsgTrigger size is not reached (A zero meens INFINITE Timeout).
 					UINT uiTxPacketTimeout,				// After this timeout a Packet is sent
 														// even if no Write Event Happened (A zero meens INFINITE Timeout).
-														// This is also the Generator rate if not sending through Write Events,
-														// Attention: if set to zero the Generator is never called!
 					CMsgOut* pMsgOut,					// Message Class for Debug, Notice, Warning, Error and Critical Visualization.
 					int nSocketFamily)					// Socket family
 {
@@ -1355,7 +1344,7 @@ BOOL CNetCom::Init(	HWND hOwnerWnd,						// The Optional Owner Window to which s
 
 	// Initialize the Member Variables
 	InitVars(	hOwnerWnd, lParam, pRxBuf, pcsRxBufSync, pRxFifo, pcsRxFifoSync,
-				pTxBuf, pcsTxBufSync, pTxFifo, pcsTxFifoSync, pParseProcess, pIdleGenerator, sLocalAddress, uiLocalPort,
+				pTxBuf, pcsTxBufSync, pTxFifo, pcsTxFifoSync, pParseProcess, sLocalAddress, uiLocalPort,
 				sPeerAddress, uiPeerPort, hAcceptEvent, hConnectEvent, hConnectFailedEvent, hCloseEvent,
 				hReadEvent, hWriteEvent, hOOBEvent, lResetEventMask, lOwnerWndNetEvents,
 				uiRxMsgTrigger, hRxMsgTriggerEvent, uiMaxTxPacketSize, uiRxPacketTimeout, uiTxPacketTimeout, pMsgOut);
@@ -1363,9 +1352,6 @@ BOOL CNetCom::Init(	HWND hOwnerWnd,						// The Optional Owner Window to which s
 	// Init the Parser
 	if (m_pParseProcess)
 		m_pParseProcess->Init(this);
-
-	// The Idle Generator is disabled
-	m_bIdleGeneratorEnabled	= FALSE;
 
 	if (m_hSocket == INVALID_SOCKET)
 	{
@@ -1498,9 +1484,6 @@ void CNetCom::Close()
 		m_pMsgOut = NULL;
 		m_bFreeMsgOut = FALSE;
 	}
-
-	// Disable The Idle Generator
-	m_bIdleGeneratorEnabled = FALSE;
 
 	// Reset init time
 	m_InitTime = CTime(0);
@@ -1674,11 +1657,6 @@ BOOL CNetCom::StartTxThread()
 		}
 	}
 	return TRUE;
-}
-
-void CNetCom::EnableIdleGenerator(BOOL bEnabled)
-{
-	m_bIdleGeneratorEnabled = bEnabled;
 }
 
 int CNetCom::GetAvailableReadBytes()
@@ -2057,7 +2035,6 @@ void CNetCom::InitVars(	HWND hOwnerWnd,
 						BUFQUEUE* pTxFifo,
 						LPCRITICAL_SECTION pcsTxFifoSync,
 						CParseProcess* pParseProcess,
-						CIdleGenerator* pIdleGenerator,
 						CString sLocalAddress,
 						UINT uiLocalPort,
 						CString sPeerAddress,
@@ -2171,7 +2148,6 @@ void CNetCom::InitVars(	HWND hOwnerWnd,
 
 	// Init member vars
 	m_pParseProcess = pParseProcess;
-	m_pIdleGenerator = pIdleGenerator;
 	m_hOwnerWnd = hOwnerWnd;
 	m_lParam = lParam;
 	m_sLocalAddress = sLocalAddress;
