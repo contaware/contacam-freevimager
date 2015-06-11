@@ -3195,7 +3195,6 @@ BOOL CVideoDeviceDoc::CHttpGetFrameThread::Connect(BOOL bSignalEvents,
 					NULL,					// The Optional Critical Section for the Tx Fifo.
 					pParseProcess,			// Parser
 					NULL,					// Generator
-					SOCK_STREAM,			// TCP
 					_T(""),					// Local Address (IP or Host Name).
 					0,						// Local Port, let the OS choose one
 					m_pDoc->m_sGetFrameVideoHost,// Peer Address (IP or Host Name).
@@ -3510,7 +3509,7 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 
 				// Http Networking Reconnect
 				if (dwCurrentUpTime - dwLastHttpReconnectUpTime > (DWORD)(1000 * HTTPGETFRAME_CONNECTION_TIMEOUT) &&
-					m_pDoc->m_pGetFrameNetCom && m_pDoc->m_pGetFrameNetCom->IsClient())
+					m_pDoc->m_pGetFrameNetCom)
 				{
 					VlmReStart();
 					dwLastHttpReconnectUpTime = dwCurrentUpTime;
@@ -5693,7 +5692,7 @@ void CVideoDeviceDoc::OnChangeFrameRate()
 			}
 			SetDocumentTitle();
 		}
-		else if (m_pGetFrameNetCom && m_pGetFrameNetCom->IsClient())
+		else if (m_pGetFrameNetCom)
 		{
 			if (m_pHttpGetFrameParseProcess->m_FormatType == CHttpGetFrameParseProcess::FORMATMJPEG)
 			{
@@ -5796,7 +5795,7 @@ void CVideoDeviceDoc::VideoFormatDialog()
 			dlg.DoModal();
 		}
 	}
-	else if (m_pGetFrameNetCom && m_pGetFrameNetCom->IsClient())
+	else if (m_pGetFrameNetCom)
 	{
 		if (m_nNetworkDeviceTypeMode == OTHERONE_SP	||
 			m_nNetworkDeviceTypeMode == OTHERONE_CP	||
@@ -6270,7 +6269,6 @@ BOOL CVideoDeviceDoc::MicroApacheIsPortUsed(int nPort)
 				NULL,					// The Optional Critical Section for the Tx Fifo.
 				NULL,					// Parser
 				NULL,					// Generator
-				SOCK_STREAM,			// TCP
 				_T(""),					// Local Address (IP or Host Name).
 				0,						// Local Port, let the OS choose one
 				_T("localhost"),		// Peer Address (IP or Host Name).
@@ -6398,7 +6396,6 @@ BOOL CVideoDeviceDoc::MicroApacheWaitCanConnect()
 					NULL,					// The Optional Critical Section for the Tx Fifo.
 					NULL,					// Parser
 					NULL,					// Generator
-					SOCK_STREAM,			// TCP
 					_T(""),					// Local Address (IP or Host Name).
 					0,						// Local Port, let the OS choose one
 					_T("localhost"),									// Peer Address (IP or Host Name).

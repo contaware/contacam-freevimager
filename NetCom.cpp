@@ -69,7 +69,6 @@ CNetCom::CBuf::CBuf()
 	m_Buf = NULL;
 	m_BufSize = 0;
 	m_MsgSize = 0;
-	memset(&m_Addr, 0, sizeof(sockaddr_in6));
 #ifdef NETCOM_BUF_TICKCOUNT
 	m_dwTickCount = 0;
 #endif
@@ -80,7 +79,6 @@ CNetCom::CBuf::CBuf(unsigned int Size)
 	m_Buf = new char[Size];
 	m_BufSize = Size;
 	m_MsgSize = 0;
-	memset(&m_Addr, 0, sizeof(sockaddr_in6));
 #ifdef NETCOM_BUF_TICKCOUNT
 	m_dwTickCount = 0;
 #endif
@@ -98,7 +96,6 @@ CNetCom::CBuf::CBuf(const CNetCom::CBuf& b) // Copy Constructor (CBuf b1 = b2 or
 #ifdef NETCOM_BUF_TICKCOUNT
 	m_dwTickCount = b.m_dwTickCount;
 #endif
-	memcpy(&m_Addr, &(b.m_Addr), sizeof(sockaddr_in6));
 	m_Buf = new char[m_BufSize = b.m_BufSize];
 	ASSERT(m_MsgSize <= m_BufSize);
 	if (m_Buf && b.m_Buf)
@@ -113,7 +110,6 @@ CNetCom::CBuf& CNetCom::CBuf::operator=(const CNetCom::CBuf& b) // Copy Assignme
 #ifdef NETCOM_BUF_TICKCOUNT
 		m_dwTickCount = b.m_dwTickCount;
 #endif
-		memcpy(&m_Addr, &(b.m_Addr), sizeof(sockaddr_in6));
 		if (m_BufSize < m_MsgSize || !m_Buf)
 		{
 			if (m_Buf)
@@ -295,36 +291,21 @@ int CNetCom::CMsgThread::Work()
 					m_pNetCom->Notice(m_pNetCom->GetName() + _T(" We are starting shutdown"));
 				if (m_pNetCom->m_hSocket != INVALID_SOCKET)
 				{
-					if (m_pNetCom->m_nSocketType == SOCK_DGRAM)
-					{
-						m_pNetCom->ShutdownTxThread();
-						m_pNetCom->ShutdownRxThread();
-						if (::closesocket(m_pNetCom->m_hSocket) == SOCKET_ERROR)
-							m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" closesocket()"));
-						else
-							m_pNetCom->m_hSocket = INVALID_SOCKET;
-						if (m_pNetCom->m_pMsgOut)
-							m_pNetCom->Notice(m_pNetCom->GetName() + _T(" MsgThread ended (ID = 0x%08X)"), GetId());
-						return 0;
-					}
-					else
-					{
-						// Stop the Tx and Rx Threads because after shutdown with SD_BOTH,
-						// transmitting and receiving is not allowed!
-						m_pNetCom->ShutdownTxThread();
-						m_pNetCom->ShutdownRxThread();
+					// Stop the Tx and Rx Threads because after shutdown with SD_BOTH,
+					// transmitting and receiving is not allowed!
+					m_pNetCom->ShutdownTxThread();
+					m_pNetCom->ShutdownRxThread();
 
-						// Set flag
-						bInitConnectionShutdown = TRUE;
+					// Set flag
+					bInitConnectionShutdown = TRUE;
 
-						// Enable only FD_CLOSE events at this point
-						if (::WSAEventSelect(m_pNetCom->m_hSocket, (WSAEVENT)m_pNetCom->m_hNetEvent, FD_CLOSE) == SOCKET_ERROR)
-							m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" WSAEventSelect()"));
+					// Enable only FD_CLOSE events at this point
+					if (::WSAEventSelect(m_pNetCom->m_hSocket, (WSAEVENT)m_pNetCom->m_hNetEvent, FD_CLOSE) == SOCKET_ERROR)
+						m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" WSAEventSelect()"));
 
-						// Shutdown SD_BOTH
-						if (::shutdown(m_pNetCom->m_hSocket, SD_BOTH) == SOCKET_ERROR)
-							m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" shutdown()"));
-					}
+					// Shutdown SD_BOTH
+					if (::shutdown(m_pNetCom->m_hSocket, SD_BOTH) == SOCKET_ERROR)
+						m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" shutdown()"));
 				}
 				break;
 
@@ -431,7 +412,7 @@ int CNetCom::CMsgThread::Work()
 									m_pNetCom->Notice(m_pNetCom->GetName() + _T(" MsgThread ended (ID = 0x%08X)"), GetId());
 								return 0;
 							}
-							else if (m_pNetCom->m_nSocketType != SOCK_DGRAM)
+							else
 							{
 								m_pNetCom->m_bClientConnected = TRUE;
 
@@ -872,31 +853,13 @@ __forceinline void CNetCom::CRxThread::Read(UINT BufSize)
 	WSABuffer.buf = m_pCurrentBuf->GetBuf();
 	DWORD NumberOfBytesReceived = 0;
 
-	int nRecvRes;
-	if (m_pNetCom->IsDatagram())
-	{
-		INT incoming_addrlen;
-		incoming_addrlen = sizeof(sockaddr_in6);
-		nRecvRes = ::WSARecvFrom(m_pNetCom->m_hSocket,
-								&WSABuffer,
-								1,
-								&NumberOfBytesReceived,
-								&Flags,
-								m_pCurrentBuf->GetAddrPtr(),                           
-								&incoming_addrlen,
-								&m_pNetCom->m_ovRx,
-								NULL);
-	}
-	else
-	{
-		nRecvRes = ::WSARecv(m_pNetCom->m_hSocket,
+	int nRecvRes = ::WSARecv(m_pNetCom->m_hSocket,
 							&WSABuffer,
 							1,
 							&NumberOfBytesReceived,
 							&Flags,
 							&m_pNetCom->m_ovRx,
 							NULL);
-	}
 	if (nRecvRes == SOCKET_ERROR)
 	{
 		int res = ::WSAGetLastError();
@@ -912,10 +875,7 @@ __forceinline void CNetCom::CRxThread::Read(UINT BufSize)
 		}
 		else
 		{
-			if (m_pNetCom->IsDatagram())
-				m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" WSARecvFrom()"));
-			else	
-				m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" WSARecv()"));
+			m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" WSARecv()"));
 			delete m_pCurrentBuf;
 			m_pCurrentBuf = NULL;
 		}	
@@ -944,20 +904,6 @@ int CNetCom::CTxThread::Work()
 
 	if (m_pNetCom->m_pMsgOut)
 		m_pNetCom->Notice(m_pNetCom->GetName() + _T(" TxThread started (ID = 0x%08X)"), GetId());
-
-	int nSendBufSize;
-	int nOptLen = sizeof(nSendBufSize);
-	if (::getsockopt(	m_pNetCom->m_hSocket,         
-						SOL_SOCKET,        
-						SO_SNDBUF, 
-						(char*)&nSendBufSize,
-						&nOptLen) == SOCKET_ERROR)
-	{
-		m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" getsockopt()"));
-		m_dwSendBufSize2 = NETCOM_DEFAULT_SENDBUFSIZE2;
-	}
-	else
-		m_dwSendBufSize2 = (DWORD)(nSendBufSize >> 1);
 
 	// Set thread priority
 	::SetThreadPriority(m_hThread, m_pNetCom->m_nThreadsPriority);
@@ -1082,56 +1028,13 @@ void CNetCom::CTxThread::Write()
 		// Send out
 		if ((WSABuffer.len > 0) && (WSABuffer.buf != NULL))
 		{
-			// Bandwidth Control
-			DWORD dwSleepMs = 0xFFFFFFFFU;
-			::EnterCriticalSection(&m_csBandwidth);
-			if (m_dwMaxBandwidth > 0U)
-			{
-				m_dwSentBytes += WSABuffer.len;
-				if (m_dwSentBytes >= m_dwSendBufThreshold)
-				{
-					dwSleepMs = 1000U * m_dwSentBytes / m_dwMaxBandwidth;	
-					DWORD dwElapsedMs = ::timeGetTime() - m_dwLastUpTime;
-					if (dwElapsedMs >= 0x80000000U)
-						dwElapsedMs = 0U;
-					dwSleepMs = dwSleepMs - dwElapsedMs;
-					if (dwSleepMs >= 0x80000000U)
-						dwSleepMs = 0U;
-					m_dwSentBytes = 0U;
-				}
-			}
-			::LeaveCriticalSection(&m_csBandwidth);
-			if (dwSleepMs != 0xFFFFFFFFU)
-			{
-				if (dwSleepMs > 0U)
-					::Sleep(dwSleepMs);
-				m_dwLastUpTime = ::timeGetTime();
-			}
-
-			int nSendRes;
-			if (m_pNetCom->IsDatagram() &&
-				!SOCKADDRANY(m_pCurrentBuf->GetAddrPtr()))
-			{
-				nSendRes = ::WSASendTo(	m_pNetCom->m_hSocket,
-										&WSABuffer,
-										1,
-										&NumberOfBytesSent,
-										0,
-										m_pCurrentBuf->GetAddrPtr(),                       
-										SOCKADDRSIZE(m_pCurrentBuf->GetAddrPtr()),
-										&m_pNetCom->m_ovTx,
-										NULL);
-			}
-			else
-			{
-				nSendRes = ::WSASend(m_pNetCom->m_hSocket,
+			int nSendRes = ::WSASend(m_pNetCom->m_hSocket,
 									&WSABuffer,
 									1,
 									&NumberOfBytesSent,
 									0,
 									&m_pNetCom->m_ovTx,
 									NULL);
-			}	
 			if (nSendRes == SOCKET_ERROR)
 			{
 				int res = ::WSAGetLastError();
@@ -1147,11 +1050,7 @@ void CNetCom::CTxThread::Write()
 				}
 				else
 				{
-					if (m_pNetCom->IsDatagram() &&
-						!SOCKADDRANY(m_pCurrentBuf->GetAddrPtr()))
-						m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" WSASendTo()"));
-					else
-						m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" WSASend()"));
+					m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" WSASend()"));
 					delete m_pCurrentBuf;
 					m_pCurrentBuf = NULL;
 				}
@@ -1472,7 +1371,6 @@ BOOL CNetCom::Init(	HWND hOwnerWnd,						// The Optional Owner Window to which s
 					LPCRITICAL_SECTION pcsTxFifoSync,	// The Optional Critical Section for the Tx Fifo.
 					CParseProcess* pParseProcess,		// Parser & Processor
 					CIdleGenerator* pIdleGenerator,		// The Idle Generator, remember to enable it with EnableIdleGenerator(TRUE)!
-					int nSocketType,					// Socket Type: SOCK_STREAM (TCP) or SOCK_DGRAM (UDP).
 					CString sLocalAddress,				// Local Address (IP or Host Name), if _T("") Any Address is ok
 					UINT uiLocalPort,					// Local Port, if 0 -> Win Selects a Port
 					CString sPeerAddress,				// Peer Address (IP or Host Name), if _T("") Any Address is ok
@@ -1533,11 +1431,6 @@ BOOL CNetCom::Init(	HWND hOwnerWnd,						// The Optional Owner Window to which s
 	memset(&local_addr6, 0, sizeof(local_addr6));	// Init to any address
 	if (!InitAddr(m_nSocketFamily, sPeerAddress, uiPeerPort, ppeer_addr)) // This can change m_nSocketFamily
 		return FALSE;
-	if (nSocketType == SOCK_DGRAM)
-	{
-		if (!InitAddr(m_nSocketFamily, sLocalAddress, uiLocalPort, plocal_addr)) // This can change m_nSocketFamily
-			return FALSE;
-	}
 	if (m_nSocketFamily == AF_UNSPEC)
 		m_nSocketFamily = AF_INET; // Default to IP4
 	ppeer_addr->sa_family = plocal_addr->sa_family = (unsigned short)m_nSocketFamily; // Init family
@@ -1571,7 +1464,7 @@ BOOL CNetCom::Init(	HWND hOwnerWnd,						// The Optional Owner Window to which s
 
 	// Initialize the Member Variables
 	InitVars(	hOwnerWnd, lParam, pRxBuf, pcsRxBufSync, pRxFifo, pcsRxFifoSync,
-				pTxBuf, pcsTxBufSync, pTxFifo, pcsTxFifoSync, pParseProcess, pIdleGenerator, nSocketType, sLocalAddress, uiLocalPort,
+				pTxBuf, pcsTxBufSync, pTxFifo, pcsTxFifoSync, pParseProcess, pIdleGenerator, sLocalAddress, uiLocalPort,
 				sPeerAddress, uiPeerPort, hAcceptEvent, hConnectEvent, hConnectFailedEvent, hCloseEvent,
 				hReadEvent, hWriteEvent, hOOBEvent, lResetEventMask, lOwnerWndNetEvents,
 				uiRxMsgTrigger, hRxMsgTriggerEvent, uiMaxTxPacketSize, uiRxPacketTimeout, uiTxPacketTimeout, pMsgOut);
@@ -1586,72 +1479,24 @@ BOOL CNetCom::Init(	HWND hOwnerWnd,						// The Optional Owner Window to which s
 	if (m_hSocket == INVALID_SOCKET)
 	{
 		// Create an Overlapped (=Asynchronous) Socket
-		if ((m_hSocket = ::WSASocket(m_nSocketFamily, nSocketType,
-									(nSocketType==SOCK_STREAM) ? IPPROTO_TCP : IPPROTO_UDP,
+		if ((m_hSocket = ::WSASocket(m_nSocketFamily, SOCK_STREAM,
+									IPPROTO_TCP,
 									NULL, 0, WSA_FLAG_OVERLAPPED)) != INVALID_SOCKET)
 		{
 			// Turn On all Network Events
 			if (InitEvents() == FALSE)
 				return FALSE;
-		
-			// Create a Client Socket or a Datagram Connection
-			if (nSocketType == SOCK_DGRAM)
-			{
-				if (::bind(m_hSocket, plocal_addr, SOCKADDRSIZE(plocal_addr)) == SOCKET_ERROR)
-				{
-					ProcessWSAError(GetName() + _T(" bind()"));
-					return FALSE;
-				}
-				else if (m_pMsgOut)
-				{
-					if (sLocalAddress != _T(""))
-						Notice(GetName() + _T(" Bind (%s port %d)"), sLocalAddress, uiLocalPort);
-					else
-						Notice(GetName() + _T(" Bind (localhost port %d)"), uiLocalPort);
-				}
-			}
 
 			// Start Message Thread now so that FD_CONNECT can be handled
 			StartMsgThread();
 				
+			// Connect
 			if (!SOCKADDRANY(ppeer_addr))
 			{
 				if (::WSAConnect(m_hSocket, ppeer_addr, SOCKADDRSIZE(ppeer_addr), NULL, NULL, NULL, NULL) != SOCKET_ERROR)
 				{
 					if (m_pMsgOut)
 						Notice(GetName() + _T(" Connect (%s port %d)"), sPeerAddress, uiPeerPort);
-
-					// Old Win9x and Wine do not set the FD_CONNECT event for udp
-					// -> start everything here!
-					if (nSocketType == SOCK_DGRAM)
-					{
-						m_bClientConnected = TRUE;
-
-						// Start Rx and Tx Threads
-						StartRxThread();
-						StartTxThread();
-
-						// Connect Event
-						if (m_hConnectEvent)
-						{	
-							if (m_lResetEventMask & FD_CONNECT)
-								::ResetEvent(m_hConnectEvent);
-							else
-								::SetEvent(m_hConnectEvent);
-						}
-
-						// Send Connect Message to the Parent Window
-						if ((m_lOwnerWndNetEvents & FD_CONNECT) && m_hOwnerWnd)
-						{
-							::PostMessage(m_hOwnerWnd, WM_NETCOM_CONNECT_EVENT,
-										(WPARAM)this, (LPARAM)m_lParam);
-
-							if (m_nIDConnect)
-								::PostMessage(m_hOwnerWnd, WM_COMMAND,
-									(WPARAM)m_nIDConnect, (LPARAM)NULL);
-						}
-					}
-
 					return TRUE;
 				}
 				else
@@ -1669,21 +1514,9 @@ BOOL CNetCom::Init(	HWND hOwnerWnd,						// The Optional Owner Window to which s
 			}
 			else
 			{
-				// A listening Datagram Socket is ok
-				if (nSocketType == SOCK_DGRAM)
-				{
-					// Start here the Rx Thread because no CONNECT event
-					// is sent to the Msg Thread,
-					// which would start the Rx Thread
-					StartRxThread();
-					return TRUE;
-				}
-				else
-				{
-					if (m_pMsgOut)
-						Error(GetName() + _T(" Cannot Connect To A Empty Address!"));
-					return FALSE;
-				}
+				if (m_pMsgOut)
+					Error(GetName() + _T(" Cannot Connect To A Empty Address!"));
+				return FALSE;
 			}
 		}
 		else
@@ -2082,131 +1915,6 @@ int CNetCom::Write(BYTE* Data, int Size)
 		return 0;
 }
 
-int CNetCom::WriteDatagramTo(	sockaddr* pAddr,
-								BYTE* Hdr,
-								int HdrSize,
-								BYTE* Data,
-								int DataSize,
-								BOOL bHighPriority)
-{
-	// Check
-	if (!pAddr						||
-		m_hSocket == INVALID_SOCKET	||
-		m_nSocketType != SOCK_DGRAM	||
-		m_pMsgThread->m_bClosing	||
-		!m_pcsTxFifoSync			||
-		!m_pTxFifo)
-		return 0;
-
-	// Check Params
-	if (HdrSize <= 0)
-		Hdr = NULL;
-	if (DataSize <= 0)
-		Data = NULL;
-	if (Hdr == NULL)
-		HdrSize = 0;
-	if (Data == NULL)
-		DataSize = 0;
-	if ((Hdr == NULL) && (Data == NULL))
-		return 0;
-	if ((DataSize + HdrSize) > (int)m_uiMaxTxPacketSize)
-		return 0;
-
-	// Is Tx Thread Running?
-	if (!m_pTxThread->IsRunning())
-	{
-		if (!StartTxThread())
-			return 0;
-	}
-
-	// Send
-	CBuf* pBuf = new CBuf(DataSize + HdrSize);
-	memcpy((void*)(pBuf->GetBuf()), (void*)(Hdr), HdrSize);
-	memcpy((void*)(pBuf->GetBuf() + HdrSize), (void*)Data, DataSize);
-	pBuf->SetMsgSize(DataSize + HdrSize);
-	memcpy(pBuf->GetAddrPtr(), pAddr, SOCKADDRSIZE(pAddr));
-	
-	::EnterCriticalSection(m_pcsTxFifoSync);
-	if (bHighPriority)
-		m_pTxFifo->AddHead(pBuf);
-	else
-		m_pTxFifo->AddTail(pBuf);
-	::LeaveCriticalSection(m_pcsTxFifoSync);
-
-	::SetEvent(m_hTxEvent);
-
-	return (DataSize + HdrSize);
-}
-
-int CNetCom::WriteDatagramTo(	CString sPeerAddress,
-								UINT uiPeerPort,
-								BYTE* Hdr,
-								int HdrSize,
-								BYTE* Data,
-								int DataSize,
-								BOOL bHighPriority)
-{
-	sockaddr_in6 peer_addr;
-	CString sPeerPort;
-	sPeerPort.Format(_T("%u"), uiPeerPort);
-	BOOL bIPv4 = FALSE;
-	if (m_nSocketFamily != AF_INET6)
-		bIPv4 = StringToAddress(sPeerAddress, sPeerPort, (sockaddr*)&peer_addr, AF_INET);
-	if (!bIPv4)
-	{
-		if (m_nSocketFamily == AF_INET)
-			return 0;
-		if (!StringToAddress(sPeerAddress, sPeerPort, (sockaddr*)&peer_addr, AF_INET6))
-			return 0;
-	}
-	return WriteDatagramTo((sockaddr*)&peer_addr, Hdr, HdrSize, Data, DataSize, bHighPriority);
-}
-
-int CNetCom::WriteDatagram(	BYTE* Hdr,
-							int HdrSize,
-							BYTE* Data,
-							int DataSize,
-							BOOL bHighPriority)
-{
-	// Check
-	if (m_hSocket == INVALID_SOCKET ||
-		m_pMsgThread->m_bClosing	||
-		!m_pcsTxFifoSync			||
-		!m_pTxFifo)
-		return 0;
-
-	// Check Params
-	if (HdrSize <= 0)
-		Hdr = NULL;
-	if (DataSize <= 0)
-		Data = NULL;
-	if (Hdr == NULL)
-		HdrSize = 0;
-	if (Data == NULL)
-		DataSize = 0;
-	if ((Hdr == NULL) && (Data == NULL))
-		return 0;
-	if ((DataSize + HdrSize) > (int)m_uiMaxTxPacketSize)
-		return 0;
-
-	// Send
-	CBuf* pBuf = new CBuf(DataSize + HdrSize);
-	memcpy((void*)(pBuf->GetBuf()), (void*)(Hdr), HdrSize);
-	memcpy((void*)(pBuf->GetBuf() + HdrSize), (void*)Data, DataSize);
-	pBuf->SetMsgSize(DataSize + HdrSize);
-	
-	::EnterCriticalSection(m_pcsTxFifoSync);
-	if (bHighPriority)
-		m_pTxFifo->AddHead(pBuf);
-	else
-		m_pTxFifo->AddTail(pBuf);
-	::LeaveCriticalSection(m_pcsTxFifoSync);
-
-	::SetEvent(m_hTxEvent);
-
-	return (DataSize + HdrSize);
-}
-
 CNetCom::CBuf* CNetCom::ReadHeadBuf()
 {
 	CNetCom::CBuf* pBuf = NULL;
@@ -2440,12 +2148,7 @@ int CNetCom::StrToByte(char* str)
 CString CNetCom::GetName()
 {
 	if (m_hSocket != INVALID_SOCKET)
-	{
-		if (m_nSocketType == SOCK_STREAM)
-			return _T("Net_Client");
-		else
-			return _T("Net_Datagram");
-	}
+		return _T("Net_Client");
 	else
 	{
 		return _T("Net");
@@ -2464,7 +2167,6 @@ void CNetCom::InitVars(	HWND hOwnerWnd,
 						LPCRITICAL_SECTION pcsTxFifoSync,
 						CParseProcess* pParseProcess,
 						CIdleGenerator* pIdleGenerator,
-						int nSocketType,
 						CString sLocalAddress,
 						UINT uiLocalPort,
 						CString sPeerAddress,
@@ -2581,7 +2283,6 @@ void CNetCom::InitVars(	HWND hOwnerWnd,
 	m_pIdleGenerator = pIdleGenerator;
 	m_hOwnerWnd = hOwnerWnd;
 	m_lParam = lParam;
-	m_nSocketType = nSocketType;
 	m_sLocalAddress = sLocalAddress;
 	m_uiLocalPort = uiLocalPort;
 	m_sPeerAddress = sPeerAddress;

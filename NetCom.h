@@ -50,9 +50,6 @@
 // Threads closing timeout, after this time the threads are forced to terminate
 #define NETCOM_BLOCKING_TIMEOUT					15000U
 
-// Default Send Buf Size
-#define NETCOM_DEFAULT_SENDBUFSIZE2				4096U
-
 // Tx Sleep in ms
 #define NETCOM_TX_SLEEP							10U
 
@@ -182,7 +179,6 @@ public:
 			__forceinline unsigned int GetMsgSize() const {return m_MsgSize;};
 			__forceinline unsigned int GetBufSize() const {return m_BufSize;};
 			__forceinline char* GetBuf() const {return m_Buf;};
-			__forceinline sockaddr* GetAddrPtr() {return (sockaddr*)(&m_Addr);};
 #ifdef NETCOM_BUF_SERIALIZE
 			void Serialize(CArchive& archive);
 #endif
@@ -193,9 +189,6 @@ public:
 			char* m_Buf;
 			unsigned int m_MsgSize;
 			unsigned int m_BufSize;
-
-			// Only Used For Datagrams
-			sockaddr_in6 m_Addr;		// The internet address is stored here, maybe IP4 or IP6
 	};
 
 	// The Host Class
@@ -267,22 +260,9 @@ public:
 		public:
 			CTxThread(){m_pNetCom = NULL;
 						m_pCurrentBuf = NULL;
-						m_nCurrentTxFifoSize = 0;
-						m_dwSentBytes = 0U;
-						m_dwSendBufSize2 = NETCOM_DEFAULT_SENDBUFSIZE2;
-						m_dwSendBufThreshold = NETCOM_DEFAULT_SENDBUFSIZE2;
-						m_dwMaxBandwidth = 0U;
-						m_dwLastUpTime = 0U;
-						::InitializeCriticalSection(&m_csBandwidth);};
-			virtual ~CTxThread(){Kill(NETCOM_BLOCKING_TIMEOUT); ::DeleteCriticalSection(&m_csBandwidth);};
+						m_nCurrentTxFifoSize = 0;};
+			virtual ~CTxThread(){Kill(NETCOM_BLOCKING_TIMEOUT);};
 			__forceinline void SetNetComPointer(CNetCom* pNetCom) {m_pNetCom = pNetCom;};
-			__forceinline void SetMaxDatagramBandwidth(DWORD dwMaxBandwidth)
-			{
-				::EnterCriticalSection(&m_csBandwidth);
-				m_dwMaxBandwidth = dwMaxBandwidth;
-				m_dwSendBufThreshold = MIN(NETCOM_TX_SLEEP * dwMaxBandwidth / 1000U, m_dwSendBufSize2);
-				::LeaveCriticalSection(&m_csBandwidth);
-			};
 			
 		protected:
 			int Work();
@@ -290,12 +270,6 @@ public:
 			CNetCom* m_pNetCom;
 			CBuf* m_pCurrentBuf;
 			int m_nCurrentTxFifoSize;
-			DWORD m_dwSentBytes;
-			DWORD m_dwSendBufSize2;
-			DWORD m_dwLastUpTime;
-			volatile DWORD m_dwMaxBandwidth;
-			volatile DWORD m_dwSendBufThreshold;
-			CRITICAL_SECTION m_csBandwidth;
 	};
 
 	// Base Parser Class
@@ -357,7 +331,6 @@ public:
 					LPCRITICAL_SECTION pcsTxFifoSync,	// The Optional Critical Section for the Tx Fifo.
 					CParseProcess* pParseProcess,		// Parser & Processor
 					CIdleGenerator* pIdleGenerator,		// The Idle Generator, remember to enable it with EnableIdleGenerator(TRUE)!
-					int nSocketType,					// Socket Type: SOCK_STREAM (TCP) or SOCK_DGRAM (UDP).
 					CString sLocalAddress,				// Local Address (IP or Host Name), if _T("") Any Address is ok
 					UINT uiLocalPort,					// Local Port, if 0 -> Win Selects a Port
 					CString sPeerAddress,				// Peer Address (IP or Host Name), if _T("") Any Address is ok
@@ -498,36 +471,6 @@ public:
 
 	// This Splits in multiple packets if they are to big
 	int Write(BYTE* Data, int Size);
-	
-	// Single UDP Datagram send to Specified Address,
-	// if the data is to big -> nothing is sent!
-	// if bHighPriority is set the datagram is added to the queue head instead of the tail
-	int WriteDatagramTo(sockaddr* pAddr,
-						BYTE* Hdr,
-						int HdrSize,
-						BYTE* Data,
-						int DataSize,
-						BOOL bHighPriority);
-
-	// Single UDP Datagram send to Specified Address,
-	// if the data is to big -> nothing is sent!
-	// if bHighPriority is set the datagram is added to the queue head instead of the tail
-	int WriteDatagramTo(CString sPeerAddress,
-						UINT uiPeerPort,
-						BYTE* Hdr,
-						int HdrSize,
-						BYTE* Data,
-						int DataSize,
-						BOOL bHighPriority);
-
-	// Single UDP Datagram send (can also be used for TCP),
-	// if the data is to big -> nothing is sent!
-	// if bHighPriority is set the datagram is added to the queue head instead of the tail
-	int WriteDatagram(	BYTE* Hdr,
-						int HdrSize,
-						BYTE* Data,
-						int DataSize,
-						BOOL bHighPriority);
 
 	// Get the Head Buffer from the Rx Queue and remove it from the Rx Queue
 	// (Remember to delete the CBuf Object!)
@@ -559,13 +502,7 @@ public:
 	// the StrToByte (see below)
 	int WriteStr(LPCTSTR str, BOOL bEscapeSeq = FALSE);
 
-	// Is the NetCom Object Configured as Stream (TCP) Client ?
-	__forceinline BOOL IsClient() const {return (m_nSocketType == SOCK_STREAM);};
-
-	// Is the NetCom Object Configured as Datagram (UDP) Client ?
-	__forceinline BOOL IsDatagram() const {return (m_nSocketType == SOCK_DGRAM);};
-
-	// Is Client (Stream or Datagram) Connected ?
+	// Is Client Connected ?
 	__forceinline BOOL IsClientConnected() const {return m_bClientConnected;}; 
 
 	// Config
@@ -581,7 +518,6 @@ public:
 
 	// Name of the CNetCom Object Instance:
 	// "NetCom Client"
-	// "NetCom Datagram"
 	CString GetName();
 
 	// Socket Family
@@ -598,13 +534,6 @@ public:
 	// Set Msg, Rx and Tx threads priority,
 	// to be done before starting them!
 	__forceinline void SetThreadsPriority(int nThreadsPriority) {m_nThreadsPriority = nThreadsPriority;};
-
-	// Tx bandwidth balancing for datagram packets in bytes / second.
-	// Good practice to avoid packet drops.
-	// Even for the loopback device it is necessary!
-	// Set to 0 to disable it.
-	__forceinline void SetMaxTxDatagramBandwidth(DWORD dwMaxBandwidth) {if (m_pTxThread)
-																			m_pTxThread->SetMaxDatagramBandwidth(dwMaxBandwidth);};
 
 	// Set the new max Tx packet size
 	void SetMaxTxPacketSize(UINT uiNewSize);
@@ -666,7 +595,6 @@ protected:
 				LPCRITICAL_SECTION pcsTxFifoSync,
 				CParseProcess* pParseProcess,
 				CIdleGenerator* pIdleGenerator,
-				int nSocketType,
 				CString sLocalAddress,
 				UINT uiLocalPort,
 				CString sPeerAddress,
@@ -760,9 +688,6 @@ protected:
 
 	// The lParam to send with the Messages
 	LPARAM m_lParam;
-
-	// The Socket Tyoe (SOCK_STREAM or SOCK_DGRAM)
-	int	m_nSocketType;
 
 	// The Network Events that are to be sent to the Owner Window
 	long m_lOwnerWndNetEvents;

@@ -324,7 +324,7 @@ BOOL CGeneralPage::OnInitDialog()
 		else
 			m_SpinFrameRate.SetRange(MIN_FRAMERATE, MAX_FRAMERATE);
 	}
-	else if (m_pDoc->m_pGetFrameNetCom && m_pDoc->m_pGetFrameNetCom->IsClient())
+	else if (m_pDoc->m_pGetFrameNetCom)
 	{
 		// Axis and Edimax support only integer values starting at 1 fps
 		if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::AXIS_SP ||
@@ -390,7 +390,7 @@ BOOL CGeneralPage::OnInitDialog()
 	CButton* pButton = (CButton*)GetDlgItem(IDC_VIDEO_FORMAT);
 	if ((m_pDoc->m_pDxCapture && m_pDoc->m_pDxCapture->HasFormats())	||
 		(m_pDoc->m_pDxCapture && m_pDoc->m_pDxCapture->IsDV() && m_pDoc->m_pDxCapture->HasDVFormatDlg()) ||
-		(m_pDoc->m_pGetFrameNetCom && m_pDoc->m_pGetFrameNetCom->IsClient()))
+		(m_pDoc->m_pGetFrameNetCom))
 		pButton->EnableWindow(TRUE);
 	else
 		pButton->EnableWindow(FALSE);
@@ -584,7 +584,6 @@ void CGeneralPage::OnTimer(UINT nIDEvent)
 		CString sFrameRate;
 		pEdit = (CEdit*)GetDlgItem(IDC_FRAMERATE);
 		if (m_pDoc->m_pGetFrameNetCom &&
-			m_pDoc->m_pGetFrameNetCom->IsClient() &&
 			m_pDoc->m_pHttpGetFrameParseProcess->m_FormatType == CVideoDeviceDoc::CHttpGetFrameParseProcess::FORMATJPEG &&
 			!pEdit->IsWindowEnabled())
 		{
