@@ -143,12 +143,7 @@ void CNetCom::CMsgThread::SignalClosing()
 {
 	// Close Event
 	if (m_pNetCom->m_hCloseEvent)
-	{	
-		if (m_pNetCom->m_lResetEventMask & FD_CLOSE)
-			::ResetEvent(m_pNetCom->m_hCloseEvent);
-		else
-			::SetEvent(m_pNetCom->m_hCloseEvent);
-	}
+		::SetEvent(m_pNetCom->m_hCloseEvent);
 }
 
 int CNetCom::CMsgThread::Work()
@@ -273,12 +268,7 @@ int CNetCom::CMsgThread::Work()
 							{
 								// Connect Failed Event
 								if (m_pNetCom->m_hConnectFailedEvent)
-								{	
-									if (m_pNetCom->m_lResetEventMask & FD_CONNECTFAILED)
-										::ResetEvent(m_pNetCom->m_hConnectFailedEvent);
-									else
-										::SetEvent(m_pNetCom->m_hConnectFailedEvent);
-								}
+									::SetEvent(m_pNetCom->m_hConnectFailedEvent);
 
 								// Note that connection may fail while closing, thus we have
 								// to make sure that the tx and rx threads are not running!
@@ -304,12 +294,7 @@ int CNetCom::CMsgThread::Work()
 
 								// Connect Event
 								if (m_pNetCom->m_hConnectEvent)
-								{	
-									if (m_pNetCom->m_lResetEventMask & FD_CONNECT)
-										::ResetEvent(m_pNetCom->m_hConnectEvent);
-									else
-										::SetEvent(m_pNetCom->m_hConnectEvent);
-								}
+									::SetEvent(m_pNetCom->m_hConnectEvent);
 							}
 						}
 						if (NetworkEvents.lNetworkEvents & FD_READ)
@@ -319,43 +304,10 @@ int CNetCom::CMsgThread::Work()
 
 							// Read Event
 							if (m_pNetCom->m_hReadEvent)
-							{	
-								if (m_pNetCom->m_lResetEventMask & FD_READ)
-									::ResetEvent(m_pNetCom->m_hReadEvent);
-								else
-									::SetEvent(m_pNetCom->m_hReadEvent);
-							}
+								::SetEvent(m_pNetCom->m_hReadEvent);
 
 							// Trigger the RX Thread
 							::SetEvent(m_pNetCom->m_hRxEvent);
-						}
-						if (NetworkEvents.lNetworkEvents & FD_WRITE)
-						{
-							if (m_pNetCom->m_pMsgOut)
-								m_pNetCom->Debug(m_pNetCom->GetName() + _T(" Net Event FD_WRITE"));
-
-							// Write Event
-							if (m_pNetCom->m_hWriteEvent)
-							{	
-								if (m_pNetCom->m_lResetEventMask & FD_WRITE)
-									::ResetEvent(m_pNetCom->m_hWriteEvent);
-								else
-									::SetEvent(m_pNetCom->m_hWriteEvent);
-							}
-						}
-						if (NetworkEvents.lNetworkEvents & FD_OOB)
-						{
-							if (m_pNetCom->m_pMsgOut)
-								m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Net Event FD_OOB"));
-
-							// OOB Event
-							if (m_pNetCom->m_hOOBEvent)
-							{	
-								if (m_pNetCom->m_lResetEventMask & FD_OOB)
-									::ResetEvent(m_pNetCom->m_hOOBEvent);
-								else
-									::SetEvent(m_pNetCom->m_hOOBEvent);
-							}
 						}
 						if (NetworkEvents.lNetworkEvents & FD_CLOSE)
 						{
@@ -884,13 +836,10 @@ CNetCom::CNetCom()
 	m_hStartConnectionShutdownEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hTxTimeoutChangeEvent			= ::CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hRxTimeoutChangeEvent			= ::CreateEvent(NULL, TRUE, FALSE, NULL);
-	m_hAcceptEvent					= NULL;
 	m_hConnectEvent					= NULL;
 	m_hConnectFailedEvent			= NULL;
 	m_hCloseEvent					= NULL;
 	m_hReadEvent					= NULL;
-	m_hWriteEvent					= NULL;
-	m_hOOBEvent						= NULL;
 
 	// Initialize the Event Object Arrays
 	m_hMsgEventArray[0]			= m_pMsgThread ? m_pMsgThread->GetKillEvent() : NULL;	// highest priority
@@ -924,8 +873,6 @@ CNetCom::CNetCom()
 	
 	m_uiRxPacketTimeout = INFINITE;
 	m_uiTxPacketTimeout = INFINITE;
-
-	m_lResetEventMask = 0;
 
 	// Socket Family
 	m_nSocketFamily = AF_UNSPEC;
@@ -1038,18 +985,12 @@ BOOL CNetCom::InitAddr(volatile int& nSocketFamily, const CString& sAddress, UIN
 }
 
 BOOL CNetCom::Init(	CParseProcess* pParseProcess,		// Parser & Processor
-					CString sPeerAddress,				// Peer Address (IP or Host Name), if _T("") Any Address is ok
-					UINT uiPeerPort,					// Peer Port, if 0 -> Win Selects a Port
-					HANDLE hAcceptEvent,				// Handle to an Event Object that will get Accept Events.
+					CString sPeerAddress,				// Peer Address (IP or Host Name)
+					UINT uiPeerPort,					// Peer Port
 					HANDLE hConnectEvent,				// Handle to an Event Object that will get Connect Events.
 					HANDLE hConnectFailedEvent,			// Handle to an Event Object that will get Connect Failed Events.
 					HANDLE hCloseEvent,					// Handle to an Event Object that will get Close Events.
 					HANDLE hReadEvent,					// Handle to an Event Object that will get Read Events.
-					HANDLE hWriteEvent,					// Handle to an Event Object that will get Write Events.
-					HANDLE hOOBEvent,					// Handle to an Event Object that will get OOB Events.
-					long lResetEventMask,				// A combination of network events:
-														// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB
-														// A set value means that instead of setting an event it is reset.
 					UINT uiRxMsgTrigger,				// The number of bytes that triggers an hRxMsgTriggerEvent 
 														// (if hRxMsgTriggerEvent != NULL).
 														// Upper bound for this value is NETCOM_MAX_RX_BUFFER_SIZE.
@@ -1111,8 +1052,8 @@ BOOL CNetCom::Init(	CParseProcess* pParseProcess,		// Parser & Processor
 
 	// Initialize the Member Variables
 	InitVars(	pParseProcess,
-				sPeerAddress, uiPeerPort, hAcceptEvent, hConnectEvent, hConnectFailedEvent, hCloseEvent,
-				hReadEvent, hWriteEvent, hOOBEvent, lResetEventMask,
+				sPeerAddress, uiPeerPort, hConnectEvent, hConnectFailedEvent, hCloseEvent,
+				hReadEvent,
 				uiRxMsgTrigger, hRxMsgTriggerEvent, uiMaxTxPacketSize, uiRxPacketTimeout, uiTxPacketTimeout, pMsgOut);
 
 	// Init the Parser
@@ -1773,14 +1714,10 @@ CString CNetCom::GetName()
 void CNetCom::InitVars(	CParseProcess* pParseProcess,
 						CString sPeerAddress,
 						UINT uiPeerPort,
-						HANDLE hAcceptEvent,
 						HANDLE hConnectEvent,
 						HANDLE hConnectFailedEvent,
 						HANDLE hCloseEvent,
 						HANDLE hReadEvent,
-						HANDLE hWriteEvent,
-						HANDLE hOOBEvent,
-						long lResetEventMask,
 						UINT uiRxMsgTrigger,
 						HANDLE hRxMsgTriggerEvent,
 						UINT uiMaxTxPacketSize,
@@ -1800,14 +1737,10 @@ void CNetCom::InitVars(	CParseProcess* pParseProcess,
 	m_pParseProcess = pParseProcess;
 	m_sPeerAddress = sPeerAddress;
 	m_uiPeerPort = uiPeerPort;
-	m_hAcceptEvent = hAcceptEvent;
 	m_hConnectEvent = hConnectEvent;
 	m_hConnectFailedEvent = hConnectFailedEvent;
 	m_hCloseEvent = hCloseEvent;
 	m_hReadEvent = hReadEvent;
-	m_hWriteEvent = hWriteEvent;
-	m_hOOBEvent = hOOBEvent;
-	m_lResetEventMask = lResetEventMask;
 	m_uiRxMsgTrigger = uiRxMsgTrigger;
 	m_hRxMsgTriggerEvent = hRxMsgTriggerEvent;
 	m_uiMaxTxPacketSize = uiMaxTxPacketSize;
@@ -1821,7 +1754,7 @@ BOOL CNetCom::InitEvents()
 	if (m_hSocket != INVALID_SOCKET)
 	{
 		if (::WSAEventSelect(m_hSocket, (WSAEVENT)m_hNetEvent,
-						FD_READ | FD_WRITE | FD_OOB | FD_ACCEPT | FD_CONNECT | FD_CLOSE) == SOCKET_ERROR)
+						FD_READ | FD_CONNECT | FD_CLOSE) == SOCKET_ERROR)
 		{
 			ProcessWSAError(GetName() + _T(" WSAEventSelect()"));
 			return FALSE;

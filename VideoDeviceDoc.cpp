@@ -3186,16 +3186,10 @@ BOOL CVideoDeviceDoc::CHttpGetFrameThread::Connect(BOOL bSignalEvents,
 					pParseProcess,			// Parser
 					m_pDoc->m_sGetFrameVideoHost,// Peer Address (IP or Host Name).
 					m_pDoc->m_nGetFrameVideoPort,// Peer Port.
-					NULL,					// Handle to an Event Object that will get Accept Events.
 					bSignalEvents ? GetHttpConnectedEvent() : NULL,// Handle to an Event Object that will get Connect Events.
 					bSignalEvents ? GetHttpConnectFailedEvent() : NULL,// Handle to an Event Object that will get Connect Failed Events.
 					NULL,					// Handle to an Event Object that will get Close Events.
 					bSignalEvents ? GetHttpReadEvent() : NULL,// Handle to an Event Object that will get Read Events.
-					NULL,					// Handle to an Event Object that will get Write Events.
-					NULL,					// Handle to an Event Object that will get OOB Events.
-					0,						// A combination of network events:
-											// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB
-											// A set value means that instead of setting an event it is reset.
 					0,/*=uiRxMsgTrigger*/	// The number of bytes that triggers an hRxMsgTriggerEvent 
 											// (if hRxMsgTriggerEvent != NULL).
 											// Upper bound for this value is NETCOM_MAX_RX_BUFFER_SIZE.
@@ -6233,16 +6227,10 @@ BOOL CVideoDeviceDoc::MicroApacheIsPortUsed(int nPort)
 				NULL,					// Parser
 				_T("localhost"),		// Peer Address (IP or Host Name).
 				nPort,					// Peer Port.
-				NULL,					// Handle to an Event Object that will get Accept Events.
 				hEventArray[0],			// Handle to an Event Object that will get Connect Events.
 				hEventArray[1],			// Handle to an Event Object that will get Connect Failed Events.
 				NULL,					// Handle to an Event Object that will get Close Events.
 				NULL,					// Handle to an Event Object that will get Read Events.
-				NULL,					// Handle to an Event Object that will get Write Events.
-				NULL,					// Handle to an Event Object that will get OOB Events.
-				0,						// A combination of network events:
-										// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB
-										// A set value means that instead of setting an event it is reset.
 				0,/*=uiRxMsgTrigger*/	// The number of bytes that triggers an hRxMsgTriggerEvent 
 										// (if hRxMsgTriggerEvent != NULL).
 										// Upper bound for this value is NETCOM_MAX_RX_BUFFER_SIZE.
@@ -6333,16 +6321,10 @@ BOOL CVideoDeviceDoc::MicroApacheWaitCanConnect()
 					NULL,					// Parser
 					_T("localhost"),									// Peer Address (IP or Host Name).
 					((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort,	// Peer Port.
-					NULL,					// Handle to an Event Object that will get Accept Events.
 					hEventArray[0],			// Handle to an Event Object that will get Connect Events.
 					hEventArray[1],			// Handle to an Event Object that will get Connect Failed Events.
 					NULL,					// Handle to an Event Object that will get Close Events.
 					NULL,					// Handle to an Event Object that will get Read Events.
-					NULL,					// Handle to an Event Object that will get Write Events.
-					NULL,					// Handle to an Event Object that will get OOB Events.
-					0,						// A combination of network events:
-											// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB
-											// A set value means that instead of setting an event it is reset.
 					0,/*=uiRxMsgTrigger*/	// The number of bytes that triggers an hRxMsgTriggerEvent 
 											// (if hRxMsgTriggerEvent != NULL).
 											// Upper bound for this value is NETCOM_MAX_RX_BUFFER_SIZE.

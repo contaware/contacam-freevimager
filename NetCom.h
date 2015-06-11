@@ -234,18 +234,12 @@ public:
 
 	// Open a Network Connection								
 	BOOL Init(		CParseProcess* pParseProcess,		// Parser & Processor
-					CString sPeerAddress,				// Peer Address (IP or Host Name), if _T("") Any Address is ok
-					UINT uiPeerPort,					// Peer Port, if 0 -> Win Selects a Port
-					HANDLE hAcceptEvent,				// Handle to an Event Object that will get Accept Events.
+					CString sPeerAddress,				// Peer Address (IP or Host Name)
+					UINT uiPeerPort,					// Peer Port
 					HANDLE hConnectEvent,				// Handle to an Event Object that will get Connect Events.
 					HANDLE hConnectFailedEvent,			// Handle to an Event Object that will get Connect Failed Events.
 					HANDLE hCloseEvent,					// Handle to an Event Object that will get Close Events.
 					HANDLE hReadEvent,					// Handle to an Event Object that will get Read Events.
-					HANDLE hWriteEvent,					// Handle to an Event Object that will get Write Events.
-					HANDLE hOOBEvent,					// Handle to an Event Object that will get OOB Events.
-					long lResetEventMask,				// A combination of network events:
-														// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB
-														// A set value means that instead of setting an event it is reset.
 					UINT uiRxMsgTrigger,				// The number of bytes that triggers an hRxMsgTriggerEvent 
 														// (if hRxMsgTriggerEvent != NULL).
 														// Upper bound for this value is NETCOM_MAX_RX_BUFFER_SIZE.
@@ -405,14 +399,10 @@ protected:
 	void InitVars(CParseProcess* pParseProcess,
 				CString sPeerAddress,
 				UINT uiPeerPort,
-				HANDLE hAcceptEvent,
 				HANDLE hConnectEvent,
 				HANDLE hConnectFailedEvent,
 				HANDLE hCloseEvent,
 				HANDLE hReadEvent,
-				HANDLE hWriteEvent,
-				HANDLE hOOBEvent,
-				long lResetEventMask,
 				UINT uiRxMsgTrigger,
 				HANDLE hRxMsgTriggerEvent,
 				UINT uiMaxTxPacketSize,
@@ -420,7 +410,7 @@ protected:
 				UINT uiTxPacketTimeout,
 				CMsgOut* pMsgOut);
 	
-	// Initialize all Network Events (FD_CONNECT, ...)
+	// Initialize the Network Events FD_READ, FD_CONNECT and FD_CLOSE
 	BOOL InitEvents();
 
 	// Shutdown Threads
@@ -521,17 +511,11 @@ protected:
 	WSAOVERLAPPED m_ovRx;
 	WSAOVERLAPPED m_ovTx;
 
-	// A set value means that instead of setting an event it is reset
-	long m_lResetEventMask;
-
 	// Event Handles
 
-	// Network Event (FD_ACCEPT, FD_CONNECT, FD_CLOSE, ...)
+	// Network Event (FD_READ, FD_CONNECT and FD_CLOSE)
 	// Event is handled by the Message Thread
 	WSAEVENT m_hNetEvent;
-
-	// The Message Thread will send the Accept Events
-	HANDLE m_hAcceptEvent;
 
 	// The Message Thread will send the Connect Events
 	HANDLE m_hConnectEvent;
@@ -544,12 +528,6 @@ protected:
 
 	// The Message Thread will send the Read Events
 	HANDLE m_hReadEvent;
-
-	// The Message Thread will send the Write Events
-	HANDLE m_hWriteEvent;
-	
-	// The Message Thread will send the OOB Events
-	HANDLE m_hOOBEvent;
 
 	// The Message Thread will send the Rx Event
 	// when the FD_READ network event arrives
@@ -580,12 +558,12 @@ protected:
 									// m_hStartConnectionShutdownEvent
 									// m_hNetEvent
 	HANDLE m_hRxEventArray[4];		// m_RxThread.GetKillEvent() -> (highest priority)
-									// m_hRxEvent
 									// m_ovRx.hEvent
+									// m_hRxEvent
 									// m_hRxTimeoutChangeEvent
 	HANDLE m_hTxEventArray[4];		// m_TxThread.GetKillEvent() -> (highest priority)
-									// m_hWriteEvent
 									// m_ovTx.hEvent
+									// m_hTxEvent
 									// m_hTxTimeoutChangeEvent
 
 	// Rx Fifo and Tx Fifo Pointers
