@@ -425,23 +425,15 @@ int CNetCom::CRxThread::Work()
 	DWORD Event;
 	DWORD Flags;
 	DWORD NumberOfBytesReceived = 0;
-	DWORD TriggerBytesReceived = 0;
-	DWORD Timeout = INFINITE;
 	BOOL  bResult;
-	UINT  BufSize;
 
 	if (m_pNetCom->m_pMsgOut)
 		m_pNetCom->Notice(m_pNetCom->GetName() + _T(" RxThread started (ID = 0x%08X)"), GetId());
 
 	for(;;)
 	{
-		if (m_pNetCom->m_uiRxMsgTrigger == 0)
-			BufSize = NETCOM_MAX_RX_BUFFER_SIZE;
-		else
-			BufSize = m_pNetCom->m_uiRxMsgTrigger;
-
 		// Main wait function
-		Event = ::WaitForMultipleObjects(4, m_pNetCom->m_hRxEventArray, FALSE, Timeout);
+		Event = ::WaitForMultipleObjects(3, m_pNetCom->m_hRxEventArray, FALSE, INFINITE);
 		
 		switch (Event)
 		{
@@ -496,26 +488,15 @@ int CNetCom::CRxThread::Work()
 			// Read Event
 			case WAIT_OBJECT_0 + 2 :
 				::ResetEvent(m_pNetCom->m_hRxEvent);
-				Timeout = m_pNetCom->m_uiRxPacketTimeout; // Set Timeout
 				if ((m_pNetCom->m_hSocket != INVALID_SOCKET) && (m_pCurrentBuf == NULL))
-					Read(BufSize);
+					Read();
 				break;
 
-			// Timeout has been changed
-			case WAIT_OBJECT_0 + 3 :
-				::ResetEvent(m_pNetCom->m_hRxTimeoutChangeEvent);
-				continue;
-
-			// Timeout
-			case WAIT_TIMEOUT :
-				Timeout = INFINITE; // Reset Timeout
-				if (m_pNetCom->m_hRxMsgTriggerEvent != NULL)
-					::SetEvent(m_pNetCom->m_hRxMsgTriggerEvent);
+			default :
 				break;
 		}
 
-		unsigned int uiCurrentMsgSize;
-		if (m_pCurrentBuf && ((uiCurrentMsgSize = m_pCurrentBuf->GetMsgSize()) > 0))
+		if (m_pCurrentBuf && (m_pCurrentBuf->GetMsgSize() > 0))
 		{
 			// Add Message to Fifo
 			if (m_pNetCom->m_pRxFifo)
@@ -533,33 +514,19 @@ int CNetCom::CRxThread::Work()
 			// Call the Parser
 			if (m_pNetCom->m_pParseProcess)
 				m_pNetCom->m_pParseProcess->NewData(FALSE);
-
-			// Notify parent and set the event if at least m_uiRxMsgTrigger were received,
-			// or if the Rx Timeout elapsed.
-			if (m_pNetCom->m_uiRxMsgTrigger)
-			{
-				TriggerBytesReceived += uiCurrentMsgSize;
-				if (m_pNetCom->m_uiRxMsgTrigger <= TriggerBytesReceived)
-				{
-					Timeout = INFINITE; // Reset Timeout
-					TriggerBytesReceived = 0;
-					if (m_pNetCom->m_hRxMsgTriggerEvent != NULL)
-						::SetEvent(m_pNetCom->m_hRxMsgTriggerEvent);		
-				}
-			}
 		}
 	}
 	return 0;
 }
 
-__forceinline void CNetCom::CRxThread::Read(UINT BufSize)
+__forceinline void CNetCom::CRxThread::Read()
 {
 	// Do not use the MSG_PARTIAL flag, it indicates that the receive operation
 	// should complete even if only part of a message has been received.
 	// (This Flag is only for Datagram Packets)
 	DWORD Flags = 0;
 	WSABUF WSABuffer;
-	m_pCurrentBuf = new CBuf(BufSize);
+	m_pCurrentBuf = new CBuf(NETCOM_MAX_RX_BUFFER_SIZE);
 	WSABuffer.len = m_pCurrentBuf->GetBufSize();
 	WSABuffer.buf = m_pCurrentBuf->GetBuf();
 	DWORD NumberOfBytesReceived = 0;
@@ -792,9 +759,8 @@ CNetCom::CNetCom()
 		TRACE(_T("No usable WinSock DLL found\n")); 
 	}
 
-	// Handles
+	// Handle
 	m_hSocket					= INVALID_SOCKET;
-	m_hRxMsgTriggerEvent		= NULL;
 
 	// Pointers
 	m_pParseProcess				= NULL;
@@ -826,7 +792,6 @@ CNetCom::CNetCom()
 	m_hTxEvent						= ::CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hRxEvent						= ::CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hStartConnectionShutdownEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);
-	m_hRxTimeoutChangeEvent			= ::CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hConnectEvent					= NULL;
 	m_hConnectFailedEvent			= NULL;
 	m_hCloseEvent					= NULL;
@@ -839,7 +804,6 @@ CNetCom::CNetCom()
 	m_hRxEventArray[0]			= m_pRxThread ? m_pRxThread->GetKillEvent() : NULL;		// highest priority
 	m_hRxEventArray[1]			= m_ovRx.hEvent;
 	m_hRxEventArray[2]			= m_hRxEvent;
-	m_hRxEventArray[3]			= m_hRxTimeoutChangeEvent;
 	m_hTxEventArray[0]			= m_pTxThread ? m_pTxThread->GetKillEvent() : NULL;		// highest priority
 	m_hTxEventArray[1]			= m_ovTx.hEvent;
 	m_hTxEventArray[2]			= m_hTxEvent;
@@ -855,11 +819,6 @@ CNetCom::CNetCom()
 	
 	// Port
 	m_uiPeerPort = 0;
-
-	// Number of Rx Bytes that trigger a WM_NETCOM_RX Msg
-	m_uiRxMsgTrigger = 0;
-	
-	m_uiRxPacketTimeout = INFINITE;
 
 	// Socket Family
 	m_nSocketFamily = AF_UNSPEC;
@@ -908,12 +867,6 @@ CNetCom::~CNetCom()
 		::ResetEvent(m_hStartConnectionShutdownEvent);
 		::CloseHandle(m_hStartConnectionShutdownEvent);
 		m_hStartConnectionShutdownEvent = NULL;
-	}
-	if (m_hRxTimeoutChangeEvent != NULL)
-	{
-		::ResetEvent(m_hRxTimeoutChangeEvent);
-		::CloseHandle(m_hRxTimeoutChangeEvent);
-		m_hRxTimeoutChangeEvent = NULL;
 	}
 
 	// Free the Threads
@@ -972,13 +925,6 @@ BOOL CNetCom::Init(	CParseProcess* pParseProcess,		// Parser & Processor
 					HANDLE hConnectFailedEvent,			// Handle to an Event Object that will get Connect Failed Events.
 					HANDLE hCloseEvent,					// Handle to an Event Object that will get Close Events.
 					HANDLE hReadEvent,					// Handle to an Event Object that will get Read Events.
-					UINT uiRxMsgTrigger,				// The number of bytes that triggers an hRxMsgTriggerEvent 
-														// (if hRxMsgTriggerEvent != NULL).
-														// Upper bound for this value is NETCOM_MAX_RX_BUFFER_SIZE.
-					HANDLE hRxMsgTriggerEvent,			// Handle to an Event Object that will get an Event
-														// each time uiRxMsgTrigger bytes arrived.
-					UINT uiRxPacketTimeout,				// After this timeout a Packet is returned
-														// even if the uiRxMsgTrigger size is not reached (A zero meens INFINITE Timeout).
 					CMsgOut* pMsgOut,					// Message Class for Debug, Notice, Warning, Error and Critical Visualization.
 					int nSocketFamily)					// Socket family
 {
@@ -1004,14 +950,6 @@ BOOL CNetCom::Init(	CParseProcess* pParseProcess,		// Parser & Processor
 		m_nSocketFamily = AF_INET; // Default to IP4
 	ppeer_addr->sa_family = plocal_addr->sa_family = (unsigned short)m_nSocketFamily; // Init family
 
-	// Limit the Trigger Size
-	if (uiRxMsgTrigger > NETCOM_MAX_RX_BUFFER_SIZE)
-		uiRxMsgTrigger = NETCOM_MAX_RX_BUFFER_SIZE;
-
-	// Timeouts
-	if (uiRxPacketTimeout == 0)
-		uiRxPacketTimeout = INFINITE;
-
 	// Init Message Out if not supplied
 	if (pMsgOut == NULL)
 	{
@@ -1023,9 +961,9 @@ BOOL CNetCom::Init(	CParseProcess* pParseProcess,		// Parser & Processor
 
 	// Initialize the Member Variables
 	InitVars(	pParseProcess,
-				sPeerAddress, uiPeerPort, hConnectEvent, hConnectFailedEvent, hCloseEvent,
-				hReadEvent,
-				uiRxMsgTrigger, hRxMsgTriggerEvent, uiRxPacketTimeout, pMsgOut);
+				sPeerAddress, uiPeerPort,
+				hConnectEvent, hConnectFailedEvent, hCloseEvent, hReadEvent,
+				pMsgOut);
 
 	// Init the Parser
 	if (m_pParseProcess)
@@ -1097,8 +1035,6 @@ void CNetCom::Close()
 			ProcessWSAError(GetName() + _T(" closesocket()"));
 		m_hSocket = INVALID_SOCKET;
 	}
-
-	m_hRxMsgTriggerEvent = NULL;
 
 	if (m_pRxFifo)
 	{
@@ -1689,9 +1625,6 @@ void CNetCom::InitVars(	CParseProcess* pParseProcess,
 						HANDLE hConnectFailedEvent,
 						HANDLE hCloseEvent,
 						HANDLE hReadEvent,
-						UINT uiRxMsgTrigger,
-						HANDLE hRxMsgTriggerEvent,
-						UINT uiRxPacketTimeout,
 						CMsgOut* pMsgOut)
 {
 	// Init the Fifos
@@ -1710,9 +1643,6 @@ void CNetCom::InitVars(	CParseProcess* pParseProcess,
 	m_hConnectFailedEvent = hConnectFailedEvent;
 	m_hCloseEvent = hCloseEvent;
 	m_hReadEvent = hReadEvent;
-	m_uiRxMsgTrigger = uiRxMsgTrigger;
-	m_hRxMsgTriggerEvent = hRxMsgTriggerEvent;
-	m_uiRxPacketTimeout = uiRxPacketTimeout;
 	m_pMsgOut = pMsgOut;
 }
 
@@ -1741,24 +1671,6 @@ void CNetCom::ShutdownConnection_NoBlocking()
 		m_pMsgThread->m_bClosing = TRUE;
 		::SetEvent(m_hStartConnectionShutdownEvent);
 	}
-}
-
-void CNetCom::SetRxMsgTriggerSize(UINT uiNewSize)
-{
-	// Limit the Trigger Size
-	if (uiNewSize > NETCOM_MAX_RX_BUFFER_SIZE)
-		uiNewSize = NETCOM_MAX_RX_BUFFER_SIZE;
-	m_uiRxMsgTrigger = uiNewSize;
-}
-
-UINT CNetCom::SetRxTimeout(UINT uiNewTimeout)
-{
-	if (uiNewTimeout == 0)
-		uiNewTimeout = INFINITE;
-	UINT uiOldRxTimeout = m_uiRxPacketTimeout;
-	m_uiRxPacketTimeout = uiNewTimeout;
-	::SetEvent(m_hRxTimeoutChangeEvent); // Release the Rx thread to change the timeout
-	return uiOldRxTimeout;
 }
 
 BOOL CNetCom::StringToAddress(const TCHAR* sHost, const TCHAR* sPort, sockaddr* psockaddr, int nSocketFamily/*=AF_UNSPEC*/)

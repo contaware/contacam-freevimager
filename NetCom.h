@@ -116,24 +116,8 @@ public:
 			unsigned int m_BufSize;
 	};
 
-	// The Host Class
-	class CHost
-	{
-		public:
-			CHost(){;};
-			CHost(CString sName, CString sFullName, CString sIP, in_addr IP){m_sName = sName; m_sFullName = sFullName; m_sIP = sIP; m_IP = IP;};
-			virtual ~CHost(){;};
-			CString m_sName;
-			CString m_sFullName;
-			CString m_sIP;
-			in_addr m_IP;
-	};
-
-	// MFC Collection Class Typedefs
-	typedef CArray<CBuf*,CBuf*> BUFARRAY;
+	// MFC Collection Class Typedef
 	typedef CList<CBuf*,CBuf*> BUFQUEUE;
-	typedef CArray<CNetCom*,CNetCom*> NETCOMVECTOR;
-	typedef CArray<CString,CString&> STRINGVECTOR;
 
 	// Output Message Class
 	class CMsgOut
@@ -174,7 +158,7 @@ public:
 
 		protected:
 			int Work();
-			__forceinline void Read(UINT BufSize);
+			__forceinline void Read();
 			CNetCom* m_pNetCom;
 			CBuf* m_pCurrentBuf;
 	};
@@ -240,13 +224,6 @@ public:
 					HANDLE hConnectFailedEvent,			// Handle to an Event Object that will get Connect Failed Events.
 					HANDLE hCloseEvent,					// Handle to an Event Object that will get Close Events.
 					HANDLE hReadEvent,					// Handle to an Event Object that will get Read Events.
-					UINT uiRxMsgTrigger,				// The number of bytes that triggers an hRxMsgTriggerEvent 
-														// (if hRxMsgTriggerEvent != NULL).
-														// Upper bound for this value is NETCOM_MAX_RX_BUFFER_SIZE.
-					HANDLE hRxMsgTriggerEvent,			// Handle to an Event Object that will get an Event
-														// each time uiRxMsgTrigger bytes arrived.
-					UINT uiRxPacketTimeout,				// After this timeout a Packet is returned
-														// even if the uiRxMsgTrigger size is not reached (A zero meens INFINITE Timeout).
 					CMsgOut* pMsgOut,					// Message Class for Debug, Notice, Warning, Error and Critical Visualization.
 					int nSocketFamily);					// Socket family
 
@@ -360,18 +337,6 @@ public:
 	// Socket Family
 	__forceinline int GetSocketFamily() {return m_nSocketFamily;};
 
-	// Set the new Rx message trigger
-	void SetRxMsgTriggerSize(UINT uiNewSize);
-	
-	// Return the Rx message trigger value
-	__forceinline UINT GetRxMsgTriggerSize() const {return m_uiRxMsgTrigger;};
-
-	// Set the new Rx packet timeout
-	UINT SetRxTimeout(UINT uiNewTimeout);
-
-	// Return the Rx packet timeout
-	__forceinline UINT GetRxTimeout() const {return (m_uiRxPacketTimeout == INFINITE) ? 0 : m_uiRxPacketTimeout;};
-
 	// Init() was called last time on
 	CTime m_InitTime;
 
@@ -387,9 +352,6 @@ protected:
 				HANDLE hConnectFailedEvent,
 				HANDLE hCloseEvent,
 				HANDLE hReadEvent,
-				UINT uiRxMsgTrigger,
-				HANDLE hRxMsgTriggerEvent,
-				UINT uiRxPacketTimeout,
 				CMsgOut* pMsgOut);
 	
 	// Initialize the Network Events FD_READ, FD_CONNECT and FD_CLOSE
@@ -457,16 +419,6 @@ protected:
 	// The Socket Handle
 	SOCKET m_hSocket;
 
-	// The number of bytes that triggers an m_hRxMsgTriggerEvent 
-	// (if m_hRxMsgTriggerEvent != NULL).
-	// Upper bound for this value is NETCOM_MAX_RX_BUFFER_SIZE.
-	UINT m_uiRxMsgTrigger;
-
-	// After this timeout a Packet is returned
-	// even if the m_uiRxMsgTrigger size is not reached
-	// (A zero meens INFINITE Timeout).
-	UINT m_uiRxPacketTimeout;
-
 	// Is the Client Connected?
 	volatile BOOL m_bClientConnected;
 	
@@ -485,8 +437,6 @@ protected:
 	WSAOVERLAPPED m_ovRx;
 	WSAOVERLAPPED m_ovTx;
 
-	// Event Handles
-
 	// Network Event (FD_READ, FD_CONNECT and FD_CLOSE)
 	// Event is handled by the Message Thread
 	WSAEVENT m_hNetEvent;
@@ -494,7 +444,7 @@ protected:
 	// The Message Thread will send the Connect Events
 	HANDLE m_hConnectEvent;
 
-	// The Message Thread will send the Connect Events
+	// The Message Thread will send the Connect Failed Events
 	HANDLE m_hConnectFailedEvent;
 
 	// The Message Thread will send the Close Events
@@ -508,10 +458,6 @@ protected:
 	// This Event triggers the RX Thread
 	HANDLE m_hRxEvent;
 
-	// The Rx Thread will set this event each time m_uiRxMsgTrigger
-	// bytes have been received
-	HANDLE m_hRxMsgTriggerEvent;
-
 	// A User or the Write function set this event
 	// The Event triggers the TX Thread
 	HANDLE m_hTxEvent;
@@ -521,17 +467,13 @@ protected:
 	// by the message thread
 	HANDLE m_hStartConnectionShutdownEvent;
 
-	// The Rx Timeout has changed
-	HANDLE m_hRxTimeoutChangeEvent;
-
 	// Event Arrays
 	HANDLE m_hMsgEventArray[3];		// m_MsgThread.GetKillEvent() -> (highest priority)
 									// m_hStartConnectionShutdownEvent
 									// m_hNetEvent
-	HANDLE m_hRxEventArray[4];		// m_RxThread.GetKillEvent() -> (highest priority)
+	HANDLE m_hRxEventArray[3];		// m_RxThread.GetKillEvent() -> (highest priority)
 									// m_ovRx.hEvent
 									// m_hRxEvent
-									// m_hRxTimeoutChangeEvent
 	HANDLE m_hTxEventArray[3];		// m_TxThread.GetKillEvent() -> (highest priority)
 									// m_ovTx.hEvent
 									// m_hTxEvent

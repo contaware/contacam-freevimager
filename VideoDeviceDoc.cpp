@@ -3190,13 +3190,6 @@ BOOL CVideoDeviceDoc::CHttpGetFrameThread::Connect(BOOL bSignalEvents,
 					bSignalEvents ? GetHttpConnectFailedEvent() : NULL,// Handle to an Event Object that will get Connect Failed Events.
 					NULL,					// Handle to an Event Object that will get Close Events.
 					bSignalEvents ? GetHttpReadEvent() : NULL,// Handle to an Event Object that will get Read Events.
-					0,/*=uiRxMsgTrigger*/	// The number of bytes that triggers an hRxMsgTriggerEvent 
-											// (if hRxMsgTriggerEvent != NULL).
-											// Upper bound for this value is NETCOM_MAX_RX_BUFFER_SIZE.
-					NULL,/*hRxMsgTriggerEvent*/	// Handle to an Event Object that will get an Event
-											// each time uiRxMsgTrigger bytes arrived.
-					0,/*uiRxPacketTimeout*/	// After this timeout a Packet is returned
-											// even if the uiRxMsgTrigger size is not reached (A zero meens INFINITE Timeout).
 					NULL,					// Message Class for Notice, Warning and Error Visualization.
 					nSocketFamily);			// Socket family
 }
@@ -6227,13 +6220,6 @@ BOOL CVideoDeviceDoc::MicroApacheIsPortUsed(int nPort)
 				hEventArray[1],			// Handle to an Event Object that will get Connect Failed Events.
 				NULL,					// Handle to an Event Object that will get Close Events.
 				NULL,					// Handle to an Event Object that will get Read Events.
-				0,/*=uiRxMsgTrigger*/	// The number of bytes that triggers an hRxMsgTriggerEvent 
-										// (if hRxMsgTriggerEvent != NULL).
-										// Upper bound for this value is NETCOM_MAX_RX_BUFFER_SIZE.
-				NULL,/*hRxMsgTriggerEvent*/	// Handle to an Event Object that will get an Event
-										// each time uiRxMsgTrigger bytes arrived.
-				0,/*uiRxPacketTimeout*/	// After this timeout a Packet is returned
-										// even if the uiRxMsgTrigger size is not reached (A zero meens INFINITE Timeout).
 				NULL,					// Message Class for Notice, Warning and Error Visualization.
 				AF_UNSPEC))				// Socket family
 	{
@@ -6317,13 +6303,6 @@ BOOL CVideoDeviceDoc::MicroApacheWaitCanConnect()
 					hEventArray[1],			// Handle to an Event Object that will get Connect Failed Events.
 					NULL,					// Handle to an Event Object that will get Close Events.
 					NULL,					// Handle to an Event Object that will get Read Events.
-					0,/*=uiRxMsgTrigger*/	// The number of bytes that triggers an hRxMsgTriggerEvent 
-											// (if hRxMsgTriggerEvent != NULL).
-											// Upper bound for this value is NETCOM_MAX_RX_BUFFER_SIZE.
-					NULL,/*hRxMsgTriggerEvent*/	// Handle to an Event Object that will get an Event
-											// each time uiRxMsgTrigger bytes arrived.
-					0,/*uiRxPacketTimeout*/	// After this timeout a Packet is returned
-											// even if the uiRxMsgTrigger size is not reached (A zero meens INFINITE Timeout).
 					NULL,					// Message Class for Notice, Warning and Error Visualization.
 					AF_UNSPEC))				// Socket family
 		{
