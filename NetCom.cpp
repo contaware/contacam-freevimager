@@ -1342,7 +1342,7 @@ int CNetCom::Read(BYTE* Data/*=NULL*/, int BufSize/*=0*/)
 		return 0;
 }
 
-int CNetCom::Write(BYTE* Data, int Size)
+int CNetCom::Write(const BYTE* Data, int Size)
 {
 	if ((Size == 0) || (Data == NULL))
 		return 0;
@@ -1378,234 +1378,12 @@ int CNetCom::Write(BYTE* Data, int Size)
 		return 0;
 }
 
-CNetCom::CBuf* CNetCom::ReadHeadBuf()
+int CNetCom::WriteStr(LPCTSTR str)
 {
-	CNetCom::CBuf* pBuf = NULL;
-
-	if (m_pcsRxFifoSync && m_pRxFifo)
-	{
-		::EnterCriticalSection(m_pcsRxFifoSync);
-		if (!m_pRxFifo->IsEmpty())
-		{
-			pBuf = m_pRxFifo->GetHead();
-			m_pRxFifo->RemoveHead();
-		}
-		::LeaveCriticalSection(m_pcsRxFifoSync);
-	}
-	
-	return pBuf;
-}
-
-CNetCom::CBuf* CNetCom::GetReadHeadBuf()
-{
-	CNetCom::CBuf* pBuf = NULL;
-
-	if (m_pcsRxFifoSync && m_pRxFifo)
-	{
-		::EnterCriticalSection(m_pcsRxFifoSync);
-		if (!m_pRxFifo->IsEmpty())
-			pBuf = m_pRxFifo->GetHead();
-		::LeaveCriticalSection(m_pcsRxFifoSync);
-	}
-	
-	return pBuf;
-}
-
-BOOL CNetCom::RemoveReadHeadBuf()
-{
-	BOOL bRes = FALSE;
-
-	if (m_pcsRxFifoSync && m_pRxFifo)
-	{
-		::EnterCriticalSection(m_pcsRxFifoSync);
-		if (!m_pRxFifo->IsEmpty())
-		{
-			m_pRxFifo->RemoveHead();
-			bRes = TRUE;
-		}
-		::LeaveCriticalSection(m_pcsRxFifoSync);
-	}
-	
-	return bRes;
-}
-
-int CNetCom::FindByte(BYTE b)
-{
-	int bytepos = 0;
-
-	if (m_pcsRxFifoSync && m_pRxFifo)
-	{
-		::EnterCriticalSection(m_pcsRxFifoSync);
-		POSITION position = m_pRxFifo->GetHeadPosition();
-		::LeaveCriticalSection(m_pcsRxFifoSync);
-		if (!position) return -1;
-		while (position)
-		{
-			CBuf* pBuf;
-			::EnterCriticalSection(m_pcsRxFifoSync);
-			pBuf = m_pRxFifo->GetNext(position);
-			::LeaveCriticalSection(m_pcsRxFifoSync);
-			for (unsigned int i = 0 ; i < pBuf->GetMsgSize() ; i++)
-			{
-				if ((pBuf->GetBuf())[i] == b) return bytepos;
-				bytepos++;
-			}
-		}
-	}
-	return -1;
-}
-
-int CNetCom::ReadLine(BYTE* Data, int MaxSize)
-{
-	int LFPos;
-	int CRPos;
-	
-	LFPos = FindByte('\n');
-	if (LFPos >= 0)
-	{
-		if ((LFPos+1) <= MaxSize)
-			return Read(Data, LFPos+1);
-		else
-			return 0;
-	}
-
-	CRPos = FindByte('\r');
-	if (CRPos >= 0)
-	{
-		if ((CRPos+1) <= MaxSize)
-			return Read(Data, CRPos+1);
-		else
-			return 0;
-	}
-	
-	return 0;
-}
-
-int CNetCom::ReadCRLFLine(BYTE* Data, int MaxSize)
-{
-	int LFPos;
-	int CRPos;
-	
-	LFPos = FindByte('\n');
-	CRPos = FindByte('\r');
-
-	if ((LFPos >= 0) && (CRPos >= 0))
-		if (CRPos == (LFPos-1))
-			if ((LFPos+1) <= MaxSize)
-				return Read(Data, LFPos+1);
-	
-	return 0;
-}
-
-int CNetCom::WriteStr(LPCTSTR str, BOOL bEscapeSeq/*=FALSE*/)
-{
-	int nSize = _tcslen(str);
-#ifdef _UNICODE
-	// Convert to Normal Bytes
-	char* buf = new char[nSize+1]; // +1 for null termination
-	if (::WideCharToMultiByte(CP_ACP, 0, str, nSize+1, buf, nSize+1, NULL, FALSE) != (nSize+1))
-	{
-		delete [] buf;
-		return 0;
-	}
-	buf[nSize] = '\0';
-	if (bEscapeSeq) 
-		nSize = StrToByte(buf); // Convert Escape Sequences to Bytes
-	int res = Write((BYTE*)buf, nSize);
-	delete [] buf;
+	CStringA sAnsiText(str);
+	int res = Write((const BYTE*)sAnsiText.GetBuffer(), sAnsiText.GetLength());
+    sAnsiText.ReleaseBuffer();
 	return res;
-#else
-	if (bEscapeSeq)
-	{
-		char* buf = new char[nSize+1]; // +1 for null termination
-		strcpy(buf, str);
-		nSize = StrToByte(buf); // Convert Escape Sequences to Bytes
-		int res = Write((BYTE*)buf, nSize);
-		delete [] buf;
-		return res;
-	}
-	else
-		return Write((BYTE*)str, nSize);
-#endif
-}
-
-/*
-Escape Sequence Represents 
-\a Bell
-\b Backspace 
-\f Formfeed 
-\n New line 
-\r Carriage return 
-\t Horizontal tab 
-\v Vertical tab 
-\\ Backslash 
-\ddd ASCII character in decimal notation 
-\0ooo ASCII character in octal notation 
-\xhh ASCII character in hexadecimal notation 
-\0xhh ASCII character in hexadecimal notation 
-
-Note: If a backslash precedes a character that does not appear above,
-	  the undefined character is handled as the character itself.
-	  For example, \x is treated as an x.
-*/
-int CNetCom::StrToByte(char* str)
-{
-	int size = strlen(str);
-	char* pstopstring;
-	char* buf = new char[size];
-	int count = 0;
-	for (int i = 0 ; i < size ; i++)
-	{
-		if (str[i] == '\\') // Escape Char
-		{
-			if (++i < size)
-			{
-				pstopstring = NULL;
-				switch (str[i])
-				{
-					case 'A' :	
-					case 'a' : buf[count++] = 0x07; break; // Bell
-					case 'B' :
-					case 'b' : buf[count++] = 0x08; break; // Backspace
-					case 'F' :
-					case 'f' : buf[count++] = 0x0C; break; // Formfeed
-					case 'N' :
-					case 'n' : buf[count++] = 0x0A; break; // New line
-					case 'R' :
-					case 'r' : buf[count++] = 0x0D; break; // Carriage return
-					case 'T' :
-					case 't' : buf[count++] = 0x09; break; // Horizontal tab
-					case 'V' :
-					case 'v' : buf[count++] = 0x0B; break; // Vertical tab
-					case '\\': buf[count++] = '\\'; break; // Backslash
-					case 'X' :
-					case 'x' : if (++i < size) buf[count++] = (char)strtoul(str+i, &pstopstring, 16); break; // Base 16
-					case '0' : buf[count++] = (char)strtoul(str+i, &pstopstring, 0); break; // Base 8 or base 16
-					case '1' :
-					case '2' :
-					case '3' :
-					case '4' :
-					case '5' :
-					case '6' :
-					case '7' :
-					case '8' :
-					case '9' : buf[count++] = (char)strtoul(str+i, &pstopstring, 10); break; // Base 10
-					default  : buf[count++] = str[i]; 
-				}
-				if ((unsigned int)pstopstring > (unsigned int)(str+i))
-					i = pstopstring-str-1;
-			}
-		}
-		else
-			buf[count++] = str[i];
-	}
-
-	// Copy back
-	memcpy(str, buf, count);
-	delete [] buf;
-	
-	// Return the count
-	return count;
 }
 
 CString CNetCom::GetName()
@@ -1699,28 +1477,16 @@ BOOL CNetCom::StringToAddress(const TCHAR* sHost, const TCHAR* sPort, sockaddr* 
 	HINSTANCE hInstLib = ::LoadLibrary(_T("Ws2_32.dll"));
 	if (hInstLib)
 	{
-#ifdef _UNICODE
 		INT (WSAAPI *lpfGetAddrInfo)(PCWSTR pNodeName, PCWSTR pServiceName, const ADDRINFOW* pHints, PADDRINFOW* ppResult);
 		VOID (WSAAPI *lpfFreeAddrInfo)(PADDRINFOW pAddrInfo);
 		lpfGetAddrInfo = (INT(WSAAPI*)(PCWSTR, PCWSTR, const ADDRINFOW*, PADDRINFOW*))::GetProcAddress(hInstLib, "GetAddrInfoW");
 		lpfFreeAddrInfo = (VOID(WSAAPI*)(PADDRINFOW))::GetProcAddress(hInstLib, "FreeAddrInfoW");
-#else
-		INT (WSAAPI *lpfGetAddrInfo)(PCSTR pNodeName, PCSTR pServiceName, const ADDRINFOA* pHints, PADDRINFOA* ppResult);
-		VOID (WSAAPI *lpfFreeAddrInfo)(PADDRINFOA pAddrInfo);
-		lpfGetAddrInfo = (INT(WSAAPI*)(PCSTR, PCSTR, const ADDRINFOA*, PADDRINFOA*))::GetProcAddress(hInstLib, "getaddrinfo");
-		lpfFreeAddrInfo = (VOID(WSAAPI*)(PADDRINFOA))::GetProcAddress(hInstLib, "freeaddrinfo");
-#endif
 		if (lpfGetAddrInfo && lpfFreeAddrInfo)
 		{
 			// Do not use ADDRINFOT because it is defined as addrinfo
 			// if _WIN32_WINNT < 0x0502 in the atlsocket.h file!
-#ifdef _UNICODE
 			ADDRINFOW aiHints;
 			ADDRINFOW* aiList = NULL;
-#else
-			ADDRINFOA aiHints;
-			ADDRINFOA* aiList = NULL;
-#endif
 			memset(&aiHints, 0, sizeof(aiHints));
 			aiHints.ai_family = nSocketFamily;
 			aiHints.ai_flags = AI_PASSIVE;
@@ -1728,11 +1494,7 @@ BOOL CNetCom::StringToAddress(const TCHAR* sHost, const TCHAR* sPort, sockaddr* 
 			{
 				// Do not use ADDRINFOT because it is defined as addrinfo
 				// if _WIN32_WINNT < 0x0502 in the atlsocket.h file!
-#ifdef _UNICODE
 				ADDRINFOW* walk;
-#else
-				ADDRINFOA* walk;
-#endif
 				for (walk = aiList ; walk != NULL ; walk = walk->ai_next)
 				{
 					if ((walk->ai_family == nSocketFamily || nSocketFamily == AF_UNSPEC) &&
@@ -1751,26 +1513,17 @@ BOOL CNetCom::StringToAddress(const TCHAR* sHost, const TCHAR* sPort, sockaddr* 
 		else if (nSocketFamily != AF_INET6)
 		{
 			psockaddr->sa_family = AF_INET;
-#ifdef _UNICODE
 			size_t host_size = _tcslen(sHost);
 			char* pHost = (char*)new char[host_size+1];
 			wcstombs(pHost, sHost, host_size+1);
 			// Check for Dotted IP Address String
 			((sockaddr_in*)psockaddr)->sin_addr.S_un.S_addr = inet_addr(pHost);
-#else
-			// Check for Dotted IP Address String
-			((sockaddr_in*)psockaddr)->sin_addr.S_un.S_addr = inet_addr(sHost);
-#endif
 
 			// If not a Dotted IP Address String try to resolve it as host name
 			if ((((sockaddr_in*)psockaddr)->sin_addr.S_un.S_addr == INADDR_NONE) &&
 				(_tcscmp(sHost, _T("255.255.255.255"))))
 			{
-#ifdef _UNICODE
 				LPHOSTENT pHostent = ::gethostbyname(pHost);
-#else
-				LPHOSTENT pHostent = ::gethostbyname(sHost);
-#endif
 
 				// Check if successfull
 				if (pHostent)
@@ -1785,9 +1538,7 @@ BOOL CNetCom::StringToAddress(const TCHAR* sHost, const TCHAR* sPort, sockaddr* 
 				res = TRUE;
 
 			// Clean-Up
-#ifdef _UNICODE
 			delete [] pHost;
-#endif
 		}
 
 		// Free lib

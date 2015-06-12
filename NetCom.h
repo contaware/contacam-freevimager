@@ -220,11 +220,11 @@ public:
 	BOOL Init(		CParseProcess* pParseProcess,		// Parser & Processor
 					CString sPeerAddress,				// Peer Address (IP or Host Name)
 					UINT uiPeerPort,					// Peer Port
-					HANDLE hConnectEvent,				// Handle to an Event Object that will get Connect Events.
-					HANDLE hConnectFailedEvent,			// Handle to an Event Object that will get Connect Failed Events.
-					HANDLE hCloseEvent,					// Handle to an Event Object that will get Close Events.
-					HANDLE hReadEvent,					// Handle to an Event Object that will get Read Events.
-					CMsgOut* pMsgOut,					// Message Class for Debug, Notice, Warning, Error and Critical Visualization.
+					HANDLE hConnectEvent,				// Handle to an Event Object that will get Connect Events
+					HANDLE hConnectFailedEvent,			// Handle to an Event Object that will get Connect Failed Events
+					HANDLE hCloseEvent,					// Handle to an Event Object that will get Close Events
+					HANDLE hReadEvent,					// Handle to an Event Object that will get Read Events
+					CMsgOut* pMsgOut,					// Message Class for Debug, Notice, Warning, Error and Critical Visualization
 					int nSocketFamily);					// Socket family
 
 	// Close the Network Connection, this function is blocking
@@ -272,60 +272,21 @@ public:
 	BOOL StartMsgThread();
 	BOOL StartRxThread();
 	BOOL StartTxThread();
-
-	// Get The Tx Event Handle.
-	// This handle is used to trigger the TX Thread
-	// (The Write function shows how to use this handle)
-	__forceinline HANDLE GetTxEventHandle() const {return m_hTxEvent;};
-
-	// Get The RxFifo and the TxFifo
-	__forceinline BUFQUEUE* GetRxFifo() const {return m_pRxFifo;};
-	__forceinline BUFQUEUE* GetTxFifo() const {return m_pTxFifo;};
-
-	// Get The RxFifo and the TxFifo Critical Sections
-	__forceinline LPCRITICAL_SECTION GetRxFifoSync() const {return m_pcsRxFifoSync;};
-	__forceinline LPCRITICAL_SECTION GetTxFifoSync() const {return m_pcsTxFifoSync;};
 	
-	// Get the available bytes count that can be read with Read()
-	int GetAvailableReadBytes();
-
 	// Read Data from the Network
-	int Read(BYTE* Data = NULL, int BufSize = 0); // returns the number of bytes read 
+	int GetAvailableReadBytes(); // get the total available bytes count that can be read
+	int Read(BYTE* Data = NULL, int BufSize = 0);	// Read() without params empties the RxFifo
+													// Read() with NULL Data removes BufSize bytes 
+													// Data must be preallocated with enough space if not NULL
+													// Function returns the number of bytes read/removed
+	__forceinline BUFQUEUE* GetRxFifo() const {return m_pRxFifo;};						// instead of Read() we can access the fifo directly,
+	__forceinline LPCRITICAL_SECTION GetRxFifoSync() const {return m_pcsRxFifoSync;};	// but in this case always use this critical section
 
-	// Write Data to the Network
-
-	// This Splits in multiple packets if they are to big
-	int Write(BYTE* Data, int Size);
-
-	// Get the Head Buffer from the Rx Queue and remove it from the Rx Queue
-	// (Remember to delete the CBuf Object!)
-	CBuf* ReadHeadBuf(void);
-
-	// Get the Head Buffer from the Rx Queue, do not remove it from the Rx Queue
-	// (Remember to delete the CBuf Object!)
-	CBuf* GetReadHeadBuf(void);
-
-	// Remove the Head Buffer from the Rx Queue
-	// (Remember to delete the CBuf Object!)
-	BOOL RemoveReadHeadBuf(void);
-
-	// Returns the position in the rx fifo of the given character
-	int FindByte(BYTE b);
-
-	// Read a Line from the Input Buffer.
-	// If no '\n' or no '\r' is found, 0 is returned.
-	// The '\n' and/or the '\r' are also returned in the buffer.
-	int ReadLine(BYTE* Data, int MaxSize);
-
-	// Read a CR + LF Line.
-	// CR and LF are also returned.
-	int ReadCRLFLine(BYTE* Data, int MaxSize);
-
-	// Write a NULL Terminated String
-	// (The terminating NULL is not written to the net)
-	// if bEscapeSeq is TRUE the string is parsed with
-	// the StrToByte (see below)
-	int WriteStr(LPCTSTR str, BOOL bEscapeSeq = FALSE);
+	// Write Data to the Network (both functions return the number of written bytes)
+	int Write(const BYTE* Data, int Size);	// If Size is bigger than NETCOM_MAX_TX_BUFFER_SIZE,
+											// then the write is divided into multiple packets
+	int WriteStr(LPCTSTR str);				// Write a NULL terminated string (the terminating NULL is not written to the net),
+											// converting the given string with CStringA
 
 	// Is Client Connected ?
 	__forceinline BOOL IsClientConnected() const {return m_bClientConnected;}; 
@@ -344,7 +305,7 @@ protected:
 	// Init paddr from sAddress
 	BOOL InitAddr(volatile int& nSocketFamily, const CString& sAddress, UINT uiPort, sockaddr* paddr);
 
-	// Initialize All User Parameters (Parameters from Init Function)
+	// Initialize all user parameters
 	void InitVars(CParseProcess* pParseProcess,
 				CString sPeerAddress,
 				UINT uiPeerPort,
@@ -387,31 +348,6 @@ protected:
 	void Warning(const TCHAR* pFormat, ...);
 	void Notice(const TCHAR* pFormat, ...);
 	void Debug(const TCHAR* pFormat, ...);
-
-	/*
-	String to Byte, returns the new size.
-	input: null terminated string
-	output: bytes with no null termination
-	
-	Escape Sequence Represents 
-	\a Bell
-	\b Backspace 
-	\f Formfeed 
-	\n New line 
-	\r Carriage return 
-	\t Horizontal tab 
-	\v Vertical tab 
-	\\ Backslash 
-	\ddd ASCII character in decimal notation 
-	\0ooo ASCII character in octal notation 
-	\xhh ASCII character in hexadecimal notation 
-	\0xhh ASCII character in hexadecimal notation 
-
-	Note: If a backslash precedes a character that does not appear above,
-		  the undefined character is handled as the character itself.
-		  For example, \x is treated as an x.
-	*/
-	int StrToByte(char* str);
 
 	// The Parser & Processor
 	CParseProcess* m_pParseProcess;
@@ -458,8 +394,8 @@ protected:
 	// This Event triggers the RX Thread
 	HANDLE m_hRxEvent;
 
-	// A User or the Write function set this event
-	// The Event triggers the TX Thread
+	// The Write functions set this event,
+	// which triggers the TX Thread
 	HANDLE m_hTxEvent;
 
 	// The m_hStartConnectionShutdownEvent is set by
