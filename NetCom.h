@@ -31,7 +31,7 @@
 												((sockaddr_in*)pAddr)->sin_addr.S_un.S_addr == INADDR_ANY) : 0)
 
 // The safety margin for the processor linear buffer
-#define PROCESSOR_BUFFER_PADDING_SIZE			16
+#define PROCESSOR_BUFFER_PADDING_SIZE			32
 
 // The Maximum RX Buffer Size
 #define NETCOM_MAX_RX_BUFFER_SIZE				4096
@@ -49,9 +49,6 @@
 
 // Threads closing timeout, after this time the threads are forced to terminate
 #define NETCOM_BLOCKING_TIMEOUT					15000U
-
-// Tx Sleep in ms
-#define NETCOM_TX_SLEEP							10U
 
 ////////////////////////////
 // Event Masks From WinSock2
@@ -302,21 +299,8 @@ public:
 	CTime m_InitTime;
 
 protected:
-	// Init paddr from sAddress
+	// Init paddr from sAddress and uiPort (this function updates nSocketFamily)
 	BOOL InitAddr(volatile int& nSocketFamily, const CString& sAddress, UINT uiPort, sockaddr* paddr);
-
-	// Initialize all user parameters
-	void InitVars(CParseProcess* pParseProcess,
-				CString sPeerAddress,
-				UINT uiPeerPort,
-				HANDLE hConnectEvent,
-				HANDLE hConnectFailedEvent,
-				HANDLE hCloseEvent,
-				HANDLE hReadEvent,
-				CMsgOut* pMsgOut);
-	
-	// Initialize the Network Events FD_READ, FD_CONNECT and FD_CLOSE
-	BOOL InitEvents();
 
 	// Shutdown Threads
 	__forceinline void ShutdownMsgThread() {
@@ -417,8 +401,6 @@ protected:
 	// Rx Fifo and Tx Fifo
 	BUFQUEUE m_RxFifo;
 	BUFQUEUE m_TxFifo;
-
-	// Synchronisation Objects
 	CRITICAL_SECTION m_csRxFifoSync;
 	CRITICAL_SECTION m_csTxFifoSync;
 

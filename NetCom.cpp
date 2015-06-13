@@ -657,8 +657,7 @@ void CNetCom::CTxThread::Write()
 			::LeaveCriticalSection(&m_pNetCom->m_csTxFifoSync);
 			return;
 		}
-		m_pCurrentBuf = m_pNetCom->m_TxFifo.GetHead();
-		m_pNetCom->m_TxFifo.RemoveHead();
+		m_pCurrentBuf = m_pNetCom->m_TxFifo.RemoveHead();
 		::LeaveCriticalSection(&m_pNetCom->m_csTxFifoSync);
 
 		// Init the WSABuffer
@@ -920,11 +919,11 @@ BOOL CNetCom::InitAddr(volatile int& nSocketFamily, const CString& sAddress, UIN
 BOOL CNetCom::Init(	CParseProcess* pParseProcess,		// Parser & Processor
 					CString sPeerAddress,				// Peer Address (IP or Host Name)
 					UINT uiPeerPort,					// Peer Port
-					HANDLE hConnectEvent,				// Handle to an Event Object that will get Connect Events.
-					HANDLE hConnectFailedEvent,			// Handle to an Event Object that will get Connect Failed Events.
-					HANDLE hCloseEvent,					// Handle to an Event Object that will get Close Events.
-					HANDLE hReadEvent,					// Handle to an Event Object that will get Read Events.
-					CMsgOut* pMsgOut,					// Message Class for Debug, Notice, Warning, Error and Critical Visualization.
+					HANDLE hConnectEvent,				// Handle to an Event Object that will get Connect Events
+					HANDLE hConnectFailedEvent,			// Handle to an Event Object that will get Connect Failed Events
+					HANDLE hCloseEvent,					// Handle to an Event Object that will get Close Events
+					HANDLE hReadEvent,					// Handle to an Event Object that will get Read Events
+					CMsgOut* pMsgOut,					// Message Class for Debug, Notice, Warning, Error and Critical Visualization
 					int nSocketFamily)					// Socket family
 {
 	// First close
@@ -933,23 +932,20 @@ BOOL CNetCom::Init(	CParseProcess* pParseProcess,		// Parser & Processor
 	// Set init time
 	m_InitTime = CTime::GetCurrentTime();
 
-	// Init socket family
-	m_nSocketFamily = nSocketFamily;
-
-	// Addresses
+	// Init Address
 	sockaddr_in6 peer_addr6;
 	sockaddr* ppeer_addr = (sockaddr*)&peer_addr6;
-	memset(&peer_addr6, 0, sizeof(peer_addr6));		// Init to any address
-	sockaddr_in6 local_addr6;
-	sockaddr* plocal_addr = (sockaddr*)&local_addr6;
-	memset(&local_addr6, 0, sizeof(local_addr6));	// Init to any address
-	if (!InitAddr(m_nSocketFamily, sPeerAddress, uiPeerPort, ppeer_addr)) // This can change m_nSocketFamily
+	memset(&peer_addr6, 0, sizeof(peer_addr6)); // Init to any address
+	if (!InitAddr(nSocketFamily, sPeerAddress, uiPeerPort, ppeer_addr)) // This can change nSocketFamily
 		return FALSE;
-	if (m_nSocketFamily == AF_UNSPEC)
-		m_nSocketFamily = AF_INET; // Default to IP4
-	ppeer_addr->sa_family = plocal_addr->sa_family = (unsigned short)m_nSocketFamily; // Init family
+	if (nSocketFamily == AF_UNSPEC)
+		nSocketFamily = AF_INET; // Default to IP4
+	ppeer_addr->sa_family = (unsigned short)nSocketFamily;
+	m_nSocketFamily = nSocketFamily;
+	m_sPeerAddress = sPeerAddress;
+	m_uiPeerPort = uiPeerPort;
 
-	// Init Message Out if not supplied
+	// Init Message Out
 	if (pMsgOut == NULL)
 	{
 #if defined(_DEBUG) || defined(TRACELOGFILE)
@@ -957,68 +953,69 @@ BOOL CNetCom::Init(	CParseProcess* pParseProcess,		// Parser & Processor
 		m_bFreeMsgOut = TRUE;
 #endif
 	}
+	m_pMsgOut = pMsgOut;
 
-	// Initialize the Member Variables
-	InitVars(	pParseProcess,
-				sPeerAddress, uiPeerPort,
-				hConnectEvent, hConnectFailedEvent, hCloseEvent, hReadEvent,
-				pMsgOut);
+	// Init the Events
+	m_hConnectEvent = hConnectEvent;
+	m_hConnectFailedEvent = hConnectFailedEvent;
+	m_hCloseEvent = hCloseEvent;
+	m_hReadEvent = hReadEvent;
 
 	// Init the Parser
-	if (m_pParseProcess)
-		m_pParseProcess->Init(this);
+	if (pParseProcess)
+		pParseProcess->Init(this);
+	m_pParseProcess = pParseProcess;
 
-	if (m_hSocket == INVALID_SOCKET)
+	// Create an Overlapped (=Asynchronous) Socket
+	if ((m_hSocket = ::WSASocket(m_nSocketFamily, SOCK_STREAM,
+								IPPROTO_TCP,
+								NULL, 0, WSA_FLAG_OVERLAPPED)) != INVALID_SOCKET)
 	{
-		// Create an Overlapped (=Asynchronous) Socket
-		if ((m_hSocket = ::WSASocket(m_nSocketFamily, SOCK_STREAM,
-									IPPROTO_TCP,
-									NULL, 0, WSA_FLAG_OVERLAPPED)) != INVALID_SOCKET)
+		// Turn on the used network events
+		if (::WSAEventSelect(m_hSocket, (WSAEVENT)m_hNetEvent,
+							FD_READ | FD_CONNECT | FD_CLOSE) == SOCKET_ERROR)
 		{
-			// Turn On all Network Events
-			if (InitEvents() == FALSE)
-				return FALSE;
+			ProcessWSAError(GetName() + _T(" WSAEventSelect()"));
+			return FALSE;
+		}
 
-			// Start Message Thread now so that FD_CONNECT can be handled
-			StartMsgThread();
+		// Start Message Thread now so that FD_CONNECT can be handled
+		StartMsgThread();
 				
-			// Connect
-			if (!SOCKADDRANY(ppeer_addr))
+		// Connect
+		if (!SOCKADDRANY(ppeer_addr))
+		{
+			if (::WSAConnect(m_hSocket, ppeer_addr, SOCKADDRSIZE(ppeer_addr), NULL, NULL, NULL, NULL) != SOCKET_ERROR)
 			{
-				if (::WSAConnect(m_hSocket, ppeer_addr, SOCKADDRSIZE(ppeer_addr), NULL, NULL, NULL, NULL) != SOCKET_ERROR)
-				{
-					if (m_pMsgOut)
-						Notice(GetName() + _T(" Connect (%s port %d)"), sPeerAddress, uiPeerPort);
-					return TRUE;
-				}
-				else
-				{
-					int nErrorCode = ::WSAGetLastError();
-					if (nErrorCode == WSAEWOULDBLOCK)
-					{
-						if (m_pMsgOut)
-							Notice(GetName() + _T(" Connect with WSAEWOULDBLOCK (%s port %d)"), sPeerAddress, uiPeerPort);
-						return TRUE;
-					}
-					ProcessWSAError(GetName() + _T(" WSAConnect()"));
-					return FALSE;
-				}
+				if (m_pMsgOut)
+					Notice(GetName() + _T(" Connect (%s port %d)"), sPeerAddress, uiPeerPort);
+				return TRUE;
 			}
 			else
 			{
-				if (m_pMsgOut)
-					Error(GetName() + _T(" Cannot Connect To A Empty Address!"));
+				int nErrorCode = ::WSAGetLastError();
+				if (nErrorCode == WSAEWOULDBLOCK)
+				{
+					if (m_pMsgOut)
+						Notice(GetName() + _T(" Connect with WSAEWOULDBLOCK (%s port %d)"), sPeerAddress, uiPeerPort);
+					return TRUE;
+				}
+				ProcessWSAError(GetName() + _T(" WSAConnect()"));
 				return FALSE;
 			}
 		}
 		else
 		{
-			ProcessWSAError(GetName() + _T(" WSASocket()"));
+			if (m_pMsgOut)
+				Error(GetName() + _T(" Cannot Connect To A Empty Address!"));
 			return FALSE;
 		}
 	}
 	else
+	{
+		ProcessWSAError(GetName() + _T(" WSASocket()"));
 		return FALSE;
+	}
 }
 
 void CNetCom::Close()
@@ -1035,18 +1032,18 @@ void CNetCom::Close()
 		m_hSocket = INVALID_SOCKET;
 	}
 
-	// Empty fifos
+	// Empty fifos (no critical section use because threads are not running)
 	while (!m_RxFifo.IsEmpty())
 	{
-		CBuf* pBuf = m_RxFifo.GetHead();
-		m_RxFifo.RemoveHead();
-		delete pBuf;
+		CBuf* pBuf = m_RxFifo.RemoveHead();
+		if (pBuf)
+			delete pBuf;
 	}
 	while (!m_TxFifo.IsEmpty())
 	{
-		CBuf* pBuf = m_TxFifo.GetHead();
-		m_TxFifo.RemoveHead();
-		delete pBuf;
+		CBuf* pBuf = m_TxFifo.RemoveHead();
+		if (pBuf)
+			delete pBuf;
 	}
 
 	// Free msg out
@@ -1257,13 +1254,12 @@ int CNetCom::Read(BYTE* Data/*=NULL*/, int BufSize/*=0*/)
 		::EnterCriticalSection(&m_csRxFifoSync);
 		while (!m_RxFifo.IsEmpty())
 		{
-			CBuf* pBuf = m_RxFifo.GetHead();
+			CBuf* pBuf = m_RxFifo.RemoveHead();
 			if (pBuf)
 			{
 				i += pBuf->GetMsgSize();
 				delete pBuf;
 			}
-			m_RxFifo.RemoveHead();
 		}
 		::LeaveCriticalSection(&m_csRxFifoSync);
 		return i;
@@ -1364,43 +1360,6 @@ CString CNetCom::GetName()
 	{
 		return _T("Net");
 	}
-}
-
-void CNetCom::InitVars(	CParseProcess* pParseProcess,
-						CString sPeerAddress,
-						UINT uiPeerPort,
-						HANDLE hConnectEvent,
-						HANDLE hConnectFailedEvent,
-						HANDLE hCloseEvent,
-						HANDLE hReadEvent,
-						CMsgOut* pMsgOut)
-{
-	// Init member vars
-	m_pParseProcess = pParseProcess;
-	m_sPeerAddress = sPeerAddress;
-	m_uiPeerPort = uiPeerPort;
-	m_hConnectEvent = hConnectEvent;
-	m_hConnectFailedEvent = hConnectFailedEvent;
-	m_hCloseEvent = hCloseEvent;
-	m_hReadEvent = hReadEvent;
-	m_pMsgOut = pMsgOut;
-}
-
-BOOL CNetCom::InitEvents()
-{
-	if (m_hSocket != INVALID_SOCKET)
-	{
-		if (::WSAEventSelect(m_hSocket, (WSAEVENT)m_hNetEvent,
-						FD_READ | FD_CONNECT | FD_CLOSE) == SOCKET_ERROR)
-		{
-			ProcessWSAError(GetName() + _T(" WSAEventSelect()"));
-			return FALSE;
-		}
-		else
-			return TRUE;
-	}
-	else
-		return FALSE;
 }
 
 void CNetCom::ShutdownConnection_NoBlocking()

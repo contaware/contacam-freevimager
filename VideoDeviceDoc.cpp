@@ -3181,17 +3181,16 @@ BOOL CVideoDeviceDoc::CHttpGetFrameThread::Connect(BOOL bSignalEvents,
 	if (!pNetCom)
 		return FALSE;
 
-	// Init TCP
-	return pNetCom->Init(
-					pParseProcess,			// Parser
-					m_pDoc->m_sGetFrameVideoHost,// Peer Address (IP or Host Name).
-					m_pDoc->m_nGetFrameVideoPort,// Peer Port.
-					bSignalEvents ? GetHttpConnectedEvent() : NULL,// Handle to an Event Object that will get Connect Events.
-					bSignalEvents ? GetHttpConnectFailedEvent() : NULL,// Handle to an Event Object that will get Connect Failed Events.
-					NULL,					// Handle to an Event Object that will get Close Events.
-					bSignalEvents ? GetHttpReadEvent() : NULL,// Handle to an Event Object that will get Read Events.
-					NULL,					// Message Class for Notice, Warning and Error Visualization.
-					nSocketFamily);			// Socket family
+	// Init
+	return pNetCom->Init(pParseProcess,									// Parser
+						m_pDoc->m_sGetFrameVideoHost,					// Peer Address (IP or Host Name)
+						m_pDoc->m_nGetFrameVideoPort,					// Peer Port
+						bSignalEvents ? GetHttpConnectedEvent() : NULL,	// Handle to an Event Object that will get Connect Events
+						bSignalEvents ? GetHttpConnectFailedEvent() : NULL,// Handle to an Event Object that will get Connect Failed Events
+						NULL,											// Handle to an Event Object that will get Close Events
+						bSignalEvents ? GetHttpReadEvent() : NULL,		// Handle to an Event Object that will get Read Events
+						NULL,											// Message Class for Notice, Warning and Error Visualization
+						nSocketFamily);									// Socket family
 }
 
 int CVideoDeviceDoc::CHttpGetFrameThread::Work()
@@ -6214,13 +6213,13 @@ BOOL CVideoDeviceDoc::MicroApacheIsPortUsed(int nPort)
 	hEventArray[1] = ::CreateEvent(NULL, TRUE, FALSE, NULL); // Http Connect Failed Event
 	if (NetCom.Init(
 				NULL,					// Parser
-				_T("localhost"),		// Peer Address (IP or Host Name).
-				nPort,					// Peer Port.
-				hEventArray[0],			// Handle to an Event Object that will get Connect Events.
-				hEventArray[1],			// Handle to an Event Object that will get Connect Failed Events.
-				NULL,					// Handle to an Event Object that will get Close Events.
-				NULL,					// Handle to an Event Object that will get Read Events.
-				NULL,					// Message Class for Notice, Warning and Error Visualization.
+				_T("localhost"),		// Peer Address (IP or Host Name)
+				nPort,					// Peer Port
+				hEventArray[0],			// Handle to an Event Object that will get Connect Events
+				hEventArray[1],			// Handle to an Event Object that will get Connect Failed Events
+				NULL,					// Handle to an Event Object that will get Close Events
+				NULL,					// Handle to an Event Object that will get Read Events
+				NULL,					// Message Class for Notice, Warning and Error Visualization
 				AF_UNSPEC))				// Socket family
 	{
 		DWORD Event = ::WaitForMultipleObjects(	2,
@@ -6297,13 +6296,13 @@ BOOL CVideoDeviceDoc::MicroApacheWaitCanConnect()
 		::ResetEvent(hEventArray[1]);
 		if (NetCom.Init(
 					NULL,					// Parser
-					_T("localhost"),									// Peer Address (IP or Host Name).
-					((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort,	// Peer Port.
-					hEventArray[0],			// Handle to an Event Object that will get Connect Events.
-					hEventArray[1],			// Handle to an Event Object that will get Connect Failed Events.
-					NULL,					// Handle to an Event Object that will get Close Events.
-					NULL,					// Handle to an Event Object that will get Read Events.
-					NULL,					// Message Class for Notice, Warning and Error Visualization.
+					_T("localhost"),									// Peer Address (IP or Host Name)
+					((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort,	// Peer Port
+					hEventArray[0],			// Handle to an Event Object that will get Connect Events
+					hEventArray[1],			// Handle to an Event Object that will get Connect Failed Events
+					NULL,					// Handle to an Event Object that will get Close Events
+					NULL,					// Handle to an Event Object that will get Read Events
+					NULL,					// Message Class for Notice, Warning and Error Visualization
 					AF_UNSPEC))				// Socket family
 		{
 			DWORD Event = ::WaitForMultipleObjects(	2,
