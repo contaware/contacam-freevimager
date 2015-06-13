@@ -455,11 +455,9 @@ int CNetCom::CRxThread::Work()
 			case WAIT_OBJECT_0 + 1 :
 				bResult = ::WSAGetOverlappedResult(m_pNetCom->m_hSocket, &m_pNetCom->m_ovRx, &NumberOfBytesReceived, TRUE, &Flags);
 				::WSAResetEvent(m_pNetCom->m_ovRx.hEvent);
-
-				// Error Handling
 				if (!bResult)
 				{
-					m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" WSAGetOverlappedResult() of WSARecv() or WSARecvFrom()"));
+					m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" WSAGetOverlappedResult() of WSARecv()"));
 					if (m_pCurrentBuf)
 					{
 						delete m_pCurrentBuf;
@@ -469,10 +467,12 @@ int CNetCom::CRxThread::Work()
 				else
 				{
 					if (m_pNetCom->m_pMsgOut)
-						m_pNetCom->Debug(m_pNetCom->GetName() + _T(" Got WSAGetOverlappedResult() of WSARecv() or WSARecvFrom() with %d bytes"), NumberOfBytesReceived);
+						m_pNetCom->Debug(m_pNetCom->GetName() + _T(" Got WSAGetOverlappedResult() of WSARecv() with %d bytes"), NumberOfBytesReceived);
 				}
-				// Strange: Even if WSARecv received all the bytes and returned no error,
-				// the Overlapped event is triggered! 
+
+				// Update the message size
+				// Note: even if WSARecv received all the bytes and returned no error,
+				// the Overlapped event is also triggered! 
 				if (m_pCurrentBuf && (m_pCurrentBuf->GetMsgSize() == 0))
 				{
 					if (NumberOfBytesReceived == 0)
@@ -496,9 +496,10 @@ int CNetCom::CRxThread::Work()
 				break;
 		}
 
+		// Store and parse & process received data
 		if (m_pCurrentBuf && (m_pCurrentBuf->GetMsgSize() > 0))
 		{
-			// Add Message to Fifo
+			// Add to Fifo
 			::EnterCriticalSection(&m_pNetCom->m_csRxFifoSync);
 			m_pNetCom->m_RxFifo.AddTail(m_pCurrentBuf);
 			::LeaveCriticalSection(&m_pNetCom->m_csRxFifoSync);
@@ -516,9 +517,6 @@ int CNetCom::CRxThread::Work()
 
 __forceinline void CNetCom::CRxThread::Read()
 {
-	// Do not use the MSG_PARTIAL flag, it indicates that the receive operation
-	// should complete even if only part of a message has been received.
-	// (This Flag is only for Datagram Packets)
 	DWORD Flags = 0;
 	WSABUF WSABuffer;
 	m_pCurrentBuf = new CBuf(NETCOM_MAX_RX_BUFFER_SIZE);
@@ -558,9 +556,8 @@ __forceinline void CNetCom::CRxThread::Read()
 		if (m_pNetCom->m_pMsgOut)
 			m_pNetCom->Debug(m_pNetCom->GetName() + _T(" Received %d bytes"), NumberOfBytesReceived);
 
-		// Overlapped Event is also called if no error has been returned.
-		// -> the following code is not necessary!
-		/* m_pCurrentBuf->SetMsgSize(NumberOfBytesReceived);*/
+		// An overlapped event is also triggered if no error has been returned
+		// -> the message size is set by the overlapped handler
 	}
 }
 
@@ -600,11 +597,9 @@ int CNetCom::CTxThread::Work()
 			case WAIT_OBJECT_0 + 1 :
 				bResult = ::WSAGetOverlappedResult(m_pNetCom->m_hSocket, &m_pNetCom->m_ovTx, &NumberOfBytesSent, TRUE, &Flags);
 				::WSAResetEvent(m_pNetCom->m_ovTx.hEvent);
-
-				// Error Handling
 				if (!bResult)
 				{
-					m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" WSAGetOverlappedResult() of WSASend() or WSASendTo()"));
+					m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" WSAGetOverlappedResult() of WSASend()"));
 					if (m_pCurrentBuf)
 					{
 						delete m_pCurrentBuf;
@@ -614,18 +609,21 @@ int CNetCom::CTxThread::Work()
 				else
 				{
 					if (m_pNetCom->m_pMsgOut)
-						m_pNetCom->Debug(m_pNetCom->GetName() + _T(" Got WSAGetOverlappedResult() of WSASend() or WSASendTo() with %d bytes"), NumberOfBytesSent);
+						m_pNetCom->Debug(m_pNetCom->GetName() + _T(" Got WSAGetOverlappedResult() of WSASend() with %d bytes"), NumberOfBytesSent);
 				}
 
-				// Strange: Even if WSASend sent all the bytes and returned no error,
+				// Free the message buffer and trigger another tx event (if data available)
+				// Note: even if WSASend sent all the bytes and returned no error,
 				// the Overlapped event is triggered! 
 				if (m_pCurrentBuf && (m_pCurrentBuf->GetMsgSize() > 0))
 				{
+					// Free
 					delete m_pCurrentBuf;
 					m_pCurrentBuf = NULL;
 					
-					// Statistics
-					if (m_nCurrentTxFifoSize > 1) ::SetEvent(m_pNetCom->m_hTxEvent);
+					// Trigger another tx event?
+					if (m_nCurrentTxFifoSize > 1) // this is the fifo size before the current Write()
+						::SetEvent(m_pNetCom->m_hTxEvent);
 				}
 				break;
 		
@@ -699,15 +697,9 @@ void CNetCom::CTxThread::Write()
 				if (m_pNetCom->m_pMsgOut)
 					m_pNetCom->Debug(m_pNetCom->GetName() + _T(" Sent %d bytes"), NumberOfBytesSent);
 
-				// Overlapped Event is also called if no error has been returned.
-				// -> the following code is not necessary!
-				/*
-				delete m_pCurrentBuf;
-				m_pCurrentBuf = NULL;
-
-				// Statistics
-				if (m_nCurrentTxFifoSize > 1) ::SetEvent(m_pNetCom->m_hTxEvent);
-				*/
+				// An overlapped event is also triggered if no error has been returned
+				// -> the message buffer is freed and another tx event is trigger
+				//    (if data available) by the overlapped handler
 			}
 		}
 		else
@@ -1111,60 +1103,6 @@ CString CNetCom::GetPeerSockIP()
 	}
 	else
 		return _T("");
-}
-
-DWORD CNetCom::EnumLAN(CStringArray* pHosts)
-{
-	// Check
-	if (!pHosts)
-		return 0;
-
-	// Free
-	pHosts->RemoveAll();
-
-	// Enum
-	HANDLE hEnum;
-	DWORD res = ::WNetOpenEnum(RESOURCE_CONTEXT, RESOURCETYPE_ANY, NULL, NULL, &hEnum);
-	if (res == NO_ERROR)
-	{		
-		if (hEnum)	
-		{
-			const int items_at_a_time = 256;
-			NETRESOURCE net_resource[items_at_a_time];
-			DWORD net_resource_count;
-			
-			do 
-			{
-				DWORD count = 0xFFFFFFFF;
-				net_resource_count = sizeof(NETRESOURCE)*items_at_a_time;
-				memset(net_resource, 0, net_resource_count);
-				
-				res = ::WNetEnumResource(hEnum, &count, (LPVOID)net_resource, &net_resource_count);				
-				if ((res != NO_ERROR) && (res != ERROR_MORE_DATA))
-					break;
-				
-				for (DWORD i = 0 ; i < count ; i++)
-				{	
-					if (net_resource[i].lpRemoteName)
-					{
-						const TCHAR* name = net_resource[i].lpRemoteName;
-						if (lstrlen(name) >= 2 && name[0] == _T('\\') && name[1] == _T('\\'))
-							name += 2;
-						pHosts->Add(CString(name));
-					}
-				}
-			} 
-			while((res == NO_ERROR) || (res == ERROR_MORE_DATA));
-			
-			::WNetCloseEnum(hEnum);
-
-			return pHosts->GetSize();
-		}
-		else
-			return 0;
-	}
-	else
-		return 0;
 }
  
 BOOL CNetCom::StartMsgThread()

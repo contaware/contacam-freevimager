@@ -210,9 +210,6 @@ public:
 	// Attention: if nSocketFamily is AF_UNSPEC or AF_INET6 pass a sockaddr_in6 structure pointer!
 	static BOOL StringToAddress(const TCHAR* sHost, const TCHAR* sPort, sockaddr* psockaddr, int nSocketFamily = AF_UNSPEC);
 
-	// Enumerate the LAN
-	static DWORD EnumLAN(CStringArray* pHosts);
-
 	// Open a Network Connection								
 	BOOL Init(		CParseProcess* pParseProcess,		// Parser & Processor
 					CString sPeerAddress,				// Peer Address (IP or Host Name)
@@ -258,9 +255,6 @@ public:
 	__forceinline BOOL IsShutdown() {return !m_pMsgThread->IsAlive()	&&
 											!m_pRxThread->IsAlive()		&&
 											!m_pTxThread->IsAlive();};
-
-	// Get Parser & Processor
-	__forceinline CParseProcess* GetParseProcess() const {return m_pParseProcess;};
 
 	// Return the Peer Socket IP
 	CString GetPeerSockIP();
