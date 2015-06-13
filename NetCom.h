@@ -279,8 +279,8 @@ public:
 													// Read() with NULL Data removes BufSize bytes 
 													// Data must be preallocated with enough space if not NULL
 													// Function returns the number of bytes read/removed
-	__forceinline BUFQUEUE* GetRxFifo() const {return m_pRxFifo;};						// instead of Read() we can access the fifo directly,
-	__forceinline LPCRITICAL_SECTION GetRxFifoSync() const {return m_pcsRxFifoSync;};	// but in this case always use this critical section
+	__forceinline BUFQUEUE* GetRxFifo() {return m_pRxFifo;};					// instead of Read() we can access the fifo directly,
+	__forceinline LPCRITICAL_SECTION GetRxFifoSync() {return &m_csRxFifoSync;};	// but in this case always use this critical section
 
 	// Write Data to the Network (both functions return the number of written bytes)
 	int Write(const BYTE* Data, int Size);	// If Size is bigger than NETCOM_MAX_TX_BUFFER_SIZE,
@@ -419,8 +419,8 @@ protected:
 	BUFQUEUE* m_pTxFifo;
 
 	// Synchronisation Objects
-	LPCRITICAL_SECTION	m_pcsRxFifoSync;
-	LPCRITICAL_SECTION	m_pcsTxFifoSync;
+	CRITICAL_SECTION m_csRxFifoSync;
+	CRITICAL_SECTION m_csTxFifoSync;
 
 	// Message Output
 	CMsgOut* m_pMsgOut;

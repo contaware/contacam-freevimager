@@ -501,9 +501,9 @@ int CNetCom::CRxThread::Work()
 			// Add Message to Fifo
 			if (m_pNetCom->m_pRxFifo)
 			{
-				::EnterCriticalSection(m_pNetCom->m_pcsRxFifoSync);
+				::EnterCriticalSection(&m_pNetCom->m_csRxFifoSync);
 				m_pNetCom->m_pRxFifo->AddTail(m_pCurrentBuf);
-				::LeaveCriticalSection(m_pNetCom->m_pcsRxFifoSync);
+				::LeaveCriticalSection(&m_pNetCom->m_csRxFifoSync);
 			}
 			else
 				delete m_pCurrentBuf;
@@ -655,16 +655,16 @@ void CNetCom::CTxThread::Write()
 
 	if (m_pNetCom->m_hSocket != INVALID_SOCKET)
 	{
-		::EnterCriticalSection(m_pNetCom->m_pcsTxFifoSync);
+		::EnterCriticalSection(&m_pNetCom->m_csTxFifoSync);
 		m_nCurrentTxFifoSize = m_pNetCom->m_pTxFifo->GetCount(); 
 		if (m_nCurrentTxFifoSize == 0)
 		{
-			::LeaveCriticalSection(m_pNetCom->m_pcsTxFifoSync);
+			::LeaveCriticalSection(&m_pNetCom->m_csTxFifoSync);
 			return;
 		}
 		m_pCurrentBuf = m_pNetCom->m_pTxFifo->GetHead();
 		m_pNetCom->m_pTxFifo->RemoveHead();
-		::LeaveCriticalSection(m_pNetCom->m_pcsTxFifoSync);
+		::LeaveCriticalSection(&m_pNetCom->m_csTxFifoSync);
 
 		// Init the WSABuffer
 		WSABuffer.buf = m_pCurrentBuf->GetBuf();
@@ -766,8 +766,6 @@ CNetCom::CNetCom()
 	m_pParseProcess				= NULL;
 	m_pRxFifo					= NULL;
 	m_pTxFifo					= NULL;
-	m_pcsRxFifoSync				= NULL;
-	m_pcsTxFifoSync				= NULL;
 	m_pMsgOut					= NULL;
 	m_pMsgThread = new CMsgThread;
 	m_pRxThread = new CRxThread;
@@ -807,6 +805,10 @@ CNetCom::CNetCom()
 	m_hTxEventArray[0]			= m_pTxThread ? m_pTxThread->GetKillEvent() : NULL;		// highest priority
 	m_hTxEventArray[1]			= m_ovTx.hEvent;
 	m_hTxEventArray[2]			= m_hTxEvent;
+
+	// Initialize critical sections
+	::InitializeCriticalSection(&m_csRxFifoSync);
+	::InitializeCriticalSection(&m_csTxFifoSync);
 
 	// Is the Client Connected?
 	m_bClientConnected			= FALSE;
@@ -873,6 +875,10 @@ CNetCom::~CNetCom()
 	delete m_pMsgThread;
 	delete m_pRxThread;
 	delete m_pTxThread;
+
+	// Delete critical sections
+	::DeleteCriticalSection(&m_csRxFifoSync);
+	::DeleteCriticalSection(&m_csTxFifoSync);
 
 	// WinSock Cleanup
 	::WSACleanup();
@@ -1047,12 +1053,6 @@ void CNetCom::Close()
 		delete m_pRxFifo;
 		m_pRxFifo = NULL;
 	}
-	if (m_pcsRxFifoSync)
-	{
-		::DeleteCriticalSection(m_pcsRxFifoSync);
-		delete m_pcsRxFifoSync;
-		m_pcsRxFifoSync = NULL;
-	}
 
 	if (m_pTxFifo)
 	{
@@ -1064,12 +1064,6 @@ void CNetCom::Close()
 		}
 		delete m_pTxFifo;
 		m_pTxFifo = NULL;
-	}
-	if (m_pcsTxFifoSync)
-	{
-		::DeleteCriticalSection(m_pcsTxFifoSync);
-		delete m_pcsTxFifoSync;
-		m_pcsTxFifoSync = NULL;
 	}
 
 	if (m_bFreeMsgOut && m_pMsgOut)
@@ -1256,9 +1250,9 @@ BOOL CNetCom::StartTxThread()
 int CNetCom::GetAvailableReadBytes()
 {
 	int nSize = 0;
-	if (m_pcsRxFifoSync && m_pRxFifo)
+	if (m_pRxFifo)
 	{
-		::EnterCriticalSection(m_pcsRxFifoSync);
+		::EnterCriticalSection(&m_csRxFifoSync);
 		POSITION pos = m_pRxFifo->GetHeadPosition();
 		while (pos)
 		{
@@ -1266,7 +1260,7 @@ int CNetCom::GetAvailableReadBytes()
 			if (pBuf)
 				nSize += pBuf->GetMsgSize();
 		}
-		::LeaveCriticalSection(m_pcsRxFifoSync);
+		::LeaveCriticalSection(&m_csRxFifoSync);
 	}
 	return nSize;
 }
@@ -1276,12 +1270,12 @@ int CNetCom::Read(BYTE* Data/*=NULL*/, int BufSize/*=0*/)
 	unsigned int i = 0;
 	int pos = 0;
 
-	if (m_pcsRxFifoSync && m_pRxFifo)
+	if (m_pRxFifo)
 	{
 		// Empty Read
 		if (Data == NULL && BufSize <= 0)
 		{
-			::EnterCriticalSection(m_pcsRxFifoSync);
+			::EnterCriticalSection(&m_csRxFifoSync);
 			while (!m_pRxFifo->IsEmpty())
 			{
 				CBuf* pBuf = m_pRxFifo->GetHead();
@@ -1292,7 +1286,7 @@ int CNetCom::Read(BYTE* Data/*=NULL*/, int BufSize/*=0*/)
 				}
 				m_pRxFifo->RemoveHead();
 			}
-			::LeaveCriticalSection(m_pcsRxFifoSync);
+			::LeaveCriticalSection(&m_csRxFifoSync);
 			return i;
 		}
 
@@ -1300,11 +1294,11 @@ int CNetCom::Read(BYTE* Data/*=NULL*/, int BufSize/*=0*/)
 		if (BufSize <= 0)
 			return 0;
 
-		::EnterCriticalSection(m_pcsRxFifoSync);
+		::EnterCriticalSection(&m_csRxFifoSync);
 		while (!m_pRxFifo->IsEmpty())
 		{
 			CBuf* pBuf = m_pRxFifo->GetHead();
-			::LeaveCriticalSection(m_pcsRxFifoSync);
+			::LeaveCriticalSection(&m_csRxFifoSync);
 			i = 0;
 			while ((pos < BufSize) && (i < pBuf->GetMsgSize()))
 			{
@@ -1323,19 +1317,19 @@ int CNetCom::Read(BYTE* Data/*=NULL*/, int BufSize/*=0*/)
 				}
 				else // if i == pBuf->GetMsgSize()
 				{
-					::EnterCriticalSection(m_pcsRxFifoSync);
+					::EnterCriticalSection(&m_csRxFifoSync);
 					m_pRxFifo->RemoveHead();
 					delete pBuf;
-					::LeaveCriticalSection(m_pcsRxFifoSync);
+					::LeaveCriticalSection(&m_csRxFifoSync);
 				}
 				return pos;
 			}
 
-			::EnterCriticalSection(m_pcsRxFifoSync);
+			::EnterCriticalSection(&m_csRxFifoSync);
 			m_pRxFifo->RemoveHead();
 			delete pBuf;
 		}
-		::LeaveCriticalSection(m_pcsRxFifoSync);
+		::LeaveCriticalSection(&m_csRxFifoSync);
 		return pos;
 	}
 	else
@@ -1347,7 +1341,7 @@ int CNetCom::Write(const BYTE* Data, int Size)
 	if ((Size == 0) || (Data == NULL))
 		return 0;
 
-	if ((m_hSocket != INVALID_SOCKET) && m_pcsTxFifoSync && m_pTxFifo)
+	if ((m_hSocket != INVALID_SOCKET) && m_pTxFifo)
 	{
 		int SentSize = 0;
 		while (SentSize < Size)
@@ -1367,9 +1361,9 @@ int CNetCom::Write(const BYTE* Data, int Size)
 				pBuf->SetMsgSize(Size - SentSize);
 				SentSize = Size;
 			}
-			::EnterCriticalSection(m_pcsTxFifoSync);
+			::EnterCriticalSection(&m_csTxFifoSync);
 			m_pTxFifo->AddTail(pBuf);
-			::LeaveCriticalSection(m_pcsTxFifoSync);
+			::LeaveCriticalSection(&m_csTxFifoSync);
 			::SetEvent(m_hTxEvent);
 		}
 		return SentSize;
@@ -1407,11 +1401,7 @@ void CNetCom::InitVars(	CParseProcess* pParseProcess,
 {
 	// Init the Fifos
 	m_pRxFifo = new BUFQUEUE;
-	m_pcsRxFifoSync = new CRITICAL_SECTION;
-	::InitializeCriticalSection(m_pcsRxFifoSync);
 	m_pTxFifo = new BUFQUEUE;
-	m_pcsTxFifoSync = new CRITICAL_SECTION;
-	::InitializeCriticalSection(m_pcsTxFifoSync);
 
 	// Init member vars
 	m_pParseProcess = pParseProcess;
