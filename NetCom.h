@@ -279,7 +279,7 @@ public:
 													// Read() with NULL Data removes BufSize bytes 
 													// Data must be preallocated with enough space if not NULL
 													// Function returns the number of bytes read/removed
-	__forceinline BUFQUEUE* GetRxFifo() {return m_pRxFifo;};					// instead of Read() we can access the fifo directly,
+	__forceinline BUFQUEUE* GetRxFifo() {return &m_RxFifo;};					// instead of Read() we can access the fifo directly,
 	__forceinline LPCRITICAL_SECTION GetRxFifoSync() {return &m_csRxFifoSync;};	// but in this case always use this critical section
 
 	// Write Data to the Network (both functions return the number of written bytes)
@@ -414,9 +414,9 @@ protected:
 									// m_ovTx.hEvent
 									// m_hTxEvent
 
-	// Rx Fifo and Tx Fifo Pointers
-	BUFQUEUE* m_pRxFifo;
-	BUFQUEUE* m_pTxFifo;
+	// Rx Fifo and Tx Fifo
+	BUFQUEUE m_RxFifo;
+	BUFQUEUE m_TxFifo;
 
 	// Synchronisation Objects
 	CRITICAL_SECTION m_csRxFifoSync;
