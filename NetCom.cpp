@@ -139,13 +139,6 @@ void CNetCom::CParseProcess::NewData(BOOL bLastCall)
 ///////////////////////////////////////////////////////////////////////////////
 // Message Thread
 ///////////////////////////////////////////////////////////////////////////////
-void CNetCom::CMsgThread::SignalClosing()
-{
-	// Close Event
-	if (m_pNetCom->m_hCloseEvent)
-		::SetEvent(m_pNetCom->m_hCloseEvent);
-}
-
 int CNetCom::CMsgThread::Work()
 {
 	DWORD Event;
@@ -167,7 +160,6 @@ int CNetCom::CMsgThread::Work()
 		{
 			// Thread Shutdown Event
 			case WAIT_OBJECT_0 :
-				m_pNetCom->m_bClientConnected = FALSE;
 				if (m_pNetCom->m_pMsgOut)
 					m_pNetCom->Warning(m_pNetCom->GetName() + _T(" MsgThread ended killed (ID = 0x%08X)"), GetId());
 				return 0;
@@ -207,7 +199,6 @@ int CNetCom::CMsgThread::Work()
 												&NetworkEvents) == SOCKET_ERROR)
 					{
 						m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" WSAEnumNetworkEvents()"));
-						m_pNetCom->m_bClientConnected = FALSE;
 						m_pNetCom->ShutdownTxThread();
 						m_pNetCom->ShutdownRxThread();
 						if (::closesocket(m_pNetCom->m_hSocket) == SOCKET_ERROR)
@@ -278,21 +269,17 @@ int CNetCom::CMsgThread::Work()
 									m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" closesocket()"));
 								else
 									m_pNetCom->m_hSocket = INVALID_SOCKET;
-								if (m_bClosing)
-									SignalClosing();
 								if (m_pNetCom->m_pMsgOut)
 									m_pNetCom->Notice(m_pNetCom->GetName() + _T(" MsgThread ended (ID = 0x%08X)"), GetId());
 								return 0;
 							}
 							else
 							{
-								m_pNetCom->m_bClientConnected = TRUE;
-
 								// Start Rx and Tx Threads
 								m_pNetCom->StartRxThread();
 								m_pNetCom->StartTxThread();
 
-								// Connect Event
+								// Trigger Connect Event
 								if (m_pNetCom->m_hConnectEvent)
 									::SetEvent(m_pNetCom->m_hConnectEvent);
 							}
@@ -312,7 +299,6 @@ int CNetCom::CMsgThread::Work()
 						if (NetworkEvents.lNetworkEvents & FD_CLOSE)
 						{
 							m_bClosing = TRUE;
-							m_pNetCom->m_bClientConnected = FALSE;
 							if (m_pNetCom->m_pMsgOut)
 								m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Net Event FD_CLOSE"));
 
@@ -349,7 +335,6 @@ int CNetCom::CMsgThread::Work()
 									m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" closesocket()"));
 								else
 									m_pNetCom->m_hSocket = INVALID_SOCKET;
-								SignalClosing();
 								if (m_pNetCom->m_pMsgOut)
 									m_pNetCom->Notice(m_pNetCom->GetName() + _T(" MsgThread ended, we started shutdown (ID = 0x%08X)"), GetId());
 								return 0;
@@ -391,7 +376,6 @@ int CNetCom::CMsgThread::Work()
 						m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" closesocket()"));
 					else
 						m_pNetCom->m_hSocket = INVALID_SOCKET;
-					SignalClosing();
 					if (m_pNetCom->m_pMsgOut)
 						m_pNetCom->Notice(m_pNetCom->GetName() + _T(" MsgThread ended, peer started shutdown (ID = 0x%08X)"), GetId());
 					return 0;
@@ -405,7 +389,6 @@ int CNetCom::CMsgThread::Work()
 						m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" closesocket()"));
 					else
 						m_pNetCom->m_hSocket = INVALID_SOCKET;
-					SignalClosing();
 					if (m_pNetCom->m_pMsgOut)
 						m_pNetCom->Warning(m_pNetCom->GetName() + _T(" MsgThread ended, we started shutdown, peer did not answer (ID = 0x%08X)"), GetId());
 					return 0;
@@ -746,11 +729,11 @@ CNetCom::CNetCom()
 	}
 
 	// Handle
-	m_hSocket					= INVALID_SOCKET;
+	m_hSocket = INVALID_SOCKET;
 
 	// Pointers
-	m_pParseProcess				= NULL;
-	m_pMsgOut					= NULL;
+	m_pParseProcess	= NULL;
+	m_pMsgOut = NULL;
 	m_pMsgThread = new CMsgThread;
 	m_pRxThread = new CRxThread;
 	m_pTxThread = new CTxThread;
@@ -762,10 +745,10 @@ CNetCom::CNetCom()
 		m_pTxThread->SetNetComPointer(this);
 
 	// Initialize overlapped structure members to zero
-	m_ovRx.Offset				= 0;
-	m_ovRx.OffsetHigh			= 0;
-	m_ovTx.Offset				= 0;
-	m_ovTx.OffsetHigh			= 0;
+	m_ovRx.Offset		= 0;
+	m_ovRx.OffsetHigh	= 0;
+	m_ovTx.Offset		= 0;
+	m_ovTx.OffsetHigh	= 0;
 
 	// Create Events
 	m_ovRx.hEvent					= ::WSACreateEvent();
@@ -776,29 +759,25 @@ CNetCom::CNetCom()
 	m_hStartConnectionShutdownEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hConnectEvent					= NULL;
 	m_hConnectFailedEvent			= NULL;
-	m_hCloseEvent					= NULL;
 	m_hReadEvent					= NULL;
 
 	// Initialize the Event Object Arrays
-	m_hMsgEventArray[0]			= m_pMsgThread ? m_pMsgThread->GetKillEvent() : NULL;	// highest priority
-	m_hMsgEventArray[1]			= m_hStartConnectionShutdownEvent;
-	m_hMsgEventArray[2]			= m_hNetEvent;
-	m_hRxEventArray[0]			= m_pRxThread ? m_pRxThread->GetKillEvent() : NULL;		// highest priority
-	m_hRxEventArray[1]			= m_ovRx.hEvent;
-	m_hRxEventArray[2]			= m_hRxEvent;
-	m_hTxEventArray[0]			= m_pTxThread ? m_pTxThread->GetKillEvent() : NULL;		// highest priority
-	m_hTxEventArray[1]			= m_ovTx.hEvent;
-	m_hTxEventArray[2]			= m_hTxEvent;
+	m_hMsgEventArray[0]	= m_pMsgThread ? m_pMsgThread->GetKillEvent() : NULL;
+	m_hMsgEventArray[1]	= m_hStartConnectionShutdownEvent;
+	m_hMsgEventArray[2]	= m_hNetEvent;
+	m_hRxEventArray[0]	= m_pRxThread ? m_pRxThread->GetKillEvent() : NULL;
+	m_hRxEventArray[1]	= m_ovRx.hEvent;
+	m_hRxEventArray[2]	= m_hRxEvent;
+	m_hTxEventArray[0]	= m_pTxThread ? m_pTxThread->GetKillEvent() : NULL;
+	m_hTxEventArray[1]	= m_ovTx.hEvent;
+	m_hTxEventArray[2]	= m_hTxEvent;
 
 	// Initialize critical sections
 	::InitializeCriticalSection(&m_csRxFifoSync);
 	::InitializeCriticalSection(&m_csTxFifoSync);
 
-	// Is the Client Connected?
-	m_bClientConnected			= FALSE;
-
 	// Must this Class Instance free or not
-	m_bFreeMsgOut				= FALSE;
+	m_bFreeMsgOut = FALSE;
 
 	// Address
 	m_sPeerAddress = _T("");
@@ -815,9 +794,15 @@ CNetCom::CNetCom()
 
 CNetCom::~CNetCom()
 {
+	// Close connection
 	Close();
 
-	// Close the Events
+	// Free the threads
+	delete m_pMsgThread;	// destructor kills the thread
+	delete m_pRxThread;		// destructor kills the thread
+	delete m_pTxThread;		// destructor kills the thread
+
+	// Close the events
 	if (m_ovRx.hEvent != NULL)
 	{
 		::WSAResetEvent(m_ovRx.hEvent);
@@ -855,16 +840,11 @@ CNetCom::~CNetCom()
 		m_hStartConnectionShutdownEvent = NULL;
 	}
 
-	// Free the Threads
-	delete m_pMsgThread;
-	delete m_pRxThread;
-	delete m_pTxThread;
-
 	// Delete critical sections
 	::DeleteCriticalSection(&m_csRxFifoSync);
 	::DeleteCriticalSection(&m_csTxFifoSync);
 
-	// WinSock Cleanup
+	// WinSock cleanup
 	::WSACleanup();
 }
 
@@ -913,7 +893,6 @@ BOOL CNetCom::Init(	CParseProcess* pParseProcess,		// Parser & Processor
 					UINT uiPeerPort,					// Peer Port
 					HANDLE hConnectEvent,				// Handle to an Event Object that will get Connect Events
 					HANDLE hConnectFailedEvent,			// Handle to an Event Object that will get Connect Failed Events
-					HANDLE hCloseEvent,					// Handle to an Event Object that will get Close Events
 					HANDLE hReadEvent,					// Handle to an Event Object that will get Read Events
 					CMsgOut* pMsgOut,					// Message Class for Debug, Notice, Warning, Error and Critical Visualization
 					int nSocketFamily)					// Socket family
@@ -950,7 +929,6 @@ BOOL CNetCom::Init(	CParseProcess* pParseProcess,		// Parser & Processor
 	// Init the Events
 	m_hConnectEvent = hConnectEvent;
 	m_hConnectFailedEvent = hConnectFailedEvent;
-	m_hCloseEvent = hCloseEvent;
 	m_hReadEvent = hReadEvent;
 
 	// Init the Parser
@@ -1304,7 +1282,6 @@ void CNetCom::ShutdownConnection_NoBlocking()
 {
 	if (m_pMsgThread->IsRunning() && !m_pMsgThread->m_bClosing)
 	{
-		m_bClientConnected = FALSE;
 		m_pMsgThread->m_bClosing = TRUE;
 		::SetEvent(m_hStartConnectionShutdownEvent);
 	}

@@ -3187,7 +3187,6 @@ BOOL CVideoDeviceDoc::CHttpGetFrameThread::Connect(BOOL bSignalEvents,
 						m_pDoc->m_nGetFrameVideoPort,					// Peer Port
 						bSignalEvents ? GetHttpConnectedEvent() : NULL,	// Handle to an Event Object that will get Connect Events
 						bSignalEvents ? GetHttpConnectFailedEvent() : NULL,// Handle to an Event Object that will get Connect Failed Events
-						NULL,											// Handle to an Event Object that will get Close Events
 						bSignalEvents ? GetHttpReadEvent() : NULL,		// Handle to an Event Object that will get Read Events
 						NULL,											// Message Class for Notice, Warning and Error Visualization
 						nSocketFamily);									// Socket family
@@ -6217,7 +6216,6 @@ BOOL CVideoDeviceDoc::MicroApacheIsPortUsed(int nPort)
 				nPort,					// Peer Port
 				hEventArray[0],			// Handle to an Event Object that will get Connect Events
 				hEventArray[1],			// Handle to an Event Object that will get Connect Failed Events
-				NULL,					// Handle to an Event Object that will get Close Events
 				NULL,					// Handle to an Event Object that will get Read Events
 				NULL,					// Message Class for Notice, Warning and Error Visualization
 				AF_UNSPEC))				// Socket family
@@ -6300,7 +6298,6 @@ BOOL CVideoDeviceDoc::MicroApacheWaitCanConnect()
 					((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort,	// Peer Port
 					hEventArray[0],			// Handle to an Event Object that will get Connect Events
 					hEventArray[1],			// Handle to an Event Object that will get Connect Failed Events
-					NULL,					// Handle to an Event Object that will get Close Events
 					NULL,					// Handle to an Event Object that will get Read Events
 					NULL,					// Message Class for Notice, Warning and Error Visualization
 					AF_UNSPEC))				// Socket family

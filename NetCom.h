@@ -141,7 +141,6 @@ public:
 
 		protected:
 			int Work();
-			void SignalClosing();
 			CNetCom* m_pNetCom;
 	};
 
@@ -216,7 +215,6 @@ public:
 					UINT uiPeerPort,					// Peer Port
 					HANDLE hConnectEvent,				// Handle to an Event Object that will get Connect Events
 					HANDLE hConnectFailedEvent,			// Handle to an Event Object that will get Connect Failed Events
-					HANDLE hCloseEvent,					// Handle to an Event Object that will get Close Events
 					HANDLE hReadEvent,					// Handle to an Event Object that will get Read Events
 					CMsgOut* pMsgOut,					// Message Class for Debug, Notice, Warning, Error and Critical Visualization
 					int nSocketFamily);					// Socket family
@@ -279,9 +277,6 @@ public:
 	int WriteStr(LPCTSTR str);				// Write a NULL terminated string (the terminating NULL is not written to the net),
 											// converting the given string with CStringA
 
-	// Is Client Connected ?
-	__forceinline BOOL IsClientConnected() const {return m_bClientConnected;}; 
-
 	// Name of the CNetCom Object Instance:
 	// "NetCom Client"
 	CString GetName();
@@ -332,9 +327,6 @@ protected:
 
 	// The Socket Handle
 	SOCKET m_hSocket;
-
-	// Is the Client Connected?
-	volatile BOOL m_bClientConnected;
 	
 	// The Internet Address (IP or Host Name)
 	CString m_sPeerAddress;
@@ -361,9 +353,6 @@ protected:
 	// The Message Thread will send the Connect Failed Events
 	HANDLE m_hConnectFailedEvent;
 
-	// The Message Thread will send the Close Events
-	HANDLE m_hCloseEvent;
-
 	// The Message Thread will send the Read Events
 	HANDLE m_hReadEvent;
 
@@ -382,13 +371,13 @@ protected:
 	HANDLE m_hStartConnectionShutdownEvent;
 
 	// Event Arrays
-	HANDLE m_hMsgEventArray[3];		// m_MsgThread.GetKillEvent() -> (highest priority)
+	HANDLE m_hMsgEventArray[3];		// m_pMsgThread->GetKillEvent()
 									// m_hStartConnectionShutdownEvent
 									// m_hNetEvent
-	HANDLE m_hRxEventArray[3];		// m_RxThread.GetKillEvent() -> (highest priority)
+	HANDLE m_hRxEventArray[3];		// m_pRxThread->GetKillEvent()
 									// m_ovRx.hEvent
 									// m_hRxEvent
-	HANDLE m_hTxEventArray[3];		// m_TxThread.GetKillEvent() -> (highest priority)
+	HANDLE m_hTxEventArray[3];		// m_pTxThread->GetKillEvent()
 									// m_ovTx.hEvent
 									// m_hTxEvent
 
