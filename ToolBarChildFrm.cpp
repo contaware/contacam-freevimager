@@ -1268,10 +1268,9 @@ void CVideoDeviceChildFrame::EndShutdown()
 	ASSERT_VALID(pDoc);
 
 	// Network Client Clean-Up
-	// (threads should already be stopped)
 	if (pDoc->m_pGetFrameNetCom)
 	{
-		delete pDoc->m_pGetFrameNetCom; // this calls Close() which eventually blocks till all threads are forced to close
+		delete pDoc->m_pGetFrameNetCom; // this calls Close()
 		pDoc->m_pGetFrameNetCom = NULL;
 	}
 

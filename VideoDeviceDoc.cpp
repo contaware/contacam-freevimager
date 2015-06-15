@@ -3188,7 +3188,6 @@ BOOL CVideoDeviceDoc::CHttpGetFrameThread::Connect(BOOL bSignalEvents,
 						bSignalEvents ? GetHttpConnectedEvent() : NULL,	// Handle to an Event Object that will get Connect Events
 						bSignalEvents ? GetHttpConnectFailedEvent() : NULL,// Handle to an Event Object that will get Connect Failed Events
 						bSignalEvents ? GetHttpReadEvent() : NULL,		// Handle to an Event Object that will get Read Events
-						NULL,											// Message Class for Notice, Warning and Error Visualization
 						nSocketFamily);									// Socket family
 }
 
@@ -6217,7 +6216,6 @@ BOOL CVideoDeviceDoc::MicroApacheIsPortUsed(int nPort)
 				hEventArray[0],			// Handle to an Event Object that will get Connect Events
 				hEventArray[1],			// Handle to an Event Object that will get Connect Failed Events
 				NULL,					// Handle to an Event Object that will get Read Events
-				NULL,					// Message Class for Notice, Warning and Error Visualization
 				AF_UNSPEC))				// Socket family
 	{
 		DWORD Event = ::WaitForMultipleObjects(	2,
@@ -6299,7 +6297,6 @@ BOOL CVideoDeviceDoc::MicroApacheWaitCanConnect()
 					hEventArray[0],			// Handle to an Event Object that will get Connect Events
 					hEventArray[1],			// Handle to an Event Object that will get Connect Failed Events
 					NULL,					// Handle to an Event Object that will get Read Events
-					NULL,					// Message Class for Notice, Warning and Error Visualization
 					AF_UNSPEC))				// Socket family
 		{
 			DWORD Event = ::WaitForMultipleObjects(	2,

@@ -1,6 +1,28 @@
 #ifndef __NETCOM_H__
 #define __NETCOM_H__
 
+/*
+Is Winsock thread-safe?
+-----------------------
+
+On modern Windows stacks, yes, it is, within limits: 
+
+It is safe, for instance, to have one thread calling send() and another 
+thread calling recv() on a single socket. 
+
+By contrast, it's a bad idea for two threads to both be calling send() 
+on a single socket. This is “thread-safe” in the limited sense that 
+your program shouldn’t crash, and you certainly shouldn't be able to 
+crash the kernel, which is handling these send() calls. The fact that it 
+is “safe” doesn’t answer key questions about the actual effect of 
+doing this. Which call's data goes out first on the connection? Does 
+it get interleaved somehow? 
+
+Having multiple threads receiving data from a socket is usually fine for 
+UDP socket, but doesn't make much sense for TCP sockets most of the 
+time. 
+*/
+
 // Includes
 #ifndef __AFXTEMPL_H__
 #pragma message("To avoid this message, put afxtempl.h in your PCH (usually stdafx.h)")
@@ -39,56 +61,11 @@
 // The Maximum TX Buffer Size
 #define NETCOM_MAX_TX_BUFFER_SIZE				1400
 
-// Timeout for waiting the FD_CLOSE replay if we started closing
+// Timeout before closing the socket
 #define NETCOM_CONNECTION_SHUTDOWN_TIMEOUT		3000U
 
-// Timeout for letting the RX Thread finishing reading the data in the input queue
-// (this is useful for http files download for example, in this case the peer
-// closes the connection very fast)
-#define NETCOM_PEER_CONNECTION_CLOSE_TIMEOUT	2000U
-
-// Threads closing timeout, after this time the threads are forced to terminate
+// Threads closing timeout
 #define NETCOM_BLOCKING_TIMEOUT					15000U
-
-////////////////////////////
-// Event Masks From WinSock2
-//
-// #define FD_READ_BIT					0
-// #define FD_READ						(1 << FD_READ_BIT)
-// 
-// #define FD_WRITE_BIT					1
-// #define FD_WRITE						(1 << FD_WRITE_BIT)
-//
-// #define FD_OOB_BIT					2
-// #define FD_OOB						(1 << FD_OOB_BIT)
-//
-// #define FD_ACCEPT_BIT				3
-// #define FD_ACCEPT					(1 << FD_ACCEPT_BIT)
-//
-// #define FD_CONNECT_BIT				4
-// #define FD_CONNECT					(1 << FD_CONNECT_BIT)
-//
-// #define FD_CLOSE_BIT					5
-// #define FD_CLOSE						(1 << FD_CLOSE_BIT)
-//
-// #define FD_QOS_BIT					6
-// #define FD_QOS						(1 << FD_QOS_BIT)
-//
-// #define FD_GROUP_QOS_BIT				7
-// #define FD_GROUP_QOS					(1 << FD_GROUP_QOS_BIT)
-//
-// #define FD_ROUTING_INTERFACE_CHANGE_BIT 8
-// #define FD_ROUTING_INTERFACE_CHANGE     (1 << FD_ROUTING_INTERFACE_CHANGE_BIT)
-//
-// #define FD_ADDRESS_LIST_CHANGE_BIT	9
-// #define FD_ADDRESS_LIST_CHANGE		(1 << FD_ADDRESS_LIST_CHANGE_BIT)
-//
-// #define FD_MAX_EVENTS				10
-// #define FD_ALL_EVENTS				((1 << FD_MAX_EVENTS) - 1)
-
-#define FD_CONNECTFAILED_BIT			11
-#define FD_CONNECTFAILED				(1 << FD_CONNECTFAILED_BIT)
-
 
 // The Network Communication Class
 class CNetCom
@@ -113,34 +90,20 @@ public:
 			unsigned int m_BufSize;
 	};
 
-	// MFC Collection Class Typedef
+	// Typedef
 	typedef CList<CBuf*,CBuf*> BUFQUEUE;
-
-	// Output Message Class
-	class CMsgOut
-	{
-		public:
-			// Declare Friend Class
-			friend class CNetCom;
-			CMsgOut(){::InitializeCriticalSection(&m_csMessageOut);};
-			virtual ~CMsgOut(){::DeleteCriticalSection(&m_csMessageOut);};
-			enum MsgOutCode {CRITICAL_MSG, ERROR_MSG, WARNING_MSG, NOTICE_MSG, DEBUG_MSG};
-			virtual void MessageOut(MsgOutCode code, const TCHAR* pMsg);
-		protected:
-			CRITICAL_SECTION m_csMessageOut;
-	};
 
 	// The Message Thread Class
 	class CMsgThread : public CWorkerThread
 	{
 		public:
-			CMsgThread(){m_bClosing = FALSE; m_pNetCom = NULL;};
+			CMsgThread(){m_pNetCom = NULL;};
 			virtual ~CMsgThread(){Kill(NETCOM_BLOCKING_TIMEOUT);};
 			__forceinline void SetNetComPointer(CNetCom* pNetCom) {m_pNetCom = pNetCom;};
-			volatile BOOL m_bClosing; // About to Close
 
 		protected:
 			int Work();
+			int CloseSocket();
 			CNetCom* m_pNetCom;
 	};
 
@@ -171,7 +134,7 @@ public:
 			
 		protected:
 			int Work();
-			void Write();
+			__forceinline void Write();
 			CNetCom* m_pNetCom;
 			CBuf* m_pCurrentBuf;
 			int m_nCurrentTxFifoSize;
@@ -216,51 +179,22 @@ public:
 					HANDLE hConnectEvent,				// Handle to an Event Object that will get Connect Events
 					HANDLE hConnectFailedEvent,			// Handle to an Event Object that will get Connect Failed Events
 					HANDLE hReadEvent,					// Handle to an Event Object that will get Read Events
-					CMsgOut* pMsgOut,					// Message Class for Debug, Notice, Warning, Error and Critical Visualization
 					int nSocketFamily);					// Socket family
 
 	// Close the Network Connection, this function is blocking
 	void Close();
 
-	// Start shutting down the connection,
-	// eventually do something else and finally
-	// use WaitTillShutdown_Blocking() to make
-	// sure that we are done, or poll with the
-	// IsShutdown() function, or just call Close()
-	// (the destructor calls also Close() for us)
-	void ShutdownConnection_NoBlocking();
+	// Start shutting down the connection, eventually do something else and finally
+	// poll IsShutdown() or call Close() to make sure the connection has terminated
+	__forceinline void ShutdownConnection_NoBlocking() {::SetEvent(m_hStartConnectionShutdownEvent);};
 
-	// Wait till all threads are dead
-	__forceinline void WaitTillShutdown_Blocking() {
-									if (!m_pTxThread->WaitDone_Blocking(NETCOM_BLOCKING_TIMEOUT))
-									{
-										if (m_pMsgOut)
-											Critical(GetName() + _T(" TxThread has been forced to terminate by WaitTillShutdown_Blocking() after %u ms"), NETCOM_BLOCKING_TIMEOUT);
-									}
-									if (!m_pRxThread->WaitDone_Blocking(NETCOM_BLOCKING_TIMEOUT))
-									{
-										if (m_pMsgOut)
-											Critical(GetName() + _T(" RxThread has been forced to terminate by WaitTillShutdown_Blocking() after %u ms"), NETCOM_BLOCKING_TIMEOUT);
-									}
-									if (!m_pMsgThread->WaitDone_Blocking(NETCOM_BLOCKING_TIMEOUT))
-									{
-										if (m_pMsgOut)
-											Critical(GetName() + _T(" MsgThread has been forced to terminate by WaitTillShutdown_Blocking() after %u ms"), NETCOM_BLOCKING_TIMEOUT);
-									}
-								};
-
-	// Is Shutdown?
+	// Is connection shutdown?
 	__forceinline BOOL IsShutdown() {return !m_pMsgThread->IsAlive()	&&
 											!m_pRxThread->IsAlive()		&&
 											!m_pTxThread->IsAlive();};
 
 	// Return the Peer Socket IP
 	CString GetPeerSockIP();
-
-	// Start Communication Threads
-	BOOL StartMsgThread();
-	BOOL StartRxThread();
-	BOOL StartTxThread();
 	
 	// Read Data from the Network
 	int GetAvailableReadBytes(); // get the total available bytes count that can be read
@@ -277,8 +211,7 @@ public:
 	int WriteStr(LPCTSTR str);				// Write a NULL terminated string (the terminating NULL is not written to the net),
 											// converting the given string with CStringA
 
-	// Name of the CNetCom Object Instance:
-	// "NetCom Client"
+	// Name of the CNetCom Object Instance
 	CString GetName();
 
 	// Socket Family
@@ -291,36 +224,44 @@ protected:
 	// Init paddr from sAddress and uiPort (this function updates nSocketFamily)
 	BOOL InitAddr(volatile int& nSocketFamily, const CString& sAddress, UINT uiPort, sockaddr* paddr);
 
-	// Shutdown Threads
-	__forceinline void ShutdownMsgThread() {
-										if (!m_pMsgThread->Kill(NETCOM_BLOCKING_TIMEOUT))
-										{
-											if (m_pMsgOut)
-												Critical(GetName() + _T(" MsgThread has been forced to terminate by ShutdownMsgThread() after %u ms"), NETCOM_BLOCKING_TIMEOUT);
-										}
-									};
-	__forceinline void ShutdownRxThread() {
-										if (!m_pRxThread->Kill(NETCOM_BLOCKING_TIMEOUT))
-										{
-											if (m_pMsgOut)
-												Critical(GetName() + _T(" RxThread has been forced to terminate by ShutdownRxThread() after %u ms"), NETCOM_BLOCKING_TIMEOUT);
-										}
-									};
-	__forceinline void ShutdownTxThread() {
-										if (!m_pTxThread->Kill(NETCOM_BLOCKING_TIMEOUT))
-										{
-											if (m_pMsgOut)
-												Critical(GetName() + _T(" TxThread has been forced to terminate by ShutdownTxThread() after %u ms"), NETCOM_BLOCKING_TIMEOUT);
-										}
-									};
-
-	// Critical, Error, Warning, Notice and Debug Functions
-	void ProcessWSAError(const CString& sErrorText);
-	void Critical(const TCHAR* pFormat, ...);
-	void Error(const TCHAR* pFormat, ...);
-	void Warning(const TCHAR* pFormat, ...);
-	void Notice(const TCHAR* pFormat, ...);
-	void Debug(const TCHAR* pFormat, ...);
+	// Threads Start / Stop
+	__forceinline BOOL StartMsgThread() {
+						if (!m_pMsgThread->IsRunning())
+						{
+							// Reset event has to be here and not at the beginning of
+							// the message thread because if calling two consecutive
+							// Init() the first message thread start could reset the
+							// event after the second ShutdownConnection_NoBlocking() call
+							::ResetEvent(m_hStartConnectionShutdownEvent);
+							if (m_pMsgThread->Start() == true) // this function sets the m_bRunning flag
+								return TRUE;
+							else
+								return FALSE;
+						}
+						return TRUE;
+	}
+	__forceinline BOOL StartRxThread() {
+						if (!m_pRxThread->IsRunning())
+						{
+							if (m_pRxThread->Start() == true) // this function sets the m_bRunning flag
+								return TRUE;
+							else
+								return FALSE;
+						}
+						return TRUE;
+	}
+	__forceinline BOOL StartTxThread() {	
+						if (!m_pTxThread->IsRunning())
+						{
+							if (m_pTxThread->Start() == true) // this function sets the m_bRunning flag
+								return TRUE;
+							else
+								return FALSE;
+						}
+						return TRUE;
+	}
+	__forceinline void ShutdownRxThread(DWORD dwTimeout) {m_pRxThread->Kill(dwTimeout);};
+	__forceinline void ShutdownTxThread(DWORD dwTimeout) {m_pTxThread->Kill(dwTimeout);};
 
 	// The Parser & Processor
 	CParseProcess* m_pParseProcess;
@@ -386,10 +327,6 @@ protected:
 	BUFQUEUE m_TxFifo;
 	CRITICAL_SECTION m_csRxFifoSync;
 	CRITICAL_SECTION m_csTxFifoSync;
-
-	// Message Output
-	CMsgOut* m_pMsgOut;
-	BOOL m_bFreeMsgOut;
 
 	// Socket Family
 	volatile int m_nSocketFamily;
