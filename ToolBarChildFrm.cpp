@@ -1270,7 +1270,11 @@ void CVideoDeviceChildFrame::EndShutdown()
 	// Network Client Clean-Up
 	if (pDoc->m_pGetFrameNetCom)
 	{
-		delete pDoc->m_pGetFrameNetCom; // this calls Close()
+		// This calls Close() which is not locking indefinitely,
+		// but attention the destructors of the message threads
+		// (both base class and derived class destructors) call
+		// Kill() which locks indefinitely freezing the interface
+		delete pDoc->m_pGetFrameNetCom;
 		pDoc->m_pGetFrameNetCom = NULL;
 	}
 

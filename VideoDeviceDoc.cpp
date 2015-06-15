@@ -3163,7 +3163,7 @@ void CVideoDeviceDoc::CHttpGetFrameThread::CleanUpAllConnections()
 	{
 		CNetCom* pNetCom = m_HttpGetFrameNetComList.GetHead();
 		if (pNetCom)
-			delete pNetCom; // This calls Close() which blocks till all threads are done
+			delete pNetCom; // This calls Close() and blocks till all threads are done
 		m_HttpGetFrameNetComList.RemoveHead();
 		CHttpGetFrameParseProcess* pHttpGetFrameParseProcess = m_HttpGetFrameParseProcessList.GetHead();
 		if (pHttpGetFrameParseProcess)
@@ -3248,11 +3248,10 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 				DWORD dwConnectDelayMs = m_dwConnectDelayMs;
 				::LeaveCriticalSection(&m_csConnectRequestParams);
 				CleanUpAllConnections();
-				if (::WaitForSingleObject(GetKillEvent(), dwConnectDelayMs / 2U) == WAIT_OBJECT_0)
+				m_pDoc->m_pGetFrameNetCom->ShutdownConnection_NoBlocking();
+				if (::WaitForSingleObject(GetKillEvent(), dwConnectDelayMs) == WAIT_OBJECT_0)
 					return 0;
 				m_pDoc->m_pGetFrameNetCom->Close();
-				if (::WaitForSingleObject(GetKillEvent(), dwConnectDelayMs / 2U) == WAIT_OBJECT_0)
-					return 0;
 				m_pDoc->m_pHttpGetFrameParseProcess->m_bPollNextJpeg = FALSE;
 				if (!Connect(TRUE,
 							m_pDoc->m_pGetFrameNetCom,

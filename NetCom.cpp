@@ -74,6 +74,7 @@ CNetCom::CBuf& CNetCom::CBuf::operator=(const CNetCom::CBuf& b) // Copy Assignme
 	return *this;
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////
 // The Parser & Processor Base Class
 ///////////////////////////////////////////////////////////////////////////////
@@ -136,13 +137,14 @@ void CNetCom::CParseProcess::NewData(BOOL bLastCall)
 	}
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////
 // Message Thread
 ///////////////////////////////////////////////////////////////////////////////
 int CNetCom::CMsgThread::CloseSocket()
 {
-	m_pNetCom->ShutdownTxThread(NETCOM_BLOCKING_TIMEOUT);
-	m_pNetCom->ShutdownRxThread(NETCOM_BLOCKING_TIMEOUT);
+	m_pNetCom->m_pTxThread->Kill(NETCOM_BLOCKING_TIMEOUT);
+	m_pNetCom->m_pRxThread->Kill(NETCOM_BLOCKING_TIMEOUT);
 	if (m_pNetCom->m_hSocket != INVALID_SOCKET)
 	{
 		::closesocket(m_pNetCom->m_hSocket);
@@ -151,6 +153,7 @@ int CNetCom::CMsgThread::CloseSocket()
 	TRACE(_T("%s MsgThread ended (ID = 0x%08X)\n"), m_pNetCom->GetName(), GetId());
 	return 0;
 }
+
 int CNetCom::CMsgThread::Work()
 {
 	TRACE(_T("%s MsgThread started (ID = 0x%08X)\n"), m_pNetCom->GetName(), GetId());
@@ -169,15 +172,18 @@ int CNetCom::CMsgThread::Work()
 			// Start Connection Shutdown Event
 			case WAIT_OBJECT_0 + 1 :
 				::ResetEvent(m_pNetCom->m_hStartConnectionShutdownEvent);
-				TRACE(_T("%s We are starting shutdown\n"), m_pNetCom->GetName());
-				m_pNetCom->ShutdownTxThread(NETCOM_BLOCKING_TIMEOUT); // Stop the Tx and Rx Threads because after shutdown with SD_BOTH,
-				m_pNetCom->ShutdownRxThread(NETCOM_BLOCKING_TIMEOUT); // transmitting and receiving is not allowed!
-				if (m_pNetCom->m_hSocket != INVALID_SOCKET)
+				if (!bShutdownInited)
 				{
-					::WSAEventSelect(m_pNetCom->m_hSocket, (WSAEVENT)m_pNetCom->m_hNetEvent, FD_CLOSE); // enable only FD_CLOSE events
-					::shutdown(m_pNetCom->m_hSocket, SD_BOTH);
+					TRACE(_T("%s We are starting shutdown\n"), m_pNetCom->GetName());
+					m_pNetCom->m_pTxThread->Kill(NETCOM_BLOCKING_TIMEOUT); // Stop the Tx and Rx Threads because after shutdown with SD_BOTH,
+					m_pNetCom->m_pRxThread->Kill(NETCOM_BLOCKING_TIMEOUT); // transmitting and receiving is not allowed!
+					if (m_pNetCom->m_hSocket != INVALID_SOCKET)
+					{
+						::WSAEventSelect(m_pNetCom->m_hSocket, (WSAEVENT)m_pNetCom->m_hNetEvent, FD_CLOSE); // enable only FD_CLOSE events
+						::shutdown(m_pNetCom->m_hSocket, SD_BOTH);
+					}
+					bShutdownInited = TRUE;
 				}
-				bShutdownInited = TRUE;
 				break;
 
 			// Net Event
@@ -194,8 +200,8 @@ int CNetCom::CMsgThread::Work()
 						if (NetworkEvents.iErrorCode[FD_CONNECT_BIT] == 0)
 						{
 							TRACE(_T("%s Normal connection establishment to %s\n"), m_pNetCom->GetName(), m_pNetCom->GetPeerSockIP());
-							m_pNetCom->StartRxThread();
-							m_pNetCom->StartTxThread();
+							m_pNetCom->m_pRxThread->Start();
+							m_pNetCom->m_pTxThread->Start();
 							if (m_pNetCom->m_hConnectEvent)
 								::SetEvent(m_pNetCom->m_hConnectEvent);			// trigger Connect Event
 						}
@@ -219,7 +225,7 @@ int CNetCom::CMsgThread::Work()
 							return CloseSocket();
 						else
 						{
-							m_pNetCom->ShutdownTxThread(NETCOM_BLOCKING_TIMEOUT); // stop the Tx Thread because after shutdown with SD_SEND transmitting is not allowed
+							m_pNetCom->m_pTxThread->Kill(NETCOM_BLOCKING_TIMEOUT); // stop the Tx Thread because after shutdown with SD_SEND transmitting is not allowed
 							if (m_pNetCom->m_hSocket != INVALID_SOCKET)
 							{
 								::WSAEventSelect(m_pNetCom->m_hSocket, (WSAEVENT)m_pNetCom->m_hNetEvent, FD_READ); // enable only FD_READ events
@@ -574,10 +580,11 @@ CNetCom::~CNetCom()
 	// Close connection
 	Close();
 
-	// Free the threads
-	delete m_pMsgThread;	// destructor kills the thread
-	delete m_pRxThread;		// destructor kills the thread
-	delete m_pTxThread;		// destructor kills the thread
+	// Free the threads (attention both base class and derived class
+	// destructors call Kill() which locks indefinitely)
+	delete m_pMsgThread;
+	delete m_pRxThread;
+	delete m_pTxThread;
 
 	// Close the events
 	if (m_ovRx.hEvent != NULL)
@@ -629,7 +636,7 @@ BOOL CNetCom::InitAddr(volatile int& nSocketFamily, const CString& sAddress, UIN
 {
 	if (!paddr)
 		return FALSE;
-	((sockaddr_in*)paddr)->sin_port = htons((unsigned short)uiPort); // If 0 -> Win Selects a Port
+	((sockaddr_in*)paddr)->sin_port = htons((unsigned short)uiPort);
 	if (sAddress != _T(""))
 	{
 		// Port string
@@ -711,7 +718,12 @@ BOOL CNetCom::Init(	CParseProcess* pParseProcess,		// Parser & Processor
 		::WSAEventSelect(m_hSocket, (WSAEVENT)m_hNetEvent, FD_READ | FD_CONNECT | FD_CLOSE);
 
 		// Start Message Thread now so that FD_CONNECT can be handled
-		StartMsgThread();
+		// Note: the Reset event has to be here and not at the beginning of
+		// the message thread because if calling two consecutive
+		// Init() the first message thread start could reset the
+		// event after the second ShutdownConnection_NoBlocking() call
+		::ResetEvent(m_hStartConnectionShutdownEvent);
+		m_pMsgThread->Start();
 				
 		// Connect
 		if (!SOCKADDRANY(ppeer_addr))
@@ -958,16 +970,6 @@ int CNetCom::WriteStr(LPCTSTR str)
 	int res = Write((const BYTE*)sAnsiText.GetBuffer(), sAnsiText.GetLength());
     sAnsiText.ReleaseBuffer();
 	return res;
-}
-
-CString CNetCom::GetName()
-{
-	if (m_hSocket != INVALID_SOCKET)
-		return _T("Net_Client");
-	else
-	{
-		return _T("Net");
-	}
 }
 
 BOOL CNetCom::StringToAddress(const TCHAR* sHost, const TCHAR* sPort, sockaddr* psockaddr, int nSocketFamily/*=AF_UNSPEC*/)

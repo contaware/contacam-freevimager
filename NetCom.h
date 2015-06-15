@@ -98,7 +98,7 @@ public:
 	{
 		public:
 			CMsgThread(){m_pNetCom = NULL;};
-			virtual ~CMsgThread(){Kill(NETCOM_BLOCKING_TIMEOUT);};
+			virtual ~CMsgThread(){Kill();};
 			__forceinline void SetNetComPointer(CNetCom* pNetCom) {m_pNetCom = pNetCom;};
 
 		protected:
@@ -112,7 +112,7 @@ public:
 	{
 		public:
 			CRxThread(){m_pNetCom = NULL; m_pCurrentBuf = NULL;};
-			virtual ~CRxThread(){Kill(NETCOM_BLOCKING_TIMEOUT);};
+			virtual ~CRxThread(){Kill();};
 			__forceinline void SetNetComPointer(CNetCom* pNetCom) {m_pNetCom = pNetCom;};
 
 		protected:
@@ -129,7 +129,7 @@ public:
 			CTxThread(){m_pNetCom = NULL;
 						m_pCurrentBuf = NULL;
 						m_nCurrentTxFifoSize = 0;};
-			virtual ~CTxThread(){Kill(NETCOM_BLOCKING_TIMEOUT);};
+			virtual ~CTxThread(){Kill();};
 			__forceinline void SetNetComPointer(CNetCom* pNetCom) {m_pNetCom = pNetCom;};
 			
 		protected:
@@ -181,7 +181,7 @@ public:
 					HANDLE hReadEvent,					// Handle to an Event Object that will get Read Events
 					int nSocketFamily);					// Socket family
 
-	// Close the Network Connection, this function is blocking
+	// Close the Network Connection (this function is blocking a maximum of 2 * NETCOM_BLOCKING_TIMEOUT ms)
 	void Close();
 
 	// Start shutting down the connection, eventually do something else and finally
@@ -212,7 +212,7 @@ public:
 											// converting the given string with CStringA
 
 	// Name of the CNetCom Object Instance
-	CString GetName();
+	CString GetName() {CString s; s.Format(_T("Net_0x%08IX"), (size_t)this); return s;};
 
 	// Socket Family
 	__forceinline int GetSocketFamily() {return m_nSocketFamily;};
@@ -222,46 +222,7 @@ public:
 
 protected:
 	// Init paddr from sAddress and uiPort (this function updates nSocketFamily)
-	BOOL InitAddr(volatile int& nSocketFamily, const CString& sAddress, UINT uiPort, sockaddr* paddr);
-
-	// Threads Start / Stop
-	__forceinline BOOL StartMsgThread() {
-						if (!m_pMsgThread->IsRunning())
-						{
-							// Reset event has to be here and not at the beginning of
-							// the message thread because if calling two consecutive
-							// Init() the first message thread start could reset the
-							// event after the second ShutdownConnection_NoBlocking() call
-							::ResetEvent(m_hStartConnectionShutdownEvent);
-							if (m_pMsgThread->Start() == true) // this function sets the m_bRunning flag
-								return TRUE;
-							else
-								return FALSE;
-						}
-						return TRUE;
-	}
-	__forceinline BOOL StartRxThread() {
-						if (!m_pRxThread->IsRunning())
-						{
-							if (m_pRxThread->Start() == true) // this function sets the m_bRunning flag
-								return TRUE;
-							else
-								return FALSE;
-						}
-						return TRUE;
-	}
-	__forceinline BOOL StartTxThread() {	
-						if (!m_pTxThread->IsRunning())
-						{
-							if (m_pTxThread->Start() == true) // this function sets the m_bRunning flag
-								return TRUE;
-							else
-								return FALSE;
-						}
-						return TRUE;
-	}
-	__forceinline void ShutdownRxThread(DWORD dwTimeout) {m_pRxThread->Kill(dwTimeout);};
-	__forceinline void ShutdownTxThread(DWORD dwTimeout) {m_pTxThread->Kill(dwTimeout);};
+	static BOOL InitAddr(volatile int& nSocketFamily, const CString& sAddress, UINT uiPort, sockaddr* paddr);
 
 	// The Parser & Processor
 	CParseProcess* m_pParseProcess;
