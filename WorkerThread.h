@@ -10,8 +10,8 @@ public:
 	bool Pause();
 	bool Kill(DWORD dwTimeout = INFINITE);						// this is Kill_NoBlocking() + return WaitDone_Blocking(dwTimeout)
 	void Kill_NoBlocking();										// sets m_hKillEvent
-	bool WaitDone_Blocking(DWORD dwTimeout = INFINITE);			// returns FALSE if after the timeout the thread was forced to terminate!
-	void SetProcMsg(bool bProcMsg) {m_bProcMsg = bProcMsg;};	// to "abuse" the thread class with a message loop instead of running a thread!
+	bool WaitDone_Blocking(DWORD dwTimeout = INFINITE);			// returns false if after the given timeout the thread is not stopping
+	void SetProcMsg(bool bProcMsg) {m_bProcMsg = bProcMsg;};	// to "abuse" the thread class with a message loop instead of running a thread
 	__forceinline bool DoExit() {return (m_bProcMsg ? ProcMsg() : ::WaitForSingleObject(m_hKillEvent, 0) == WAIT_OBJECT_0);};
 	__forceinline HANDLE GetHandle() const {return m_hThread;};
 	__forceinline DWORD GetId() const {return m_nThreadID;};

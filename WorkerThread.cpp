@@ -245,22 +245,10 @@ void CWorkerThread::Kill_NoBlocking()
 
 bool CWorkerThread::WaitDone_Blocking(DWORD dwTimeout/*=INFINITE*/)
 {
-	// Wait until thread exits
 	if (m_hThread && ::WaitForSingleObject(m_hThread, dwTimeout) != WAIT_OBJECT_0)
 	{
-		// If it doesn't want to exit force the termination!
-		if (m_hThread)
-		{
-			::TerminateThread(m_hThread, 0);
-			::ResetEvent(m_hStartupEvent); // Be Sure To Reset This Event!
-			::EnterCriticalSection(&m_cs);
-			m_bRunning = false;
-			m_bAlive = false;
-			m_pMainWnd = NULL;
-			::LeaveCriticalSection(&m_cs);
-			TRACE(_T("Thread with ID = 0x%08X has been forced to terminate!\n"), m_nThreadID);
-			return false;
-		}
+		TRACE(_T("Thread with ID = 0x%08X is not stopping after waiting for %u ms\n"), m_nThreadID, dwTimeout);
+		return false;
 	}
 	return true;
 }
