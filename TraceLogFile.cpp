@@ -16,6 +16,10 @@ extern int ToUTF8(const CString& s, LPBYTE* ppUtf8);
 TCHAR g_sTraceFileName[MAX_PATH] = _T("");
 TCHAR g_sLogFileName[MAX_PATH] = _T("");
 volatile ULONGLONG g_ullMaxLogFileSize = 0;
+#ifdef _DEBUG
+CRITICAL_SECTION g_csTraceDebug;
+CString g_sTraceDebugFileAndLine;
+#endif
 CRITICAL_SECTION g_csTraceFile;
 CRITICAL_SECTION g_csLogFile;
 volatile BOOL g_bTraceLogFileInited = FALSE;
@@ -26,6 +30,9 @@ void InitTraceLogFile(LPCTSTR szTraceFileName,
 {
 	if (!g_bTraceLogFileInited)
 	{
+#ifdef _DEBUG
+		InitializeCriticalSection(&g_csTraceDebug);
+#endif
 		InitializeCriticalSection(&g_csTraceFile);
 		InitializeCriticalSection(&g_csLogFile);
 		g_ullMaxLogFileSize = ullMaxLogFileSize;
@@ -44,6 +51,9 @@ void EndTraceLogFile()
 		g_bTraceLogFileInited = FALSE;
 		DeleteCriticalSection(&g_csLogFile);
 		DeleteCriticalSection(&g_csTraceFile);
+#ifdef _DEBUG
+		DeleteCriticalSection(&g_csTraceDebug);
+#endif
 	}
 }
 
@@ -99,7 +109,7 @@ void LogLine(const TCHAR* pFormat, ...)
 
 	// Trace
 #ifdef _DEBUG
-	AfxTrace(_T("%s: %s\n"), sCurrentTime, s);
+	afxDump << (sCurrentTime + _T(": ") + s + _T("\n"));
 #endif
 
 	// Create directory
@@ -149,7 +159,7 @@ void TraceFileEnterCS(const TCHAR* pFormat, ...)
 
 	// Trace
 #ifdef _DEBUG
-	AfxTrace(_T("%s"), s);
+	afxDump << s;
 #endif
 
 	// Create directory
@@ -181,7 +191,7 @@ void TraceFileLeaveCS(const TCHAR* pFormat, ...)
 
 	// Trace
 #ifdef _DEBUG
-	AfxTrace(_T("%s"), s);
+	afxDump << s;
 #endif
 
 	// Create directory
@@ -200,3 +210,38 @@ void TraceFileLeaveCS(const TCHAR* pFormat, ...)
 	// Leave CS
 	LeaveCriticalSection(&g_csTraceFile);
 }
+
+#ifdef _DEBUG
+void TraceDebugEnterCS(CString sFileName, int nLine)
+{
+	// Check
+	if (!g_bTraceLogFileInited)
+		return;
+
+	// Enter CS
+	EnterCriticalSection(&g_csTraceDebug);
+
+	// Format
+	g_sTraceDebugFileAndLine.Format(_T("%s(%i)"), sFileName, nLine);
+}
+
+void TraceDebugLeaveCS(const TCHAR* pFormat, ...)
+{
+	// Check
+	if (!g_bTraceLogFileInited)
+		return;
+
+	// Format
+	CString s;
+	va_list arguments;
+	va_start(arguments, pFormat);	
+	s.FormatV(pFormat, arguments);
+    va_end(arguments);
+
+	// Trace
+	afxDump << (g_sTraceDebugFileAndLine + _T(" : ") + s);
+
+	// Leave CS
+	LeaveCriticalSection(&g_csTraceDebug);
+}
+#endif
