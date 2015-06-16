@@ -191,15 +191,11 @@ echo "<h1>" . SUMMARYTITLE . "</h1>\n";
 
 // Date picker
 echo "<form>\n";
-echo "<span class=\"globalbuttons\">";
-echo "<a href=\"" . GetDeltaUrl(0,0,-1) . "\">&lt;</a>";
-echo "<a href=\"" . GetDeltaUrl(0,-1,0) . "\">&lt;&lt;</a>";
-echo "<a href=\"" . GetDeltaUrl(-1,0,0) . "\">&lt;&lt;&lt;</a>";
-echo "<input id=\"DatePicker\" type=\"date\" value=\"$selected_year_string-$selected_month_string-$selected_day_string\" />";
-echo "<a href=\"" . GetDeltaUrl(1,0,0) . "\">&gt;&gt;&gt;</a>";
-echo "<a href=\"" . GetDeltaUrl(0,1,0) . "\">&gt;&gt;</a>";
-echo "<a href=\"" . GetDeltaUrl(0,0,1) . "\">&gt;</a>";
-echo "</span><br />\n";
+echo "<span class=\"globalbuttons\">\n";
+echo "<a href=\"" . GetDeltaUrl(0,0,-1) . "\">&lt;</a>\n";
+echo "<input id=\"DatePicker\" type=\"date\" value=\"$selected_year_string-$selected_month_string-$selected_day_string\" />\n";
+echo "<a href=\"" . GetDeltaUrl(0,0,1) . "\">&gt;</a>\n";
+echo "</span>\n<br />\n";
 $daynames = explode(",", str_replace("'", "", DAYNAMES));
 $day_name = $daynames[$selected_weekday_num];	
 if ($selected_days_elapsed == 0)
