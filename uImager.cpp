@@ -873,7 +873,10 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 					if (CVideoDeviceDoc::MicroApacheInitStart() && CVideoDeviceDoc::MicroApacheWaitStartDone())
 						m_bMicroApacheStarted = TRUE;
 					else
-						::LogLine(_T("%s"), ML_STRING(1475, "Failed to start the web server"));
+					{
+						::LogLine(_T("%s"), ML_STRING(1475, "Failed to start the web server") + _T(" ") +
+											ML_STRING(1476, "(change the Port number to an unused one)"));
+					}
 				}
 
 				// Autorun Devices

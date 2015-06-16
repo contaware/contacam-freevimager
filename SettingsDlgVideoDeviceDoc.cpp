@@ -238,7 +238,10 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 			if (nRet == 0)
 				::AfxMessageBox(ML_STRING(1474, "Failed to stop the web server"), MB_ICONSTOP);
 			else
-				::AfxMessageBox(ML_STRING(1475, "Failed to start the web server"), MB_ICONSTOP);
+			{
+				::AfxMessageBox(ML_STRING(1475, "Failed to start the web server") + _T("\n") + 
+								ML_STRING(1476, "(change the Port number to an unused one)"), MB_ICONSTOP);
+			}
 			BeginWaitCursor();
 		}
 	}
