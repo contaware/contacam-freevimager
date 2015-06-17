@@ -208,6 +208,10 @@ input {
 	border: 1px solid;
 	border-color: #33ccff #039ccf #039ccf #33ccff;
 }
+input[type='date'] {
+	vertical-align: middle;
+	font-size: 12px;
+}
 input.playerbutton, input.playerinfotext {
 	padding: 4px;
 }
