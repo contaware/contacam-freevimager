@@ -2186,9 +2186,9 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		}
 
 		// Print debug message
-		TRACE(_T("\nCPU:   %0.1f%%\n")
-			_T("MEM:   phystotused=%dMB vmprivused=%dMB vmused=%dMB vmres=%dMB vmfree=%dMB frag=%0.1f%% regions=%d\n")
-			_T("HEAPS: default(%s)=%dMB CRT(%s %s)=%dMB others=%dMB\n"),
+		TRACE(	_T("CPU %0.1f%% | ")
+				_T("MEM phystotused=%dMB vmprivused=%dMB vmused=%dMB vmres=%dMB vmfree=%dMB frag=%0.1f%% regions=%d | ")
+				_T("HEAPS default(%s)=%dMB crt(%s %s)=%dMB others=%dMB\n"),
 			dCPUUsage,
 			nPhysMemWorkingSetSize, nVMPrivateCommitSize, nCommittedMB, nReservedMB, nFreeMB, dFragmentation, nRegions,
 			sDefaultHeapType, (int)(DefaultHeapSize>>20), sCRTHeapType, sCRTHeapStatus, (int)(CRTHeapSize>>20), (int)(OtherHeapsSize>>20));

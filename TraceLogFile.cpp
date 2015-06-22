@@ -13,8 +13,9 @@ extern CString GetFileNameNoExt(const CString& sFullFilePath);
 extern ULARGE_INTEGER GetFileSize64(LPCTSTR lpszFileName);
 extern int ToUTF8(const CString& s, LPBYTE* ppUtf8);
 
-TCHAR g_sTraceFileName[MAX_PATH] = _T("");
-TCHAR g_sLogFileName[MAX_PATH] = _T("");
+CString g_sTraceFileName;
+CString g_sLogFileName;
+volatile ULONGLONG g_ullMaxTraceFileSize = 0;
 volatile ULONGLONG g_ullMaxLogFileSize = 0;
 #ifdef _DEBUG
 CRITICAL_SECTION g_csTraceDebug;
@@ -26,6 +27,7 @@ volatile BOOL g_bTraceLogFileInited = FALSE;
 
 void InitTraceLogFile(LPCTSTR szTraceFileName,
 					  LPCTSTR szLogFileName,
+					  ULONGLONG ullMaxTraceFileSize/*=0*/,
 					  ULONGLONG ullMaxLogFileSize/*=0*/)
 {
 	if (!g_bTraceLogFileInited)
@@ -35,11 +37,10 @@ void InitTraceLogFile(LPCTSTR szTraceFileName,
 #endif
 		InitializeCriticalSection(&g_csTraceFile);
 		InitializeCriticalSection(&g_csLogFile);
+		g_ullMaxTraceFileSize = ullMaxTraceFileSize;
 		g_ullMaxLogFileSize = ullMaxLogFileSize;
-		_tcsncpy(g_sTraceFileName, szTraceFileName, MAX_PATH);
-		g_sTraceFileName[MAX_PATH - 1] = _T('\0');
-		_tcsncpy(g_sLogFileName, szLogFileName, MAX_PATH);
-		g_sLogFileName[MAX_PATH - 1] = _T('\0');
+		g_sTraceFileName = szTraceFileName;
+		g_sLogFileName = szLogFileName;
 		g_bTraceLogFileInited = TRUE;
 	}
 }
@@ -79,6 +80,26 @@ void LogLine(const TCHAR* pFormat, ...)
 	// Enter CS
 	EnterCriticalSection(&g_csLogFile);
 
+	// Format
+	CString s;
+	va_list arguments;
+	va_start(arguments, pFormat);	
+	s.FormatV(pFormat, arguments);
+    va_end(arguments);
+
+	// Make single line with no line ending
+	s = SingleLine(s);
+	
+	// Trace (current time is added by TRACE)
+	TRACE(_T("%s\n"), s);
+
+	// Add current time
+	time_t CurrentTime;
+	time(&CurrentTime);
+	CString sCurrentTime(_tctime(&CurrentTime));
+	sCurrentTime.TrimRight(_T('\n'));
+	s = _T("[") + sCurrentTime + _T("] ") + s;
+
 	// Check file size
 	if (g_ullMaxLogFileSize > 0)
 	{
@@ -91,38 +112,18 @@ void LogLine(const TCHAR* pFormat, ...)
 		}
 	}
 
-	// Format
-	CString s;
-	va_list arguments;
-	va_start(arguments, pFormat);	
-	s.FormatV(pFormat, arguments);
-    va_end(arguments);
-
-	// Single line
-	s = SingleLine(s);
-	
-	// Current Time
-	time_t CurrentTime;
-	time(&CurrentTime);
-	CString sCurrentTime(_tctime(&CurrentTime));
-	sCurrentTime.Replace(_T('\n'), _T(' '));
-
-	// Trace
-#ifdef _DEBUG
-	afxDump << (sCurrentTime + _T(": ") + s + _T("\n"));
-#endif
-
 	// Create directory
 	CString sPath = GetDriveAndDirName(g_sLogFileName);
 	if (!IsExistingDir(sPath))
 		CreateDir(sPath);
 
 	// Log To File
+	s += _T("\r\n"); // add \r\n line ending
 	FILE* pf = _tfopen(g_sLogFileName, _T("ab"));
 	if (pf)
 	{
 		LPBYTE pData = NULL;
-		int nSize = ToUTF8(sCurrentTime + _T(": ") + s + _T("\r\n"), &pData);
+		int nSize = ToUTF8(s, &pData);
 		if (pData)
 		{
 			ULARGE_INTEGER Size = GetFileSize64(g_sLogFileName);
@@ -141,7 +142,7 @@ void LogLine(const TCHAR* pFormat, ...)
 	LeaveCriticalSection(&g_csLogFile);
 }
 
-void TraceFileEnterCS(const TCHAR* pFormat, ...)
+void TraceFile(const TCHAR* pFormat, ...)
 {
 	// Check
 	if (!g_bTraceLogFileInited)
@@ -157,53 +158,49 @@ void TraceFileEnterCS(const TCHAR* pFormat, ...)
 	s.FormatV(pFormat, arguments);
     va_end(arguments);
 
-	// Trace
-#ifdef _DEBUG
-	afxDump << s;
-#endif
+	// Add current time
+	time_t CurrentTime;
+	time(&CurrentTime);
+	CString sCurrentTime(_tctime(&CurrentTime));
+	sCurrentTime.TrimRight(_T('\n'));
+	s = _T("[") + sCurrentTime + _T("] ") + s;
 
-	// Create directory
-	CString sPath = GetDriveAndDirName(g_sTraceFileName);
-	if (!IsExistingDir(sPath))
-		CreateDir(sPath);
-
-	// Log To File
-	FILE* pf = _tfopen(g_sTraceFileName, _T("at"));
-	if (pf)
+	// Check file size
+	if (g_ullMaxTraceFileSize > 0)
 	{
-		_ftprintf(pf, _T("%s"), (LPCTSTR)s);
-		fclose(pf);
+		ULARGE_INTEGER Size = GetFileSize64(g_sTraceFileName);
+		if (Size.QuadPart > g_ullMaxTraceFileSize)
+		{
+			CString sOldFileName = GetFileNameNoExt(g_sTraceFileName) + _T(".old");
+			DeleteFile(sOldFileName);
+			MoveFile(g_sTraceFileName, sOldFileName);
+		}
 	}
-}
-
-void TraceFileLeaveCS(const TCHAR* pFormat, ...)
-{
-	// Check
-	if (!g_bTraceLogFileInited)
-		return;
-
-	// Format
-	CString s;
-	va_list arguments;
-	va_start(arguments, pFormat);	
-	s.FormatV(pFormat, arguments);
-    va_end(arguments);
-
-	// Trace
-#ifdef _DEBUG
-	afxDump << s;
-#endif
 
 	// Create directory
 	CString sPath = GetDriveAndDirName(g_sTraceFileName);
 	if (!IsExistingDir(sPath))
 		CreateDir(sPath);
 
-	// Log To File
-	FILE* pf = _tfopen(g_sTraceFileName, _T("at"));
+	// Trace To File
+	s.Replace(_T("\r\n"), _T("\n")); // make sure we do not have already \r\n endings
+	s.Replace(_T("\n"), _T("\r\n")); // convert to \r\n line endings
+	FILE* pf = _tfopen(g_sTraceFileName, _T("ab"));
 	if (pf)
 	{
-		_ftprintf(pf, _T("%s"), (LPCTSTR)s);
+		LPBYTE pData = NULL;
+		int nSize = ToUTF8(s, &pData);
+		if (pData)
+		{
+			ULARGE_INTEGER Size = GetFileSize64(g_sTraceFileName);
+			if (Size.QuadPart == 0)
+			{
+				const BYTE BOM[3] = {0xEF, 0xBB, 0xBF};
+				fwrite(BOM, sizeof(BYTE), 3, pf);
+			}
+			fwrite(pData, sizeof(BYTE), nSize, pf);
+			delete [] pData;
+		}
 		fclose(pf);
 	}
 
@@ -238,8 +235,19 @@ void TraceDebugLeaveCS(const TCHAR* pFormat, ...)
 	s.FormatV(pFormat, arguments);
     va_end(arguments);
 
+	// Add current time
+	time_t CurrentTime;
+	time(&CurrentTime);
+	CString sCurrentTime(_tctime(&CurrentTime));
+	sCurrentTime.TrimRight(_T('\n'));
+	s = _T("[") + sCurrentTime + _T("] ") + s;
+
+	// Add file and line names
+	CString sWithFileAndLine;
+	sWithFileAndLine.Format(_T("%-") TRACEDEBUG_CHARS_INDENT _T("s : %s"), g_sTraceDebugFileAndLine, s);
+
 	// Trace
-	afxDump << (g_sTraceDebugFileAndLine + _T(" : ") + s);
+	afxDump << sWithFileAndLine;
 
 	// Leave CS
 	LeaveCriticalSection(&g_csTraceDebug);

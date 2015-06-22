@@ -425,11 +425,11 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		m_sMicroApacheDocRoot += _T("\\") + CString(APPNAME_NOEXT);
 #endif
 
-		// Init Trace and Log files location
+		// Init Trace and Log files
 		// (containing folder is only created when Trace or Log Files are written)
 		::InitTraceLogFile(	sConfigFilesDir + _T("\\") + TRACENAME_EXT,
 							sConfigFilesDir + _T("\\") + LOGNAME_EXT,
-							MAX_LOG_FILE_SIZE);
+							MAX_TRACE_FILE_SIZE, MAX_LOG_FILE_SIZE);
 
 		// Use registry?
 		BOOL bUseRegistry = TRUE;

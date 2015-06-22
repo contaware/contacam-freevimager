@@ -43,10 +43,10 @@
 #define MASTERCONFIG_INI_NAME_EXT						_T("MasterConfig.ini")
 
 // Trace and Log files
-#define LOGNAME_EXT										_T("log.txt")
 #define TRACENAME_EXT									_T("log_debug.txt")
+#define LOGNAME_EXT										_T("log.txt")
+#define MAX_TRACE_FILE_SIZE								8388608 /* 8MB */
 #define MAX_LOG_FILE_SIZE								8388608 /* 8MB */
-
 
 /////////////////////////////////////////////////////////////////////////////
 
