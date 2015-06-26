@@ -621,9 +621,18 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			void* pRes[2048];
 			int nIndex;
 			for (nIndex = 0 ; nIndex < 2048 ; nIndex++)
+			{
 				pRes[nIndex] = malloc(256 * 1024);	// alloc 256 KB block
+				if (pRes[nIndex] == NULL)
+					break;
+			}
 			for (nIndex = 0 ; nIndex < 2048 ; nIndex++)
-				free(pRes[nIndex]);					// free block
+			{
+				if (pRes[nIndex])
+					free(pRes[nIndex]);				// free block
+				else
+					break;
+			}
 			size_t nLargestCommittedFreeBlock = ::HeapCompact((HANDLE)_get_heap_handle(), 0);
 #if defined(_DEBUG) || defined(TRACELOGFILE)
 			int nReservedMB;
