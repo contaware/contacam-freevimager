@@ -649,7 +649,8 @@ void CMainFrame::OnClose()
 
 		// Show closing message
 #ifdef VIDEODEVICEDOC
-		if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
+		if (!((CUImagerApp*)::AfxGetApp())->m_bForceSeparateInstance &&
+			!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
 			PopupToaster(ML_STRING(1566, "Closing ") + APPNAME_NOEXT, ML_STRING(1565, "Please wait..."), 0);
 #endif
 
