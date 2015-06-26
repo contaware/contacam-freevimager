@@ -61,52 +61,45 @@
 #pragma warning(pop)
 #endif
 
-// Session change notification
-#ifndef NOTIFY_FOR_ALL_SESSIONS
-#define NOTIFY_FOR_ALL_SESSIONS		1
-#endif
-#ifndef NOTIFY_FOR_THIS_SESSION
-#define NOTIFY_FOR_THIS_SESSION		0
-#endif
-
 // Maximum file path size for file dialog
 // Note: WinXP seems to only support 32k, passing
 // a bigger buffer doesn't fail the file dialog
 // function but the above mentioned limit remains
-#define MAX_FILEDLG_PATH			1048576		// 1M
+#define MAX_FILEDLG_PATH							1048576		// 1M
 
 // Default Font Face Families
-#define DEFAULT_FONTFACE			_T("Arial")
-#define DEFAULT_FONTFACE_NARROW		_T("Arial Narrow")
+#define DEFAULT_FONTFACE							_T("Arial")
+#define DEFAULT_FONTFACE_NARROW						_T("Arial Narrow")
 
 // Vista and higher Shield Icon
 #ifndef BCM_SETSHIELD
-#define BCM_SETSHIELD				(BCM_FIRST + 0x000C)
+#define BCM_SETSHIELD								(BCM_FIRST + 0x000C)
 #endif
+
 
 #if(WINVER < 0x0601)
 /*
  * Gesture Message
  */
-#define WM_GESTURE                      0x0119
+#define WM_GESTURE									0x0119
 
 /*
  * Gesture flags - GESTUREINFO.dwFlags
  */
-#define GF_BEGIN                        0x00000001
-#define GF_INERTIA                      0x00000002
-#define GF_END                          0x00000004
+#define GF_BEGIN									0x00000001
+#define GF_INERTIA									0x00000002
+#define GF_END										0x00000004
 
 /*
  * Gesture IDs
  */
-#define GID_BEGIN                       1
-#define GID_END                         2
-#define GID_ZOOM                        3
-#define GID_PAN                         4
-#define GID_ROTATE                      5
-#define GID_TWOFINGERTAP                6
-#define GID_PRESSANDTAP                 7
+#define GID_BEGIN									1
+#define GID_END										2
+#define GID_ZOOM									3
+#define GID_PAN										4
+#define GID_ROTATE									5
+#define GID_TWOFINGERTAP							6
+#define GID_PRESSANDTAP								7
 
 /*
  * Zoom gesture configuration flags - set GESTURECONFIG.dwID to GID_ZOOM
@@ -132,8 +125,8 @@
  *   - Angle should be a double in the range of -2pi to +2pi
  *   - Argument should be an unsigned 16-bit value
  */
-#define GID_ROTATE_ANGLE_TO_ARGUMENT(_arg_)     ((USHORT)((((_arg_) + 2.0 * 3.14159265) / (4.0 * 3.14159265)) * 65535.0))
-#define GID_ROTATE_ANGLE_FROM_ARGUMENT(_arg_)   ((((double)(_arg_) / 65535.0) * 4.0 * 3.14159265) - 2.0 * 3.14159265)
+#define GID_ROTATE_ANGLE_TO_ARGUMENT(_arg_)			((USHORT)((((_arg_) + 2.0 * 3.14159265) / (4.0 * 3.14159265)) * 65535.0))
+#define GID_ROTATE_ANGLE_FROM_ARGUMENT(_arg_)		((((double)(_arg_) / 65535.0) * 4.0 * 3.14159265) - 2.0 * 3.14159265)
 
 /*
  * Two finger tap gesture configuration flags - set GESTURECONFIG.dwID to GID_TWOFINGERTAP

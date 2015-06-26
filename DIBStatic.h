@@ -13,7 +13,7 @@
 #include "GifAnimationThread.h"
 #include "TryEnterCriticalSection.h"
 
-#define WM_MUSIC_POS				WM_USER + 201
+#define WM_MUSIC_POS				WM_USER + 201	/* do not change that */
 #define	WM_LOADDONE					WM_USER + 1300
 #define	WM_PAINT_BUSYTEXT			WM_USER + 1301
 
