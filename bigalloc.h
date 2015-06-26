@@ -17,12 +17,14 @@
 // - LFH heap is active up to 16 KB, from 16 KB to 512 KB the standard
 //   heap is used and above this value the VirtualAlloc function is
 //   called. For the release build we prefer the virtual functions
-//   because mjpeg frames have a size between 16 KB - 512 KB, that's
-//   the worst range because there the heap gets quite fragmented and
-//   grows a lot without shrinking when heap data is freed (heap
-//   memory remains reserved in memory wasting address space). For
-//   picture data the size is above 512 KB, using the heap functions
-//   would add a function call more
+//   because mjpeg frames have a size between 16 KB - 512 KB which would
+//   fragment and grow the heap (freed heap memory remains reserved wasting
+//   address space). For picture data the size is above 512 KB, using the
+//   heap functions would add a function call more
+// - VirtualAlloc for small mjpeg frames (16 KB - 64 KB) fragments the
+//   virtual address space quite a lot, so it's mandatory to reserve heap
+//   space when starting the program (see InitInstance() where we reserve
+//   512 MB for the heap)
 #define BIGALLOC_SAFETY			4096	// must be at least FF_INPUT_BUFFER_PADDING_SIZE, we use one page
 #ifdef _DEBUG
 #define BIGALLOC(Size) av_malloc((size_t)(Size)+BIGALLOC_SAFETY)
