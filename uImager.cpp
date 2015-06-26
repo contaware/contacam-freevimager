@@ -144,7 +144,6 @@ CUImagerApp::CUImagerApp()
 	m_bSingleInstance = TRUE;
 	m_bServiceProcess = FALSE;
 	m_bDoStartFromService = FALSE;
-	m_pAutorunProgressDlg = NULL;
 #else
 	m_bSingleInstance = FALSE;
 #endif
@@ -728,9 +727,9 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// Stop from Service Progress Dialog
 		if (bStopFromService && (!m_bTrayIcon || m_bFirstRun)) // if m_bFirstRun set we will not minimize to tray in CMainFrame::OnCreate()
 		{
-			CString sStartingApp;
-			sStartingApp.Format(ML_STRING(1764, "Starting %s..."), APPNAME_NOEXT);
-			pProgressDlgThread = new CProgressDlgThread(sStartingApp, 0, CONTACAMSERVICE_TIMEOUT);
+			pProgressDlgThread = new CProgressDlgThread(ML_STRING(1764, "Starting") + _T(" ") + APPNAME_NOEXT + _T("..."),
+														0,
+														CONTACAMSERVICE_TIMEOUT);
 		}
 #endif
 
@@ -2215,33 +2214,16 @@ void CUImagerApp::AutorunVideoDevices(BOOL bStartDelay/*=TRUE*/)
 														m_dwFirstStartDelayMs,
 														0, 0);
 
-		// Show starting progress dialog
-		if (m_pAutorunProgressDlg)
+		// Show starting toaster
+		if (!m_bServiceProcess && m_dwFirstStartDelayMs > 0U)
 		{
-			m_pAutorunProgressDlg->Close();	// self-deletion
-			m_pAutorunProgressDlg = NULL;
-		}
-		if (!m_bServiceProcess														&&
-			(!m_bTrayIcon || !::AfxGetMainFrame()->m_TrayIcon.IsMinimizedToTray())	&&
-			m_dwFirstStartDelayMs > 0U)
-		{
-			m_pAutorunProgressDlg = new CProgressDlg(	::AfxGetMainFrame()->GetSafeHwnd(),
-														ML_STRING(1565, "Please wait..."),
-														0,
-														m_dwFirstStartDelayMs);
+			::AfxGetMainFrame()->PopupToaster(	ML_STRING(1764, "Starting") + _T(" ") + APPNAME_NOEXT,
+												ML_STRING(1565, "Please wait..."),
+												m_dwFirstStartDelayMs);
 		}
 	}
 	else
 	{
-		// Close progress dialog
-		// Note: if application is exiting, the mainframe closes this
-		// child window and self-deletion will clean-up the memory
-		if (m_pAutorunProgressDlg)
-		{
-			m_pAutorunProgressDlg->Close();	// self-deletion
-			m_pAutorunProgressDlg = NULL;
-		}
-
 		// Start Vlc process with given vlm configuration file
 		CVideoDeviceDoc::VlmReStart();
 

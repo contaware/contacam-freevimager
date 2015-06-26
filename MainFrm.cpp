@@ -651,7 +651,11 @@ void CMainFrame::OnClose()
 #ifdef VIDEODEVICEDOC
 		if (!((CUImagerApp*)::AfxGetApp())->m_bForceSeparateInstance &&
 			!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
-			PopupToaster(ML_STRING(1566, "Closing ") + APPNAME_NOEXT, ML_STRING(1565, "Please wait..."), 0);
+		{
+			PopupToaster(	ML_STRING(1566, "Closing") + _T(" ") + APPNAME_NOEXT,
+							ML_STRING(1565, "Please wait..."),
+							0);
+		}
 #endif
 
 		// Do Not Call pApp->CloseAllDocuments because it calls

@@ -4198,7 +4198,7 @@ void CVideoDeviceDoc::SetDocumentTitle()
 	if (m_bClosing)
 	{
 		// Closing progress
-		sTitle = ML_STRING(1566, "Closing ");
+		sTitle = ML_STRING(1566, "Closing") + _T(" ");
 		CString sCurrentTitle(GetTitle());
 		if (sCurrentTitle.Find(_T(".....")) >= 0)
 			sTitle += _T(".");

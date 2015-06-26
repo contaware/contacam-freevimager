@@ -770,11 +770,6 @@ protected:
 	// whether this program is running
 	HANDLE m_hAppMutex;
 
-	// Autorun progress dialog
-#ifdef VIDEODEVICEDOC
-	CProgressDlg* m_pAutorunProgressDlg;
-#endif
-
 	// Doc Templates
 #ifdef VIDEODEVICEDOC
 	CUImagerMultiDocTemplate* m_pVideoDeviceDocTemplate;
