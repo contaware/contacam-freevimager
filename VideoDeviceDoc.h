@@ -124,8 +124,7 @@ class CMovementDetectionPage;
 #define MOVDET_MEM_LOAD_PRE_BUF				25.0		// Above this load the oldest pre-buffer frames are dropped
 #define MOVDET_MEM_LOAD_SAVE				35.0		// Above this load the detected frames are saved and freed
 #define MOVDET_MEM_LOAD_CRITICAL			75.0		// Above this load the detected frames are dropped
-#define MOVDET_MEM_MAX_MB					512			// Maximum allocable memory in MB for 32 bits applications
-														// (not 2048 because of fragmentation, stack and heap)
+#define MOVDET_MEM_MAX_MB					512			// Maximum allocable memory in MB (margin for fragmentation, stack and heap)
 #define MOVDET_ANIMGIF_MAX_FRAMES			60			// Maximum number of frames per animated gif
 #define MOVDET_ANIMGIF_MAX_LENGTH			6000.0		// ms, MOVDET_ANIMGIF_MAX_LENGTH / MOVDET_ANIMGIF_MAX_FRAMES must be >= 100
 #define MOVDET_ANIMGIF_DELAY				500.0		// ms (frame time)

@@ -12,7 +12,7 @@ extern CString g_sLogFileName;
 extern volatile ULONGLONG g_ullMaxTraceFileSize;
 extern volatile ULONGLONG g_ullMaxLogFileSize;
 #ifdef _DEBUG
-#define TRACEDEBUG_CHARS_INDENT	_T("68")
+#define TRACEDEBUG_CHARS_INDENT	_T("60")
 extern CRITICAL_SECTION g_csTraceDebug;
 extern CString g_sTraceDebugFileAndLine;
 #endif
