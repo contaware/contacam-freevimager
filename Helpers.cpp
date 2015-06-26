@@ -2354,8 +2354,8 @@ void GetMemoryStats(int* pRegions/*=NULL*/,
 	DWORD sum_free = 0, max_free = 0;
 	DWORD sum_reserve = 0, max_reserve = 0;
 	DWORD sum_commit = 0, max_commit = 0;
-	while (VirtualQuery(memory_info.BaseAddress, &memory_info, sizeof(memory_info))) // it stops when passing >= 0x7fff0000
-	{
+	while (VirtualQuery(memory_info.BaseAddress, &memory_info, sizeof(memory_info)))	// it stops when passing >= 0x7fff0000 and for
+	{																					// LARGEADDRESSAWARE it stops at 0xffff0000
 		++region;
 		switch (memory_info.State)
 		{
