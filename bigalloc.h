@@ -31,9 +31,14 @@
 #define BIGFREE(lpAddress) av_free(lpAddress)
 // av_malloc wastes some bytes for alignment but we do not account for that here
 #define BIGALLOC_USEDSIZE(Size) ((SIZE_T)(Size)+BIGALLOC_SAFETY)
+#else 
+#ifdef TRACELOGFILE
+#define BIGALLOC(Size) VirtualAllocTrace(NULL,(SIZE_T)(Size)+BIGALLOC_SAFETY,MEM_COMMIT,PAGE_READWRITE,CString(__FILE__),__LINE__)
+#define BIGFREE(lpAddress) VirtualFreeTrace((LPVOID)(lpAddress),0,MEM_RELEASE,CString(__FILE__),__LINE__)
 #else
 #define BIGALLOC(Size) VirtualAlloc(NULL,(SIZE_T)(Size)+BIGALLOC_SAFETY,MEM_COMMIT,PAGE_READWRITE)
 #define BIGFREE(lpAddress) VirtualFree((LPVOID)(lpAddress),0,MEM_RELEASE)
+#endif
 #define BIGALLOC_USEDSIZE(Size) (((SIZE_T)(Size)+BIGALLOC_SAFETY+0xffff)&~0xffff)
 #endif
 

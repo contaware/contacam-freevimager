@@ -635,11 +635,11 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			}
 			size_t nLargestCommittedFreeBlock = ::HeapCompact((HANDLE)_get_heap_handle(), 0);
 #if defined(_DEBUG) || defined(TRACELOGFILE)
-			int nReservedMB;
-			::GetMemoryStats(NULL, NULL, &nReservedMB, NULL, NULL);
-			TRACE(	_T("vmres is %dMB after heap reservation (size of largest committed free block in heap is %dKB)\n"),
-					nReservedMB,
-					nLargestCommittedFreeBlock >> 10);
+			DWORD dwReservedMB;
+			::GetMemoryStats(NULL, NULL, &dwReservedMB);
+			TRACE(	_T("vmres is %uMB after heap reservation (size of largest committed free block in heap is %dKB)\n"),
+					dwReservedMB,
+					(int)(nLargestCommittedFreeBlock >> 10));
 #endif
 		}
 #endif

@@ -274,10 +274,13 @@ extern CString GetComputerName();
 extern double GetCPUUsage();
 
 // Get Memory Stats
-extern void GetMemoryStats(	int* pRegions = NULL,
-							int* pFreeMB = NULL,
-							int* pReservedMB = NULL,
-							int* pCommittedMB = NULL,
+extern void GetMemoryStats(	DWORD* pRegions = NULL,
+							DWORD* pFreeMB = NULL,
+							DWORD* pReservedMB = NULL,
+							DWORD* pCommittedMB = NULL,
+							DWORD* pMaxFree = NULL,
+							DWORD* pMaxReserved = NULL,
+							DWORD* pMaxCommitted = NULL,
 							double* pFragmentation = NULL);
 
 // Get the total allocated size (with overhead bytes) of the given heap
@@ -309,6 +312,10 @@ extern int GetVirtualMemUsedMB(); // returns PROCESS_MEMORY_COUNTERS_EX.PrivateU
 // double counting in this value (Private Working Set is not counting the
 // shared amount but is not available in PROCESS_MEMORY_COUNTERS_EX)
 extern int GetPhysicalMemUsedMB(); // returns PROCESS_MEMORY_COUNTERS_EX.WorkingSetSize
+
+// Virtual memory functions with TRACE on error
+extern LPVOID VirtualAllocTrace(LPVOID lpAddress, SIZE_T dwSize, DWORD flAllocationType, DWORD flProtect, CString sFileName, int nLine);
+extern BOOL VirtualFreeTrace(LPVOID lpAddress, SIZE_T dwSize, DWORD dwFreeType, CString sFileName, int nLine);
 
 // Disk total size and available free space.
 // Pass a drive letter (like "c:"), a directory path

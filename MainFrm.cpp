@@ -2155,8 +2155,10 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		int nPhysMemWorkingSetSize = ::GetPhysicalMemUsedMB();
 
 		// Get virtual memory stats
-		int nRegions = 0; int nFreeMB = 0; int nReservedMB = 0; int nCommittedMB = 0; double dFragmentation = 0.0;
-		::GetMemoryStats(&nRegions, &nFreeMB, &nReservedMB, &nCommittedMB, &dFragmentation);
+		DWORD dwRegions; DWORD dwFreeMB; DWORD dwReservedMB; DWORD dwCommittedMB;
+		DWORD dwMaxFree; DWORD dwMaxReserved; DWORD dwMaxCommitted; double dFragmentation;
+		::GetMemoryStats(	&dwRegions, &dwFreeMB, &dwReservedMB, &dwCommittedMB,
+							&dwMaxFree, &dwMaxReserved, &dwMaxCommitted, &dFragmentation);
 
 		// Get heap stats
 		SIZE_T DefaultHeapSize = 0; SIZE_T CRTHeapSize = 0; SIZE_T OtherHeapsSize = 0;
@@ -2192,11 +2194,11 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 
 		// Print debug message
 		TRACE(	_T("CPU %0.1f%% | ")
-				_T("MEM phystotused=%dMB vmprivused=%dMB vmused=%dMB vmres=%dMB vmfree=%dMB frag=%0.1f%% regions=%d | ")
+				_T("MEM phystotused=%dMB vmprivused=%dMB vmused=%uMB(max %uKB) vmres=%uMB(max %uKB) vmfree=%uMB(max %uKB) frag=%0.1f%% regions=%u | ")
 				_T("HEAPS default(%s)=%dMB crt(%s %s)=%dMB others=%dMB\n"),
-			dCPUUsage,
-			nPhysMemWorkingSetSize, nVMPrivateCommitSize, nCommittedMB, nReservedMB, nFreeMB, dFragmentation, nRegions,
-			sDefaultHeapType, (int)(DefaultHeapSize>>20), sCRTHeapType, sCRTHeapStatus, (int)(CRTHeapSize>>20), (int)(OtherHeapsSize>>20));
+				dCPUUsage,
+				nPhysMemWorkingSetSize, nVMPrivateCommitSize, dwCommittedMB, dwMaxCommitted>>10, dwReservedMB, dwMaxReserved>>10, dwFreeMB, dwMaxFree>>10, dFragmentation, dwRegions,
+				sDefaultHeapType, (int)(DefaultHeapSize>>20), sCRTHeapType, sCRTHeapStatus, (int)(CRTHeapSize>>20), (int)(OtherHeapsSize>>20));
 #endif
 		// Show CPU Usage
 		CString sCPUUsage;

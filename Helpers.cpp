@@ -2342,10 +2342,13 @@ static int GetTotPhysMemMB(BOOL bInstalled)
 	}
 }
 
-void GetMemoryStats(int* pRegions/*=NULL*/,
-					int* pFreeMB/*=NULL*/,
-					int* pReservedMB/*=NULL*/,
-					int* pCommittedMB/*=NULL*/,
+void GetMemoryStats(DWORD* pRegions/*=NULL*/,
+					DWORD* pFreeMB/*=NULL*/,
+					DWORD* pReservedMB/*=NULL*/,
+					DWORD* pCommittedMB/*=NULL*/,
+					DWORD* pMaxFree/*=NULL*/,
+					DWORD* pMaxReserved/*=NULL*/,
+					DWORD* pMaxCommitted/*=NULL*/,
 					double* pFragmentation/*=NULL*/)
 {
 	MEMORY_BASIC_INFORMATION memory_info;
@@ -2392,6 +2395,9 @@ void GetMemoryStats(int* pRegions/*=NULL*/,
 	if (pFreeMB) *pFreeMB = sum_free;
 	if (pReservedMB) *pReservedMB = sum_reserve;
 	if (pCommittedMB) *pCommittedMB = sum_commit;
+	if (pMaxFree) *pMaxFree = max_free;
+	if (pMaxReserved) *pMaxReserved = max_reserve;
+	if (pMaxCommitted) *pMaxCommitted = max_commit;
 	if (pFragmentation) *pFragmentation = dFragmentation;
 }
 
@@ -2496,6 +2502,36 @@ int GetPhysicalMemUsedMB()
 	PROCESS_MEMORY_COUNTERS_EX pmc;
     GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
 	return (int)(pmc.WorkingSetSize >> 20);
+}
+
+LPVOID VirtualAllocTrace(LPVOID lpAddress, SIZE_T dwSize, DWORD flAllocationType, DWORD flProtect, CString sFileName, int nLine)
+{
+	LPVOID p = VirtualAlloc(lpAddress, dwSize, flAllocationType, flProtect);
+	if (!p)
+	{
+		DWORD dwLastError = GetLastError();
+		CString sHeader;
+		sHeader.Format(_T("VirtualAlloc(%u bytes) FAILURE -> "), dwSize);
+		CString sFooter;
+		sFooter.Format(_T(" Called in %s(%i)"), sFileName, nLine);
+		ShowError(dwLastError, FALSE, sHeader, sFooter);
+	}
+	return p;
+}
+
+BOOL VirtualFreeTrace(LPVOID lpAddress, SIZE_T dwSize, DWORD dwFreeType, CString sFileName, int nLine)
+{
+	BOOL res = VirtualFree(lpAddress, dwSize, dwFreeType);
+	if (!res)
+	{
+		DWORD dwLastError = GetLastError();
+		CString sHeader;
+		sHeader.Format(_T("VirtualFree(0x%08IX) FAILURE -> "), (size_t)lpAddress);
+		CString sFooter;
+		sFooter.Format(_T(" Called in %s(%i)"), sFileName, nLine);
+		ShowError(dwLastError, FALSE, sHeader, sFooter);
+	}
+	return res;
 }
 
 ULONGLONG GetDiskTotalSize(LPCTSTR lpszPath)
