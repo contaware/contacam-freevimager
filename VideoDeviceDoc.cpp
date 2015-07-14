@@ -214,7 +214,6 @@ void CVideoDeviceDoc::CSaveFrameListThread::LoadAndDecodeFrame(CDib* pDib)
 		pDib->SetBMI(&NewBmi);
 
 		// Decode
-		TRACE(_T("%s, Start m_AVDetDecoder.Decode()\n"), m_pDoc->GetAssignedDeviceName());
 		BOOL res = m_AVDetDecoder.Decode(pOldBmi,
 										pOldBits,
 										pOldBmi->bmiHeader.biSizeImage,
@@ -229,8 +228,6 @@ void CVideoDeviceDoc::CSaveFrameListThread::LoadAndDecodeFrame(CDib* pDib)
 			else
 				TRACE(_T("%s, LoadJPEG() + Compress(I420) FAILURE\n"), m_pDoc->GetAssignedDeviceName());
 		}
-		else
-			TRACE(_T("%s, m_AVDetDecoder.Decode() success\n"), m_pDoc->GetAssignedDeviceName());
 
 		// Make sure we have valid bits, if not make a green frame
 		if (!pDib->GetBits())
@@ -7088,13 +7085,11 @@ void CVideoDeviceDoc::ProcessOtherFrame(LPBYTE pData, DWORD dwSize)
 {	
 	// Decode ffmpeg supported formats
 	m_pProcessFrameExtraDib->SetBMI((LPBITMAPINFO)&m_ProcessFrameBMI);
-	TRACE(_T("%s, Start m_AVDecoder.Decode()\n"), GetAssignedDeviceName());
 	if (m_AVDecoder.Decode(	(LPBITMAPINFO)&m_CaptureBMI,
 							pData,
 							dwSize,
 							m_pProcessFrameExtraDib)) // this function will allocate the dst bits if necessary
 	{
-		TRACE(_T("%s, m_AVDecoder.Decode() success\n"), GetAssignedDeviceName());
 		if (m_AVDecoder.GetCodecId() == AV_CODEC_ID_MJPEG)
 		{
 			m_lCompressedDataRateSum += dwSize;
@@ -10583,7 +10578,6 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Process(unsigned char* pLinBuf,
 
 	// Decode
 	int got_picture = 0;
-	TRACE(_T("%s, Start avcodec_decode_video2()\n"), m_pDoc->GetAssignedDeviceName());
 	int len = avcodec_decode_video2(m_pCodecCtx,
 									m_pFrame,
 									&got_picture,
@@ -10674,7 +10668,6 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Process(unsigned char* pLinBuf,
 	// (first try fast conversion, if source format not supported fall back to sws_scale)
 	if (got_picture && m_pImgConvertCtx)
 	{
-		TRACE(_T("%s, avcodec_decode_video2 success\n"), m_pDoc->GetAssignedDeviceName());
 		BOOL bOk = ITU601JPEGConvert(m_pCodecCtx->pix_fmt,	// Source Format
 									AV_PIX_FMT_YUV420P,		// Destination Format
 									m_pFrame->data,			// Source Data
