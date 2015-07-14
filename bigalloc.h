@@ -6,40 +6,50 @@
 
 #pragma once
 
-// - VirtualAlloc and VirtualFree leaks are not detected by debugger,
+// Default list size must be a multiple of 1048576
+#ifdef VIDEODEVICEDOC
+#define BIGALLOC_DEFAULT_LIST_SIZE	134217728	// 128MB
+#else
+#define BIGALLOC_DEFAULT_LIST_SIZE	33554432	// 32MB
+#endif
+
+typedef CList<LPVOID,LPVOID> BIGALLOCLIST;
+extern void InitBigAlloc();
+extern void EndBigAlloc();
+extern LPVOID BigAlloc(SIZE_T Size, CString sFileName, int nLine);
+extern BOOL BigFree(LPBYTE p, CString sFileName, int nLine);
+extern SIZE_T BigAllocUsedSize(LPBYTE p, SIZE_T Size);
+extern void GetBigAllocStats(double* p64kUsed = NULL,
+							double* p128kUsed = NULL,
+							double* p256kUsed = NULL,
+							double* p512kUsed = NULL,
+							double* p1024kUsed = NULL);
+
+// - VirtualAlloc and VirtualFree leaks are not detected by the debugger,
 //   we use the CRT heap functions for the debug build 
 // - VirtualAlloc's returned address is 64 KB aligned, 16, 32 or 64 bytes
-//   alignment is necessary for SIMD ops in CDib and CAVRec, av_malloc
-//   handles that correctly
+//   alignment is necessary for SIMD ops, av_malloc handles that correctly
 // - Today's 32 bits apps suffer from memory space fragmentation and
-//   not from RAM shortage, BIGALLOC_USEDSIZE accounts for the 64 KB
+//   not from RAM shortage, BIGALLOC_USEDSIZE accounts for the
 //   allocation granularity and the address space waste
-// - LFH heap is active up to 16 KB, from 16 KB to 512 KB the standard
-//   heap is used and above this value the VirtualAlloc function is
-//   called. For the release build we prefer the virtual functions
-//   because mjpeg frames have a size between 16 KB - 512 KB which would
-//   fragment and grow the heap (freed heap memory remains reserved wasting
-//   address space). For picture data the size is above 512 KB, using the
-//   heap functions would add a function call more
-// - VirtualAlloc for small mjpeg frames (16 KB - 64 KB) fragments the
-//   virtual address space quite a lot, so it's mandatory to reserve heap
-//   space when starting the program (see InitInstance() where we reserve
-//   512 MB for the heap)
-#define BIGALLOC_SAFETY			4096	// must be at least FF_INPUT_BUFFER_PADDING_SIZE, we use one page
+// - If using the heap functions the LFH heap is active up to 16 KB, from
+//   16 KB to 512 KB the standard heap is used and above this value the
+//   VirtualAlloc function is called. For the release build we prefer the
+//   virtual functions because mjpeg frames have a size between 16 KB - 512 KB
+//   which fragments and grows the heap (freed heap memory remains reserved
+//   wasting address space). VirtualAllocs for sizes 16 KB - 512 KB fragment
+//   the virtual address space, to solve that problem we use fixed sizes
+//   allocator lists implemented in BigAlloc() and BigFree()
+#define BIGALLOC_SAFETY		64	// must be at least FF_INPUT_BUFFER_PADDING_SIZE
 #ifdef _DEBUG
 #define BIGALLOC(Size) av_malloc((size_t)(Size)+BIGALLOC_SAFETY)
-#define BIGFREE(lpAddress) av_free(lpAddress)
+#define BIGFREE(p) av_free(p)
 // av_malloc wastes some bytes for alignment but we do not account for that here
-#define BIGALLOC_USEDSIZE(Size) ((SIZE_T)(Size)+BIGALLOC_SAFETY)
-#else 
-#ifdef TRACELOGFILE
-#define BIGALLOC(Size) VirtualAllocTrace(NULL,(SIZE_T)(Size)+BIGALLOC_SAFETY,MEM_COMMIT,PAGE_READWRITE,CString(__FILE__),__LINE__)
-#define BIGFREE(lpAddress) VirtualFreeTrace((LPVOID)(lpAddress),0,MEM_RELEASE,CString(__FILE__),__LINE__)
+#define BIGALLOC_USEDSIZE(p,Size) ((SIZE_T)(Size)+BIGALLOC_SAFETY)
 #else
-#define BIGALLOC(Size) VirtualAlloc(NULL,(SIZE_T)(Size)+BIGALLOC_SAFETY,MEM_COMMIT,PAGE_READWRITE)
-#define BIGFREE(lpAddress) VirtualFree((LPVOID)(lpAddress),0,MEM_RELEASE)
-#endif
-#define BIGALLOC_USEDSIZE(Size) (((SIZE_T)(Size)+BIGALLOC_SAFETY+0xffff)&~0xffff)
+#define BIGALLOC(Size) BigAlloc((SIZE_T)(Size)+BIGALLOC_SAFETY,CString(__FILE__),__LINE__)
+#define BIGFREE(p) BigFree((LPBYTE)(p),CString(__FILE__),__LINE__)
+#define BIGALLOC_USEDSIZE(p,Size) BigAllocUsedSize((LPBYTE)(p),(SIZE_T)(Size)+BIGALLOC_SAFETY)
 #endif
 
 //{{AFX_INSERT_LOCATION}}

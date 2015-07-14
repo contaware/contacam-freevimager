@@ -411,6 +411,9 @@
     <ClCompile Include="ToasterWndLink.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="bigalloc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <MASM Include="MotionDetHelpers.asm">

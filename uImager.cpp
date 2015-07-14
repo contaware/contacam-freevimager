@@ -614,35 +614,8 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			::EnableLFHeap();
 #endif
 
-		// Reserve 512 MB of heap space
-#ifdef VIDEODEVICEDOC
-		if (!m_bForceSeparateInstance)
-		{
-			void* pRes[2048];
-			int nIndex;
-			for (nIndex = 0 ; nIndex < 2048 ; nIndex++)
-			{
-				pRes[nIndex] = malloc(256 * 1024);	// alloc 256 KB block
-				if (pRes[nIndex] == NULL)
-					break;
-			}
-			for (nIndex = 0 ; nIndex < 2048 ; nIndex++)
-			{
-				if (pRes[nIndex])
-					free(pRes[nIndex]);				// free block
-				else
-					break;
-			}
-			size_t LargestCommittedFreeBlock = ::HeapCompact((HANDLE)_get_heap_handle(), 0);
-#if defined(_DEBUG) || defined(TRACELOGFILE)
-			DWORD dwReservedMB;
-			::GetMemoryStats(NULL, NULL, &dwReservedMB);
-			TRACE(	_T("vmres is %uMB after heap reservation (size of largest committed free block in heap is %IuKB)\n"),
-					dwReservedMB,
-					(size_t)(LargestCommittedFreeBlock >> 10));
-#endif
-		}
-#endif
+		// Init big memory manager
+		::InitBigAlloc();
 
 		// Init for the PostDelayedMessage() Function
 		CPostDelayedMessageThread::Init();
@@ -2147,6 +2120,9 @@ int CUImagerApp::ExitInstance()
 	TRACE(_T("*** FFMPEG LEAKS 47 or 63 BYTES, OPENSSL LEAKS 16 + 20 BYTES and SOMETIMES MORE, IT'S NORMAL ***\n"));
 #endif
 #endif
+
+	// Clean-up big memory manager
+	::EndBigAlloc();
 
 	// Clean-Up Trace Log File
 	::EndTraceLogFile();

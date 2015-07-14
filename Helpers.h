@@ -313,10 +313,6 @@ extern int GetVirtualMemUsedMB(); // returns PROCESS_MEMORY_COUNTERS_EX.PrivateU
 // shared amount but is not available in PROCESS_MEMORY_COUNTERS_EX)
 extern int GetPhysicalMemUsedMB(); // returns PROCESS_MEMORY_COUNTERS_EX.WorkingSetSize
 
-// Virtual memory functions with TRACE on error
-extern LPVOID VirtualAllocTrace(LPVOID lpAddress, SIZE_T dwSize, DWORD flAllocationType, DWORD flProtect, CString sFileName, int nLine);
-extern BOOL VirtualFreeTrace(LPVOID lpAddress, SIZE_T dwSize, DWORD dwFreeType, CString sFileName, int nLine);
-
 // Disk total size and available free space.
 // Pass a drive letter (like "c:"), a directory path
 // (it has not to be the root dir) or a UNC path

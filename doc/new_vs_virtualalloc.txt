@@ -19,23 +19,33 @@ Speed
 -----
 
 The heap functions are faster than the virtual allocation functions for 
-small blocks. Even for blocks that are a small multiple of 64 KB, 
-new/malloc/HeapAlloc are likely to be faster because most of the time 
-they don't require a transition to kernel mode, unlike VirtualAlloc 
-which is a system call. Internally new and malloc call HeapAlloc, but 
-the speed difference is negligible because the overhead is really small. 
+blocks smaller than 16 KB because they don't require a transition to 
+kernel mode and because they use the fast LFH heap. For bigger blocks up 
+to 512 KB new/malloc/HeapAlloc are sometimes faster but not always. For 
+blocks of 512 KB or greater the heap functions call the virtual 
+functions, so that the speed is roughly the same. The heap free operations
+on 16 KB - 512 KB blocks (standard heap range) can be quite slow because
+of heap coalescing which should "find" the neighbours, pull them out to
+construct a larger block, and reinsert the larger block into the free list. 
+Internally new and malloc call HeapAlloc, but the speed difference is 
+negligible because the overhead is really small. 
 
 
-VirtualAlloc should be used only
---------------------------------
+CRT Heap vs. Process Heap
+-------------------------
 
-1. If you need allocation aligned on page boundary
-   (usually for non-buffered I/O)
-2. You don't want to commit full amount of memory (sparse allocation)
-3. You want to allocate very large amount at once
-4. You're implementing your own custom allocator
+Prior to Visual C++ 2012, each CRT had its own heap, created via 
+HeapCreate. In Visual C++ 2012, the CRT uses the process heap, obtained 
+via GetProcessHeap. 
+
+
+Heap behaviour depends from allocation size
+-------------------------------------------
+
+LFH heap is active up to 16 KB, from 16 KB to 512 KB the standard heap 
+is used and above this value the VirtualAlloc function is called. 
+
    
-
 LFH Heap
 --------
 
@@ -127,8 +137,8 @@ the address space if many large blocks are allocated (like 500 KB) and
 freed.
 
 
-Heap behaviour depends from allocation size
--------------------------------------------
+Reference
+---------
 
-LFH heap is active up to 16 KB, from 16 KB to 512 KB the standard heap 
-is used and above this value the VirtualAlloc function is called. 
+https://msdn.microsoft.com/en-us/library/ms810466.aspx
+http://library.softwareverify.com/memory-fragmentation-your-worst-nightmare/

@@ -153,7 +153,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::CalcMovementDetectionListsSize()
 						{
 							// For video frames BIGALLOC_USEDSIZE accounts for the
 							// allocation granularity and the address space waste
-							dwVideoUsedSize += BIGALLOC_USEDSIZE(pDib->GetImageSize());
+							dwVideoUsedSize += BIGALLOC_USEDSIZE(pDib->GetBits(), pDib->GetImageSize());
 
 							// For audio the maximum allocated size for a single buffer
 							// with AUDIO_IN_MIN_BUF_SIZE set to 256 is
