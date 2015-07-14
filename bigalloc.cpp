@@ -262,8 +262,9 @@ LPVOID BigAlloc(SIZE_T Size, CString sFileName, int nLine)
 	p = VirtualAlloc(NULL, Size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 	if (!p)
 	{
-		::LogLine(	_T("VirtualAlloc(%Iu bytes) in %s(%i) returned ") + ML_STRING(1784, "Error with code %u."),
-					Size, ::GetShortFileName(sFileName), nLine, GetLastError());
+		DWORD dwLastError = GetLastError();
+		LogLine(_T("VirtualAlloc(%Iu bytes) in %s(%i) returned ") + ML_STRING(1784, "Error with code %u."),
+				Size, GetShortFileName(sFileName), nLine, dwLastError);
 	}
 
 	return p;
@@ -333,8 +334,9 @@ BOOL BigFree(LPBYTE p, CString sFileName, int nLine)
 
 	if (!res)
 	{
-		::LogLine(	_T("VirtualFree(0x%08IX) in %s(%i) returned ") + ML_STRING(1784, "Error with code %u."),
-					(SIZE_T)p, ::GetShortFileName(sFileName), nLine, GetLastError());
+		DWORD dwLastError = GetLastError();
+		LogLine(_T("VirtualFree(0x%08IX) in %s(%i) returned ") + ML_STRING(1784, "Error with code %u."),
+				(SIZE_T)p, GetShortFileName(sFileName), nLine, dwLastError);
 	}
 
 	return res;
