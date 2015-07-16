@@ -179,12 +179,16 @@ LPVOID BigAlloc(SIZE_T Size, CString sFileName, int nLine)
 		EnterCriticalSection(&g_csBigAlloc64k);
 		if (!g_BigAlloc64kList.IsEmpty()) // note: try next allocation size if list empty
 		{
-			p = VirtualAlloc(g_BigAlloc64kList.GetHead(), 65536, MEM_COMMIT, PAGE_READWRITE);
+			LPVOID pHead = g_BigAlloc64kList.RemoveHead();
+			LeaveCriticalSection(&g_csBigAlloc64k);
+			p = VirtualAlloc(pHead, 65536, MEM_COMMIT, PAGE_READWRITE);
 			if (p)
-			{
-				g_BigAlloc64kList.RemoveHead();
-				LeaveCriticalSection(&g_csBigAlloc64k);
 				return p;
+			else
+			{
+				// Re-add it if failing
+				EnterCriticalSection(&g_csBigAlloc64k);
+				g_BigAlloc64kList.AddHead(pHead);
 			}
 		}
 		LeaveCriticalSection(&g_csBigAlloc64k);
@@ -196,12 +200,16 @@ LPVOID BigAlloc(SIZE_T Size, CString sFileName, int nLine)
 		EnterCriticalSection(&g_csBigAlloc128k);
 		if (!g_BigAlloc128kList.IsEmpty()) // note: try next allocation size if list empty
 		{
-			p = VirtualAlloc(g_BigAlloc128kList.GetHead(), 131072, MEM_COMMIT, PAGE_READWRITE);
+			LPVOID pHead = g_BigAlloc128kList.RemoveHead();
+			LeaveCriticalSection(&g_csBigAlloc128k);
+			p = VirtualAlloc(pHead, 131072, MEM_COMMIT, PAGE_READWRITE);
 			if (p)
-			{
-				g_BigAlloc128kList.RemoveHead();
-				LeaveCriticalSection(&g_csBigAlloc128k);
 				return p;
+			else
+			{
+				// Re-add it if failing
+				EnterCriticalSection(&g_csBigAlloc128k);
+				g_BigAlloc128kList.AddHead(pHead);
 			}
 		}
 		LeaveCriticalSection(&g_csBigAlloc128k);
@@ -213,12 +221,16 @@ LPVOID BigAlloc(SIZE_T Size, CString sFileName, int nLine)
 		EnterCriticalSection(&g_csBigAlloc256k);
 		if (!g_BigAlloc256kList.IsEmpty()) // note: try next allocation size if list empty
 		{
-			p = VirtualAlloc(g_BigAlloc256kList.GetHead(), 262144, MEM_COMMIT, PAGE_READWRITE);
+			LPVOID pHead = g_BigAlloc256kList.RemoveHead();
+			LeaveCriticalSection(&g_csBigAlloc256k);
+			p = VirtualAlloc(pHead, 262144, MEM_COMMIT, PAGE_READWRITE);
 			if (p)
-			{
-				g_BigAlloc256kList.RemoveHead();
-				LeaveCriticalSection(&g_csBigAlloc256k);
 				return p;
+			else
+			{
+				// Re-add it if failing
+				EnterCriticalSection(&g_csBigAlloc256k);
+				g_BigAlloc256kList.AddHead(pHead);
 			}
 		}
 		LeaveCriticalSection(&g_csBigAlloc256k);
@@ -230,12 +242,16 @@ LPVOID BigAlloc(SIZE_T Size, CString sFileName, int nLine)
 		EnterCriticalSection(&g_csBigAlloc512k);
 		if (!g_BigAlloc512kList.IsEmpty()) // note: try next allocation size if list empty
 		{
-			p = VirtualAlloc(g_BigAlloc512kList.GetHead(), 524288, MEM_COMMIT, PAGE_READWRITE);
+			LPVOID pHead = g_BigAlloc512kList.RemoveHead(); 
+			LeaveCriticalSection(&g_csBigAlloc512k);
+			p = VirtualAlloc(pHead, 524288, MEM_COMMIT, PAGE_READWRITE);
 			if (p)
-			{
-				g_BigAlloc512kList.RemoveHead();
-				LeaveCriticalSection(&g_csBigAlloc512k);
 				return p;
+			else
+			{
+				// Re-add it if failing
+				EnterCriticalSection(&g_csBigAlloc512k);
+				g_BigAlloc512kList.AddHead(pHead);
 			}
 		}
 		LeaveCriticalSection(&g_csBigAlloc512k);
@@ -247,12 +263,16 @@ LPVOID BigAlloc(SIZE_T Size, CString sFileName, int nLine)
 		EnterCriticalSection(&g_csBigAlloc1024k);
 		if (!g_BigAlloc1024kList.IsEmpty()) // note: reserve + commit in one step if list empty
 		{
-			p = VirtualAlloc(g_BigAlloc1024kList.GetHead(), 1048576, MEM_COMMIT, PAGE_READWRITE);
+			LPVOID pHead = g_BigAlloc1024kList.RemoveHead();
+			LeaveCriticalSection(&g_csBigAlloc1024k);
+			p = VirtualAlloc(pHead, 1048576, MEM_COMMIT, PAGE_READWRITE);
 			if (p)
-			{
-				g_BigAlloc1024kList.RemoveHead();
-				LeaveCriticalSection(&g_csBigAlloc1024k);
 				return p;
+			else
+			{
+				// Re-add it if failing
+				EnterCriticalSection(&g_csBigAlloc1024k);
+				g_BigAlloc1024kList.AddHead(pHead);
 			}
 		}
 		LeaveCriticalSection(&g_csBigAlloc1024k);
