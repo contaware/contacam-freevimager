@@ -16,7 +16,8 @@ static char THIS_FILE[] = __FILE__;
 
 #pragma comment(lib, "winmm.lib")
 #pragma comment(lib, "Wininet.lib")
-#pragma comment(lib, "psapi.lib") // to support GetProcessMemoryInfo()
+#pragma comment(lib, "psapi.lib")	// to support GetProcessMemoryInfo()
+#pragma comment(lib, "mpr.lib")		// to support WNetGetConnection()
 
 // If InitHelpers() is not called vars default to WinXP,
 // no multimedia instructions and 2GB RAM
