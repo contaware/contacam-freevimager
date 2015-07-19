@@ -230,7 +230,7 @@ public:
 			BOOL SendRawRequest(CString sRequest);
 			BOOL SendRequest();
 			virtual BOOL Parse(CNetCom* pNetCom, BOOL bLastCall);
-			virtual BOOL Process(unsigned char* pLinBuf, int nSize);
+			virtual void Process(unsigned char* pLinBuf, int nSize);
 			BOOL HasResolution(const CSize& Size);
 			
 			CArray<CSize,CSize> m_Sizes;

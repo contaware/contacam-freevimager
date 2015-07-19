@@ -7,7 +7,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#pragma comment(lib, "mpr.lib")
+#ifdef VIDEODEVICEDOC
+
 #pragma comment(lib, "ws2_32.lib")
 
 // Defines
@@ -79,11 +80,10 @@ CNetCom::CBuf& CNetCom::CBuf::operator=(const CNetCom::CBuf& b) // Copy Assignme
 // The Parser & Processor Base Class
 ///////////////////////////////////////////////////////////////////////////////
 
-BOOL CNetCom::CParseProcess::Process(unsigned char* pLinBuf, int nSize)
+void CNetCom::CParseProcess::Process(unsigned char* pLinBuf, int nSize)
 {
 	pLinBuf;
 	nSize;
-	return TRUE; // Auto-delete pLinBuf
 }
 
 void CNetCom::CParseProcess::NewData(BOOL bLastCall)
@@ -107,9 +107,10 @@ void CNetCom::CParseProcess::NewData(BOOL bLastCall)
 
 		// Read the data
 		int nReadSize = 0;
-		unsigned char* pBuf = new unsigned char[m_nProcessSize + PROCESSOR_BUFFER_PADDING_SIZE];
+		unsigned char* pBuf = (unsigned char*)av_malloc(m_nProcessSize + FF_INPUT_BUFFER_PADDING_SIZE);
 		if (pBuf)
 		{
+			memset(pBuf + m_nProcessSize, 0, FF_INPUT_BUFFER_PADDING_SIZE); // zero the padding!
 			if (m_nProcessOffset == 0)
 			{	
 				// Copy data from queue to linear buffer
@@ -130,9 +131,9 @@ void CNetCom::CParseProcess::NewData(BOOL bLastCall)
 				}
 			}
 
-			// Call the Process function
-			if (Process(pBuf, nReadSize))
-				delete [] pBuf; // Auto-delete if return value is TRUE
+			// Call the Process function and free the buffer
+			Process(pBuf, nReadSize);
+			av_free(pBuf);
 		}
 	}
 }
@@ -1068,3 +1069,5 @@ BOOL CNetCom::StringToAddress(const TCHAR* sHost, const TCHAR* sPort, sockaddr* 
 
 	return res;
 }
+
+#endif

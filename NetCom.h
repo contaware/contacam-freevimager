@@ -1,6 +1,8 @@
 #ifndef __NETCOM_H__
 #define __NETCOM_H__
 
+#ifdef VIDEODEVICEDOC
+
 /*
 Is Winsock thread-safe?
 -----------------------
@@ -26,11 +28,20 @@ time.
 // Includes
 #ifndef __AFXTEMPL_H__
 #pragma message("To avoid this message, put afxtempl.h in your PCH (usually stdafx.h)")
-#include <afxtempl.h>
+#include <afxtempl.h> // for CList
 #endif
 #include <winsock2.h>
 #include <Ws2tcpip.h>
 #include "WorkerThread.h"
+extern "C"
+{
+#include "libavutil/opt.h"
+#include "libavutil/mathematics.h"
+#include "libavcodec/avcodec.h"
+#include "libavformat/avformat.h"
+#include "libswscale/swscale.h"
+#include "libswresample/swresample.h"
+}
 
 // Macros
 #ifndef MAX
@@ -51,9 +62,6 @@ time.
 #define SOCKADDRANY(pAddr)						(pAddr ? ((((sockaddr*)pAddr)->sa_family == AF_INET6) ?\
 												memcmp(&(((sockaddr_in6*)pAddr)->sin6_addr), &my_in6addr_any, sizeof(my_in6addr_any)) == 0 :\
 												((sockaddr_in*)pAddr)->sin_addr.S_un.S_addr == INADDR_ANY) : 0)
-
-// The safety margin for the processor linear buffer
-#define PROCESSOR_BUFFER_PADDING_SIZE			32
 
 // The Maximum RX Buffer Size
 #define NETCOM_MAX_RX_BUFFER_SIZE				4096
@@ -149,8 +157,8 @@ public:
 			CParseProcess(){m_pNetCom = NULL; m_nProcessOffset = m_nProcessSize = 0;};
 			virtual ~CParseProcess(){;};
 			virtual BOOL Parse(CNetCom* pNetCom, BOOL bLastCall) = 0;
-			virtual BOOL Process(unsigned char* pLinBuf, int nSize);
-			
+			virtual void Process(unsigned char* pLinBuf, int nSize);	// pLinBuf is a correctly aligned buffer ending
+																		// with FF_INPUT_BUFFER_PADDING_SIZE zero bytes
 		protected:
 			void Init(CNetCom* pNetCom) {m_pNetCom = pNetCom;};
 			void NewData(BOOL bLastCall);
@@ -293,4 +301,5 @@ protected:
 	volatile int m_nSocketFamily;
 };
 
+#endif
 #endif __NETCOM_H__

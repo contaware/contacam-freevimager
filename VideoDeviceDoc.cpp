@@ -10544,7 +10544,9 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 	}
 }
 
-BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Process(unsigned char* pLinBuf, int nSize)
+// pLinBuf is a correctly aligned buffer ending
+// with FF_INPUT_BUFFER_PADDING_SIZE zero bytes
+void CVideoDeviceDoc::CHttpGetFrameParseProcess::Process(unsigned char* pLinBuf, int nSize)
 {
 	::EnterCriticalSection(&m_pDoc->m_csHttpProcess);
 
@@ -10560,18 +10562,14 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Process(unsigned char* pLinBuf,
 	if (!m_pCodecCtx)
 	{
 		::LeaveCriticalSection(&m_pDoc->m_csHttpProcess);
-		return TRUE; // Auto-Delete pLinBuf
+		return;
 	}
 
-	// Copy source data to have a correctly aligned buffer
-	// ending with FF_INPUT_BUFFER_PADDING_SIZE zero bytes
+	// Init source data
 	AVPacket avpkt;
-    if (av_new_packet(&avpkt, nSize) < 0)
-	{
-		::LeaveCriticalSection(&m_pDoc->m_csHttpProcess);
-		return TRUE; // Auto-Delete pLinBuf
-	}
-	memcpy(avpkt.data, pLinBuf, nSize);
+	av_init_packet(&avpkt);
+	avpkt.data = pLinBuf;
+	avpkt.size = nSize;
 
 	// Reset Frame Structure 
 	av_frame_unref(m_pFrame);
@@ -10587,7 +10585,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Process(unsigned char* pLinBuf,
 		TRACE(_T("%s, avcodec_decode_video2 FAILURE (returned=%d)\n"), m_pDoc->GetAssignedDeviceName(), len);
 		av_free_packet(&avpkt);
 		::LeaveCriticalSection(&m_pDoc->m_csHttpProcess);
-		return TRUE; // Auto-Delete pLinBuf
+		return;
 	}
 
 	// Re-init if the size changed externally
@@ -10603,7 +10601,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Process(unsigned char* pLinBuf,
 		{
 			av_free_packet(&avpkt);
 			::LeaveCriticalSection(&m_pDoc->m_csHttpProcess);
-			return TRUE; // Auto-Delete pLinBuf
+			return;
 		}
 
 		// Init if size changed
@@ -10712,12 +10710,10 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Process(unsigned char* pLinBuf,
 	// otherwise the watchdog is restarting the connection!
 	m_bFirstFrame = FALSE;
 	
-	// Free memory
+	// Free packet
 	av_free_packet(&avpkt);
 
 	::LeaveCriticalSection(&m_pDoc->m_csHttpProcess);
-
-	return TRUE; // Auto-Delete pLinBuf
 }
 
 BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::OpenAVCodec()
