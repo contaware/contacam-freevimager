@@ -2155,8 +2155,8 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		int nPhysMemWorkingSetSize = ::GetPhysicalMemUsedMB();
 
 		// Get big allocation stats
-		double d64kUsed, d128kUsed, d256kUsed, d512kUsed, d1024kUsed;
-		::GetBigAllocStats(&d64kUsed, &d128kUsed, &d256kUsed, &d512kUsed, &d1024kUsed);
+		double d64kUsed, d128kUsed, d256kUsed, d512kUsed, d1024kUsed, d2048kUsed;
+		::GetBigAllocStats(&d64kUsed, &d128kUsed, &d256kUsed, &d512kUsed, &d1024kUsed, &d2048kUsed);
 
 		// Get virtual memory stats
 		DWORD dwRegions; DWORD dwFreeMB; DWORD dwReservedMB; DWORD dwCommittedMB;
@@ -2198,11 +2198,11 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 
 		// Print debug message
 		TRACE(	_T("CPU %0.1f%% | ")
-				_T("BIGALLOC 64k=%0.1f%% 128k=%0.1f%% 256k=%0.1f%% 512k=%0.1f%% 1024k=%0.1f%% | ")
+				_T("BIGALLOC 64k=%0.1f%% 128k=%0.1f%% 256k=%0.1f%% 512k=%0.1f%% 1024k=%0.1f%% 2048k=%0.1f%% | ")
 				_T("MEM phystotused=%dMB vmprivused=%dMB vmused=%uMB(max %uKB) vmres=%uMB(max %uKB) vmfree=%uMB(max %uKB) frag=%0.1f%% regions=%u | ")
 				_T("HEAPS default(%s)=%dMB crt(%s %s)=%dMB others=%dMB\n"),
 				dCPUUsage,
-				d64kUsed, d128kUsed, d256kUsed, d512kUsed, d1024kUsed,
+				d64kUsed, d128kUsed, d256kUsed, d512kUsed, d1024kUsed, d2048kUsed,
 				nPhysMemWorkingSetSize, nVMPrivateCommitSize, dwCommittedMB, dwMaxCommitted>>10, dwReservedMB, dwMaxReserved>>10, dwFreeMB, dwMaxFree>>10, dFragmentation, dwRegions,
 				sDefaultHeapType, (int)(DefaultHeapSize>>20), sCRTHeapType, sCRTHeapStatus, (int)(CRTHeapSize>>20), (int)(OtherHeapsSize>>20));
 #endif

@@ -23,12 +23,13 @@ extern void GetBigAllocStats(double* p64kUsed = NULL,
 							double* p128kUsed = NULL,
 							double* p256kUsed = NULL,
 							double* p512kUsed = NULL,
-							double* p1024kUsed = NULL);
+							double* p1024kUsed = NULL,
+							double* p2048kUsed = NULL);
 
 // - VirtualAlloc and VirtualFree leaks are not detected by the debugger,
 //   we use the CRT heap functions for the debug build 
-// - VirtualAlloc's returned address is 64 KB aligned, 16, 32 or 64 bytes
-//   alignment is necessary for SIMD ops, av_malloc handles that correctly
+// - VirtualAlloc's returned address is 64 KB aligned, 32 bytes alignment
+//   is necessary for SIMD ops, av_malloc handles that correctly
 // - Today's 32 bits apps suffer from memory space fragmentation and
 //   not from RAM shortage, BIGALLOC_USEDSIZE accounts for the
 //   allocation granularity and the address space waste
@@ -40,7 +41,7 @@ extern void GetBigAllocStats(double* p64kUsed = NULL,
 //   wasting address space). VirtualAllocs for sizes 16 KB - 512 KB fragment
 //   the virtual address space, to solve that problem we use fixed sizes
 //   allocator lists implemented in BigAlloc() and BigFree()
-#define BIGALLOC_SAFETY		64	// must be at least FF_INPUT_BUFFER_PADDING_SIZE
+#define BIGALLOC_SAFETY		32	// must be at least FF_INPUT_BUFFER_PADDING_SIZE
 #ifdef _DEBUG
 #define BIGALLOC(Size) av_malloc((size_t)(Size)+BIGALLOC_SAFETY)
 #define BIGFREE(p) av_free(p)
