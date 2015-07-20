@@ -5,6 +5,7 @@ require_once( LANGUAGEFILEPATH ); // Must be here at the top of this file becaus
 <!DOCTYPE html>
 <html>
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="author" content="Oliver Pfister" />
 <?php
