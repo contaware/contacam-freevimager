@@ -25,6 +25,7 @@ extern void GetBigAllocStats(double* p64kUsed = NULL,
 							double* p512kUsed = NULL,
 							double* p1024kUsed = NULL,
 							double* p2048kUsed = NULL);
+extern void BigAllocVMMapSnapshot();
 
 // - VirtualAlloc and VirtualFree leaks are not detected by the debugger,
 //   we use the CRT heap functions for the debug build 

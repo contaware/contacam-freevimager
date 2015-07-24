@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Helpers.h"
 #include "Round.h"
+#include "uImager.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -14,6 +15,7 @@ static BIGALLOCLIST g_BigAlloc256kList;
 static BIGALLOCLIST g_BigAlloc512kList;
 static BIGALLOCLIST g_BigAlloc1024kList;
 static BIGALLOCLIST g_BigAlloc2048kList;
+static CRITICAL_SECTION g_csBigAllocVMMapSnapshot = {0};
 static CRITICAL_SECTION g_csBigAlloc64k = {0};
 static CRITICAL_SECTION g_csBigAlloc128k = {0};
 static CRITICAL_SECTION g_csBigAlloc256k = {0};
@@ -34,6 +36,7 @@ static LPBYTE g_pBigAlloc2048kBase = NULL;
 static SIZE_T g_BigAlloc2048kSize = 0;
 static BOOL g_bOneBigMemoryChunk = FALSE;
 static BOOL g_bBigAllocInited = FALSE;
+static BOOL g_bBigAllocVMMapSnapshotDone = FALSE;
 
 void InitBigAlloc()
 {
@@ -42,6 +45,7 @@ void InitBigAlloc()
 		SIZE_T i;
 
 		// Init critical sections
+		InitializeCriticalSection(&g_csBigAllocVMMapSnapshot);
 		InitializeCriticalSection(&g_csBigAlloc64k);
 		InitializeCriticalSection(&g_csBigAlloc128k);
 		InitializeCriticalSection(&g_csBigAlloc256k);
@@ -181,6 +185,7 @@ void EndBigAlloc()
 		g_BigAlloc2048kSize = 0;
 
 		// Delete critical sections
+		DeleteCriticalSection(&g_csBigAllocVMMapSnapshot);
 		DeleteCriticalSection(&g_csBigAlloc64k);
 		DeleteCriticalSection(&g_csBigAlloc128k);
 		DeleteCriticalSection(&g_csBigAlloc256k);
@@ -325,6 +330,7 @@ LPVOID BigAlloc(SIZE_T Size, CString sFileName, int nLine)
 	if (!p)
 	{
 		DWORD dwLastError = GetLastError();
+		BigAllocVMMapSnapshot();
 		LogLine(_T("VirtualAlloc(%Iu bytes) in %s(%i) returned ") + ML_STRING(1784, "Error with code %u."),
 				Size, GetShortFileName(sFileName), nLine, dwLastError);
 	}
@@ -408,6 +414,7 @@ BOOL BigFree(LPBYTE p, CString sFileName, int nLine)
 	if (!res)
 	{
 		DWORD dwLastError = GetLastError();
+		BigAllocVMMapSnapshot();
 		LogLine(_T("VirtualFree(0x%08IX) in %s(%i) returned ") + ML_STRING(1784, "Error with code %u."),
 				(SIZE_T)p, GetShortFileName(sFileName), nLine, dwLastError);
 	}
@@ -507,4 +514,44 @@ void GetBigAllocStats(	double* p64kUsed/*=NULL*/,
 			*p2048kUsed = 0.0;
 		LeaveCriticalSection(&g_csBigAlloc2048k);
 	}
+}
+
+void BigAllocVMMapSnapshot()
+{
+	TCHAR szDrive[_MAX_DRIVE];
+	TCHAR szDir[_MAX_DIR];
+	TCHAR szProgramName[MAX_PATH];
+
+	// Enter CS
+	EnterCriticalSection(&g_csBigAllocVMMapSnapshot);
+
+	// Do VM snapshot if not already done
+	if (!g_bBigAllocVMMapSnapshotDone)
+	{
+		if (GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
+		{
+			_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+			CString sVMMapExec = CString(szDrive) + CString(szDir) + _T("vmmap.exe");
+			if (IsExistingFile(sVMMapExec))
+			{
+				CString sParams(CString(_T("-p ")) + APPNAME_EXT + _T(" ") + VMMAPNAME_EXT);
+				CString sStartDirectory(CUImagerApp::GetConfigFilesDir());
+				if (!IsExistingDir(sStartDirectory))
+				{
+					if (!CreateDir(sStartDirectory))
+						ShowLastError(TRUE);
+				}
+				HANDLE hProcess = ExecApp(sVMMapExec, sParams, sStartDirectory);
+				if (hProcess)
+				{
+					CloseHandle(hProcess); // close handle to avoid ERROR_NO_SYSTEM_RESOURCES
+					hProcess = NULL;
+					g_bBigAllocVMMapSnapshotDone = TRUE;
+				}
+			}
+		}
+	}
+
+	// Leave CS
+	LeaveCriticalSection(&g_csBigAllocVMMapSnapshot);
 }

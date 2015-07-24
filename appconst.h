@@ -31,7 +31,7 @@
 #define FAQ_ONLINE_PAGE									_T("http://www.contaware.com/freevimagerfaq/")
 #define MANUAL_ONLINE_PAGE								_T("http://www.contaware.com/freevimagermanual/")
 #endif
-#define APPVERSION										_T("5.0.1beta9")
+#define APPVERSION										_T("5.0.1beta11")
 #define SLIDESHOWNAME									_T("Start.exe")
 
 // Company
@@ -43,6 +43,7 @@
 #define MASTERCONFIG_INI_NAME_EXT						_T("MasterConfig.ini")
 
 // Trace and Log files
+#define VMMAPNAME_EXT									_T("log_vmmap.mmp") // no spaces in filename please!
 #define TRACENAME_EXT									_T("log_debug.txt")
 #define LOGNAME_EXT										_T("log.txt")
 #define MAX_TRACE_FILE_SIZE								8388608 /* 8MB */
