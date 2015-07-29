@@ -23,8 +23,7 @@ extern void GetBigAllocStats(double* p64kUsed = NULL,
 							double* p128kUsed = NULL,
 							double* p256kUsed = NULL,
 							double* p512kUsed = NULL,
-							double* p1024kUsed = NULL,
-							double* p2048kUsed = NULL);
+							double* p1024kUsed = NULL);
 extern void BigAllocVMMapSnapshot();
 
 // - VirtualAlloc and VirtualFree leaks are not detected by the debugger,
