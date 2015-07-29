@@ -2752,7 +2752,7 @@ BOOL CVideoDeviceDoc::ResizeFast(CDib* pSrcDib, CDib* pDstDib)
 									pDstDib->GetWidth(),	// Destination Width
 									pDstDib->GetHeight(),	// Destination Height
 									dst_pix_fmt,			// Destination Format
-									SWS_BICUBIC,			// Interpolation
+									SWS_BICUBIC,			// Interpolation (add SWS_PRINT_INFO to debug)
 									NULL,					// No Source Filter
 									NULL,					// No Destination Filter
 									NULL);					// Param
@@ -2834,7 +2834,7 @@ BOOL CVideoDeviceDoc::SaveJpegFast(CDib* pDib, CMJPEGEncoder* pMJPEGEncoder, con
 									pDib->GetWidth(),		// Destination Width
 									pDib->GetHeight(),		// Destination Height
 									dst_pix_fmt,			// Destination Format
-									SWS_BICUBIC,			// Interpolation
+									SWS_BICUBIC,			// Interpolation (add SWS_PRINT_INFO to debug)
 									NULL,					// No Source Filter
 									NULL,					// No Destination Filter
 									NULL);					// Param
@@ -10840,7 +10840,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::InitImgConvert()
 											m_pCodecCtx->width,		// Destination Width
 											m_pCodecCtx->height,	// Destination Height
 											AV_PIX_FMT_YUV420P,		// Destination Format
-											SWS_BICUBIC,			// Interpolation
+											SWS_BICUBIC,			// Interpolation (add SWS_PRINT_INFO to debug)
 											NULL,					// No Source Filter
 											NULL,					// No Destination Filter
 											NULL);					// Param

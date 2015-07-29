@@ -725,7 +725,7 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 																pCodecCtx->width,				// Destination Width
 																pCodecCtx->height,				// Destination Height
 																pCodecCtx->pix_fmt,				// Destination Format
-																SWS_BICUBIC,					// Interpolation
+																SWS_BICUBIC,					// Interpolation (add SWS_PRINT_INFO to debug)
 																NULL,							// No Source Filter
 																NULL,							// No Destination Filter
 																NULL);							// Param

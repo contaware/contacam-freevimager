@@ -236,7 +236,7 @@ BOOL CAVDecoder::Decode(LPBITMAPINFO pSrcBMI,
 											pDstDib->GetWidth(),			// Destination Width
 											pDstDib->GetHeight(),			// Destination Height
 											dst_pix_fmt,					// Destination Format
-											SWS_BICUBIC,					// Interpolation
+											SWS_BICUBIC,					// Interpolation (add SWS_PRINT_INFO to debug)
 											NULL,							// No Source Filter
 											NULL,							// No Destination Filter
 											NULL);							// Param
