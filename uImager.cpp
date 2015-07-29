@@ -614,39 +614,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			::EnableLFHeap();
 #endif
 
-		// Reserve 128 MB of heap space for mallocs up to 512 KB
-		// (above that value malloc directly calls VirtualAlloc)
-		size_t LargestCommittedFreeBlock = ::HeapCompact((HANDLE)_get_heap_handle(), 0);
-#if defined(_DEBUG) || defined(TRACELOGFILE)
-		DWORD dwReservedMB;
-		::GetMemoryStats(NULL, NULL, &dwReservedMB);
-		TRACE(	_T("vmres is %uMB before heap reservation (size of largest committed free block in heap is %IuKB)\n"),
-				dwReservedMB,
-				(size_t)(LargestCommittedFreeBlock >> 10));
-#endif
-		void* pRes[512];
-		int nIndex;
-		for (nIndex = 0 ; nIndex < 512 ; nIndex++)
-		{
-			pRes[nIndex] = malloc(256 * 1024);	// alloc 256 KB block
-			if (pRes[nIndex] == NULL)
-				break;
-		}
-		for (nIndex = 0 ; nIndex < 512 ; nIndex++)
-		{
-			if (pRes[nIndex])
-				free(pRes[nIndex]);				// free block
-			else
-				break;
-		}
-		LargestCommittedFreeBlock = ::HeapCompact((HANDLE)_get_heap_handle(), 0);
-#if defined(_DEBUG) || defined(TRACELOGFILE)
-		::GetMemoryStats(NULL, NULL, &dwReservedMB);
-		TRACE(	_T("vmres is %uMB after heap reservation (size of largest committed free block in heap is %IuKB)\n"),
-				dwReservedMB,
-				(size_t)(LargestCommittedFreeBlock >> 10));
-#endif
-
 		// Init big memory manager
 		::InitBigAlloc();
 
