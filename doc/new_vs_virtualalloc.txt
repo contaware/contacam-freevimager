@@ -142,3 +142,50 @@ Reference
 
 https://msdn.microsoft.com/en-us/library/ms810466.aspx
 http://library.softwareverify.com/memory-fragmentation-your-worst-nightmare/
+
+
+GetDIBits, SetDIBits, CreateDIBitmap, StretchDIBits, ... need VirtualAlloc
+--------------------------------------------------------------------------
+
+The buffer pointed to by lpvBits cannot straddle multiple virtual memory 
+allocations. We have observed this on many different computers with 
+different video cards and versions of Windows. 
+
+The only safe buffer to pass to lpvBits is one that you have directly 
+allocated using a single call to VirtualAlloc, never use heap functions! 
+
+For example, the following procedure would fail:
+
+1. Call VirtualAlloc and reserve/commit a 1 megabyte buffer.
+2. Call VirtualAlloc and reserve/commit a second 1 megabyte buffer
+   with a base address that immediately follows the allocation from #1.
+3. Logically, we can now consider the base address for the first
+   allocation to point to a 2 megabyte buffer, because the two commits
+   were adjacent to each other (heap memory managers do exactly this).
+4. Call GetDIBits for a 1.5 megabyte bitmap with lpvBits base address
+   of first commit. The call fails, GetLastError() does not provide any
+   clues. It turns out that the reason it fails is because the buffer
+   pointed to by lpvBits straddles two VirtualAlloc reservations.
+   The solution is to combine the two VirtualAlloc calls into a single
+   VirtualAlloc call that reserves/commits the required buffer space.
+
+I do not know why this problem occurs, it could be defined/due to 
+any of these factors:
+
+* The GDI function has an undocumented requirement for lpvBits to not 
+  straddle multiple VirtualAlloc reserve/commits (i.e. this behavior
+  is by design). 
+
+* The GDI function has a bug where it can't handle buffers that straddle 
+  multiple memory commits when it should be able to. 
+
+* The video drivers on the system have a bug such that they impose this 
+  undocumented requirement (i.e. not Microsoft's fault). It would be
+  nice if someone at Microsoft could shed some light on this issue. 
+  
+From:
+https://msdn.microsoft.com/en-us/library/windows/desktop/dd144879%28v=vs.85%29.aspx
+https://groups.google.com/forum/#!msg/google-perftools/eb50K0c0RBo/u0uYQFa3Vm0J
+https://code.google.com/p/gperftools/issues/detail?id=120&can=1&start=100
+
+
