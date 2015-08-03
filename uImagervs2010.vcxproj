@@ -338,7 +338,7 @@
     <Link>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <AssemblyDebug>
       </AssemblyDebug>
       <ProgramDatabaseFile>Bin\ContaCamTraceLogFile\ContaCam.pdb</ProgramDatabaseFile>
