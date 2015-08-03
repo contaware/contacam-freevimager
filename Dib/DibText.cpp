@@ -7,8 +7,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define DIBSECTION_DEFAULT_BPP		24
-
 // Font Creation Example:
 /*
 	CFont Font;
@@ -41,13 +39,22 @@ BOOL CDib::AddSingleLineText(LPCTSTR szText,
 	// Bits
 	if (m_pBits)
 	{
-		// Get Display dc
+		// Get display dc
 		HDC hDC = ::GetDC(NULL);
-		ASSERT(hDC);
+		if (!hDC)
+		{
+			TRACE(_T("AddSingleLineText() failed to ::GetDC(NULL)\n"));
+			return FALSE;
+		}
 		
 		// Create mem dc 
 		HDC hTmpDC = ::CreateCompatibleDC(hDC);
-		ASSERT(hTmpDC);
+		if (!hTmpDC)
+		{
+			TRACE(_T("AddSingleLineText() failed to ::CreateCompatibleDC(0x%08X)\n"), hDC);
+			::ReleaseDC(NULL, hDC);
+			return FALSE;
+		}
 
 		// Select the font in the memory dc
 		COLORREF crOldTextColor = ::SetTextColor(hTmpDC, crTextColor);
@@ -65,8 +72,18 @@ BOOL CDib::AddSingleLineText(LPCTSTR szText,
 
 		// Calc Text Size
 		CRect rcOrigText(0,0,0,0);
-		int res = ::DrawText(hTmpDC, szText, -1, rcOrigText, DT_CALCRECT | DT_SINGLELINE | DT_NOCLIP);
-		
+		if (::DrawText(hTmpDC, szText, -1, rcOrigText, DT_CALCRECT | DT_SINGLELINE | DT_NOCLIP) == 0)
+		{
+			TRACE(_T("AddSingleLineText() failed to calculate the rectangle of %s with ::DrawText()\n"), szText);
+			::SelectObject(hTmpDC, hOldFont);
+			::SetBkMode(hTmpDC, nOldBkgMode);
+			::SetBkColor(hTmpDC, crOldBkgColor);
+			::SetTextColor(hTmpDC, crOldTextColor);
+			::DeleteDC(hTmpDC);
+			::ReleaseDC(NULL, hDC);
+			return FALSE;
+		}
+
 		// 4 pixel alignment for YVU9 and YUV9 formats
 		if (GetCompression() == FCC('YVU9') ||
 			GetCompression() == FCC('YUV9'))
@@ -99,6 +116,17 @@ BOOL CDib::AddSingleLineText(LPCTSTR szText,
 			m_pBMI->bmiHeader.biCompression == BI_BITFIELDS)
 		{
 			pBMI = (LPBITMAPINFO)new BYTE[GetBMISize()];
+			if (!pBMI)
+			{
+				TRACE(_T("AddSingleLineText() failed to allocate %d bytes for BITMAPINFO\n"), GetBMISize());
+				::SelectObject(hTmpDC, hOldFont);
+				::SetBkMode(hTmpDC, nOldBkgMode);
+				::SetBkColor(hTmpDC, crOldBkgColor);
+				::SetTextColor(hTmpDC, crOldTextColor);
+				::DeleteDC(hTmpDC);
+				::ReleaseDC(NULL, hDC);
+				return FALSE;
+			}
 			memcpy(pBMI, m_pBMI, GetBMISize());
 			uiDIBSrcScanLineSize = DWALIGNEDWIDTHBYTES(nTextWidth * GetBitCount());
 			uiDIBDstScanLineSize = DWALIGNEDWIDTHBYTES(GetWidth() * GetBitCount());
@@ -106,11 +134,22 @@ BOOL CDib::AddSingleLineText(LPCTSTR szText,
 		else
 		{
 			pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER)];
+			if (!pBMI)
+			{
+				TRACE(_T("AddSingleLineText() failed to allocate %d bytes for BITMAPINFOHEADER\n"), sizeof(BITMAPINFOHEADER));
+				::SelectObject(hTmpDC, hOldFont);
+				::SetBkMode(hTmpDC, nOldBkgMode);
+				::SetBkColor(hTmpDC, crOldBkgColor);
+				::SetTextColor(hTmpDC, crOldTextColor);
+				::DeleteDC(hTmpDC);
+				::ReleaseDC(NULL, hDC);
+				return FALSE;
+			}
 			memset(pBMI, 0, sizeof(BITMAPINFOHEADER));
 			pBMI->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 			pBMI->bmiHeader.biCompression = BI_RGB;
 			pBMI->bmiHeader.biPlanes = 1;
-			pBMI->bmiHeader.biBitCount = DIBSECTION_DEFAULT_BPP;
+			pBMI->bmiHeader.biBitCount = 32;
 			uiDIBSrcScanLineSize = ::CalcYUVStride(m_pBMI->bmiHeader.biCompression, nTextWidth);
 			uiDIBDstScanLineSize = ::CalcYUVStride(m_pBMI->bmiHeader.biCompression, GetWidth());
 		}
@@ -125,13 +164,15 @@ BOOL CDib::AddSingleLineText(LPCTSTR szText,
 												NULL, 0);
 		if (!hTmpDib)
 		{
-			delete [] pBMI;
+			DWORD dwLastError = ::GetLastError();
+			TRACE(_T("AddSingleLineText() failed to ::CreateDIBSection(), returned bits pointer is 0x%08IX and error code is 0x%08X\n"), (size_t)pSrcBits, dwLastError);
 			::SelectObject(hTmpDC, hOldFont);
 			::SetBkMode(hTmpDC, nOldBkgMode);
 			::SetBkColor(hTmpDC, crOldBkgColor);
 			::SetTextColor(hTmpDC, crOldTextColor);
 			::DeleteDC(hTmpDC);
 			::ReleaseDC(NULL, hDC);
+			delete [] pBMI;
 			return FALSE;
 		}
 		HGDIOBJ hOldBitmap = ::SelectObject(hTmpDC, hTmpDib);
@@ -220,26 +261,26 @@ BOOL CDib::AddSingleLineText(LPCTSTR szText,
 		if (rcText.bottom > Pos.bottom)
 			rcText.bottom = Pos.bottom;
 
-		// Copy Background if in Transparent Mode
+		// If in Transparent Mode copy image background to dibsection bits
 		if (nBkgMode == TRANSPARENT)
 		{
 			if (m_pBMI->bmiHeader.biCompression == BI_RGB ||
 				m_pBMI->bmiHeader.biCompression == BI_BITFIELDS)
 			{
 				VERIFY(CopyBits(m_pBMI->bmiHeader.biCompression,// FourCC
-									GetBitCount(),					// Bit Count
-									0,								// Dst X Offset
-									0,								// Dst Y Offset
-									rcText.left,					// Src X Offset
-									GetHeight() - rcText.bottom,	// Src Y Offset
-									rcText.Width(),					// Width to Copy
-									rcText.Height(),				// Height to Copy
-									rcText.Height(),				// Dst Height
-									GetHeight(),					// Src Height
-									pSrcBits,						// Dst Bits
-									m_pBits,						// Src Bits
-									uiDIBSrcScanLineSize,			// Dst Scan Line Size in Bytes
-									uiDIBDstScanLineSize));			// Src Scan Line Size in Bytes
+								GetBitCount(),					// Bit Count
+								0,								// Dst X Offset
+								0,								// Dst Y Offset
+								rcText.left,					// Src X Offset
+								GetHeight() - rcText.bottom,	// Src Y Offset
+								rcText.Width(),					// Width to Copy
+								rcText.Height(),				// Height to Copy
+								rcText.Height(),				// Dst Height
+								GetHeight(),					// Src Height
+								pSrcBits,						// Dst Bits
+								m_pBits,						// Src Bits
+								uiDIBSrcScanLineSize,			// Dst Scan Line Size in Bytes
+								uiDIBDstScanLineSize));			// Src Scan Line Size in Bytes
 			}
 			else 
 			{
@@ -263,7 +304,7 @@ BOOL CDib::AddSingleLineText(LPCTSTR szText,
 									uiDIBSrcScanLineSize,			// Dst Scan Line Size in Bytes
 									uiDIBDstScanLineSize))			// Src Scan Line Size in Bytes
 					{
-						if (Dib.Decompress(DIBSECTION_DEFAULT_BPP))
+						if (Dib.Decompress(pBMI->bmiHeader.biBitCount))
 						{
 							LPBYTE ps = Dib.GetBits();
 							LPBYTE pd = pSrcBits;
@@ -279,20 +320,23 @@ BOOL CDib::AddSingleLineText(LPCTSTR szText,
 				}
 			}
 		}
+		// Fill dibsection bits because text rect may be bigger
+		// than the calculated one (do to the even text size)
 		else
 		{
-			// Necessary because text rect may be bigger than the
-			// calculated one do to the even text size!
 			HBRUSH hBrush = ::CreateSolidBrush(crBkgColor);
-			ASSERT(hBrush);
-			VERIFY(::FillRect(	hTmpDC,
-								&rcOrigText,
-								hBrush));
-			::DeleteObject(hBrush);
+			if (hBrush)
+			{
+				VERIFY(::FillRect(hTmpDC, &rcOrigText, hBrush));
+				::DeleteObject(hBrush);
+			}
 		}
 
 		// Draw Text
-		res = ::DrawText(hTmpDC, szText, -1, rcOrigText, DT_LEFT | DT_TOP | DT_SINGLELINE | DT_NOCLIP);
+		::DrawText(hTmpDC, szText, -1, rcOrigText, DT_LEFT | DT_TOP | DT_SINGLELINE | DT_NOCLIP);
+
+		// Flush GDI drawing before using the dib section bits directly
+		::GdiFlush();
 
 		// Copy Text To Bitmap Bits
 		if (m_pBMI->bmiHeader.biCompression == BI_RGB ||
@@ -350,14 +394,24 @@ BOOL CDib::AddSingleLineText(LPCTSTR szText,
 		return TRUE;
 	}
 	// Dib Section
-	else
+	else if (m_hDibSection)
 	{
-		if (!m_hDibSection)
-			return FALSE;
-
-		// Create memory dc
+		// Get display dc
 		HDC hDC = ::GetDC(NULL);
+		if (!hDC)
+		{
+			TRACE(_T("AddSingleLineText() failed to ::GetDC(NULL)\n"));
+			return FALSE;
+		}
+		
+		// Create mem dc 
 		HDC hTmpDC = ::CreateCompatibleDC(hDC);
+		if (!hTmpDC)
+		{
+			TRACE(_T("AddSingleLineText() failed to ::CreateCompatibleDC(0x%08X)\n"), hDC);
+			::ReleaseDC(NULL, hDC);
+			return FALSE;
+		}
 
 		// Select dibsection into the temp memory dc
 		HGDIOBJ hOldBitmap = ::SelectObject(hTmpDC, m_hDibSection);
@@ -372,11 +426,12 @@ BOOL CDib::AddSingleLineText(LPCTSTR szText,
 			hFont = (HFONT)::GetStockObject(ANSI_VAR_FONT);
 			hOldFont = (HFONT)::SelectObject(hTmpDC, hFont);
 		}
+
 		// Draw the text to the temp memory dc
 		COLORREF crOldTextColor = ::SetTextColor(hTmpDC, crTextColor);
 		COLORREF crOldBkgColor = ::SetBkColor(hTmpDC, crBkgColor);
 		int nOldBkgMode = ::SetBkMode(hTmpDC, nBkgMode);
-		int nHeightText = ::DrawText(hTmpDC, szText, -1, Pos, Align | DT_SINGLELINE | DT_NOCLIP);
+		::DrawText(hTmpDC, szText, -1, Pos, Align | DT_SINGLELINE | DT_NOCLIP);
 
 		// Cleanup 
 		::SelectObject(hTmpDC, hOldFont);
@@ -389,4 +444,6 @@ BOOL CDib::AddSingleLineText(LPCTSTR szText,
 
 		return TRUE;
 	}
+	else
+		return FALSE;
 }
