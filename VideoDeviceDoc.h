@@ -927,10 +927,9 @@ public:
 	static BOOL MicroApacheMakePasswordFile(BOOL bDigest, const CString& sAreaname, const CString& sUsername, const CString& sPassword);
 	static BOOL MicroApacheIsPortUsed(int nPort);
 	static BOOL MicroApacheInitStart();
-	static BOOL MicroApacheWaitStartDone();
+	static BOOL MicroApacheWaitStartDone(DWORD dwTimeout);
 	static BOOL MicroApacheWaitCanConnect();
 	static BOOL MicroApacheShutdown();
-	static int MicroApacheReload(); // Return Values: 1=OK, 0=Failed to stop the web server, -1=Failed to start the web server
 	
 	// Vlm
 	static CString VlmGetConfigFileName();

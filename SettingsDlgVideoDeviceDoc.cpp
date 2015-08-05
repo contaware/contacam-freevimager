@@ -221,6 +221,15 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 		pApp->m_sMicroApachePassword != m_sMicroApachePassword		||
 		m_sMicroApacheDocRoot.CompareNoCase(m_sMicroApacheDocRootOld) != 0)
 	{
+		// Stop Micro Apache
+		if (pApp->m_bStartMicroApache && !CVideoDeviceDoc::MicroApacheShutdown())
+		{
+			EndWaitCursor();
+			::AfxMessageBox(ML_STRING(1474, "Failed to stop the web server"),
+							MB_ICONSTOP);
+			BeginWaitCursor();
+		}
+
 		// Update vars
 		pApp->m_bStartMicroApache = m_bStartMicroApache;
 		pApp->m_nMicroApachePort = m_nMicroApachePort;
@@ -230,18 +239,19 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 		pApp->m_sMicroApachePassword = m_sMicroApachePassword;
 		pApp->m_sMicroApacheDocRoot = m_sMicroApacheDocRoot;
 
-		// Stop, update and eventually restart server
-		int nRet = CVideoDeviceDoc::MicroApacheReload();
-		if (nRet <= 0)
+		// Update / create doc root index.php and config file for microapache
+		CVideoDeviceDoc::MicroApacheUpdateMainFiles();
+
+		// Start Micro Apache
+		if (m_bStartMicroApache													&&
+			!(CVideoDeviceDoc::MicroApacheInitStart()							&&
+			CVideoDeviceDoc::MicroApacheWaitStartDone(MICROAPACHE_TIMEOUT_MS)	&&
+			CVideoDeviceDoc::MicroApacheWaitCanConnect()))
 		{
 			EndWaitCursor();
-			if (nRet == 0)
-				::AfxMessageBox(ML_STRING(1474, "Failed to stop the web server"), MB_ICONSTOP);
-			else
-			{
-				::AfxMessageBox(ML_STRING(1475, "Failed to start the web server") + _T("\n") + 
-								ML_STRING(1476, "(change the Port number to an unused one)"), MB_ICONSTOP);
-			}
+			::AfxMessageBox(ML_STRING(1475, "Failed to start the web server") + _T("\n") + 
+							ML_STRING(1476, "(change the Port number to an unused one)"),
+							MB_ICONSTOP);
 			BeginWaitCursor();
 		}
 	}

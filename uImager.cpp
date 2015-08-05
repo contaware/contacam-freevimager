@@ -133,7 +133,6 @@ CUImagerApp::CUImagerApp()
 	m_dwAutostartDelayMs = DEFAULT_AUTOSTART_DELAY_MS;
 	m_dwFirstStartDelayMs = DEFAULT_FIRSTSTART_DELAY_MS;
 	m_bStartMicroApache = FALSE;
-	m_bMicroApacheStarted = FALSE;
 	m_nMicroApachePort = MICROAPACHE_DEFAULT_PORT;
 	m_bMicroApacheDigestAuth = TRUE;
 	m_sMicroApacheAreaname = MICROAPACHE_DEFAULT_AUTH_AREANAME;
@@ -866,19 +865,28 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			// Auto-starts
 			if (!m_bForceSeparateInstance)
 			{
+				// Log the starting of the application
+				if (m_bServiceProcess)
+					::LogLine(_T("%s"), ML_STRING(1764, "Starting") + _T(" ") + APPNAME_NOEXT + _T(" (Service Mode)"));
+				else
+					::LogLine(_T("%s"), ML_STRING(1764, "Starting") + _T(" ") + APPNAME_NOEXT);
+
 				// Update / create doc root index.php and config file for microapache
 				CVideoDeviceDoc::MicroApacheUpdateMainFiles();
 
 				// Start Micro Apache
-				if (m_bStartMicroApache)
+				// Note: make sure the web server is running because the below devices
+				//       autorun which can connect to localhost's push.php or poll.php
+				//       and the browser autostart need it
+				if (m_bStartMicroApache														&&
+					!(CVideoDeviceDoc::MicroApacheInitStart()								&&
+					CVideoDeviceDoc::MicroApacheWaitStartDone(	m_bServiceProcess ?
+																MICROAPACHE_SERVICEPROCESS_TIMEOUT_MS :
+																MICROAPACHE_TIMEOUT_MS)		&&
+					CVideoDeviceDoc::MicroApacheWaitCanConnect()))
 				{
-					if (CVideoDeviceDoc::MicroApacheInitStart() && CVideoDeviceDoc::MicroApacheWaitStartDone())
-						m_bMicroApacheStarted = TRUE;
-					else
-					{
-						::LogLine(_T("%s"), ML_STRING(1475, "Failed to start the web server") + _T(" ") +
-											ML_STRING(1476, "(change the Port number to an unused one)"));
-					}
+					::LogLine(_T("%s"), ML_STRING(1475, "Failed to start the web server") + _T(" ") +
+										ML_STRING(1476, "(change the Port number to an unused one)"));
 				}
 
 				// Autorun Devices
@@ -887,27 +895,18 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 				// Start Browser
 				if (m_bBrowserAutostart && !m_bServiceProcess)
 				{
-					BOOL bDoStartBrowser = TRUE;
-					if (m_bStartMicroApache)
-					{
-						bDoStartBrowser =	m_bMicroApacheStarted &&
-											CVideoDeviceDoc::MicroApacheWaitCanConnect();
-					}
-					if (bDoStartBrowser)
-					{
-						CString sUrl, sPort;
-						sPort.Format(_T("%d"), m_nMicroApachePort);
-						if (sPort != _T("80"))
-							sUrl = _T("http://localhost:") + sPort + _T("/");
-						else
-							sUrl = _T("http://localhost/");
-						::ShellExecute(	NULL,
-										_T("open"),
-										sUrl,
-										NULL,
-										NULL,
-										SW_SHOWNORMAL);
-					}
+					CString sUrl, sPort;
+					sPort.Format(_T("%d"), m_nMicroApachePort);
+					if (sPort != _T("80"))
+						sUrl = _T("http://localhost:") + sPort + _T("/");
+					else
+						sUrl = _T("http://localhost/");
+					::ShellExecute(	NULL,
+									_T("open"),
+									sUrl,
+									NULL,
+									NULL,
+									SW_SHOWNORMAL);
 				}
 			}
 #endif
@@ -1737,10 +1736,12 @@ void CUImagerApp::SaveOnEndSession()
 		}
 	}
 	CVideoDeviceDoc::VlmShutdown();
-	if (m_bMicroApacheStarted)
+	if (m_bStartMicroApache)
 		CVideoDeviceDoc::MicroApacheShutdown();
 	if (!m_bServiceProcess)
 		BrowserAutostart();
+	if (!m_bForceSeparateInstance)
+		::LogLine(_T("%s"), ML_STRING(1566, "Closing") + _T(" ") + APPNAME_NOEXT + _T(" (Session End)"));
 	if (m_bDoStartFromService && GetContaCamServiceState() == CONTACAMSERVICE_RUNNING)
 		ControlContaCamService(CONTACAMSERVICE_CONTROL_START_PROC);
 #endif
@@ -2086,12 +2087,16 @@ int CUImagerApp::ExitInstance()
 	CVideoDeviceDoc::VlmShutdown();
 
 	// Micro Apache shutdown
-	if (m_bMicroApacheStarted)
+	if (m_bStartMicroApache)
 		CVideoDeviceDoc::MicroApacheShutdown();
 
 	// Browser autostart
 	if (!m_bServiceProcess)
 		BrowserAutostart();
+
+	// Log the stopping of the application
+	if (!m_bForceSeparateInstance)
+		::LogLine(_T("%s"), ML_STRING(1566, "Closing") + _T(" ") + APPNAME_NOEXT);
 #endif
 
 	// Close The Application Mutex

@@ -6272,14 +6272,14 @@ BOOL CVideoDeviceDoc::MicroApacheInitStart()
 	return ::ExecHiddenApp(sMicroapacheStartFile, sParams);
 }
 
-BOOL CVideoDeviceDoc::MicroApacheWaitStartDone()
+BOOL CVideoDeviceDoc::MicroApacheWaitStartDone(DWORD dwTimeout)
 {
-	DWORD dwSleep = 0U;
+	DWORD dwElapsedMs = 0U;
 	while (::EnumKillProcByName(MICROAPACHE_FILENAME) < MICROAPACHE_NUM_PROCESS)
 	{
-		dwSleep += MICROAPACHE_WAITTIME_MS;
+		dwElapsedMs += MICROAPACHE_WAITTIME_MS;
 		::Sleep(MICROAPACHE_WAITTIME_MS);
-		if (dwSleep >= MICROAPACHE_TIMEOUT_MS)
+		if (dwElapsedMs >= dwTimeout)
 			return FALSE;
 	}
 	return TRUE;
@@ -6400,12 +6400,12 @@ BOOL CVideoDeviceDoc::MicroApacheShutdown()
 
 	// Wait a max of MICROAPACHE_TIMEOUT_MS
 	res = TRUE;
-	DWORD dwSleep = 0U;
+	DWORD dwElapsedMs = 0U;
 	while (::EnumKillProcByName(MICROAPACHE_FILENAME) > 0)
 	{
-		dwSleep += MICROAPACHE_WAITTIME_MS;
+		dwElapsedMs += MICROAPACHE_WAITTIME_MS;
 		::Sleep(MICROAPACHE_WAITTIME_MS);
-		if (dwSleep >= MICROAPACHE_TIMEOUT_MS)
+		if (dwElapsedMs >= MICROAPACHE_TIMEOUT_MS)
 		{
 			res = FALSE;
 			break;
@@ -6417,12 +6417,12 @@ BOOL CVideoDeviceDoc::MicroApacheShutdown()
 	{
 		::EnumKillProcByName(MICROAPACHE_FILENAME, TRUE);
 		res = TRUE;
-		dwSleep = 0U;
+		dwElapsedMs = 0U;
 		while (::EnumKillProcByName(MICROAPACHE_FILENAME) > 0)
 		{
-			dwSleep += MICROAPACHE_WAITTIME_MS;
+			dwElapsedMs += MICROAPACHE_WAITTIME_MS;
 			::Sleep(MICROAPACHE_WAITTIME_MS);
-			if (dwSleep >= MICROAPACHE_TIMEOUT_MS)
+			if (dwElapsedMs >= MICROAPACHE_TIMEOUT_MS)
 			{
 				res = FALSE;
 				break;
@@ -6434,38 +6434,6 @@ BOOL CVideoDeviceDoc::MicroApacheShutdown()
 	::DeleteFile(MicroApacheGetPidFileName());
 
 	return res;
-}
-
-// Return Values
-// 1  : OK
-// 0  : Failed to stop the web server
-// -1 : Failed to start the web server
-int CVideoDeviceDoc::MicroApacheReload()
-{
-	CUImagerApp* pApp = (CUImagerApp*)::AfxGetApp();
-	BOOL bOk = TRUE;
-	if (pApp->m_bMicroApacheStarted)
-	{
-		if (bOk = MicroApacheShutdown())
-			pApp->m_bMicroApacheStarted = FALSE;
-	}
-	if (!bOk)
-		return 0;
-	else
-	{
-		// Update / create doc root index.php and config file for microapache
-		MicroApacheUpdateMainFiles();
-
-		// Start server
-		if (pApp->m_bStartMicroApache)
-		{
-			if (MicroApacheInitStart() && MicroApacheWaitStartDone())
-				pApp->m_bMicroApacheStarted = TRUE;
-			else
-				return -1;
-		}
-	}
-	return 1;
 }
 
 CString CVideoDeviceDoc::VlmGetConfigFileName()

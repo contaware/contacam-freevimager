@@ -27,6 +27,7 @@
 #define MICROAPACHE_PWTOOL_RELPATH						(CString(MICROAPACHE_DIR) + CString(_T("\\")) + CString(MICROAPACHE_PWTOOL_FILENAME))
 #define MICROAPACHE_NUM_PROCESS							2
 #define MICROAPACHE_TIMEOUT_MS							8000U
+#define MICROAPACHE_SERVICEPROCESS_TIMEOUT_MS			30000U
 #define MICROAPACHE_WAITTIME_MS							100U
 #define MICROAPACHE_CANCONNECT_ATTEMPTS					10
 #define MICROAPACHE_PREFERRED_PORT						80
@@ -643,9 +644,6 @@ public:
 
 	// Start the Micro Apache server
 	BOOL m_bStartMicroApache;
-
-	// Micro Apache Server has been started
-	BOOL m_bMicroApacheStarted;
 
 	// Micro Apache Document Root
 	CString m_sMicroApacheDocRoot;
