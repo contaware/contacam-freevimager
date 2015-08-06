@@ -885,8 +885,11 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 																MICROAPACHE_TIMEOUT_MS)		&&
 					CVideoDeviceDoc::MicroApacheWaitCanConnect()))
 				{
-					::LogLine(_T("%s"), ML_STRING(1475, "Failed to start the web server") + _T(" ") +
-										ML_STRING(1476, "(change the Port number to an unused one)"));
+					CString sMsg(	ML_STRING(1475, "Failed to start the web server") + _T(" ") +
+									ML_STRING(1476, "(change the Port number to an unused one)"));
+					if (!m_bServiceProcess)
+						::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, sMsg, 0);
+					::LogLine(_T("%s"), sMsg);
 				}
 
 				// Autorun Devices
