@@ -2258,14 +2258,14 @@ void CUImagerApp::AutorunVideoDevices(BOOL bStartDelay/*=TRUE*/)
 				{
 					if (CVideoDeviceDoc::GetHostFromDevicePathName(sDevRegistry) != _T(""))
 					{
-						DWORD dwCurrentStartupDelay = ::GetTickCount() - dwInitTickCount;
-						DWORD dwWantedNetworkDeviceStartupDelay = (dwOpenNetworkDeviceCount + 1U) * m_dwAutostartDelayMs;
-						DWORD dwConnectDelay;
-						if (dwWantedNetworkDeviceStartupDelay > dwCurrentStartupDelay)
-							dwConnectDelay = dwWantedNetworkDeviceStartupDelay - dwCurrentStartupDelay;
+						DWORD dwCurrentStartupDelayMs = ::GetTickCount() - dwInitTickCount;
+						DWORD dwWantedNetworkDeviceStartupDelayMs = (dwOpenNetworkDeviceCount + 1U) * m_dwAutostartDelayMs;
+						DWORD dwConnectDelayMs;
+						if (dwWantedNetworkDeviceStartupDelayMs > dwCurrentStartupDelayMs)
+							dwConnectDelayMs = dwWantedNetworkDeviceStartupDelayMs - dwCurrentStartupDelayMs;
 						else
-							dwConnectDelay = 0U;
-						if (!pDoc->OpenGetVideo(sDevRegistry, dwConnectDelay))
+							dwConnectDelayMs = 0U;
+						if (!pDoc->OpenGetVideo(sDevRegistry, dwConnectDelayMs))
 							pDoc->CloseDocument();
 						else
 							dwOpenNetworkDeviceCount++;
