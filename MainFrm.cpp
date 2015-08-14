@@ -1055,7 +1055,7 @@ LONG CMainFrame::OnThreadSafeConnectErr(WPARAM wparam, LPARAM lparam)
 	{
 		if (CVideoDeviceDoc::AutorunGetDeviceKey(*pDevicePathName) != _T(""))
 		{
-			CConnectErrMsgBoxDlg dlg(*pMsg);
+			CConnectErrMsgBoxDlg dlg(*pMsg, this);
 			dlg.DoModal();
 			if (!dlg.m_bAutorun)
 				CVideoDeviceDoc::AutorunRemoveDevice(*pDevicePathName);
