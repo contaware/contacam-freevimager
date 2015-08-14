@@ -1165,10 +1165,12 @@ void CVideoDeviceChildFrame::OnClose()
 		{
 			CString sMsg, t;
 			sMsg.Format(_T("%s forced stopping"), pDoc->GetAssignedDeviceName());
-			if (pDoc->m_HttpGetFrameThread.IsAlive())
-				t += _T(", http get frame thread still alive");
-			if (pDoc->m_pGetFrameNetCom && !pDoc->m_pGetFrameNetCom->IsShutdown())
-				t += _T(", netcom get frame threads still alive");
+			if (pDoc->m_HttpThread.IsAlive())
+				t += _T(", http thread still alive");
+			if (pDoc->m_pVideoNetCom && !pDoc->m_pVideoNetCom->IsShutdown())
+				t += _T(", netcom video threads still alive");
+			if (pDoc->m_pAudioNetCom && !pDoc->m_pAudioNetCom->IsShutdown())
+				t += _T(", netcom audio threads still alive");
 			if (pDoc->m_DeleteThread.IsAlive())
 				t += _T(", delete thread still alive");
 			if (pDoc->m_CaptureAudioThread.IsAlive())
@@ -1231,7 +1233,7 @@ void CVideoDeviceChildFrame::StartShutdown2()
 	m_bShutdown2Started = TRUE;
 
 	// Start killing threads
-	pDoc->m_HttpGetFrameThread.Kill_NoBlocking();
+	pDoc->m_HttpThread.Kill_NoBlocking();
 	pDoc->m_DeleteThread.Kill_NoBlocking();
 	pDoc->m_CaptureAudioThread.Kill_NoBlocking();
 	pDoc->m_SaveFrameListThread.Kill_NoBlocking();
@@ -1253,11 +1255,13 @@ void CVideoDeviceChildFrame::StartShutdown3()
 	m_bShutdown3Started = TRUE;
 
 	// Start connections shutdown
-	// (this must happen when m_HttpGetFrameThread is not running
-	// anymore, because inside this thread GetFrame connections
+	// (this must happen when m_HttpThread is not running
+	// anymore, because inside this thread http connections
 	// can be established)
-	if (pDoc->m_pGetFrameNetCom)
-		pDoc->m_pGetFrameNetCom->ShutdownConnection_NoBlocking();
+	if (pDoc->m_pVideoNetCom)
+		pDoc->m_pVideoNetCom->ShutdownConnection_NoBlocking();
+	if (pDoc->m_pAudioNetCom)
+		pDoc->m_pAudioNetCom->ShutdownConnection_NoBlocking();
 }
 
 void CVideoDeviceChildFrame::EndShutdown()
@@ -1267,15 +1271,24 @@ void CVideoDeviceChildFrame::EndShutdown()
 	CVideoDeviceDoc* pDoc = pView->GetDocument();
 	ASSERT_VALID(pDoc);
 
-	// Network Client Clean-Up
-	if (pDoc->m_pGetFrameNetCom)
+	// Network Clients Clean-Up
+	if (pDoc->m_pVideoNetCom)
 	{
 		// This calls Close() which is not locking indefinitely,
 		// but attention the destructors of the message threads
 		// (both base class and derived class destructors) call
 		// Kill() which locks indefinitely freezing the interface
-		delete pDoc->m_pGetFrameNetCom;
-		pDoc->m_pGetFrameNetCom = NULL;
+		delete pDoc->m_pVideoNetCom;
+		pDoc->m_pVideoNetCom = NULL;
+	}
+	if (pDoc->m_pAudioNetCom)
+	{
+		// This calls Close() which is not locking indefinitely,
+		// but attention the destructors of the message threads
+		// (both base class and derived class destructors) call
+		// Kill() which locks indefinitely freezing the interface
+		delete pDoc->m_pAudioNetCom;
+		pDoc->m_pAudioNetCom = NULL;
 	}
 
 	// Delete DirectShow Capture Object
@@ -1328,7 +1341,7 @@ BOOL CVideoDeviceChildFrame::IsShutdown2Done()
 	ASSERT_VALID(pDoc);
 
 	// Check whether all Threads are dead
-	if (!pDoc->m_HttpGetFrameThread.IsAlive()		&&
+	if (!pDoc->m_HttpThread.IsAlive()				&&
 		!pDoc->m_DeleteThread.IsAlive()				&&
 		!pDoc->m_CaptureAudioThread.IsAlive()		&&
 		!pDoc->m_SaveFrameListThread.IsAlive()		&&
@@ -1347,7 +1360,9 @@ BOOL CVideoDeviceChildFrame::IsShutdown3Done()
 	ASSERT_VALID(pDoc);
 
 	// Check whether the connections have been shutdown
-	if (pDoc->m_pGetFrameNetCom ? pDoc->m_pGetFrameNetCom->IsShutdown() : TRUE)
+	BOOL bVideoShutdown = pDoc->m_pVideoNetCom ? pDoc->m_pVideoNetCom->IsShutdown() : TRUE;
+	BOOL bAudioShutdown = pDoc->m_pAudioNetCom ? pDoc->m_pAudioNetCom->IsShutdown() : TRUE;
+	if (bVideoShutdown && bAudioShutdown)
 		return TRUE;
 	else
 		return FALSE;

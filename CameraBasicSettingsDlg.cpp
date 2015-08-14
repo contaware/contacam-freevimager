@@ -799,9 +799,14 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	// Stop delete thread
 	m_pDoc->m_DeleteThread.Kill();
 
-	// Stop audio thread
+	// Stop audio
 	if (m_pDoc->m_bCaptureAudio)
-		m_pDoc->m_CaptureAudioThread.Kill();
+	{
+		if (m_pDoc->m_pAudioNetCom)
+			m_pDoc->m_pAudioNetCom->Close();
+		else
+			m_pDoc->m_CaptureAudioThread.Kill();
+	}
 
 	// Make sure snapshot threads are stopped
 	// (at this point the process frame is stopped but
@@ -1080,6 +1085,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 		case 0  : m_pDoc->m_sAVRecFileExt = _T(".mp4"); break;
 		default : m_pDoc->m_sAVRecFileExt = _T(".avi"); break;
 	}
+	m_pDoc->UpdateDstWaveFormat(); // this updates m_pDstWaveFormat from m_sAVRecFileExt
 
 	// Maximum camera folder size
 	double dMaxCameraFolderSizeGB = _tcstod(m_sMaxCameraFolderSizeGB.GetBuffer(0), NULL);
@@ -1097,9 +1103,14 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	else if (m_pDoc->m_nMinDiskFreePermillion > 1000000)
 		m_pDoc->m_nMinDiskFreePermillion = 1000000;
 
-	// Restart audio thread
+	// Restart audio
 	if (m_pDoc->m_bCaptureAudio)
-		m_pDoc->m_CaptureAudioThread.Start();
+	{
+		if (m_pDoc->m_pAudioNetCom)
+			m_pDoc->m_HttpThread.SetEventAudioConnect();
+		else
+			m_pDoc->m_CaptureAudioThread.Start();
+	}
 
 	// Restart delete thread
 	m_pDoc->m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);

@@ -324,7 +324,7 @@ BOOL CGeneralPage::OnInitDialog()
 		else
 			m_SpinFrameRate.SetRange(MIN_FRAMERATE, MAX_FRAMERATE);
 	}
-	else if (m_pDoc->m_pGetFrameNetCom)
+	else if (m_pDoc->m_pVideoNetCom)
 	{
 		// Axis and Edimax support only integer values starting at 1 fps
 		if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::AXIS_SP ||
@@ -390,7 +390,7 @@ BOOL CGeneralPage::OnInitDialog()
 	CButton* pButton = (CButton*)GetDlgItem(IDC_VIDEO_FORMAT);
 	if ((m_pDoc->m_pDxCapture && m_pDoc->m_pDxCapture->HasFormats())	||
 		(m_pDoc->m_pDxCapture && m_pDoc->m_pDxCapture->IsDV() && m_pDoc->m_pDxCapture->HasDVFormatDlg()) ||
-		(m_pDoc->m_pGetFrameNetCom))
+		(m_pDoc->m_pVideoNetCom))
 		pButton->EnableWindow(TRUE);
 	else
 		pButton->EnableWindow(FALSE);
@@ -429,6 +429,20 @@ BOOL CGeneralPage::OnInitDialog()
 		else
 			pButton->EnableWindow(FALSE);
 	}
+	else
+		pButton->EnableWindow(FALSE);
+
+	// Enable Audio Source Button?
+	pButton = (CButton*)GetDlgItem(IDC_AUDIO_INPUT);
+	if (!m_pDoc->m_pAudioNetCom)
+		pButton->EnableWindow(TRUE);
+	else
+		pButton->EnableWindow(FALSE);
+
+	// Enable Audio Mixer Buttom?
+	pButton = (CButton*)GetDlgItem(IDC_AUDIO_MIXER);
+	if (!m_pDoc->m_pAudioNetCom)
+		pButton->EnableWindow(TRUE);
 	else
 		pButton->EnableWindow(FALSE);
 
@@ -513,9 +527,26 @@ void CGeneralPage::OnRecAudio()
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_REC_AUDIO);
 	m_pDoc->m_bCaptureAudio = (pCheck->GetCheck() == 1);
 	if (m_pDoc->m_bCaptureAudio)
-		m_pDoc->m_CaptureAudioThread.Start();
+	{
+		if (m_pDoc->m_pAudioNetCom)
+		{
+			m_pDoc->m_pHttpAudioParseProcess->m_bTryConnecting = TRUE;
+			m_pDoc->m_HttpThread.SetEventAudioConnect();
+			::Sleep(200); // wait to let CHttpThread process the event
+		}
+		else
+			m_pDoc->m_CaptureAudioThread.Start();
+	}
 	else
-		m_pDoc->m_CaptureAudioThread.Kill();
+	{
+		if (m_pDoc->m_pAudioNetCom)
+		{
+			m_pDoc->m_pAudioNetCom->ShutdownConnection_NoBlocking();
+			::Sleep(200); // wait to let CMsgThread process the event
+		}
+		else
+			m_pDoc->m_CaptureAudioThread.Kill();
+	}
 
 	// Restart Save Frame List Thread
 	m_pDoc->m_SaveFrameListThread.Start();
@@ -583,8 +614,8 @@ void CGeneralPage::OnTimer(UINT nIDEvent)
 		// Enable Frame Rate Edit Control for Client Poll devices
 		CString sFrameRate;
 		pEdit = (CEdit*)GetDlgItem(IDC_FRAMERATE);
-		if (m_pDoc->m_pGetFrameNetCom &&
-			m_pDoc->m_pHttpGetFrameParseProcess->m_FormatType == CVideoDeviceDoc::CHttpGetFrameParseProcess::FORMATJPEG &&
+		if (m_pDoc->m_pVideoNetCom &&
+			m_pDoc->m_pHttpVideoParseProcess->m_FormatType == CVideoDeviceDoc::CHttpParseProcess::FORMATVIDEO_JPEG &&
 			!pEdit->IsWindowEnabled())
 		{
 			m_SpinFrameRate.SetRange(MIN_FRAMERATE, MAX_FRAMERATE);

@@ -220,12 +220,12 @@ public:
 		FILES_TO_UPLOAD_VIDEO_GIF	= 2
 	};
 
-	// The Http Networking Get Frame Parser & Processor Class
-	class CHttpGetFrameParseProcess : public CNetCom::CParseProcess
+	// The Http Networking Parser & Processor Class
+	class CHttpParseProcess : public CNetCom::CParseProcess
 	{
 		public:
-			CHttpGetFrameParseProcess(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc; m_dwCNonceCount = 0U; Clear();};
-			virtual ~CHttpGetFrameParseProcess() {FreeAVCodec();};
+			CHttpParseProcess(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc; m_dwCNonceCount = 0U; Clear();};
+			virtual ~CHttpParseProcess() {FreeAVCodec();};
 			void Close() {FreeAVCodec(); Clear();};
 			BOOL SendRawRequest(CString sRequest);
 			BOOL SendRequest();
@@ -239,15 +239,15 @@ public:
 			CString m_sNonce;
 			CString m_sAlgorithm;
 			CString m_sOpaque;
-			volatile enum {FORMATUNKNOWN = 0, FORMATJPEG, FORMATMJPEG} m_FormatType;
+			volatile enum {FORMATVIDEO_UNKNOWN = 0, FORMATVIDEO_JPEG, FORMATVIDEO_MJPEG, FORMATAUDIO_UNKNOWN, FORMATAUDIO_MULAW, FORMATAUDIO_G726_24, FORMATAUDIO_G726_32} m_FormatType;
 			typedef enum {AUTHNONE = 0, AUTHBASIC, AUTHDIGEST} AUTHTYPE;
-			volatile AUTHTYPE m_AnswerAuthorizationType;
-			volatile AUTHTYPE m_LastRequestAuthorizationType;
-			volatile BOOL m_bQueryProperties;
-			volatile BOOL m_bSetResolution;
-			volatile BOOL m_bSetCompression;
-			volatile BOOL m_bSetFramerate;
-			volatile BOOL m_bFirstFrame;
+			volatile AUTHTYPE m_AnswerAuthorizationType;		// authorization type chosen by parsing WWW-Authenticate header
+			volatile AUTHTYPE m_LastRequestAuthorizationType;	// last sent authorization type
+			volatile BOOL m_bQueryVideoProperties;
+			volatile BOOL m_bSetVideoResolution;
+			volatile BOOL m_bSetVideoCompression;
+			volatile BOOL m_bSetVideoFramerate;
+			volatile BOOL m_bFirstProcessing;
 			volatile BOOL m_bTryConnecting;
 			volatile BOOL m_bConnectionKeepAlive;
 			volatile BOOL m_bPollNextJpeg;
@@ -256,14 +256,14 @@ public:
 		protected:
 			void Clear() {	m_bMultipartNoLength = FALSE;
 							m_nMultipartBoundaryLength = 0;
-							m_bFirstFrame = TRUE;
+							m_bFirstProcessing = TRUE;
 							m_bTryConnecting = FALSE;
-							m_bQueryProperties = FALSE;
-							m_bSetResolution = FALSE;
-							m_bSetCompression = FALSE;
-							m_bSetFramerate = FALSE;
+							m_bQueryVideoProperties = FALSE;
+							m_bSetVideoResolution = FALSE;
+							m_bSetVideoCompression = FALSE;
+							m_bSetVideoFramerate = FALSE;
 							m_bPollNextJpeg = FALSE;
-							m_FormatType = FORMATUNKNOWN;
+							m_FormatType = FORMATVIDEO_UNKNOWN;
 							m_AnswerAuthorizationType = AUTHNONE;
 							m_LastRequestAuthorizationType = AUTHNONE;
 							m_bOldVersion = FALSE;
@@ -297,7 +297,9 @@ public:
 			BOOL OpenAVCodec();
 			void FreeAVCodec();
 			BOOL InitImgConvert();
-
+			BOOL DecodeVideo(AVPacket* avpkt);
+			BOOL DecodeAudio(AVPacket* avpkt);
+			
 			CVideoDeviceDoc* m_pDoc;
 			BOOL m_bMultipartNoLength;
 			DWORD m_dwCNonceCount;
@@ -314,7 +316,7 @@ public:
 			DWORD m_dwI420BufSize;
 			DWORD m_dwI420ImageSize;
 	};
-	typedef CList<CHttpGetFrameParseProcess*,CHttpGetFrameParseProcess*> NETCOMPARSEPROCESSLIST;
+	typedef CList<CHttpParseProcess*,CHttpParseProcess*> NETCOMPARSEPROCESSLIST;
 
 	// The Record Audio File Thread Class
 	class CCaptureAudioThread : public CWorkerThread
@@ -325,15 +327,6 @@ public:
 			virtual ~CCaptureAudioThread();
 			void AudioInSourceDialog();
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
-			static void WaveInitFormat(WORD wCh, DWORD dwSampleRate, WORD wBitsPerSample, LPWAVEFORMATEX pWaveFormat);
-
-			// Wave Formats
-			LPWAVEFORMATEX m_pSrcWaveFormat;
-			LPWAVEFORMATEX m_pDstWaveFormat;
-
-			// Audio list
-			CDib::USERLIST m_AudioList;
-			CRITICAL_SECTION m_csAudioList;
 			
 		protected:
 			// Functions
@@ -354,51 +347,66 @@ public:
 			DWORD m_dwUncompressedBufSize;
 	};
 
-	// Http Get Frame Thread
-	class CHttpGetFrameThread : public CWorkerThread
+	// Http Thread
+	class CHttpThread : public CWorkerThread
 	{
 		public:
-			CHttpGetFrameThread() {	m_pDoc = NULL;
-									m_dwConnectDelayMs	= 0U;										// Delay before starting connection
-									m_hEventArray[0]	= GetKillEvent();							// Kill Event
-									m_hEventArray[1]	= ::CreateEvent(NULL, TRUE, FALSE, NULL);	// Http Setup Connection Event
-									m_hEventArray[2]	= ::CreateEvent(NULL, TRUE, FALSE, NULL);	// Http Connected Event
-									m_hEventArray[3]	= ::CreateEvent(NULL, TRUE, FALSE, NULL);	// Http Read Event
-									m_hEventArray[4]	= ::CreateEvent(NULL, TRUE, FALSE, NULL);	// Http Connect Failed Event
-									::InitializeCriticalSection(&m_csConnectRequestParams);};
-			virtual ~CHttpGetFrameThread() {Kill();
-											::CloseHandle(m_hEventArray[1]);
-											::CloseHandle(m_hEventArray[2]);
-											::CloseHandle(m_hEventArray[3]);
-											::CloseHandle(m_hEventArray[4]);
-											::DeleteCriticalSection(&m_csConnectRequestParams);};
+			CHttpThread() {	m_pDoc = NULL;
+							m_dwAudioConnectDelayMs	= 0U;									// Delay before starting Audio connection
+							m_dwVideoConnectDelayMs	= 0U;									// Delay before starting video connection
+							m_hEventArray[0]	= GetKillEvent();							// Kill Event
+							m_hEventArray[1]	= ::CreateEvent(NULL, TRUE, FALSE, NULL);	// Http Setup Video Connection Event
+							m_hEventArray[2]	= ::CreateEvent(NULL, TRUE, FALSE, NULL);	// Http Video Connected Event
+							m_hEventArray[3]	= ::CreateEvent(NULL, TRUE, FALSE, NULL);	// Http Video Connect Failed Event
+							m_hEventArray[4]	= ::CreateEvent(NULL, TRUE, FALSE, NULL);	// Http Video Read Event
+							m_hEventArray[5]	= ::CreateEvent(NULL, TRUE, FALSE, NULL);	// Http Setup Audio Connection Event
+							::InitializeCriticalSection(&m_csVideoConnectRequestParams);
+							::InitializeCriticalSection(&m_csAudioConnectRequestParams);};
+			virtual ~CHttpThread() {Kill();
+									::CloseHandle(m_hEventArray[1]);
+									::CloseHandle(m_hEventArray[2]);
+									::CloseHandle(m_hEventArray[3]);
+									::CloseHandle(m_hEventArray[4]);
+									::CloseHandle(m_hEventArray[5]);
+									::DeleteCriticalSection(&m_csVideoConnectRequestParams);
+									::DeleteCriticalSection(&m_csAudioConnectRequestParams);};
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
-			__forceinline BOOL SetEventConnect(LPCTSTR lpszRequest = _T(""), DWORD dwConnectDelayMs = 0U)
+			__forceinline BOOL SetEventVideoConnect(LPCTSTR lpszRequest = _T(""), DWORD dwConnectDelayMs = 0U)
 			{
-				::EnterCriticalSection(&m_csConnectRequestParams);
-				m_sRequest = CString(lpszRequest);
-				m_dwConnectDelayMs = dwConnectDelayMs;
-				::LeaveCriticalSection(&m_csConnectRequestParams);
+				::EnterCriticalSection(&m_csVideoConnectRequestParams);
+				m_sVideoRequest = CString(lpszRequest);
+				m_dwVideoConnectDelayMs = dwConnectDelayMs;
+				::LeaveCriticalSection(&m_csVideoConnectRequestParams);
 				return ::SetEvent(m_hEventArray[1]);	
 			};
-			__forceinline HANDLE GetHttpConnectedEvent() const {return m_hEventArray[2];};
-			__forceinline HANDLE GetHttpReadEvent() const {return m_hEventArray[3];};
-			__forceinline HANDLE GetHttpConnectFailedEvent() const {return m_hEventArray[4];};
+			__forceinline BOOL SetEventAudioConnect(LPCTSTR lpszRequest = _T(""), DWORD dwConnectDelayMs = 0U)
+			{
+				::EnterCriticalSection(&m_csAudioConnectRequestParams);
+				m_sAudioRequest = CString(lpszRequest);
+				m_dwAudioConnectDelayMs = dwConnectDelayMs;
+				::LeaveCriticalSection(&m_csAudioConnectRequestParams);
+				return ::SetEvent(m_hEventArray[5]);	
+			};
 
 		protected:
 			int Work();
-			int OnError();
-			__forceinline BOOL Connect(	BOOL bSignalEvents,
-										CNetCom* pNetCom,
-										CHttpGetFrameParseProcess* pParseProcess,
-										int nSocketFamily);
+			int OnError(BOOL bCloseDocument);
+			__forceinline BOOL Connect(	CNetCom* pNetCom,
+										CHttpParseProcess* pParseProcess,
+										int nSocketFamily,
+										HANDLE hConnectedEvent = NULL,
+										HANDLE hConnectFailedEvent = NULL,
+										HANDLE hReadEvent = NULL);
 			BOOL PollAndClean(BOOL bDoNewPoll);
 			void CleanUpAllConnections();
 			CVideoDeviceDoc* m_pDoc;
-			HANDLE m_hEventArray[5];
-			volatile DWORD m_dwConnectDelayMs;
-			CString m_sRequest;
-			CRITICAL_SECTION m_csConnectRequestParams;
+			HANDLE m_hEventArray[6];
+			volatile DWORD m_dwVideoConnectDelayMs;
+			volatile DWORD m_dwAudioConnectDelayMs;
+			CString m_sVideoRequest;
+			CString m_sAudioRequest;
+			CRITICAL_SECTION m_csVideoConnectRequestParams;
+			CRITICAL_SECTION m_csAudioConnectRequestParams;
 			NETCOMLIST m_HttpGetFrameNetComList;
 			NETCOMPARSEPROCESSLIST m_HttpGetFrameParseProcessList;
 	};
@@ -743,7 +751,7 @@ public:
 
 	// Open Video From Network
 	BOOL OpenGetVideo(CHostPortDlg* pDlg);
-	BOOL OpenGetVideo(CString sAddress, DWORD dwConnectDelay = 0U);
+	BOOL OpenGetVideo(CString sAddress, DWORD dwConnectDelayMs = 0U);
 
 	// Connect to the chosen Networking Type and Mode
 	typedef enum {
@@ -764,7 +772,7 @@ public:
 		// Add more devices here...	
 		LAST_DEVICE			// Placeholder for range check
 	} NetworkDeviceTypeMode;
-	BOOL ConnectGetFrame(DWORD dwConnectDelay = 0U);
+	BOOL ConnectHttp(DWORD dwConnectDelayMs = 0U);
 
 	// Dialogs
 	void CaptureCameraBasicSettings();
@@ -849,6 +857,8 @@ public:
 	void NextRecTime(CTime t);
 	void CloseAndShowVideoFile();
 	void FreeVideoFile();
+	static void WaveInitFormat(WORD wCh, DWORD dwSampleRate, WORD wBitsPerSample, LPWAVEFORMATEX pWaveFormat);
+	void UpdateDstWaveFormat();
 
 	// Fast bicubic resize
 	// Source and destination Dibs must already have the bits allocated! 
@@ -995,7 +1005,7 @@ public:
 	CTime m_1SecTime;									// For the 1 sec tick in ProcessI420Frame()
 
 	// Threads
-	CHttpGetFrameThread m_HttpGetFrameThread;			// Http Networking Helper Thread
+	CHttpThread m_HttpThread;							// Http Networking Helper Thread
 	CWatchdogThread m_WatchdogThread;					// Video Capture Watchdog Thread
 	CDeleteThread m_DeleteThread;						// Delete files older than a given amount of days Thread
 	CCaptureAudioThread m_CaptureAudioThread;			// Audio Capture Thread
@@ -1019,9 +1029,13 @@ public:
 	int m_nDeviceFormatWidth;							// Format Width
 	int m_nDeviceFormatHeight;							// Format Height
 	
-	// Audio Capture Vars
+	// Audio Vars
 	volatile DWORD m_dwCaptureAudioDeviceID;			// Audio Capture Device ID
 	volatile BOOL m_bCaptureAudio;						// Do Capture Audio Flag
+	LPWAVEFORMATEX m_pSrcWaveFormat;					// Uncompressed audio source format
+	LPWAVEFORMATEX m_pDstWaveFormat;					// Wanted save format
+	CDib::USERLIST m_AudioList;							// Audio buffers
+	CRITICAL_SECTION m_csAudioList;						// Critical section to access the audio buffers
 
 	// Audio / Video Rec
 	volatile DWORD m_dwRecFirstUpTime;					// Up-Time of First Recorded Frame
@@ -1042,13 +1056,15 @@ public:
 	volatile int m_nMinDiskFreePermillion;				// Minimum disk free size in permillion, if the free space is lower than that the oldest files are removed
 
 	// HTTP Get Frame Networking
-	CNetCom* volatile m_pGetFrameNetCom;				// Get Frame Instance
-	volatile NetworkDeviceTypeMode m_nNetworkDeviceTypeMode;// Get Frame Network Device Type and Mode
+	CNetCom* volatile m_pVideoNetCom;					// Http Video Instance
+	CNetCom* volatile m_pAudioNetCom;					// Http Audio Instance
+	volatile NetworkDeviceTypeMode m_nNetworkDeviceTypeMode;// Video Network Device Type and Mode
 	CString m_sGetFrameVideoHost;						// Get Frame video host
 	volatile int m_nGetFrameVideoPort;					// Get Frame video port
 	CString m_sHttpGetFrameUsername;					// HTTP Username
 	CString m_sHttpGetFramePassword;					// HTTP Password
-	CHttpGetFrameParseProcess* volatile m_pHttpGetFrameParseProcess; // HTTP Get Frame Parse & Process
+	CHttpParseProcess* volatile m_pHttpVideoParseProcess; // HTTP Video Parse & Process
+	CHttpParseProcess* volatile m_pHttpAudioParseProcess; // HTTP Audio Parse & Process
 	volatile int m_nHttpVideoQuality;					// 0 Best Quality, 100 Worst Quality
 	volatile int m_nHttpVideoSizeX;						// Video width
 	volatile int m_nHttpVideoSizeY;						// Video height
