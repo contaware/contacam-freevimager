@@ -86,8 +86,8 @@ public:
 			CBuf();
 			CBuf(unsigned int Size);
 			virtual ~CBuf();
-			CBuf(const CBuf& b); // Copy Constructor
-			CBuf& operator=(const CBuf& b); // Copy Assignment
+			CBuf(const CBuf& b);			// Copy Constructor
+			CBuf& operator=(const CBuf& b);	// Copy Assignment
 			__forceinline void SetMsgSize(unsigned int MsgSize) {m_MsgSize = MsgSize;};
 			__forceinline unsigned int GetMsgSize() const {return m_MsgSize;};
 			__forceinline unsigned int GetBufSize() const {return m_BufSize;};
@@ -181,13 +181,13 @@ public:
 	static BOOL StringToAddress(const TCHAR* sHost, const TCHAR* sPort, sockaddr* psockaddr, int nSocketFamily = AF_UNSPEC);
 
 	// Open a Network Connection								
-	BOOL Init(		CParseProcess* pParseProcess,		// Parser & Processor
-					CString sPeerAddress,				// Peer Address (IP or Host Name)
-					UINT uiPeerPort,					// Peer Port
-					HANDLE hConnectEvent,				// Handle to an Event Object that will get Connect Events
-					HANDLE hConnectFailedEvent,			// Handle to an Event Object that will get Connect Failed Events
-					HANDLE hReadEvent,					// Handle to an Event Object that will get Read Events
-					int nSocketFamily);					// Socket family
+	BOOL Init(	CParseProcess* pParseProcess,	// Parser & Processor
+				CString sPeerAddress,			// Peer Address (IP or Host Name)
+				UINT uiPeerPort,				// Peer Port
+				HANDLE hConnectEvent,			// Handle to an Event Object that will get Connect Events
+				HANDLE hConnectFailedEvent,		// Handle to an Event Object that will get Connect Failed Events
+				HANDLE hReadEvent,				// Handle to an Event Object that will get Read Events
+				int nSocketFamily);				// Socket family
 
 	// Close the Network Connection (this function is blocking a maximum of 2 * NETCOM_BLOCKING_TIMEOUT ms)
 	void Close();
@@ -281,15 +281,15 @@ protected:
 	HANDLE m_hStartConnectionShutdownEvent;
 
 	// Event Arrays
-	HANDLE m_hMsgEventArray[3];		// m_pMsgThread->GetKillEvent()
-									// m_hStartConnectionShutdownEvent
-									// m_hNetEvent
-	HANDLE m_hRxEventArray[3];		// m_pRxThread->GetKillEvent()
-									// m_ovRx.hEvent
-									// m_hRxEvent
-	HANDLE m_hTxEventArray[3];		// m_pTxThread->GetKillEvent()
-									// m_ovTx.hEvent
-									// m_hTxEvent
+	HANDLE m_hMsgEventArray[3];	// m_pMsgThread->GetKillEvent()
+								// m_hStartConnectionShutdownEvent
+								// m_hNetEvent
+	HANDLE m_hRxEventArray[3];	// m_pRxThread->GetKillEvent()
+								// m_ovRx.hEvent
+								// m_hRxEvent
+	HANDLE m_hTxEventArray[3];	// m_pTxThread->GetKillEvent()
+								// m_ovTx.hEvent
+								// m_hTxEvent
 
 	// Rx Fifo and Tx Fifo
 	BUFQUEUE m_RxFifo;
