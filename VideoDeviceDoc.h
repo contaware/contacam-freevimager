@@ -407,8 +407,8 @@ public:
 			CString m_sAudioRequest;
 			CRITICAL_SECTION m_csVideoConnectRequestParams;
 			CRITICAL_SECTION m_csAudioConnectRequestParams;
-			NETCOMLIST m_HttpGetFrameNetComList;
-			NETCOMPARSEPROCESSLIST m_HttpGetFrameParseProcessList;
+			NETCOMLIST m_HttpVideoNetComList;
+			NETCOMPARSEPROCESSLIST m_HttpVideoParseProcessList;
 	};
 
 	// Watch Dog Thread

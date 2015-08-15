@@ -3009,7 +3009,7 @@ BOOL CVideoDeviceDoc::CHttpThread::PollAndClean(BOOL bDoNewPoll)
 {
 	BOOL res = FALSE;
 	CNetCom* pNetCom = NULL;
-	CHttpParseProcess* pHttpGetFrameParseProcess = NULL;
+	CHttpParseProcess* pHttpVideoParseProcess = NULL;
 
 	// New Poll Connection
 	if (bDoNewPoll)
@@ -3017,39 +3017,39 @@ BOOL CVideoDeviceDoc::CHttpThread::PollAndClean(BOOL bDoNewPoll)
 		pNetCom = new CNetCom;
 		if (!pNetCom)
 			return FALSE;
-		pHttpGetFrameParseProcess = new CHttpParseProcess(m_pDoc);
-		if (!pHttpGetFrameParseProcess)
+		pHttpVideoParseProcess = new CHttpParseProcess(m_pDoc);
+		if (!pHttpVideoParseProcess)
 		{
 			delete pNetCom;
 			return FALSE;
 		}
 		if (m_pDoc->m_pHttpVideoParseProcess->m_AnswerAuthorizationType == CVideoDeviceDoc::CHttpParseProcess::AUTHBASIC)
-			pHttpGetFrameParseProcess->m_AnswerAuthorizationType = CVideoDeviceDoc::CHttpParseProcess::AUTHBASIC;
-		pHttpGetFrameParseProcess->m_bOldVersion = m_pDoc->m_pHttpVideoParseProcess->m_bOldVersion;
-		pHttpGetFrameParseProcess->m_FormatType = m_pDoc->m_pHttpVideoParseProcess->m_FormatType;
+			pHttpVideoParseProcess->m_AnswerAuthorizationType = CVideoDeviceDoc::CHttpParseProcess::AUTHBASIC;
+		pHttpVideoParseProcess->m_bOldVersion = m_pDoc->m_pHttpVideoParseProcess->m_bOldVersion;
+		pHttpVideoParseProcess->m_FormatType = m_pDoc->m_pHttpVideoParseProcess->m_FormatType;
 		for (int i = 0 ; i < m_pDoc->m_pHttpVideoParseProcess->m_Sizes.GetSize() ; i++)
-			pHttpGetFrameParseProcess->m_Sizes.Add(m_pDoc->m_pHttpVideoParseProcess->m_Sizes[i]);
+			pHttpVideoParseProcess->m_Sizes.Add(m_pDoc->m_pHttpVideoParseProcess->m_Sizes[i]);
 		if (Connect(pNetCom,
-					pHttpGetFrameParseProcess,
+					pHttpVideoParseProcess,
 					m_pDoc->m_pVideoNetCom->GetSocketFamily()))
 		{
-			m_HttpGetFrameNetComList.AddTail(pNetCom);
-			m_HttpGetFrameParseProcessList.AddTail(pHttpGetFrameParseProcess);
-			pHttpGetFrameParseProcess->SendRequest();
+			m_HttpVideoNetComList.AddTail(pNetCom);
+			m_HttpVideoParseProcessList.AddTail(pHttpVideoParseProcess);
+			pHttpVideoParseProcess->SendRequest();
 			res = TRUE;
 		}
 		else
 		{
 			delete pNetCom;
-			delete pHttpGetFrameParseProcess;
+			delete pHttpVideoParseProcess;
 			res = FALSE;
 		}
 	}
 
 	// Clean-Up
-	while (m_HttpGetFrameNetComList.GetCount() > (bDoNewPoll ? 1 : 0))
+	while (m_HttpVideoNetComList.GetCount() > (bDoNewPoll ? 1 : 0))
 	{
-		pNetCom = m_HttpGetFrameNetComList.GetHead();
+		pNetCom = m_HttpVideoNetComList.GetHead();
 		if (pNetCom)
 		{
 			// Remove oldest connection?
@@ -3060,11 +3060,11 @@ BOOL CVideoDeviceDoc::CHttpThread::PollAndClean(BOOL bDoNewPoll)
 				!bDoNewPoll)															// too many open connections?
 			{
 				delete pNetCom; // this calls Close() which blocks till all net threads are done
-				m_HttpGetFrameNetComList.RemoveHead();
-				pHttpGetFrameParseProcess = m_HttpGetFrameParseProcessList.GetHead();
-				if (pHttpGetFrameParseProcess)
-					delete pHttpGetFrameParseProcess;
-				m_HttpGetFrameParseProcessList.RemoveHead();
+				m_HttpVideoNetComList.RemoveHead();
+				pHttpVideoParseProcess = m_HttpVideoParseProcessList.GetHead();
+				if (pHttpVideoParseProcess)
+					delete pHttpVideoParseProcess;
+				m_HttpVideoParseProcessList.RemoveHead();
 			}
 			// Nothing more to clean-up... exit loop
 			else
@@ -3073,11 +3073,11 @@ BOOL CVideoDeviceDoc::CHttpThread::PollAndClean(BOOL bDoNewPoll)
 		// Should never happen...
 		else
 		{
-			m_HttpGetFrameNetComList.RemoveHead();
-			pHttpGetFrameParseProcess = m_HttpGetFrameParseProcessList.GetHead();
-			if (pHttpGetFrameParseProcess)
-				delete pHttpGetFrameParseProcess;
-			m_HttpGetFrameParseProcessList.RemoveHead();
+			m_HttpVideoNetComList.RemoveHead();
+			pHttpVideoParseProcess = m_HttpVideoParseProcessList.GetHead();
+			if (pHttpVideoParseProcess)
+				delete pHttpVideoParseProcess;
+			m_HttpVideoParseProcessList.RemoveHead();
 		}
 	}
 
@@ -3096,25 +3096,25 @@ int CVideoDeviceDoc::CHttpThread::OnError(BOOL bCloseDocument)
 void CVideoDeviceDoc::CHttpThread::CleanUpAllConnections()
 {
 	// Start Shutdown All Connections
-	POSITION pos = m_HttpGetFrameNetComList.GetHeadPosition();
+	POSITION pos = m_HttpVideoNetComList.GetHeadPosition();
 	while (pos)
 	{
-		CNetCom* pNetCom = m_HttpGetFrameNetComList.GetNext(pos);
+		CNetCom* pNetCom = m_HttpVideoNetComList.GetNext(pos);
 		if (pNetCom)
 			pNetCom->ShutdownConnection_NoBlocking();
 	}
 
 	// Wait Till All Connections are down
-	while (!m_HttpGetFrameNetComList.IsEmpty())
+	while (!m_HttpVideoNetComList.IsEmpty())
 	{
-		CNetCom* pNetCom = m_HttpGetFrameNetComList.GetHead();
+		CNetCom* pNetCom = m_HttpVideoNetComList.GetHead();
 		if (pNetCom)
 			delete pNetCom; // This calls Close() and blocks till all threads are done
-		m_HttpGetFrameNetComList.RemoveHead();
-		CHttpParseProcess* pHttpGetFrameParseProcess = m_HttpGetFrameParseProcessList.GetHead();
-		if (pHttpGetFrameParseProcess)
-			delete pHttpGetFrameParseProcess;
-		m_HttpGetFrameParseProcessList.RemoveHead();
+		m_HttpVideoNetComList.RemoveHead();
+		CHttpParseProcess* pHttpVideoParseProcess = m_HttpVideoParseProcessList.GetHead();
+		if (pHttpVideoParseProcess)
+			delete pHttpVideoParseProcess;
+		m_HttpVideoParseProcessList.RemoveHead();
 	}
 }
 
@@ -3329,11 +3329,11 @@ int CVideoDeviceDoc::CHttpThread::Work()
 						SetEventVideoConnect();
 					else
 					{
-						if (m_HttpGetFrameNetComList.GetCount() >= HTTPGETFRAME_MAXCOUNT_ALARM3)
+						if (m_HttpVideoNetComList.GetCount() >= HTTPGETFRAME_MAXCOUNT_ALARM3)
 							nAlarmLevel = 3;
-						else if (m_HttpGetFrameNetComList.GetCount() >= HTTPGETFRAME_MAXCOUNT_ALARM2)
+						else if (m_HttpVideoNetComList.GetCount() >= HTTPGETFRAME_MAXCOUNT_ALARM2)
 							nAlarmLevel = 2;
-						else if (m_HttpGetFrameNetComList.GetCount() >= HTTPGETFRAME_MAXCOUNT_ALARM1)
+						else if (m_HttpVideoNetComList.GetCount() >= HTTPGETFRAME_MAXCOUNT_ALARM1)
 							nAlarmLevel = 1;
 						else
 							nAlarmLevel = 0;
