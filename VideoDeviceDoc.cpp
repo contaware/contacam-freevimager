@@ -2074,14 +2074,6 @@ int CVideoDeviceDoc::CCaptureAudioThread::Loop()
 		}
 	}
 
-	// Log the starting
-	if (nLoopState == 1)
-	{
-		::LogLine(	_T("%s starting audio from %s"),
-					m_pDoc->GetAssignedDeviceName(),
-					CAudioInSourceDlg::DevIDToName(m_pDoc->m_dwCaptureAudioDeviceID));
-	}
-
 	// Samples loop
 	while (nLoopState == 1)
 	{
@@ -2113,6 +2105,7 @@ int CVideoDeviceDoc::CCaptureAudioThread::Loop()
 													}
 												}
 												::LeaveCriticalSection(&m_pDoc->m_csAudioList);
+												::InterlockedExchange(&m_pDoc->m_lLastAudioFramesUpTime, (LONG)::timeGetTime());
 
 												// New Buffer
 												m_pUncompressedBuf[m_uiWaveInBufPos] = (LPBYTE)av_malloc(m_dwUncompressedBufSize);
@@ -2141,13 +2134,6 @@ int CVideoDeviceDoc::CCaptureAudioThread::Loop()
 		memset(&m_WaveHeader[i], 0, sizeof(WAVEHDR));
 	}
 	CloseInAudio();
-
-	// Log the stopping
-	if (nLoopState == 0)
-	{
-		::LogLine(	_T("%s stopping audio"),
-					m_pDoc->GetAssignedDeviceName());
-	}
 
 	return nLoopState;
 }
@@ -3396,8 +3382,8 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 		}
 	}
 
-	// Init
-	DWORD dwLastHttpReconnectUpTime = ::timeGetTime();
+	// Set time far in the past
+	CTime LastHttpReconnectTime = CTime(0);
 
 	// Watch
 	for (;;)
@@ -3412,26 +3398,28 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 			// Check
 			case WAIT_TIMEOUT :		
 			{
-				// Update m_bWatchDogAlarm
+				// Current times
 				DWORD dwCurrentUpTime = ::timeGetTime();
-				DWORD dwFrameTime = (DWORD)Round(1000.0 / m_pDoc->m_dFrameRate);
-				if (m_pDoc->m_dEffectiveFrameRate > 0.0)
-					dwFrameTime = (DWORD)Round(1000.0 / m_pDoc->m_dEffectiveFrameRate);
+				CTime CurrentTime = CTime::GetCurrentTime();
+
+				// Video watchdog
 				DWORD dwMsSinceLastProcessFrame = dwCurrentUpTime - (DWORD)m_pDoc->m_lCurrentInitUpTime;
-				if (dwMsSinceLastProcessFrame > WATCHDOG_THRESHOLD	&&
-					dwMsSinceLastProcessFrame > 7U * dwFrameTime)
-					m_pDoc->m_bWatchDogAlarm = TRUE;
-				else
-				{
-					m_pDoc->m_bWatchDogAlarm = FALSE;
-					dwLastHttpReconnectUpTime = dwCurrentUpTime;
-				}
+				m_pDoc->m_bWatchDogVideoAlarm = (dwMsSinceLastProcessFrame > WATCHDOG_THRESHOLD);
+
+				// Avoid triggering the audio watchdog when toggling m_bCaptureAudio
+				// and if audio is disabled
+				if (!m_pDoc->m_bCaptureAudio)
+					::InterlockedExchange(&m_pDoc->m_lLastAudioFramesUpTime, (LONG)dwCurrentUpTime);
+
+				// Audio watchdog
+				DWORD dwMsSinceLastAudioFrames = dwCurrentUpTime - (DWORD)m_pDoc->m_lLastAudioFramesUpTime;
+				m_pDoc->m_bWatchDogAudioAlarm = (dwMsSinceLastAudioFrames > WATCHDOG_THRESHOLD);
 
 				// Save Frame List may be called many times till
 				// CSaveFrameListThread::Work() reacts and starts working:
 				// it's not a problem because CSaveFrameListThread::Work()
 				// removes empty lists
-				if (m_pDoc->m_bWatchDogAlarm							&&
+				if (m_pDoc->m_bWatchDogVideoAlarm						&&
 					m_pDoc->m_dwVideoProcessorMode						&&
 					m_pDoc->m_bDetectingMovement						&&
 					m_pDoc->GetTotalMovementDetectionListSize() > 0		&&
@@ -3443,20 +3431,23 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 					m_pDoc->m_bFTPUploadMovementDetection))
 					m_pDoc->SaveFrameList(FALSE);
 
-				// Http Networking Reconnect
-				if (dwCurrentUpTime - dwLastHttpReconnectUpTime > (DWORD)(1000 * HTTPGETFRAME_CONNECTION_TIMEOUT) &&
-					m_pDoc->m_pVideoNetCom)
+				// Http reconnect
+				if (m_pDoc->m_pVideoNetCom && (m_pDoc->m_bWatchDogVideoAlarm || m_pDoc->m_bWatchDogAudioAlarm))
 				{
-					VlmReStart();
-					dwLastHttpReconnectUpTime = dwCurrentUpTime;
-					DWORD dwConnectDelayMs = MIN(((CUImagerApp*)::AfxGetApp())->m_dwAutostartDelayMs, 1000 * HTTPGETFRAME_CONNECTION_TIMEOUT / 2);
-					m_pDoc->m_HttpThread.SetEventVideoConnect(_T(""), dwConnectDelayMs);
-					if (m_pDoc->m_bCaptureAudio)
-						m_pDoc->m_HttpThread.SetEventAudioConnect(_T(""), dwConnectDelayMs);
-					if (dwConnectDelayMs == 0)
-						::LogLine(_T("%s try reconnecting"), m_pDoc->GetAssignedDeviceName());
-					else
-						::LogLine(_T("%s try reconnecting in %u sec"), m_pDoc->GetAssignedDeviceName(), dwConnectDelayMs / 1000U);
+					CTimeSpan TimeSpan = CurrentTime - LastHttpReconnectTime;
+					if (TimeSpan.GetTotalSeconds() > HTTPGETFRAME_CONNECTION_TIMEOUT)
+					{
+						VlmReStart();
+						LastHttpReconnectTime = CurrentTime;
+						DWORD dwConnectDelayMs = MIN(((CUImagerApp*)::AfxGetApp())->m_dwAutostartDelayMs, 1000 * HTTPGETFRAME_CONNECTION_TIMEOUT / 2);
+						m_pDoc->m_HttpThread.SetEventVideoConnect(_T(""), dwConnectDelayMs);
+						if (m_pDoc->m_bCaptureAudio)
+							m_pDoc->m_HttpThread.SetEventAudioConnect(_T(""), dwConnectDelayMs);
+						if (dwConnectDelayMs == 0)
+							::LogLine(_T("%s try reconnecting"), m_pDoc->GetAssignedDeviceName());
+						else
+							::LogLine(_T("%s try reconnecting in %u sec"), m_pDoc->GetAssignedDeviceName(), dwConnectDelayMs / 1000U);
+					}
 				}
 
 				// Trigger drawing in case no frames reaching
@@ -3775,7 +3766,9 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nDeviceFormatWidth = 0;
 	m_nDeviceFormatHeight = 0;
 	m_lCurrentInitUpTime = 0;
-	m_bWatchDogAlarm = FALSE;
+	m_lLastAudioFramesUpTime = 0;
+	m_bWatchDogVideoAlarm = FALSE;
+	m_bWatchDogAudioAlarm = FALSE;
 
 	// Networking
 	m_pVideoNetCom = NULL;
@@ -4995,6 +4988,7 @@ BOOL CVideoDeviceDoc::OpenVideoDevice(int nId)
 	m_dwFrameCountUp = 0U;
 	m_dwNextSnapshotUpTime = ::timeGetTime();
 	::InterlockedExchange(&m_lCurrentInitUpTime, (LONG)m_dwNextSnapshotUpTime);
+	::InterlockedExchange(&m_lLastAudioFramesUpTime, (LONG)m_dwNextSnapshotUpTime);
 
 	// Init and Open Dx Capture
 	if (InitOpenDxCapture(nId))
@@ -5288,6 +5282,7 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CString sAddress, DWORD dwConnectDelayMs/*=0U
 	m_dwFrameCountUp = 0U;
 	m_dwNextSnapshotUpTime = ::timeGetTime();
 	::InterlockedExchange(&m_lCurrentInitUpTime, (LONG)m_dwNextSnapshotUpTime);
+	::InterlockedExchange(&m_lLastAudioFramesUpTime, (LONG)m_dwNextSnapshotUpTime);
 
 	// Connect
 	if (!ConnectHttp(dwConnectDelayMs))
@@ -5338,6 +5333,7 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CHostPortDlg* pDlg)
 	m_dwFrameCountUp = 0U;
 	m_dwNextSnapshotUpTime = ::timeGetTime();
 	::InterlockedExchange(&m_lCurrentInitUpTime, (LONG)m_dwNextSnapshotUpTime);
+	::InterlockedExchange(&m_lLastAudioFramesUpTime, (LONG)m_dwNextSnapshotUpTime);
 
 	// Connect
 	if (!ConnectHttp())
@@ -10830,6 +10826,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::DecodeAudio(AVPacket* avpkt)
 		}
 	}
 	::LeaveCriticalSection(&m_pDoc->m_csAudioList);
+	::InterlockedExchange(&m_pDoc->m_lLastAudioFramesUpTime, (LONG)::timeGetTime());
 
 	return TRUE;
 }

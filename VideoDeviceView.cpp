@@ -319,14 +319,14 @@ void CVideoDeviceView::Draw(HDC hDC)
 	BOOL bVideoView = pDoc->m_bVideoView;
 	BOOL bStopAndChangeFormat = pDoc->m_bStopAndChangeFormat;
 	BOOL bDxDeviceUnplugged = pDoc->m_bDxDeviceUnplugged;
-	BOOL bWatchDogAlarm = pDoc->m_bWatchDogAlarm;
+	BOOL bWatchDogVideoAlarm = pDoc->m_bWatchDogVideoAlarm;
 
 	// Draw Rect
 	CRect rcClient;
 	GetClientRect(&rcClient);
 
 	// Erase Background
-	if (bStopAndChangeFormat || bDxDeviceUnplugged || bWatchDogAlarm || !bVideoView)
+	if (bStopAndChangeFormat || bDxDeviceUnplugged || bWatchDogVideoAlarm || !bVideoView)
 	{
 		CBrush br;
 		br.CreateSolidBrush(DRAW_BKG_COLOR);	
@@ -350,7 +350,7 @@ void CVideoDeviceView::Draw(HDC hDC)
 						OPAQUE, DRAW_BKG_COLOR); // faster drawing with opaque!
 	}
 	// Display: No Frames
-	else if (bWatchDogAlarm)
+	else if (bWatchDogVideoAlarm)
 	{
 		::DrawBigText(	hDC, rcClient,
 						ML_STRING(1570, "No Frames"),

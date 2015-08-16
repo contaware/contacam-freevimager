@@ -800,13 +800,18 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	m_pDoc->m_DeleteThread.Kill();
 
 	// Stop audio
+	BOOL bDoCaptureAudio;
 	if (m_pDoc->m_bCaptureAudio)
 	{
+		bDoCaptureAudio = TRUE;
+		m_pDoc->m_bCaptureAudio = FALSE; // disables audio watchdog
 		if (m_pDoc->m_pAudioNetCom)
 			m_pDoc->m_pAudioNetCom->Close();
 		else
 			m_pDoc->m_CaptureAudioThread.Kill();
 	}
+	else
+		bDoCaptureAudio = FALSE;
 
 	// Make sure snapshot threads are stopped
 	// (at this point the process frame is stopped but
@@ -1104,8 +1109,9 @@ void CCameraBasicSettingsDlg::ApplySettings()
 		m_pDoc->m_nMinDiskFreePermillion = 1000000;
 
 	// Restart audio
-	if (m_pDoc->m_bCaptureAudio)
+	if (bDoCaptureAudio)
 	{
+		m_pDoc->m_bCaptureAudio = TRUE;
 		if (m_pDoc->m_pAudioNetCom)
 			m_pDoc->m_HttpThread.SetEventAudioConnect();
 		else

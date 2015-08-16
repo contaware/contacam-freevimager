@@ -3,7 +3,9 @@ CONTACAM HISTORY
 5.0.1 (June Xth 2015)
 
 - Web interface has now a better calendar picker
-- Enhanced ContaCam service installation 
+- Enhanced ContaCam service installation
+- Audio support for Axis ip cameras (thanks to Michele Grünenfelder
+  for sponsoring the development)
 
 5.0.0 (May 19th 2015)
 

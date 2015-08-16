@@ -1006,19 +1006,21 @@ public:
 
 	// Threads
 	CHttpThread m_HttpThread;							// Http Networking Helper Thread
-	CWatchdogThread m_WatchdogThread;					// Video Capture Watchdog Thread
-	CDeleteThread m_DeleteThread;						// Delete files older than a given amount of days Thread
+	CWatchdogThread m_WatchdogThread;					// Video/Audio Watchdog Thread
+	CDeleteThread m_DeleteThread;						// Delete old files Thread
 	CCaptureAudioThread m_CaptureAudioThread;			// Audio Capture Thread
-	CSaveFrameListThread m_SaveFrameListThread;			// Thread which saves the frames in m_FrameArray
+	CSaveFrameListThread m_SaveFrameListThread;			// Thread which saves the detection frames
 	CSaveSnapshotThread m_SaveSnapshotThread;			// Thread which saves the snapshots
-	CSaveSnapshotVideoThread m_SaveSnapshotVideoThread;	// Thread which creates the history video file and FTP uploads it
+	CSaveSnapshotVideoThread m_SaveSnapshotVideoThread;	// Thread which creates the history video file
 
 	// Drawing
 	CDib* volatile m_pDrawDibRGB32;						// Frame in RGB32 format for drawing
 
 	// Watchdog vars
 	volatile LONG m_lCurrentInitUpTime;					// Uptime set in ProcessI420Frame()
-	volatile BOOL m_bWatchDogAlarm;						// WatchDog Alarm
+	volatile LONG m_lLastAudioFramesUpTime;				// Uptime set on audio frame arrival
+	volatile BOOL m_bWatchDogVideoAlarm;				// WatchDog Video Alarm
+	volatile BOOL m_bWatchDogAudioAlarm;				// WatchDog Audio Alarm
 
 	// DirectShow Capture Vars
 	volatile BOOL m_bStopAndChangeFormat;				// Flag indicating that we are changing the DV format
