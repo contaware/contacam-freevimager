@@ -866,10 +866,11 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			if (!m_bForceSeparateInstance)
 			{
 				// Log the starting of the application
+				CString sAppId(CString(APPNAME_NOEXT) + _T(" ") + APPVERSION + _T(" (") + CString(_T(__TIME__)) + CString(_T(" ")) + CString(_T(__DATE__)) + _T(")"));
 				if (m_bServiceProcess)
-					::LogLine(_T("%s"), ML_STRING(1764, "Starting") + _T(" ") + APPNAME_NOEXT + _T(" (Service Mode)"));
+					::LogLine(_T("%s"), ML_STRING(1764, "Starting") + _T(" ") + sAppId + _T(" - SERVICE MODE"));
 				else
-					::LogLine(_T("%s"), ML_STRING(1764, "Starting") + _T(" ") + APPNAME_NOEXT);
+					::LogLine(_T("%s"), ML_STRING(1764, "Starting") + _T(" ") + sAppId);
 
 				// Update / create doc root index.php and config file for microapache
 				CVideoDeviceDoc::MicroApacheUpdateMainFiles();
