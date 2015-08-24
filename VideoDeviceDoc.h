@@ -169,29 +169,29 @@ class CMovementDetectionPage;
 
 // Http Networking
 #define DEFAULT_TCP_PORT					80
-#define HTTP_MAX_HEADER_SIZE				1400
-#define HTTP_MAX_MULTIPART_BOUNDARY			128
-#define HTTP_MIN_MULTIPART_SIZE				256
+#define HTTP_MAX_HEADER_SIZE				1400		// bytes
+#define HTTP_MAX_MULTIPART_BOUNDARY			128			// boundary string buffer size in bytes
+#define HTTP_MIN_MULTIPART_SIZE				256			// minimum size of a multipart content
 #define HTTP_MAX_MULTIPART_SIZE				8388608		// 8 MB		
-#define DEFAULT_HTTP_VIDEO_QUALITY			30			// 0 Best Quality, 100 Worst Quality
-#define DEFAULT_HTTP_VIDEO_SIZE_CX			640
-#define DEFAULT_HTTP_VIDEO_SIZE_CY			480
-#define HTTPGETFRAME_RECONNECTION_DELAY		5000U		// in case of a unhandled HTTP return code wait that time in ms before reconnecting
-#define HTTPGETFRAME_MAXCOUNT_ALARM1		30
-#define HTTPGETFRAME_MAXCOUNT_ALARM2		40
-#define HTTPGETFRAME_MAXCOUNT_ALARM3		50
-#define HTTPGETFRAME_DELAY_DEFAULT			500U		// ms
-#define HTTPGETFRAME_MIN_DELAY_ALARM1		100U		// ms
-#define HTTPGETFRAME_MIN_DELAY_ALARM2		400U		// ms
-#define HTTPGETFRAME_MIN_DELAY_ALARM3		1000U		// ms
-#define HTTPGETFRAME_MAX_DELAY_ALARM		((DWORD)(1000.0 / MIN_FRAMERATE)) // ms
-#define HTTPGETFRAME_CONNECTION_TIMEOUT		60			// Connection timeout in sec, used:
+#define HTTP_DEFAULT_VIDEO_QUALITY			30			// 0 Best Quality, 100 Worst Quality
+#define HTTP_DEFAULT_VIDEO_SIZE_CX			640			// pixels
+#define HTTP_DEFAULT_VIDEO_SIZE_CY			480			// pixels
+#define HTTP_RECONNECTION_DELAY				5000U		// in case of a unhandled HTTP return code wait that time in ms before reconnecting
+#define HTTP_MAXPOLLS_ALARM1				30			// Maximum polling connections: alarm level 1
+#define HTTP_MAXPOLLS_ALARM2				40			// Maximum polling connections: alarm level 2
+#define HTTP_MAXPOLLS_ALARM3				50			// Maximum polling connections: alarm level 3
+#define HTTP_THREAD_DEFAULT_DELAY			500U		// ms
+#define HTTP_THREAD_MIN_DELAY_ALARM1		100U		// ms
+#define HTTP_THREAD_MIN_DELAY_ALARM2		400U		// ms
+#define HTTP_THREAD_MIN_DELAY_ALARM3		1000U		// ms
+#define HTTP_THREAD_MAX_DELAY_ALARM			((DWORD)(1000.0 / MIN_FRAMERATE)) // ms
+#define HTTP_CONNECTION_TIMEOUT				60			// Connection timeout in sec, used:
 														// - remove the oldest connections in network poll mode
 														// - network setup try connecting timeout
 														// - network reconnect in watchdog
-#define HTTPGETFRAME_MIN_KEEPALIVE_REQUESTS	50			// Keep-alive support check
-#define HTTPGETFRAME_USERNAME_PLACEHOLDER	_T("[USERNAME]") // only use letters, numbers, uri unreserved or uri reserved chars
-#define HTTPGETFRAME_PASSWORD_PLACEHOLDER	_T("[PASSWORD]") // only use letters, numbers, uri unreserved or uri reserved chars
+#define HTTP_MIN_KEEPALIVE_REQUESTS			50			// Keep-alive support check
+#define HTTP_USERNAME_PLACEHOLDER			_T("[USERNAME]") // only use letters, numbers, uri unreserved or uri reserved chars
+#define HTTP_PASSWORD_PLACEHOLDER			_T("[PASSWORD]") // only use letters, numbers, uri unreserved or uri reserved chars
 
 // The Document Class
 class CVideoDeviceDoc : public CUImagerDoc
@@ -1057,12 +1057,12 @@ public:
 														// 0 means no limit
 	volatile int m_nMinDiskFreePermillion;				// Minimum disk free size in permillion, if the free space is lower than that the oldest files are removed
 
-	// HTTP Get Frame Networking
-	CNetCom* volatile m_pVideoNetCom;					// Http Video Instance
-	CNetCom* volatile m_pAudioNetCom;					// Http Audio Instance
+	// HTTP Networking
+	CNetCom* volatile m_pVideoNetCom;					// HTTP Video Instance
+	CNetCom* volatile m_pAudioNetCom;					// HTTP Audio Instance
 	volatile NetworkDeviceTypeMode m_nNetworkDeviceTypeMode;// Video Network Device Type and Mode
-	CString m_sGetFrameVideoHost;						// Get Frame video host
-	volatile int m_nGetFrameVideoPort;					// Get Frame video port
+	CString m_sGetFrameVideoHost;						// HTTP Host
+	volatile int m_nGetFrameVideoPort;					// HTTP Port
 	CString m_sHttpGetFrameUsername;					// HTTP Username
 	CString m_sHttpGetFramePassword;					// HTTP Password
 	CHttpParseProcess* volatile m_pHttpVideoParseProcess; // HTTP Video Parse & Process
@@ -1070,8 +1070,8 @@ public:
 	volatile int m_nHttpVideoQuality;					// 0 Best Quality, 100 Worst Quality
 	volatile int m_nHttpVideoSizeX;						// Video width
 	volatile int m_nHttpVideoSizeY;						// Video height
-	CRITICAL_SECTION m_csHttpParams;					// Critical Section for Size and Compression
-	CRITICAL_SECTION m_csHttpProcess;					// Critical Section for Processing Image Data
+	CRITICAL_SECTION m_csHttpParams;					// Critical Section for Size and Compression params
+	CRITICAL_SECTION m_csHttpProcess;					// Critical Section used while processing HTTP data
 	volatile int m_nHttpGetFrameLocationPos;			// Automatic camera type detection position
 	CStringArray m_HttpGetFrameLocations;				// Automatic camera type detection query string
 

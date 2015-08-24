@@ -3040,10 +3040,10 @@ BOOL CVideoDeviceDoc::CHttpThread::PollAndClean(BOOL bDoNewPoll)
 		{
 			// Remove oldest connection?
 			CTimeSpan ConnectionAge = CTime::GetCurrentTime() - pNetCom->m_InitTime;
-			if (pNetCom->IsShutdown()												||	// done?
-				ConnectionAge.GetTotalSeconds() >= HTTPGETFRAME_CONNECTION_TIMEOUT	||	// too old?
-				ConnectionAge.GetTotalSeconds() < 0									||	// "
-				!bDoNewPoll)															// too many open connections?
+			if (pNetCom->IsShutdown()										||	// done?
+				ConnectionAge.GetTotalSeconds() >= HTTP_CONNECTION_TIMEOUT	||	// too old?
+				ConnectionAge.GetTotalSeconds() < 0							||	// "
+				!bDoNewPoll)													// too many open connections?
 			{
 				delete pNetCom; // this calls Close() which blocks till all net threads are done
 				m_HttpVideoNetComList.RemoveHead();
@@ -3130,32 +3130,32 @@ int CVideoDeviceDoc::CHttpThread::Work()
 	ASSERT(m_pDoc);
 	int nAlarmLevel = 0;
 	BOOL bCheckConnectionTimeout = FALSE;
-	int nConnectionKeepAliveSupported = HTTPGETFRAME_MIN_KEEPALIVE_REQUESTS; // 0: not supported, 1: supported, >1: to be verified
+	int nConnectionKeepAliveSupported = HTTP_MIN_KEEPALIVE_REQUESTS; // 0: not supported, 1: supported, >1: to be verified
 
 	for (;;)
 	{
 		// Set wait delay for client poll mode and set
 		// check-timeout for both client poll and server
 		// push modes when trying to setup a connection 
-		DWORD dwWaitDelay = HTTPGETFRAME_DELAY_DEFAULT;
+		DWORD dwWaitDelay = HTTP_THREAD_DEFAULT_DELAY;
 		if (m_pDoc->m_dFrameRate > 0.0)
 			dwWaitDelay = (DWORD)Round(1000.0 / m_pDoc->m_dFrameRate);
 
 		// Alarm dependent wait delay (only used in client poll mode)
 		if (nAlarmLevel == 1)
 		{
-			dwWaitDelay = MAX(2U*dwWaitDelay, HTTPGETFRAME_MIN_DELAY_ALARM1);
-			dwWaitDelay = MIN(dwWaitDelay, HTTPGETFRAME_MAX_DELAY_ALARM);
+			dwWaitDelay = MAX(2U*dwWaitDelay, HTTP_THREAD_MIN_DELAY_ALARM1);
+			dwWaitDelay = MIN(dwWaitDelay, HTTP_THREAD_MAX_DELAY_ALARM);
 		}
 		else if (nAlarmLevel == 2)
 		{
-			dwWaitDelay = MAX(4U*dwWaitDelay, HTTPGETFRAME_MIN_DELAY_ALARM2);
-			dwWaitDelay = MIN(dwWaitDelay, HTTPGETFRAME_MAX_DELAY_ALARM);
+			dwWaitDelay = MAX(4U*dwWaitDelay, HTTP_THREAD_MIN_DELAY_ALARM2);
+			dwWaitDelay = MIN(dwWaitDelay, HTTP_THREAD_MAX_DELAY_ALARM);
 		}
 		else if (nAlarmLevel >= 3)
 		{
-			dwWaitDelay = MAX(8U*dwWaitDelay, HTTPGETFRAME_MIN_DELAY_ALARM3);
-			dwWaitDelay = MIN(dwWaitDelay, HTTPGETFRAME_MAX_DELAY_ALARM);
+			dwWaitDelay = MAX(8U*dwWaitDelay, HTTP_THREAD_MIN_DELAY_ALARM3);
+			dwWaitDelay = MIN(dwWaitDelay, HTTP_THREAD_MAX_DELAY_ALARM);
 		}	
 
 		// Wait for events
@@ -3177,7 +3177,7 @@ int CVideoDeviceDoc::CHttpThread::Work()
 			{
 				::ResetEvent(m_hEventArray[1]);
 				bCheckConnectionTimeout = TRUE;
-				nConnectionKeepAliveSupported = HTTPGETFRAME_MIN_KEEPALIVE_REQUESTS; // 0: not supported, 1: supported, >1: to be verified
+				nConnectionKeepAliveSupported = HTTP_MIN_KEEPALIVE_REQUESTS; // 0: not supported, 1: supported, >1: to be verified
 				::EnterCriticalSection(&m_csVideoConnectRequestParams);
 				DWORD dwConnectDelayMs = m_dwVideoConnectDelayMs;
 				::LeaveCriticalSection(&m_csVideoConnectRequestParams);
@@ -3279,7 +3279,7 @@ int CVideoDeviceDoc::CHttpThread::Work()
 				if (m_pDoc->m_pHttpVideoParseProcess->m_bTryConnecting && bCheckConnectionTimeout)
 				{
 					CTimeSpan ConnectionAge = CTime::GetCurrentTime() - m_pDoc->m_pVideoNetCom->m_InitTime;
-					if (ConnectionAge.GetTotalSeconds() >= HTTPGETFRAME_CONNECTION_TIMEOUT ||
+					if (ConnectionAge.GetTotalSeconds() >= HTTP_CONNECTION_TIMEOUT ||
 						ConnectionAge.GetTotalSeconds() < 0)
 					{
 						m_pDoc->m_pHttpVideoParseProcess->m_bTryConnecting = FALSE;
@@ -3315,11 +3315,11 @@ int CVideoDeviceDoc::CHttpThread::Work()
 						SetEventVideoConnect();
 					else
 					{
-						if (m_HttpVideoNetComList.GetCount() >= HTTPGETFRAME_MAXCOUNT_ALARM3)
+						if (m_HttpVideoNetComList.GetCount() >= HTTP_MAXPOLLS_ALARM3)
 							nAlarmLevel = 3;
-						else if (m_HttpVideoNetComList.GetCount() >= HTTPGETFRAME_MAXCOUNT_ALARM2)
+						else if (m_HttpVideoNetComList.GetCount() >= HTTP_MAXPOLLS_ALARM2)
 							nAlarmLevel = 2;
-						else if (m_HttpVideoNetComList.GetCount() >= HTTPGETFRAME_MAXCOUNT_ALARM1)
+						else if (m_HttpVideoNetComList.GetCount() >= HTTP_MAXPOLLS_ALARM1)
 							nAlarmLevel = 1;
 						else
 							nAlarmLevel = 0;
@@ -3435,11 +3435,11 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 				if (m_pDoc->m_pVideoNetCom && (m_pDoc->m_bWatchDogVideoAlarm || m_pDoc->m_bWatchDogAudioAlarm))
 				{
 					CTimeSpan TimeSpan = CurrentTime - LastHttpReconnectTime;
-					if (TimeSpan.GetTotalSeconds() > HTTPGETFRAME_CONNECTION_TIMEOUT)
+					if (TimeSpan.GetTotalSeconds() > HTTP_CONNECTION_TIMEOUT)
 					{
 						VlmReStart();
 						LastHttpReconnectTime = CurrentTime;
-						DWORD dwConnectDelayMs = MIN(((CUImagerApp*)::AfxGetApp())->m_dwAutostartDelayMs, 1000 * HTTPGETFRAME_CONNECTION_TIMEOUT / 2);
+						DWORD dwConnectDelayMs = MIN(((CUImagerApp*)::AfxGetApp())->m_dwAutostartDelayMs, 1000 * HTTP_CONNECTION_TIMEOUT / 2);
 						m_pDoc->m_HttpThread.SetEventVideoConnect(_T(""), dwConnectDelayMs);
 						if (m_pDoc->m_bCaptureAudio)
 							m_pDoc->m_HttpThread.SetEventAudioConnect(_T(""), dwConnectDelayMs);
@@ -3778,9 +3778,9 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_sGetFrameVideoHost = _T("");
 	m_nGetFrameVideoPort = DEFAULT_TCP_PORT;
 	m_nNetworkDeviceTypeMode = OTHERONE_SP;
-	m_nHttpVideoQuality = DEFAULT_HTTP_VIDEO_QUALITY;
-	m_nHttpVideoSizeX = DEFAULT_HTTP_VIDEO_SIZE_CX;
-	m_nHttpVideoSizeY = DEFAULT_HTTP_VIDEO_SIZE_CY;
+	m_nHttpVideoQuality = HTTP_DEFAULT_VIDEO_QUALITY;
+	m_nHttpVideoSizeX = HTTP_DEFAULT_VIDEO_SIZE_CX;
+	m_nHttpVideoSizeY = HTTP_DEFAULT_VIDEO_SIZE_CY;
 	m_nHttpGetFrameLocationPos = 0;
 	m_HttpGetFrameLocations.Add(_T("/")); // start trying home to see whether cam is reachable
 
@@ -4516,9 +4516,9 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_SnapshotFTPUploadConfiguration.m_sPassword = pApp->GetSecureProfileString(sSection, _T("SnapshotFTPPassword"), _T(""));
 
 	// Networking
-	m_nHttpVideoQuality = (int) pApp->GetProfileInt(sSection, _T("HTTPVideoQuality"), DEFAULT_HTTP_VIDEO_QUALITY);
-	m_nHttpVideoSizeX = (int) pApp->GetProfileInt(sSection, _T("HTTPVideoSizeX"), DEFAULT_HTTP_VIDEO_SIZE_CX);
-	m_nHttpVideoSizeY = (int) pApp->GetProfileInt(sSection, _T("HTTPVideoSizeY"), DEFAULT_HTTP_VIDEO_SIZE_CY);
+	m_nHttpVideoQuality = (int) pApp->GetProfileInt(sSection, _T("HTTPVideoQuality"), HTTP_DEFAULT_VIDEO_QUALITY);
+	m_nHttpVideoSizeX = (int) pApp->GetProfileInt(sSection, _T("HTTPVideoSizeX"), HTTP_DEFAULT_VIDEO_SIZE_CX);
+	m_nHttpVideoSizeY = (int) pApp->GetProfileInt(sSection, _T("HTTPVideoSizeY"), HTTP_DEFAULT_VIDEO_SIZE_CY);
 	m_sHttpGetFrameUsername = pApp->GetSecureProfileString(sSection, _T("HTTPGetFrameUsername"), _T(""));
 	m_sHttpGetFramePassword = pApp->GetSecureProfileString(sSection, _T("HTTPGetFramePassword"), _T(""));
 
@@ -5067,15 +5067,15 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 		m_HttpGetFrameLocations.Add(_T("/control/faststream.jpg?stream=full"));	// Mobotix
 		
 		m_HttpGetFrameLocations.Add(CString(_T("/image.cgi?mode=http")) +
-									_T("&id=") + HTTPGETFRAME_USERNAME_PLACEHOLDER + 
-									_T("&passwd=") + HTTPGETFRAME_PASSWORD_PLACEHOLDER);	// Intellinet
+									_T("&id=") + HTTP_USERNAME_PLACEHOLDER + 
+									_T("&passwd=") + HTTP_PASSWORD_PLACEHOLDER);	// Intellinet
 
 		m_HttpGetFrameLocations.Add(CString(_T("/cgi-bin/CGIProxy.fcgi?cmd=setSubStreamFormat&format=1")) +
-									_T("&usr=") + HTTPGETFRAME_USERNAME_PLACEHOLDER + 
-									_T("&pwd=") + HTTPGETFRAME_PASSWORD_PLACEHOLDER);		// Enable MJPG for Foscam HD
+									_T("&usr=") + HTTP_USERNAME_PLACEHOLDER + 
+									_T("&pwd=") + HTTP_PASSWORD_PLACEHOLDER);		// Enable MJPG for Foscam HD
 		m_HttpGetFrameLocations.Add(CString(_T("/cgi-bin/CGIStream.cgi?cmd=GetMJStream")) +
-									_T("&usr=") + HTTPGETFRAME_USERNAME_PLACEHOLDER + 
-									_T("&pwd=") + HTTPGETFRAME_PASSWORD_PLACEHOLDER);		// Foscam HD (mjpeg stream is VGA resolution @ 15fps)
+									_T("&usr=") + HTTP_USERNAME_PLACEHOLDER + 
+									_T("&pwd=") + HTTP_PASSWORD_PLACEHOLDER);		// Foscam HD (mjpeg stream is VGA resolution @ 15fps)
 	}
 	// JPEG
 	else if (m_nNetworkDeviceTypeMode == OTHERONE_CP)
@@ -5144,8 +5144,8 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 		m_HttpGetFrameLocations.Add(_T("/capture1.jpg"));					// Active WebCam Video Surveillance Software
 
 		m_HttpGetFrameLocations.Add(CString(_T("/cgi-bin/CGIProxy.fcgi?cmd=snapPicture2")) +
-									_T("&usr=") + HTTPGETFRAME_USERNAME_PLACEHOLDER + 
-									_T("&pwd=") + HTTPGETFRAME_PASSWORD_PLACEHOLDER); // Foscam HD
+									_T("&usr=") + HTTP_USERNAME_PLACEHOLDER + 
+									_T("&pwd=") + HTTP_PASSWORD_PLACEHOLDER); // Foscam HD
 	}
 
 	// Finally add the mixed commands (it depends from the maker whether those commands return JPEG or MJPEG)
@@ -6582,11 +6582,11 @@ void CVideoDeviceDoc::VlmReStart()
 
 	::EnterCriticalSection(&pApp->m_csVlc);
 
-	// Stop if running and 2.5 * HTTPGETFRAME_CONNECTION_TIMEOUT seconds elapsed
+	// Stop if running and 2.5 * HTTP_CONNECTION_TIMEOUT seconds elapsed
 	if (pApp->m_hVlcProcess)
 	{
 		CTimeSpan TimeSpan = CTime::GetCurrentTime() - pApp->m_VlcStartTime;
-		if (TimeSpan.GetTotalSeconds() > 5 * HTTPGETFRAME_CONNECTION_TIMEOUT / 2)
+		if (TimeSpan.GetTotalSeconds() > 5 * HTTP_CONNECTION_TIMEOUT / 2)
 		{
 			::KillApp(pApp->m_hVlcProcess); // this sets pApp->m_hVlcProcess to NULL
 			bStopped = TRUE;
@@ -9030,13 +9030,13 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRawRequest(CString sRequest)
 			sUri = ::UrlDecode(sUri);
 
 			// Do not encode reserved chars like '?' or '&' or '=' used by uri parameters
-			// or '[' and ']' found in HTTPGETFRAME_USERNAME_PLACEHOLDER or
-			// HTTPGETFRAME_PASSWORD_PLACEHOLDER and replaced below
+			// or '[' and ']' found in HTTP_USERNAME_PLACEHOLDER or
+			// HTTP_PASSWORD_PLACEHOLDER and replaced below
 			sUri = ::UrlEncode(sUri, FALSE);
 
 			// Replace uri parameters placeholders with fully url encoded username and password
-			sUri.Replace(HTTPGETFRAME_USERNAME_PLACEHOLDER, ::UrlEncode(m_pDoc->m_sHttpGetFrameUsername, TRUE));
-			sUri.Replace(HTTPGETFRAME_PASSWORD_PLACEHOLDER, ::UrlEncode(m_pDoc->m_sHttpGetFramePassword, TRUE));
+			sUri.Replace(HTTP_USERNAME_PLACEHOLDER, ::UrlEncode(m_pDoc->m_sHttpGetFrameUsername, TRUE));
+			sUri.Replace(HTTP_PASSWORD_PLACEHOLDER, ::UrlEncode(m_pDoc->m_sHttpGetFramePassword, TRUE));
 
 			// Make request
 			sRequest = sMethod + _T(" ") + sUri + sRequest.Mid(nPosEnd);
@@ -9500,11 +9500,11 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 					{
 						sRequest.Format(_T("GET %s?action=update&Image.I0.Appearance.Resolution=%dx%d HTTP/%s\r\n"),
 										sLocation,
-										DEFAULT_HTTP_VIDEO_SIZE_CX,
-										DEFAULT_HTTP_VIDEO_SIZE_CY,
+										HTTP_DEFAULT_VIDEO_SIZE_CX,
+										HTTP_DEFAULT_VIDEO_SIZE_CY,
 										m_bOldVersion ? _T("1.0") : _T("1.1"));
-						m_pDoc->m_nHttpVideoSizeX = DEFAULT_HTTP_VIDEO_SIZE_CX;
-						m_pDoc->m_nHttpVideoSizeY = DEFAULT_HTTP_VIDEO_SIZE_CY;
+						m_pDoc->m_nHttpVideoSizeX = HTTP_DEFAULT_VIDEO_SIZE_CX;
+						m_pDoc->m_nHttpVideoSizeY = HTTP_DEFAULT_VIDEO_SIZE_CY;
 					}
 				}
 				else if (m_bSetVideoCompression)
@@ -9569,11 +9569,11 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 					{
 						sRequest.Format(_T("GET %s?action=update&Image.I0.Appearance.Resolution=%dx%d HTTP/%s\r\n"),
 										sLocation,
-										DEFAULT_HTTP_VIDEO_SIZE_CX,
-										DEFAULT_HTTP_VIDEO_SIZE_CY,
+										HTTP_DEFAULT_VIDEO_SIZE_CX,
+										HTTP_DEFAULT_VIDEO_SIZE_CY,
 										m_bOldVersion ? _T("1.0") : _T("1.1"));
-						m_pDoc->m_nHttpVideoSizeX = DEFAULT_HTTP_VIDEO_SIZE_CX;
-						m_pDoc->m_nHttpVideoSizeY = DEFAULT_HTTP_VIDEO_SIZE_CY;
+						m_pDoc->m_nHttpVideoSizeX = HTTP_DEFAULT_VIDEO_SIZE_CX;
+						m_pDoc->m_nHttpVideoSizeY = HTTP_DEFAULT_VIDEO_SIZE_CY;
 					}
 				}
 				else if (m_bSetVideoCompression)
@@ -9639,8 +9639,8 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 				else
 					nRate = 23;	// 0.2 fps
 				sLocation =	CString(_T("/videostream.cgi")) +
-							_T("?user=") + HTTPGETFRAME_USERNAME_PLACEHOLDER +
-							_T("&pwd=") + HTTPGETFRAME_PASSWORD_PLACEHOLDER;
+							_T("?user=") + HTTP_USERNAME_PLACEHOLDER +
+							_T("&pwd=") + HTTP_PASSWORD_PLACEHOLDER;
 				if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
 				{
 					sRequest.Format(_T("GET %s&resolution=%d&rate=%d HTTP/%s\r\n"),
@@ -9671,8 +9671,8 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 			case FOSCAM_CP :	// Foscam Client Poll (jpegs)
 			{
 				sLocation = CString(_T("/snapshot.cgi")) +
-							_T("?user=") + HTTPGETFRAME_USERNAME_PLACEHOLDER +
-							_T("&pwd=") + HTTPGETFRAME_PASSWORD_PLACEHOLDER;
+							_T("?user=") + HTTP_USERNAME_PLACEHOLDER +
+							_T("&pwd=") + HTTP_PASSWORD_PLACEHOLDER;
 				if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
 				{
 					sRequest.Format(_T("GET %s&resolution=%d HTTP/%s\r\n"),
@@ -10626,9 +10626,9 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 
 				// Retry start connection with delay
 				if (m_FormatType < FORMATAUDIO_UNKNOWN)
-					m_pDoc->m_HttpThread.SetEventVideoConnect(_T(""), HTTPGETFRAME_RECONNECTION_DELAY);
+					m_pDoc->m_HttpThread.SetEventVideoConnect(_T(""), HTTP_RECONNECTION_DELAY);
 				else
-					m_pDoc->m_HttpThread.SetEventAudioConnect(_T(""), HTTPGETFRAME_RECONNECTION_DELAY);
+					m_pDoc->m_HttpThread.SetEventAudioConnect(_T(""), HTTP_RECONNECTION_DELAY);
 			}
 			delete [] pMsg;
 #if defined(_DEBUG) || defined(TRACELOGFILE)
