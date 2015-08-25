@@ -387,22 +387,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// double-clicked!
 		::SetCurrentDirectory(sDriveDir); // Locks program's dir
 
-		// Create Application Temporary Directory (it is _T('\\') terminated)
-		// Note: do not delete it to clean-up because other instances may be running!
-		TCHAR szTempPath[MAX_PATH];
-		CString sSysTempDir;
-		if (::GetTempPath(MAX_PATH, szTempPath))
-			sSysTempDir = CString(szTempPath) + sName;	// no trailing backslash
-		m_sAppTempDir = GetConfiguredTempDir();			// no trailing backslash
-		if (m_sAppTempDir.IsEmpty())
-			m_sAppTempDir = sSysTempDir;
-		m_sAppTempDir += _T("\\");						// add trailing backslash
-		if (!::IsExistingDir(m_sAppTempDir))
-		{
-			if (!::CreateDir(m_sAppTempDir))
-				::ShowLastError(TRUE);
-		}
-
 		// Get configuration files directory
 		// Note: create directory only if VIDEODEVICEDOC defined
 		BOOL bIsConfigFilesDirConfigured;
@@ -415,7 +399,15 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		}
 #endif
 
-		// Set default location for Document Root,
+		// Get system temporary folder
+		TCHAR szTempPath[MAX_PATH];
+		memset(szTempPath, 0, MAX_PATH * sizeof(TCHAR));
+		::GetTempPath(MAX_PATH, szTempPath); // the returned string ends with a backslash
+		CString sSysTempDir(szTempPath);
+		if (sSysTempDir.IsEmpty())
+			sSysTempDir = CString(_T("C:\\Temp\\"));
+
+		// Set default location for Document Root
 		// Note: sSysTempDir is supposed to be on a drive where we can write
 #ifdef VIDEODEVICEDOC
 		m_sMicroApacheDocRoot = ::GetDriveName(sSysTempDir);
@@ -744,10 +736,10 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		}
 		m_pMainWnd = pMainFrame;
 
-		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		// ! Do not throw after this point, debugger asserts if returning FALSE !!
-		// ! from this function when the MainFrame has already been created     !! 
-		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		!! Do not throw after this point, debugger asserts if returning FALSE !!
+		!! from this function when the MainFrame has already been created     !! 
+		!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
 
 		// If this is the first instance of our App then track it
 		// so any other instances can find us
@@ -774,6 +766,31 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			pProgressDlgThread = NULL;
 		}
 #endif
+
+		// Application temporary directory is _T('\\') terminated
+		// (its content must be delete exactly here, that's after the service
+		// process stopped and before ProcessShellCommand() execution)
+		// Note: m_sAppTempDir is used later on in BatchProcDlg.cpp, ImageInfoDlg.cpp,
+		//       MainFrm.cpp (for scan), PictureDoc.cpp, SettingsDlg.cpp,
+		//       uImager.cpp (for shrink pictures and send mail), VideoDeviceDoc.cpp
+		CString sSharedTempFolderPostfix;
+		if (m_bForceSeparateInstance || !m_bSingleInstance)
+			sSharedTempFolderPostfix = _T("Shared");
+		m_sAppTempDir = GetConfiguredTempDir();											// returns no trailing backslash
+		if (m_sAppTempDir.IsEmpty())
+			m_sAppTempDir = sSysTempDir + sName + sSharedTempFolderPostfix + _T("\\");	// sSysTempDir ends with a backslash
+		else
+			m_sAppTempDir = m_sAppTempDir + _T("\\") + sName + sSharedTempFolderPostfix + _T("\\");
+		if (::IsExistingDir(m_sAppTempDir))
+		{
+			if (sSharedTempFolderPostfix.IsEmpty())
+				::DeleteDirContent(m_sAppTempDir);
+		}
+		else
+		{
+			if (!::CreateDir(m_sAppTempDir))
+				::ShowLastError(TRUE);
+		}
 
 		// Dispatch commands specified on the command line,
 		// returns FALSE if printing or if file opening fails
