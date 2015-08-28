@@ -7,6 +7,7 @@
 #include "PicturePrintPreviewView.h"
 #include "PrintPreviewScaleEdit.h"
 #include "SortableFileFind.h"
+#include "HelpersAudio.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

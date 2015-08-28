@@ -41,6 +41,7 @@
 #include <Windns.h>
 #include <wincrypt.h>
 #include "MlString.h"
+#include "MMSystem.h"
 #include "Helpers.h"
 #include "Performance.h"
 #include "TraceLogFile.h"

@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include "mmsystem.h"
 #include "wininet.h"
+#include "Winnetwk.h"
 #include "Helpers.h"
 #include "Round.h"
 #include "Rpc.h"
@@ -14,8 +14,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#pragma comment(lib, "winmm.lib")
-#pragma comment(lib, "Wininet.lib")
 #pragma comment(lib, "psapi.lib")	// to support GetProcessMemoryInfo()
 #pragma comment(lib, "mpr.lib")		// to support WNetGetConnection()
 
@@ -2082,90 +2080,6 @@ CString ShowError(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, CString sHeade
 CString ShowLastError(BOOL bShowMessageBoxOnError, CString sHeader/*=_T("")*/, CString sFooter/*=_T("")*/)
 {
 	return ShowError(GetLastError(), bShowMessageBoxOnError, sHeader, sFooter);
-}
-
-// Plays a specified file using MCI_OPEN and MCI_PLAY. 
-// Returns when playback begins.
-// Returns the device id on success,
-// on error it returns -1.
-int MCIPlayFile(HWND hWndNotify, BOOL bStartPlaying, LPCTSTR lpszFileName)
-{
-    MCI_OPEN_PARMS mciOpenParms;
-	ZeroMemory(&mciOpenParms, sizeof(MCI_OPEN_PARMS));
-
-    // Open the device by specifying the filename.
-    // MCI will choose a device capable of playing the specified file.
-    mciOpenParms.lpstrElementName = lpszFileName;
-    if (mciSendCommand(0,
-						MCI_OPEN,
-						MCI_OPEN_ELEMENT,
-						(DWORD)(LPVOID)&mciOpenParms))
-    {
-        // Failed to open device.
-        return -1;
-    }
-
-    // Play?
-	if (bStartPlaying)
-	{
-		if (MCIPlayDevice(hWndNotify, (int)mciOpenParms.wDeviceID))
-		{
-			MCICloseDevice(hWndNotify, (int)mciOpenParms.wDeviceID);
-			return -1;
-		}
-	}
-
-    return (int)mciOpenParms.wDeviceID;
-}
-
-// Begin playback. The window procedure function for the parent 
-// window will be notified with an MM_MCINOTIFY message when 
-// playback is complete. At this time, the window procedure closes 
-// the device.
-MCIERROR MCIPlayDevice(HWND hWndNotify, int nDeviceID)
-{
-	if (nDeviceID >= 0)
-	{
-		MCI_PLAY_PARMS mciPlayParms;
-		ZeroMemory(&mciPlayParms, sizeof(MCI_PLAY_PARMS));
-		mciPlayParms.dwCallback = (DWORD)hWndNotify;
-		return mciSendCommand((MCIDEVICEID)nDeviceID,
-								MCI_PLAY, 
-								hWndNotify ? MCI_NOTIFY : 0,
-								(DWORD)(LPVOID)&mciPlayParms);
-	}
-	else
-		return MCIERR_INVALID_DEVICE_ID;
-}
-
-MCIERROR MCIPauseDevice(HWND hWndNotify, int nDeviceID)
-{
-	if (nDeviceID >= 0)
-	{
-		MCI_GENERIC_PARMS mciGenericParms;
-		mciGenericParms.dwCallback = (DWORD)hWndNotify;
-		return mciSendCommand((MCIDEVICEID)nDeviceID,
-								MCI_PAUSE, 
-								hWndNotify ? MCI_NOTIFY : 0,
-								(DWORD)(LPVOID)&mciGenericParms);
-	}
-	else
-		return MCIERR_INVALID_DEVICE_ID;
-}
-
-MCIERROR MCICloseDevice(HWND hWndNotify, int nDeviceID)
-{
-	if (nDeviceID >= 0)
-	{
-		MCI_GENERIC_PARMS mciGenericParms;
-		mciGenericParms.dwCallback = (DWORD)hWndNotify;
-		return mciSendCommand((MCIDEVICEID)nDeviceID,
-								MCI_CLOSE, 
-								hWndNotify ? MCI_NOTIFY : 0,
-								(DWORD)(LPVOID)&mciGenericParms);
-	}
-	else
-		return MCIERR_INVALID_DEVICE_ID;
 }
 
 static BOOL HasCpuId()

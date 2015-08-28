@@ -747,6 +747,7 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="HelpersAudio.cpp" />
     <ClCompile Include="HLSDlgModeless.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCam TraceLogFile|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -1448,6 +1449,7 @@
     <ClInclude Include="GeneralPage.h" />
     <ClInclude Include="GifAnimationThread.h" />
     <ClInclude Include="Helpers.h" />
+    <ClInclude Include="HelpersAudio.h" />
     <ClInclude Include="HLSDlgModeless.h" />
     <ClInclude Include="HostPortDlg.h" />
     <ClInclude Include="HScrollListBox.h" />

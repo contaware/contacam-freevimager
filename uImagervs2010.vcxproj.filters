@@ -414,6 +414,9 @@
     <ClCompile Include="bigalloc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="HelpersAudio.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <MASM Include="MotionDetHelpers.asm">
@@ -853,6 +856,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ToasterWndLink.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HelpersAudio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "MMSystem.h"
 #include "WinReg.h"
 #include "WorkerThread.h"
 #include "Round.h"
@@ -258,12 +257,6 @@ extern CString ShowError(	DWORD dwErrorCode,
 extern CString ShowLastError(	BOOL bShowMessageBoxOnError,
 								CString sHeader = _T(""),
 								CString sFooter = _T(""));
-
-// Just Play An Audio File
-extern int MCIPlayFile(HWND hWndNotify, BOOL bStartPlaying, LPCTSTR lpszFileName);
-extern MCIERROR MCIPlayDevice(HWND hWndNotify, int nDeviceID);
-extern MCIERROR MCIPauseDevice(HWND hWndNotify, int nDeviceID);
-extern MCIERROR MCICloseDevice(HWND hWndNotify, int nDeviceID);
 
 // Get the local NetBIOS computer name
 extern CString GetComputerName();

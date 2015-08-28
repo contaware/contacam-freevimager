@@ -24,6 +24,7 @@
 #include "Tiff2Pdf.h"
 #include "NoVistaFileDlg.h"
 #include "AVRec.h"
+#include "HelpersAudio.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
