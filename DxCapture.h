@@ -24,11 +24,11 @@ typedef unsigned long ULONG_PTR;
 #include "ISampleGrabber.h"
 
 #ifndef SAFE_RELEASE
-#define SAFE_RELEASE( x )  \
-    if ( NULL != x )       \
-    {                      \
-        x->Release( );     \
-        x = NULL;          \
+#define SAFE_RELEASE(x) \
+    if ((x) != NULL)    \
+    {                   \
+        (x)->Release(); \
+        (x) = NULL;     \
     }
 #endif
 
