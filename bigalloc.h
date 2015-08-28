@@ -43,6 +43,10 @@ extern void BigAllocVMMapSnapshot();
 //   allocator lists implemented in BigAlloc() and BigFree()
 #define BIGALLOC_SAFETY		32	// must be at least FF_INPUT_BUFFER_PADDING_SIZE
 #ifdef _DEBUG
+extern "C"
+{
+#include "libavutil/mem.h"
+}
 #define BIGALLOC(Size) av_malloc((size_t)(Size)+BIGALLOC_SAFETY)
 #define BIGFREE(p) av_free(p)
 // av_malloc wastes some bytes for alignment but we do not account for that here
