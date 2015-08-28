@@ -112,7 +112,10 @@ public:
 					bool bInterleaved,
 					int64_t pts = AV_NOPTS_VALUE);
 
-	// Audio Samples Write, for flushing set pBuf to NULL and dwNumSamples to 0
+	// - Audio Samples Write, for flushing set pBuf to NULL and dwNumSamples to 0
+	// - dwNumSamples is the number of input samples per channel, this is equivalent
+	//   to the number of audio frames. The size in bytes of such a frame is specified
+	//   by the nBlockAlign member of WAVEFORMATEX
 	bool AddAudioSamples(DWORD dwStreamNum, DWORD dwNumSamples, LPBYTE pBuf, bool bInterleaved);
 
 	// Video Frame Manipulation Functions
