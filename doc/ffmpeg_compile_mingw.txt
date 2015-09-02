@@ -1,3 +1,10 @@
+FFMPEG command line versions
+----------------------------
+
+- ffmpeg.exe (ffmpeg.exe "stripped" of its debug symbols)
+- ffmpeg_g.exe (ffmpeg.exe with debug symbols)
+
+
 FFMPEG
 ------
 
@@ -25,6 +32,7 @@ Put library source to /src, extract it and: (get src from: http://download.video
 make
 make install
 -> library: /mingw/lib/libx264.a  copy to  /c/uimager/ffmpeg/mingw
+Note: to debug SIMD problems try with --disable-asm
 
   
 LAME
@@ -35,6 +43,7 @@ Put library source to /src, extract it and:
 make
 make install
 -> library: /mingw/lib/libmp3lame.a  copy to  /c/uimager/ffmpeg/mingw
+Note: to debug SIMD problems try without --enable-nasm
 
 
 AAC
@@ -124,3 +133,9 @@ When running the MinGW Installation Manager it may happen that libintl-8.dll is 
 Delete packages C:\MinGW\var\cache\mingw-get\packages\libintl-*
 $ mingw-get install --reinstall msys-libintl
 $ mingw-get install --reinstall mingw32-libintl
+
+
+To update MinGW better to use the MSYS command line
+---------------------------------------------------
+$ mingw-get update
+$ mingw-get upgrade

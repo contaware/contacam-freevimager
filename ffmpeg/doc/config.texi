@@ -165,7 +165,7 @@
 @c @set have-dev-video-bktr-ioctl-bt848-h no
 @c @set have-dev-video-meteor-ioctl-meteor-h no
 @set have-direct-h yes
-@c @set have-dlfcn-h no
+@set have-dlfcn-h yes
 @c @set have-dxva-h no
 @c @set have-es2-gl-h no
 @c @set have-gsm-h no
@@ -325,9 +325,9 @@
 @c @set have-xlib no
 @c @set config-bsfs no
 @set config-decoders yes
-@c @set config-demuxers no
+@set config-demuxers yes
 @set config-encoders yes
-@c @set config-filters no
+@set config-filters yes
 @c @set config-hwaccels no
 @c @set config-indevs no
 @set config-muxers yes
@@ -456,9 +456,9 @@
 @set config-swresample yes
 @set config-swscale yes
 @c @set config-ffplay no
-@c @set config-ffprobe no
+@set config-ffprobe yes
 @c @set config-ffserver no
-@c @set config-ffmpeg no
+@set config-ffmpeg yes
 @set config-dct yes
 @c @set config-dwt no
 @set config-error-resilience yes
@@ -523,7 +523,7 @@
 @set config-pixblockdsp yes
 @set config-qpeldsp yes
 @c @set config-rangecoder no
-@c @set config-riffdec no
+@set config-riffdec yes
 @set config-riffenc yes
 @c @set config-rtpdec no
 @set config-rtpenc-chain yes
@@ -968,7 +968,7 @@
 @c @set config-ass-demuxer no
 @c @set config-ast-demuxer no
 @c @set config-au-demuxer no
-@c @set config-avi-demuxer no
+@set config-avi-demuxer yes
 @c @set config-avisynth-demuxer no
 @c @set config-avr-demuxer no
 @c @set config-avs-demuxer no
@@ -1056,7 +1056,7 @@
 @c @set config-mlv-demuxer no
 @c @set config-mm-demuxer no
 @c @set config-mmf-demuxer no
-@c @set config-mov-demuxer no
+@set config-mov-demuxer yes
 @c @set config-mp3-demuxer no
 @c @set config-mpc-demuxer no
 @c @set config-mpc8-demuxer no
@@ -1358,16 +1358,16 @@
 @c @set config-aecho-filter no
 @c @set config-aeval-filter no
 @c @set config-afade-filter no
-@c @set config-aformat-filter no
+@set config-aformat-filter yes
 @c @set config-ainterleave-filter no
 @c @set config-allpass-filter no
 @c @set config-amerge-filter no
 @c @set config-amix-filter no
-@c @set config-anull-filter no
+@set config-anull-filter yes
 @c @set config-apad-filter no
 @c @set config-aperms-filter no
 @c @set config-aphaser-filter no
-@c @set config-aresample-filter no
+@set config-aresample-filter yes
 @c @set config-aselect-filter no
 @c @set config-asendcmd-filter no
 @c @set config-asetnsamples-filter no
@@ -1380,7 +1380,7 @@
 @c @set config-astreamsync-filter no
 @c @set config-asyncts-filter no
 @c @set config-atempo-filter no
-@c @set config-atrim-filter no
+@set config-atrim-filter yes
 @c @set config-azmq-filter no
 @c @set config-bandpass-filter no
 @c @set config-bandreject-filter no
@@ -1443,7 +1443,7 @@
 @c @set config-field-filter no
 @c @set config-fieldmatch-filter no
 @c @set config-fieldorder-filter no
-@c @set config-format-filter no
+@set config-format-filter yes
 @c @set config-fps-filter no
 @c @set config-framepack-filter no
 @c @set config-framestep-filter no
@@ -1475,7 +1475,7 @@
 @c @set config-negate-filter no
 @c @set config-noformat-filter no
 @c @set config-noise-filter no
-@c @set config-null-filter no
+@set config-null-filter yes
 @c @set config-ocv-filter no
 @c @set config-overlay-filter no
 @c @set config-owdenoise-filter no
@@ -1497,7 +1497,7 @@
 @c @set config-separatefields-filter no
 @c @set config-setdar-filter no
 @c @set config-setfield-filter no
-@c @set config-setpts-filter no
+@set config-setpts-filter yes
 @c @set config-setsar-filter no
 @c @set config-settb-filter no
 @c @set config-showinfo-filter no
@@ -1516,7 +1516,7 @@
 @c @set config-tile-filter no
 @c @set config-tinterlace-filter no
 @c @set config-transpose-filter no
-@c @set config-trim-filter no
+@set config-trim-filter yes
 @c @set config-unsharp-filter no
 @c @set config-uspp-filter no
 @c @set config-vflip-filter no
