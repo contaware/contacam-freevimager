@@ -1976,7 +1976,10 @@ int CVideoDeviceDoc::FTPUpload(	CFTPTransfer* pFTP, FTPUploadConfigurationStruct
 
 CVideoDeviceDoc::CCaptureAudioThread::CCaptureAudioThread() 
 {
+	// Set pointers to NULL
 	m_pDoc = NULL;
+	m_pAudioTools = NULL;
+	m_pAudioPlay = NULL;
 
 	// Create Input Event
 	m_hWaveInEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);
@@ -2095,6 +2098,9 @@ int CVideoDeviceDoc::CCaptureAudioThread::Loop()
 												UserBuf.m_dwSize = m_WaveHeader[m_uiWaveInBufPos].dwBytesRecorded;
 												UserBuf.m_pBuf = m_pUncompressedBuf[m_uiWaveInBufPos];
 												m_pDoc->m_AudioList.AddTail(UserBuf);
+												Prelisten(	UserBuf.m_pBuf, UserBuf.m_dwSize,
+															m_pDoc->m_pSrcWaveFormat,
+															m_pAudioTools, m_pAudioPlay);
 												if (m_pDoc->m_AudioList.GetCount() > AUDIO_MAX_LIST_SIZE)
 												{
 													UserBuf = m_pDoc->m_AudioList.RemoveHead();
@@ -2144,6 +2150,17 @@ int CVideoDeviceDoc::CCaptureAudioThread::Work()
 	if (!m_pDoc)
 		return 0;
 
+	// Init COM
+	::CoInitialize(NULL);
+
+	// Init audio prelisten
+	if (!m_pAudioTools)
+		m_pAudioTools = new CAudioTools;
+	if (!m_pAudioPlay)
+		m_pAudioPlay = new CAudioPlay;
+	if (m_pAudioPlay)
+		m_pAudioPlay->Init(1.0f, 5000000);
+
 	// Loop
 	while (Loop() != 0)
 	{
@@ -2151,6 +2168,21 @@ int CVideoDeviceDoc::CCaptureAudioThread::Work()
 		if (::WaitForSingleObject(m_hKillEvent, AUDIO_RECONNECTION_DELAY) == WAIT_OBJECT_0)
 			break; // exit thread
 	}
+
+	// Close audio prelisten and free
+	if (m_pAudioPlay)
+	{
+		delete m_pAudioPlay;
+		m_pAudioPlay = NULL;
+	}
+	if (m_pAudioTools)
+	{
+		delete m_pAudioTools;
+		m_pAudioTools = NULL;
+	}
+
+	// Uninit COM
+	::CoUninitialize();
 
 	return 0;
 }
@@ -2282,6 +2314,46 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::DataInAudio()
 	m_uiWaveInBufPos = (m_uiWaveInBufPos + 1) % AUDIO_UNCOMPRESSED_BUFS_COUNT;
 
 	return TRUE;
+}
+
+BOOL CVideoDeviceDoc::Prelisten(LPBYTE pData, DWORD dwSizeInBytes,
+								const LPWAVEFORMATEX pSrcWaveFormat,
+								CAudioTools* pAudioTools, CAudioPlay* pAudioPlay)
+{
+	// Check
+	if (!pData || dwSizeInBytes == 0 || !pSrcWaveFormat || !pAudioTools || !pAudioPlay)
+		return FALSE;
+	
+	// Play audio
+	if (pAudioPlay->IsInit())
+	{
+		int nNumSrcFrames = dwSizeInBytes / pSrcWaveFormat->nBlockAlign;
+
+		// CAudioPlay always wants the floating-point format
+		float* pToFloatBuf = pAudioTools->ToFloat(	pData,
+													nNumSrcFrames,
+													pSrcWaveFormat);
+
+		// Adjust to the channels wanted by CAudioPlay
+		float* pConvertChannelsBuf = pAudioTools->ConvertChannels(	pToFloatBuf,
+																	nNumSrcFrames,
+																	pSrcWaveFormat->nChannels,
+																	pAudioPlay->GetWaveFormat()->nChannels);
+
+		// Resample to the sampling-rate wanted by CAudioPlay
+		int nNumDstFrames;
+		float* pResampleBuf = pAudioTools->Resample(pConvertChannelsBuf,
+													nNumSrcFrames,
+													&nNumDstFrames,
+													pSrcWaveFormat->nSamplesPerSec,
+													pAudioPlay->GetWaveFormat()->nSamplesPerSec,
+													pAudioPlay->GetWaveFormat()->nChannels);
+
+		// Finally play it
+		return pAudioPlay->Write((LPBYTE)pResampleBuf, nNumDstFrames, TRUE);
+	}
+	else
+		return FALSE;
 }
 
 void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, LPBYTE pMJPGData, DWORD dwMJPGSize, DWORD dwVideoProcessorMode, BOOL b1SecTick)
@@ -10816,6 +10888,9 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::DecodeAudio(AVPacket* avpkt)
 	memcpy(UserBuf.m_pBuf, m_pFrame->data[0], UserBuf.m_dwSize);
 	::EnterCriticalSection(&m_pDoc->m_csAudioList);
 	m_pDoc->m_AudioList.AddTail(UserBuf);
+	Prelisten(	UserBuf.m_pBuf, UserBuf.m_dwSize,
+				m_pDoc->m_pSrcWaveFormat,
+				m_pAudioTools, m_pAudioPlay);
 	if (m_pDoc->m_AudioList.GetCount() > AUDIO_MAX_LIST_SIZE)
 	{
 		UserBuf = m_pDoc->m_AudioList.RemoveHead();
@@ -10829,6 +10904,44 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::DecodeAudio(AVPacket* avpkt)
 	::InterlockedExchange(&m_pDoc->m_lLastAudioFramesUpTime, (LONG)::timeGetTime());
 
 	return TRUE;
+}
+
+void CVideoDeviceDoc::CHttpParseProcess::OnThreadStart()
+{
+	if (m_FormatType >= FORMATAUDIO_UNKNOWN)
+	{
+		// Init COM
+		::CoInitialize(NULL);
+
+		// Init audio prelisten
+		if (!m_pAudioTools)
+			m_pAudioTools = new CAudioTools;
+		if (!m_pAudioPlay)
+			m_pAudioPlay = new CAudioPlay;
+		if (m_pAudioPlay)
+			m_pAudioPlay->Init(1.0f, 10000000);
+	}
+}
+
+void CVideoDeviceDoc::CHttpParseProcess::OnThreadShutdown()
+{
+	if (m_FormatType >= FORMATAUDIO_UNKNOWN)
+	{
+		// Close audio prelisten and free
+		if (m_pAudioPlay)
+		{
+			delete m_pAudioPlay;
+			m_pAudioPlay = NULL;
+		}
+		if (m_pAudioTools)
+		{
+			delete m_pAudioTools;
+			m_pAudioTools = NULL;
+		}
+
+		// Uninit COM
+		::CoUninitialize();
+	}
 }
 
 // pLinBuf is a correctly aligned buffer ending

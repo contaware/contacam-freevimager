@@ -14,6 +14,7 @@
 #include "AVDecoder.h"
 #include "MJPEGEncoder.h"
 #include "YuvToRgb.h"
+#include "HelpersAudio.h"
 #include "SortableFileFind.h"
 #include "FTPTransfer.h"
 #include "HostPortDlg.h"
@@ -224,13 +225,15 @@ public:
 	class CHttpParseProcess : public CNetCom::CParseProcess
 	{
 		public:
-			CHttpParseProcess(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc; m_dwCNonceCount = 0U; Clear();};
+			CHttpParseProcess(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc; m_pAudioTools = NULL; m_pAudioPlay = NULL; m_dwCNonceCount = 0U; Clear();};
 			virtual ~CHttpParseProcess() {FreeAVCodec();};
 			void Close() {FreeAVCodec(); Clear();};
 			BOOL SendRawRequest(CString sRequest);
 			BOOL SendRequest();
 			virtual BOOL Parse(CNetCom* pNetCom, BOOL bLastCall);
 			virtual void Process(unsigned char* pLinBuf, int nSize);
+			void OnThreadStart();
+			void OnThreadShutdown();
 			BOOL HasResolution(const CSize& Size);
 			
 			CArray<CSize,CSize> m_Sizes;
@@ -301,6 +304,8 @@ public:
 			BOOL DecodeAudio(AVPacket* avpkt);
 			
 			CVideoDeviceDoc* m_pDoc;
+			CAudioTools* m_pAudioTools;
+			CAudioPlay* m_pAudioPlay;
 			BOOL m_bMultipartNoLength;
 			DWORD m_dwCNonceCount;
 			CString m_sLastRequest;
@@ -345,6 +350,8 @@ public:
 			unsigned int m_uiWaveInBufPos;
 			LPBYTE m_pUncompressedBuf[AUDIO_UNCOMPRESSED_BUFS_COUNT];
 			DWORD m_dwUncompressedBufSize;
+			CAudioTools* m_pAudioTools;
+			CAudioPlay* m_pAudioPlay;
 	};
 
 	// Http Thread
@@ -849,6 +856,11 @@ public:
 															::LeaveCriticalSection(&m_csProcessFrameStop);
 															return res;};
 	
+	// Audio Prelisten
+	static BOOL Prelisten(	LPBYTE pData, DWORD dwSizeInBytes,
+							const LPWAVEFORMATEX pSrcWaveFormat,
+							CAudioTools* pAudioTools, CAudioPlay* pAudioPlay);
+
 	// Video / Audio Recording
 	BOOL MakeAVRec(CAVRec** ppAVRec);
 	void OpenVideoFile(const CString& sFileName);

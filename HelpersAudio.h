@@ -3,9 +3,10 @@
 
 #pragma once
 
-#include "MMSystem.h"
-#include "Audioclient.h"
-#include "mmdeviceapi.h"
+#include "streams.h"
+#include <MMSystem.h>
+#include <Audioclient.h> // to avoid duplicated typedefs by the included ksmedia.h first include streams.h which includes ddraw.h
+#include <mmdeviceapi.h>
 
 // The size of an audio frame is specified by the nBlockAlign
 // member of the WAVEFORMATEX (or WAVEFORMATEXTENSIBLE).
@@ -27,64 +28,117 @@ extern int MCIPlayFile(HWND hWndNotify, BOOL bStartPlaying, LPCTSTR lpszFileName
 extern MCIERROR MCIPlayDevice(HWND hWndNotify, int nDeviceID);
 extern MCIERROR MCICloseDevice(HWND hWndNotify, int nDeviceID);
 
-// Helper function which returns a WORD audio tag from the given wave format
-extern WORD GetWaveFormatTag(const LPWAVEFORMATEX pWaveFormat);
-
 // Play a Sinus Wave
-extern double GenerateSinus(LPBYTE pData, UINT32 uiNumFrames, const LPWAVEFORMATEX pWaveFormat,
-							double dFrequency = 440.0, double dPhase = 0.0, double dAmplitude = 0.3);
-extern BOOL PlayFrequency(int nDurationSec, double dFrequency = 440.0, double dAmplitude = 0.3); // blocking function that must be called from the STA thread
+// Note: blocking function that must be called from the STA thread
+extern BOOL PlaySinus(int nDurationSec, double dFrequency = 440.0, double dAmplitude = 0.3);
 
-// Audio Resampler (only for floating-point format)
-class CAudioResampler
+// Audio Tools
+class CAudioTools
 {
 	public:
-		CAudioResampler(){m_pInbuf = NULL; m_nInbufSizeBytes = 0; m_pOutbuf = NULL; m_nOutbufSizeBytes = 0;}
-		virtual ~CAudioResampler(){Free();}
+		CAudioTools(){	m_pLowpassBuf = NULL; m_nLowpassBufSizeBytes = 0;
+						m_pResampleBuf = NULL; m_nResampleBufSizeBytes = 0;
+						m_pToFloatBuf = NULL; m_nToFloatBufSizeBytes = 0;
+						m_pConvertChannelsBuf = NULL; m_nConvertChannelsBufSizeBytes = 0;}
+		virtual ~CAudioTools(){Free();}
 
-		// This function returns the number of audio frames written to m_pOutbuf
-		int Resample(	float* pSrc,		// pSrc contains nSrcSize audio frames in floating-point format
-						int nSrcSize,		// the number of audio frames (size of such a frame is sizeof(float) * nChannels bytes)
+		// Helper function which returns a WORD audio tag from the given wave format
+		static WORD GetWaveFormatTag(const LPWAVEFORMATEX pWaveFormat);
+
+		// Fill the given buffer with a sinus wave
+		static double GenerateSinus(LPBYTE pData, UINT32 uiNumFrames, const LPWAVEFORMATEX pWaveFormat,
+									double dFrequency = 440.0, double dPhase = 0.0, double dAmplitude = 0.3);
+
+		// To float format changer
+		// returns the format changed buffer pointer valid till next ToFloat() call
+		// (returns pSrc if the source format is already float)
+		float* ToFloat(	LPBYTE pSrc,				// pSrc contains nNumFrames audio frames in integer format
+						int nNumFrames,				// the number of audio frames (size of such a frame is nChannels*wSrcBitsPerSample/2 bytes)
+						const LPWAVEFORMATEX pSrcWaveFormat);
+
+		// Channels converter
+		// returns the channels converted buffer pointer valid till next ConvertChannels() call
+		// (returns pSrc if the channels count is the same for source and destination)
+		float* ConvertChannels(	float* pSrc,		// pSrc contains nNumFrames audio frames in floating-point format
+								int nNumFrames,		// the number of audio frames (size of such a frame is nChannels*sizeof(float) bytes)
+								int nSrcChannels,
+								int nDstChannels);
+
+		// Resampler
+		// returns the resample buffer pointer valid till next Resample() call
+		// (returns pSrc and sets nNumDstFrames equal to nNumSrcFrames if the sample rate is the same for source and destination)
+		float* Resample(float* pSrc,				// pSrc contains nNumSrcFrames audio frames in floating-point format
+						int nNumSrcFrames,			// the number of input audio frames (size of such a frame is nChannels*sizeof(float) bytes)
+						int* pNumDstFrames,			// returns the number of resampled audio frames written to m_pResampleBuf
 						int nSrcSampleRate,
 						int nDstSampleRate,
 						int nChannels);
-		float* GetOutputBuffer() {return m_pOutbuf;}; // returns the output buffer pointer valid till next Resample() call
+
+		// Lowpass filter
+		// returns the lowpass filtered buffer pointer valid till next LowPass() call
+		float* LowPass(	float* pSrc,				// pSrc contains nNumFrames audio frames in floating-point format
+						int nNumFrames,				// the number of audio frames (size of such a frame is nChannels*sizeof(float) bytes)
+						int nSrcSampleRate,
+						int nDstSampleRate,
+						int nChannels);
 
 	protected:
 		void Free();
-		void LowPass(float* pSrc, float* pDst, int nSize, int nSrcSampleRate, int nDstSampleRate, int nChannels);
-		float* m_pInbuf;
-		int m_nInbufSizeBytes;
-		float* m_pOutbuf;
-		int m_nOutbufSizeBytes;
+		float* m_pLowpassBuf;
+		int m_nLowpassBufSizeBytes;
+		float* m_pResampleBuf;
+		int m_nResampleBufSizeBytes;
+		float* m_pToFloatBuf;
+		int m_nToFloatBufSizeBytes;
+		float* m_pConvertChannelsBuf;
+		int m_nConvertChannelsBufSizeBytes;
 };
 
 // Audio Buffer Player
-// The first use of IAudioClient to access the audio device should be on
-// the STA thread. Calls from an MTA thread may result in undefined behavior!
+// Note: CoInitialize your thread before using any of the class functions,
+//       the first use of IAudioClient to access the audio device should be on the
+//       STA thread. Calls from an MTA thread may result in undefined behavior.
+#define	FRAMES_CORRECTION_CHECK_INTERVAL_MS		3000U	// ms
+#define	FRAMES_CORRECTION_MAX_REL_OFFSET		0.01
 class CAudioPlay
 {
 	public:
-		CAudioPlay(){	m_pEnumerator = NULL;
+		CAudioPlay(){	m_bInit = FALSE;
+						m_bStarted = FALSE;
+						m_dFramesCorrection = 0.0;
+						m_uiBufferFrameCount = 0;
+						m_pWaveFormat = NULL;
+						m_pEnumerator = NULL;
 						m_pDevice = NULL;
 						m_pAudioClient = NULL;
-						m_pRenderClient = NULL;
-						m_pWaveFormat = NULL;
-						m_bStarted = FALSE;
-						m_uiBufferFrameCount = 0;
-						m_hnsBufferDuration = 0;}
+						m_pAudioStreamVolume = NULL;
+						m_pRenderClient = NULL;}
 		virtual ~CAudioPlay(){Close();}
-		BOOL Init(REFERENCE_TIME hnsRequestedBufferDuration = 10000000);		// by default 1 sec buffer (100 ns unit)
-		void Close();															// stop playing and free memory
-		BOOL Write(LPBYTE pData, UINT32 uiNumFrames);							// write the given amount of frames to the buffer,
-																				// Attention: not all frames are written if 
-																				// uiNumFrames > GetAvailableSpaceForFrames()
-																				// Note: it starts playing when buffer is at least half-full
-		LPWAVEFORMATEX GetWaveFormat() const {return m_pWaveFormat;}			// returns the default wave format which has to be used
-																				// when feeding the samples through the Write() function
-		UINT32 GetBufferFrameCount() const {return m_uiBufferFrameCount;}		// returns the buffer size in frames
-		REFERENCE_TIME GetBufferDuration() const {return m_hnsBufferDuration;}	// returns the buffer size in 100 ns units
-		UINT32 GetAvailableSpaceForFrames() {									// get the available free space in buffer (unit is frames)
+
+		// Init
+		BOOL Init(	float fStreamVolume = 1.0f,									// Stream volume: 0.0f .. 1.0f
+					REFERENCE_TIME hnsRequestedBufferDuration = 10000000);		// by default 1 sec buffer (100 ns unit)
+		BOOL IsInit() const {return m_bInit;}									// Has Init() been called successfully?
+
+		// Stop playing and free memory
+		void Close();
+		
+		// Write the given amount of frames to the buffer
+		// Attention: not all frames are written if uiNumFrames > GetAvailableSpaceForFrames()
+		// Note: it starts playing when buffer is at least half-full
+		BOOL Write(	LPBYTE pData, UINT32 uiNumFrames,																				
+					BOOL bDoFramesOffsetCorrection);							// TRUE: correct timing by repeating or dropping frames
+																				// FALSE: no correction applied, poll with GetAvailableSpaceForFrames()
+		
+		// Returns the default wave format which has to be used
+		// when feeding the samples through the Write() function
+		LPWAVEFORMATEX GetWaveFormat() const {return m_pWaveFormat;}
+		
+		// Returns the total buffer size in frames
+		UINT32 GetBufferFrameCount() const {return m_uiBufferFrameCount;}
+
+		// Get the available free space in buffer (unit is frames)
+		UINT32 GetAvailableSpaceForFrames() {
 									UINT32 uiNumFramesPadding;
 									if (m_pAudioClient && SUCCEEDED(m_pAudioClient->GetCurrentPadding(&uiNumFramesPadding)))
 										return m_uiBufferFrameCount - uiNumFramesPadding;
@@ -92,15 +146,28 @@ class CAudioPlay
 										return 0;
 								}
 
+		// Set the stream volume: 0.0f .. 1.0f
+		void SetStreamVolume(float fLevel) {
+									UINT32 dwCount;
+									if (m_pAudioStreamVolume && SUCCEEDED(m_pAudioStreamVolume->GetChannelCount(&dwCount)))
+									{
+										for (UINT32 dwIndex = 0 ; dwIndex < dwCount ; dwIndex++)
+											m_pAudioStreamVolume->SetChannelVolume(dwIndex, fLevel);
+									}
+								}
+
 	protected:
+		BOOL m_bInit;
+		BOOL m_bStarted;
+		DWORD m_dwLastCheckUpTime;
+		double m_dFramesCorrection; // if positive we need to add frames, if negative remove frames
+		UINT32 m_uiBufferFrameCount;
+		LPWAVEFORMATEX m_pWaveFormat;
 		IMMDeviceEnumerator* m_pEnumerator;
 		IMMDevice* m_pDevice;
 		IAudioClient* m_pAudioClient;
+		IAudioStreamVolume* m_pAudioStreamVolume;
 		IAudioRenderClient* m_pRenderClient;
-		LPWAVEFORMATEX m_pWaveFormat;
-		BOOL m_bStarted;
-		UINT32 m_uiBufferFrameCount;
-		REFERENCE_TIME m_hnsBufferDuration;
 };
 
 #endif // !defined(AFX_HELPERS_AUDIO_H__8FD88286_7192_47B9_B311_4C2F27BF8B85__INCLUDED_)

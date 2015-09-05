@@ -81,7 +81,53 @@ MCIERROR MCICloseDevice(HWND hWndNotify, int nDeviceID)
 		return MCIERR_INVALID_DEVICE_ID;
 }
 
-WORD GetWaveFormatTag(const LPWAVEFORMATEX pWaveFormat)
+BOOL PlaySinus(int nDurationSec, double dFrequency/*=440.0*/, double dAmplitude/*=0.3*/)
+{
+	// Init with 1 sec buffer
+	CAudioPlay AudioPlay;
+	if (!AudioPlay.Init())
+		return FALSE;
+
+	// Allocate 1 sec buffer
+	int nBufSizeBytes = AudioPlay.GetBufferFrameCount() * AudioPlay.GetWaveFormat()->nBlockAlign;
+	LPBYTE pData = (LPBYTE)BIGALLOC(nBufSizeBytes);
+	if (!pData)
+		return FALSE;
+
+	// Init one second of sinus data
+	nDurationSec--;
+	nDurationSec *= 2; // duration in units of 500 ms
+	double dPhase = 0.0;
+	UINT32 uiAvailableSpaceForFrames = AudioPlay.GetAvailableSpaceForFrames();
+	dPhase = CAudioTools::GenerateSinus(pData, uiAvailableSpaceForFrames, AudioPlay.GetWaveFormat(), dFrequency, dPhase, dAmplitude);
+	AudioPlay.Write(pData, uiAvailableSpaceForFrames, FALSE);
+    
+	// Loop
+	while (nDurationSec > 0)
+    {
+        // Sleep for half second
+        Sleep(500);
+		nDurationSec--;
+
+        // Get next portion of sinus data
+		uiAvailableSpaceForFrames = AudioPlay.GetAvailableSpaceForFrames();
+		dPhase = CAudioTools::GenerateSinus(pData, uiAvailableSpaceForFrames, AudioPlay.GetWaveFormat(), dFrequency, dPhase, dAmplitude);
+		AudioPlay.Write(pData, uiAvailableSpaceForFrames, FALSE);
+    }
+
+    // Sleep for a second
+    Sleep(1000);
+
+	// Stop playing
+    AudioPlay.Close();
+
+	// Free
+	BIGFREE(pData);
+
+	return TRUE;
+}
+
+WORD CAudioTools::GetWaveFormatTag(const LPWAVEFORMATEX pWaveFormat)
 {
 	if (pWaveFormat->wFormatTag == WAVE_FORMAT_PCM ||
 		(pWaveFormat->wFormatTag == WAVE_FORMAT_EXTENSIBLE && ((WAVEFORMATEXTENSIBLE*)pWaveFormat)->SubFormat == KSDATAFORMAT_SUBTYPE_PCM))
@@ -93,8 +139,8 @@ WORD GetWaveFormatTag(const LPWAVEFORMATEX pWaveFormat)
 		return pWaveFormat->wFormatTag;
 }
 
-double GenerateSinus(LPBYTE pData, UINT32 uiNumFrames, const LPWAVEFORMATEX pWaveFormat,
-					double dFrequency/*=440.0*/, double dPhase/*=0.0*/, double dAmplitude/*=0.3*/)
+double CAudioTools::GenerateSinus(	LPBYTE pData, UINT32 uiNumFrames, const LPWAVEFORMATEX pWaveFormat,
+									double dFrequency/*=440.0*/, double dPhase/*=0.0*/, double dAmplitude/*=0.3*/)
 {
 	// Check
 	if (!pData || uiNumFrames == 0 || !pWaveFormat)
@@ -152,102 +198,160 @@ double GenerateSinus(LPBYTE pData, UINT32 uiNumFrames, const LPWAVEFORMATEX pWav
 	return fmod(dPhase, 2.0*PI);
 }
 
-BOOL PlayFrequency(int nDurationSec, double dFrequency/*=440.0*/, double dAmplitude/*=0.3*/)
-{
-	// Init with 1 sec buffer
-	CAudioPlay AudioPlay;
-	if (!AudioPlay.Init())
-		return FALSE;
-
-	// Allocate 1 sec buffer
-	int nBufSizeBytes = AudioPlay.GetBufferFrameCount() * AudioPlay.GetWaveFormat()->nBlockAlign;
-	LPBYTE pData = (LPBYTE)BIGALLOC(nBufSizeBytes);
-	if (!pData)
-		return FALSE;
-
-	// Init one second of sinus data
-	nDurationSec--;
-	nDurationSec *= 2; // duration in units of 500 ms
-	double dPhase = 0.0;
-	UINT32 uiAvailableSpaceForFrames = AudioPlay.GetAvailableSpaceForFrames();
-	dPhase = GenerateSinus(pData, uiAvailableSpaceForFrames, AudioPlay.GetWaveFormat(), dFrequency, dPhase, dAmplitude);
-	AudioPlay.Write(pData, uiAvailableSpaceForFrames);
-    
-	// Loop
-	while (nDurationSec > 0)
-    {
-        // Sleep for half second
-        Sleep(500);
-		nDurationSec--;
-
-        // Get next portion of sinus data
-		uiAvailableSpaceForFrames = AudioPlay.GetAvailableSpaceForFrames();
-		dPhase = GenerateSinus(pData, uiAvailableSpaceForFrames, AudioPlay.GetWaveFormat(), dFrequency, dPhase, dAmplitude);
-		AudioPlay.Write(pData, uiAvailableSpaceForFrames);
-    }
-
-    // Sleep for a second
-    Sleep(1000);
-
-	// Stop playing
-    AudioPlay.Close();
-
-	// Free
-	BIGFREE(pData);
-
-	return TRUE;
-}
-
-int CAudioResampler::Resample(float* pSrc, int nSrcSize, int nSrcSampleRate, int nDstSampleRate, int nChannels)
+float* CAudioTools::ToFloat(LPBYTE pSrc, int nNumFrames, const LPWAVEFORMATEX pSrcWaveFormat)
 {
 	// Check
-	float dRatio = (float)nDstSampleRate / (float)nSrcSampleRate;
-	if (!pSrc || nChannels < 1)
-		return 0;
+	if (!pSrc || nNumFrames <= 0 || !pSrcWaveFormat)
+		return NULL;
 
-	// Downsample?
-	if (dRatio < 1.0f)
+	// If already float return pSrc
+	if (GetWaveFormatTag(pSrcWaveFormat) == WAVE_FORMAT_IEEE_FLOAT)
+		return (float*)pSrc;
+
+	// Setup format changed buffer
+	int nDstSizeBytes = nNumFrames * sizeof(float) * pSrcWaveFormat->nChannels;
+	if (nDstSizeBytes > m_nToFloatBufSizeBytes)
 	{
-		// Setup low-pass filter output buffer
-		int nSrcSizeBytes = nSrcSize * sizeof(float) * nChannels;
-		if (nSrcSizeBytes > m_nInbufSizeBytes)
+		m_nToFloatBufSizeBytes = nDstSizeBytes;
+		if (m_pToFloatBuf)
+			BIGFREE(m_pToFloatBuf);
+		m_pToFloatBuf = (float*)BIGALLOC(m_nToFloatBufSizeBytes);
+		if (!m_pToFloatBuf)
 		{
-			m_nInbufSizeBytes = nSrcSizeBytes;
-			if (m_pInbuf)
-				BIGFREE(m_pInbuf);
-			m_pInbuf = (float*)BIGALLOC(m_nInbufSizeBytes);
-			if (!m_pInbuf)
+			m_nToFloatBufSizeBytes = 0;
+			return NULL;
+		}
+	}
+	
+	// Convert
+	if (pSrcWaveFormat->wBitsPerSample == 16)
+	{
+		// Positive peaks can go up to +32767, negative peaks to -32768 and silence are 0
+		short* pData16 = (short*)pSrc;
+		for (int i = 0 ; i < nNumFrames ; i++)
+		{
+			for (int iChannel = 0 ; iChannel < pSrcWaveFormat->nChannels ; iChannel++)
+				 m_pToFloatBuf[pSrcWaveFormat->nChannels*i + iChannel] = pData16[pSrcWaveFormat->nChannels*i + iChannel] / 32768.0f;
+		}
+		return m_pToFloatBuf;
+	}
+	else if (pSrcWaveFormat->wBitsPerSample == 8)
+	{
+		// 8-bit data is in offset binary where positive peaks are 255, negative peaks are 0 and 128 is silence
+		// https://en.wikipedia.org/wiki/Offset_binary
+		unsigned char* pData8 = (unsigned char*)pSrc;
+		for (int i = 0 ; i < nNumFrames ; i++)
+		{
+			for (int iChannel = 0; iChannel < pSrcWaveFormat->nChannels ; iChannel++)
 			{
-				m_nInbufSizeBytes = 0;
-				return 0;
+				int sample = (int)pData8[pSrcWaveFormat->nChannels*i + iChannel] - 128;
+				m_pToFloatBuf[pSrcWaveFormat->nChannels*i + iChannel] = sample / 128.0f;
 			}
 		}
+		return m_pToFloatBuf;
+	}
+	else
+		return NULL;
+}
 
-		// Low-pass
-		LowPass(pSrc, m_pInbuf, nSrcSize, nSrcSampleRate, nDstSampleRate, nChannels);
+float* CAudioTools::ConvertChannels(float* pSrc, int nNumFrames, int nSrcChannels, int nDstChannels)
+{
+	// Check
+	if (!pSrc || nNumFrames <= 0 || nSrcChannels < 1 || nDstChannels < 1)
+		return NULL;
 
-		// New source
-		pSrc = m_pInbuf;
+	// If the same channels count return pSrc
+	if (nSrcChannels == nDstChannels)
+		return pSrc;
+
+	// Setup channels converted buffer
+	int nDstSizeBytes = nNumFrames * sizeof(float) * nDstChannels;
+	if (nDstSizeBytes > m_nConvertChannelsBufSizeBytes)
+	{
+		m_nConvertChannelsBufSizeBytes = nDstSizeBytes;
+		if (m_pConvertChannelsBuf)
+			BIGFREE(m_pConvertChannelsBuf);
+		m_pConvertChannelsBuf = (float*)BIGALLOC(m_nConvertChannelsBufSizeBytes);
+		if (!m_pConvertChannelsBuf)
+		{
+			m_nConvertChannelsBufSizeBytes = 0;
+			return NULL;
+		}
+	}
+	
+	// Mix source channels to mono destination channel
+	if (nDstChannels == 1)
+	{
+		for (int i = 0 ; i < nNumFrames ; i++)
+		{
+			float fMixedValue = 0.0f;
+			for (int iSrcChannel = 0 ; iSrcChannel < nSrcChannels ; iSrcChannel++)
+				fMixedValue += pSrc[nSrcChannels*i + iSrcChannel];
+			fMixedValue /= nSrcChannels;
+			m_pConvertChannelsBuf[i] = fMixedValue;
+		}
+	}
+	// Copy source channels to destination channels
+	else
+	{
+		for (int i = 0 ; i < nNumFrames ; i++)
+		{
+			int iSrcChannel = 0;
+			for (int iDstChannel = 0 ; iDstChannel < nDstChannels ; iDstChannel++)
+			{
+				m_pConvertChannelsBuf[nDstChannels*i + iDstChannel] = pSrc[nSrcChannels*i + iSrcChannel];
+				if (iSrcChannel < (nSrcChannels - 1))
+					iSrcChannel++;
+			}
+		}
 	}
 
-	// Setup output buffer
-	int nDstSize = (int)(dRatio * nSrcSize); // could also use RoundF()
-	int nDstSizeBytes = nDstSize * sizeof(float) * nChannels;
-	if (nDstSizeBytes > m_nOutbufSizeBytes)
+	return m_pConvertChannelsBuf;
+}
+
+float* CAudioTools::Resample(float* pSrc, int nNumSrcFrames, int* pNumDstFrames, int nSrcSampleRate, int nDstSampleRate, int nChannels)
+{
+	// Check
+	if (!pSrc || nNumSrcFrames <= 0 || nChannels < 1)
 	{
-		m_nOutbufSizeBytes = nDstSizeBytes;
-		if (m_pOutbuf)
-			BIGFREE(m_pOutbuf);
-		m_pOutbuf = (float*)BIGALLOC(m_nOutbufSizeBytes);
-		if (!m_pOutbuf)
+		if (pNumDstFrames)
+			*pNumDstFrames = 0;
+		return NULL;
+	}
+
+	// If the same sample rate return pSrc
+	if (nSrcSampleRate == nDstSampleRate)
+	{
+		if (pNumDstFrames)
+			*pNumDstFrames = nNumSrcFrames;
+		return pSrc;
+	}
+
+	// If downsampling first lowpass the signal
+	float dRatio = (float)nDstSampleRate / (float)nSrcSampleRate;
+	if (dRatio < 1.0f)
+		pSrc = LowPass(pSrc, nNumSrcFrames, nSrcSampleRate, nDstSampleRate, nChannels);
+
+	// Setup output buffer
+	int nCalcDstFrames = (int)(dRatio * nNumSrcFrames); // could also use RoundF()
+	int nDstSizeBytes = nCalcDstFrames * sizeof(float) * nChannels;
+	if (nDstSizeBytes > m_nResampleBufSizeBytes)
+	{
+		m_nResampleBufSizeBytes = nDstSizeBytes;
+		if (m_pResampleBuf)
+			BIGFREE(m_pResampleBuf);
+		m_pResampleBuf = (float*)BIGALLOC(m_nResampleBufSizeBytes);
+		if (!m_pResampleBuf)
 		{
-			m_nOutbufSizeBytes = 0;
-			return 0;
+			m_nResampleBufSizeBytes = 0;
+			if (pNumDstFrames)
+				*pNumDstFrames = 0;
+			return NULL;
 		}
 	}
 
 	// Linear interpolation
-	for (int j = 0 ; j < nDstSize ; j++)
+	for (int j = 0 ; j < nCalcDstFrames ; j++)
 	{
 		// From output buffer index to input buffer index
 		float di = (float)j / dRatio; 
@@ -258,8 +362,8 @@ int CAudioResampler::Resample(float* pSrc, int nSrcSize, int nSrcSampleRate, int
 		for (int iChannel = 0 ; iChannel < nChannels ; iChannel++)
 		{
 			// Check
-			if (i1 >= nSrcSize)
-				m_pOutbuf[nChannels*j + iChannel] = pSrc[nChannels*(nSrcSize - 1) + iChannel];
+			if (i1 >= nNumSrcFrames)
+				m_pResampleBuf[nChannels*j + iChannel] = pSrc[nChannels*(nNumSrcFrames - 1) + iChannel];
 			else
 			{
 				// Slope
@@ -271,48 +375,83 @@ int CAudioResampler::Resample(float* pSrc, int nSrcSize, int nSrcSampleRate, int
 				float dB = pSrc[nChannels*i0 + iChannel] - (dA * i0);
 
 				// Calculate output value from the linear function y = Ax + B
-				m_pOutbuf[nChannels*j + iChannel] = dA * di + dB;
+				m_pResampleBuf[nChannels*j + iChannel] = dA * di + dB;
 			}
 		}
 	}
 
-	return nDstSize;
+	if (pNumDstFrames)
+		*pNumDstFrames = nCalcDstFrames;
+	return m_pResampleBuf;
 }
 
 // https://en.wikipedia.org/wiki/Low-pass_filter#Simple_infinite_impulse_response_filter
-void CAudioResampler::LowPass(float* pSrc, float* pDst, int nSize, int nSrcSampleRate, int nDstSampleRate, int nChannels)
+float* CAudioTools::LowPass(float* pSrc, int nNumFrames, int nSrcSampleRate, int nDstSampleRate, int nChannels)
 {
+	// Check
+	if (!pSrc || nNumFrames <= 0 || nChannels < 1)
+		return NULL;
+
+	// Setup low-pass filter output buffer
+	int nSrcSizeBytes = nNumFrames * sizeof(float) * nChannels;
+	if (nSrcSizeBytes > m_nLowpassBufSizeBytes)
+	{
+		m_nLowpassBufSizeBytes = nSrcSizeBytes;
+		if (m_pLowpassBuf)
+			BIGFREE(m_pLowpassBuf);
+		m_pLowpassBuf = (float*)BIGALLOC(m_nLowpassBufSizeBytes);
+		if (!m_pLowpassBuf)
+		{
+			m_nLowpassBufSizeBytes = 0;
+			return NULL;
+		}
+	}
+
+	// Lowpass
 	float T = 1.0f / nSrcSampleRate;											// sampling period
 	float fcutoff = nDstSampleRate / 4.0f;										// cutoff frequency
 	float a = (2.0f * PI_F * T * fcutoff) / (2.0f * PI_F * T * fcutoff + 1.0f); // 0 < a < 1
-
 	for (int iChannel = 0 ; iChannel < nChannels ; iChannel++)
-		pDst[iChannel] = pSrc[iChannel];
-	for (int i = 1 ; i < nSize ; i++)
+		m_pLowpassBuf[iChannel] = pSrc[iChannel];
+	for (int i = 1 ; i < nNumFrames ; i++)
 	{
 		// pDst[i] = a*pSrc[i] + (1-a)*pDst[i-1] = pDst[i-1] + a*(pSrc[i] - pDst[i-1])
 		for (int iChannel = 0 ; iChannel < nChannels ; iChannel++)
-			 pDst[nChannels*i + iChannel] = pDst[nChannels*(i-1) + iChannel] + a*(pSrc[nChannels*i + iChannel] - pDst[nChannels*(i-1) + iChannel]);
+			 m_pLowpassBuf[nChannels*i + iChannel] = m_pLowpassBuf[nChannels*(i-1) + iChannel] + a*(pSrc[nChannels*i + iChannel] - m_pLowpassBuf[nChannels*(i-1) + iChannel]);
 	}
+
+	return m_pLowpassBuf;
 }
 
-void CAudioResampler::Free()
+void CAudioTools::Free()
 {
-	if (m_pInbuf)
+	if (m_pLowpassBuf)
 	{
-		BIGFREE(m_pInbuf);
-		m_pInbuf = NULL;
+		BIGFREE(m_pLowpassBuf);
+		m_pLowpassBuf = NULL;
 	}
-	m_nInbufSizeBytes = 0;
-	if (m_pOutbuf)
+	m_nLowpassBufSizeBytes = 0;
+	if (m_pResampleBuf)
 	{
-		BIGFREE(m_pOutbuf);
-		m_pOutbuf = NULL;
+		BIGFREE(m_pResampleBuf);
+		m_pResampleBuf = NULL;
 	}
-	m_nOutbufSizeBytes = 0;
+	m_nResampleBufSizeBytes = 0;
+	if (m_pToFloatBuf)
+	{
+		BIGFREE(m_pToFloatBuf);
+		m_pToFloatBuf = NULL;
+	}
+	m_nToFloatBufSizeBytes = 0;
+	if (m_pConvertChannelsBuf)
+	{
+		BIGFREE(m_pConvertChannelsBuf);
+		m_pConvertChannelsBuf = NULL;
+	}
+	m_nConvertChannelsBufSizeBytes = 0;
 }
 
-BOOL CAudioPlay::Init(REFERENCE_TIME hnsRequestedBufferDuration/*=10000000*/)
+BOOL CAudioPlay::Init(float fStreamVolume/*=1.0f*/, REFERENCE_TIME hnsRequestedBufferDuration/*=10000000*/)
 {
 	// First close
 	Close();
@@ -351,7 +490,7 @@ BOOL CAudioPlay::Init(REFERENCE_TIME hnsRequestedBufferDuration/*=10000000*/)
 	//m_pWaveFormat->nAvgBytesPerSec = m_pWaveFormat->nSamplesPerSec * m_pWaveFormat->nBlockAlign;
 	//m_pWaveFormat->cbSize = 0;
     hr = m_pAudioClient->Initialize(AUDCLNT_SHAREMODE_SHARED,		// share the audio with other clients (no exclusive access to device)
-									AUDCLNT_STREAMFLAGS_NOPERSIST,	// this flag disables persistence of the volume and mute settings						
+									AUDCLNT_STREAMFLAGS_NOPERSIST,	// this flag disables persistence of the volume and mute settings for the session, see ISimpleAudioVolume						
 									hnsRequestedBufferDuration,		// the buffer capacity as a 100-nanosecond units time value
 									0,								// in shared mode always set hnsPeriodicity to 0
 									m_pWaveFormat,					// wanted audio format
@@ -364,18 +503,36 @@ BOOL CAudioPlay::Init(REFERENCE_TIME hnsRequestedBufferDuration/*=10000000*/)
 	if (FAILED(hr))
 		return FALSE;
 
-	// Calculate the actual duration of the allocated buffer
-    m_hnsBufferDuration = hnsRequestedBufferDuration * m_uiBufferFrameCount / m_pWaveFormat->nSamplesPerSec;
+	// Set stream volume
+	hr = m_pAudioClient->GetService(__uuidof(IAudioStreamVolume), (void**)&m_pAudioStreamVolume);
+	if (FAILED(hr))
+		return FALSE;
+	SetStreamVolume(fStreamVolume);
 
 	// Get renderer
     hr = m_pAudioClient->GetService(__uuidof(IAudioRenderClient), (void**)&m_pRenderClient);
-	return SUCCEEDED(hr);
+	if (SUCCEEDED(hr))
+	{
+		m_bInit = TRUE;
+		return TRUE;
+	}
+	else
+		return FALSE;
 }
 
 void CAudioPlay::Close()
 {
+	// Stop playing
 	if (m_pAudioClient)
 		m_pAudioClient->Stop();
+
+	// Reset vars
+	m_bInit = FALSE;
+	m_bStarted = FALSE;
+	m_dFramesCorrection = 0.0;
+	m_uiBufferFrameCount = 0;
+
+	// Free
 	if (m_pWaveFormat)
 	{
 		::CoTaskMemFree(m_pWaveFormat);
@@ -396,47 +553,103 @@ void CAudioPlay::Close()
 		m_pAudioClient->Release();
 		m_pAudioClient = NULL;
 	}
+	if (m_pAudioStreamVolume)
+	{
+		m_pAudioStreamVolume->Release();
+		m_pAudioStreamVolume = NULL;
+	}
     if (m_pRenderClient)
 	{
 		m_pRenderClient->Release();
 		m_pRenderClient = NULL;
 	}
-	m_bStarted = FALSE;
-	m_uiBufferFrameCount = 0;
-	m_hnsBufferDuration = 0;
 }
 
-BOOL CAudioPlay::Write(LPBYTE pData, UINT32 uiNumFrames)
+BOOL CAudioPlay::Write(LPBYTE pData, UINT32 uiNumFrames, BOOL bDoFramesOffsetCorrection)
 {
 	// Check
 	if (!m_pAudioClient || !m_pRenderClient || !m_pWaveFormat)
 		return FALSE;
+
+	// Return if nothing to buffer
 	if (!pData || uiNumFrames == 0)
 		return TRUE;
 
-	// Calc. the number of frames that can be written
+	// Adjust the buffer size depending from the frames correction
+	int nNumFramesGetBuf = uiNumFrames;
+	if (bDoFramesOffsetCorrection)
+	{
+		int nFramesOffset = (int)(m_dFramesCorrection * uiNumFrames);
+		double dFramesOffsetRel = (double)nFramesOffset / (double)uiNumFrames;
+		if (abs(dFramesOffsetRel) > FRAMES_CORRECTION_MAX_REL_OFFSET)
+			nNumFramesGetBuf += nFramesOffset;
+		else
+		{
+			if (nFramesOffset > 0)
+				nNumFramesGetBuf += 1;
+			else if (nFramesOffset < 0)
+				nNumFramesGetBuf -= 1;
+		}
+		//TRACE(_T("Frames Offset %d\n"), nNumFramesGetBuf - (int)uiNumFrames);
+	}
+
+	// Clip
+	if (nNumFramesGetBuf <= 0)
+		return TRUE;
     UINT32 uiNumFramesPadding;
 	HRESULT hr = m_pAudioClient->GetCurrentPadding(&uiNumFramesPadding); // amount of valid, unread data that the endpoint buffer contains
 	if (FAILED(hr))
 		return FALSE;
-	UINT32 uiAvailableSpaceForFrames = m_uiBufferFrameCount - uiNumFramesPadding;
-	UINT32 uiNumFramesToWrite = MIN(uiAvailableSpaceForFrames, uiNumFrames);
+	int nAvailableSpaceForFrames = (int)m_uiBufferFrameCount - (int)uiNumFramesPadding;
+	if (nNumFramesGetBuf > nAvailableSpaceForFrames)
+		nNumFramesGetBuf = nAvailableSpaceForFrames;
 
 	// Write
 	LPBYTE pBuf;
-	hr = m_pRenderClient->GetBuffer(uiNumFramesToWrite, &pBuf);
+	hr = m_pRenderClient->GetBuffer((UINT32)nNumFramesGetBuf, &pBuf);
 	if (FAILED(hr))
 		return FALSE;
-	memcpy(pBuf, pData, m_pWaveFormat->nBlockAlign * uiNumFramesToWrite);
-	hr = m_pRenderClient->ReleaseBuffer(uiNumFramesToWrite, 0);
+	if (nNumFramesGetBuf > (int)uiNumFrames)
+	{
+		memcpy(pBuf, pData, m_pWaveFormat->nBlockAlign * uiNumFrames);
+		pData += m_pWaveFormat->nBlockAlign * (uiNumFrames - 1);	// point to last frame
+		pBuf += m_pWaveFormat->nBlockAlign * uiNumFrames;			// point to after last frame
+		int nRepeat = nNumFramesGetBuf - (int)uiNumFrames;
+		while (nRepeat-- > 0)
+		{
+			memcpy(pBuf, pData, m_pWaveFormat->nBlockAlign);
+			pBuf += m_pWaveFormat->nBlockAlign;
+		}
+	}
+	else
+		memcpy(pBuf, pData, m_pWaveFormat->nBlockAlign * nNumFramesGetBuf);
+	hr = m_pRenderClient->ReleaseBuffer((UINT32)nNumFramesGetBuf, 0);
 	if (FAILED(hr))
 		return FALSE;
 
-	// Start?
-	if (!m_bStarted && ((uiNumFramesPadding + uiNumFramesToWrite) >= m_uiBufferFrameCount / 2))
+	// Update Frames Padding after buffer write
+	// Note: it's not necessary to call GetCurrentPadding() again as we know what we wrote
+	uiNumFramesPadding += nNumFramesGetBuf;
+
+	// Started?
+	if (m_bStarted)
+	{
+		DWORD dwCurrentUpTime = ::GetTickCount();
+		DWORD dwDiffMs = dwCurrentUpTime - m_dwLastCheckUpTime;
+		if (dwDiffMs >= FRAMES_CORRECTION_CHECK_INTERVAL_MS)
+		{
+			int nDelta = (int)(m_uiBufferFrameCount / 2) - (int)uiNumFramesPadding;
+			int nTotalElapsedFrames = (int)(m_pWaveFormat->nSamplesPerSec * dwDiffMs / 1000U);
+			m_dFramesCorrection = (double)nDelta / (double)nTotalElapsedFrames;
+			//TRACE(_T("Audio Prelisten Buffer Usage %u/%u (%0.2f%%)\n"), uiNumFramesPadding, m_uiBufferFrameCount, 100.0 * uiNumFramesPadding / m_uiBufferFrameCount);
+			m_dwLastCheckUpTime = dwCurrentUpTime;
+		}
+	}
+	else if (uiNumFramesPadding >= m_uiBufferFrameCount / 2)
 	{
 		m_pAudioClient->Start();
 		m_bStarted = TRUE;
+		m_dwLastCheckUpTime = ::GetTickCount();
 	}
 
 	return TRUE;
