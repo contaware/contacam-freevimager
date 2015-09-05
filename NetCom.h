@@ -156,6 +156,8 @@ public:
 		public:
 			CParseProcess(){m_pNetCom = NULL; m_nProcessOffset = m_nProcessSize = 0;};
 			virtual ~CParseProcess(){;};
+			virtual void OnThreadStart();								// executed when the thread that calls Parse/Process is started
+			virtual void OnThreadShutdown();							// executed when the thread that calls Parse/Process is shutdown
 			virtual BOOL Parse(CNetCom* pNetCom, BOOL bLastCall) = 0;
 			virtual void Process(unsigned char* pLinBuf, int nSize);	// pLinBuf is a correctly aligned buffer ending
 																		// with FF_INPUT_BUFFER_PADDING_SIZE zero bytes

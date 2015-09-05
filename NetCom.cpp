@@ -80,6 +80,16 @@ CNetCom::CBuf& CNetCom::CBuf::operator=(const CNetCom::CBuf& b) // Copy Assignme
 // The Parser & Processor Base Class
 ///////////////////////////////////////////////////////////////////////////////
 
+void CNetCom::CParseProcess::OnThreadStart()
+{
+
+}
+
+void CNetCom::CParseProcess::OnThreadShutdown()
+{
+
+}
+
 void CNetCom::CParseProcess::Process(unsigned char* pLinBuf, int nSize)
 {
 	pLinBuf;
@@ -245,6 +255,7 @@ int CNetCom::CMsgThread::Work()
 				break;
 		}
 	}
+	ASSERT(FALSE); // should never end up here...
 	return 0;
 }
 
@@ -259,6 +270,10 @@ int CNetCom::CRxThread::Work()
 	DWORD NumberOfBytesReceived = 0;
 	BOOL  bResult;
 
+	// Signal the thread starting to Parser
+	if (m_pNetCom->m_pParseProcess)
+		m_pNetCom->m_pParseProcess->OnThreadStart();
+
 	for(;;)
 	{
 		DWORD Event = ::WaitForMultipleObjects(3, m_pNetCom->m_hRxEventArray, FALSE, INFINITE);
@@ -272,7 +287,13 @@ int CNetCom::CRxThread::Work()
 					m_pCurrentBuf = NULL;
 				}
 				if (m_pNetCom->m_pParseProcess)
-					m_pNetCom->m_pParseProcess->NewData(TRUE); // call the Parser last time
+				{
+					// Call the Parser last time
+					m_pNetCom->m_pParseProcess->NewData(TRUE);
+
+					// Signal the thread shutdown to Parser
+					m_pNetCom->m_pParseProcess->OnThreadShutdown();
+				}
 				TRACE(_T("%s RxThread ended (ID = 0x%08X)\n"), m_pNetCom->GetName(), GetId());
 				return 0;
 		
@@ -331,6 +352,7 @@ int CNetCom::CRxThread::Work()
 				m_pNetCom->m_pParseProcess->NewData(FALSE);
 		}
 	}
+	ASSERT(FALSE); // should never end up here...
 	return 0;
 }
 
@@ -427,6 +449,7 @@ int CNetCom::CTxThread::Work()
 				break;
 		}
 	}
+	ASSERT(FALSE); // should never end up here...
 	return 0;
 }
 
