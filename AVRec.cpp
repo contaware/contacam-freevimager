@@ -283,6 +283,13 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 		//   of the used algorithms, for example a Full HD video encoding uses
 		//   ~270 MB with medium, ~130 MB with veryfast and ~65 MB with ultrafast
 		av_opt_set(pCodecCtx->priv_data, "preset", "veryfast", 0);
+
+		// Only enable up to SSE SIMD optimizations (apparently mingw doesn't support
+		// 32-bytes stack alignment on Windows, this prevents the use of 256-bit AVX)
+		// X264_CPU_CMOV | X264_CPU_MMX | X264_CPU_MMXEXT | X264_CPU_SSE = 15 (see x264.h)
+		// Note: to make sure the following command works, enable logging (see my_av_log_trace()
+		//       in uImager.cpp) and check the Output window after the below avcodec_open_thread_safe()
+		av_opt_set(pCodecCtx->priv_data, "x264-params", "asm=SSE", 0); // equivalent to "asm=15"
 	}
 	else
 	{

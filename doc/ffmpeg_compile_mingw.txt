@@ -24,26 +24,50 @@ $ ./config_mingw
 $ make
 
 
-X264
-----
+X264 (to disable asm and multi-threading use --disable-asm --disable-thread)
+----------------------------------------------------------------------------
 
-Put library source to /src, extract it and: (get src from: http://download.videolan.org/pub/videolan/x264/snapshots/last_stable_x264.tar.bz2)
+Put library source to /src and extract it
+(get src from: http://download.videolan.org/pub/videolan/x264/snapshots/last_stable_x264.tar.bz2)
+
+Apparently mingw doesn't support 32-bytes stack alignment on Windows (-mpreferred-stack-boundary=5),
+this effectively prevents the use of 256-bit AVX instructions. In our code we prevent the use of AVX
+by calling av_opt_set(pCodecCtx->priv_data, "x264-params", "asm=SSE", 0)
+http://stackoverflow.com/questions/5983389/how-to-align-stack-at-32-byte-boundary-in-gcc
+https://gcc.gnu.org/bugzilla/show_bug.cgi?id=49001
+
+Patch the configure file to have the default 16-bytes alignment:
+if [ $asm = auto -a \( $ARCH = X86 -o $ARCH = X86_64 \) ] ; then
+    if ! as_check "vpmovzxwd ymm0, xmm0" ; then
+        VER=`($AS --version || echo no assembler) 2>/dev/null | head -n 1`
+        echo "Found $VER"
+        echo "Minimum version is yasm-1.2.0"
+        echo "If you really want to compile without asm, configure with --disable-asm."
+        exit 1
+    fi
+    cc_check '' '' '__asm__("pabsw %xmm0, %xmm0");' && define HAVE_X86_INLINE_ASM
+    ASFLAGS="$ASFLAGS -Worphan-labels"
+    define HAVE_MMX
+->  #if [ $compiler = GNU ] && cc_check '' -mpreferred-stack-boundary=5 ; then
+->  #    CFLAGS="$CFLAGS -mpreferred-stack-boundary=5"
+->  #    stack_alignment=32
+->  #fi
+fi
+
 ./configure --extra-cflags='-mstackrealign' --prefix=/mingw --enable-static --enable-strip --enable-win32thread --disable-cli --disable-avs --disable-gpac --disable-lsmash
 make
 make install
--> library: /mingw/lib/libx264.a  copy to  /c/uimager/ffmpeg/mingw
-Note: to debug SIMD problems try with --disable-asm
+-> library: /mingw/lib/libx264.a copy to /c/uimager/ffmpeg/mingw
 
   
-LAME
-----
+LAME (to disable asm remove --enable-nasm)
+------------------------------------------
 
 Put library source to /src, extract it and:
 ./configure CFLAGS="-mstackrealign" --prefix=/mingw --exec-prefix=/mingw --enable-static --disable-shared --disable-decoder --enable-nasm
 make
 make install
--> library: /mingw/lib/libmp3lame.a  copy to  /c/uimager/ffmpeg/mingw
-Note: to debug SIMD problems try without --enable-nasm
+-> library: /mingw/lib/libmp3lame.a copy to /c/uimager/ffmpeg/mingw
 
 
 AAC

@@ -50,6 +50,11 @@ $ which yasm
 /C/Program Files (x86)/Microsoft Visual Studio 10.0/VC/BIN/yasm.exe
 
 
+External libx264 (not tested yet)
+---------------------------------
+http://siliconandlithium.blogspot.ch/2014/03/building-x264-on-windows-with-visual.html
+
+
 External libmp3lame
 -------------------
 - Open vc_solution\vc9_lame.sln and let it convert all projects

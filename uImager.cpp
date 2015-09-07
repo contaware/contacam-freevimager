@@ -286,6 +286,7 @@ extern "C" float __cdecl hypotf(float x, float y)
 
 static void my_av_log_trace(void* ptr, int level, const char* fmt, va_list vl)
 {
+	// Comment this return to enable logging output
 	return;
 
 	/*
