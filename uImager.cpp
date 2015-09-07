@@ -3884,7 +3884,7 @@ BOOL CUImagerApp::SendMail(LPCTSTR szAttachment)
 					{
 						EndWaitCursor();
 						CString Str;
-						Str.Format(	ML_STRING(1214, "To Many Attached Files. Max Number is %i.\n") +
+						Str.Format(	ML_STRING(1214, "Too Many Attached Files. Max Number is %i.\n") +
 									ML_STRING(1215, "Tip: Use a Zip File to put all your files in it."),
 									MAX_ATTACHMENTS);
 						::AfxMessageBox(Str);

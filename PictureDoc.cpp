@@ -2604,7 +2604,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 		// Save to itself?
 		if (m_sFileName.CompareNoCase(FileName) == 0 && bSaveCopyAs)
 		{
-			::AfxMessageBox(ML_STRING(1249, "Cannot save a copy to ourself"), MB_OK | MB_ICONSTOP);
+			::AfxMessageBox(ML_STRING(1249, "Cannot save a copy to ourselves"), MB_OK | MB_ICONSTOP);
 			GetView()->ForceCursor(FALSE);
 			return FALSE;
 		}
@@ -3158,7 +3158,7 @@ BOOL CPictureDoc::SaveAsFromAnimGIF(BOOL bSaveCopyAs,
 		if (m_sFileName.CompareNoCase(FileName) == 0 &&
 			bSaveCopyAs)
 		{
-			::AfxMessageBox(ML_STRING(1249, "Cannot save a copy to ourself"), MB_OK | MB_ICONSTOP);
+			::AfxMessageBox(ML_STRING(1249, "Cannot save a copy to ourselves"), MB_OK | MB_ICONSTOP);
 			GetView()->ForceCursor(FALSE);
 			return FALSE;
 		}

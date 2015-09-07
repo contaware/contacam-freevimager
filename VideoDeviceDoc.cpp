@@ -1890,7 +1890,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendMail(const CTime& Time, const CSt
 			// Display the error
 			else
 			{
-				::LogLine(	_T("%s, an error occured sending the message, Error: %x, Description: %s"),
+				::LogLine(	_T("%s, an error occurred sending the message, Error: %x, Description: %s"),
 							m_pDoc->GetAssignedDeviceName(),
 							pEx->m_hr,
 							pEx->GetErrorMessage());

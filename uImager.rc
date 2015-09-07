@@ -3785,7 +3785,7 @@ BEGIN
     IDS_MULTILANG_1210      "No Burner Was Detected."
     IDS_MULTILANG_1211      "Burning Is Not Supported For Your Operating System."
     IDS_MULTILANG_1212      "Loading Folder's First Picture"
-    IDS_MULTILANG_1214      "To Many Attached Files. Max Number is %i.\n"
+    IDS_MULTILANG_1214      "Too Many Attached Files. Max Number is %i.\n"
     IDS_MULTILANG_1215      "Tip: Use a Zip File to put all your files in it."
 END
 
@@ -3823,7 +3823,7 @@ END
 STRINGTABLE
 BEGIN
     IDS_MULTILANG_1248      " , File %i of %i in Directory, %dx%d , %s , File: %d %s"
-    IDS_MULTILANG_1249      "Cannot save a copy to ourself"
+    IDS_MULTILANG_1249      "Cannot save a copy to ourselves"
     IDS_MULTILANG_1250      "The file %s\nis read only"
     IDS_MULTILANG_1251      "Access denied to %s"
     IDS_MULTILANG_1252      "Could Not Save The Picture."
@@ -3967,7 +3967,7 @@ BEGIN
     IDS_MULTILANG_1410      "At least one recipient must be specified to use the DNS lookup option\n"
     IDS_MULTILANG_1411      "Unable to determine the domain for the email address %s\n"
     IDS_MULTILANG_1413      "Unable to perform a DNS MX lookup for the domain %s, Error Code:%d\n"
-    IDS_MULTILANG_1414      "An error occured sending the message, Error:%x\nDescription:%s\n"
+    IDS_MULTILANG_1414      "An error occurred sending the message, Error:%x\nDescription:%s\n"
 END
 
 STRINGTABLE
@@ -4720,9 +4720,9 @@ BEGIN
     IDS_STRING1769          "Thumbnail Size %i x %i"
     IDS_STRING1770          "Please Enter A Host Name"
     IDS_STRING1771          "Success: Host Reachable"
-    IDS_STRING1772          "An error occured while opening the file to be downloaded:\n%s\n"
+    IDS_STRING1772          "An error occurred while opening the file to be downloaded:\n%s\n"
     IDS_STRING1773          "An error occurred while seeking to the end of the file to be downloaded:\n%s\n"
-    IDS_STRING1774          "An error occured while opening the file to be uploaded:\n%s\n"
+    IDS_STRING1774          "An error occurred while opening the file to be uploaded:\n%s\n"
     IDS_STRING1775          "Failed connecting to the FTP server in a timely manner\n"
 END
 
@@ -4733,8 +4733,8 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_STRING1776          "An exception occured while writing to the download file:\n%s\n"
-    IDS_STRING1777          "An exception occured while reading the local file:\n%s\n"
+    IDS_STRING1776          "An exception occurred while writing to the download file:\n%s\n"
+    IDS_STRING1777          "An exception occurred while reading the local file:\n%s\n"
     IDS_STRING1780          "The request to connect could not be completed because the supplied user name and/or password are incorrect"
     IDS_STRING1784          "Error with code %u."
     IDS_STRING1785          "General"

@@ -369,7 +369,7 @@ void CSendMailConfigurationDlg::OnButtonTest()
 			// Display the error
 			EndWaitCursor();
 			CString sMsg;
-			sMsg.Format(ML_STRING(1414, "An error occured sending the message, Error:%x\nDescription:%s\n"),
+			sMsg.Format(ML_STRING(1414, "An error occurred sending the message, Error:%x\nDescription:%s\n"),
 						pEx->m_hr,
 						pEx->GetErrorMessage());
 			TRACE(sMsg);

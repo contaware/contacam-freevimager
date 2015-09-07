@@ -106,7 +106,7 @@ BOOL CFTPTransfer::OpenLocalFile()
 		if (!m_LocalFile.Open(m_sLocalFile, dwFileFlags, &ex))
 		{
 			ex.GetErrorMessage(szCause, 255);
-			m_sError.Format(ML_STRING(1772, "An error occured while opening the file to be downloaded:\n%s\n"), szCause);
+			m_sError.Format(ML_STRING(1772, "An error occurred while opening the file to be downloaded:\n%s\n"), szCause);
 			return FALSE;
 		}
 
@@ -130,7 +130,7 @@ BOOL CFTPTransfer::OpenLocalFile()
 		if (!m_LocalFile.Open(m_sLocalFile, CFile::modeRead | CFile::shareDenyWrite, &ex))
 		{
 			ex.GetErrorMessage(szCause, 255);
-			m_sError.Format(ML_STRING(1774, "An error occured while opening the file to be uploaded:\n%s\n"), szCause);
+			m_sError.Format(ML_STRING(1774, "An error occurred while opening the file to be uploaded:\n%s\n"), szCause);
 			return FALSE;
 		}
 
@@ -602,7 +602,7 @@ int CFTPTransfer::Transfer()
 				catch (CFileException* pEx)
 				{
 					pEx->GetErrorMessage(szCause, 255);
-					m_sError.Format(ML_STRING(1776, "An exception occured while writing to the download file:\n%s\n"), szCause);
+					m_sError.Format(ML_STRING(1776, "An exception occurred while writing to the download file:\n%s\n"), szCause);
 					m_LocalFile.Close();
 					::DeleteFile(m_sLocalFile);
 					if (m_hInternetSession && pOldCallback)
@@ -639,7 +639,7 @@ int CFTPTransfer::Transfer()
 			catch (CFileException* pEx)
 			{
 				pEx->GetErrorMessage(szCause, 255);
-				m_sError.Format(ML_STRING(1777, "An exception occured while reading the local file:\n%s\n"), szCause);
+				m_sError.Format(ML_STRING(1777, "An exception occurred while reading the local file:\n%s\n"), szCause);
 				m_LocalFile.Close();
 				if (m_hInternetSession && pOldCallback)
 				  ::InternetSetStatusCallback(m_hInternetSession, pOldCallback);
