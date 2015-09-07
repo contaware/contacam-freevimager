@@ -857,9 +857,8 @@ public:
 															return res;};
 	
 	// Audio Prelisten
-	static BOOL Prelisten(	LPBYTE pData, DWORD dwSizeInBytes,
-							const LPWAVEFORMATEX pSrcWaveFormat,
-							CAudioTools* pAudioTools, CAudioPlay* pAudioPlay);
+	BOOL Prelisten(	LPBYTE pData, DWORD dwSizeInBytes,
+					CAudioTools* pAudioTools, CAudioPlay* pAudioPlay);
 
 	// Video / Audio Recording
 	BOOL MakeAVRec(CAVRec** ppAVRec);
@@ -1046,6 +1045,7 @@ public:
 	// Audio Vars
 	volatile DWORD m_dwCaptureAudioDeviceID;			// Audio Capture Device ID
 	volatile BOOL m_bCaptureAudio;						// Do Capture Audio Flag
+	volatile BOOL m_bAudioPrelisten;					// Pre-listen audio source
 	LPWAVEFORMATEX m_pSrcWaveFormat;					// Uncompressed audio source format
 	LPWAVEFORMATEX m_pDstWaveFormat;					// Wanted save format
 	CDib::USERLIST m_AudioList;							// Audio buffers

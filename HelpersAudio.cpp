@@ -451,7 +451,7 @@ void CAudioTools::Free()
 	m_nConvertChannelsBufSizeBytes = 0;
 }
 
-BOOL CAudioPlay::Init(float fStreamVolume/*=1.0f*/, REFERENCE_TIME hnsRequestedBufferDuration/*=10000000*/)
+BOOL CAudioPlay::Init(REFERENCE_TIME hnsRequestedBufferDuration/*=10000000*/)
 {
 	// First close
 	Close();
@@ -503,12 +503,6 @@ BOOL CAudioPlay::Init(float fStreamVolume/*=1.0f*/, REFERENCE_TIME hnsRequestedB
 	if (FAILED(hr))
 		return FALSE;
 
-	// Set stream volume
-	hr = m_pAudioClient->GetService(__uuidof(IAudioStreamVolume), (void**)&m_pAudioStreamVolume);
-	if (FAILED(hr))
-		return FALSE;
-	SetStreamVolume(fStreamVolume);
-
 	// Get renderer
     hr = m_pAudioClient->GetService(__uuidof(IAudioRenderClient), (void**)&m_pRenderClient);
 	if (SUCCEEDED(hr))
@@ -552,11 +546,6 @@ void CAudioPlay::Close()
 	{
 		m_pAudioClient->Release();
 		m_pAudioClient = NULL;
-	}
-	if (m_pAudioStreamVolume)
-	{
-		m_pAudioStreamVolume->Release();
-		m_pAudioStreamVolume = NULL;
 	}
     if (m_pRenderClient)
 	{

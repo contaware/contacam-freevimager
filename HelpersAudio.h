@@ -111,13 +111,11 @@ class CAudioPlay
 						m_pEnumerator = NULL;
 						m_pDevice = NULL;
 						m_pAudioClient = NULL;
-						m_pAudioStreamVolume = NULL;
 						m_pRenderClient = NULL;}
 		virtual ~CAudioPlay(){Close();}
 
 		// Init
-		BOOL Init(	float fStreamVolume = 1.0f,									// Stream volume: 0.0f .. 1.0f
-					REFERENCE_TIME hnsRequestedBufferDuration = 10000000);		// by default 1 sec buffer (100 ns unit)
+		BOOL Init(REFERENCE_TIME hnsRequestedBufferDuration = 10000000);		// by default 1 sec buffer (100 ns unit)
 		BOOL IsInit() const {return m_bInit;}									// Has Init() been called successfully?
 
 		// Stop playing and free memory
@@ -146,16 +144,6 @@ class CAudioPlay
 										return 0;
 								}
 
-		// Set the stream volume: 0.0f .. 1.0f
-		void SetStreamVolume(float fLevel) {
-									UINT32 dwCount;
-									if (m_pAudioStreamVolume && SUCCEEDED(m_pAudioStreamVolume->GetChannelCount(&dwCount)))
-									{
-										for (UINT32 dwIndex = 0 ; dwIndex < dwCount ; dwIndex++)
-											m_pAudioStreamVolume->SetChannelVolume(dwIndex, fLevel);
-									}
-								}
-
 	protected:
 		BOOL m_bInit;
 		BOOL m_bStarted;
@@ -166,7 +154,6 @@ class CAudioPlay
 		IMMDeviceEnumerator* m_pEnumerator;
 		IMMDevice* m_pDevice;
 		IAudioClient* m_pAudioClient;
-		IAudioStreamVolume* m_pAudioStreamVolume;
 		IAudioRenderClient* m_pRenderClient;
 };
 

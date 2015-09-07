@@ -65,6 +65,7 @@ void CGeneralPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_LIVE_DEINTERLACE, m_bDeinterlace);
 	DDX_Check(pDX, IDC_CHECK_LIVE_ROTATE180, m_bRotate180);
 	DDX_Check(pDX, IDC_CHECK_AUTOOPEN, m_bRecAutoOpen);
+	DDX_Check(pDX, IDC_CHECK_AUDIO_PRELISTEN, m_bAudioPrelisten);
 	//}}AFX_DATA_MAP
 }
 
@@ -91,6 +92,7 @@ BEGIN_MESSAGE_MAP(CGeneralPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_AUTOOPEN, OnCheckAutoopen)
 	ON_BN_CLICKED(IDC_CHECK_LIVE_DEINTERLACE, OnCheckLiveDeinterlace)
 	ON_BN_CLICKED(IDC_CHECK_LIVE_ROTATE180, OnCheckLiveRotate180)
+	ON_BN_CLICKED(IDC_CHECK_AUDIO_PRELISTEN, OnCheckAudioPrelisten)
 	ON_CBN_SELCHANGE(IDC_REF_FONTSIZE, OnSelchangeRefFontsize)
 	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_ONCE_START, OnDatetimechangeTimeOnceStart)
 	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_ONCE_STOP, OnDatetimechangeTimeOnceStop)
@@ -174,13 +176,6 @@ void CGeneralPage::UpdateVideoQualityInfo()
 
 BOOL CGeneralPage::OnInitDialog() 
 {	
-	// Init vars
-	m_bDeinterlace = FALSE;
-	m_bRotate180 = FALSE;
-	m_bRecTimeSegmentation = FALSE;
-	m_nTimeSegmentationIndex = 0;
-	m_bRecAutoOpen = TRUE;
-
 	// Frame Rate Change Flag
 	m_bDoChangeFrameRate = FALSE;
 
@@ -203,6 +198,7 @@ BOOL CGeneralPage::OnInitDialog()
 
 	// Init Rec Vars
 	m_nVideoRecKeyframesRate = m_pDoc->m_nVideoRecKeyframesRate;
+	m_bAudioPrelisten = m_pDoc->m_bAudioPrelisten;
 
 	// Init Scheduler Values
 	CUImagerApp::CSchedulerEntry* pOnceSchedulerEntry =
@@ -721,6 +717,12 @@ void CGeneralPage::OnCheckTimeSegmentation()
 {
 	UpdateData(TRUE);
 	m_pDoc->m_bRecTimeSegmentation = m_bRecTimeSegmentation;
+}
+
+void CGeneralPage::OnCheckAudioPrelisten()
+{
+	UpdateData(TRUE);
+	m_pDoc->m_bAudioPrelisten = m_bAudioPrelisten;
 }
 
 void CGeneralPage::OnSelchangeTimeSegmentation() 
