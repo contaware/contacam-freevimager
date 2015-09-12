@@ -98,9 +98,11 @@ void CNetCom::CParseProcess::Process(unsigned char* pLinBuf, int nSize)
 
 void CNetCom::CParseProcess::NewData(BOOL bLastCall)
 {
-	if (!m_pNetCom) return;
+	// Check
+	if (!m_pNetCom)
+		return;
 	
-	int nAvailableRxBytes = m_pNetCom->GetAvailableReadBytes(); 
+	int nAvailableRxBytes = m_pNetCom->GetAvailableReadBytes();
 	m_nProcessOffset = 0;
 	m_nProcessSize = nAvailableRxBytes;
 	if (nAvailableRxBytes > 0 && Parse(m_pNetCom, bLastCall))
@@ -145,6 +147,11 @@ void CNetCom::CParseProcess::NewData(BOOL bLastCall)
 			Process(pBuf, nReadSize);
 			av_free(pBuf);
 		}
+
+		// Do Parse and maybe Process more data if it's not the last call,
+		// if the current call processed data and if there are bytes available
+		if (!bLastCall && nReadSize > 0 && m_pNetCom->GetAvailableReadBytes() > 0)
+			NewData(FALSE);
 	}
 }
 

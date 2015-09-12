@@ -3259,7 +3259,7 @@ int CVideoDeviceDoc::CHttpThread::Work()
 				m_pDoc->m_pVideoNetCom->ShutdownConnection_NoBlocking();
 				if (::WaitForSingleObject(GetKillEvent(), dwConnectDelayMs) == WAIT_OBJECT_0)
 					return 0;
-				m_pDoc->m_pVideoNetCom->Close();
+				m_pDoc->m_pVideoNetCom->Close(); // this also empties the rx & tx fifos
 				m_pDoc->m_pHttpVideoParseProcess->m_bPollNextJpeg = FALSE;
 				if (!Connect(m_pDoc->m_pVideoNetCom,
 							m_pDoc->m_pHttpVideoParseProcess,
@@ -3322,7 +3322,7 @@ int CVideoDeviceDoc::CHttpThread::Work()
 				m_pDoc->m_pAudioNetCom->ShutdownConnection_NoBlocking();
 				if (::WaitForSingleObject(GetKillEvent(), dwConnectDelayMs) == WAIT_OBJECT_0)
 					return 0;
-				m_pDoc->m_pAudioNetCom->Close();
+				m_pDoc->m_pAudioNetCom->Close(); // this also empties the rx & tx fifos
 				if (!Connect(m_pDoc->m_pAudioNetCom,
 							m_pDoc->m_pHttpAudioParseProcess,
 							((CUImagerApp*)::AfxGetApp())->m_bIPv6 ? AF_INET6 : AF_INET))
@@ -8940,7 +8940,7 @@ resolutions:
 8  -> 320*240
 32 -> 640*480
 
-rates (value rang 0-23):
+rates (value range 0-23):
 0  -> full speed
 1  -> 20 fps
 3  -> 15 fps
