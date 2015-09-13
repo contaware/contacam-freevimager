@@ -1088,7 +1088,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	switch (m_nComboFileExt)
 	{
 		case 0  : m_pDoc->m_sAVRecFileExt = _T(".mp4"); break;
-		default : m_pDoc->m_sAVRecFileExt = _T(".avi"); break;
+		default : m_pDoc->m_sAVRecFileExt = _T(".avi"); break; // also .mov is working
 	}
 	m_pDoc->UpdateDstWaveFormat(); // this updates m_pDstWaveFormat from m_sAVRecFileExt
 

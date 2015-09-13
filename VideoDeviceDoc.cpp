@@ -515,7 +515,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 					DstBmi.biWidth = VideoSaveDib.GetWidth();
 					DstBmi.biHeight = VideoSaveDib.GetHeight();
 					DstBmi.biPlanes = 1;
-					DstBmi.biCompression = ::GetFileExt(AVRecVideo.GetFileName()) == _T(".mp4") ? DEFAULT_MP4_VIDEO_FOURCC : DEFAULT_AVI_VIDEO_FOURCC;
+					DstBmi.biCompression = ::GetFileExt(AVRecVideo.GetFileName()) == _T(".mp4") ? DEFAULT_MP4_VIDEO_FOURCC : DEFAULT_VIDEO_FOURCC;
 					AVRecVideo.AddVideoStream(VideoSaveDib.GetBMI(),			// Source Video Format
 											(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
 											CalcFrameRate.num,					// Rate
@@ -1302,7 +1302,7 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 								DstBmi.biWidth = Dib.GetWidth();
 								DstBmi.biHeight = Dib.GetHeight();
 								DstBmi.biPlanes = 1;
-								DstBmi.biCompression = ::GetFileExt(pAVRecVideo->GetFileName()) == _T(".mp4") ? DEFAULT_MP4_VIDEO_FOURCC : DEFAULT_AVI_VIDEO_FOURCC;
+								DstBmi.biCompression = ::GetFileExt(pAVRecVideo->GetFileName()) == _T(".mp4") ? DEFAULT_MP4_VIDEO_FOURCC : DEFAULT_VIDEO_FOURCC;
 								pAVRecVideo->AddVideoStream(Dib.GetBMI(),						// Source Video Format
 															(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
 															FrameRate.num,						// Rate
@@ -1339,7 +1339,7 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 								DstBmi.biWidth = Dib.GetWidth();
 								DstBmi.biHeight = Dib.GetHeight();
 								DstBmi.biPlanes = 1;
-								DstBmi.biCompression = ::GetFileExt(pAVRecThumbVideo->GetFileName()) == _T(".mp4") ? DEFAULT_MP4_VIDEO_FOURCC : DEFAULT_AVI_VIDEO_FOURCC;
+								DstBmi.biCompression = ::GetFileExt(pAVRecThumbVideo->GetFileName()) == _T(".mp4") ? DEFAULT_MP4_VIDEO_FOURCC : DEFAULT_VIDEO_FOURCC;
 								pAVRecThumbVideo->AddVideoStream(Dib.GetBMI(),						// Source Video Format
 																(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
 																FrameRate.num,						// Rate
@@ -3962,10 +3962,9 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bCaptureAudio = FALSE;
 	m_bAudioPrelisten = FALSE;
 	m_pSrcWaveFormat = (WAVEFORMATEX*)new BYTE[sizeof(WAVEFORMATEX)];
-	WaveInitFormat(DEFAULT_AUDIO_CHANNELS, DEFAULT_AUDIO_SAMPLINGRATE, 16, m_pSrcWaveFormat);
+	WaveInitFormat(DEFAULT_AUDIO_CHANNELS, DEFAULT_AUDIO_SAMPLINGRATE, DEFAULT_AUDIO_BITS, m_pSrcWaveFormat);
 	m_pDstWaveFormat = (WAVEFORMATEX*)new BYTE[sizeof(WAVEFORMATEX)];
-	WaveInitFormat(DEFAULT_AUDIO_CHANNELS, DEFAULT_AUDIO_SAMPLINGRATE, 16, m_pDstWaveFormat);
-	UpdateDstWaveFormat(); // this needs m_sAVRecFileExt to be set!
+	UpdateDstWaveFormat(); // m_sAVRecFileExt and m_pAudioNetCom must be initialized!
 
 	// Property Sheet
 	m_pMovementDetectionPage = NULL;
@@ -5335,16 +5334,16 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CString sAddress, DWORD dwConnectDelayMs/*=0U
 	InitHttpGetFrameLocations();
 
 	// Allocate
-	m_pVideoNetCom = (CNetCom*)new CNetCom;
+	m_pVideoNetCom = new CNetCom;
 	if (!m_pVideoNetCom)
 		return FALSE;
-	m_pAudioNetCom = (CNetCom*)new CNetCom;
+	m_pAudioNetCom = new CNetCom;
 	if (!m_pAudioNetCom)
 		return FALSE;
-	m_pHttpVideoParseProcess = (CHttpParseProcess*)new CHttpParseProcess(this);
+	m_pHttpVideoParseProcess = new CHttpParseProcess(this);
 	if (!m_pHttpVideoParseProcess)
 		return FALSE;
-	m_pHttpAudioParseProcess = (CHttpParseProcess*)new CHttpParseProcess(this);
+	m_pHttpAudioParseProcess = new CHttpParseProcess(this);
 	if (!m_pHttpAudioParseProcess)
 		return FALSE;
 
@@ -5386,16 +5385,16 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CHostPortDlg* pDlg)
 	InitHttpGetFrameLocations();
 
 	// Allocate
-	m_pVideoNetCom = (CNetCom*)new CNetCom;
+	m_pVideoNetCom = new CNetCom;
 	if (!m_pVideoNetCom)
 		return FALSE;
-	m_pAudioNetCom = (CNetCom*)new CNetCom;
+	m_pAudioNetCom = new CNetCom;
 	if (!m_pAudioNetCom)
 		return FALSE;
-	m_pHttpVideoParseProcess = (CHttpParseProcess*)new CHttpParseProcess(this);
+	m_pHttpVideoParseProcess = new CHttpParseProcess(this);
 	if (!m_pHttpVideoParseProcess)
 		return FALSE;
-	m_pHttpAudioParseProcess = (CHttpParseProcess*)new CHttpParseProcess(this);
+	m_pHttpAudioParseProcess = new CHttpParseProcess(this);
 	if (!m_pHttpAudioParseProcess)
 		return FALSE;
 
@@ -5511,7 +5510,7 @@ BOOL CVideoDeviceDoc::MakeAVRec(CAVRec** ppAVRec)
 	DstBmi.bmiHeader.biWidth = SrcBmi.bmiHeader.biWidth;
 	DstBmi.bmiHeader.biHeight = SrcBmi.bmiHeader.biHeight;
 	DstBmi.bmiHeader.biPlanes = SrcBmi.bmiHeader.biPlanes;
-	DstBmi.bmiHeader.biCompression = ::GetFileExt((*ppAVRec)->GetFileName()) == _T(".mp4") ? DEFAULT_MP4_VIDEO_FOURCC : DEFAULT_AVI_VIDEO_FOURCC;
+	DstBmi.bmiHeader.biCompression = ::GetFileExt((*ppAVRec)->GetFileName()) == _T(".mp4") ? DEFAULT_MP4_VIDEO_FOURCC : DEFAULT_VIDEO_FOURCC;
 	AVRational FrameRate;
 	if (m_dEffectiveFrameRate > 0.0)
 		FrameRate = av_d2q(m_dEffectiveFrameRate, MAX_SIZE_FOR_RATIONAL);
@@ -5543,38 +5542,61 @@ BOOL CVideoDeviceDoc::MakeAVRec(CAVRec** ppAVRec)
 
 void CVideoDeviceDoc::WaveInitFormat(WORD wCh, DWORD dwSampleRate, WORD wBitsPerSample, LPWAVEFORMATEX pWaveFormat)
 {
-	if (!pWaveFormat) return;
-	pWaveFormat->wFormatTag = WAVE_FORMAT_PCM;
-	pWaveFormat->nChannels = wCh;
-	pWaveFormat->nSamplesPerSec = dwSampleRate;
-	pWaveFormat->nBlockAlign = wCh * wBitsPerSample/8;
-	pWaveFormat->nAvgBytesPerSec = dwSampleRate * pWaveFormat->nBlockAlign;
-	pWaveFormat->wBitsPerSample = wBitsPerSample;
-	pWaveFormat->cbSize = 0;
+	if (pWaveFormat)
+	{
+		pWaveFormat->wFormatTag = WAVE_FORMAT_PCM;
+		pWaveFormat->nChannels = wCh;
+		pWaveFormat->nSamplesPerSec = dwSampleRate;
+		pWaveFormat->nBlockAlign = wCh * wBitsPerSample/8;
+		pWaveFormat->nAvgBytesPerSec = dwSampleRate * pWaveFormat->nBlockAlign;
+		pWaveFormat->wBitsPerSample = wBitsPerSample;
+		pWaveFormat->cbSize = 0;
+	}
 }
 
 void CVideoDeviceDoc::UpdateDstWaveFormat()
 {
-	m_pDstWaveFormat->wFormatTag = m_sAVRecFileExt == _T(".mp4") ? DEFAULT_MP4_AUDIO_FORMAT_TAG : DEFAULT_AVI_AUDIO_FORMAT_TAG;
-	if (m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_PCM)
-		WaveInitFormat(DEFAULT_AUDIO_CHANNELS, DEFAULT_AUDIO_SAMPLINGRATE, 16, m_pDstWaveFormat);
-	else if (m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_DVI_ADPCM)
+	if (m_pDstWaveFormat)
 	{
-		m_pDstWaveFormat->nAvgBytesPerSec = m_pDstWaveFormat->nSamplesPerSec * m_pDstWaveFormat->nChannels / 2; // calculated more precisely by codec
-		m_pDstWaveFormat->nBlockAlign = 0;																		// calculated by codec
-		m_pDstWaveFormat->wBitsPerSample = 4;
-	}
-	else if (m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_MPEGLAYER3)
-	{
-		m_pDstWaveFormat->nAvgBytesPerSec = DEFAULT_MP3_AUDIO_BITRATE / 8;
-		m_pDstWaveFormat->nBlockAlign = 0;
-		m_pDstWaveFormat->wBitsPerSample = 0;
-	}
-	else if (m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_AAC2)
-	{
-		m_pDstWaveFormat->nAvgBytesPerSec = DEFAULT_AAC_AUDIO_BITRATE / 8;
-		m_pDstWaveFormat->nBlockAlign = 0;
-		m_pDstWaveFormat->wBitsPerSample = 0;
+		// Init
+		if (m_sAVRecFileExt == _T(".mp4"))
+		{
+			WaveInitFormat(DEFAULT_AUDIO_CHANNELS, DEFAULT_AUDIO_SAMPLINGRATE, DEFAULT_AUDIO_BITS, m_pDstWaveFormat);
+			m_pDstWaveFormat->wFormatTag = DEFAULT_MP4_AUDIO_FORMAT_TAG;
+		}
+		else
+		{
+			if (m_pAudioNetCom)
+			{
+				WaveInitFormat(DEFAULT_NETCOM_AUDIO_CHANNELS, DEFAULT_NETCOM_AUDIO_SAMPLINGRATE, DEFAULT_NETCOM_AUDIO_BITS, m_pDstWaveFormat);
+				m_pDstWaveFormat->wFormatTag = DEFAULT_NETCOM_AUDIO_FORMAT_TAG;
+			}
+			else
+			{
+				WaveInitFormat(DEFAULT_AUDIO_CHANNELS, DEFAULT_AUDIO_SAMPLINGRATE, DEFAULT_AUDIO_BITS, m_pDstWaveFormat);
+				m_pDstWaveFormat->wFormatTag = DEFAULT_AUDIO_FORMAT_TAG;
+			}
+		}
+
+		// Update according to format tag
+		if (m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_DVI_ADPCM)
+		{
+			m_pDstWaveFormat->nAvgBytesPerSec = m_pDstWaveFormat->nSamplesPerSec * m_pDstWaveFormat->nChannels / 2; // calculated more precisely by codec
+			m_pDstWaveFormat->nBlockAlign = 0;																		// calculated by codec
+			m_pDstWaveFormat->wBitsPerSample = 4;
+		}
+		else if (m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_MPEGLAYER3)
+		{
+			m_pDstWaveFormat->nAvgBytesPerSec = DEFAULT_MP3_AUDIO_BITRATE / 8;
+			m_pDstWaveFormat->nBlockAlign = 0;
+			m_pDstWaveFormat->wBitsPerSample = 0;
+		}
+		else if (m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_AAC2)
+		{
+			m_pDstWaveFormat->nAvgBytesPerSec = DEFAULT_AAC_AUDIO_BITRATE / 8;
+			m_pDstWaveFormat->nBlockAlign = 0;
+			m_pDstWaveFormat->wBitsPerSample = 0;
+		}
 	}
 }
 
@@ -9068,7 +9090,7 @@ BOOL CVideoDeviceDoc::ConnectHttp(DWORD dwConnectDelayMs/*=0U*/)
 	// Init Audio
 	m_pHttpAudioParseProcess->m_bTryConnecting = TRUE;
 	m_pHttpAudioParseProcess->m_FormatType = CHttpParseProcess::FORMATAUDIO_UNKNOWN;
-	WaveInitFormat(1, 8000, 16, m_pSrcWaveFormat); // all supported http network formats decode to Mono, 8000Hz, 16bit
+	WaveInitFormat(DEFAULT_NETCOM_AUDIO_CHANNELS, DEFAULT_NETCOM_AUDIO_SAMPLINGRATE, DEFAULT_NETCOM_AUDIO_BITS, m_pSrcWaveFormat); // all supported http network formats decode to Mono, 8000Hz, 16bit
 
 	// Start thread
 	m_HttpThread.Start();

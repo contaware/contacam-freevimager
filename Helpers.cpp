@@ -2473,6 +2473,8 @@ CString FileNameToMime(LPCTSTR lpszFileName)
 		return _T("video/avi");
 	else if (sExt == _T(".mp4"))
 		return _T("video/mp4");
+	else if (sExt == _T(".mov"))
+		return _T("video/quicktime");
 	else
 		return _T(""); 
 }
