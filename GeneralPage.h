@@ -51,7 +51,7 @@ public:
 	BOOL	m_bRecAutoOpen;
 	BOOL	m_bDeinterlace;
 	BOOL	m_bRotate180;
-	BOOL	m_bAudioPrelisten;
+	BOOL	m_bAudioListen;
 	//}}AFX_DATA
 
 
@@ -93,7 +93,7 @@ protected:
 	afx_msg void OnCheckLiveDeinterlace();
 	afx_msg void OnCheckLiveRotate180();
 	afx_msg void OnCheckAutoopen();
-	afx_msg void OnCheckAudioPrelisten();
+	afx_msg void OnCheckAudioListen();
 	afx_msg void OnSelchangeRefFontsize();
 	afx_msg void OnDatetimechangeTimeOnceStart(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnDatetimechangeTimeOnceStop(NMHDR *pNMHDR, LRESULT *pResult);

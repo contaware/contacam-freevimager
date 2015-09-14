@@ -65,7 +65,7 @@ void CGeneralPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_LIVE_DEINTERLACE, m_bDeinterlace);
 	DDX_Check(pDX, IDC_CHECK_LIVE_ROTATE180, m_bRotate180);
 	DDX_Check(pDX, IDC_CHECK_AUTOOPEN, m_bRecAutoOpen);
-	DDX_Check(pDX, IDC_CHECK_AUDIO_PRELISTEN, m_bAudioPrelisten);
+	DDX_Check(pDX, IDC_CHECK_AUDIO_LISTEN, m_bAudioListen);
 	//}}AFX_DATA_MAP
 }
 
@@ -92,7 +92,7 @@ BEGIN_MESSAGE_MAP(CGeneralPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_AUTOOPEN, OnCheckAutoopen)
 	ON_BN_CLICKED(IDC_CHECK_LIVE_DEINTERLACE, OnCheckLiveDeinterlace)
 	ON_BN_CLICKED(IDC_CHECK_LIVE_ROTATE180, OnCheckLiveRotate180)
-	ON_BN_CLICKED(IDC_CHECK_AUDIO_PRELISTEN, OnCheckAudioPrelisten)
+	ON_BN_CLICKED(IDC_CHECK_AUDIO_LISTEN, OnCheckAudioListen)
 	ON_CBN_SELCHANGE(IDC_REF_FONTSIZE, OnSelchangeRefFontsize)
 	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_ONCE_START, OnDatetimechangeTimeOnceStart)
 	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_ONCE_STOP, OnDatetimechangeTimeOnceStop)
@@ -198,7 +198,7 @@ BOOL CGeneralPage::OnInitDialog()
 
 	// Init Rec Vars
 	m_nVideoRecKeyframesRate = m_pDoc->m_nVideoRecKeyframesRate;
-	m_bAudioPrelisten = m_pDoc->m_bAudioPrelisten;
+	m_bAudioListen = m_pDoc->m_bAudioListen;
 
 	// Init Scheduler Values
 	CUImagerApp::CSchedulerEntry* pOnceSchedulerEntry =
@@ -359,6 +359,11 @@ BOOL CGeneralPage::OnInitDialog()
 		pCheck->SetCheck(1);
 	else
 		pCheck->SetCheck(0);
+
+	// Audio Listen only supported on Vista or higher
+	pCheck = (CButton*)GetDlgItem(IDC_CHECK_AUDIO_LISTEN);
+	if (!g_bWinVistaOrHigher)
+		pCheck->ShowWindow(SW_HIDE);
 
 	// Set reference font size
 	if (m_pDoc->m_nRefFontSize == 8)
@@ -719,10 +724,10 @@ void CGeneralPage::OnCheckTimeSegmentation()
 	m_pDoc->m_bRecTimeSegmentation = m_bRecTimeSegmentation;
 }
 
-void CGeneralPage::OnCheckAudioPrelisten()
+void CGeneralPage::OnCheckAudioListen()
 {
 	UpdateData(TRUE);
-	m_pDoc->m_bAudioPrelisten = m_bAudioPrelisten;
+	m_pDoc->m_bAudioListen = m_bAudioListen;
 }
 
 void CGeneralPage::OnSelchangeTimeSegmentation() 

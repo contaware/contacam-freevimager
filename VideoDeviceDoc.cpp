@@ -2098,7 +2098,7 @@ int CVideoDeviceDoc::CCaptureAudioThread::Loop()
 												UserBuf.m_dwSize = m_WaveHeader[m_uiWaveInBufPos].dwBytesRecorded;
 												UserBuf.m_pBuf = m_pUncompressedBuf[m_uiWaveInBufPos];
 												m_pDoc->m_AudioList.AddTail(UserBuf);
-												m_pDoc->Prelisten(UserBuf.m_pBuf, UserBuf.m_dwSize, m_pAudioTools, m_pAudioPlay);
+												m_pDoc->AudioListen(UserBuf.m_pBuf, UserBuf.m_dwSize, m_pAudioTools, m_pAudioPlay);
 												if (m_pDoc->m_AudioList.GetCount() > AUDIO_MAX_LIST_SIZE)
 												{
 													UserBuf = m_pDoc->m_AudioList.RemoveHead();
@@ -2151,7 +2151,7 @@ int CVideoDeviceDoc::CCaptureAudioThread::Work()
 	// Init COM
 	::CoInitialize(NULL);
 
-	// Init audio prelisten
+	// Init audio listen
 	if (!m_pAudioTools)
 		m_pAudioTools = new CAudioTools;
 	if (!m_pAudioPlay)
@@ -2167,7 +2167,7 @@ int CVideoDeviceDoc::CCaptureAudioThread::Work()
 			break; // exit thread
 	}
 
-	// Close audio prelisten and free
+	// Close audio listen and free
 	if (m_pAudioPlay)
 	{
 		delete m_pAudioPlay;
@@ -2314,8 +2314,8 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::DataInAudio()
 	return TRUE;
 }
 
-BOOL CVideoDeviceDoc::Prelisten(LPBYTE pData, DWORD dwSizeInBytes,
-								CAudioTools* pAudioTools, CAudioPlay* pAudioPlay)
+BOOL CVideoDeviceDoc::AudioListen(	LPBYTE pData, DWORD dwSizeInBytes,
+									CAudioTools* pAudioTools, CAudioPlay* pAudioPlay)
 {
 	// Check
 	if (!pData || dwSizeInBytes == 0 || !m_pSrcWaveFormat || !pAudioTools || !pAudioPlay)
@@ -2347,8 +2347,8 @@ BOOL CVideoDeviceDoc::Prelisten(LPBYTE pData, DWORD dwSizeInBytes,
 													pAudioPlay->GetWaveFormat()->nSamplesPerSec,
 													pAudioPlay->GetWaveFormat()->nChannels);
 
-		// Clear buffer if not pre-listening
-		if (!m_bAudioPrelisten)
+		// Clear buffer if not listening
+		if (!m_bAudioListen)
 			memset(pResampleBuf, 0, nNumDstFrames * pAudioPlay->GetWaveFormat()->nChannels * sizeof(float));
 
 		// Finally play it
@@ -3960,7 +3960,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	// Audio
 	m_dwCaptureAudioDeviceID = 0U;
 	m_bCaptureAudio = FALSE;
-	m_bAudioPrelisten = FALSE;
+	m_bAudioListen = FALSE;
 	m_pSrcWaveFormat = (WAVEFORMATEX*)new BYTE[sizeof(WAVEFORMATEX)];
 	WaveInitFormat(DEFAULT_AUDIO_CHANNELS, DEFAULT_AUDIO_SAMPLINGRATE, DEFAULT_AUDIO_BITS, m_pSrcWaveFormat);
 	m_pDstWaveFormat = (WAVEFORMATEX*)new BYTE[sizeof(WAVEFORMATEX)];
@@ -4653,7 +4653,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 											pApp->GetProfileInt(sSection, _T("SnapshotStopMin"), t.GetMinute()),
 											pApp->GetProfileInt(sSection, _T("SnapshotStopSec"), t.GetSecond()));
 	m_bCaptureAudio = (BOOL) pApp->GetProfileInt(sSection, _T("CaptureAudio"), FALSE);
-	m_bAudioPrelisten = (BOOL) pApp->GetProfileInt(sSection, _T("AudioPrelisten"), FALSE);
+	m_bAudioListen = (BOOL) pApp->GetProfileInt(sSection, _T("AudioListen"), FALSE);
 	m_dwCaptureAudioDeviceID = (DWORD) pApp->GetProfileInt(sSection, _T("AudioCaptureDeviceID"), 0);
 	m_nDeviceInputId = (int) pApp->GetProfileInt(sSection, _T("VideoCaptureDeviceInputID"), -1);
 	m_nDeviceFormatId = (int) pApp->GetProfileInt(sSection, _T("VideoCaptureDeviceFormatID"), -1);
@@ -4830,7 +4830,7 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("SnapshotStopMin"), m_SnapshotStopTime.GetMinute());
 	pApp->WriteProfileInt(sSection, _T("SnapshotStopSec"), m_SnapshotStopTime.GetSecond());
 	pApp->WriteProfileInt(sSection, _T("CaptureAudio"), m_bCaptureAudio);
-	pApp->WriteProfileInt(sSection, _T("AudioPrelisten"), (int)m_bAudioPrelisten);
+	pApp->WriteProfileInt(sSection, _T("AudioListen"), (int)m_bAudioListen);
 	pApp->WriteProfileInt(sSection, _T("AudioCaptureDeviceID"), m_dwCaptureAudioDeviceID);
 	pApp->WriteProfileInt(sSection, _T("VideoCaptureDeviceInputID"), m_nDeviceInputId);
 	pApp->WriteProfileInt(sSection, _T("VideoCaptureDeviceFormatID"), m_nDeviceFormatId);
@@ -10915,7 +10915,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::DecodeAudio(AVPacket* avpkt)
 	memcpy(UserBuf.m_pBuf, m_pFrame->data[0], UserBuf.m_dwSize);
 	::EnterCriticalSection(&m_pDoc->m_csAudioList);
 	m_pDoc->m_AudioList.AddTail(UserBuf);
-	m_pDoc->Prelisten(UserBuf.m_pBuf, UserBuf.m_dwSize, m_pAudioTools, m_pAudioPlay);
+	m_pDoc->AudioListen(UserBuf.m_pBuf, UserBuf.m_dwSize, m_pAudioTools, m_pAudioPlay);
 	if (m_pDoc->m_AudioList.GetCount() > AUDIO_MAX_LIST_SIZE)
 	{
 		UserBuf = m_pDoc->m_AudioList.RemoveHead();
@@ -10938,7 +10938,7 @@ void CVideoDeviceDoc::CHttpParseProcess::OnThreadStart()
 		// Init COM
 		::CoInitialize(NULL);
 
-		// Init audio prelisten
+		// Init audio listen
 		if (!m_pAudioTools)
 			m_pAudioTools = new CAudioTools;
 		if (!m_pAudioPlay)
@@ -10952,7 +10952,7 @@ void CVideoDeviceDoc::CHttpParseProcess::OnThreadShutdown()
 {
 	if (m_FormatType >= FORMATAUDIO_UNKNOWN)
 	{
-		// Close audio prelisten and free
+		// Close audio listen and free
 		if (m_pAudioPlay)
 		{
 			delete m_pAudioPlay;

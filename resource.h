@@ -964,7 +964,7 @@
 #define IDS_MULTILANG_1073              1073
 #define IDC_REC_AUDIO                   1073
 #define IDS_MULTILANG_1074              1074
-#define IDC_CHECK_AUDIO_PRELISTEN       1074
+#define IDC_CHECK_AUDIO_LISTEN          1074
 #define IDS_MULTILANG_1075              1075
 #define IDS_MULTILANG_1076              1076
 #define IDC_COMBO_AUDIOIN_SOURCE        1076

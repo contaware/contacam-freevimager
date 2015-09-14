@@ -630,7 +630,7 @@ BOOL CAudioPlay::Write(LPBYTE pData, UINT32 uiNumFrames, BOOL bDoFramesOffsetCor
 			int nDelta = (int)(m_uiBufferFrameCount / 2) - (int)uiNumFramesPadding;
 			int nTotalElapsedFrames = (int)(m_pWaveFormat->nSamplesPerSec * dwDiffMs / 1000U);
 			m_dFramesCorrection = (double)nDelta / (double)nTotalElapsedFrames;
-			//TRACE(_T("Audio Prelisten Buffer Usage %u/%u (%0.2f%%)\n"), uiNumFramesPadding, m_uiBufferFrameCount, 100.0 * uiNumFramesPadding / m_uiBufferFrameCount);
+			//TRACE(_T("Audio Listen Buffer Usage %u/%u (%0.2f%%)\n"), uiNumFramesPadding, m_uiBufferFrameCount, 100.0 * uiNumFramesPadding / m_uiBufferFrameCount);
 			m_dwLastCheckUpTime = dwCurrentUpTime;
 		}
 	}
