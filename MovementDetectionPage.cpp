@@ -260,9 +260,9 @@ void CMovementDetectionPage::UpdateDetectionState()
 	if (pEdit)
 	{
 		if (m_pDoc->m_bUnsupportedVideoSizeForMovDet)
-			pEdit->ShowWindow(TRUE);
+			pEdit->ShowWindow(SW_SHOW);
 		else
-			pEdit->ShowWindow(FALSE);
+			pEdit->ShowWindow(SW_HIDE);
 	}
 }
 
