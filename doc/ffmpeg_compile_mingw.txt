@@ -32,11 +32,12 @@ Put library source to /src and extract it
 
 Apparently mingw doesn't support 32-bytes stack alignment on Windows (-mpreferred-stack-boundary=5),
 this effectively prevents the use of 256-bit AVX instructions. In our code we prevent the use of AVX
-by calling av_opt_set(pCodecCtx->priv_data, "x264-params", "asm=SSE", 0)
+by calling av_opt_set(). When recompiling X264 remember to disable newer SIMD instructions in
+CAVRec::AddVideoStream()!
 http://stackoverflow.com/questions/5983389/how-to-align-stack-at-32-byte-boundary-in-gcc
 https://gcc.gnu.org/bugzilla/show_bug.cgi?id=49001
 
-Patch the configure file to have the default 16-bytes alignment:
+Patch the X264 configure file to have the default 16-bytes alignment:
 if [ $asm = auto -a \( $ARCH = X86 -o $ARCH = X86_64 \) ] ; then
     if ! as_check "vpmovzxwd ymm0, xmm0" ; then
         VER=`($AS --version || echo no assembler) 2>/dev/null | head -n 1`

@@ -16,6 +16,7 @@ extern "C"
 #include "libavformat/movenc.h"
 #include "libswscale/swscale.h"
 #include "libswresample/swresample.h"
+uint32_t x264_cpu_detect();
 }
 
 // Used to Convert From Double to Fractional Frame-Rate.
@@ -196,6 +197,12 @@ protected:
 	bool m_bOpen;
 	volatile DWORD m_dwTotalVideoStreams;
 	volatile DWORD m_dwTotalAudioStreams;
+
+	// Performance measurement
+#ifdef PERFORMANCE_MEASUREMENT
+	ULONGLONG m_ullAddFrameTimeMicroSec;
+	ULONGLONG m_ullAddFrameCount;
+#endif
 
 	// Conversion Contexts
 	SwsContext* m_pImgConvertCtx[MAX_STREAMS];

@@ -63,6 +63,11 @@ void CAVRec::InitVars()
 	m_bFileOpened = false;
 	m_bOpen = false;
 	
+#ifdef PERFORMANCE_MEASUREMENT
+	m_ullAddFrameTimeMicroSec = 0;
+	m_ullAddFrameCount = 0;
+#endif
+
 	for (DWORD dwStreamNum = 0 ; dwStreamNum < MAX_STREAMS ; dwStreamNum++)
 	{
 		// Conversion Contexts
@@ -284,12 +289,23 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 		//   ~270 MB with medium, ~130 MB with veryfast and ~65 MB with ultrafast
 		av_opt_set(pCodecCtx->priv_data, "preset", "veryfast", 0);
 
-		// Only enable up to SSE SIMD optimizations (apparently mingw doesn't support
-		// 32-bytes stack alignment on Windows, this prevents the use of 256-bit AVX)
-		// X264_CPU_CMOV | X264_CPU_MMX | X264_CPU_MMXEXT | X264_CPU_SSE = 15 (see x264.h)
-		// Note: to make sure the following command works, enable logging (see my_av_log_trace()
-		//       in uImager.cpp) and check the Output window after the below avcodec_open_thread_safe()
-		av_opt_set(pCodecCtx->priv_data, "x264-params", "asm=SSE", 0); // equivalent to "asm=15"
+		// Disable 256-bit instructions because mingw doesn't support 32-bytes stack alignment on Windows
+		// Attention: remember to disable newer SIMD instructions when recompiling x264 (see x264.h)
+		// Note:      to make sure the following command works, enable logging (see my_av_log_trace()
+		//            in uImager.cpp) and check the Output window after the below avcodec_open_thread_safe()
+		uint32_t cpu = x264_cpu_detect();
+		#define X264_CPU_LZCNT           0x0000200  /* Phenom support for "leading zero count" instruction. */
+		#define X264_CPU_AVX             0x0000400  /* AVX support: requires OS support even if YMM registers aren't used. */
+		#define X264_CPU_XOP             0x0000800  /* AMD XOP */
+		#define X264_CPU_FMA4            0x0001000  /* AMD FMA4 */
+		#define X264_CPU_FMA3            0x0002000  /* FMA3 */
+		#define X264_CPU_AVX2            0x0004000  /* AVX2 */
+		#define X264_CPU_BMI1            0x0008000  /* BMI1 */
+		#define X264_CPU_BMI2            0x0010000  /* BMI2 */
+		cpu &= ~(X264_CPU_LZCNT | X264_CPU_AVX | X264_CPU_XOP | X264_CPU_FMA4 | X264_CPU_FMA3 | X264_CPU_AVX2 | X264_CPU_BMI1 | X264_CPU_BMI2);
+		CStringA sAsmOption;
+		sAsmOption.Format("asm=%u", cpu);
+		av_opt_set(pCodecCtx->priv_data, "x264-params", sAsmOption, 0); // accepts both numbers and names: "asm=15" is equivalent to "asm=SSE"
 	}
 	else
 	{
@@ -538,6 +554,16 @@ bool CAVRec::Close()
 
 	::EnterCriticalSection(&m_csAV);
 
+#ifdef PERFORMANCE_MEASUREMENT
+	if (m_ullAddFrameCount > 0)
+	{
+		m_ullAddFrameTimeMicroSec /= m_ullAddFrameCount;
+		::LogLine(_T("Avg Video Frame Encode Time(%s) : %I64uus"), m_sFileName, m_ullAddFrameTimeMicroSec);
+	}
+	m_ullAddFrameTimeMicroSec = 0;
+	m_ullAddFrameCount = 0;
+#endif
+
 	if (m_pFormatCtx)
 	{
 		// Flush audio buffers
@@ -652,6 +678,12 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 						int64_t pts/*=AV_NOPTS_VALUE*/)
 {
 	::EnterCriticalSection(&m_csAV);
+
+	// Performance measurement init
+#ifdef PERFORMANCE_MEASUREMENT
+	CPerformance perf;
+	perf.Init();
+#endif
 
 	// Check
 	if (!m_pFormatCtx								||
@@ -898,6 +930,17 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 
 	// Encode and write frame to file
 	bool res = EncodeAndWriteFrame(dwStreamNum, bFlush ? NULL : m_pFrame[dwStreamNum], bInterleaved);
+
+	// Performance measurement end
+#ifdef PERFORMANCE_MEASUREMENT
+	if (!bFlush)
+	{
+		perf.End();
+		m_ullAddFrameTimeMicroSec += perf.GetMicroSecDiff();
+		++m_ullAddFrameCount;
+	}
+#endif
+
 	::LeaveCriticalSection(&m_csAV);
 	return res;
 }
