@@ -2,10 +2,15 @@ CONTACAM HISTORY
 
 5.0.1 (June Xth 2015)
 
-- Web interface has now a better calendar picker
+- Web interface has a new html5 calendar picker (browser must support it)
 - Enhanced ContaCam service installation
 - Audio support for Axis ip cameras (thanks to Michele Grünenfelder
   for sponsoring the development)
+- To clean-up after a possible crash ContaCam deletes now its temporary
+  folder content on startup
+- Web interface avoids switching IE to compatibility mode when opened
+  with the computer's NetBIOS name
+- Full Vietnamese language support (thanks to toan.nguyenk@gmail.com)
 
 5.0.0 (May 19th 2015)
 

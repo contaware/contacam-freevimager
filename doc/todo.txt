@@ -13,30 +13,39 @@ FreeVimager Program
 
 ContaCam Program
 ----------------
+- Intergrate Automatic License Plate Recognition library
+  https://github.com/openalpr/openalpr (alessandro@ballerininet.eu)
 - Use a Logitech C920 to implement H.264 video capture support
+  -> directshow graph building for H.264 support is intentionally
+  crap and difficult, not wanting to play their game...
 - Save JPEG snapshots once the motion detection is triggered
-- Document the way to have different parameters for the same cam,
-  like two different snapshot rates, or ...
 - Rotate by 0,90,180,270 degrees
-- Make thumbnail anim. gif for mp4 records?
-- Auto join with mp4box.exe all mp4 detections at the end of the day
 - Ability to send different emails to different people. For example
   send GIF files to one person and JPGs to another
 - Configurable saving frame-rate and resolution
 - Allow Digital Zoom of live camera via mouse wheel
   (suggested by alanphoto@starpower.net)
 - Possibility to speed-up or slow-down animated gif preview
-  (mankovv@hotmail.com)
-- Scheduler for emailing of detections: "I like to record all detected events,
-  but I would only like to be notified of certain detections, like when I'm
-  at work" (justinschmitt08@gmail.com)
-- Different detection params for day and night
+  (mankovv@hotmail.com). Every animated gif stops at the end (before it
+  starts over) with a pause, is it possible to make it just repeat or to
+  show a countdown or just black (nedim.hodzic@gmail.com)
+- Scheduler for emailing of detections: "I like to record all detected 
+  events, but I would only like to be notified of certain detections, like 
+  when I'm at work" (justinschmitt08@gmail.com) 
+- Different detection params for "day and "night" and a "stay" and 
+  "away" mode that you could easily switch between. Basically two 
+  configuration profiles. For example, if I'm at home, I may want to 
+  disable motion email alerts but have them on when I'm away. It would be 
+  most convenient if you could toggle between stay/away from either the 
+  software or the web interface (tyler.barnes@telus.net) 
 - Get an alert via email when an IP camera connection drops for a given
-  period of time (jgminwa@gmail.com)
-- Black squares where no detection and where image is obscured with black pixels
-  (jeanbaptiste.guyot@orange.fr)
-- Checkbox in Camera Basic Settings to remove the files also from the FTP server
-  (jeanbaptiste.guyot@orange.fr)
+  period of time or if the screen freezes (jgminwa@gmail.com and
+  corwin92@gmail.com)
+- Black squares where no detection and where image is obscured with black
+  pixels (jeanbaptiste.guyot@orange.fr) or crop regions to also reduce the
+  saving cpu usage (dodfr@yahoo.com)
+- Checkbox in Camera Basic Settings to remove the files also from the FTP
+  server (jeanbaptiste.guyot@orange.fr)
 - Robert Sauer <rosamei@gmx.de>:
   Es treten Videos auf, in denen zwar ein Audio-Stream angelegt ist, der 
   aber leer ist (Null Chunks, Null Samples). Es ist dabei egal, ob man 
@@ -48,9 +57,18 @@ ContaCam Program
   entschieden hat, kein Audio abzuspeichern, dies auch bei den folgenden 
   Files nicht mehr tun wird. Aber auch darauf kann man sich nicht immer 
   verlassen: manchmal funktioniert es später wieder. 
-
-
-
+- Rewrite ContaCam to send emails after filtering ok, but only if no
+  attachment is selected (nedimlight@gmail.com)
+- Change the color and position of the date and time on the camera frame
+  (toan.nguyenk@gmail.com)
+- Latest Axis firmwares state they support encrypted + unencrypted http
+  authentication, but in reality only digest is transmitted in
+  WWW-Authenticate header for the mixed mode. That maybe because they
+  changed from boa to apache web server. The problem is that to make
+  client poll work properly we must change to unencrypted only in Axis
+  web interface
+  
+  
 ContaCam Web Interface
 ----------------------
 - Add 2 links to the "summary snapshot" web page with "previous camera"
