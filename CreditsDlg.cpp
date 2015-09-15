@@ -76,8 +76,8 @@ BOOL CCreditsDlg::OnInitDialog()
 	ssmtp += CString(_T('\n')) + _T("http://www.naughter.com");
 #endif
 
-	// CToasterWnd v1.17
-	CString stoaster(_T("CToasterWnd v1.17"));
+	// CToasterWnd v1.18
+	CString stoaster(_T("CToasterWnd v1.18"));
 	stoaster += CString(_T('\n')) + _T("http://www.naughter.com");
 
 	// libjpeg

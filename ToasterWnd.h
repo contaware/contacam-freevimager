@@ -1,11 +1,11 @@
 /*
-Module : TOASTERWND.H
+Module : ToasterWnd.h
 Purpose: Defines the interface for an MFC class which implements a MSN Messenger style notification window 
          aka a "Toast" window, since it pops up!. Based in part on a C# implementation of a similiar type
          window by Robert Misiak on codeproject (http://www.codeproject.com/cs/miscctrl/RobMisNotifyWindow.asp)
 Created: PJN / 22-04-2005
 
-Copyright (c) 2005 - 2013 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 2005 - 2015 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
@@ -29,7 +29,7 @@ to maintain a single distribution point for the source code.
 
 #ifndef CTOASTERWND_EXT_CLASS
 #define CTOASTERWND_EXT_CLASS
-#endif
+#endif //#ifndef CTOASTERWND_EXT_CLASS
 
 
 ////////////////////////////// Includes ///////////////////////////////////////
@@ -37,15 +37,15 @@ to maintain a single distribution point for the source code.
 #ifdef CTOASTERWND_HTMLAYOUT_SUPPORT
 #ifndef __htmlayout_h__
 #include <htmlayout.h> //If you get a compilation error on this line, then you need to download, install and purchase a license for HTMLayout (http://www.terrainformatica.com/htmlayout/)
-#endif
-#endif
+#endif //#ifndef __htmlayout_h__
+#endif //#ifdef CTOASTERWND_HTMLAYOUT_SUPPORT
 
 #if WINVER >= 0x0500
 #ifndef __ATLIMAGE_H__
 #pragma message("To avoid this message, please put atlimage.h in your pre compiled header (normally stdafx.h)")
 #include <atlimage.h> //CImage support
-#endif
-#endif
+#endif //#ifndef __ATLIMAGE_H__
+#endif //#if WINVER >= 0x0500
 
 
 ////////////////////////////// Classes ////////////////////////////////////////
@@ -64,14 +64,14 @@ public:
   virtual void    OnIconClicked(CToasterWnd* pFrom);                                             //called when the user clicks the title text
   virtual void    OnClose(CToasterWnd* pFrom, BOOL bButton);                                     //Called when the notification window is closing
   virtual void    OnStateChange(CToasterWnd* pFrom);                                             //Called when the animation state changes
-#ifdef CTOASTERWND_QHTM_SUPPORT  
+#ifdef CTOASTERWND_QHTM_SUPPORT
   virtual LRESULT OnQHTMHyperLink(CToasterWnd* pFrom, LPCTSTR pcszLinkText, LPCTSTR pcszLinkID); //Called when a QHTM hyperlink is clicked
-#endif  
+#endif  //#ifdef CTOASTERWND_QHTM_SUPPORT
 #ifdef CTOASTERWND_HTMLAYOUT_SUPPORT
   virtual void OnHTMLayoutHyperLink(CToasterWnd* pFrom, NMHL_HYPERLINK* pHyperlink);             //Called when a HTMLayout hyperlink notification occurs
   virtual void OnHTMLayoutCommand(CToasterWnd* pFrom, NMHL_COMMAND_CLICK* pCommand);             //Called when a HTMLayout command notification occurs
   virtual LRESULT OnHTMLayoutLoadData(CToasterWnd* pFrom, NMHDR* pnmh);                          //Called to implement support for HLN_LOAD_DATA message
-#endif  
+#endif  //#ifdef CTOASTERWND_HTMLAYOUT_SUPPORT
 
   virtual CRect   CalculateInitialPopupPosition(CToasterWnd* pFrom);                             //Called to calculate the initial popup position and animation style 
 };
@@ -89,11 +89,12 @@ public:
   CToasterWnd* m_pReflectorWnd;  
   
 protected:
+//Message handlers
   afx_msg LRESULT OnBehaviorNotify(WPARAM wParam, LPARAM lParam);
   
   DECLARE_MESSAGE_MAP()
 };
-#endif
+#endif //#ifdef CTOASTERWND_HTMLAYOUT_SUPPORT
 
 
 //The class which encapsulates the "Toaster" notification window
@@ -196,15 +197,15 @@ __if_exists(CImage)
   BOOL                  m_bTransparent;              //Should the animation also use transparency
 #if defined(CTOASTERWND_HTMLAYOUT_SUPPORT) || defined(CTOASTERWND_QHTM_SUPPORT)
   BOOL                  m_bHTML;                     //Should we create a HTML based child control instead of doing all our own custom drawing
-#endif  
+#endif  //#if defined(CTOASTERWND_HTMLAYOUT_SUPPORT) || defined(CTOASTERWND_QHTM_SUPPORT)
 #ifdef CTOASTERWND_HTMLAYOUT_SUPPORT
   CHtmlLayoutReflectorWnd m_wndHTMLayout;            //The actual HTMLayout child control
-#endif
+#endif //#ifdef CTOASTERWND_HTMLAYOUT_SUPPORT
 #ifdef CTOASTERWND_QHTM_SUPPORT
   CWnd                  m_wndQHTM;                   //The actual QHTM child control
-#endif          
+#endif  //#ifdef CTOASTERWND_QHTM_SUPPORT
 
-#ifdef CTOASTERWND_HTMLAYOUT_SUPPORT	  
+#ifdef CTOASTERWND_HTMLAYOUT_SUPPORT
   DWORD                 m_dwHTML;                    //Use this value in conjuction with m_pbHTML if you would like to use a raw blob as the HTML rather than using "m_sText"
   LPCBYTE               m_pbHTML;                    //The raw html text to use
 
@@ -231,7 +232,7 @@ __if_exists(CImage)
     
     return ::HTMLayoutLoadFile(m_wndHTMLayout.m_hWnd, url);
   }
-#endif  
+#endif  //#ifdef CTOASTERWND_HTMLAYOUT_SUPPORT
 
 protected:
 //Methods
@@ -245,14 +246,15 @@ protected:
   virtual void DrawLogo(CDC* pDC);
   virtual void HandleClosing(BOOL bButton);
   BOOL UpdateTransparency(BYTE byAlpha);
-#ifdef CTOASTERWND_HTMLAYOUT_SUPPORT	  
+#ifdef CTOASTERWND_HTMLAYOUT_SUPPORT
   virtual BOOL CreateHTMLayoutChildControl();
   virtual LRESULT LoadResourceData(LPNMHL_LOAD_DATA pnm);
-#endif  
+#endif  //#ifdef CTOASTERWND_HTMLAYOUT_SUPPORT	  
 #ifdef CTOASTERWND_QHTM_SUPPORT
   virtual BOOL CreateQHTMChildControl();
-#endif
+#endif  //#ifdef CTOASTERWND_QHTM_SUPPORT
 
+//Message handlers
   afx_msg void OnDestroy();
   afx_msg void OnTimer(UINT_PTR nIDEvent);
   afx_msg void OnPaint();
@@ -267,13 +269,14 @@ protected:
   afx_msg void OnHTMLayoutLoadData(NMHDR* nmh, LRESULT* plResult);
   afx_msg void OnHTMLayoutHyperlink(NMHDR* nmh, LRESULT* plResult);
   afx_msg void OnHTMLayoutAttachBehavior(NMHDR* nmh, LRESULT* plResult);
-#endif	
+#endif  //#ifdef CTOASTERWND_HTMLAYOUT_SUPPORT
 #ifdef CTOASTERWND_QHTM_SUPPORT
   afx_msg void OnQHTMHyperlink(NMHDR* nmh, LRESULT* plResult);
-#endif
+#endif  //#ifdef CTOASTERWND_QHTM_SUPPORT
 
   DECLARE_MESSAGE_MAP()
 
+//Member variables
   UINT_PTR              m_nTimerID;                 //The timer ID we use for the animation and shutdown
   CRect                 m_rectScreen;               //The work area of the primary display
   CRect                 m_rectIcon;                 //Client window location of the icon
@@ -310,4 +313,4 @@ protected:
 };
 
 
-#endif //__TOASTERWND_H__
+#endif //#ifndef CTOASTERWND_EXT_CLASS

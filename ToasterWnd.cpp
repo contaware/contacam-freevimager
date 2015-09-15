@@ -1,5 +1,5 @@
 /*
-Module : TOASTERWND.CPP
+Module : ToasterWnd.cpp
 Purpose: Defines the implementation for an MFC class which implements a MSN Messenger style notification window 
          aka a "Toast" window, since it pops up!. Based in part on a C# implementation of a similiar type
          window by Robert Misiak on codeproject (http://www.codeproject.com/cs/miscctrl/RobMisNotifyWindow.asp)
@@ -102,9 +102,11 @@ History: PJN / 23-04-2005 1. Title and body text can now be optionally made hot 
                           7. Fixed a bug where window would not be drawn correctly when using the HTMLayout control due to the 
                           OnPaint method being incorrect
                           8. The default value for "m_AnimationStyle" is set based on the value returned from
-                          SystemParametersInfo(SPI_GETANIMATION
+                          SystemParametersInfo(SPI_GETANIMATION)
+         PJN / 26-07-2015 1. Updated copyright details.
+                          2. Updated the code to clean compile on VC 2013 & 2015
                           
-Copyright (c) 2005 - 2013 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 2005 - 2015 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
@@ -127,49 +129,49 @@ to maintain a single distribution point for the source code.
 #ifndef _UXTHEME_H_
 #pragma message("To avoid this message, please put uxtheme.h in your pre compiled header (normally stdafx.h)")
 #include <uxtheme.h>
-#endif
+#endif  //#ifndef _UXTHEME_H_
 
 #ifdef CTOASTERWND_HTMLAYOUT_SUPPORT
 //Automatically pull in support for HTMLayout
 #pragma comment(lib, "HTMLayout.lib")
-#endif
+#endif  //#ifdef CTOASTERWND_HTMLAYOUT_SUPPORT
 
 #ifdef CTOASTERWND_QHTM_SUPPORT
 #ifndef QHTM_H
 #include <qhtm.h> //If you get a compilation error on this line, then you need to download, install and possible purchase a license for QHTM (http://www.gipsysoft.com/qhtm/)
 #endif
-#endif
+#endif  //#ifdef CTOASTERWND_QHTM_SUPPORT
 
 
 //////////////////////////////// Statics / Macros /////////////////////////////
 
 #ifndef WS_EX_LAYERED
 #define WS_EX_LAYERED 0x00080000
-#endif
+#endif  //#ifndef WS_EX_LAYERED
 
 #ifndef LWA_ALPHA
 #define LWA_ALPHA 0x00000002
-#endif
+#endif  //#ifndef LWA_ALPHA
 
 #ifndef IDC_HAND
 #define IDC_HAND MAKEINTRESOURCE(32649)
-#endif
+#endif  //#ifndef IDC_HAND
 
 #ifndef WP_CLOSEBUTTON
 #define WP_CLOSEBUTTON 18
-#endif
+#endif  #ifndef WP_CLOSEBUTTON
 
 #ifndef CBS_PUSHED
 #define CBS_PUSHED 3
-#endif
+#endif  //#ifndef CBS_PUSHED
 
 #ifndef CBS_HOT
 #define CBS_HOT 2
-#endif
+#endif  //#ifndef CBS_HOT
 
 #ifndef SPI_GETANIMATION
 #define SPI_GETANIMATION 0x0048
-#endif
+#endif  //#ifndef SPI_GETANIMATION
 
 const UINT TOASTERWND_HTML_ID = 100;
 const UINT TOASTERWND_TIMER_ID = 1;
@@ -217,7 +219,7 @@ LRESULT CToasterNotification::OnQHTMHyperLink(CToasterWnd* /*pFrom*/, LPCTSTR /*
 {
   return TRUE; //by default allow all hyperlinks to be handled by QHTM
 }
-#endif
+#endif //#ifdef CTOASTERWND_QHTM_SUPPORT
 
 #ifdef CTOASTERWND_HTMLAYOUT_SUPPORT
 void CToasterNotification::OnHTMLayoutHyperLink(CToasterWnd* /*pFrom*/, NMHL_HYPERLINK* /*pHyperlink*/)
@@ -232,7 +234,7 @@ LRESULT CToasterNotification::OnHTMLayoutLoadData(CToasterWnd* /*pFrom*/, NMHDR*
 {
   return 0;
 }
-#endif
+#endif //#ifdef CTOASTERWND_HTMLAYOUT_SUPPORT
 
 
 #ifdef CTOASTERWND_HTMLAYOUT_SUPPORT
@@ -266,7 +268,7 @@ LRESULT CHtmlLayoutReflectorWnd::OnBehaviorNotify(WPARAM wParam, LPARAM lParam)
   }
   return 0;
 }
-#endif
+#endif //#ifdef CTOASTERWND_HTMLAYOUT_SUPPORT
 
 BEGIN_MESSAGE_MAP(CToasterWnd, CFrameWnd)
   ON_WM_DESTROY()
@@ -282,10 +284,10 @@ BEGIN_MESSAGE_MAP(CToasterWnd, CFrameWnd)
 #ifdef CTOASTERWND_HTMLAYOUT_SUPPORT
   ON_NOTIFY(HLN_LOAD_DATA, TOASTERWND_HTML_ID, &CToasterWnd::OnHTMLayoutLoadData)
   ON_NOTIFY(HLN_ATTACH_BEHAVIOR, TOASTERWND_HTML_ID, &CToasterWnd::OnHTMLayoutAttachBehavior)
-#endif
+#endif //#ifdef CTOASTERWND_HTMLAYOUT_SUPPORT
 #ifdef CTOASTERWND_QHTM_SUPPORT
   ON_NOTIFY(QHTMN_HYPERLINK, TOASTERWND_HTML_ID, &CToasterWnd::OnQHTMHyperlink)
-#endif
+#endif //#ifdef CTOASTERWND_QHTM_SUPPORT
 END_MESSAGE_MAP()
 
 CToasterWnd::CToasterWnd() 
@@ -336,11 +338,12 @@ void CToasterWnd::Construct()
   m_dwWaitTime = 10000; //Default to 10 seconds
   m_nHeight = 116;
   m_nWidth = 181;
-#if WINVER >= 0x0500
+__if_exists(CImage)
+{
   m_nLogoSrcAlpha = 255;
   m_rectLogoSrc = CRect(0, 0, m_nWidth, m_nHeight);
   m_rectLogoDest = m_rectLogoSrc;
-#endif  
+}
   m_BackgroundStyle = BackwardDiagonalGradient;
   m_bWaitOnMouseOver = TRUE;
   m_bOnlyCloseOnUser = FALSE;
@@ -372,13 +375,13 @@ void CToasterWnd::Construct()
   m_bTransparent = TRUE;
 #if defined(CTOASTERWND_HTMLAYOUT_SUPPORT) || defined(CTOASTERWND_QHTM_SUPPORT)
   m_bHTML = FALSE;
-#endif
+#endif  //#if defined(CTOASTERWND_HTMLAYOUT_SUPPORT) || defined(CTOASTERWND_QHTM_SUPPORT)
 
 #ifdef CTOASTERWND_HTMLAYOUT_SUPPORT
   m_dwHTML = 0;
   m_pbHTML = NULL;
   m_wndHTMLayout.m_pReflectorWnd = this;
-#endif
+#endif  //#ifdef CTOASTERWND_HTMLAYOUT_SUPPORT
 
   //Dynamically pull in the uxtheme functions
   m_hUXTheme = LoadLibraryFromSystem32(_T("UxTheme.dll"));
@@ -417,7 +420,8 @@ HMODULE CToasterWnd::LoadLibraryFromSystem32(LPCTSTR lpFileName)
   if (GetSystemDirectory(szFullPath, _countof(szFullPath)) == 0)
     return NULL;
 
-  //Setup the full path and delegate to LoadLibrary    
+  //Setup the full path and delegate to LoadLibrary
+#pragma warning(suppress: 6102) //There is a bug with the SAL annotation of GetSystemDirectory in the Windows 8.1 SDK
   _tcscat_s(szFullPath, _countof(szFullPath), _T("\\"));
   _tcscat_s(szFullPath, _countof(szFullPath), lpFileName);
   return LoadLibrary(szFullPath);
@@ -683,7 +687,7 @@ void CToasterWnd::CreateFonts()
     defaultGUIFont.Attach(GetStockObject(DEFAULT_GUI_FONT));
     pCurrentFont = &defaultGUIFont;
   }
-  ASSERT(pCurrentFont);
+  ASSERT(pCurrentFont != NULL);
   if (m_fontTitle.operator HFONT() == NULL)
   {
     LOGFONT lf;
@@ -707,7 +711,7 @@ BOOL CToasterWnd::Create()
     ASSERT((m_pbHTML && m_dwHTML) || m_sText.GetLength()); //If we are using HTMLayout, we support loading from the raw byte pointer or from the CString member variable
 #else  
   ASSERT(m_sText.GetLength()); //What no Text!!
-#endif  
+#endif  //#ifdef CTOASTERWND_HTMLAYOUT_SUPPORT
 
   //Get the working area for the primary monitor
   if (!SystemParametersInfo(SPI_GETWORKAREA, NULL, &m_rectScreen, 0))
@@ -730,7 +734,7 @@ __if_exists(CWnd::SetLayeredWindowAttributes)
   if (m_bTransparent && (m_actualAnimationStyle != NoAnimation))
     dwExFlags |= WS_EX_LAYERED;
 } //__if_exists(CWnd::SetLayeredWindowAttributes)
-  if (!CFrameWnd::Create(NULL, m_sTitle, WS_POPUP, m_rectInitialPos, NULL, NULL, dwExFlags))
+  if (!__super::Create(NULL, m_sTitle, WS_POPUP, m_rectInitialPos, NULL, NULL, dwExFlags))
     return FALSE;
 
   //Do all the various calculation / setup code (if required)
@@ -745,7 +749,7 @@ __if_exists(CWnd::SetLayeredWindowAttributes)
     m_rectTitle = CRect(-1, -1, -1, -1);
     m_rectBodyText = CRect(-1, -1, -1, -1);
   }
-#endif
+#endif  //#if defined(CTOASTERWND_HTMLAYOUT_SUPPORT) || defined(CTOASTERWND_QHTM_SUPPORT)
   if (bNeedInitCode)
   {
     //Create the fonts
@@ -897,7 +901,7 @@ void CToasterWnd::OnDestroy()
   }
   
   //Let the base class do its thing
-  CFrameWnd::OnDestroy();
+  __super::OnDestroy();
   
   m_AnimationState = None;
 }
@@ -1117,7 +1121,7 @@ void CToasterWnd::OnTimer(UINT_PTR nIDEvent)
   else
   {
     //Let the base class do its thing
-    CFrameWnd::OnTimer(nIDEvent);
+    __super::OnTimer(nIDEvent);
   }
 }
 
@@ -1171,7 +1175,7 @@ void CToasterWnd::OnPaint()
 #if defined(CTOASTERWND_HTMLAYOUT_SUPPORT) || defined(CTOASTERWND_QHTM_SUPPORT)
   if (m_bHTML)
     return;
-#endif
+#endif  //#if defined(CTOASTERWND_HTMLAYOUT_SUPPORT) || defined(CTOASTERWND_QHTM_SUPPORT)
 
   //Get the client area
   CRect rectClient;
@@ -1499,7 +1503,7 @@ BOOL CToasterWnd::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
     return TRUE;
   }
   else
-    return CFrameWnd::OnSetCursor(pWnd, nHitTest, message);
+    return __super::OnSetCursor(pWnd, nHitTest, message);
 }
 
 void CToasterWnd::OnClose() 
@@ -1509,7 +1513,7 @@ void CToasterWnd::OnClose()
   //has a valid pointer to us, which they can then use to 
   //synchronously close this instance via the Close() method
   if (m_bSafeToClose)	
-    CFrameWnd::OnClose();
+    __super::OnClose();
   else
     ShowWindow(SW_HIDE);
 }
@@ -1534,13 +1538,13 @@ BOOL CToasterWnd::CreateHTMLayoutChildControl()
   else if (m_sText.GetLength())
   {
     CStringA sAsciiText(m_sText);
-    ::HTMLayoutLoadHtml(m_wndHTMLayout.GetSafeHwnd(), reinterpret_cast<LPCBYTE>(sAsciiText.GetBuffer()), static_cast<UINT>(sAsciiText.GetLength()));
+    HTMLayoutLoadHtml(m_wndHTMLayout.GetSafeHwnd(), reinterpret_cast<LPCBYTE>(sAsciiText.GetBuffer()), static_cast<UINT>(sAsciiText.GetLength()));
     sAsciiText.ReleaseBuffer();
   }
   
   return TRUE;
 }
-#endif
+#endif //#ifdef CTOASTERWND_HTMLAYOUT_SUPPORT
 
 #ifdef CTOASTERWND_QHTM_SUPPORT
 BOOL CToasterWnd::CreateQHTMChildControl()
@@ -1558,12 +1562,12 @@ BOOL CToasterWnd::CreateQHTMChildControl()
   
   return TRUE;
 }
-#endif
+#endif //#ifdef CTOASTERWND_QHTM_SUPPORT
 
 int CToasterWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
   //Let the base class do its thing
-  if (CFrameWnd::OnCreate(lpCreateStruct) == -1)
+  if (__super::OnCreate(lpCreateStruct) == -1)
     return -1;
 
 #if defined(CTOASTERWND_HTMLAYOUT_SUPPORT)
@@ -1580,7 +1584,7 @@ int CToasterWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
     if (!CreateQHTMChildControl())
       return -1;
   }
-#endif
+#endif  //#if defined(CTOASTERWND_HTMLAYOUT_SUPPORT)
 
   return 0;
 }
@@ -1588,7 +1592,7 @@ int CToasterWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 void CToasterWnd::OnMouseMove(UINT nFlags, CPoint point) 
 {
   //Let the base class do its thing
-  CFrameWnd::OnMouseMove(nFlags, point);
+  __super::OnMouseMove(nFlags, point);
 
   //See if we are over the close button and if so make it "hot"
   //and force a redraw of it
@@ -1612,14 +1616,14 @@ void CToasterWnd::OnHTMLayoutLoadData(NMHDR* nmh, LRESULT* plResult)
     LRESULT lr = m_pNotifier->OnHTMLayoutLoadData(this, nmh);
     if (lr) 
     {
-      ASSERT(plResult);
+      ASSERT(plResult != NULL);
       *plResult = lr;
       return;
     }
   }
 
   LPNMHL_LOAD_DATA pnm = reinterpret_cast<LPNMHL_LOAD_DATA>(nmh);
-  ASSERT(pnm);
+  ASSERT(pnm != NULL);
   
   //To make it easier to create easy to use HTML toast windows with HTMLayout, support a "RES:" protocol
   //similiar to the built in support in QHTM
@@ -1627,7 +1631,7 @@ void CToasterWnd::OnHTMLayoutLoadData(NMHDR* nmh, LRESULT* plResult)
   sURL.MakeUpper();
   if (sURL.Find(_T("RES:")) == 0)
   {
-    ASSERT(plResult);
+    ASSERT(plResult != NULL);
     *plResult = LoadResourceData(pnm);
   }
 }
@@ -1635,7 +1639,7 @@ void CToasterWnd::OnHTMLayoutLoadData(NMHDR* nmh, LRESULT* plResult)
 LRESULT CToasterWnd::LoadResourceData(LPNMHL_LOAD_DATA pnm)
 {
   //Validate our parameters
-  ASSERT(pnm);
+  ASSERT(pnm != NULL);
   if (pnm->uri == NULL || !pnm->uri[0])
     return LOAD_DISCARD;
 
@@ -1769,7 +1773,7 @@ void CToasterWnd::OnHTMLayoutAttachBehavior(NMHDR* nmh, LRESULT* plResult)
  
   *plResult = 0;
 }
-#endif
+#endif  //#ifdef CTOASTERWND_HTMLAYOUT_SUPPORT
 
 //To make it easier for derived classes to handle QHTM notifications, lets map the notification message to a 
 //virtual function in the notifier
@@ -1816,4 +1820,4 @@ void CToasterWnd::OnQHTMHyperlink(NMHDR* nmh, LRESULT* /*plResult*/)
       pnm->resReturnValue = m_pNotifier->OnQHTMHyperLink(this, pnm->pcszLinkText, pnm->pcszLinkID);
   }
 }
-#endif
+#endif  //#ifdef CTOASTERWND_QHTM_SUPPORT
