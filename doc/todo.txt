@@ -61,16 +61,13 @@ ContaCam Program
   attachment is selected (nedimlight@gmail.com)
 - Change the color and position of the date and time on the camera frame
   (toan.nguyenk@gmail.com)
-- Latest Axis firmwares state they support encrypted + unencrypted http
-  authentication, but in reality only digest is transmitted in
-  WWW-Authenticate header for the mixed mode. That maybe because they
-  changed from boa to apache web server. The problem is that to make
-  client poll work properly we must change to unencrypted only in Axis
-  web interface
   
   
 ContaCam Web Interface
 ----------------------
+- Number of detections in index.php at the bottom of each preview for
+  quick reference on which cameras have had detections in last 24 hours
+  (pauls583@yahoo.com.au)
 - Add 2 links to the "summary snapshot" web page with "previous camera"
   and "next camera" (either with text, arrow or + and -) 
 - If live snapshot file time stamp remains the same then output a red
