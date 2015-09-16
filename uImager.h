@@ -632,6 +632,9 @@ public:
 	DISCRECORDERARRAY m_DiscRecorders2;
 
 #ifdef VIDEODEVICEDOC
+	// Flag indicating that the auto-starts have been executed
+	volatile BOOL m_bAutostartsExecuted;
+
 	// Count of open video device docs with detection enabled
 	volatile int m_nTotalVideoDeviceDocsMovementDetecting;
 

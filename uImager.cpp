@@ -127,6 +127,7 @@ CUImagerApp::CUImagerApp()
 	m_bForceSeparateInstance = FALSE;
 #ifdef VIDEODEVICEDOC
 	m_pVideoDeviceDocTemplate = NULL;
+	m_bAutostartsExecuted = FALSE;
 	m_nTotalVideoDeviceDocsMovementDetecting = 0;
 	m_bBrowserAutostart = FALSE;
 	m_bIPv6 = FALSE;
@@ -930,6 +931,9 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 									NULL,
 									SW_SHOWNORMAL);
 				}
+
+				// Flag indicating that the auto-starts have been executed
+				m_bAutostartsExecuted = TRUE;
 			}
 #endif
 		}
@@ -1757,13 +1761,15 @@ void CUImagerApp::SaveOnEndSession()
 			pVideoDeviceDoc->SaveSettings();
 		}
 	}
-	CVideoDeviceDoc::VlmShutdown();
-	if (m_bStartMicroApache)
-		CVideoDeviceDoc::MicroApacheShutdown();
-	if (!m_bServiceProcess)
-		BrowserAutostart();
-	if (!m_bForceSeparateInstance)
+	if (m_bAutostartsExecuted)
+	{
+		CVideoDeviceDoc::VlmShutdown();
+		if (m_bStartMicroApache)
+			CVideoDeviceDoc::MicroApacheShutdown();
+		if (!m_bServiceProcess)
+			BrowserAutostart();
 		::LogLine(_T("%s"), ML_STRING(1566, "Closing") + _T(" ") + APPNAME_NOEXT + _T(" (Session End)"));
+	}
 	if (m_bDoStartFromService && GetContaCamServiceState() == CONTACAMSERVICE_RUNNING)
 		ControlContaCamService(CONTACAMSERVICE_CONTROL_START_PROC);
 #endif
@@ -2105,20 +2111,23 @@ int CUImagerApp::ExitInstance()
 		delete m_Scheduler.GetNext(pos);
 	m_Scheduler.RemoveAll();
 
-	// Vlm shutdown
-	CVideoDeviceDoc::VlmShutdown();
+	// Clean-up auto-starts
+	if (m_bAutostartsExecuted)
+	{
+		// Vlm shutdown
+		CVideoDeviceDoc::VlmShutdown();
 
-	// Micro Apache shutdown
-	if (m_bStartMicroApache)
-		CVideoDeviceDoc::MicroApacheShutdown();
+		// Micro Apache shutdown
+		if (m_bStartMicroApache)
+			CVideoDeviceDoc::MicroApacheShutdown();
 
-	// Browser autostart
-	if (!m_bServiceProcess)
-		BrowserAutostart();
+		// Browser autostart
+		if (!m_bServiceProcess)
+			BrowserAutostart();
 
-	// Log the stopping of the application
-	if (!m_bForceSeparateInstance)
+		// Log the stopping of the application
 		::LogLine(_T("%s"), ML_STRING(1566, "Closing") + _T(" ") + APPNAME_NOEXT);
+	}
 #endif
 
 	// Close The Application Mutex
