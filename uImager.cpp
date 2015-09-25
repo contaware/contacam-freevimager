@@ -3852,6 +3852,12 @@ BOOL CUImagerApp::SendMail(LPCTSTR szAttachment)
 	}
 	ASSERT(pMailState->m_hInstMail != NULL);
 
+	// When our 32-bit application calls MAPISendMail on a computer with 64-bit Windows and 64-bit Outlook:
+	// the MAPI library makes a COM call to launch a 64-bit Fixmapi.exe application. The Fixmapi application
+	// implicitly links to the MAPI library, which routes the function call to the Windows MAPI stub, which in
+	// turn forwards the call to the Outlook MAPI stub, enabling the MAPISendMail function call to succeed. 
+	// https://msdn.microsoft.com/en-us/library/office/dd941355%28v=office.15%29.aspx
+	// Note: I successfully tested MAPISendMail on Windows 10 64-bit with Outlook 2013 64-bit
 	ULONG (PASCAL *lpfnSendMail)(ULONG, ULONG, MapiMessage*, FLAGS, ULONG);
 	(FARPROC&)lpfnSendMail = ::GetProcAddress(pMailState->m_hInstMail, "MAPISendMail");
 	if (lpfnSendMail == NULL)
