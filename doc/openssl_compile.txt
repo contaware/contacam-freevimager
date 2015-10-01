@@ -1,7 +1,7 @@
 OpenSSL
 -------
 - Download latest OpenSSL source from http://www.openssl.org/source/
-- Extract the files to the EMPTY C:\uimager\openssl folder
+- Extract the files to the EMPTY C:\DropboxOliver\Dropbox\uimager\openssl folder
 
 
 Perl
@@ -13,8 +13,8 @@ Perl
 Compile 32 bit static (run-time library switch is /MT, see nt.mak)
 ------------------------------------------------------------------
 - Open the Visual Studio Command Prompt (2010) (in the Start menu)
-- cd C:\uimager\openssl
-- perl Configure VC-WIN32 --prefix=C:\uimager\openssl\Build32MT
+- cd C:\DropboxOliver\Dropbox\uimager\openssl
+- perl Configure VC-WIN32 --prefix=C:\DropboxOliver\Dropbox\uimager\openssl\Build32MT
 - ms\do_ms
 - nmake -f ms\nt.mak
 - nmake -f ms\nt.mak install
@@ -23,8 +23,8 @@ Compile 32 bit static (run-time library switch is /MT, see nt.mak)
 Compile 32 bit static debug (run-time library switch is /MTd, see nt.mak)
 -------------------------------------------------------------------------
 - Open the Visual Studio Command Prompt (2010) (in the Start menu)
-- cd C:\uimager\openssl
-- perl Configure debug-VC-WIN32 --prefix=C:\uimager\openssl\Build32MTd
+- cd C:\DropboxOliver\Dropbox\uimager\openssl
+- perl Configure debug-VC-WIN32 --prefix=C:\DropboxOliver\Dropbox\uimager\openssl\Build32MTd
 - ms\do_ms
 - Open ms\nt.mak and replace all occurrences of /Zi with /Z7.
   The /Zi option works, but it's hard to find the right .pdb

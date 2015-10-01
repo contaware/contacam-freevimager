@@ -108,6 +108,7 @@ EXPORTS
     ASN1_STRING_TABLE_add                   @2245
     ASN1_STRING_TABLE_cleanup               @2020
     ASN1_STRING_TABLE_get                   @2091
+    ASN1_STRING_clear_free                  @2392
     ASN1_STRING_cmp                         @14
     ASN1_STRING_copy                        @4305
     ASN1_STRING_data                        @2075
@@ -2615,6 +2616,7 @@ EXPORTS
     X509V3_set_nconf                        @2695
     X509V3_string_free                      @1506
     X509_ALGORS_it                          @3926
+    X509_ALGOR_cmp                          @2398
     X509_ALGOR_dup                          @1518
     X509_ALGOR_free                         @517
     X509_ALGOR_get0                         @3927

@@ -11,8 +11,8 @@
 # The one monster makefile better suits building in non-unix
 # environments.
 
-INSTALLTOP=D:\uimager\openssl\Build32MTd
-OPENSSLDIR=D:\uimager\openssl\Build32MTd\ssl
+INSTALLTOP=C:\DropboxOliver\Dropbox\uimager\openssl\Build32MTd
+OPENSSLDIR=C:\DropboxOliver\Dropbox\uimager\openssl\Build32MTd\ssl
 
 # Set your compiler options
 PLATFORM=VC-WIN32
@@ -170,8 +170,9 @@ T_OBJ=$(OBJ_D)\constant_time_test.obj \
 	$(OBJ_D)\bntest.obj $(OBJ_D)\exptest.obj $(OBJ_D)\rsa_test.obj \
 	$(OBJ_D)\dsatest.obj $(OBJ_D)\dhtest.obj $(OBJ_D)\ectest.obj \
 	$(OBJ_D)\ecdhtest.obj $(OBJ_D)\ecdsatest.obj $(OBJ_D)\randtest.obj \
-	$(OBJ_D)\evp_test.obj $(OBJ_D)\enginetest.obj $(OBJ_D)\wp_test.obj \
-	$(OBJ_D)\srptest.obj $(OBJ_D)\ssltest.obj $(OBJ_D)\heartbeat_test.obj 
+	$(OBJ_D)\evp_test.obj $(OBJ_D)\evp_extra_test.obj $(OBJ_D)\verify_extra_test.obj \
+	$(OBJ_D)\enginetest.obj $(OBJ_D)\wp_test.obj $(OBJ_D)\srptest.obj \
+	$(OBJ_D)\ssltest.obj $(OBJ_D)\heartbeat_test.obj 
 
 E_OBJ=$(OBJ_D)\verify.obj \
 	$(OBJ_D)\asn1pars.obj $(OBJ_D)\req.obj $(OBJ_D)\dgst.obj \
@@ -427,8 +428,9 @@ T_EXE=$(TEST_D)\constant_time_test.exe \
 	$(TEST_D)\bntest.exe $(TEST_D)\exptest.exe $(TEST_D)\rsa_test.exe \
 	$(TEST_D)\dsatest.exe $(TEST_D)\dhtest.exe $(TEST_D)\ectest.exe \
 	$(TEST_D)\ecdhtest.exe $(TEST_D)\ecdsatest.exe $(TEST_D)\randtest.exe \
-	$(TEST_D)\evp_test.exe $(TEST_D)\enginetest.exe $(TEST_D)\wp_test.exe \
-	$(TEST_D)\srptest.exe $(TEST_D)\ssltest.exe $(TEST_D)\heartbeat_test.exe 
+	$(TEST_D)\evp_test.exe $(TEST_D)\evp_extra_test.exe $(TEST_D)\verify_extra_test.exe \
+	$(TEST_D)\enginetest.exe $(TEST_D)\wp_test.exe $(TEST_D)\srptest.exe \
+	$(TEST_D)\ssltest.exe $(TEST_D)\heartbeat_test.exe 
 
 E_SHLIB=
 
@@ -1004,6 +1006,12 @@ $(OBJ_D)\randtest.obj: $(SRC_D)\crypto\rand\randtest.c
 
 $(OBJ_D)\evp_test.obj: $(SRC_D)\crypto\evp\evp_test.c
 	$(CC) /Fo$(OBJ_D)\evp_test.obj $(APP_CFLAGS) -c $(SRC_D)\crypto\evp\evp_test.c
+
+$(OBJ_D)\evp_extra_test.obj: $(SRC_D)\crypto\evp\evp_extra_test.c
+	$(CC) /Fo$(OBJ_D)\evp_extra_test.obj $(APP_CFLAGS) -c $(SRC_D)\crypto\evp\evp_extra_test.c
+
+$(OBJ_D)\verify_extra_test.obj: $(SRC_D)\crypto\x509\verify_extra_test.c
+	$(CC) /Fo$(OBJ_D)\verify_extra_test.obj $(APP_CFLAGS) -c $(SRC_D)\crypto\x509\verify_extra_test.c
 
 $(OBJ_D)\enginetest.obj: $(SRC_D)\crypto\engine\enginetest.c
 	$(CC) /Fo$(OBJ_D)\enginetest.obj $(APP_CFLAGS) -c $(SRC_D)\crypto\engine\enginetest.c
@@ -3390,6 +3398,18 @@ $(TEST_D)\randtest.exe: $(OBJ_D)\randtest.obj $(LIBS_DEP)
 $(TEST_D)\evp_test.exe: $(OBJ_D)\evp_test.obj $(LIBS_DEP)
 	$(LINK) $(LFLAGS) /out:$(TEST_D)\evp_test.exe @<<
 	$(APP_EX_OBJ) $(OBJ_D)\evp_test.obj $(L_LIBS) $(EX_LIBS)
+<<
+	IF EXIST $@.manifest mt -nologo -manifest $@.manifest -outputresource:$@;1
+
+$(TEST_D)\evp_extra_test.exe: $(OBJ_D)\evp_extra_test.obj $(LIBS_DEP)
+	$(LINK) $(LFLAGS) /out:$(TEST_D)\evp_extra_test.exe @<<
+	$(APP_EX_OBJ) $(OBJ_D)\evp_extra_test.obj $(L_LIBS) $(EX_LIBS)
+<<
+	IF EXIST $@.manifest mt -nologo -manifest $@.manifest -outputresource:$@;1
+
+$(TEST_D)\verify_extra_test.exe: $(OBJ_D)\verify_extra_test.obj $(LIBS_DEP)
+	$(LINK) $(LFLAGS) /out:$(TEST_D)\verify_extra_test.exe @<<
+	$(APP_EX_OBJ) $(OBJ_D)\verify_extra_test.obj $(L_LIBS) $(EX_LIBS)
 <<
 	IF EXIST $@.manifest mt -nologo -manifest $@.manifest -outputresource:$@;1
 
