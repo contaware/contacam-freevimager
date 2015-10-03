@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "uImager.h"
+#include "MainFrm.h"
 #include "SaveFileDlg.h"
 
 #ifdef _DEBUG

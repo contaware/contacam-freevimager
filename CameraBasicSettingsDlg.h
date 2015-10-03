@@ -14,8 +14,6 @@ class CVideoDeviceDoc;
 /////////////////////////////////////////////////////////////////////////////
 // CCameraBasicSettingsDlg dialog
 
-#define CAMERABASICSETTINGSDLG_TIMER_MS		500
-
 class CCameraBasicSettingsDlg : public CDialog
 {
 // Construction

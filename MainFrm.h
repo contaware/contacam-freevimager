@@ -41,17 +41,21 @@ extern "C"
 #define ID_TIMER_MCIAUDIO							7
 #define ID_TIMER_PROGRESS							8
 #define ID_TIMER_1SEC								9
+#define ID_TIMER_SAVEFILEDLG						10
 #ifdef VIDEODEVICEDOC
-#define ID_TIMER_30SEC								10
-#define ID_TIMER_GENERALDLG  						11
-#define ID_TIMER_CAMERABASICSETTINGSDLG				12
-#define ID_TIMER_RELOAD_SETTINGS					13
+#define ID_TIMER_30SEC								11
+#define ID_TIMER_GENERALDLG  						12
+#define ID_TIMER_CAMERABASICSETTINGSDLG				13
+#define ID_TIMER_RELOAD_SETTINGS					14
 #endif
 
 #define FULLSCREEN_TIMER_MS							1000U	// ms
 #define AUTOSCROLL_TIMER_MS							120U	// ms
 #define CLOSING_CHECK_INTERVAL_TIMER_MS				300U	// ms
+#define SAVEFILEDLG_TIMER_MS						100U	// ms
 #ifdef VIDEODEVICEDOC
+#define GENERALDLG_TIMER_MS							300U	// ms
+#define CAMERABASICSETTINGSDLG_TIMER_MS				500U	// ms
 #define RELOAD_SETTINGS_TIMER_MS					1000U	// ms
 #endif
 

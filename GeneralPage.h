@@ -18,7 +18,6 @@ class CVideoDeviceDoc;
 /////////////////////////////////////////////////////////////////////////////
 // CGeneralPage dialog
 
-#define GENERALDLG_TIMER_MS					300
 #define FRAMERATE_CHANGE_TIMEOUT			4	// In GENERALDLG_TIMER_MS units
 
 class CGeneralPage : public CPropertyPage
