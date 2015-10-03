@@ -40,17 +40,20 @@ extern "C"
 #define ID_TIMER_CLOSING_VIDEODEVICEDOC				6
 #define ID_TIMER_MCIAUDIO							7
 #define ID_TIMER_PROGRESS							8
-#define ID_TIMER_ONESEC_POLL						9
+#define ID_TIMER_1SEC								9
 #ifdef VIDEODEVICEDOC
-#define ID_TIMER_GENERALDLG  						10
-#define ID_TIMER_CAMERABASICSETTINGSDLG				11
-#define ID_TIMER_RELOAD_SETTINGS					12
+#define ID_TIMER_30SEC								10
+#define ID_TIMER_GENERALDLG  						11
+#define ID_TIMER_CAMERABASICSETTINGSDLG				12
+#define ID_TIMER_RELOAD_SETTINGS					13
 #endif
 
 #define FULLSCREEN_TIMER_MS							1000U	// ms
 #define AUTOSCROLL_TIMER_MS							120U	// ms
 #define CLOSING_CHECK_INTERVAL_TIMER_MS				300U	// ms
-#define ONESEC_POLL_TIMER_MS						1000U	// ms
+#ifdef VIDEODEVICEDOC
+#define RELOAD_SETTINGS_TIMER_MS					1000U	// ms
+#endif
 
 // Picture document closing wait time
 #define MAX_PICTUREDOC_CLOSE_WAITTIME				15000U	// ms

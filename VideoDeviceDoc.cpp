@@ -3434,7 +3434,7 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 			// Init settings reload timer
 			::SetTimer(	m_pDoc->GetView()->GetSafeHwnd(),
 						ID_TIMER_RELOAD_SETTINGS,
-						ONESEC_POLL_TIMER_MS, NULL);
+						RELOAD_SETTINGS_TIMER_MS, NULL);
 			
 			// Trigger drawing of the possible "Preview Off" message
 			::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),

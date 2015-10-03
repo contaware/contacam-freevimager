@@ -6,6 +6,7 @@ CONTACAM HISTORY
 - Enhanced ContaCam service installation
 - Audio support for Axis ip cameras (thanks to Michele Grünenfelder
   for sponsoring the development)
+- Disallow standby and hibernate when there are cameras running
 - To clean-up after a possible crash ContaCam deletes now its temporary
   folder content on startup
 - Web interface avoids switching IE to compatibility mode when opened
