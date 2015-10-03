@@ -1,6 +1,6 @@
 CONTACAM HISTORY
 
-5.0.1 (June Xth 2015)
+5.0.1 (October 3rd 2015)
 
 - Web interface has a new html5 calendar picker (browser must support it)
 - Enhanced ContaCam service installation
