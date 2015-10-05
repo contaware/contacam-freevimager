@@ -328,7 +328,22 @@ void CSettingsDlgVideoDeviceDoc::OnButtonDocRoot()
 	{
 		// If it's a valid drive mount path convert it to a UNC path which is also working in service mode
 		sNewMicroApacheDocRoot = ::UNCPath(sNewMicroApacheDocRoot);
+
+		// Trim trailing backslash
 		sNewMicroApacheDocRoot.TrimRight(_T('\\'));
+
+		// Fail if sNewMicroApacheDocRoot is the system drive
+		CString sSysDrive;
+		::GetWindowsDirectory(sSysDrive.GetBuffer(MAX_PATH), MAX_PATH);
+		sSysDrive.ReleaseBuffer();
+		sSysDrive = ::GetDriveName(sSysDrive);
+		if (sSysDrive.CompareNoCase(sNewMicroApacheDocRoot) == 0)
+		{
+			CString sMsg;
+			sMsg.Format(ML_STRING(1869, "Choose a directory under the %s drive"), sSysDrive);
+			::AfxMessageBox(sMsg, MB_OK | MB_ICONERROR);
+			return;
+		}
 
 		// Fail if sNewMicroApacheDocRoot is not an ASCII path
 		if (!::IsASCIICompatiblePath(sNewMicroApacheDocRoot))
