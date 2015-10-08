@@ -3167,11 +3167,6 @@
 #define ID_PLAY_TRANSITION_BLEND        32921
 #define ID_EDIT_REDEYE                  32923
 #define ID_EDIT_UPDATE_EXIFTHUMB        32925
-#define ID_INDICATOR_PROGRESS           32926
-#define ID_INDICATOR_XCOORDINATE        32927
-#define ID_INDICATOR_YCOORDINATE        32928
-#define ID_INDICATOR_CPU_USAGE          32929
-#define ID_INDICATOR_MEM_USAGE          32930
 #define ID_VIEW_ZOOM_TOOL               32931
 #define ID_EDIT_ADD_EXIFTHUMB           32933
 #define ID_EDIT_REMOVE_EXIFTHUMB        32934
@@ -3321,6 +3316,12 @@
 #define ID_FILE_RELOAD                  33500
 #define ID_VIEW_FILES                   33501
 #define ID_SETTINGS_BROWSE_CONFIGLOG_FILES 33503
+#define ID_INDICATOR_PROGRESS           33504
+#define ID_INDICATOR_HD_USAGE           33505
+#define ID_INDICATOR_CPU_USAGE          33506
+#define ID_INDICATOR_MEM_USAGE          33507
+#define ID_INDICATOR_XCOORDINATE        33508
+#define ID_INDICATOR_YCOORDINATE        33509
 #define ID_BUTTON_PRINT_SETUP           58120
 
 // Next default values for new objects
@@ -3329,7 +3330,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1496
-#define _APS_NEXT_COMMAND_VALUE         33504
+#define _APS_NEXT_COMMAND_VALUE         33510
 #define _APS_NEXT_CONTROL_VALUE         2567
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

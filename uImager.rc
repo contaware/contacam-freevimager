@@ -2872,7 +2872,7 @@ BEGIN
     LTEXT           "Maximum camera folder size\n(0.0: unlimited)",IDC_STATIC,16,219,133,16
     LTEXT           "GB",IDC_STATIC,190,223,10,8
     LTEXT           "%",IDC_STATIC,190,210,8,8
-    LTEXT           "Minimum disk free space",IDC_STATIC,16,209,132,8
+    LTEXT           "Minimum disk free space",IDC_STATIC,16,208,132,8
     LTEXT           "Video file format",IDC_STATIC,16,180,133,8
 END
 
@@ -4117,15 +4117,20 @@ BEGIN
     ID_EDIT_REDEYE          "Red eye reduction of current image\nRed Eye"
     ID_EDIT_UPDATE_EXIFTHUMB 
                             "Update the EXIF thumbnail with the downsized main image\nUpdate EXIF Thumbnail"
-    ID_INDICATOR_PROGRESS   "                                   "
-    ID_INDICATOR_XCOORDINATE "X:               "
 END
 
 STRINGTABLE
 BEGIN
+    ID_INDICATOR_PROGRESS   "                                   "
+    ID_INDICATOR_HD_USAGE   "HD:              "
+    ID_INDICATOR_CPU_USAGE  "CPU:             "
+    ID_INDICATOR_MEM_USAGE  "MEM:             "
+    ID_INDICATOR_XCOORDINATE "X:               "
     ID_INDICATOR_YCOORDINATE "Y:               "
-    ID_INDICATOR_CPU_USAGE  "CPU: 0.0%"
-    ID_INDICATOR_MEM_USAGE  "MEM: 0MB"
+END
+
+STRINGTABLE
+BEGIN
     ID_VIEW_ZOOM_TOOL       "Click to zoom-in, right click to zoom-out\nZoom Click"
     ID_EDIT_ADD_EXIFTHUMB   "Add an EXIF thumbnail from the downsized main image\nAdd EXIF Thumbnail"
     ID_EDIT_REMOVE_EXIFTHUMB 

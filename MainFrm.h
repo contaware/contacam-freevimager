@@ -221,6 +221,7 @@ protected:
 #ifdef VIDEODEVICEDOC
 	void CleanupFileMenu(CMenu* pPopupMenu);
 	void PopulateCaptureMenu(CMenu* pPopupMenu);
+	static CString GetDiskStats(LPCTSTR lpszPath, int nMinDiskFreePermillion = 0);
 #endif
 
 // Generated message map functions

@@ -1133,8 +1133,8 @@ void CPicturePrintPreviewView::UpdatePaneText()
 		sXCoord.Format(_T("X: %0.2f cm"), dX);
 		sYCoord.Format(_T("Y: %0.2f cm"), dY);
 	}
-	::AfxGetMainFrame()->GetStatusBar()->SetPaneText(2, sXCoord);
-	::AfxGetMainFrame()->GetStatusBar()->SetPaneText(3, sYCoord);
+	::AfxGetMainFrame()->GetStatusBar()->SetPaneText(::AfxGetMainFrame()->GetStatusBar()->CommandToIndex(ID_INDICATOR_XCOORDINATE), sXCoord);
+	::AfxGetMainFrame()->GetStatusBar()->SetPaneText(::AfxGetMainFrame()->GetStatusBar()->CommandToIndex(ID_INDICATOR_YCOORDINATE), sYCoord);
 }
 
 void CPicturePrintPreviewView::OnDraw(CDC* pDC) 

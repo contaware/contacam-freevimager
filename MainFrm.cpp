@@ -99,11 +99,13 @@ static SBACTPANEINFO sba_indicators[] =
 {
 	{ ID_SEPARATOR, _T(""), SBACTF_NORMAL },		// status line indicator
 	{ ID_INDICATOR_PROGRESS, _T(""), SBACTF_NORMAL },
-	{ ID_INDICATOR_XCOORDINATE, sba_CoordinateHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_HANDCURSOR },
-	{ ID_INDICATOR_YCOORDINATE, sba_CoordinateHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_HANDCURSOR }, 
+#ifdef VIDEODEVICEDOC
+	{ ID_INDICATOR_HD_USAGE, _T(""), SBACTF_AUTOFIT },
 	{ ID_INDICATOR_CPU_USAGE, _T(""), SBACTF_AUTOFIT },
 	{ ID_INDICATOR_MEM_USAGE, _T(""), SBACTF_AUTOFIT },
-	{ ID_INDICATOR_CAPS, _T(""), SBACTF_NORMAL },
+#endif
+	{ ID_INDICATOR_XCOORDINATE, sba_CoordinateHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_HANDCURSOR },
+	{ ID_INDICATOR_YCOORDINATE, sba_CoordinateHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_HANDCURSOR },
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -2140,6 +2142,35 @@ void CMainFrame::OnViewAllNextPicture()
 	}
 }
 
+#ifdef VIDEODEVICEDOC
+CString CMainFrame::GetDiskStats(LPCTSTR lpszPath, int nMinDiskFreePermillion/*=0*/)
+{
+	// Must include trailing backslash and does not have to specify the root dir
+	CString sPath(lpszPath);
+	sPath.TrimRight(_T('\\'));
+	sPath += _T("\\");
+
+	// Get the disk free space and the total disk size
+	ULARGE_INTEGER FreeBytesAvailableToCaller;
+	ULARGE_INTEGER TotalNumberOfBytesAvailableToCaller;
+	if (!::GetDiskFreeSpaceEx(	sPath,
+								&FreeBytesAvailableToCaller,
+								&TotalNumberOfBytesAvailableToCaller,
+								NULL))
+		return _T("HD:              ");
+	else
+	{
+		CString sUsage;
+		sUsage.Format(	_T("HD: %I64u/%I64uGB"),
+						(TotalNumberOfBytesAvailableToCaller.QuadPart - FreeBytesAvailableToCaller.QuadPart) >> 30,
+						TotalNumberOfBytesAvailableToCaller.QuadPart >> 30);
+		if (FreeBytesAvailableToCaller.QuadPart < TotalNumberOfBytesAvailableToCaller.QuadPart / 1000000 * nMinDiskFreePermillion)
+			sUsage += _T(" !!");
+		return sUsage;
+	}
+}
+#endif
+
 void CMainFrame::OnTimer(UINT nIDEvent) 
 {
 	CMDIFrameWnd::OnTimer(nIDEvent);
@@ -2150,11 +2181,13 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 	}
 	else if (nIDEvent == ID_TIMER_1SEC)
 	{
+#if defined(TRACELOGFILE) || defined(VIDEODEVICEDOC)
 		// Get CPU Usage
 		double dCPUUsage = ::GetCPUUsage();
 
 		// Get VM Stats
 		int nVMPrivateCommitSize = ::GetVirtualMemUsedMB();
+#endif
 
 #ifdef TRACELOGFILE
 		// Get Used Phys. Mem Stats
@@ -2212,17 +2245,35 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 				nPhysMemWorkingSetSize, nVMPrivateCommitSize, dwCommittedMB, dwMaxCommitted>>10, dwReservedMB, dwMaxReserved>>10, dwFreeMB, dwMaxFree>>10, dFragmentation, dwRegions,
 				sDefaultHeapType, (int)(DefaultHeapSize>>20), sCRTHeapType, sCRTHeapStatus, (int)(CRTHeapSize>>20), (int)(OtherHeapsSize>>20));
 #endif
+
+#ifdef VIDEODEVICEDOC
+		// Show HD Usage
+		// Note: GetDiskStats() calcs the stats for directory symbolic link targets
+		CString sSaveDir = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
+		int nMinDiskFreePermillion = 0;
+		CMDIChildWnd* pChild = MDIGetActive();
+		if (pChild)
+		{
+			CVideoDeviceDoc* pDoc = (CVideoDeviceDoc*)pChild->GetActiveDocument();
+			if (pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CVideoDeviceDoc)))
+			{
+				sSaveDir = pDoc->m_sRecordAutoSaveDir;
+				nMinDiskFreePermillion = pDoc->m_nMinDiskFreePermillion;
+			}
+		}
+		GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_HD_USAGE),
+									GetDiskStats(sSaveDir, nMinDiskFreePermillion));
+
 		// Show CPU Usage
 		CString sCPUUsage;
 		sCPUUsage.Format(_T("CPU: %0.1f%%"), dCPUUsage);
-		GetStatusBar()->SetPaneText(4, sCPUUsage);
+		GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_CPU_USAGE), sCPUUsage);
 
 		// Show MEM Usage
 		CString sMEMUsage;
 		sMEMUsage.Format(_T("MEM: %dMB"), nVMPrivateCommitSize);
-		GetStatusBar()->SetPaneText(5, sMEMUsage);
+		GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_MEM_USAGE), sMEMUsage);
 
-#ifdef VIDEODEVICEDOC
 		// Update the count of open video device docs with detection enabled
 		CUImagerMultiDocTemplate* pVideoDeviceDocTemplate = ((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate();
 		POSITION posVideoDeviceDoc = pVideoDeviceDocTemplate->GetFirstDocPosition();
