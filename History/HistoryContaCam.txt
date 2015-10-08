@@ -1,5 +1,9 @@
 CONTACAM HISTORY
 
+5.0.3 (xxx yth 2015)
+
+- HD info display
+
 5.0.1 (October 3rd 2015)
 
 - Web interface has a new html5 calendar picker (browser must support it)

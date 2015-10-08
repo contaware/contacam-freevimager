@@ -1,5 +1,9 @@
 TRANSLATIONS HISTORY
 
+5.0.3 (xxx yth 2015)
+
+- ...
+
 5.0.1 (October 3rd 2015)
 
 - Full Vietnamese language support (thanks to toan.nguyenk@gmail.com)

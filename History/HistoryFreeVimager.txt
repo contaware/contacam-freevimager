@@ -1,5 +1,9 @@
 FREEVIMAGER HISTORY
 
+5.0.3 (xxx yth 2015)
+
+- ...
+
 5.0.1 (October 3rd 2015)
 
 - Small enhancements and fixes
