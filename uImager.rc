@@ -4718,6 +4718,9 @@ END
 STRINGTABLE
 BEGIN
     IDS_STRING1760          "Application Log File has not yet been created"
+    IDS_STRING1761          "HD free space"
+    IDS_STRING1762          "CPU usage"
+    IDS_STRING1763          "memory usage"
     IDS_STRING1764          "Starting"
     IDS_STRING1765          "%s already exists.\nDo you want to proceed and merge the files?"
     IDS_STRING1766          "Only ASCII characters allowed in path"

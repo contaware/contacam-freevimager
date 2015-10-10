@@ -94,15 +94,20 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 #endif
 END_MESSAGE_MAP()
 
+#ifdef VIDEODEVICEDOC
+static TCHAR sba_HDHelp[MAX_PATH];
+static TCHAR sba_CPUHelp[MAX_PATH];
+static TCHAR sba_MEMHelp[MAX_PATH];
+#endif
 static TCHAR sba_CoordinateHelp[MAX_PATH];
 static SBACTPANEINFO sba_indicators[] = 
 {
 	{ ID_SEPARATOR, _T(""), SBACTF_NORMAL },		// status line indicator
 	{ ID_INDICATOR_PROGRESS, _T(""), SBACTF_NORMAL },
 #ifdef VIDEODEVICEDOC
-	{ ID_INDICATOR_HD_USAGE, _T(""), SBACTF_AUTOFIT },
-	{ ID_INDICATOR_CPU_USAGE, _T(""), SBACTF_AUTOFIT },
-	{ ID_INDICATOR_MEM_USAGE, _T(""), SBACTF_AUTOFIT },
+	{ ID_INDICATOR_HD_USAGE, sba_HDHelp, SBACTF_AUTOFIT },
+	{ ID_INDICATOR_CPU_USAGE, sba_CPUHelp, SBACTF_AUTOFIT },
+	{ ID_INDICATOR_MEM_USAGE, sba_MEMHelp, SBACTF_AUTOFIT },
 #endif
 	{ ID_INDICATOR_XCOORDINATE, sba_CoordinateHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_HANDCURSOR },
 	{ ID_INDICATOR_YCOORDINATE, sba_CoordinateHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_HANDCURSOR },
@@ -175,6 +180,14 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;      // fail to create
 	}
 
+#ifdef VIDEODEVICEDOC
+	_tcsncpy(sba_HDHelp, ML_STRING(1761, "HD free space"), MAX_PATH);
+	sba_HDHelp[MAX_PATH - 1] = _T('\0');
+	_tcsncpy(sba_CPUHelp, CString(APPNAME_NOEXT) + _T(" ") + ML_STRING(1762, "CPU usage"), MAX_PATH);
+	sba_CPUHelp[MAX_PATH - 1] = _T('\0');
+	_tcsncpy(sba_MEMHelp, CString(APPNAME_NOEXT) + _T(" ") + ML_STRING(1763, "memory usage"), MAX_PATH);
+	sba_MEMHelp[MAX_PATH - 1] = _T('\0');
+#endif
 	_tcsncpy(sba_CoordinateHelp, ML_STRING(1768, "Double-click to change unit"), MAX_PATH);
 	sba_CoordinateHelp[MAX_PATH - 1] = _T('\0');
 	if (!m_wndStatusBar.Create(this) || 
@@ -2161,9 +2174,18 @@ CString CMainFrame::GetDiskStats(LPCTSTR lpszPath, int nMinDiskFreePermillion/*=
 	else
 	{
 		CString sUsage;
-		sUsage.Format(	_T("HD: %I64u/%I64uGB"),
-						(TotalNumberOfBytesAvailableToCaller.QuadPart - FreeBytesAvailableToCaller.QuadPart) >> 30,
-						TotalNumberOfBytesAvailableToCaller.QuadPart >> 30);
+		if (FreeBytesAvailableToCaller.QuadPart >= (1024*1024*1024))
+		{
+			sUsage.Format(	_T("HD: %I64u") + ML_STRING(1826, "GB") + _T("(%0.1f%%)"),
+							FreeBytesAvailableToCaller.QuadPart >> 30,
+							(1000 * FreeBytesAvailableToCaller.QuadPart / TotalNumberOfBytesAvailableToCaller.QuadPart) / 10.0);
+		}
+		else
+		{
+			sUsage.Format(	_T("HD: %I64u") + ML_STRING(1825, "MB") + _T("(%0.1f%%)"),
+							FreeBytesAvailableToCaller.QuadPart >> 20,
+							(1000 * FreeBytesAvailableToCaller.QuadPart / TotalNumberOfBytesAvailableToCaller.QuadPart) / 10.0);
+		}
 		if (FreeBytesAvailableToCaller.QuadPart < TotalNumberOfBytesAvailableToCaller.QuadPart / 1000000 * nMinDiskFreePermillion)
 			sUsage += _T(" !!");
 		return sUsage;
