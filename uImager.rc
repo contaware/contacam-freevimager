@@ -285,7 +285,7 @@ BEGIN
             MENUITEM "Blend",                       ID_PLAY_TRANSITION_BLEND
         END
         MENUITEM "Slideshow Infinite Loop",     ID_PLAY_LOOP
-        MENUITEM "Slideshow Random",            ID_PLAY_RANDOM
+        MENUITEM "Slideshow Random\tF9",        ID_PLAY_RANDOM
         MENUITEM SEPARATOR
         MENUITEM "File Information...\tCtrl+I", ID_FILE_INFO
         MENUITEM "On-Screen Display",           ID_VIEW_ENABLE_OSD
@@ -405,7 +405,7 @@ BEGIN
             MENUITEM "Blend",                       ID_PLAY_TRANSITION_BLEND
         END
         MENUITEM "Slideshow Infinite Loop",     ID_PLAY_LOOP
-        MENUITEM "Slideshow Random",            ID_PLAY_RANDOM
+        MENUITEM "Slideshow Random\tF9",        ID_PLAY_RANDOM
         MENUITEM SEPARATOR
         MENUITEM "File Information...\tCtrl+I", ID_FILE_INFO
         MENUITEM SEPARATOR
@@ -717,7 +717,7 @@ BEGIN
             MENUITEM "Blend",                       ID_PLAY_TRANSITION_BLEND
         END
         MENUITEM "Slideshow Infinite Loop",     ID_PLAY_LOOP
-        MENUITEM "Slideshow Random",            ID_PLAY_RANDOM
+        MENUITEM "Slideshow Random\tF9",        ID_PLAY_RANDOM
         MENUITEM SEPARATOR
         MENUITEM "Play Animated GIF",           ID_PLAY_ANIMATION
         MENUITEM "Stop Animated GIF",           ID_STOP_ANIMATION
@@ -952,7 +952,7 @@ BEGIN
             MENUITEM "Blend",                       ID_PLAY_TRANSITION_BLEND
         END
         MENUITEM "Slideshow Infinite Loop",     ID_PLAY_LOOP
-        MENUITEM "Slideshow Random",            ID_PLAY_RANDOM
+        MENUITEM "Slideshow Random\tF9",        ID_PLAY_RANDOM
         MENUITEM SEPARATOR
         MENUITEM "File Information...\tCtrl+I", ID_FILE_INFO
         MENUITEM "On-Screen Display",           ID_VIEW_ENABLE_OSD
@@ -1159,17 +1159,20 @@ END
 
 IDR_MAINFRAME ACCELERATORS
 BEGIN
+    VK_F2,          ID_EDIT_RENAME,         VIRTKEY, NOINVERT
+    VK_F8,          ID_FILE_COPY_TO,        VIRTKEY, NOINVERT
+    VK_F7,          ID_FILE_MOVE_TO,        VIRTKEY, NOINVERT
+    VK_F5,          ID_FILE_RELOAD,         VIRTKEY, NOINVERT
+    VK_F9,          ID_PLAY_RANDOM,         VIRTKEY, NOINVERT
+    VK_F11,         ID_VIEW_FULLSCREEN,     VIRTKEY, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     "K",            ID_EDIT_CROP,           VIRTKEY, CONTROL, NOINVERT
-    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
     "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
     "G",            ID_EDIT_GRAYSCALE,      VIRTKEY, CONTROL, NOINVERT
     "B",            ID_EDIT_HLS,            VIRTKEY, CONTROL, NOINVERT
     "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
-    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT, NOINVERT
     "Y",            ID_EDIT_REDO,           VIRTKEY, CONTROL, NOINVERT
-    VK_F2,          ID_EDIT_RENAME,         VIRTKEY, NOINVERT
     "R",            ID_EDIT_RESIZE,         VIRTKEY, CONTROL, NOINVERT
     VK_DOWN,        ID_EDIT_ROTATE_180,     VIRTKEY, CONTROL, NOINVERT
     VK_UP,          ID_EDIT_ROTATE_180,     VIRTKEY, CONTROL, NOINVERT
@@ -1177,21 +1180,19 @@ BEGIN
     VK_RIGHT,       ID_EDIT_ROTATE_90CW,    VIRTKEY, CONTROL, NOINVERT
     "J",            ID_EDIT_ROTATE_FLIP,    VIRTKEY, CONTROL, NOINVERT
     VK_F11,         ID_EDIT_SCREENSHOT,     VIRTKEY, CONTROL, NOINVERT
-    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT, NOINVERT
     "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
-    VK_F8,          ID_FILE_COPY_TO,        VIRTKEY, NOINVERT
     "I",            ID_FILE_INFO,           VIRTKEY, CONTROL, NOINVERT
-    VK_F7,          ID_FILE_MOVE_TO,        VIRTKEY, NOINVERT
     "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
     "P",            ID_FILE_PRINT_PREVIEW,  VIRTKEY, CONTROL, NOINVERT
-    VK_F5,          ID_FILE_RELOAD,         VIRTKEY, NOINVERT
     "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
     VK_HOME,        ID_VIEW_ALL_FIRST_PICTURE, VIRTKEY, CONTROL, NOINVERT
     VK_END,         ID_VIEW_ALL_LAST_PICTURE, VIRTKEY, CONTROL, NOINVERT
     VK_SPACE,       ID_VIEW_ALL_NEXT_PICTURE, VIRTKEY, CONTROL, NOINVERT
     VK_BACK,        ID_VIEW_ALL_PREVIOUS_PICTURE, VIRTKEY, CONTROL, NOINVERT
-    VK_F11,         ID_VIEW_FULLSCREEN,     VIRTKEY, NOINVERT
     "U",            ID_VIEW_LAYERED_DLG,    VIRTKEY, CONTROL, NOINVERT
+    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT, NOINVERT
+    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
+    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT, NOINVERT
 END
 
 
