@@ -1827,7 +1827,9 @@ int CPictureDoc::CTransitionThread::Work()
 	// Init Vars
 	m_pDoc->m_bNoDrawing = FALSE;
 	m_pDoc->GetView()->m_nTransitionStep = 0;
-	srand(::timeGetTime()); // Seed
+	LARGE_INTEGER PerformanceCounterSeed;
+	::QueryPerformanceCounter(&PerformanceCounterSeed);
+	srand(::makeseed(PerformanceCounterSeed.LowPart, (unsigned int)::time(NULL), ::GetCurrentThreadId())); // Seed
 	if (m_pDoc->m_nTransitionType == 1) // Random Transition
 		m_pDoc->GetView()->m_nCurrentTransition =
 							(int)(((unsigned int)rand())%((unsigned int)nNumOfTransitions)) +
@@ -8349,7 +8351,7 @@ void CPictureDoc::OnUpdatePlayStop(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck((!m_SlideShowThread.IsSlideshowRunning() && !m_bDoRestartSlideshow) ? 1 : 0);
 }
 
-void CPictureDoc::PlayLoop() 
+void CPictureDoc::OnPlayLoop() 
 {
 	m_SlideShowThread.SetLoop(!m_SlideShowThread.IsLoop());
 	::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
@@ -8357,27 +8359,17 @@ void CPictureDoc::PlayLoop()
 									m_SlideShowThread.IsLoop());
 }
 
-void CPictureDoc::OnPlayLoop() 
-{
-	PlayLoop();
-}
-
 void CPictureDoc::OnUpdatePlayLoop(CCmdUI* pCmdUI) 
 {
 	pCmdUI->SetCheck(m_SlideShowThread.IsLoop() ? 1 : 0);
 }
 
-void CPictureDoc::PlayRandom()
+void CPictureDoc::OnPlayRandom() 
 {
 	m_SlideShowThread.SetRandom(!m_SlideShowThread.IsRandom());
 	::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
 									_T("SlideShowRandomPlay"),
 									m_SlideShowThread.IsRandom());
-}
-
-void CPictureDoc::OnPlayRandom() 
-{
-	PlayRandom();
 }
 
 void CPictureDoc::OnUpdatePlayRandom(CCmdUI* pCmdUI) 
@@ -8837,7 +8829,9 @@ BOOL CPictureDoc::TransitionChess(	HDC hSrcDC, int xs, int ys,
 			nSquareSize = 1;
 		int nXNum = width / nSquareSize + 1;
 		int nYNum = height / nSquareSize + 1;
-		srand(::timeGetTime()); // Seed
+		LARGE_INTEGER PerformanceCounterSeed;
+		::QueryPerformanceCounter(&PerformanceCounterSeed);
+		srand(::makeseed(PerformanceCounterSeed.LowPart, (unsigned int)::time(NULL), ::GetCurrentThreadId())); // Seed
 
 		if (hSrcDC && hDestDC)
 		{

@@ -1807,7 +1807,9 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendMail(const CTime& Time, const CSt
 					return 0;
 
 				// Setup all the html body parts
-				srand(::makeseed(::timeGetTime(), ::GetCurrentProcessId(), ::GetCurrentThreadId())); // Seed
+				LARGE_INTEGER PerformanceCounterSeed;
+				::QueryPerformanceCounter(&PerformanceCounterSeed);
+				srand(::makeseed(PerformanceCounterSeed.LowPart, (unsigned int)::time(NULL), ::GetCurrentThreadId())); // Seed
 				CString sRanNum;
 				sRanNum.Format(_T("%08X"), (DWORD)irand(4294967296.0)); // returns a hex random string in the range [0,0xFFFFFFFF]
 				CPJNSMTPBodyPart related;
@@ -3694,7 +3696,9 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 		// If using a constant deletion time interval in case of multiple devices running
 		// the first started one would be cleared more than the last one. To fix that
 		// we use a random generator for the deletion interval
-		srand(::makeseed(::timeGetTime(), ::GetCurrentProcessId(), ::GetCurrentThreadId())); // Seed
+		LARGE_INTEGER PerformanceCounterSeed;
+		::QueryPerformanceCounter(&PerformanceCounterSeed);
+		srand(::makeseed(PerformanceCounterSeed.LowPart, (unsigned int)::time(NULL), ::GetCurrentThreadId())); // Seed
 		DWORD dwDeleteInMs = FILES_DELETE_INTERVAL_MIN + irand(FILES_DELETE_INTERVAL_RANGE); // [10min,15min[
 		Event = ::WaitForSingleObject(GetKillEvent(), dwDeleteInMs);
 		switch (Event)
@@ -9211,7 +9215,9 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRawRequest(CString sRequest)
 			m_dwCNonceCount++;
 			CString sCNonceCount;
 			sCNonceCount.Format(_T("%08x"), m_dwCNonceCount);
-			srand(::makeseed(::timeGetTime(), ::GetCurrentProcessId(), ::GetCurrentThreadId())); // Seed
+			LARGE_INTEGER PerformanceCounterSeed;
+			::QueryPerformanceCounter(&PerformanceCounterSeed);
+			srand(::makeseed(PerformanceCounterSeed.LowPart, (unsigned int)::time(NULL), ::GetCurrentThreadId())); // Seed
 			DWORD dwCNonce = (DWORD)irand(4294967296.0); // returns a random value in the range [0,0xFFFFFFFF]
 			CString sCNonce;
 			sCNonce.Format(_T("%08x"), dwCNonce);

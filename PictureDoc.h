@@ -531,12 +531,6 @@ public:
 	// Show / Hide File Info Dialog
 	void FileInfo();
 
-	// Enable / Disable Play Loop
-	void PlayLoop();
-	
-	// Enable / Disable Random Order Play
-	void PlayRandom();
-
 	// Enable / Disable Halftone Stretch Mode
 	void StretchHalftone();
 
