@@ -1333,7 +1333,42 @@ BOOL CDxCapture::Open(	HWND hWnd,
 	}
 	mt.bFixedSizeSamples = TRUE;
 	mt.bTemporalCompression = FALSE;
-	hr = m_pGrabber->SetMediaType(&mt);
+	m_pGrabber->SetMediaType(&mt);
+
+	// Get Configuration Interface
+	hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_CAPTURE,
+											  &MEDIATYPE_Interleaved,
+											  m_pSrcFilter,
+											  IID_IAMStreamConfig, (void**)&m_pConfig);
+	if (FAILED(hr))
+		hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_CAPTURE,
+												  &MEDIATYPE_Video,
+												  m_pSrcFilter,
+												  IID_IAMStreamConfig, (void**)&m_pConfig);
+	if (FAILED(hr))
+		hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_PREVIEW,
+												  &MEDIATYPE_Interleaved,
+												  m_pSrcFilter,
+												  IID_IAMStreamConfig, (void**)&m_pConfig);
+	if (FAILED(hr))
+		hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_PREVIEW,
+												  &MEDIATYPE_Video,
+												  m_pSrcFilter,
+												  IID_IAMStreamConfig, (void**)&m_pConfig);
+	if (FAILED(hr) && IsOpenWithMediaSubType())
+	{
+		// Note: some mpeg2 devices return the config interface,
+		// but with no information on it!
+		hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_CAPTURE,
+												  &MEDIATYPE_Stream,
+												  m_pSrcFilter,
+												  IID_IAMStreamConfig, (void**)&m_pConfig);
+	}
+	if (FAILED(hr))
+	{
+		TRACE(_T("Failed while getting the configuration interface\n"));
+		return FALSE;
+	}
 
 	// Render DV
 	if (bDV)
@@ -1399,73 +1434,6 @@ BOOL CDxCapture::Open(	HWND hWnd,
 	}
 	if (FAILED(hr))
 		return FALSE;
-
-	// Get Dropped Frames Interface
-	hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_CAPTURE,
-											  &MEDIATYPE_Interleaved,
-											  m_pSrcFilter,
-											  IID_IAMDroppedFrames, (void**)&m_pDF);
-	if (FAILED(hr))
-		hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_CAPTURE,
-											  &MEDIATYPE_Video,
-											  m_pSrcFilter,
-											  IID_IAMDroppedFrames, (void**)&m_pDF);
-	if (FAILED(hr))
-		hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_PREVIEW,
-												  &MEDIATYPE_Interleaved,
-												  m_pSrcFilter,
-												  IID_IAMDroppedFrames, (void**)&m_pDF);
-	if (FAILED(hr))
-		hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_PREVIEW,
-												  &MEDIATYPE_Video,
-												  m_pSrcFilter,
-												  IID_IAMDroppedFrames, (void**)&m_pDF);
-	if (FAILED(hr) && IsOpenWithMediaSubType())
-	{
-		hr = m_pCaptureGraphBuilder->FindInterface(	&PIN_CATEGORY_CAPTURE,
-													&MEDIATYPE_Stream,
-													m_pSrcFilter,
-													IID_IAMDroppedFrames, (void**)&m_pDF);
-	}
-
-	// Get Configuration Interface
-	hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_CAPTURE,
-											  &MEDIATYPE_Interleaved,
-											  m_pSrcFilter,
-											  IID_IAMStreamConfig, (void**)&m_pConfig);
-	if (FAILED(hr))
-		hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_CAPTURE,
-												  &MEDIATYPE_Video,
-												  m_pSrcFilter,
-												  IID_IAMStreamConfig, (void**)&m_pConfig);
-	if (FAILED(hr))
-		hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_PREVIEW,
-												  &MEDIATYPE_Interleaved,
-												  m_pSrcFilter,
-												  IID_IAMStreamConfig, (void**)&m_pConfig);
-	if (FAILED(hr))
-		hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_PREVIEW,
-												  &MEDIATYPE_Video,
-												  m_pSrcFilter,
-												  IID_IAMStreamConfig, (void**)&m_pConfig);
-	if (FAILED(hr) && IsOpenWithMediaSubType())
-	{
-		// Note: some mpeg2 devices return the config interface,
-		// but with no information on it!
-		hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_CAPTURE,
-												  &MEDIATYPE_Stream,
-												  m_pSrcFilter,
-												  IID_IAMStreamConfig, (void**)&m_pConfig);
-	}
-	if (m_pDF)
-		m_pDF->GetNumDropped(&m_lDroppedFramesBase);
-	else
-		m_lDroppedFramesBase = 0;
-	if (FAILED(hr))
-	{
-		TRACE(_T("Failed while getting the configuration interface\n"));
-		return FALSE;
-	}
 
 	// Set Format and Frame Rate
 	if (!bDV && !IsOpenWithMediaSubType())
@@ -1622,6 +1590,40 @@ BOOL CDxCapture::Open(	HWND hWnd,
 		TRACE(_T("Failed to set graph notify window\n"));
         return FALSE;
     }
+
+	// Get Dropped Frames Interface
+	// NOTE: we cannot query for this interface earlier, as it may not be
+    // available until the pin is connected
+	hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_CAPTURE,
+											  &MEDIATYPE_Interleaved,
+											  m_pSrcFilter,
+											  IID_IAMDroppedFrames, (void**)&m_pDF);
+	if (FAILED(hr))
+		hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_CAPTURE,
+											  &MEDIATYPE_Video,
+											  m_pSrcFilter,
+											  IID_IAMDroppedFrames, (void**)&m_pDF);
+	if (FAILED(hr))
+		hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_PREVIEW,
+												  &MEDIATYPE_Interleaved,
+												  m_pSrcFilter,
+												  IID_IAMDroppedFrames, (void**)&m_pDF);
+	if (FAILED(hr))
+		hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_PREVIEW,
+												  &MEDIATYPE_Video,
+												  m_pSrcFilter,
+												  IID_IAMDroppedFrames, (void**)&m_pDF);
+	if (FAILED(hr) && IsOpenWithMediaSubType())
+	{
+		hr = m_pCaptureGraphBuilder->FindInterface(	&PIN_CATEGORY_CAPTURE,
+													&MEDIATYPE_Stream,
+													m_pSrcFilter,
+													IID_IAMDroppedFrames, (void**)&m_pDF);
+	}
+	if (m_pDF)
+		m_pDF->GetNumDropped(&m_lDroppedFramesBase);
+	else
+		m_lDroppedFramesBase = 0;
         
     return TRUE;
 }
