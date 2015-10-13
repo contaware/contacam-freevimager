@@ -128,32 +128,6 @@ class CVideoDeviceDoc;
 class CPictureDoc;
 class CUImagerDoc;
 class CProgressDlg;
-class CDiscRecorder;
-
-// Interface ICDBurn of IMAPI
-#ifndef __ICDBurn_FWD_DEFINED__
-#define __ICDBurn_FWD_DEFINED__
-typedef interface ICDBurn ICDBurn;
-
-// [unique][uuid][object] 
-const IID IID_ICDBurn =    {0x3d73a659,0xe5d0,0x4d42,{0xaf,0xc0,0x51,0x21,0xba,0x42,0x5c,0x8d}};
-const CLSID CLSID_CDBurn = {0xfbeb8a05,0xbeee,0x4442,{0x80,0x4e,0x40,0x9d,0x6c,0x45,0x15,0xe9}};
-   
-MIDL_INTERFACE("3d73a659-e5d0-4d42-afc0-5121ba425c8d")
-ICDBurn : public IUnknown
-{
-	public:
-		virtual HRESULT STDMETHODCALLTYPE GetRecorderDriveLetter( 
-											LPWSTR pszDrive, // [size_is][out]
-											UINT cch) = 0; // [in]
-    
-		virtual HRESULT STDMETHODCALLTYPE Burn( 
-											HWND hwnd) = 0; // [in]
-    
-		virtual HRESULT STDMETHODCALLTYPE HasRecordableDrive( 
-											BOOL *pfHasRecorder) = 0; // [out]
-};
-#endif 	/* __ICDBurn_FWD_DEFINED__ */
 
 class CAboutDlg : public CDialog
 {
@@ -222,14 +196,10 @@ public:
 			virtual void ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLast);
 			virtual void ParseParam(const char* pszParam, BOOL bFlag, BOOL bLast);
 
-			BOOL DoStartSlideShow() {return m_bStartSlideShow;};
-
 			// For Multiple Files
 			CStringArray m_strFileNames;
 
 		protected:
-			BOOL m_bStartSlideShow;
-
 			void ParseParamFlag(const char* pszParam);
 			void ParseParamNotFlag(const TCHAR* pszParam);
 			void ParseParamNotFlag(const char* pszParam);
@@ -323,31 +293,7 @@ public:
 	BOOL CloseAll();
 	
 	// Start Slideshow opening a new Picture Doc
-	CPictureDoc* SlideShow(	LPCTSTR sStartDirName,
-							BOOL bFullscreen,
-							BOOL bRunSlideshow,
-							BOOL bRecursive);
-	// IMAPI
-	BOOL HasRecordableDrive(ICDBurn* pICDBurn = NULL);
-	CString GetRecorderDriveLetter(ICDBurn* pICDBurn = NULL);
-	__forceinline CString GetBurnFolderPath();
-	BOOL BurnDirContent(CString sDir);
-
-	// IMAPI2
-	// Note on annoying Bug:
-	// Leaving the previously modal CBatchProcDlg open for more than 15-20
-	// minutes and then closing it generated a strange WM_QUIT which exited
-	// the main message loop. CBatchProcDlg when opened used to call the
-	// IDiscMaster2's get_IsSupportedEnvironment() which internally initializes
-	// all devices with IDiscRecorder2. I simulated the get_IsSupportedEnvironment()
-	// behavior and tracked down the problem to the CoCreateInstance() of
-	// the IDiscRecorder2 interface. I could not figure out what the problem
-	// was, but making the CBatchProcDlg and the CIMAPI2Dlg dialogs modeless
-	// and initializing the IDiscRecorder2 interfaces only once in the main
-	// UI thread solved the problem -> call FreeDiscRecorders2() only once
-	// in ExitInstance()!
-	BOOL InitDiscRecorders2();
-	void FreeDiscRecorders2();
+	CPictureDoc* SlideShow(LPCTSTR sStartDirName, BOOL bRecursive);
 
 	// Is Wait Cursor Showing?
 	// Used by the OnSetCursor() functions of the Views
@@ -523,9 +469,6 @@ public:
 	// Paste clipboard to given file
 	static BOOL PasteToFile(LPCTSTR lpszFileName, COLORREF crBackgroundColor = RGB(255,255,255));
 
-	// Application Runs as Slideshow-Only Program
-	BOOL m_bSlideShowOnly;
-
 	// Use Tray Icon
 	volatile BOOL m_bTrayIcon;
 
@@ -626,10 +569,6 @@ public:
 
 	// Start MDI Child Maximized Flag
 	BOOL m_bStartMaximized;
-
-	// IMAPI2 disc recorders array
-	typedef CArray<CDiscRecorder*,CDiscRecorder*> DISCRECORDERARRAY;
-	DISCRECORDERARRAY m_DiscRecorders2;
 
 #ifdef VIDEODEVICEDOC
 	// Flag indicating that the auto-starts have been executed

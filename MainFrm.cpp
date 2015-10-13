@@ -11,7 +11,6 @@
 #include "GeneralPage.h"
 #include "dbt.h"
 #include "PicturePrintPreviewView.h"
-#include "IMAPI2Dlg.h"
 #include "BatchProcDlg.h"
 #include "CPUCount.h"
 #include "CPUSpeed.h"
@@ -142,7 +141,6 @@ CMainFrame::CMainFrame() : m_TrayIcon(IDR_TRAYICON) // Menu ID
 	m_TiffScan = NULL;
 	m_bScanAndEmail = FALSE;
 	m_pBatchProcDlg = NULL;
-	m_pIMAPI2Dlg = NULL;
 	m_bLastToasterDone = FALSE;
 	m_pToaster = NULL;
 }
@@ -629,27 +627,12 @@ void CMainFrame::OnClose()
 		if (!pApp->SaveAllModified())
 			return;     // don't close it
 
-		// Let the user close the dialog(s),
-		// some processing may still be running!
-		if (m_pBatchProcDlg && m_pIMAPI2Dlg)
-		{
-			::MessageBeep(0xFFFFFFFF);
-			m_pIMAPI2Dlg->SetActiveWindow();
-			m_pIMAPI2Dlg->SetFocus();
-			return;		// don't close it
-		}
-		else if (m_pBatchProcDlg)
+		// Let the user close the dialog, some processing may still be running
+		if (m_pBatchProcDlg)
 		{
 			::MessageBeep(0xFFFFFFFF);
 			m_pBatchProcDlg->SetActiveWindow();
 			m_pBatchProcDlg->SetFocus();
-			return;		// don't close it
-		}
-		else if (m_pIMAPI2Dlg)
-		{
-			::MessageBeep(0xFFFFFFFF);
-			m_pIMAPI2Dlg->SetActiveWindow();
-			m_pIMAPI2Dlg->SetFocus();
 			return;		// don't close it
 		}
 
@@ -2593,9 +2576,7 @@ LONG CMainFrame::OnTaskBarButton(WPARAM wparam, LPARAM lparam)
 
 		CPoint point(lparam);
 		CMenu menu;
-		if (((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly)
-			VERIFY(menu.LoadMenu(IDR_CONTEXT_TASKBAR_SLIDESHOW_ONLY));
-		else if (m_bFullScreenMode)
+		if (m_bFullScreenMode)
 			VERIFY(menu.LoadMenu(IDR_CONTEXT_TASKBAR_FULLSCREEN));
 		else
 			VERIFY(menu.LoadMenu(IDR_CONTEXT_TASKBAR));

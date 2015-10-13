@@ -156,8 +156,6 @@ BEGIN_MESSAGE_MAP(CPictureDoc, CUImagerDoc)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_CROP_LOSSLESS, OnUpdateEditCropLossless)
 	ON_COMMAND(ID_VIEW_STRETCH_HALFTONE, OnViewStretchHalftone)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_STRETCH_HALFTONE, OnUpdateViewStretchHalftone)
-	ON_COMMAND(ID_PLAY_MUSIC, OnPlayMusic)
-	ON_UPDATE_COMMAND_UI(ID_PLAY_MUSIC, OnUpdatePlayMusic)
 	ON_COMMAND(ID_EDIT_FILTER_SHARPEN, OnEditFilterSharpen)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_FILTER_SHARPEN, OnUpdateEditFilterSharpen)
 	ON_COMMAND(ID_EDIT_FILTER_SOFTEN, OnEditFilterSoften)
@@ -360,7 +358,6 @@ CPictureDoc::CSlideShowThread::CSlideShowThread()
 	m_bNext = TRUE;
 	m_bDoRunSlideshow = FALSE;
 	m_bSlideshowLoadPictureDone = TRUE;
-	m_nBackgroundMusicDeviceId = -1;
 }
 
 CPictureDoc::CSlideShowThread::~CSlideShowThread() 
@@ -381,51 +378,6 @@ CPictureDoc::CSlideShowThread::~CSlideShowThread()
 	m_hLastPictureEvent = NULL;
 	::CloseHandle(m_hSlideshowTimerEvent);
 	m_hSlideshowTimerEvent = NULL;
-}
-
-void CPictureDoc::CSlideShowThread::PlayFirstBackgroundMusic()
-{	
-	::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-					WM_THREADSAFE_PLAYFIRST_BACKGROUNDMUSIC,
-					0, 0);
-}
-
-void CPictureDoc::CSlideShowThread::PlayNextBackgroundMusic()
-{	
-	BOOL res;
-	if (m_bRandom)
-		res = m_pDoc->m_BackgroundMusicFileFind.FindRandomFile();
-	else
-		res = m_pDoc->m_BackgroundMusicFileFind.FindNextFile();
-
-	// Loop To First, Load & Play it
-	if (!res && (m_pDoc->m_BackgroundMusicFileFind.GetFilesCount() >= 1))
-	{
-		PlayFirstBackgroundMusic();
-	}
-	else
-	{
-		// Load & Play Next
-		while (m_pDoc->m_BackgroundMusicFileFind.GetFilesCount() >= 1)
-		{
-			m_nBackgroundMusicDeviceId =
-					::MCIPlayFile(	m_pDoc->GetView()->GetSafeHwnd(),
-									TRUE,
-									m_pDoc->m_BackgroundMusicFileFind.GetFileName());
-			if (m_nBackgroundMusicDeviceId == -1)
-				m_pDoc->m_BackgroundMusicFileFind.DeleteFileName(m_pDoc->m_BackgroundMusicFileFind.GetFilePosition());
-			else
-				break;
-		}
-	}
-}
-
-void CPictureDoc::CSlideShowThread::StopBackgroundMusic()
-{	
-	::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-					WM_THREADSAFE_STOP_BACKGROUNDMUSIC,
-					0, 0);
-
 }
 
 void CPictureDoc::CSlideShowThread::RestartRunningTimer()
@@ -585,40 +537,20 @@ int CPictureDoc::CSlideShowThread::Work()
 	{
 		if (!m_pDoc->m_FileFind.InitRecursive(m_pDoc->m_sDirName + _T("\\*")))
 			return OnError();
-
-		if (((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly)
-		{
-			if (!m_pDoc->m_BackgroundMusicFileFind.InitRecursive(m_pDoc->m_sDirName + _T("\\*")))
-				return OnError();
-		}
 	}
 	// Init Normal File Find
 	else
 	{
 		if (!m_pDoc->m_FileFind.Init(m_pDoc->m_sDirName + _T("\\*")))
 			return OnError();
-
-		if (((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly)
-		{
-			if (!m_pDoc->m_BackgroundMusicFileFind.Init(m_pDoc->m_sDirName + _T("\\*")))
-				return OnError();
-		}
 	}
 
 	// SlideShow returns FALSE if an error occurs and
 	// TRUE if it's time to Shutdown the Thread.
 	if (!SlideShow(sStartFileName))
-	{
-		if (((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly)
-			StopBackgroundMusic();
-
 		return OnError();
-	}
 	else
 	{
-		if (((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly)
-			StopBackgroundMusic();
-
 		// Reset Timer
 		if (m_uiSlideshowTimerId)
 		{
@@ -632,16 +564,8 @@ int CPictureDoc::CSlideShowThread::Work()
 
 int CPictureDoc::CSlideShowThread::OnError()
 {
-	if (((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly)
-	{
-		// Exit Program
-		::AfxGetMainFrame()->PostMessage(WM_CLOSE, 0, 0);
-	}
-	else
-	{
-		// Close Document
-		m_pDoc->CloseDocumentForce();
-	}
+	// Close Document
+	m_pDoc->CloseDocumentForce();
 
 	// Reset Timer
 	if (m_uiSlideshowTimerId)
@@ -731,19 +655,11 @@ BOOL CPictureDoc::CSlideShowThread::SlideShow(CString sStartFileName)
 	{
 		if (m_pDoc->m_FileFind.WaitRecursiveStarted(GetKillEvent()) != 1)
 			return FALSE;
-
-		if (((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly)
-			m_pDoc->m_BackgroundMusicFileFind.WaitRecursiveStarted(GetKillEvent());
 	}
 
 	// Find First File
     if (!m_pDoc->m_FileFind.FindFirstFile())
 		return FALSE;
-
-	// Start Playing Background Music
-	if (((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly &&
-		m_pDoc->m_BackgroundMusicFileFind.GetFilesCount() >= 1)
-		PlayFirstBackgroundMusic();
 
 	// Find Init File
 	if (sStartFileName != _T(""))
@@ -2179,19 +2095,6 @@ CPictureDoc::CPictureDoc()
 	m_NewFileFind.AddAllowedExtension(_T("dib"));
 	m_NewFileFind.AddAllowedNumericExtensions();
 
-	// Allowed Extensions For Background Music
-	m_BackgroundMusicFileFind.AddAllowedExtension(_T("mp3"));
-	m_BackgroundMusicFileFind.AddAllowedExtension(_T("wav"));
-	m_BackgroundMusicFileFind.AddAllowedExtension(_T("wma"));
-	m_BackgroundMusicFileFind.AddAllowedExtension(_T("mid"));
-	m_BackgroundMusicFileFind.AddAllowedExtension(_T("rmi"));
-	m_BackgroundMusicFileFind.AddAllowedExtension(_T("au"));
-	m_BackgroundMusicFileFind.AddAllowedExtension(_T("aif"));
-	m_BackgroundMusicFileFind.AddAllowedExtension(_T("aiff"));
-
-	// Background Music Play Flag
-	m_bPlayBackgroundMusic = TRUE;
-
 	// Load the Settings
 	LoadSettings();
 }
@@ -2274,7 +2177,6 @@ BOOL CPictureDoc::DoEnableCommand()
 	return(	m_pDib &&
 			!(m_SlideShowThread.IsSlideshowRunning() ||
 			m_bDoRestartSlideshow)								&&
-			!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly	&&
 			!m_GifAnimationThread.IsAlive()						&&
 			!m_bMetadataModified								&&
 			!m_pRotationFlippingDlg								&&
@@ -2509,7 +2411,6 @@ void CPictureDoc::OnUpdateFileExtract(CCmdUI* pCmdUI)
 					!m_bMetadataModified								&&
 					!(m_SlideShowThread.IsSlideshowRunning()			||
 					m_bDoRestartSlideshow)								&&
-					!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly	&&
 					!m_pRotationFlippingDlg								&&
 					!m_pWndPalette										&&
 					!m_pHLSDlg											&&
@@ -3663,8 +3564,7 @@ BOOL CPictureDoc::Save()
 
 void CPictureDoc::OnFileCopyTo()
 {
-	if (!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly &&
-		((CUImagerApp*)::AfxGetApp())->IsDocAvailable(this, TRUE))
+	if (((CUImagerApp*)::AfxGetApp())->IsDocAvailable(this, TRUE))
 	{
 		GetView()->ForceCursor();
 
@@ -3704,8 +3604,7 @@ void CPictureDoc::OnFileCopyTo()
 
 void CPictureDoc::OnFileMoveTo()
 {
-	if (!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly &&
-		((CUImagerApp*)::AfxGetApp())->IsDocAvailable(this, TRUE))
+	if (((CUImagerApp*)::AfxGetApp())->IsDocAvailable(this, TRUE))
 	{
 		GetView()->ForceCursor();
 
@@ -3755,8 +3654,7 @@ void CPictureDoc::OnFileMoveTo()
 
 void CPictureDoc::OnFileReload() 
 {
-	if (!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly &&
-		((CUImagerApp*)::AfxGetApp())->IsDocAvailable(this, TRUE))
+	if (((CUImagerApp*)::AfxGetApp())->IsDocAvailable(this, TRUE))
 	{
 		GetView()->ForceCursor();
 		LoadPicture(&m_pDib, m_sFileName);
@@ -3882,7 +3780,6 @@ void CPictureDoc::OnUpdateFileSave(CCmdUI* pCmdUI)
 	pCmdUI->Enable(	IsModified()										&&
 					!(m_SlideShowThread.IsSlideshowRunning()			||
 					m_bDoRestartSlideshow)								&&
-					!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly	&&
 					!m_pRotationFlippingDlg								&&
 					!m_pWndPalette										&&
 					!m_pHLSDlg											&&
@@ -3908,7 +3805,6 @@ void CPictureDoc::OnUpdateFileSaveAs(CCmdUI* pCmdUI)
 					m_dwIDAfterFullLoadCommand == ID_FILE_SAVE_AS)		&&
 					!(m_SlideShowThread.IsSlideshowRunning()			||
 					m_bDoRestartSlideshow)								&&
-					!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly	&&
 					!m_bMetadataModified								&&
 					!m_pRotationFlippingDlg								&&
 					!m_pWndPalette										&&
@@ -3935,7 +3831,6 @@ void CPictureDoc::OnUpdateFileSaveCopyAs(CCmdUI* pCmdUI)
 					m_dwIDAfterFullLoadCommand == ID_FILE_SAVE_COPY_AS)	&&
 					!(m_SlideShowThread.IsSlideshowRunning()			||
 					m_bDoRestartSlideshow)								&&
-					!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly	&&
 					!m_bMetadataModified								&&
 					!m_pRotationFlippingDlg								&&
 					!m_pWndPalette										&&
@@ -3962,7 +3857,6 @@ void CPictureDoc::OnUpdateFileSaveAsPdf(CCmdUI* pCmdUI)
 					m_dwIDAfterFullLoadCommand == ID_FILE_SAVE_AS_PDF)	&&
 					!(m_SlideShowThread.IsSlideshowRunning()			||
 					m_bDoRestartSlideshow)								&&
-					!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly	&&
 					!m_bMetadataModified								&&
 					!m_pRotationFlippingDlg								&&
 					!m_pWndPalette										&&
@@ -4149,7 +4043,6 @@ void CPictureDoc::OnUpdateEditDelete(CCmdUI* pCmdUI)
 					!m_bMetadataModified								&&
 					!(m_SlideShowThread.IsSlideshowRunning()			||
 					m_bDoRestartSlideshow)								&&
-					!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly	&&
 					!m_pRotationFlippingDlg								&&
 					!m_pWndPalette										&&
 					!m_pHLSDlg											&&
@@ -4265,8 +4158,7 @@ BOOL CPictureDoc::DeleteDocFile()
 
 void CPictureDoc::OnEditRename() 
 {
-	if (!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly &&
-		((CUImagerApp*)::AfxGetApp())->IsDocAvailable(this, TRUE))
+	if (((CUImagerApp*)::AfxGetApp())->IsDocAvailable(this, TRUE))
 	{
 		GetView()->ForceCursor();
 
@@ -4372,7 +4264,6 @@ void CPictureDoc::OnUpdateEditUndo(CCmdUI* pCmdUI)
 	if (m_nDibUndoPos >= 0									&&
 		!(m_SlideShowThread.IsSlideshowRunning() ||
 		m_bDoRestartSlideshow)								&&
-		!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly	&&
 		!m_bMetadataModified								&&
 		!m_pRotationFlippingDlg								&&
 		!m_pWndPalette										&&
@@ -4434,7 +4325,6 @@ void CPictureDoc::OnUpdateEditRedo(CCmdUI* pCmdUI)
 		m_nDibUndoPos < m_DibUndoArray.GetUpperBound()		&&
 		!(m_SlideShowThread.IsSlideshowRunning() ||
 		m_bDoRestartSlideshow)								&&
-		!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly	&&
 		!m_bMetadataModified								&&
 		!m_pRotationFlippingDlg								&&
 		!m_pWndPalette										&&
@@ -5579,7 +5469,6 @@ void CPictureDoc::OnUpdateEditRotateFlip(CCmdUI* pCmdUI)
 					m_pDib												&&
 					!(m_SlideShowThread.IsSlideshowRunning() ||
 					m_bDoRestartSlideshow)								&&
-					!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly	&&
 					!m_GifAnimationThread.IsAlive()						&&
 					!m_bMetadataModified								&&
 					!m_pWndPalette										&&
@@ -5641,7 +5530,6 @@ void CPictureDoc::OnUpdateEditPalette(CCmdUI* pCmdUI)
 					m_pDib && m_pDib->GetColors()						&&
 					!(m_SlideShowThread.IsSlideshowRunning() ||
 					m_bDoRestartSlideshow)								&&
-					!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly	&&
 					!m_GifAnimationThread.IsAlive()						&&
 					!m_bMetadataModified								&&
 					!m_pHLSDlg											&&
@@ -5978,7 +5866,6 @@ void CPictureDoc::OnUpdateEditHls(CCmdUI* pCmdUI)
 					m_pDib												&&
 					!(m_SlideShowThread.IsSlideshowRunning() ||
 					m_bDoRestartSlideshow)								&&
-					!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly	&&
 					!m_GifAnimationThread.IsAlive()						&&
 					!m_bMetadataModified								&&
 					!m_pRotationFlippingDlg								&&
@@ -6674,7 +6561,6 @@ void CPictureDoc::OnUpdateEditSoftBorders(CCmdUI* pCmdUI)
 					m_pDib												&&
 					!(m_SlideShowThread.IsSlideshowRunning() ||
 					m_bDoRestartSlideshow)								&&
-					!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly	&&
 					!m_GifAnimationThread.IsAlive()						&&
 					!m_bMetadataModified								&&
 					!m_pHLSDlg											&&
@@ -7872,7 +7758,6 @@ void CPictureDoc::OnUpdateEditRedeye(CCmdUI* pCmdUI)
 					m_pDib												&&
 					!(m_SlideShowThread.IsSlideshowRunning() ||
 					m_bDoRestartSlideshow)								&&
-					!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly	&&
 					!m_GifAnimationThread.IsAlive()						&&
 					!m_bMetadataModified								&&
 					!m_pRotationFlippingDlg								&&
@@ -9269,7 +9154,6 @@ void CPictureDoc::OnUpdateEditCropLossless(CCmdUI* pCmdUI)
 					m_pDib												&&
 					!(m_SlideShowThread.IsSlideshowRunning()	||
 					m_bDoRestartSlideshow)								&&
-					!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly	&&
 					!m_GifAnimationThread.IsAlive()						&&
 					!m_bMetadataModified								&&
 					!m_pRotationFlippingDlg								&&
@@ -9310,7 +9194,6 @@ void CPictureDoc::OnUpdateEditCrop(CCmdUI* pCmdUI)
 					m_pDib												&&
 					!(m_SlideShowThread.IsSlideshowRunning()	||
 					m_bDoRestartSlideshow)								&&
-					!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly	&&
 					!m_GifAnimationThread.IsAlive()						&&
 					!m_bMetadataModified								&&
 					!m_pRotationFlippingDlg								&&
@@ -10212,23 +10095,6 @@ void CPictureDoc::OnUpdateBackgroundColor(CCmdUI* pCmdUI)
 void CPictureDoc::OnFileClose() 
 {
 	CloseDocument();
-}
-
-void CPictureDoc::OnPlayMusic() 
-{
-	m_bPlayBackgroundMusic = !m_bPlayBackgroundMusic;
-	if (m_bPlayBackgroundMusic)
-		m_SlideShowThread.PlayFirstBackgroundMusic();
-	else
-		m_SlideShowThread.StopBackgroundMusic();
-}
-
-void CPictureDoc::OnUpdatePlayMusic(CCmdUI* pCmdUI) 
-{
-	BOOL bEnable = (((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly) &&
-					m_BackgroundMusicFileFind.GetFilesCount() >= 1;
-	pCmdUI->Enable(bEnable);
-	pCmdUI->SetCheck((bEnable && m_bPlayBackgroundMusic) ? 1 : 0);
 }
 
 void CPictureDoc::OnViewEnableOsd() 

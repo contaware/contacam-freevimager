@@ -65,7 +65,6 @@ extern "C"
 // Forward Declarations
 class CUImagerDoc;
 class CBatchProcDlg;
-class CIMAPI2Dlg;
 class CDib;
 
 class CMainFrame : public CMDIFrameWnd, public CTwain
@@ -177,9 +176,6 @@ public:
 
 	// Batch Processing dialog
 	CBatchProcDlg* m_pBatchProcDlg;
-
-	// IMAPI2 Burn dialog
-	CIMAPI2Dlg* m_pIMAPI2Dlg;
 
 	// Tray Icon
 	CTrayIcon m_TrayIcon;

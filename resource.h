@@ -23,7 +23,6 @@
 #define IDD_GENERAL                     140
 #define IDR_VIDEO_DEVICE_TOOLBAR        144
 #define IDR_PICTURE_TOOLBAR             145
-#define IDR_CONTEXT_SLIDESHOW_ONLY      146
 #define IDR_CONTEXT_PICTURE             147
 #define IDR_CONTEXT_VIDEO_DEVICE        149
 #define IDR_CONTEXT_CROP                150
@@ -62,7 +61,6 @@
 #define IDI_MAGNIFY                     213
 #define IDR_CONTEXT_TASKBAR             213
 #define IDI_MAGNIFYMINUS                214
-#define IDR_CONTEXT_TASKBAR_SLIDESHOW_ONLY 214
 #define IDD_ZIP_PROGRESS                219
 #define IDR_LICENSE                     221
 #define IDD_LICENSE                     222
@@ -75,7 +73,6 @@
 #define IDB_BITMAP_DRAGDROP_SINGLE      243
 #define IDB_BITMAP_DRAGDROP_MULTI       244
 #define IDB_HEADER_CTRL                 245
-#define IDR_CONTEXT_SLIDESHOW_ONLY1     246
 #define IDB_BITSTREAM_VERA_10           249
 #define IDB_BITSTREAM_VERA_12           251
 #define IDD_SHARPEN                     257
@@ -112,8 +109,6 @@
 #define IDI_PCX                         299
 #define IDD_SETTINGS_VIDEODEVICEDOC     300
 #define IDI_EMF                         300
-#define IDD_IMAPI2                      301
-#define IDD_IMAPI2_DOWNLOAD             302
 #define IDD_CAMERABASICSETTINGS         304
 #define IDD_RENAME                      305
 #define IDD_DELETE_CAM_FOLDERS          306
@@ -1427,11 +1422,8 @@
 #define IDC_RADIO_OUTPUT_FILE           1329
 #define IDS_MULTILANG_1330              1330
 #define IDS_MULTILANG_1331              1331
-#define IDC_EDIT_TEXTROW1               1331
 #define IDS_MULTILANG_1332              1332
-#define IDC_EDIT_LINK                   1332
 #define IDS_MULTILANG_1333              1333
-#define IDC_EDIT_TEXTROW2               1333
 #define IDS_MULTILANG_1334              1334
 #define IDS_MULTILANG_1335              1335
 #define IDC_CHECK_PICTURE_EXTCHANGE     1335
@@ -1442,9 +1434,7 @@
 #define IDS_MULTILANG_1338              1338
 #define IDC_LIST_INPUT                  1338
 #define IDS_MULTILANG_1339              1339
-#define IDC_BUTTON_VIEW_SLIDESHOW       1339
 #define IDS_MULTILANG_1340              1340
-#define IDC_BUTTON_BURN_SLIDESHOW       1340
 #define IDS_MULTILANG_1341              1341
 #define IDC_PROGRESS                    1341
 #define IDS_MULTILANG_1342              1342
@@ -1472,7 +1462,6 @@
 #define IDC_COMBO_EXIF_THUMBNAIL        1352
 #define IDS_MULTILANG_1353              1353
 #define IDC_CHECK_AUTOROTATE            1353
-#define IDC_BUTTON_ADD_SLIDESHOW_EXE    1353
 #define IDS_MULTILANG_1354              1354
 #define IDC_CHECK_AUTOORIENTATE         1354
 #define IDS_MULTILANG_1355              1355
@@ -3046,13 +3035,6 @@
 #define IDC_STATIC2500                  2500
 #define IDC_CHECK_WEBSERVER             2501
 #define IDC_CHECK_DIGESTAUTH            2502
-#define IDC_COMBO_DRIVE                 2509
-#define IDC_BURN                        2512
-#define IDC_ABORT                       2513
-#define IDC_EDIT_VOLUME_LABEL           2514
-#define IDC_PROGRESS_TEXT               2516
-#define IDC_ESTIMATED_TIME              2517
-#define IDC_TIME_LEFT                   2518
 #define IDC_RADIO_MOVDET                2519
 #define IDC_RADIO_SNAPSHOT              2520
 #define IDC_RADIO_MANUAL                2521
@@ -3186,7 +3168,6 @@
 #define ID_VIEW_ALL_FIRST_PICTURE       32956
 #define ID_VIEW_ALL_LAST_PICTURE        32957
 #define ID_VIEW_STRETCH_HALFTONE        32958
-#define ID_PLAY_MUSIC                   32966
 #define ID_FILE_SHRINK_DIR_DOCS         32968
 #define ID_FILE_SENDMAIL_OPEN_DOCS      32970
 #define ID_EDIT_FILTER_SHARPEN          32973

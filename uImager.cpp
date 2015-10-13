@@ -30,8 +30,6 @@
 #include "YuvToYuv.h"
 #include "sinstance.h"
 #include <atlbase.h>
-#include "DiscMaster.h"
-#include "DiscRecorder.h"
 #include "ProgressDlg.h"
 #ifdef VIDEODEVICEDOC
 #include "DeleteCamFoldersDlg.h"
@@ -166,7 +164,6 @@ CUImagerApp::CUImagerApp()
 	m_sScanToTiffFileName = _T("");
 	m_bTrayIcon = FALSE;
 	m_bHideMainFrame = FALSE;
-	m_bSlideShowOnly = FALSE;
 	m_bPrinterInit = FALSE;
 	m_nCoordinateUnit = COORDINATES_PIX;
 	m_nNewWidth = DEFAULT_NEW_WIDTH;
@@ -466,17 +463,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		CUImagerCommandLineInfo cmdInfo;
 		ParseCommandLine(cmdInfo); // m_bHideMainFrame is ev. set to TRUE here
 
-		// Slideshow only mode?
-		CString sSlideshowName(SLIDESHOWNAME);
-		int pos = sSlideshowName.Find(_T('.'));
-		if (pos >= 0)
-			sSlideshowName = sSlideshowName.Left(pos);
-		if (cmdInfo.DoStartSlideShow() || sName.CompareNoCase(sSlideshowName) == 0)
-		{
-			m_bSlideShowOnly = TRUE;
-			bUseRegistry = FALSE;
-		}
-
 		// Registry key under which the settings are stored.
 		// This Will create the HKEY_CURRENT_USER\Software\MYCOMPANY key
 		if (bUseRegistry)
@@ -535,8 +521,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			cmdInfo.m_nShellCommand == CCommandLineInfo::FilePrintTo	||
 			cmdInfo.m_nShellCommand == CCommandLineInfo::FileDDE		||
 			cmdInfo.m_nShellCommand == CCommandLineInfo::AppRegister	||
-			cmdInfo.m_nShellCommand == CCommandLineInfo::AppUnregister	||
-			m_bSlideShowOnly;
+			cmdInfo.m_nShellCommand == CCommandLineInfo::AppUnregister;
 
 		// Single Instance
 		// (if VIDEODEVICEDOC defined -> single instance is always set, see constructor)
@@ -825,118 +810,107 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			}
 		}
 
-		// Slideshow only mode
-		if (m_bSlideShowOnly)
-		{
-			SlideShow(	sDriveDir,
-						TRUE,
-						TRUE,
-						TRUE);
-		}
-		else
-		{
-			// Load Settings has to be here for the Window Placement restore to work!
-			LoadSettings(m_nCmdShow);
+		// Load Settings has to be here for the Window Placement restore to work!
+		LoadSettings(m_nCmdShow);
 
-			// First time that the App runs after Install (or Upgrade)
-			if (m_bFirstRun)
+		// First time that the App runs after Install (or Upgrade)
+		if (m_bFirstRun)
+		{
+			// First time ever that the App runs or after a uninstall
+			if (m_bFirstRunEver)
 			{
-				// First time ever that the App runs or after a uninstall
-				if (m_bFirstRunEver)
-				{
 #ifdef VIDEODEVICEDOC
-					// Try to set the microapache server to MICROAPACHE_PREFERRED_PORT
-					if (!CVideoDeviceDoc::MicroApacheIsPortUsed(MICROAPACHE_PREFERRED_PORT))
-					{
-						m_nMicroApachePort = MICROAPACHE_PREFERRED_PORT;
-						WriteProfileInt(_T("GeneralApp"), _T("MicroApachePort"), m_nMicroApachePort);
-					}
-
-					// Enable autostart
-					Autostart(TRUE);
-#endif
-					// Reset first run ever flag
-					WriteProfileInt(_T("GeneralApp"), _T("FirstRunEver"), FALSE);
+				// Try to set the microapache server to MICROAPACHE_PREFERRED_PORT
+				if (!CVideoDeviceDoc::MicroApacheIsPortUsed(MICROAPACHE_PREFERRED_PORT))
+				{
+					m_nMicroApachePort = MICROAPACHE_PREFERRED_PORT;
+					WriteProfileInt(_T("GeneralApp"), _T("MicroApachePort"), m_nMicroApachePort);
 				}
+
+				// Enable autostart
+				Autostart(TRUE);
+#endif
+				// Reset first run ever flag
+				WriteProfileInt(_T("GeneralApp"), _T("FirstRunEver"), FALSE);
+			}
 		
-				// - Update file associations #ifndef VIDEODEVICEDOC
-				//   (necessary when changing the icons)
-				// - Unassociate all file types #ifdef VIDEODEVICEDOC
-				//   (file association has been removed with version 5.0.0)
-				UpdateFileAssociations();
+			// - Update file associations #ifndef VIDEODEVICEDOC
+			//   (necessary when changing the icons)
+			// - Unassociate all file types #ifdef VIDEODEVICEDOC
+			//   (file association has been removed with version 5.0.0)
+			UpdateFileAssociations();
 
 #ifndef VIDEODEVICEDOC
-				// Open Settings Dialog for file association and other preferences
-				if (!m_bSilentInstall)
-					OnFileSettings();
+			// Open Settings Dialog for file association and other preferences
+			if (!m_bSilentInstall)
+				OnFileSettings();
 #endif
-				// Reset first run flag
-				WriteProfileInt(_T("GeneralApp"), _T("FirstRun"), FALSE);
-			}
+			// Reset first run flag
+			WriteProfileInt(_T("GeneralApp"), _T("FirstRun"), FALSE);
+		}
 
-			// Reset silent install flag
-			WriteProfileInt(_T("GeneralApp"), _T("SilentInstall"), FALSE);
+		// Reset silent install flag
+		WriteProfileInt(_T("GeneralApp"), _T("SilentInstall"), FALSE);
 
 #ifdef VIDEODEVICEDOC
-			// Redraw web server port
-			::AfxGetMainFrame()->m_MDIClientWnd.Invalidate();
+		// Redraw web server port
+		::AfxGetMainFrame()->m_MDIClientWnd.Invalidate();
 
-			// Auto-starts
-			if (!m_bForceSeparateInstance)
+		// Auto-starts
+		if (!m_bForceSeparateInstance)
+		{
+			// Log the starting of the application
+			CString sAppId(CString(APPNAME_NOEXT) + _T(" ") + APPVERSION + _T(" (") + CString(_T(__TIME__)) + CString(_T(" ")) + CString(_T(__DATE__)) + _T(")"));
+			if (m_bServiceProcess)
+				::LogLine(_T("%s"), ML_STRING(1764, "Starting") + _T(" ") + sAppId + _T(" - SERVICE MODE"));
+			else
+				::LogLine(_T("%s"), ML_STRING(1764, "Starting") + _T(" ") + sAppId);
+
+			// Update / create doc root index.php and config file for microapache
+			CVideoDeviceDoc::MicroApacheUpdateMainFiles();
+
+			// Start Micro Apache
+			// Note: make sure the web server is running because the below devices
+			//       autorun which can connect to localhost's push.php or poll.php
+			//       and the browser autostart need it
+			if (m_bStartMicroApache														&&
+				!(CVideoDeviceDoc::MicroApacheInitStart()								&&
+				CVideoDeviceDoc::MicroApacheWaitStartDone(	m_bServiceProcess ?
+															MICROAPACHE_SERVICEPROCESS_TIMEOUT_MS :
+															MICROAPACHE_TIMEOUT_MS)		&&
+				CVideoDeviceDoc::MicroApacheWaitCanConnect()))
 			{
-				// Log the starting of the application
-				CString sAppId(CString(APPNAME_NOEXT) + _T(" ") + APPVERSION + _T(" (") + CString(_T(__TIME__)) + CString(_T(" ")) + CString(_T(__DATE__)) + _T(")"));
-				if (m_bServiceProcess)
-					::LogLine(_T("%s"), ML_STRING(1764, "Starting") + _T(" ") + sAppId + _T(" - SERVICE MODE"));
-				else
-					::LogLine(_T("%s"), ML_STRING(1764, "Starting") + _T(" ") + sAppId);
-
-				// Update / create doc root index.php and config file for microapache
-				CVideoDeviceDoc::MicroApacheUpdateMainFiles();
-
-				// Start Micro Apache
-				// Note: make sure the web server is running because the below devices
-				//       autorun which can connect to localhost's push.php or poll.php
-				//       and the browser autostart need it
-				if (m_bStartMicroApache														&&
-					!(CVideoDeviceDoc::MicroApacheInitStart()								&&
-					CVideoDeviceDoc::MicroApacheWaitStartDone(	m_bServiceProcess ?
-																MICROAPACHE_SERVICEPROCESS_TIMEOUT_MS :
-																MICROAPACHE_TIMEOUT_MS)		&&
-					CVideoDeviceDoc::MicroApacheWaitCanConnect()))
-				{
-					CString sMsg(	ML_STRING(1475, "Failed to start the web server") + _T(" ") +
-									ML_STRING(1476, "(change the Port number to an unused one)"));
-					if (!m_bServiceProcess)
-						::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, sMsg, 0);
-					::LogLine(_T("%s"), sMsg);
-				}
-
-				// Autorun Devices
-				AutorunVideoDevices();
-
-				// Start Browser
-				if (m_bBrowserAutostart && !m_bServiceProcess)
-				{
-					CString sUrl, sPort;
-					sPort.Format(_T("%d"), m_nMicroApachePort);
-					if (sPort != _T("80"))
-						sUrl = _T("http://localhost:") + sPort + _T("/");
-					else
-						sUrl = _T("http://localhost/");
-					::ShellExecute(	NULL,
-									_T("open"),
-									sUrl,
-									NULL,
-									NULL,
-									SW_SHOWNORMAL);
-				}
-
-				// Flag indicating that the auto-starts have been executed
-				m_bAutostartsExecuted = TRUE;
+				CString sMsg(	ML_STRING(1475, "Failed to start the web server") + _T(" ") +
+								ML_STRING(1476, "(change the Port number to an unused one)"));
+				if (!m_bServiceProcess)
+					::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, sMsg, 0);
+				::LogLine(_T("%s"), sMsg);
 			}
-#endif
+
+			// Autorun Devices
+			AutorunVideoDevices();
+
+			// Start Browser
+			if (m_bBrowserAutostart && !m_bServiceProcess)
+			{
+				CString sUrl, sPort;
+				sPort.Format(_T("%d"), m_nMicroApachePort);
+				if (sPort != _T("80"))
+					sUrl = _T("http://localhost:") + sPort + _T("/");
+				else
+					sUrl = _T("http://localhost/");
+				::ShellExecute(	NULL,
+								_T("open"),
+								sUrl,
+								NULL,
+								NULL,
+								SW_SHOWNORMAL);
+			}
+
+			// Flag indicating that the auto-starts have been executed
+			m_bAutostartsExecuted = TRUE;
 		}
+#endif
 
 		return TRUE;
 	}
@@ -1135,8 +1109,7 @@ void CUImagerApp::OnUpdateFileSettings(CCmdUI* pCmdUI)
 
 void CUImagerApp::OnFileOpen()
 {
-	if (!::AfxGetMainFrame()->m_bFullScreenMode &&
-		!m_bSlideShowOnly)
+	if (!::AfxGetMainFrame()->m_bFullScreenMode)
 	{
 		TCHAR* FileNames = new TCHAR[MAX_FILEDLG_PATH];
 		TCHAR* InitDir = new TCHAR[MAX_FILEDLG_PATH];
@@ -1478,12 +1451,7 @@ CDocument* CUImagerApp::OpenDocumentFile(LPCTSTR lpszFileName)
 	{
 		// A Dir may have been dropped -> Start Recursive Slideshow
 		if (::IsExistingDir(lpszFileName))
-		{
-			return SlideShow(	lpszFileName,
-								FALSE,
-								FALSE,
-								TRUE);
-		}
+			return SlideShow(lpszFileName, TRUE);
 		else
 		{
 			FileTypeNotSupportedMessageBox(lpszFileName);
@@ -1935,176 +1903,8 @@ BOOL CUImagerApp::ExtractZipToDir(LPCTSTR szDirPath, LPCTSTR szZipFileName)
 		return FALSE;
 }
 
-BOOL CUImagerApp::HasRecordableDrive(ICDBurn* pICDBurn/*=NULL*/)
-{
-	HRESULT hr;
-	BOOL bDoRelease = FALSE;
-	BOOL bHasRecordableDrive = FALSE;
-
-	if (pICDBurn == NULL)
-	{
-		hr = ::CoCreateInstance(CLSID_CDBurn, NULL,CLSCTX_INPROC_SERVER,IID_ICDBurn,(LPVOID*)&pICDBurn);
-		if (SUCCEEDED(hr))
-			bDoRelease = TRUE;
-		else
-			return FALSE;
-	}
-	
-	hr = pICDBurn->HasRecordableDrive(&bHasRecordableDrive);
-	if (bDoRelease)
-		pICDBurn->Release();
-	return (SUCCEEDED(hr) && bHasRecordableDrive);
-}
-
-CString CUImagerApp::GetRecorderDriveLetter(ICDBurn* pICDBurn/*=NULL*/)
-{
-	HRESULT hr;
-	BOOL bDoRelease = FALSE;
-	WCHAR d[32] = {0};
-
-	if (pICDBurn == NULL)
-	{
-		hr = ::CoCreateInstance(CLSID_CDBurn, NULL,CLSCTX_INPROC_SERVER,IID_ICDBurn,(LPVOID*)&pICDBurn);
-		if (SUCCEEDED(hr))
-			bDoRelease = TRUE;
-		else
-			return _T("");
-	}
-
-	hr = pICDBurn->GetRecorderDriveLetter(d, sizeof(d)/sizeof(d[0]));
-	if (bDoRelease)
-		pICDBurn->Release();
-	if (SUCCEEDED(hr))
-		return CString(d);
-	else
-		return _T("");
-}
-
-BOOL CUImagerApp::InitDiscRecorders2()
-{
-	// Altready init?
-	if (m_DiscRecorders2.GetSize() > 0)
-		return TRUE;
-
-	// Init Disc Master
-	CDiscMaster discMaster;
-    if (!discMaster.Initialize())
-        return FALSE;
-
-    // Add Devices to array
-    long totalDevices = discMaster.GetTotalDevices();
-    for (long deviceIndex = 0 ; deviceIndex < totalDevices ; deviceIndex++)
-    {
-        CString recorderUniqueID = discMaster.GetDeviceUniqueID(deviceIndex);
-        if (recorderUniqueID.IsEmpty())
-            continue;
-        CDiscRecorder* pDiscRecorder = new CDiscRecorder();
-        if (pDiscRecorder == NULL)
-            return FALSE;
-        if (!pDiscRecorder->Initialize(recorderUniqueID))
-        {
-            delete pDiscRecorder;
-            continue;
-        }
-		m_DiscRecorders2.Add(pDiscRecorder);
-    }
-
-	return (m_DiscRecorders2.GetSize() > 0);
-}
-
-void CUImagerApp::FreeDiscRecorders2()
-{
-	for (int i = 0 ; i < m_DiscRecorders2.GetSize() ; i++)
-	{
-		if (m_DiscRecorders2[i])
-			delete m_DiscRecorders2[i];
-	}
-	m_DiscRecorders2.RemoveAll();
-}
-
-__forceinline CString CUImagerApp::GetBurnFolderPath()
-{
-	return ::GetSpecialFolderPath(CSIDL_CDBURN_AREA);
-}
-
-BOOL CUImagerApp::BurnDirContent(CString sDir) 
-{
-	ICDBurn* pICDBurn;
-	HRESULT hr = ::CoCreateInstance(CLSID_CDBurn, NULL,CLSCTX_INPROC_SERVER,IID_ICDBurn,(LPVOID*)&pICDBurn);
-	if (SUCCEEDED(hr))
-	{
-		if (HasRecordableDrive(pICDBurn))
-		{
-			CString sBurnerDriveLetter = GetRecorderDriveLetter(pICDBurn);
-			CString sBurnFolder = GetBurnFolderPath();
-
-			// Begin Wait Cursor
-			BeginWaitCursor();
-
-			// Empty the Burn Directory
-			if (!::DeleteDirContent(sBurnFolder))
-			{
-				pICDBurn->Release();
-				EndWaitCursor();
-				::AfxMessageBox(ML_STRING(1208, "Error While Deleting The Burn Folder."), MB_OK | MB_ICONSTOP);
-				return FALSE;
-			}
-
-			// Copy directory content to the burn directory
-			if (!::CopyDirContent(sDir, sBurnFolder))
-			{
-				pICDBurn->Release();
-				EndWaitCursor();
-				::AfxMessageBox(ML_STRING(1209, "Error While Copying Files to The Burn Folder."), MB_OK | MB_ICONSTOP);
-				return FALSE;
-			}
-
-			// End Wait Cursor
-			EndWaitCursor();
-
-			// Disable MainFrame
-			CWnd* pParentWnd = ::AfxGetMainFrame();
-			pParentWnd->EnableWindow(FALSE);
-
-			// Burn The Files
-			pICDBurn->Burn(::AfxGetMainFrame()->GetSafeHwnd());
-
-			// Enable MainFrame And Set Focus
-			pParentWnd->EnableWindow(TRUE);
-			pParentWnd->SetActiveWindow();
-			pParentWnd->SetFocus();
-
-			// Release the Object
-			pICDBurn->Release();
-
-			// Empty the Burn Directory
-			if (!::DeleteDirContent(sBurnFolder))
-			{
-				::AfxMessageBox(ML_STRING(1208, "Error While Deleting The Burn Folder."), MB_OK | MB_ICONSTOP);
-				return FALSE;
-			}
-			else
-				return TRUE;
-		}
-		else
-		{
-			pICDBurn->Release();
-			::AfxMessageBox(ML_STRING(1210, "No Burner Was Detected."));
-			return FALSE;
-		}
-	}
-	else
-	{
-		::AfxMessageBox(ML_STRING(1211, "Burning Is Not Supported For Your Operating System."));
-		return FALSE;
-	}
-}
-
 int CUImagerApp::ExitInstance() 
 {
-	// Clean-up recorders array
-	FreeDiscRecorders2();
-
 #ifdef VIDEODEVICEDOC
 	// Clean-Up Scheduler
 	POSITION pos = m_Scheduler.GetHeadPosition();
@@ -2219,10 +2019,7 @@ int CUImagerApp::ExitInstance()
 	return nReturnValue; // returns the value from PostQuitMessage
 }
 
-CPictureDoc* CUImagerApp::SlideShow(LPCTSTR sStartDirName,
-									BOOL bFullscreen,
-									BOOL bRunSlideshow,
-									BOOL bRecursive)
+CPictureDoc* CUImagerApp::SlideShow(LPCTSTR sStartDirName, BOOL bRecursive)
 {
 	// Create New Picture Document
 	CPictureDoc* pDoc = (CPictureDoc*)GetPictureDocTemplate()->OpenDocumentFile(NULL);
@@ -2234,17 +2031,10 @@ CPictureDoc* CUImagerApp::SlideShow(LPCTSTR sStartDirName,
 	pZoomCB->SetCurSel(pDoc->m_nZoomComboBoxIndex);
 	pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(pDoc->m_nZoomComboBoxIndex))));
 
-	// Go to Full-Screen Mode
-	if (bFullscreen)
-		::AfxGetMainFrame()->EnterExitFullscreen();
-
 	// Slideshow
 	pDoc->m_SlideShowThread.SetStartName(sStartDirName);
 	pDoc->m_SlideShowThread.SetRecursive(bRecursive);
-	if (bRunSlideshow)
-		pDoc->m_SlideShowThread.RunSlideshow();
-	else
-		pDoc->m_SlideShowThread.PauseSlideshow();
+	pDoc->m_SlideShowThread.PauseSlideshow();
 
 	return pDoc;
 }
@@ -2486,8 +2276,7 @@ void CUImagerApp::MovDetSaveReservationRemove(DWORD dwId)
 
 void CUImagerApp::OnFileOpenDir() 
 {
-	if (!::AfxGetMainFrame()->m_bFullScreenMode &&
-		!m_bSlideShowOnly)
+	if (!::AfxGetMainFrame()->m_bFullScreenMode)
 	{
 		m_sLastOpenedDir.TrimRight(_T('\\'));
 		if (!::IsExistingDir(m_sLastOpenedDir))
@@ -2501,10 +2290,7 @@ void CUImagerApp::OnFileOpenDir()
 						TRUE);
 		if (dlg.DoModal() == IDOK)
 		{
-			SlideShow(	m_sLastOpenedDir,
-						FALSE,
-						FALSE,
-						dlg.IsChecked());
+			SlideShow(m_sLastOpenedDir, dlg.IsChecked());
 			WriteProfileString(	_T("GeneralApp"),
 								_T("LastOpenedDir"),
 								m_sLastOpenedDir);
@@ -2514,7 +2300,6 @@ void CUImagerApp::OnFileOpenDir()
 
 CUImagerApp::CUImagerCommandLineInfo::CUImagerCommandLineInfo()
 {
-	m_bStartSlideShow = FALSE;
 }
 
 CUImagerApp::CUImagerCommandLineInfo::~CUImagerCommandLineInfo()
@@ -2530,18 +2315,16 @@ void CUImagerApp::CUImagerCommandLineInfo::ParseParam(const TCHAR* pszParam, BOO
 
 		if (pszParam)
 		{
-			if (_tcscmp(pszParam, _T("slideshow")) == 0) // Case sensitive!
-				m_bStartSlideShow = TRUE;
-#ifdef VIDEODEVICEDOC
-			else if (_tcscmp(pszParam, _T("service")) == 0) // Case sensitive!
-				((CUImagerApp*)::AfxGetApp())->m_bServiceProcess = TRUE;
-#endif
-			else if (_tcscmp(pszParam, _T("play")) == 0) // Case sensitive!
+			if (_tcscmp(pszParam, _T("play")) == 0) // Case sensitive!
 				((CUImagerApp*)::AfxGetApp())->m_bStartPlay = TRUE;
 			else if (_tcscmp(pszParam, _T("close")) == 0) // Case sensitive!
 				((CUImagerApp*)::AfxGetApp())->m_bCloseAfterAudioPlayDone = TRUE;
 			else if (_tcscmp(pszParam, _T("hide")) == 0) // Case sensitive!
 				((CUImagerApp*)::AfxGetApp())->m_bHideMainFrame = TRUE;
+#ifdef VIDEODEVICEDOC
+			else if (_tcscmp(pszParam, _T("service")) == 0) // Case sensitive!
+				((CUImagerApp*)::AfxGetApp())->m_bServiceProcess = TRUE;
+#endif
 		}
 	}
 	else
@@ -2556,18 +2339,16 @@ void CUImagerApp::CUImagerCommandLineInfo::ParseParam(const char* pszParam, BOOL
 	{
 		ParseParamFlag(pszParam);
 
-		if (strcmp(pszParam, "slideshow") == 0) // Case sensitive!
-			m_bStartSlideShow = TRUE;
-#ifdef VIDEODEVICEDOC
-		else if (strcmp(pszParam, "service") == 0) // Case sensitive!
-			((CUImagerApp*)::AfxGetApp())->m_bServiceProcess = TRUE;
-#endif
-		else if (strcmp(pszParam, "play") == 0) // Case sensitive!
+		if (strcmp(pszParam, "play") == 0) // Case sensitive!
 			((CUImagerApp*)::AfxGetApp())->m_bStartPlay = TRUE;
 		else if (strcmp(pszParam, "close") == 0) // Case sensitive!
 			((CUImagerApp*)::AfxGetApp())->m_bCloseAfterAudioPlayDone = TRUE;
 		else if (strcmp(pszParam, "hide") == 0) // Case sensitive!
 			((CUImagerApp*)::AfxGetApp())->m_bHideMainFrame = TRUE;
+#ifdef VIDEODEVICEDOC
+		else if (strcmp(pszParam, "service") == 0) // Case sensitive!
+			((CUImagerApp*)::AfxGetApp())->m_bServiceProcess = TRUE;
+#endif
 	}
 	else
 		ParseParamNotFlag(pszParam);
@@ -4059,8 +3840,7 @@ CUImagerMultiDocTemplate* CUImagerApp::GetTemplateFromFileExtension(CString sFil
 
 void CUImagerApp::OnFileNew() 
 {
-	if (!::AfxGetMainFrame()->m_bFullScreenMode &&
-		!m_bSlideShowOnly)
+	if (!::AfxGetMainFrame()->m_bFullScreenMode)
 	{
 		// Make New Document
 		CPictureDoc* pDoc = (CPictureDoc*)GetPictureDocTemplate()->OpenDocumentFile(NULL);
@@ -4154,14 +3934,12 @@ void CUImagerApp::OnFileNew()
 
 void CUImagerApp::OnUpdateFileNew(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(	(::AfxGetMainFrame() && !::AfxGetMainFrame()->m_bFullScreenMode)	&&
-					!m_bSlideShowOnly);
+	pCmdUI->Enable(::AfxGetMainFrame() && !::AfxGetMainFrame()->m_bFullScreenMode);
 }
 
 void CUImagerApp::OnEditPaste() 
 {
-	if (!::AfxGetMainFrame()->m_bFullScreenMode &&
-		!m_bSlideShowOnly)
+	if (!::AfxGetMainFrame()->m_bFullScreenMode)
 	{
 		// Make New Document
 		CPictureDoc* pDoc = (CPictureDoc*)GetPictureDocTemplate()->OpenDocumentFile(NULL);
@@ -4211,16 +3989,14 @@ void CUImagerApp::OnEditPaste()
 
 void CUImagerApp::OnUpdateEditPaste(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(	(::IsClipboardFormatAvailable(CF_DIB)								||
-					::IsClipboardFormatAvailable(CF_ENHMETAFILE))						&&
-					(::AfxGetMainFrame() && !::AfxGetMainFrame()->m_bFullScreenMode)	&&
-					!m_bSlideShowOnly);
+	pCmdUI->Enable(	(::IsClipboardFormatAvailable(CF_DIB)			||
+					::IsClipboardFormatAvailable(CF_ENHMETAFILE))	&&
+					(::AfxGetMainFrame() && !::AfxGetMainFrame()->m_bFullScreenMode));
 }
 
 void CUImagerApp::OnEditScreenshot() 
 {
-	if (!::AfxGetMainFrame()->m_bFullScreenMode &&
-		!m_bSlideShowOnly)
+	if (!::AfxGetMainFrame()->m_bFullScreenMode)
 	{
 		CaptureScreenToClipboard();
 		OnEditPaste();
@@ -4229,8 +4005,7 @@ void CUImagerApp::OnEditScreenshot()
 
 void CUImagerApp::OnUpdateEditScreenshot(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(	(::AfxGetMainFrame() && !::AfxGetMainFrame()->m_bFullScreenMode) &&
-					!m_bSlideShowOnly);
+	pCmdUI->Enable(::AfxGetMainFrame() && !::AfxGetMainFrame()->m_bFullScreenMode);
 }
 
 void CUImagerApp::UpdateFileAssociations()

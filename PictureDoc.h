@@ -102,15 +102,6 @@ public:
 			CSlideShowThread();
 			virtual ~CSlideShowThread();
 
-			// Load & Play First Background Music
-			void PlayFirstBackgroundMusic();
-
-			// Load & Play Next Background Music
-			void PlayNextBackgroundMusic();
-
-			// Stop Playing Background Music
-			void StopBackgroundMusic();
-
 			// Restart timer if it is running
 			void RestartRunningTimer();
 
@@ -166,9 +157,6 @@ public:
 			// If set after picture load the
 			// RunSlideshow() function is called again!
 			BOOL m_bDoRunSlideshow;
-
-			// Background Music Device Id
-			volatile int m_nBackgroundMusicDeviceId;
 
 		protected:
 			// Worker Thread Entry
@@ -580,8 +568,6 @@ public:
 	CString m_sCopyOrMoveDirName;	// Current Copy or Move Directory Name
 	CSortableFileFind m_FileFind;	// File Find Object		
 	CSortableFileFind m_NewFileFind;// New File Find Object
-	CSortableFileFind m_BackgroundMusicFileFind;// Background music File Find Object
-	BOOL m_bPlayBackgroundMusic;	// Flag indicating whether playing or not
 	CDib* m_pCropBkgDib;			// The darker dib for cropping
 	CDib* volatile m_pLoadFullJpegDib;// Used To Load the Full Size Jpeg
 	CTryEnterCriticalSection m_csLoadFullJpegDib;
@@ -927,8 +913,6 @@ protected:
 	afx_msg void OnUpdateEditCropLossless(CCmdUI* pCmdUI);
 	afx_msg void OnViewStretchHalftone();
 	afx_msg void OnUpdateViewStretchHalftone(CCmdUI* pCmdUI);
-	afx_msg void OnPlayMusic();
-	afx_msg void OnUpdatePlayMusic(CCmdUI* pCmdUI);
 	afx_msg void OnEditFilterSharpen();
 	afx_msg void OnUpdateEditFilterSharpen(CCmdUI* pCmdUI);
 	afx_msg void OnEditFilterSoften();

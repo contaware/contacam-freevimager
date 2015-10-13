@@ -452,9 +452,6 @@ protected:
 	afx_msg void OnButtonListLoad();
 	afx_msg void OnButtonListSave();
 	afx_msg void OnCheckConversion();
-	afx_msg void OnButtonAddSlideshowExe();
-	afx_msg void OnButtonViewSlideshow();
-	afx_msg void OnButtonBurnSlideshow();
 	afx_msg void OnChangeEditDstdir();
 	afx_msg void OnChangeEditOutputFileName();
 	afx_msg void OnChangeEditSrcdir();

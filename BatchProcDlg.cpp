@@ -8,11 +8,9 @@
 #include "PreviewFileDlg.h"
 #include "Dib.h"
 #include "BrowseDlg.h"
-#include "IMAPI2Dlg.h"
 #include "SortableFileFind.h"
 #include "SaveFileDlg.h"
 #include "Tiff2Pdf.h"
-#include "IMAPI2DownloadDlg.h"
 #include "NoVistaFileDlg.h"
 
 #ifdef _DEBUG
@@ -1480,9 +1478,6 @@ BEGIN_MESSAGE_MAP(CBatchProcDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_LIST_LOAD, OnButtonListLoad)
 	ON_BN_CLICKED(IDC_BUTTON_LIST_SAVE, OnButtonListSave)
 	ON_BN_CLICKED(IDC_CHECK_CONVERSION, OnCheckConversion)
-	ON_BN_CLICKED(IDC_BUTTON_ADD_SLIDESHOW_EXE, OnButtonAddSlideshowExe)
-	ON_BN_CLICKED(IDC_BUTTON_VIEW_SLIDESHOW, OnButtonViewSlideshow)
-	ON_BN_CLICKED(IDC_BUTTON_BURN_SLIDESHOW, OnButtonBurnSlideshow)
 	ON_EN_CHANGE(IDC_EDIT_DSTDIR, OnChangeEditDstdir)
 	ON_EN_CHANGE(IDC_EDIT_OUTPUT_FILE, OnChangeEditOutputFileName)
 	ON_EN_CHANGE(IDC_EDIT_SRCDIR, OnChangeEditSrcdir)
@@ -2803,15 +2798,6 @@ void CBatchProcDlg::UpdateControls()
 			pButton = (CButton*)GetDlgItem(IDC_BUTTON_DSTDIR);
 			if (pButton)
 				pButton->EnableWindow(TRUE);
-			pButton = (CButton*)GetDlgItem(IDC_BUTTON_ADD_SLIDESHOW_EXE);
-			if (pButton)
-				pButton->EnableWindow(TRUE);
-			pButton = (CButton*)GetDlgItem(IDC_BUTTON_VIEW_SLIDESHOW);
-			if (pButton)
-				pButton->EnableWindow(TRUE);
-			pButton = (CButton*)GetDlgItem(IDC_BUTTON_BURN_SLIDESHOW);
-			if (pButton)
-				pButton->EnableWindow(TRUE);
 
 			pButton = (CButton*)GetDlgItem(IDC_BUTTON_OUTPUT_FILE);
 			if (pButton)
@@ -2830,15 +2816,6 @@ void CBatchProcDlg::UpdateControls()
 				pEdit->EnableWindow(TRUE);
 
 			pButton = (CButton*)GetDlgItem(IDC_BUTTON_DSTDIR);
-			if (pButton)
-				pButton->EnableWindow(FALSE);
-			pButton = (CButton*)GetDlgItem(IDC_BUTTON_ADD_SLIDESHOW_EXE);
-			if (pButton)
-				pButton->EnableWindow(FALSE);
-			pButton = (CButton*)GetDlgItem(IDC_BUTTON_VIEW_SLIDESHOW);
-			if (pButton)
-				pButton->EnableWindow(FALSE);
-			pButton = (CButton*)GetDlgItem(IDC_BUTTON_BURN_SLIDESHOW);
 			if (pButton)
 				pButton->EnableWindow(FALSE);
 
@@ -3116,15 +3093,6 @@ void CBatchProcDlg::EnableAllControls(BOOL bEnable, BOOL bIncludeProcessButton)
 	if (pButton)
 		pButton->EnableWindow(bEnable);
 	pButton = (CButton*)GetDlgItem(IDC_BUTTON_LIST_SAVE);
-	if (pButton)
-		pButton->EnableWindow(bEnable);
-	pButton = (CButton*)GetDlgItem(IDC_BUTTON_ADD_SLIDESHOW_EXE);
-	if (pButton)
-		pButton->EnableWindow(bEnable);
-	pButton = (CButton*)GetDlgItem(IDC_BUTTON_VIEW_SLIDESHOW);
-	if (pButton)
-		pButton->EnableWindow(bEnable);
-	pButton = (CButton*)GetDlgItem(IDC_BUTTON_BURN_SLIDESHOW);
 	if (pButton)
 		pButton->EnableWindow(bEnable);
 	pButton = (CButton*)m_GeneralTab.GetDlgItem(IDC_BUTTON_MERGE_XMP);
@@ -5112,165 +5080,6 @@ int CBatchProcDlg::CChangeNotificationThread::Work()
 	m_hFindChangeNotification = INVALID_HANDLE_VALUE;
 
 	return 0;
-}
-
-void CBatchProcDlg::OnButtonAddSlideshowExe() 
-{
-	if (!UpdateData(TRUE))
-		return;
-
-	// Check
-	if (m_sDst == _T(""))
-	{
-		::AfxMessageBox(ML_STRING(1362, "Please Enter an Output Directory."),
-										MB_OK | MB_ICONSTOP);
-		return;
-	}
-
-	// If not existing
-	if (!::IsExistingDir(m_sDst))
-	{
-		// Create Dir
-		if (!::CreateDir(m_sDst))
-		{
-			::ShowLastError(TRUE);
-			return;
-		}
-		else
-		{
-			// Start Change Notification Thread
-			m_ChangeNotificationThread.Start();
-		}
-	}
-
-	// Copy executable renaming it to SLIDESHOWNAME
-	TCHAR szProgramName[MAX_PATH];
-	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
-	{
-		if (!::CopyFile(szProgramName, m_sDst + _T("\\") + SLIDESHOWNAME, FALSE))
-		{
-			::ShowLastError(TRUE);
-			return;
-		}
-	}
-
-	// Create the autorun.inf File
-	try
-	{
-		CStdioFile AutorunFile(m_sDst + _T("\\autorun.inf"), CFile::modeCreate | CFile::modeWrite | CFile::typeText);
-		AutorunFile.WriteString(_T("[autorun]\n"));
-		AutorunFile.WriteString(CString(_T("open=")) + CString(SLIDESHOWNAME) + CString(_T('\n')));
-		AutorunFile.WriteString(CString(_T("icon=")) + CString(SLIDESHOWNAME));
-		AutorunFile.Close();
-		::AfxMessageBox(ML_STRING(1376, "Successfully added / updated the executable file."), MB_ICONINFORMATION);
-	}
-	catch (CFileException* e)
-	{
-		e->ReportError();
-		e->Delete();
-	}
-}
-
-void CBatchProcDlg::OnButtonViewSlideshow() 
-{
-	if (!UpdateData(TRUE))
-		return;
-
-	// Check
-	if (m_sDst == _T(""))
-	{
-		::AfxMessageBox(ML_STRING(1362, "Please Enter an Output Directory."),
-										MB_OK | MB_ICONSTOP);
-		return;
-	}
-
-	if (::IsExistingFile(m_sDst + _T("\\") + SLIDESHOWNAME))
-	{
-		::ShellExecute(	NULL,
-						_T("open"),
-						m_sDst + _T("\\") + SLIDESHOWNAME,
-						NULL, NULL, SW_SHOWNORMAL);
-	}
-	else
-	{
-		::AfxMessageBox(ML_STRING(1378, "Before Viewing the Slideshow do Step 1:\nAdd the Slideshow EXE."),
-						MB_ICONINFORMATION);
-	}
-}
-
-void CBatchProcDlg::OnButtonBurnSlideshow() 
-{
-	if (!UpdateData(TRUE))
-		return;
-
-	// Check
-	if (m_sDst == _T(""))
-	{
-		::AfxMessageBox(ML_STRING(1362, "Please Enter an Output Directory."),
-										MB_OK | MB_ICONSTOP);
-		return;
-	}
-
-	// Check
-	if (!::IsExistingFile(m_sDst + _T("\\") + SLIDESHOWNAME))
-	{
-		::AfxMessageBox(ML_STRING(1379, "Before Burning the Slideshow do Step 1:\nAdd the Slideshow EXE."),
-						MB_ICONINFORMATION);
-		return;
-	}
-	
-	// Burn with IMAPI2
-	if (((CUImagerApp*)::AfxGetApp())->InitDiscRecorders2())
-	{
-		if (!::AfxGetMainFrame()->m_pIMAPI2Dlg)
-		{
-			::AfxGetMainFrame()->m_pIMAPI2Dlg = new CIMAPI2Dlg(::AfxGetMainFrame(), m_sDst);
-			::AfxGetMainFrame()->m_pIMAPI2Dlg->ShowWindow(SW_RESTORE);
-		}
-		else
-		{
-			::MessageBeep(0xFFFFFFFF);
-			::AfxGetMainFrame()->m_pIMAPI2Dlg->SetActiveWindow();
-			::AfxGetMainFrame()->m_pIMAPI2Dlg->SetFocus();
-		}
-	}
-	// Can burn with IMAPI, but first suggest to update to IMAPI2
-	else if (((CUImagerApp*)::AfxGetApp())->HasRecordableDrive())
-	{
-		// IMAPI2 download info
-		CIMAPI2DownloadDlg dlg(::AfxGetMainFrame());
-		dlg.m_sTextRow1 = ML_STRING(1716, "A new version of IMAPI is required for best burning performance!");
-		dlg.m_sTextRow2 = ML_STRING(1717, "The latest version for your os may be downloaded from:");
-		dlg.m_sTextLink = _T("http://www.microsoft.com/downloads/details.aspx?FamilyID=63ab51ea-99c9-45c0-980a-c556746fcf05");
-		dlg.DoModal();
-
-		// Burn with IMAPI2
-		if (((CUImagerApp*)::AfxGetApp())->InitDiscRecorders2())
-		{
-			if (!::AfxGetMainFrame()->m_pIMAPI2Dlg)
-			{
-				::AfxGetMainFrame()->m_pIMAPI2Dlg = new CIMAPI2Dlg(::AfxGetMainFrame(), m_sDst);
-				::AfxGetMainFrame()->m_pIMAPI2Dlg->ShowWindow(SW_RESTORE);
-			}
-			else
-			{
-				::MessageBeep(0xFFFFFFFF);
-				::AfxGetMainFrame()->m_pIMAPI2Dlg->SetActiveWindow();
-				::AfxGetMainFrame()->m_pIMAPI2Dlg->SetFocus();
-			}
-		}
-		// Burn with IMAPI
-		else
-			((CUImagerApp*)::AfxGetApp())->BurnDirContent(m_sDst);
-	}
-	else
-	{
-		CString sText;
-		sText.Format(ML_STRING(1382, "Open your preferred CD / DVD maker Tool\n") +
-					ML_STRING(1383, "and Burn the CONTENT of the following folder:\n%s\nto a Data CD / DVD."),
-					m_sDst);
-		::AfxMessageBox(sText, MB_ICONINFORMATION);
-	}
 }
 
 LONG CBatchProcDlg::OnSetDstSize(WPARAM wparam, LPARAM lparam)

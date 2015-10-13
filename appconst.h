@@ -32,7 +32,6 @@
 #define MANUAL_ONLINE_PAGE								_T("http://www.contaware.com/freevimagermanual/")
 #endif
 #define APPVERSION										_T("5.0.3beta2")
-#define SLIDESHOWNAME									_T("Start.exe")
 
 // Company
 #define MYCOMPANY										_T("Contaware")

@@ -641,12 +641,6 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="DiscFormatData.cpp" />
-    <ClCompile Include="DiscFormatDataEvent.cpp" />
-    <ClCompile Include="DiscFormatErase.cpp" />
-    <ClCompile Include="DiscFormatEraseEvent.cpp" />
-    <ClCompile Include="DiscMaster.cpp" />
-    <ClCompile Include="DiscRecorder.cpp" />
     <ClCompile Include="DragDropListCtrl.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCam TraceLogFile|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -789,8 +783,6 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="IMAPI2Dlg.cpp" />
-    <ClCompile Include="IMAPI2DownloadDlg.cpp" />
     <ClCompile Include="LayeredDlg.cpp" />
     <ClCompile Include="LicenseDlg.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -1433,12 +1425,6 @@
     <ClInclude Include="DeleteCamFoldersDlg.h" />
     <ClInclude Include="DeletePageDlg.h" />
     <ClInclude Include="DIBStatic.h" />
-    <ClInclude Include="DiscFormatData.h" />
-    <ClInclude Include="DiscFormatDataEvent.h" />
-    <ClInclude Include="DiscFormatErase.h" />
-    <ClInclude Include="DiscFormatEraseEvent.h" />
-    <ClInclude Include="DiscMaster.h" />
-    <ClInclude Include="DiscRecorder.h" />
     <ClInclude Include="DragDropListCtrl.h" />
     <ClInclude Include="DxCapture.h" />
     <ClInclude Include="DxVideoFormatDlg.h" />
@@ -1455,9 +1441,6 @@
     <ClInclude Include="HScrollListBox.h" />
     <ClInclude Include="httpvideoformatdlg.h" />
     <ClInclude Include="ImageInfoDlg.h" />
-    <ClInclude Include="IMAPI2Dlg.h" />
-    <ClInclude Include="IMAPI2DownloadDlg.h" />
-    <ClInclude Include="Imapi2Small.h" />
     <ClInclude Include="ISampleGrabber.h" />
     <ClInclude Include="LayeredDlg.h" />
     <ClInclude Include="LicenseDlg.h" />

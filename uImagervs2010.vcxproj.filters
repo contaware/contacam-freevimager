@@ -108,24 +108,6 @@
     <ClCompile Include="DIBStatic.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DiscFormatData.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DiscFormatDataEvent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DiscFormatErase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DiscFormatEraseEvent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DiscMaster.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DiscRecorder.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DragDropListCtrl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -169,12 +151,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ImageInfoDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="IMAPI2Dlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="IMAPI2DownloadDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LayeredDlg.cpp">
@@ -528,24 +504,6 @@
     <ClInclude Include="DIBStatic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DiscFormatData.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DiscFormatDataEvent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DiscFormatErase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DiscFormatEraseEvent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DiscMaster.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DiscRecorder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DragDropListCtrl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -589,15 +547,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ImageInfoDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IMAPI2Dlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IMAPI2DownloadDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Imapi2Small.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ISampleGrabber.h">

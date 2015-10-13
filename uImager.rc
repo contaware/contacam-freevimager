@@ -181,7 +181,7 @@ BEGIN
             MENUITEM "S&elect Source",              ID_FILE_SELECTTWAINSOURCE
         END
         MENUITEM "Email",                       ID_FILE_SENDMAIL_OPEN_DOCS
-        MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
+        MENUITEM "Batch Processing...",         ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
@@ -213,151 +213,6 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Manual",                      ID_APP_MANUAL
         MENUITEM "FAQs",                        ID_APP_FAQ
-    END
-END
-
-IDR_CONTEXT_SLIDESHOW_ONLY MENU
-BEGIN
-    POPUP "_Context Menu_"
-    BEGIN
-        MENUITEM "&Play\tEnter",                ID_PLAY_SLIDESHOW
-        MENUITEM "&Stop\tPause",                ID_STOP_SLIDESHOW
-        MENUITEM "&Next Image\tSpace",          ID_VIEW_NEXT_PICTURE
-        MENUITEM "&Previous Image\tBackspace",  ID_VIEW_PREVIOUS_PICTURE
-        MENUITEM SEPARATOR
-        POPUP "Zoom"
-        BEGIN
-            MENUITEM "Fit\tShift + /",              ID_VIEW_ZOOM_FIT
-            MENUITEM "Fit Big\t/",                  ID_VIEW_ZOOM_FITBIG
-        END
-        POPUP "Monitor"
-        BEGIN
-            MENUITEM "To Next\tTAB",                ID_VIEW_NEXT_MONITOR
-            MENUITEM "To Previous\tShift+TAB",      ID_VIEW_PREVIOUS_MONITOR
-        END
-        MENUITEM "Background Color...",         ID_VIEW_BACKGROUND_COLOR_MENU
-        MENUITEM "Preview Display\tCtrl+U",     ID_VIEW_LAYERED_DLG
-        POPUP "Preview Display Settings"
-        BEGIN
-            MENUITEM "Max Size 2/3 Screen",         ID_LAYEREDDLG_MAXSIZE_0_66
-            MENUITEM "Max Size 1/2 Screen",         ID_LAYEREDDLG_MAXSIZE_0_50
-            MENUITEM "Max Size 1/3 Screen",         ID_LAYEREDDLG_MAXSIZE_0_33
-            MENUITEM "Max Size 1/4 Screen",         ID_LAYEREDDLG_MAXSIZE_0_25
-            MENUITEM "Size 12.5 %",                 ID_LAYEREDDLG_SIZE_0125
-            MENUITEM "Size 25 %",                   ID_LAYEREDDLG_SIZE_025
-            MENUITEM "Size 50 %",                   ID_LAYEREDDLG_SIZE_050
-            MENUITEM "Size 100 %",                  ID_LAYEREDDLG_SIZE_100
-            MENUITEM "Size 200 %",                  ID_LAYEREDDLG_SIZE_200
-            MENUITEM "Size 400 %",                  ID_LAYEREDDLG_SIZE_400
-            MENUITEM "Size 800 %",                  ID_LAYEREDDLG_SIZE_800
-            MENUITEM "Size 1600 %",                 ID_LAYEREDDLG_SIZE_1600
-            MENUITEM SEPARATOR
-            MENUITEM "Top - Left",                  ID_LAYEREDDLG_SIZE_TOPLEFT
-            MENUITEM "Top - Right",                 ID_LAYEREDDLG_SIZE_TOPRIGHT
-            MENUITEM "Bottom - Left",               ID_LAYEREDDLG_SIZE_BOTTOMLEFT
-            MENUITEM "Bottom - Right",              ID_LAYEREDDLG_SIZE_BOTTOMRIGHT
-            MENUITEM SEPARATOR
-            MENUITEM "Opacity 100 %",               ID_LAYEREDDLG_OPACITY_100
-            MENUITEM "Opacity 80 %",                ID_LAYEREDDLG_OPACITY_80
-            MENUITEM "Opacity 60 %",                ID_LAYEREDDLG_OPACITY_60
-            MENUITEM "Opacity 40 %",                ID_LAYEREDDLG_OPACITY_40
-            MENUITEM "Opacity 20 %",                ID_LAYEREDDLG_OPACITY_20
-        END
-        MENUITEM SEPARATOR
-        POPUP "Slideshow &Delay"
-        BEGIN
-            MENUITEM "2 s",                         ID_SLIDESHOW_DELAY_2
-            MENUITEM "3 s",                         ID_SLIDESHOW_DELAY_3
-            MENUITEM "4 s",                         ID_SLIDESHOW_DELAY_4
-            MENUITEM "5 s",                         ID_SLIDESHOW_DELAY_5
-            MENUITEM "10 s",                        ID_SLIDESHOW_DELAY_10
-            MENUITEM "30 s",                        ID_SLIDESHOW_DELAY_30
-            MENUITEM "1 min",                       ID_SLIDESHOW_DELAY_60
-        END
-        POPUP "Slideshow Transition"
-        BEGIN
-            MENUITEM "Off",                         ID_PLAY_TRANSITION_OFF
-            MENUITEM "Random",                      ID_PLAY_TRANSITION_RANDOM
-            MENUITEM "Chessboard",                  ID_PLAY_TRANSITION_CHESSBOARD
-            MENUITEM "Curtain-In",                  ID_PLAY_TRANSITION_CURTAININ
-            MENUITEM "Roll-In",                     ID_PLAY_TRANSITION_ROOLIN
-            MENUITEM "Slide-In",                    ID_PLAY_TRANSITION_SLIDEIN
-            MENUITEM "Blend",                       ID_PLAY_TRANSITION_BLEND
-        END
-        MENUITEM "Slideshow Infinite Loop",     ID_PLAY_LOOP
-        MENUITEM "Slideshow Random\tF9",        ID_PLAY_RANDOM
-        MENUITEM SEPARATOR
-        MENUITEM "File Information...\tCtrl+I", ID_FILE_INFO
-        MENUITEM "On-Screen Display",           ID_VIEW_ENABLE_OSD
-        POPUP "OSD Settings"
-        BEGIN
-            POPUP "Display"
-            BEGIN
-                MENUITEM "File Name",                   ID_OSD_DISPLAY_FILENAME
-                MENUITEM "Sizes && Compression",        ID_OSD_DISPLAY_SIZESCOMPRESSION
-                MENUITEM "File Date",                   ID_OSD_DISPLAY_DATE
-                MENUITEM "Metadata Date",               ID_OSD_DISPLAY_METADATADATE
-                MENUITEM SEPARATOR
-                MENUITEM "Location",                    ID_OSD_DISPLAY_LOCATION
-                MENUITEM "Headline && Description",     ID_OSD_DISPLAY_HEADLINE_DESCRIPTION
-                MENUITEM SEPARATOR
-                MENUITEM "Flash Used",                  ID_OSD_DISPLAY_FLASH
-                MENUITEM "Exposure Time",               ID_OSD_DISPLAY_EXPOSURETIME
-                MENUITEM "Aperture",                    ID_OSD_DISPLAY_APERTURE
-                MENUITEM "ISO Equiv.",                  ID_OSD_DISPLAY_ISOEQUIV
-                MENUITEM "Focal Length",                ID_OSD_DISPLAY_FOCALLENGTH
-            END
-            MENUITEM SEPARATOR
-            POPUP "Background Color"
-            BEGIN
-                MENUITEM "Same as for Image",           ID_OSD_BKGCOLOR_IMAGE
-                MENUITEM "Select...",                   ID_OSD_BKGCOLOR_SELECT
-            END
-            POPUP "Font Face"
-            BEGIN
-                MENUITEM "Arial",                       ID_OSD_FONTFACE_ARIAL
-                MENUITEM "Times New Roman",             ID_OSD_FONTFACE_TIMESNEWROMAN
-                MENUITEM "Comic Sans MS",               ID_OSD_FONTFACE_COMICSANSMS
-                MENUITEM "Verdana",                     ID_OSD_FONTFACE_VERDANA
-                MENUITEM "Courier New",                 ID_OSD_FONTFACE_COURIERNEW
-            END
-            POPUP "Font Size"
-            BEGIN
-                MENUITEM "Small",                       ID_OSD_FONTSIZE_SMALL
-                MENUITEM "Medium",                      ID_OSD_FONTSIZE_MEDIUM
-                MENUITEM "Big",                         ID_OSD_FONTSIZE_BIG
-            END
-            MENUITEM "Font Color...",               ID_OSD_FONTCOLOR_SELECT
-            MENUITEM SEPARATOR
-            POPUP "Off Time"
-            BEGIN
-                MENUITEM "3 s",                         ID_OSD_OFFTIMEOUT_3
-                MENUITEM "4 s",                         ID_OSD_OFFTIMEOUT_4
-                MENUITEM "5 s",                         ID_OSD_OFFTIMEOUT_5
-                MENUITEM "6 s",                         ID_OSD_OFFTIMEOUT_6
-                MENUITEM "7 s",                         ID_OSD_OFFTIMEOUT_7
-                MENUITEM "Never Off",                   ID_OSD_OFFTIMEOUT_INFINITE
-            END
-            POPUP "Opacity"
-            BEGIN
-                MENUITEM "100 %",                       ID_OSD_OPACITY_100
-                MENUITEM "80 %",                        ID_OSD_OPACITY_80
-                MENUITEM "60 %",                        ID_OSD_OPACITY_60
-                MENUITEM "40 %",                        ID_OSD_OPACITY_40
-            END
-            MENUITEM "Auto-Size",                   ID_OSD_AUTOSIZE
-            MENUITEM SEPARATOR
-            MENUITEM "Defaults",                    ID_OSD_DEFAULTS
-        END
-        MENUITEM SEPARATOR
-        MENUITEM "License",                     ID_APP_LICENSE
-        MENUITEM "&About",                      ID_APP_ABOUT
-        MENUITEM SEPARATOR
-        MENUITEM "Print...\tCtrl+P",            ID_FILE_PRINT_PREVIEW
-        MENUITEM SEPARATOR
-        MENUITEM "Music",                       ID_PLAY_MUSIC
-        MENUITEM SEPARATOR
-        MENUITEM "E&xit",                       ID_APP_EXIT
     END
 END
 
@@ -452,7 +307,7 @@ BEGIN
             MENUITEM "S&elect Source",              ID_FILE_SELECTTWAINSOURCE
         END
         MENUITEM "Email",                       ID_FILE_SENDMAIL_OPEN_DOCS
-        MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
+        MENUITEM "Batch Processing...",         ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
@@ -547,7 +402,7 @@ BEGIN
             MENUITEM "S&elect Source",              ID_FILE_SELECTTWAINSOURCE
         END
         MENUITEM "Email",                       ID_FILE_SENDMAIL_OPEN_DOCS
-        MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
+        MENUITEM "Batch Processing...",         ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
         MENUITEM "File Information...\tCtrl+I", ID_FILE_INFO
         MENUITEM SEPARATOR
@@ -795,17 +650,6 @@ BEGIN
     END
 END
 
-IDR_CONTEXT_TASKBAR_SLIDESHOW_ONLY MENU
-BEGIN
-    POPUP "_Context Menu_"
-    BEGIN
-        MENUITEM "To Next Monitor\tTAB",        ID_VIEW_NEXT_MONITOR
-        MENUITEM "To Previous Monitor\tShift+TAB", ID_VIEW_PREVIOUS_MONITOR
-        MENUITEM SEPARATOR
-        MENUITEM "Close\tAlt+F4",               ID_APP_EXIT
-    END
-END
-
 IDR_AUDIOMCI MENU
 BEGIN
     POPUP "&File"
@@ -826,7 +670,7 @@ BEGIN
             MENUITEM "S&elect Source",              ID_FILE_SELECTTWAINSOURCE
         END
         MENUITEM "Email",                       ID_FILE_SENDMAIL_OPEN_DOCS
-        MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
+        MENUITEM "Batch Processing...",         ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
@@ -1871,7 +1715,7 @@ END
 IDD_BATCH_PROC DIALOGEX 0, 0, 488, 335
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
-CAPTION "Batch Conversion, Rename and Slideshow"
+CAPTION "Batch Conversion and Rename"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_RADIO_INPUT,"Button",BS_AUTORADIOBUTTON | WS_GROUP,11,16,10,10
@@ -1892,9 +1736,6 @@ BEGIN
     CONTROL         "",IDC_RADIO_OUTPUT_FILE,"Button",BS_AUTORADIOBUTTON,230,52,10,10
     EDITTEXT        IDC_EDIT_DSTDIR,258,14,201,12,ES_AUTOHSCROLL
     PUSHBUTTON      "...",IDC_BUTTON_DSTDIR,460,14,17,12
-    PUSHBUTTON      "1. Add Slideshow EXE",IDC_BUTTON_ADD_SLIDESHOW_EXE,272,29,76,14
-    PUSHBUTTON      "2. View Slideshow",IDC_BUTTON_VIEW_SLIDESHOW,350,29,63,14
-    PUSHBUTTON      "3. Burn Slideshow",IDC_BUTTON_BURN_SLIDESHOW,415,29,62,14
     EDITTEXT        IDC_EDIT_OUTPUT_FILE,257,50,202,12,ES_AUTOHSCROLL
     PUSHBUTTON      "...",IDC_BUTTON_OUTPUT_FILE,460,50,17,12
     CONTROL         "Enable",IDC_CHECK_RENAME,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,231,81,38,10
@@ -2794,37 +2635,6 @@ BEGIN
     LTEXT           "sec",IDC_STATIC,300,45,12,8
 END
 
-IDD_IMAPI2 DIALOG 0, 0, 298, 124
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Burn Slideshow"
-FONT 8, "MS Shell Dlg"
-BEGIN
-    DEFPUSHBUTTON   "Exit",IDCANCEL,257,48,35,18
-    GROUPBOX        "Select Drive",IDC_STATIC,6,4,245,34
-    COMBOBOX        IDC_COMBO_DRIVE,11,17,235,16,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Progress1",IDC_PROGRESS,"msctls_progress32",WS_BORDER,11,98,275,12
-    GROUPBOX        "Progress",IDC_STATIC,6,74,286,44
-    PUSHBUTTON      "Burn",IDC_BURN,257,8,35,14
-    PUSHBUTTON      "Abort",IDC_ABORT,257,24,35,14
-    LTEXT           "Volume Label:",IDC_STATIC,7,53,46,8
-    EDITTEXT        IDC_EDIT_VOLUME_LABEL,55,51,69,12,ES_AUTOHSCROLL
-    CTEXT           "",IDC_PROGRESS_TEXT,11,85,275,9
-    LTEXT           "0:00",IDC_ESTIMATED_TIME,210,47,44,8
-    LTEXT           "Estimated Time:",IDC_STATIC,152,47,51,8
-    LTEXT           "Time Left:",IDC_STATIC,152,59,32,8
-    LTEXT           "0:00",IDC_TIME_LEFT,210,59,44,8
-END
-
-IDD_IMAPI2_DOWNLOAD DIALOG 0, 0, 254, 66
-STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
-FONT 8, "MS Shell Dlg"
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,101,45,50,14
-    LTEXT           "Row1",IDC_EDIT_TEXTROW1,7,7,240,8
-    LTEXT           "Link",IDC_EDIT_LINK,7,29,240,8,SS_NOTIFY
-    LTEXT           "Row2",IDC_EDIT_TEXTROW2,7,18,240,8
-END
-
 IDD_CAMERABASICSETTINGS DIALOGEX 0, 0, 417, 310
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
@@ -3223,7 +3033,6 @@ BEGIN
         TOPMARGIN, 4
         BOTTOMMARGIN, 330
         HORZGUIDE, 14
-        HORZGUIDE, 43
         HORZGUIDE, 86
         HORZGUIDE, 101
         HORZGUIDE, 263
@@ -3535,24 +3344,6 @@ BEGIN
         HORZGUIDE, 49
     END
 
-    IDD_IMAPI2, DIALOG
-    BEGIN
-        LEFTMARGIN, 6
-        RIGHTMARGIN, 292
-        VERTGUIDE, 11
-        VERTGUIDE, 286
-        BOTTOMMARGIN, 118
-        HORZGUIDE, 4
-    END
-
-    IDD_IMAPI2_DOWNLOAD, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 247
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 59
-    END
-
     IDD_CAMERABASICSETTINGS, DIALOG
     BEGIN
         LEFTMARGIN, 5
@@ -3782,10 +3573,6 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_MULTILANG_1208      "Error While Deleting The Burn Folder."
-    IDS_MULTILANG_1209      "Error While Copying Files to The Burn Folder."
-    IDS_MULTILANG_1210      "No Burner Was Detected."
-    IDS_MULTILANG_1211      "Burning Is Not Supported For Your Operating System."
     IDS_MULTILANG_1212      "Loading Folder's First Picture"
     IDS_MULTILANG_1214      "Too Many Attached Files. Max Number is %i.\n"
     IDS_MULTILANG_1215      "Tip: Use a Zip File to put all your files in it."
@@ -3936,11 +3723,6 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_MULTILANG_1376      "Successfully added / updated the executable file."
-    IDS_MULTILANG_1378      "Before Viewing the Slideshow do Step 1:\nAdd the Slideshow EXE."
-    IDS_MULTILANG_1379      "Before Burning the Slideshow do Step 1:\nAdd the Slideshow EXE."
-    IDS_MULTILANG_1382      "Open your preferred CD / DVD maker Tool\n"
-    IDS_MULTILANG_1383      "and Burn the CONTENT of the following folder:\n%s\nto a Data CD / DVD."
     IDS_MULTILANG_1384      "Loading..."
     IDS_MULTILANG_1385      "Unsupported File"
     IDS_MULTILANG_1388      "The file %s already exists.\nDo you want to replace it?"
@@ -4159,8 +3941,7 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_PLAY_MUSIC           "Enable / disable background music\nBackground Music"
-    ID_FILE_SHRINK_DIR_DOCS "Batch convert, rename and slideshow\nBatch Proc. / Slideshow"
+    ID_FILE_SHRINK_DIR_DOCS "Batch convert and rename\nBatch Processing"
     ID_FILE_SENDMAIL_OPEN_DOCS "Send by Email attachment\nSend by Email"
     ID_EDIT_FILTER_SHARPEN  "Sharpen current image\nSharpen"
     ID_EDIT_FILTER_SOFTEN   "Soften current image\nSoften"
@@ -4667,8 +4448,6 @@ BEGIN
     IDS_STRING1713          "Flash: no"
     IDS_STRING1714          "Flash:\tyes\r\n"
     IDS_STRING1715          "Flash:\tno\r\n"
-    IDS_STRING1716          "A new version of IMAPI is required for best burning performance!"
-    IDS_STRING1717          "The latest version for your os may be downloaded from:"
     IDS_STRING1719          "Example to play a sound on detection\r\nCmd\tPath to %s\r\nParams\t/play /close ""audio file path"""
     IDS_STRING1721          "1 Day"
     IDS_STRING1722          "2 Days"
@@ -4752,40 +4531,10 @@ BEGIN
     IDS_STRING1787          "Jpeg"
     IDS_STRING1788          "Tiff / Pdf"
     IDS_STRING1789          "An error occurred while seeking to the resume point of the file to be uploaded:\n%s\n"
-    IDS_STRING1790          "Burn %d%%"
-    IDS_STRING1791          "Burn..."
 END
 
 STRINGTABLE
 BEGIN
-    IDS_STRING1792          "Erase %d%%"
-    IDS_STRING1793          "Erase..."
-    IDS_STRING1794          "%s - Error:0x%08X"
-    IDS_STRING1795          "Burn completed successfully"
-    IDS_STRING1796          "Burn failed! Error: 0x%08X"
-    IDS_STRING1797          "Validating current media..."
-    IDS_STRING1798          "Formatting media..."
-    IDS_STRING1799          "Initializing hardware..."
-    IDS_STRING1800          "Optimizing laser intensity..."
-    IDS_STRING1801          "Finalizing writing..."
-    IDS_STRING1802          "Initializing Disc Recorder..."
-    IDS_STRING1803          "User Canceled!"
-    IDS_STRING1804          "Creating File System..."
-    IDS_STRING1805          "Error: No enough space on this media, choose a bigger one!"
-    IDS_STRING1806          "Failed to add %s!"
-    IDS_STRING1807          "Adding %s to file system..."
-END
-
-STRINGTABLE
-BEGIN
-    IDS_STRING1808          "Recorder not supported"
-    IDS_STRING1809          "Recorder cannot be used"
-    IDS_STRING1810          "Cannot determine the supported Media Types!"
-    IDS_STRING1811          "Erase Failed, Media is not ReWritable!"
-    IDS_STRING1812          "Erase Failed!"
-    IDS_STRING1813          "No devices detected!"
-    IDS_STRING1814          "No Media Inserted"
-    IDS_STRING1815          "Burn failed!"
     IDS_STRING1816          "Create a text file where each line represents a Paste\ncommand at the given position:\n  1. Origin: top left, top right, bottom left, bottom right\n  2. horizontal and vertical positions with sign and unit\n      (px, in, cm, mm)\n\nExample:\n\ntop left 1.57cm -1.32cm\nbottom right 12.1mm 5.5mm"
     IDS_STRING1817          "Dropping det frames:"
     IDS_STRING1818          "set lower framerate"

@@ -77,12 +77,9 @@ BEGIN_MESSAGE_MAP(CPictureView, CUImagerView)
 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, CScrollView::OnFilePrintPreview)
 	ON_MESSAGE(WM_THREADSAFE_SLIDESHOW_LOAD_PICTURE, OnThreadSafeSlideshowLoadPicture)
 	ON_MESSAGE(WM_THREADSAFE_UPDATEIMAGEINFO, OnThreadUpdateImageInfo)
-	ON_MESSAGE(WM_THREADSAFE_PLAYFIRST_BACKGROUNDMUSIC, OnThreadSafePlayFirstBackgroundMusic)
-	ON_MESSAGE(WM_THREADSAFE_STOP_BACKGROUNDMUSIC, OnThreadSafeStopBackgroundMusic)
 	ON_MESSAGE(WM_THREADSAFE_RUNSLIDESHOW, OnThreadSafeRunSlideshow)
 	ON_MESSAGE(WM_THREADSAFE_PAUSESLIDESHOW, OnThreadSafePauseSlideshow)
 	ON_MESSAGE(WM_RECURSIVEFILEFIND_DONE, OnRecursiveFileFindDone)
-	ON_MESSAGE(MM_MCINOTIFY, OnBackgroundMusicTrackDone)
 	ON_MESSAGE(WM_COLOR_PICKED, OnColorPicked)
 	ON_MESSAGE(WM_COLOR_PICKER_CLOSED, OnColorPickerClosed)
 	ON_MESSAGE(WM_APPCOMMAND, OnApplicationCommand)
@@ -276,47 +273,6 @@ LONG CPictureView::OnThreadUpdateImageInfo(WPARAM wparam, LPARAM lparam)
 		!pDoc->m_bClosing)
 	{
 		pDoc->UpdateImageInfo(bUpdateFileInfoOnly);
-		return 1;
-	}
-	else
-		return 0;
-}
-
-LONG CPictureView::OnThreadSafePlayFirstBackgroundMusic(WPARAM wparam, LPARAM lparam)
-{
-	CPictureDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-
-	if (pDoc &&
-		!pDoc->m_bClosing)
-	{
-		while (pDoc->m_BackgroundMusicFileFind.FindFirstFile())
-		{
-			pDoc->m_SlideShowThread.m_nBackgroundMusicDeviceId =
-						::MCIPlayFile(	pDoc->GetView()->GetSafeHwnd(),
-										TRUE,
-										pDoc->m_BackgroundMusicFileFind.GetFileName());
-			if (pDoc->m_SlideShowThread.m_nBackgroundMusicDeviceId == -1)
-				pDoc->m_BackgroundMusicFileFind.DeleteFileName(pDoc->m_BackgroundMusicFileFind.GetFilePosition());
-			else
-				break;
-		}
-		return 1;
-	}
-	else
-		return 0;
-}
-
-LONG CPictureView::OnThreadSafeStopBackgroundMusic(WPARAM wparam, LPARAM lparam)
-{
-	CPictureDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-
-	if (pDoc &&
-		!pDoc->m_bClosing)
-	{
-		// Stop Playing Background Music
-		::MCICloseDevice(NULL, pDoc->m_SlideShowThread.m_nBackgroundMusicDeviceId);
 		return 1;
 	}
 	else
@@ -1067,17 +1023,11 @@ void CPictureView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
 
 void CPictureView::OnViewFullscreen() 
 {
-#ifndef _DEBUG
-	if (!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly)
-#endif
-		::AfxGetMainFrame()->EnterExitFullscreen();
+	::AfxGetMainFrame()->EnterExitFullscreen();
 }
 
 void CPictureView::OnUpdateViewFullscreen(CCmdUI* pCmdUI) 
 {
-#ifndef _DEBUG
-	pCmdUI->Enable(!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly);
-#endif
 	pCmdUI->SetCheck(m_bFullScreenMode ? 1 : 0);	
 }
 
@@ -2107,8 +2057,6 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 					::AfxGetMainFrame()->StatusText();
 				}
 			}
-			else if (((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly)
-				::AfxGetMainFrame()->PostMessage(WM_CLOSE, 0, 0);
 			else if (pDoc->m_bCrop)
 				pDoc->CancelCrop();
 			else if (m_bFullScreenMode)
@@ -2297,7 +2245,6 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			if ((pDoc->m_dwIDAfterFullLoadCommand != 0) ||
 				pDoc->IsModified() || pDoc->m_bMetadataModified ||
 				pDoc->m_SlideShowThread.IsSlideshowRunning() ||
-				((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly ||
 				pDoc->m_bDoRestartSlideshow || pDoc->m_pRotationFlippingDlg || pDoc->m_pHLSDlg || 
 				pDoc->m_pWndPalette || pDoc->m_bDoRedEyeColorPickup || pDoc->m_pRedEyeDlg ||
 				pDoc->m_pMonochromeConversionDlg || pDoc->m_pSharpenDlg || pDoc->m_pSoftenDlg ||
@@ -2330,9 +2277,7 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			pDoc->CancelTransition();
 			pDoc->CancelLoadFullJpegTransition();
 
-			if (((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly)
-				VERIFY(menu.LoadMenu(IDR_CONTEXT_SLIDESHOW_ONLY));
-			else if (pDoc->m_bCrop)
+			if (pDoc->m_bCrop)
 				VERIFY(menu.LoadMenu(IDR_CONTEXT_CROP));
 			else
 			{
@@ -3309,8 +3254,6 @@ void CPictureView::OnRButtonDown(UINT nFlags, CPoint point)
 		pDoc->m_pOsdDlg->ForceShow();
 		VERIFY(menu.LoadMenu(IDR_CONTEXT_OSD));
 	}
-	else if (((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly)
-		VERIFY(menu.LoadMenu(IDR_CONTEXT_SLIDESHOW_ONLY));
 	else if (pDoc->m_bCrop)
 		VERIFY(menu.LoadMenu(IDR_CONTEXT_CROP));
 	else if (m_bFullScreenMode)
@@ -3838,12 +3781,7 @@ void CPictureView::OnLButtonDblClk(UINT nFlags, CPoint point)
 		}
 	}
 	else
-	{
-#ifndef _DEBUG
-		if (!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly)
-#endif
-			::AfxGetMainFrame()->EnterExitFullscreen();
-	}
+		::AfxGetMainFrame()->EnterExitFullscreen();
 }
 
 void CPictureView::OnLButtonUp(UINT nFlags, CPoint point) 
@@ -5190,37 +5128,6 @@ void CPictureView::OnSize(UINT nType, int cx, int cy)
 	CUImagerView::OnSize(nType, cx, cy);
 	pDoc->CancelTransition();
 	pDoc->CancelLoadFullJpegTransition();
-}
-
-LONG CPictureView::OnBackgroundMusicTrackDone(WPARAM wparam, LPARAM lparam)
-{	
-	CPictureDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-
-	if (wparam == MCI_NOTIFY_SUCCESSFUL)
-	{
-		// Close?
-		if (pDoc->m_SlideShowThread.m_nBackgroundMusicDeviceId >= 0)
-		{
-			::MCICloseDevice(pDoc->GetView()->GetSafeHwnd(), lparam);
-			pDoc->m_SlideShowThread.m_nBackgroundMusicDeviceId = -1;
-		}
-		else
-			pDoc->m_SlideShowThread.PlayNextBackgroundMusic();
-	}
-
-	/*
-	switch (wparam)
-	{
-		case MCI_NOTIFY_SUCCESSFUL :	TRACE(_T("Successful, %i\n"), lparam); break;
-		case MCI_NOTIFY_SUPERSEDED :	TRACE(_T("Superseded, %i\n"), lparam); break;
-		case MCI_NOTIFY_ABORTED :		TRACE(_T("Aborted, %i\n"), lparam); break;
-		case MCI_NOTIFY_FAILURE	:		TRACE(_T("Failure, %i\n"), lparam); break;
-		default :						TRACE(_T("Unknown, %i\n"), lparam); break;
-	}
-	*/
-
-	return 1;
 }
 
 LONG CPictureView::OnRecursiveFileFindDone(WPARAM wparam, LPARAM lparam)
