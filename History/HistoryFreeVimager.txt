@@ -2,7 +2,10 @@ FREEVIMAGER HISTORY
 
 5.0.3 (xxx yth 2015)
 
-- ...
+- Removed fullscreen only slideshow mode as CD/DVD slideshows
+  are from the old days
+- Removed audio file opening support as we are a graphics viewer
+  and not an audio player
 
 5.0.1 (October 3rd 2015)
 

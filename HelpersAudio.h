@@ -23,11 +23,6 @@
 #define PI_F 3.1415927f
 #endif
 
-// Play an Audio File
-extern int MCIPlayFile(HWND hWndNotify, BOOL bStartPlaying, LPCTSTR lpszFileName);
-extern MCIERROR MCIPlayDevice(HWND hWndNotify, int nDeviceID);
-extern MCIERROR MCICloseDevice(HWND hWndNotify, int nDeviceID);
-
 // Play a Sinus Wave
 // Note: blocking function that must be called from the STA thread
 extern BOOL PlaySinus(int nDurationSec, double dFrequency = 440.0, double dAmplitude = 0.3);

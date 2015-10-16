@@ -13,7 +13,6 @@
 #include "GifAnimationThread.h"
 #include "TryEnterCriticalSection.h"
 
-#define WM_MUSIC_POS				WM_USER + 201	/* do not change that */
 #define	WM_LOADDONE					WM_USER + 1300
 #define	WM_PAINT_BUSYTEXT			WM_USER + 1301
 
@@ -158,8 +157,6 @@ public:
 	void SetCrossColor(COLORREF crCrossColor) {m_crCrossColor = crCrossColor;};
 	void SetBusyTextColor(COLORREF crTextColor) {m_crBusyTextColor = crTextColor;};
 	void SetBusyText(CString sText) {m_sBusyText = sText;};
-	void SetMusicFlag(BOOL bMusicFile) {m_bMusicFile = bMusicFile;};
-	BOOL GetMusicFlag() const {return m_bMusicFile;};
 
 	// Operations
 	BOOL Load(	LPCTSTR lpszFileName,					// File Name to Load
@@ -169,23 +166,10 @@ public:
 														// if FALSE Load only first frame
 				BOOL bPaint = TRUE,						// Paint After Load
 				int nWidth = 0,							// If nWidth != 0 and nHeight != 0 the 
-				int nHeight = 0,						// image is loaded using the given sizes, otherwise the client rect is taken
-				BOOL bStartPlayingAudio = FALSE);		// If TRUE start playing the given audio file
+				int nHeight = 0);						// image is loaded using the given sizes, otherwise the client rect is taken
 	
 	// Dibs
 	void PaintDib(BOOL bUseCS = TRUE);
-
-	// Music
-	BOOL IsMusicPlaying() const {	return m_hMCIWnd ?
-									MCIWndGetMode(m_hMCIWnd, NULL, 0) == MCI_MODE_PLAY :
-									FALSE;};
-	BOOL LoadMusic(	LPCTSTR lpszFileName,
-					int nWidth = 0,
-					int nHeight = 0,
-					BOOL bStartPlaying = FALSE,
-					BOOL bUseShortPath = FALSE);
-	void UnloadMusic();
-	void FreeMusic();
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -197,8 +181,6 @@ protected:
 	BOOL DoRealizePalette(BOOL bForceBackGround);
 	void ClearView(CDC* pDC);
 	void ClearBorders(CDC* pDC, const CRect& rcDib);
-	void ClearMusicView(CDC* pDC);
-	void CreateMusicRgn(CRgn& rgn);
 	CString GetFormattedTime(LONG lMilliseconds);
 
 	volatile DWORD m_dwBusyTextUpTime;
@@ -226,13 +208,6 @@ protected:
 	volatile BOOL m_bLoadHdrTerminated;
 	volatile BOOL m_bLoadFullTerminated;
 
-	// Music Vars
-	HWND m_hMCIWnd;
-	BOOL m_bMusicFile;
-	CString m_sMusicFile;
-	volatile LONG m_lMusicLength;
-	volatile LONG m_lMusicPos;
-
 	//{{AFX_MSG(CDibStatic)
 	afx_msg HBRUSH CtlColor(CDC* pDC, UINT nCtlColor);
 	afx_msg BOOL OnQueryNewPalette();
@@ -240,7 +215,6 @@ protected:
 	afx_msg void OnDestroy();
 	//}}AFX_MSG
 	afx_msg LONG OnPaintBusyText(WPARAM wparam, LPARAM lparam);
-	afx_msg LONG OnMusicPos(WPARAM wparam, LPARAM lparam);
 
 	DECLARE_MESSAGE_MAP()
 };

@@ -650,70 +650,6 @@ BEGIN
     END
 END
 
-IDR_AUDIOMCI MENU
-BEGIN
-    POPUP "&File"
-    BEGIN
-        MENUITEM "New...",                      ID_FILE_NEW
-        MENUITEM "&Open File...\tCtrl+O",       ID_FILE_OPEN
-        MENUITEM "Open &Dir...",                ID_FILE_OPEN_DIR
-        MENUITEM "&Close\tEsc",                 ID_FILE_CLOSE
-        MENUITEM SEPARATOR
-        POPUP "Scan"
-        BEGIN
-            MENUITEM "Scan Single",                 ID_FILE_ACQUIRE
-            MENUITEM "Scan to Tiff",                ID_FILE_ACQUIRE_TO_TIFF
-            MENUITEM SEPARATOR
-            MENUITEM "Scan to Pdf",                 ID_FILE_ACQUIRE_TO_PDF
-            MENUITEM "Scan to Pdf && Email",        ID_FILE_ACQUIRE_AND_EMAIL
-            MENUITEM SEPARATOR
-            MENUITEM "S&elect Source",              ID_FILE_SELECTTWAINSOURCE
-        END
-        MENUITEM "Email",                       ID_FILE_SENDMAIL_OPEN_DOCS
-        MENUITEM "Batch Processing...",         ID_FILE_SHRINK_DIR_DOCS
-        MENUITEM SEPARATOR
-        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
-        MENUITEM SEPARATOR
-        MENUITEM "E&xit",                       ID_APP_EXIT
-    END
-    POPUP "&Edit"
-    BEGIN
-        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
-        MENUITEM "Screenshot\tCtrl+F11",        ID_EDIT_SCREENSHOT
-        MENUITEM SEPARATOR
-        MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
-        MENUITEM "Re&name\tF2",                 ID_EDIT_RENAME
-    END
-    POPUP "&Capture"
-    BEGIN
-        MENUITEM "&Network",                    ID_CAPTURE_NETWORK
-    END
-    POPUP "&Settings"
-    BEGIN
-        MENUITEM "Global Settings...",          ID_FILE_SETTINGS
-        MENUITEM SEPARATOR
-        MENUITEM "View Log File",               ID_SETTINGS_VIEW_LOGFILE
-        MENUITEM "Browse Config/Log Files",     ID_SETTINGS_BROWSE_CONFIGLOG_FILES
-    END
-    POPUP "&Window"
-    BEGIN
-        MENUITEM "Close A&ll",                  ID_FILE_CLOSEALL
-        MENUITEM SEPARATOR
-        MENUITEM "&Cascade",                    ID_WINDOW_CASCADE
-        MENUITEM "Tile &Horizontally",          ID_WINDOW_TILE_HORZ
-        MENUITEM "&Tile Vertically",            ID_WINDOW_TILE_VERT
-    END
-    POPUP "&Help"
-    BEGIN
-        MENUITEM "License",                     ID_APP_LICENSE
-        MENUITEM "Credits",                     ID_APP_CREDITS
-        MENUITEM "&About",                      ID_APP_ABOUT
-        MENUITEM SEPARATOR
-        MENUITEM "Manual",                      ID_APP_MANUAL
-        MENUITEM "FAQs",                        ID_APP_FAQ
-    END
-END
-
 IDR_CONTEXT_PICTURE_FULLSCREEN MENU
 BEGIN
     POPUP "_Context Menu_"
@@ -1314,36 +1250,28 @@ BEGIN
     CTEXT           "Static",IDC_BW_THRESHOLD,74,6,21,10,SS_SUNKEN
 END
 
-IDD_SETTINGS DIALOGEX 0, 0, 213, 194
+IDD_SETTINGS DIALOGEX 0, 0, 213, 145
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Global Settings"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "bmp",IDC_CHECK_BMP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,34,29,10
-    CONTROL         "gif",IDC_CHECK_GIF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,46,24,10
-    CONTROL         "jpg",IDC_CHECK_JPEG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,58,26,10
-    CONTROL         "tif",IDC_CHECK_TIFF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,70,23,10
-    CONTROL         "png",IDC_CHECK_PNG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,82,28,10
-    CONTROL         "pcx",IDC_CHECK_PCX,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,94,27,10
-    CONTROL         "emf",IDC_CHECK_EMF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,106,28,10
-    CONTROL         "aif",IDC_CHECK_AIF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,86,34,24,10
-    CONTROL         "wav",IDC_CHECK_WAV,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,86,46,29,10
-    CONTROL         "mp3",IDC_CHECK_MP3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,86,58,29,10
-    CONTROL         "wma",IDC_CHECK_WMA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,86,70,31,10
-    CONTROL         "au",IDC_CHECK_AU,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,86,82,24,10
-    CONTROL         "mid",IDC_CHECK_MIDI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,86,94,27,10
-    PUSHBUTTON      "Select All",IDC_BUTTON_SETALL,148,72,40,14
-    PUSHBUTTON      "Clear All",IDC_BUTTON_CLEARALL,148,90,40,14
-    CONTROL         "Start with Windows",IDC_CHECK_STARTWITH_WINDOWS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,140,77,10
-    CONTROL         "Tray Icon",IDC_CHECK_TRAYICON,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,154,46,10
-    CONTROL         "Single Instance",IDC_CHECK_SINGLEINSTANCE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,123,140,65,10
-    DEFPUSHBUTTON   "OK",IDOK,68,176,36,14
-    PUSHBUTTON      "Cancel",IDCANCEL,121,176,36,14
-    LTEXT           "Graphics Files",IDC_STATIC2244,15,19,47,10,0,WS_EX_STATICEDGE
-    LTEXT           "Audio Files",IDC_STATIC2245,86,19,47,10,0,WS_EX_STATICEDGE
-    GROUPBOX        "File Associations",IDC_STATIC2247,7,6,197,114
-    GROUPBOX        "General",IDC_STATIC2248,7,126,197,45
+    CONTROL         "bmp",IDC_CHECK_BMP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,19,29,10
+    CONTROL         "gif",IDC_CHECK_GIF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,35,24,10
+    CONTROL         "jpg",IDC_CHECK_JPEG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,51,26,10
+    CONTROL         "tif",IDC_CHECK_TIFF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,86,19,23,10
+    CONTROL         "png",IDC_CHECK_PNG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,86,35,28,10
+    CONTROL         "pcx",IDC_CHECK_PCX,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,86,51,27,10
+    CONTROL         "emf",IDC_CHECK_EMF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,148,19,28,10
+    PUSHBUTTON      "Select All",IDC_BUTTON_SETALL,148,32,40,14
+    PUSHBUTTON      "Clear All",IDC_BUTTON_CLEARALL,148,47,40,14
+    CONTROL         "Start with Windows",IDC_CHECK_STARTWITH_WINDOWS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,90,77,10
+    CONTROL         "Tray Icon",IDC_CHECK_TRAYICON,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,105,46,10
+    CONTROL         "Single Instance",IDC_CHECK_SINGLEINSTANCE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,122,90,65,10
+    DEFPUSHBUTTON   "OK",IDOK,68,128,36,14
+    PUSHBUTTON      "Cancel",IDCANCEL,121,128,36,14
+    GROUPBOX        "File Associations",IDC_STATIC2247,7,4,197,64
+    GROUPBOX        "General",IDC_STATIC2248,7,75,197,48
 END
 
 IDD_DX_VIDEOFORMAT DIALOGEX 0, 0, 178, 91
@@ -1723,15 +1651,14 @@ BEGIN
     EDITTEXT        IDC_EDIT_SRCDIR,39,14,158,12,ES_AUTOHSCROLL
     PUSHBUTTON      "...",IDC_BUTTON_SRCDIR,198,14,17,12
     CONTROL         "Recursive",IDC_CHECK_RECURSIVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,39,27,48,10
-    CONTROL         "List1",IDC_LIST_INPUT,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,39,43,176,173
+    CONTROL         "List1",IDC_LIST_INPUT,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,39,43,176,182
     PUSHBUTTON      "Add",IDC_BUTTON_LIST_ADD,11,63,25,12
     PUSHBUTTON      "Del",IDC_BUTTON_LIST_DELETE,11,78,25,12
     PUSHBUTTON      "Sel All",IDC_BUTTON_LIST_SELECTALL,11,93,25,12
-    PUSHBUTTON      "Up",IDC_BUTTON_LIST_UP,11,136,25,12
-    PUSHBUTTON      "Down",IDC_BUTTON_LIST_DOWN,11,150,25,12
-    PUSHBUTTON      "Load",IDC_BUTTON_LIST_LOAD,11,186,25,12
-    PUSHBUTTON      "Save",IDC_BUTTON_LIST_SAVE,11,200,25,12
-    CONTROL         "Enable Music Preview",IDC_CHECK_MUSIC_PREVIEW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,39,219,86,10
+    PUSHBUTTON      "Up",IDC_BUTTON_LIST_UP,11,138,25,12
+    PUSHBUTTON      "Down",IDC_BUTTON_LIST_DOWN,11,152,25,12
+    PUSHBUTTON      "Load",IDC_BUTTON_LIST_LOAD,11,198,25,12
+    PUSHBUTTON      "Save",IDC_BUTTON_LIST_SAVE,11,212,25,12
     CONTROL         "",IDC_RADIO_OUTPUT,"Button",BS_AUTORADIOBUTTON | WS_GROUP,230,16,10,10
     CONTROL         "",IDC_RADIO_OUTPUT_FILE,"Button",BS_AUTORADIOBUTTON,230,52,10,10
     EDITTEXT        IDC_EDIT_DSTDIR,258,14,201,12,ES_AUTOHSCROLL
@@ -1762,7 +1689,7 @@ BEGIN
     LTEXT           "",IDC_DIB3,246,268,76,62
     LTEXT           "",IDC_DIB4,326,268,76,62
     LTEXT           "",IDC_DIB5,406,268,76,62
-    RTEXT           "0 Bytes\n0 Files",IDC_EDIT_DST_SIZE,230,29,40,18,SS_SUNKEN
+    RTEXT           "0 Bytes\n0 Files",IDC_EDIT_DST_SIZE,230,29,49,18,SS_SUNKEN
     LTEXT           "Dir",IDC_TEXT_OUTPUT_DIR,243,16,10,8,SS_NOTIFY | NOT WS_GROUP
     LTEXT           "File",IDC_TEXT_OUTPUT_FILE,243,52,12,8,SS_NOTIFY | NOT WS_GROUP
     LTEXT           "Dir",IDC_TEXT_INPUT_DIR,24,16,10,8,SS_NOTIFY | NOT WS_GROUP
@@ -1779,13 +1706,6 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,94,45,41,14
     LTEXT           "Original",IDC_STATIC2360,6,4,24,8
     LTEXT           "Sharper",IDC_STATIC2361,109,4,26,8
-END
-
-IDD_MCIAUDIOPLAYER DIALOG 0, 0, 186, 65
-STYLE DS_SETFONT | WS_CHILD | WS_BORDER
-FONT 8, "MS Shell Dlg"
-BEGIN
-    LTEXT           "",IDC_DIBSTATIC,7,7,172,51
 END
 
 IDD_ADD_BORDERS DIALOGEX 0, 0, 135, 115
@@ -2851,8 +2771,12 @@ BEGIN
         VERTGUIDE, 148
         VERTGUIDE, 204
         TOPMARGIN, 7
-        BOTTOMMARGIN, 190
+        BOTTOMMARGIN, 142
         HORZGUIDE, 7
+        HORZGUIDE, 24
+        HORZGUIDE, 40
+        HORZGUIDE, 56
+        HORZGUIDE, 95
     END
 
     IDD_DX_VIDEOFORMAT, DIALOG
@@ -3045,14 +2969,6 @@ BEGIN
         RIGHTMARGIN, 135
         BOTTOMMARGIN, 59
         HORZGUIDE, 4
-    END
-
-    IDD_MCIAUDIOPLAYER, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 179
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 58
     END
 
     IDD_ADD_BORDERS, DIALOG
@@ -3435,7 +3351,6 @@ IDC_GRAB_CLOSED         CURSOR                  "res\\grab_closed.cur"
 
 STRINGTABLE
 BEGIN
-    IDR_AUDIOMCI            "\nAudio\nAudio\n\n\nAudio.Document\nAudio Document"
     IDR_PICTURE             "\nPicture\nPicture\n\n\nPicture.Document\nPicture Document"
 END
 
@@ -3525,11 +3440,6 @@ BEGIN
     IDS_PJNSMTP_FAIL_Q_ENCODE "Failed to Q encode data"
     IDS_PJNSMTP_UNEXPECTED_STARTTLS_RESPONSE 
                             "Unexpected STARTTLS response, Last Response: %1"
-END
-
-STRINGTABLE
-BEGIN
-    IDS_MULTILANG_463       "Music"
 END
 
 STRINGTABLE
@@ -3724,7 +3634,6 @@ END
 STRINGTABLE
 BEGIN
     IDS_MULTILANG_1384      "Loading..."
-    IDS_MULTILANG_1385      "Unsupported File"
     IDS_MULTILANG_1388      "The file %s already exists.\nDo you want to replace it?"
     IDS_MULTILANG_1390      "Save edited metadata to %s?"
     IDS_MULTILANG_1391      "Please save the image before proceeding\n"
@@ -4448,7 +4357,7 @@ BEGIN
     IDS_STRING1713          "Flash: no"
     IDS_STRING1714          "Flash:\tyes\r\n"
     IDS_STRING1715          "Flash:\tno\r\n"
-    IDS_STRING1719          "Example to play a sound on detection\r\nCmd\tPath to %s\r\nParams\t/play /close ""audio file path"""
+    IDS_STRING1719          "Example to play a sound on detection\r\nCmd\tPath to vlc.exe\r\nParams\t-I dummy --dummy-quiet --play-and-exit\r\n\t--no-loop ""audio file path"""
     IDS_STRING1721          "1 Day"
     IDS_STRING1722          "2 Days"
     IDS_STRING1723          "3 Days"

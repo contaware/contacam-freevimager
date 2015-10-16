@@ -4,6 +4,8 @@ CONTACAM HISTORY
 
 - HD info display
 - Fixed crash opening "ManyCam Virtual Webcam"
+- Removed audio file playing support as there are better programs that
+  can reproduce many more file types
 
 5.0.1 (October 3rd 2015)
 

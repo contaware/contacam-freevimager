@@ -4516,7 +4516,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	sDefaultAutoSaveDir += _T("\\") + sDeviceName;
 
 	// Set Placement
-	if (!pApp->m_bForceSeparateInstance && !pApp->m_bServiceProcess)
+	if (!pApp->m_bServiceProcess)
 	{
 		LPBYTE pData = NULL;
 		UINT nBytes = 0;

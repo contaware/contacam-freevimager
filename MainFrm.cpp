@@ -2,7 +2,6 @@
 #include "uImager.h"
 #include "PictureDoc.h"
 #include "VideoDeviceDoc.h"
-#include "AudioMCIDoc.h"
 #include "PictureView.h"
 #include "VideoDeviceView.h"
 #include "ConnectErrMsgBoxDlg.h"
@@ -32,8 +31,6 @@
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
-
-#pragma comment(lib, "winmm.lib")
 
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame
@@ -1864,26 +1861,6 @@ void CMainFrame::InitMenuPositions(CDocument* pDoc/*=NULL*/)
 			((CVideoDeviceDoc*)pDoc)->m_nHelpMenuPos = 6;
 		}
 #endif
-		else if (pDoc->IsKindOf(RUNTIME_CLASS(CAudioMCIDoc)))
-		{
-			((CAudioMCIDoc*)pDoc)->m_nFileMenuPos = 0;
-			((CAudioMCIDoc*)pDoc)->m_nEditMenuPos = 1;
-			((CAudioMCIDoc*)pDoc)->m_nCaptureMenuPos = 2;
-			((CAudioMCIDoc*)pDoc)->m_nSettingsMenuPos = 3;
-			((CAudioMCIDoc*)pDoc)->m_nWindowsPos = 4;
-			((CAudioMCIDoc*)pDoc)->m_nHelpMenuPos = 5;
-#ifndef VIDEODEVICEDOC
-			// In maximized state the first position is the system icon,
-			// MDIMaximize() is always called after InitMenuPositions()
-			// so that the Capture menu position is correct:
-			if (nCount == 6) // On some OSs menus are re-used from one doc opening to the next!
-				pMenu->DeleteMenu(((CAudioMCIDoc*)pDoc)->m_nCaptureMenuPos, MF_BYPOSITION);
-			((CAudioMCIDoc*)pDoc)->m_nCaptureMenuPos = -2;
-			((CAudioMCIDoc*)pDoc)->m_nSettingsMenuPos--;
-			((CAudioMCIDoc*)pDoc)->m_nWindowsPos--;
-			((CAudioMCIDoc*)pDoc)->m_nHelpMenuPos--;
-#endif
-		}
 		else
 		{
 			ASSERT(FALSE);
@@ -1930,13 +1907,6 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 					if (idx == ((CUImagerDoc*)pDoc)->m_nFileMenuPos)
 						CleanupFileMenu(pPopupMenu);
 					else if (idx == ((CUImagerDoc*)pDoc)->m_nCaptureMenuPos)
-						PopulateCaptureMenu(pPopupMenu);
-				}
-				else if (pDoc->IsKindOf(RUNTIME_CLASS(CAudioMCIDoc)))
-				{
-					if (idx == ((CAudioMCIDoc*)pDoc)->m_nFileMenuPos)
-						CleanupFileMenu(pPopupMenu);
-					else if (idx == ((CAudioMCIDoc*)pDoc)->m_nCaptureMenuPos)
 						PopulateCaptureMenu(pPopupMenu);
 				}
 				else

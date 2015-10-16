@@ -197,33 +197,6 @@ protected:
 	DECLARE_DYNCREATE(CToolBarChildFrame)
 };
 
-/////////////////////////////////////////////////////////////////////////////
-// CAudioMCIChildFrame
-
-class CAudioMCIChildFrame : public CChildFrame
-{
-protected:
-	CAudioMCIChildFrame();           // protected constructor used by dynamic creation
-
-	// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CAudioMCIChildFrame)
-	public:
-	virtual void ActivateFrame(int nCmdShow = -1);
-	protected:
-	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
-	//}}AFX_VIRTUAL
-
-	// Generated message map functions
-protected:
-	//{{AFX_MSG(CAudioMCIChildFrame)
-	afx_msg void OnClose();
-	//}}AFX_MSG
-	
-	DECLARE_MESSAGE_MAP()
-	DECLARE_DYNCREATE(CAudioMCIChildFrame)
-};
-
 #ifdef VIDEODEVICEDOC
 
 /////////////////////////////////////////////////////////////////////////////

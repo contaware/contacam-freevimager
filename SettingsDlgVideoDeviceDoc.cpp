@@ -105,7 +105,7 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	pApp->UnassociateFileType(_T("tif")); pApp->UnassociateFileType(_T("tiff")); pApp->UnassociateFileType(_T("jfx"));
 	pApp->UnassociateFileType(_T("gif"));
 
-	// Unassociate Audio Files (remove associations from older program versions)
+	// Remove associations from older program versions
 	pApp->UnassociateFileType(_T("aif")); pApp->UnassociateFileType(_T("aiff"));
 	pApp->UnassociateFileType(_T("au"));
 	pApp->UnassociateFileType(_T("mid")); pApp->UnassociateFileType(_T("rmi"));
@@ -113,8 +113,6 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	pApp->UnassociateFileType(_T("wav"));
 	pApp->UnassociateFileType(_T("wma"));
 	pApp->UnassociateFileType(_T("cda"));
-
-	// Unassociate Other Files (remove associations from older program versions)
 	pApp->UnassociateFileType(_T("avi")); pApp->UnassociateFileType(_T("divx"));
 	pApp->UnassociateFileType(_T("zip"));
 

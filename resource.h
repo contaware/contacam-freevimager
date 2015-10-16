@@ -76,7 +76,6 @@
 #define IDB_BITSTREAM_VERA_10           249
 #define IDB_BITSTREAM_VERA_12           251
 #define IDD_SHARPEN                     257
-#define IDD_MCIAUDIOPLAYER              258
 #define IDD_ADD_BORDERS                 260
 #define IDD_SOFT_BORDERS                261
 #define IDD_ANIMGIF_SAVE_SMALL          265
@@ -1188,22 +1187,16 @@
 #define IDC_BUTTON_CLEARALL             1204
 #define IDS_MULTILANG_1205              1205
 #define IDC_AUDIO_MIXER                 1205
-#define IDC_CHECK_AIF                   1205
 #define IDS_MULTILANG_1206              1206
-#define IDC_CHECK_WAV                   1206
 #define IDS_MULTILANG_1207              1207
 #define IDC_COMBO_VIDEOFORMAT           1207
-#define IDC_CHECK_MP3                   1207
 #define IDS_MULTILANG_1208              1208
 #define IDC_COMBO_VIDEOINPUT            1208
-#define IDC_CHECK_MIDI                  1208
 #define IDS_MULTILANG_1209              1209
 #define IDS_MULTILANG_1210              1210
 #define IDC_EDIT_GAMMA                  1210
-#define IDC_CHECK_WMA                   1210
 #define IDS_MULTILANG_1211              1211
 #define IDC_CHECK_SHRINKINGPICTURES     1211
-#define IDC_CHECK_AU                    1211
 #define IDS_MULTILANG_1212              1212
 #define IDC_CHECK_WORKONALLPAGES        1212
 #define IDC_CHECK_EMF                   1212
@@ -1510,7 +1503,6 @@
 #define IDS_MULTILANG_1378              1378
 #define IDC_TEXT_INPUT_DIR              1378
 #define IDS_MULTILANG_1379              1379
-#define IDC_CHECK_MUSIC_PREVIEW         1379
 #define IDS_MULTILANG_1380              1380
 #define IDC_CHECK_REMOVE_XMP            1380
 #define IDS_MULTILANG_1381              1381
@@ -1528,7 +1520,6 @@
 #define IDS_MULTILANG_1390              1390
 #define IDC_SLIDER_SHARPNESS            1390
 #define IDS_MULTILANG_1391              1391
-#define IDC_DIBSTATIC                   1391
 #define IDS_MULTILANG_1392              1392
 #define IDS_MULTILANG_1393              1393
 #define IDS_MULTILANG_1394              1394

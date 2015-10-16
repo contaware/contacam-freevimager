@@ -284,10 +284,8 @@ public:
 	CUImagerMultiDocTemplate* GetVideoDeviceDocTemplate() {return m_pVideoDeviceDocTemplate;};
 #endif
 	CUImagerMultiDocTemplate* GetPictureDocTemplate() {return m_pPictureDocTemplate;};
-	CUImagerMultiDocTemplate* GetAudioMCIDocTemplate() {return m_pAudioMCIDocTemplate;};
 	CUImagerMultiDocTemplate* GetTemplateFromFileExtension(CString sFileName);
 	static BOOL IsSupportedPictureFile(CString sFileName);
-	static BOOL IsSupportedMusicFile(CString sFileName);
 
 	// Close All Open Documents
 	BOOL CloseAll();
@@ -487,15 +485,6 @@ public:
 	// Parse & Process of the command line!
 	BOOL m_bHideMainFrame;
 
-	// We need to be a separate instance
-	// - Autorun capture devices disabled if this set
-	// - Microapache start/stop disabled if this set
-	// - General settings dialog disabled if this set (only for VIDEODEVICEDOC compile)
-	// - Browser autostart disabled if this set
-	// - Window placement store/restore disabled if this set
-	// - Start/stop ContaCam.exe from service disabled if this set
-	BOOL m_bForceSeparateInstance;
-
 	// Single Instance Application Wanted
 	BOOL m_bSingleInstance;
 
@@ -529,12 +518,6 @@ public:
 
 	// The Zip File Handling Class
 	CZipArchive m_Zip;
-
-	// Start playing given file
-	BOOL m_bStartPlay;
-
-	// Close application after audio play of given file has terminated
-	BOOL m_bCloseAfterAudioPlayDone;
 
 	// File Open Preview Flag
 	BOOL m_bFileDlgPreview;
@@ -648,7 +631,6 @@ public:
 	afx_msg void OnFileSettings();
 	afx_msg void OnAppLicense();
 	afx_msg void OnAppCredits();
-	afx_msg void OnUpdateFileSettings(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateFileCloseall(CCmdUI* pCmdUI);
 	afx_msg void OnFileShrinkDirDocs();
 	afx_msg void OnFileSendmailOpenDocs();
@@ -719,7 +701,6 @@ protected:
 #ifdef VIDEODEVICEDOC
 	CUImagerMultiDocTemplate* m_pVideoDeviceDocTemplate;
 #endif
-	CUImagerMultiDocTemplate* m_pAudioMCIDocTemplate;
 	CUImagerMultiDocTemplate* m_pPictureDocTemplate;
 };
 

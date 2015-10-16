@@ -27,12 +27,6 @@ public:
 	BOOL	m_bCheckPng;
 	BOOL	m_bCheckTiff;
 	BOOL	m_bCheckGif;
-	BOOL	m_bCheckAif;
-	BOOL	m_bCheckAu;
-	BOOL	m_bCheckMidi;
-	BOOL	m_bCheckMp3;
-	BOOL	m_bCheckWav;
-	BOOL	m_bCheckWma;
 	BOOL	m_bSingleInstance;
 	BOOL	m_bTrayIcon;
 	BOOL	m_bAutostart;

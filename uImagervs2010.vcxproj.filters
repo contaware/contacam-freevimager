@@ -24,12 +24,6 @@
     <ClCompile Include="AudioInSourceDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AudioMCIDoc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AudioMCIView.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="AVDecoder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -415,12 +409,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AudioInSourceDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AudioMCIDoc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AudioMCIView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AVDecoder.h">

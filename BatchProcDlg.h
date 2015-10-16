@@ -264,7 +264,6 @@ public:
 	BOOL	m_bRename;
 	CString	m_sRename;
 	BOOL	m_bConversion;
-	BOOL	m_bMusicPreview;
 	//}}AFX_DATA
 
 	CString m_sDst;				// Thread Safety: m_sEditDst is copied to m_sDst
@@ -455,7 +454,6 @@ protected:
 	afx_msg void OnChangeEditDstdir();
 	afx_msg void OnChangeEditOutputFileName();
 	afx_msg void OnChangeEditSrcdir();
-	afx_msg void OnCheckMusicPreview();
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 	afx_msg void OnClose();
 	//}}AFX_MSG

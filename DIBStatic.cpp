@@ -466,7 +466,6 @@ BEGIN_MESSAGE_MAP(CDibStatic, CStatic)
 	ON_WM_DESTROY()
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_PAINT_BUSYTEXT, OnPaintBusyText)
-	ON_MESSAGE(WM_MUSIC_POS, OnMusicPos)
 END_MESSAGE_MAP()
 
 CDibStatic::CDibStatic()
@@ -484,9 +483,6 @@ CDibStatic::CDibStatic()
 	m_bOnlyHeader = FALSE;
 	m_pcsDibHdr = NULL;
 	m_pcsDibFull = NULL;
-	m_bMusicFile = FALSE;
-	m_lMusicLength = -1;
-	m_lMusicPos = -1;
 	m_bAnimatedGif = FALSE;
 	m_crBackgroundColor = RGB(0xFF, 0xFF, 0xFF);
 	m_bUseImageBackgroundColor = FALSE;
@@ -497,7 +493,6 @@ CDibStatic::CDibStatic()
 	m_sBusyText = ML_STRING(1384, "Loading...");
 	m_crCrossColor = RGB(0, 0, 0);
 	m_ThumbLoadThread.SetDibStatic(this);
-	m_hMCIWnd = NULL;
 	m_GifAnimationThread.SetDibStatic(this);
 }
 
@@ -509,8 +504,6 @@ CDibStatic::~CDibStatic()
 
 void CDibStatic::OnDestroy() 
 {
-	// Destroy MCI Wnd
-	FreeMusic();
 	m_ThumbLoadThread.Kill();
 	m_GifAnimationThread.Kill();
 	CStatic::OnDestroy();
@@ -529,8 +522,7 @@ BOOL CDibStatic::Load(	LPCTSTR lpszFileName,
 						BOOL bLoadAndPlayAnimatedGif/*=TRUE*/,
 						BOOL bPaint/*=TRUE*/,
 						int nWidth/*=0*/,
-						int nHeight/*=0*/,
-						BOOL bStartPlayingAudio/*=FALSE*/)
+						int nHeight/*=0*/)
 {
 	// Client Area
 	CRect rcClient;
@@ -541,9 +533,6 @@ BOOL CDibStatic::Load(	LPCTSTR lpszFileName,
 
 	// Borders
 	rcClient.DeflateRect(&m_rcBorders);
-
-	// Destroy MCI Wnd
-	FreeMusic();
 
 	// Kill Thumb Load Thread
 	if (m_ThumbLoadThread.IsAlive())
@@ -580,12 +569,7 @@ BOOL CDibStatic::Load(	LPCTSTR lpszFileName,
 	m_ThumbLoadThread.SetPaint(bPaint);
 	m_ThumbLoadThread.SetClientRect(rcClient);
 
-	// Music File
-	if ((m_bMusicFile = ((CUImagerApp*)::AfxGetApp())->IsSupportedMusicFile(lpszFileName)) &&
-		!bOnlyHeader)
-		LoadMusic(lpszFileName, nWidth, nHeight, bStartPlayingAudio);
-
-	// Start Thread, also if music file or a invalid file,
+	// Start Thread, also if a invalid file,
 	// this because we want WM_LOADDONE messages posted!
 	if (m_ThumbLoadThread.Start(m_nThumbLoadThreadPriority) == true)
 		return TRUE;
@@ -600,128 +584,6 @@ BOOL CDibStatic::Load(	LPCTSTR lpszFileName,
 	}
 }
 
-void CDibStatic::FreeMusic()
-{
-	UnloadMusic();
-	m_bMusicFile = FALSE;
-	m_lMusicLength = -1;
-	m_lMusicPos = -1;
-}
-
-void CDibStatic::UnloadMusic()
-{
-	// Clear Var
-	m_sMusicFile = _T("");
-
-	// Destroy MCI Wnd
-	if (m_hMCIWnd)
-	{
-		MCIWndDestroy(m_hMCIWnd);
-		m_hMCIWnd = NULL;
-	}
-}
-
-BOOL CDibStatic::LoadMusic(	LPCTSTR lpszFileName,
-							int nWidth/*=0*/,
-							int nHeight/*=0*/,
-							BOOL bStartPlaying/*=FALSE*/,
-							BOOL bUseShortPath/*=FALSE*/)
-{
-	// Show Player Controls Inside Preview
-	if (::IsWindow(m_hWnd) && m_bMusicFile)
-	{
-		// Already Loaded?
-		if ((CString(lpszFileName) == m_sMusicFile) && m_hMCIWnd)
-			return TRUE;
-
-		// Set Music File Name
-		m_sMusicFile = lpszFileName;
-
-		// Client Area
-		CRect rcClient;
-		if (nWidth != 0 && nHeight != 0)
-			rcClient = CRect(0, 0, nWidth, nHeight);
-		else
-			GetClientRect(&rcClient);
-
-		// Borders
-		rcClient.DeflateRect(&m_rcBorders);
-
-		// Start Music Player
-		if (m_hMCIWnd)
-			MCIWndDestroy(m_hMCIWnd);
-		// Note: .mid is supported, but .midi not...
-		m_hMCIWnd = ::MCIWndCreate(	GetSafeHwnd(),
-									::AfxGetInstanceHandle(),
-									WS_CHILD			|
-									WS_VISIBLE			|
-									MCIWNDF_NOTIFYPOS	|
-									MCIWNDF_NOERRORDLG	|
-									MCIWNDF_NOMENU,
-									bUseShortPath ? ::GetShortPathName(lpszFileName) : lpszFileName);
-		if (m_hMCIWnd)
-		{
-			MCIWndSetTimeFormat(m_hMCIWnd, _T("ms"));
-			m_lMusicLength = MCIWndGetLength(m_hMCIWnd);
-			// Try with a short path
-			if (m_lMusicLength <= 0 && !bUseShortPath)
-			{
-				UnloadMusic();
-				m_lMusicLength = -1;
-				return LoadMusic(	lpszFileName,
-									nWidth,
-									nHeight,
-									bStartPlaying,
-									TRUE);
-			}
-			else
-			{
-				m_lMusicPos = MCIWndGetPosition(m_hMCIWnd);
-				MCIWndSetInactiveTimer(m_hMCIWnd, 500);
-			}
-		}
-		else
-		{
-			m_lMusicLength = -1;
-			m_lMusicPos = -1;
-		}
-
-		// Reposition Player Window
-		CRect rcMCIWnd;
-		::GetWindowRect(m_hMCIWnd, &rcMCIWnd);
-		int h = rcMCIWnd.Height();
-		rcMCIWnd.top = rcClient.bottom - h;
-		rcMCIWnd.left = rcClient.left;
-		rcMCIWnd.right = rcClient.right;
-		rcMCIWnd.bottom = rcClient.bottom;
-		::MoveWindow(	m_hMCIWnd,
-						rcMCIWnd.left, rcMCIWnd.top,
-						rcMCIWnd.Width(), rcMCIWnd.Height(),
-						TRUE);
-
-		// Start playing
-		if (bStartPlaying && m_hMCIWnd)
-			MCIWndPlay(m_hMCIWnd);
-
-		return (m_hMCIWnd != NULL);
-	}
-	else
-	{
-		UnloadMusic();
-		return FALSE;
-	}
-}
-
-LONG CDibStatic::OnMusicPos(WPARAM wparam, LPARAM lparam)
-{
-	if ((HWND)wparam == m_hMCIWnd)
-	{
-		m_lMusicPos = lparam;
-		PaintDib();
-	}
-	return 0;
-}
-
 void CDibStatic::ClearView(CDC* pDC)
 {	
 	ASSERT(pDC);
@@ -733,45 +595,6 @@ void CDibStatic::ClearView(CDC* pDC)
 	// Around Image
 	CRect rcFill = rcClient;
 	rcFill.DeflateRect(&m_rcBorders);
-
-	// Paint Background
-	CBrush BackGndBrush;
-	BackGndBrush.CreateSolidBrush(m_crBackgroundColor);
-	pDC->FillRect(rcFill, &BackGndBrush);
-
-	// Paint Borders
-	CRect rcBorderTop(rcClient.left, rcClient.top, rcClient.right, rcClient.top + m_rcBorders.top);
-	CRect rcBorderLeft(rcClient.left, rcClient.top, rcClient.left + m_rcBorders.left, rcClient.bottom);
-	CRect rcBorderRight = CRect(rcClient.right - m_rcBorders.right, rcClient.top, rcClient.right, rcClient.bottom);
-	CRect rcBorderBottom = CRect(rcClient.left, rcClient.bottom - m_rcBorders.bottom, rcClient.right, rcClient.bottom);
-	CBrush BordersBrush;
-	BordersBrush.CreateSolidBrush(m_crBordersColor);
-	if ((rcBorderTop.Width() > 0) && (rcBorderTop.Height() > 0))
-		pDC->FillRect(rcBorderTop, &BordersBrush);
-	if ((rcBorderLeft.Width() > 0) && (rcBorderLeft.Height() > 0))
-		pDC->FillRect(rcBorderLeft, &BordersBrush);
-	if ((rcBorderRight.Width() > 0) && (rcBorderRight.Height() > 0))
-		pDC->FillRect(rcBorderRight, &BordersBrush);
-	if ((rcBorderBottom.Width() > 0) && (rcBorderBottom.Height() > 0))
-		pDC->FillRect(rcBorderBottom, &BordersBrush);
-}
-
-void CDibStatic::ClearMusicView(CDC* pDC)
-{	
-	ASSERT(pDC);
-
-	// Client Rect
-	CRect rcClient;
-	GetClientRect(&rcClient);
-
-	// Around Image
-	CRect rcFill = rcClient;
-	rcFill.DeflateRect(&m_rcBorders);
-
-	// Adjust for Player Tools
-	CRect rcMCIWnd;
-	::GetWindowRect(m_hMCIWnd, &rcMCIWnd);
-	rcFill.bottom -= rcMCIWnd.Height();
 
 	// Paint Background
 	CBrush BackGndBrush;
@@ -842,33 +665,6 @@ void CDibStatic::ClearBorders(CDC* pDC, const CRect& rcDib)
 		pDC->FillRect(rcBorderBottom, &BordersBrush);
 }
 
-void CDibStatic::CreateMusicRgn(CRgn& rgn)
-{
-	CRect rcMCIWnd;
-	::GetWindowRect(m_hMCIWnd, &rcMCIWnd);
-	int h = rcMCIWnd.Height();
-
-	CRect rcClient;
-	GetClientRect(&rcClient);
-
-	CRect rcTop(rcClient.left, rcClient.top, rcClient.right, rcClient.bottom - h - m_rcBorders.bottom);
-	CRect rcLeft(rcClient.left, rcTop.bottom, rcClient.left + m_rcBorders.left, rcClient.bottom - m_rcBorders.bottom);
-	CRect rcRight(rcClient.right - m_rcBorders.right, rcTop.bottom, rcClient.right, rcClient.bottom - m_rcBorders.bottom);
-	CRect rcBottom(rcClient.left, rcClient.bottom - m_rcBorders.bottom, rcClient.right, rcClient.bottom);
-
-	CRgn rgnTop, rgnLeft, rgnRight, rgnBottom, rgnTopLeft, rgnTopLeftBottom;
-	rgnTop.CreateRectRgnIndirect(&rcTop);
-	rgnLeft.CreateRectRgnIndirect(&rcLeft);
-	rgnRight.CreateRectRgnIndirect(&rcRight);
-	rgnBottom.CreateRectRgnIndirect(&rcBottom);
-	rgnTopLeft.CreateRectRgn(0,0,0,0);
-	rgnTopLeftBottom.CreateRectRgn(0,0,0,0);
-	rgn.CreateRectRgn(0,0,0,0);
-	rgnTopLeft.CombineRgn(&rgnTop, &rgnLeft, RGN_OR);
-	rgnTopLeftBottom.CombineRgn(&rgnTopLeft, &rgnBottom, RGN_OR);
-	rgn.CombineRgn(&rgnTopLeftBottom, &rgnRight, RGN_OR);
-}
-
 CString CDibStatic::GetFormattedTime(LONG lMilliseconds)
 {
 	double dLength		= (double)lMilliseconds / 1000.0;						// Total Length in Seconds
@@ -893,57 +689,6 @@ void CDibStatic::PaintDib(BOOL bUseCS/*=TRUE*/)
 	GetClientRect(&rcClient);
 	rcPaint = rcClient;
 	rcPaint.DeflateRect(&m_rcBorders);
-
-	// Music
-	if (m_hMCIWnd)
-	{
-		// Select region to exclude the MCIWnd
-		// toolbar from the painting
-		CRgn rgn;
-		CreateMusicRgn(rgn);
-		dc.SelectClipRgn(&rgn);
-
-		// Flicker Free Drawing
-		CMyMemDC* pMemDC = new CMyMemDC(&dc, &rcClient);
-		if (!pMemDC)
-			return;
-
-		// Adjust rcPaint
-		CRect rcMCIWnd;
-		::GetWindowRect(m_hMCIWnd, &rcMCIWnd);
-		rcPaint.bottom -= rcMCIWnd.Height();
-
-		// Draw Music Text
-		ClearMusicView(pMemDC);
-		COLORREF crOldTextColor = pMemDC->SetTextColor(m_crBusyTextColor);
-		int nOldBkMode = pMemDC->SetBkMode(TRANSPARENT);
-		HFONT hFont = (HFONT)::GetStockObject(ANSI_VAR_FONT);
-		HFONT hOldFont = (HFONT)::SelectObject(pMemDC->GetSafeHdc(), hFont);
-		if (m_lMusicPos >= 0 && m_lMusicLength > 0)
-		{
-			CString sPos, sLength;
-			sPos.Format(_T("Pos %s"),		GetFormattedTime(m_lMusicPos));
-			sLength.Format(_T("Tot %s"),	GetFormattedTime(m_lMusicLength));
-			CSize szPosTextSize = pMemDC->GetTextExtent(sPos);
-			rcPaint.top += (rcPaint.Height() / 2 - szPosTextSize.cy);
-			pMemDC->DrawText(sPos + _T('\n') + sLength,
-							rcPaint,
-							(DT_CENTER | DT_NOCLIP | DT_NOPREFIX));
-		}
-		else
-			pMemDC->DrawText(ML_STRING(1385, "Unsupported File"), rcPaint, (DT_CENTER | DT_VCENTER | DT_NOCLIP | DT_NOPREFIX | DT_SINGLELINE));
-		::SelectObject(pMemDC->GetSafeHdc(), hOldFont);
-		pMemDC->SetBkMode(nOldBkMode);
-		pMemDC->SetTextColor(crOldTextColor);
-
-		// Free object -> Paint
-		delete pMemDC;
-		
-		// Remove Region from DC
-		dc.SelectClipRgn(NULL);
-
-		return;
-	}
 
 	BOOL bEnterOk = TRUE;
 	if (bUseCS && m_pcsDibFull)
@@ -1007,34 +752,16 @@ void CDibStatic::PaintDib(BOOL bUseCS/*=TRUE*/)
 		}
 		else
 		{
-			// Flicker Free Drawing
+			// Draw Cross
 			CMyMemDC MemDC(&dc, &rcClient);
-
-			if (m_bMusicFile)
-			{
-				// Draw Music Text
-				ClearView(&MemDC);
-				COLORREF crOldTextColor = MemDC.SetTextColor(m_crBusyTextColor);
-				int nOldBkMode = MemDC.SetBkMode(TRANSPARENT);
-				HFONT hFont = (HFONT)::GetStockObject(ANSI_VAR_FONT);
-				HFONT hOldFont = (HFONT)::SelectObject(MemDC.GetSafeHdc(), hFont);
-				MemDC.DrawText(ML_STRING(463, "Music"), rcPaint, (DT_CENTER | DT_VCENTER | DT_NOCLIP | DT_NOPREFIX | DT_SINGLELINE));
-				::SelectObject(MemDC.GetSafeHdc(), hOldFont);
-				MemDC.SetBkMode(nOldBkMode);
-				MemDC.SetTextColor(crOldTextColor);
-			}
-			else
-			{
-				// Draw Cross
-				ClearView(&MemDC);
-				CPen Pen(PS_SOLID, 1, m_crCrossColor);
-				CPen* pOldPen = MemDC.SelectObject(&Pen);
-				MemDC.MoveTo(rcPaint.TopLeft());				// Start Point Included
-				MemDC.LineTo(rcPaint.BottomRight());			// End Point Not Included
-				MemDC.MoveTo(rcPaint.left, rcPaint.bottom - 1);	// Start Point Included
-				MemDC.LineTo(rcPaint.right, rcPaint.top - 1);	// End Point Not Included
-				MemDC.SelectObject(pOldPen);
-			}
+			ClearView(&MemDC);
+			CPen Pen(PS_SOLID, 1, m_crCrossColor);
+			CPen* pOldPen = MemDC.SelectObject(&Pen);
+			MemDC.MoveTo(rcPaint.TopLeft());				// Start Point Included
+			MemDC.LineTo(rcPaint.BottomRight());			// End Point Not Included
+			MemDC.MoveTo(rcPaint.left, rcPaint.bottom - 1);	// Start Point Included
+			MemDC.LineTo(rcPaint.right, rcPaint.top - 1);	// End Point Not Included
+			MemDC.SelectObject(pOldPen);
 		}
 
 		// Leave CS
@@ -1043,10 +770,8 @@ void CDibStatic::PaintDib(BOOL bUseCS/*=TRUE*/)
 	}
 	else if (!m_bOnlyHeader && !m_bLoadFullTerminated)
 	{
-		// Flicker Free Drawing
-		CMyMemDC MemDC(&dc, &rcClient);
-
 		// Draw m_sBusyText Text
+		CMyMemDC MemDC(&dc, &rcClient);
 		ClearView(&MemDC);
 		COLORREF crOldTextColor = MemDC.SetTextColor(m_crBusyTextColor);
 		int nOldBkMode = MemDC.SetBkMode(TRANSPARENT);

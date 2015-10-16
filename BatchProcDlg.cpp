@@ -1356,7 +1356,6 @@ CBatchProcDlg::CBatchProcDlg(CWnd* pParent)
 	m_bRename = FALSE;
 	m_sRename = _T("Picture #####");
 	m_bConversion = FALSE;
-	m_bMusicPreview = FALSE;
 	//}}AFX_DATA_INIT
 
 	// Destination Directory
@@ -1428,7 +1427,6 @@ void CBatchProcDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_RENAME, m_bRename);
 	DDX_Text(pDX, IDC_EDIT_RENAME, m_sRename);
 	DDX_Check(pDX, IDC_CHECK_CONVERSION, m_bConversion);
-	DDX_Check(pDX, IDC_CHECK_MUSIC_PREVIEW, m_bMusicPreview);
 	//}}AFX_DATA_MAP
 	if (::IsWindow(m_GeneralTab.GetSafeHwnd()))
 	{
@@ -1481,7 +1479,6 @@ BEGIN_MESSAGE_MAP(CBatchProcDlg, CDialog)
 	ON_EN_CHANGE(IDC_EDIT_DSTDIR, OnChangeEditDstdir)
 	ON_EN_CHANGE(IDC_EDIT_OUTPUT_FILE, OnChangeEditOutputFileName)
 	ON_EN_CHANGE(IDC_EDIT_SRCDIR, OnChangeEditSrcdir)
-	ON_BN_CLICKED(IDC_CHECK_MUSIC_PREVIEW, OnCheckMusicPreview)
 	ON_WM_SETCURSOR()
 	ON_WM_CLOSE()
 	//}}AFX_MSG_MAP
@@ -1698,7 +1695,6 @@ void CBatchProcDlg::LoadSettings()
 	m_GeneralTab.m_nExifTimeOffsetMin = (int)pApp->GetProfileInt(sSection, _T("ExifTimeOffsetMin"), 0);
 	m_GeneralTab.m_nExifTimeOffsetSec = (int)pApp->GetProfileInt(sSection, _T("ExifTimeOffsetSec"), 0);
 	m_nStoredListFilesCount = (int)pApp->GetProfileInt(sSection, _T("ListFilesCount"), 0);
-	m_bMusicPreview = (BOOL)pApp->GetProfileInt(sSection, _T("MusicPreview"), FALSE);
 	m_nInitTab = (int)pApp->GetProfileInt(sSection, _T("InitTab"), 0);
 	unsigned int nSize = sizeof(m_GeneralTab.m_dFrameRate);
 	double* pFrameRate = &m_GeneralTab.m_dFrameRate;
@@ -1762,7 +1758,6 @@ void CBatchProcDlg::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("ExifTimeOffsetMin"), m_GeneralTab.m_nExifTimeOffsetMin);
 	pApp->WriteProfileInt(sSection, _T("ExifTimeOffsetSec"), m_GeneralTab.m_nExifTimeOffsetSec);
 	pApp->WriteProfileInt(sSection, _T("ListFilesCount"), m_List.GetItemCount());
-	pApp->WriteProfileInt(sSection, _T("MusicPreview"), m_bMusicPreview);
 	pApp->WriteProfileInt(sSection, _T("InitTab"), MAX(0, m_TabAdvSettings.GetSSLActivePage()));
 	for (int i = 0 ; i < m_List.GetItemCount() ; i++)
 	{
@@ -1928,12 +1923,6 @@ void CBatchProcDlg::OnButtonDstFile()
 		UpdateData(FALSE);
 		UpdateDstFileSize();
 	}
-}
-
-void CBatchProcDlg::OnCheckMusicPreview() 
-{
-	UpdateData(TRUE);
-	UpdateDibs();
 }
 
 void CBatchProcDlg::OnCheckRename() 
@@ -2727,9 +2716,6 @@ void CBatchProcDlg::UpdateControls()
 			pButton = (CButton*)GetDlgItem(IDC_BUTTON_LIST_SAVE);
 			if (pButton)
 				pButton->EnableWindow(FALSE);
-			pCheck = (CButton*)GetDlgItem(IDC_CHECK_MUSIC_PREVIEW);
-			if (pCheck)
-				pCheck->EnableWindow(FALSE);
 
 			break;
 		}
@@ -2773,9 +2759,6 @@ void CBatchProcDlg::UpdateControls()
 			pButton = (CButton*)GetDlgItem(IDC_BUTTON_LIST_SAVE);
 			if (pButton)
 				pButton->EnableWindow(TRUE);
-			pCheck = (CButton*)GetDlgItem(IDC_CHECK_MUSIC_PREVIEW);
-			if (pCheck)
-				pCheck->EnableWindow(TRUE);
 
 			break;
 		}
@@ -3011,9 +2994,6 @@ void CBatchProcDlg::EnableAllControls(BOOL bEnable, BOOL bIncludeProcessButton)
 	if (pCheck)
 		pCheck->EnableWindow(bEnable);
 	pCheck = (CButton*)m_GeneralTab.GetDlgItem(IDC_CHECK_EXIF_TIMEOFFSET);
-	if (pCheck)
-		pCheck->EnableWindow(bEnable);
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_MUSIC_PREVIEW);
 	if (pCheck)
 		pCheck->EnableWindow(bEnable);
 	pCheck = (CButton*)m_TiffTab.GetDlgItem(IDC_CHECK_FORCECOMPRESSION);
@@ -3480,9 +3460,8 @@ void CBatchProcDlg::OnButtonListAdd()
 	dlgFile.m_ofn.lpstrDefExt = _T("bmp");
 	dlgFile.m_ofn.lpstrCustomFilter = NULL;
 	dlgFile.m_ofn.lpstrFilter = 
-				_T("Supported Files (*.bmp;*.gif;*.jpg;*.tif;*.png;*.pcx;*.emf;*.mp3;*.wav;*.wma;*.mid;*.au;*.aif)\0")
-				_T("*.bmp;*.dib;*.gif;*.png;*.jpg;*.jpeg;*.jpe;*.thm;*.tif;*.tiff;*.jfx;*.pcx;*.emf;")
-				_T("*.mp3;*.wav;*.wma;*.mid;*.rmi;*.au;*.aif;*.aiff\0")
+				_T("Supported Files (*.bmp;*.gif;*.jpg;*.tif;*.png;*.pcx;*.emf)\0")
+				_T("*.bmp;*.dib;*.gif;*.png;*.jpg;*.jpeg;*.jpe;*.thm;*.tif;*.tiff;*.jfx;*.pcx;*.emf\0")
 				_T("All Files (*.*)\0*.*\0")
 				_T("Windows Bitmap (*.bmp;*.dib)\0*.bmp;*.dib\0")
 				_T("Graphics Interchange Format (*.gif)\0*.gif\0")
@@ -3490,9 +3469,7 @@ void CBatchProcDlg::OnButtonListAdd()
 				_T("JPEG File Interchange Format (*.jpg;*.jpeg;*.jpe;*.thm)\0*.jpg;*.jpeg;*.jpe;*.thm\0")
 				_T("Tag Image File Format (*.tif;*.tiff;*.jfx)\0*.tif;*.tiff;*.jfx\0")
 				_T("PC Paintbrush (*.pcx)\0*.pcx\0")
-				_T("Enhanced Metafile (*.emf)\0*.emf\0")
-	            _T("Audio Files (*.mp3;*.wav;*.wma;*.mid;*.au;*.aif)\0")
-				_T("*.mp3;*.wav;*.wma;*.mid;*.rmi;*.au;*.aif;*.aiff\0");
+				_T("Enhanced Metafile (*.emf)\0*.emf\0");
 	dlgFile.m_ofn.Flags |= OFN_FILEMUSTEXIST | OFN_ALLOWMULTISELECT;
 	dlgFile.m_ofn.lpstrFile = FileNames;
 	dlgFile.m_ofn.nMaxFile = MAX_FILEDLG_PATH;
@@ -4630,9 +4607,7 @@ void CBatchProcDlg::ClearDibs(BOOL bPaint/*=TRUE*/)
 		m_Dibs[i].SetBackgroundColor(RGB(0xFF,0xFF,0xFF));
 		m_Dibs[i].SetImageBackgroundColor(RGB(0xFF,0xFF,0xFF));
 		m_Dibs[i].SetUseImageBackgroundColor(FALSE);
-		m_Dibs[i].SetMusicFlag(FALSE);
 		m_Dibs[i].SetBordersColor(RGB(0xFF,0xFF,0xFF));
-		m_Dibs[i].FreeMusic();
 		if (bPaint)
 			m_Dibs[i].PaintDib();
 	}
@@ -4679,7 +4654,6 @@ LONG CBatchProcDlg::OnUpdateDibsPostpone(WPARAM wparam, LPARAM lparam)
 				m_Dibs[i].SetBackgroundColor(pListElement->m_DibStatic.GetBackgroundColor());
 				m_Dibs[i].SetImageBackgroundColor(pListElement->m_DibStatic.GetImageBackgroundColor());
 				m_Dibs[i].SetUseImageBackgroundColor(pListElement->m_DibStatic.GetUseImageBackgroundColor());
-				m_Dibs[i].SetMusicFlag(pListElement->m_DibStatic.GetMusicFlag());
 			}
 			else
 			{
@@ -4691,21 +4665,11 @@ LONG CBatchProcDlg::OnUpdateDibsPostpone(WPARAM wparam, LPARAM lparam)
 				m_Dibs[i].SetBackgroundColor(RGB(0xFF,0xFF,0xFF));
 				m_Dibs[i].SetImageBackgroundColor(RGB(0xFF,0xFF,0xFF));
 				m_Dibs[i].SetUseImageBackgroundColor(FALSE);
-				m_Dibs[i].SetMusicFlag(FALSE);
 			}
 			if (nItem == nHighlightItem)
-			{
 				m_Dibs[i].SetBordersColor(RGB(0,0,0xFF));
-				if (!m_bMusicPreview || m_List.IsDragging())
-					m_Dibs[i].UnloadMusic();
-				else if (pListElement)
-					m_Dibs[i].LoadMusic(pListElement->GetFileName());
-			}
 			else
-			{
 				m_Dibs[i].SetBordersColor(RGB(0xFF,0xFF,0xFF));
-				m_Dibs[i].UnloadMusic();
-			}
 			m_Dibs[i].PaintDib();
 			nItem++;
 		}

@@ -24,7 +24,7 @@ CSettingsDlg::CSettingsDlg(CWnd* pParent /*=NULL*/)
 	//{{AFX_DATA_INIT(CSettingsDlg)
 	//}}AFX_DATA_INIT
 
-	// Graphics
+	// File Associations
 	m_bCheckBmp =	((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("bmp"));
 	m_bCheckJpeg =	((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("jpg"))	&&
 					((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("jpeg"))	&&
@@ -37,16 +37,6 @@ CSettingsDlg::CSettingsDlg(CWnd* pParent /*=NULL*/)
 					((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("tiff"))	&&
 					((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("jfx"));
 	m_bCheckGif =	((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("gif"));
-
-	// Audio
-	m_bCheckAif =	((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("aif"))	&&
-					((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("aiff"));
-	m_bCheckAu =	((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("au"));
-	m_bCheckMidi =	((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("mid"))	&&
-					((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("rmi"));
-	m_bCheckMp3 =	((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("mp3"));
-	m_bCheckWav =	((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("wav"));
-	m_bCheckWma =	((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("wma"));
 
 	// Global Settings
 	m_bSingleInstance =			((CUImagerApp*)::AfxGetApp())->m_bSingleInstance;
@@ -65,12 +55,6 @@ void CSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_PNG, m_bCheckPng);
 	DDX_Check(pDX, IDC_CHECK_TIFF, m_bCheckTiff);
 	DDX_Check(pDX, IDC_CHECK_GIF, m_bCheckGif);
-	DDX_Check(pDX, IDC_CHECK_AIF, m_bCheckAif);
-	DDX_Check(pDX, IDC_CHECK_AU, m_bCheckAu);
-	DDX_Check(pDX, IDC_CHECK_MIDI, m_bCheckMidi);
-	DDX_Check(pDX, IDC_CHECK_MP3, m_bCheckMp3);
-	DDX_Check(pDX, IDC_CHECK_WAV, m_bCheckWav);
-	DDX_Check(pDX, IDC_CHECK_WMA, m_bCheckWma);
 	DDX_Check(pDX, IDC_CHECK_SINGLEINSTANCE, m_bSingleInstance);
 	DDX_Check(pDX, IDC_CHECK_TRAYICON, m_bTrayIcon);
 	DDX_Check(pDX, IDC_CHECK_STARTWITH_WINDOWS, m_bAutostart);
@@ -91,7 +75,6 @@ void CSettingsDlg::OnButtonClearall()
 {
 	UpdateData(TRUE);
 
-	// Graphics
 	m_bCheckBmp = FALSE;
 	m_bCheckJpeg = FALSE;
 	m_bCheckPcx = FALSE;
@@ -99,14 +82,6 @@ void CSettingsDlg::OnButtonClearall()
 	m_bCheckPng = FALSE;
 	m_bCheckTiff = FALSE;
 	m_bCheckGif = FALSE;
-	
-	// Audio
-	m_bCheckAif = FALSE;
-	m_bCheckAu = FALSE;
-	m_bCheckMidi =  FALSE;	
-	m_bCheckMp3 =  FALSE;
-	m_bCheckWav =  FALSE;
-	m_bCheckWma =  FALSE;
 
 	UpdateData(FALSE);
 }
@@ -115,7 +90,6 @@ void CSettingsDlg::OnButtonSetall()
 {
 	UpdateData(TRUE);
 
-	// Graphics
 	m_bCheckBmp = TRUE;
 	m_bCheckJpeg = TRUE;
 	m_bCheckPcx = TRUE;
@@ -123,14 +97,6 @@ void CSettingsDlg::OnButtonSetall()
 	m_bCheckPng = TRUE;
 	m_bCheckTiff = TRUE;
 	m_bCheckGif = TRUE;
-
-	// Audio
-	m_bCheckAif = TRUE;
-	m_bCheckAu = TRUE;
-	m_bCheckMidi = TRUE;	
-	m_bCheckMp3 = TRUE;
-	m_bCheckWav = TRUE;
-	m_bCheckWma = TRUE;
 
 	UpdateData(FALSE);
 }
@@ -146,16 +112,10 @@ void CSettingsDlg::OnOK()
 	BeginWaitCursor();
 
 	// File type association
-	
 	BOOL bBmpHasUserChoice = FALSE;  BOOL bJpgHasUserChoice = FALSE;  BOOL bJpegHasUserChoice = FALSE;
 	BOOL bJpeHasUserChoice = FALSE;  BOOL bThmHasUserChoice = FALSE;  BOOL bPcxHasUserChoice = FALSE;
 	BOOL bEmfHasUserChoice = FALSE;  BOOL bPngHasUserChoice = FALSE;  BOOL bTifHasUserChoice = FALSE;
 	BOOL bTiffHasUserChoice = FALSE; BOOL bJfxHasUserChoice = FALSE;  BOOL bGifHasUserChoice = FALSE;
-	BOOL bAifHasUserChoice = FALSE;  BOOL bAiffHasUserChoice = FALSE; BOOL bAuHasUserChoice = FALSE;
-	BOOL bMidHasUserChoice = FALSE;  BOOL bRmiHasUserChoice = FALSE;  BOOL bMp3HasUserChoice = FALSE;
-	BOOL bWavHasUserChoice = FALSE;  BOOL bWmaHasUserChoice = FALSE;
-
-	// Graphics
 
 	if (m_bCheckBmp)
 		pApp->AssociateFileType(_T("bmp"), &bBmpHasUserChoice);
@@ -210,52 +170,13 @@ void CSettingsDlg::OnOK()
 	else
 		pApp->UnassociateFileType(_T("gif"));
 
-
-	// Audio
-
-	if (m_bCheckAif)
-	{
-		pApp->AssociateFileType(_T("aif"), &bAifHasUserChoice);
-		pApp->AssociateFileType(_T("aiff"), &bAiffHasUserChoice);
-	}
-	else
-	{
-		pApp->UnassociateFileType(_T("aif"));
-		pApp->UnassociateFileType(_T("aiff"));
-	}
-
-	if (m_bCheckAu)
-		pApp->AssociateFileType(_T("au"), &bAuHasUserChoice);
-	else
-		pApp->UnassociateFileType(_T("au"));
-
-	if (m_bCheckMidi)
-	{
-		pApp->AssociateFileType(_T("mid"), &bMidHasUserChoice);
-		pApp->AssociateFileType(_T("rmi"), &bRmiHasUserChoice);
-	}
-	else
-	{
-		pApp->UnassociateFileType(_T("mid"));
-		pApp->UnassociateFileType(_T("rmi"));
-	}
-
-	if (m_bCheckMp3)
-		pApp->AssociateFileType(_T("mp3"), &bMp3HasUserChoice);
-	else
-		pApp->UnassociateFileType(_T("mp3"));
-
-	if (m_bCheckWav)
-		pApp->AssociateFileType(_T("wav"), &bWavHasUserChoice);
-	else
-		pApp->UnassociateFileType(_T("wav"));
-
-	if (m_bCheckWma)
-		pApp->AssociateFileType(_T("wma"), &bWmaHasUserChoice);
-	else
-		pApp->UnassociateFileType(_T("wma"));
-
 	// Remove associations from older program versions
+	pApp->UnassociateFileType(_T("aif")); pApp->UnassociateFileType(_T("aiff"));
+	pApp->UnassociateFileType(_T("au"));
+	pApp->UnassociateFileType(_T("mid")); pApp->UnassociateFileType(_T("rmi"));
+	pApp->UnassociateFileType(_T("mp3"));
+	pApp->UnassociateFileType(_T("wav"));
+	pApp->UnassociateFileType(_T("wma"));
 	pApp->UnassociateFileType(_T("cda"));
 	pApp->UnassociateFileType(_T("avi")); pApp->UnassociateFileType(_T("divx"));
 	pApp->UnassociateFileType(_T("zip"));
@@ -268,9 +189,7 @@ void CSettingsDlg::OnOK()
 	if (g_bWinVistaOrHigher &&
 		(bBmpHasUserChoice || bJpgHasUserChoice	|| bJpegHasUserChoice	|| bJpeHasUserChoice ||
 		bThmHasUserChoice || bPcxHasUserChoice	|| bEmfHasUserChoice	|| bPngHasUserChoice ||
-		bTifHasUserChoice || bTiffHasUserChoice	|| bJfxHasUserChoice	|| bGifHasUserChoice ||
-		bAifHasUserChoice || bAiffHasUserChoice	|| bAuHasUserChoice		|| bMidHasUserChoice ||
-		bRmiHasUserChoice || bMp3HasUserChoice	|| bWavHasUserChoice	|| bWmaHasUserChoice))
+		bTifHasUserChoice || bTiffHasUserChoice	|| bJfxHasUserChoice	|| bGifHasUserChoice))
 	{
 		try
 		{
@@ -301,22 +220,6 @@ void CSettingsDlg::OnOK()
 				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.jfx\\UserChoice]\n"));
 			if (bGifHasUserChoice)
 				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.gif\\UserChoice]\n"));
-			if (bAifHasUserChoice)
-				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.aif\\UserChoice]\n"));
-			if (bAiffHasUserChoice)
-				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.aiff\\UserChoice]\n"));
-			if (bAuHasUserChoice)
-				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.au\\UserChoice]\n"));
-			if (bMidHasUserChoice)
-				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.mid\\UserChoice]\n"));
-			if (bRmiHasUserChoice)
-				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.rmi\\UserChoice]\n"));
-			if (bMp3HasUserChoice)
-				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.mp3\\UserChoice]\n"));
-			if (bWavHasUserChoice)
-				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.wav\\UserChoice]\n"));
-			if (bWmaHasUserChoice)
-				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.wma\\UserChoice]\n"));
 			RegFile.Close();
 			CString sParams;
 			sParams.Format(_T("/S \"%s\""), sTempRegFileName);

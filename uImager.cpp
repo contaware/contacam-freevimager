@@ -9,11 +9,9 @@
 #include "uImagerDoc.h"
 #include "PictureDoc.h"
 #include "VideoDeviceDoc.h"
-#include "AudioMCIDoc.h"
 #include "PictureView.h"
 #include "PicturePrintPreviewView.h"
 #include "VideoDeviceView.h"
-#include "AudioMCIView.h"
 #include "PreviewFileDlg.h"
 #include "SendMailDocsDlg.h"
 #include "BatchProcDlg.h"
@@ -82,7 +80,6 @@ BEGIN_MESSAGE_MAP(CUImagerApp, CWinApp)
 	ON_COMMAND(ID_FILE_SETTINGS, OnFileSettings)
 	ON_COMMAND(ID_APP_LICENSE, OnAppLicense)
 	ON_COMMAND(ID_APP_CREDITS, OnAppCredits)
-	ON_UPDATE_COMMAND_UI(ID_FILE_SETTINGS, OnUpdateFileSettings)
 	ON_UPDATE_COMMAND_UI(ID_FILE_CLOSEALL, OnUpdateFileCloseall)
 	ON_COMMAND(ID_FILE_SHRINK_DIR_DOCS, OnFileShrinkDirDocs)
 	ON_COMMAND(ID_FILE_SENDMAIL_OPEN_DOCS, OnFileSendmailOpenDocs)
@@ -120,9 +117,6 @@ CUImagerApp::CUImagerApp()
 	m_bShuttingDownApplication = FALSE;
 	m_bClosingAll = FALSE;
 	m_sAppTempDir = _T("");
-	m_bStartPlay = FALSE;
-	m_bCloseAfterAudioPlayDone = FALSE;
-	m_bForceSeparateInstance = FALSE;
 #ifdef VIDEODEVICEDOC
 	m_pVideoDeviceDocTemplate = NULL;
 	m_bAutostartsExecuted = FALSE;
@@ -147,7 +141,6 @@ CUImagerApp::CUImagerApp()
 #endif
 	m_bTopMost = FALSE;
 	m_pPictureDocTemplate = NULL;
-	m_pAudioMCIDocTemplate = NULL;
 	m_bUseLoadPreviewDib = TRUE;
 	m_bFileDlgPreview = TRUE;
 	m_bPlacementLoaded = FALSE;
@@ -512,23 +505,12 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			::Sleep(CONTACAMSERVICE_STARTUP_SLEEP);
 #endif
 
-		// Separate Instance Necessary?
-		m_bForceSeparateInstance =
-			m_bStartPlay												||
-			m_bCloseAfterAudioPlayDone									||
-			cmdInfo.m_bRunEmbedded										||
-			cmdInfo.m_bRunAutomated										||
-			cmdInfo.m_nShellCommand == CCommandLineInfo::FilePrintTo	||
-			cmdInfo.m_nShellCommand == CCommandLineInfo::FileDDE		||
-			cmdInfo.m_nShellCommand == CCommandLineInfo::AppRegister	||
-			cmdInfo.m_nShellCommand == CCommandLineInfo::AppUnregister;
-
 		// Single Instance
 		// (if VIDEODEVICEDOC defined -> single instance is always set, see constructor)
 #ifndef VIDEODEVICEDOC
 		m_bSingleInstance = (BOOL)GetProfileInt(_T("GeneralApp"), _T("SingleInstance"), FALSE);
 #endif
-		if (!m_bForceSeparateInstance	&&
+		if (
 #ifdef VIDEODEVICEDOC			
 			!m_bServiceProcess			&&
 #endif
@@ -633,16 +615,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		AddDocTemplate(m_pVideoDeviceDocTemplate);
 #endif
 
-		// Audio MCI Doc Template Registration
-		m_pAudioMCIDocTemplate = new CUImagerMultiDocTemplate(
-			IDR_AUDIOMCI,
-			RUNTIME_CLASS(CAudioMCIDoc),
-			RUNTIME_CLASS(CAudioMCIChildFrame),
-			RUNTIME_CLASS(CAudioMCIView));
-		if (!m_pAudioMCIDocTemplate)
-			throw (int)0;
-		AddDocTemplate(m_pAudioMCIDocTemplate);
-
 		// Create Named Mutex For Installer / Uninstaller
 		m_hAppMutex = ::CreateMutex(NULL, FALSE, APPMUTEXNAME);
 
@@ -701,9 +673,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		}
 
 		// Stop from Service flag
-		BOOL bStopFromService = !m_bForceSeparateInstance	&&
-								!m_bServiceProcess			&&
-								GetContaCamServiceState() == CONTACAMSERVICE_RUNNING;
+		BOOL bStopFromService = !m_bServiceProcess && GetContaCamServiceState() == CONTACAMSERVICE_RUNNING;
 
 		// Stop from Service Progress Dialog
 		if (bStopFromService && (!m_bTrayIcon || m_bFirstRun)) // if m_bFirstRun set we will not minimize to tray in CMainFrame::OnCreate()
@@ -761,7 +731,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		//       MainFrm.cpp (for scan), PictureDoc.cpp, SettingsDlg.cpp,
 		//       uImager.cpp (for shrink pictures and send mail), VideoDeviceDoc.cpp
 		CString sSharedTempFolderPostfix;
-		if (m_bForceSeparateInstance || !m_bSingleInstance)
+		if (!m_bSingleInstance)
 			sSharedTempFolderPostfix = _T("Shared");
 		m_sAppTempDir = GetConfiguredTempDir();											// returns no trailing backslash
 		if (m_sAppTempDir.IsEmpty())
@@ -856,60 +826,56 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// Redraw web server port
 		::AfxGetMainFrame()->m_MDIClientWnd.Invalidate();
 
-		// Auto-starts
-		if (!m_bForceSeparateInstance)
+		// Log the starting of the application
+		CString sAppId(CString(APPNAME_NOEXT) + _T(" ") + APPVERSION + _T(" (") + CString(_T(__TIME__)) + CString(_T(" ")) + CString(_T(__DATE__)) + _T(")"));
+		if (m_bServiceProcess)
+			::LogLine(_T("%s"), ML_STRING(1764, "Starting") + _T(" ") + sAppId + _T(" - SERVICE MODE"));
+		else
+			::LogLine(_T("%s"), ML_STRING(1764, "Starting") + _T(" ") + sAppId);
+
+		// Update / create doc root index.php and config file for microapache
+		CVideoDeviceDoc::MicroApacheUpdateMainFiles();
+
+		// Start Micro Apache
+		// Note: make sure the web server is running because the below devices
+		//       autorun which can connect to localhost's push.php or poll.php
+		//       and the browser autostart need it
+		if (m_bStartMicroApache														&&
+			!(CVideoDeviceDoc::MicroApacheInitStart()								&&
+			CVideoDeviceDoc::MicroApacheWaitStartDone(	m_bServiceProcess ?
+														MICROAPACHE_SERVICEPROCESS_TIMEOUT_MS :
+														MICROAPACHE_TIMEOUT_MS)		&&
+			CVideoDeviceDoc::MicroApacheWaitCanConnect()))
 		{
-			// Log the starting of the application
-			CString sAppId(CString(APPNAME_NOEXT) + _T(" ") + APPVERSION + _T(" (") + CString(_T(__TIME__)) + CString(_T(" ")) + CString(_T(__DATE__)) + _T(")"));
-			if (m_bServiceProcess)
-				::LogLine(_T("%s"), ML_STRING(1764, "Starting") + _T(" ") + sAppId + _T(" - SERVICE MODE"));
-			else
-				::LogLine(_T("%s"), ML_STRING(1764, "Starting") + _T(" ") + sAppId);
-
-			// Update / create doc root index.php and config file for microapache
-			CVideoDeviceDoc::MicroApacheUpdateMainFiles();
-
-			// Start Micro Apache
-			// Note: make sure the web server is running because the below devices
-			//       autorun which can connect to localhost's push.php or poll.php
-			//       and the browser autostart need it
-			if (m_bStartMicroApache														&&
-				!(CVideoDeviceDoc::MicroApacheInitStart()								&&
-				CVideoDeviceDoc::MicroApacheWaitStartDone(	m_bServiceProcess ?
-															MICROAPACHE_SERVICEPROCESS_TIMEOUT_MS :
-															MICROAPACHE_TIMEOUT_MS)		&&
-				CVideoDeviceDoc::MicroApacheWaitCanConnect()))
-			{
-				CString sMsg(	ML_STRING(1475, "Failed to start the web server") + _T(" ") +
-								ML_STRING(1476, "(change the Port number to an unused one)"));
-				if (!m_bServiceProcess)
-					::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, sMsg, 0);
-				::LogLine(_T("%s"), sMsg);
-			}
-
-			// Autorun Devices
-			AutorunVideoDevices();
-
-			// Start Browser
-			if (m_bBrowserAutostart && !m_bServiceProcess)
-			{
-				CString sUrl, sPort;
-				sPort.Format(_T("%d"), m_nMicroApachePort);
-				if (sPort != _T("80"))
-					sUrl = _T("http://localhost:") + sPort + _T("/");
-				else
-					sUrl = _T("http://localhost/");
-				::ShellExecute(	NULL,
-								_T("open"),
-								sUrl,
-								NULL,
-								NULL,
-								SW_SHOWNORMAL);
-			}
-
-			// Flag indicating that the auto-starts have been executed
-			m_bAutostartsExecuted = TRUE;
+			CString sMsg(	ML_STRING(1475, "Failed to start the web server") + _T(" ") +
+							ML_STRING(1476, "(change the Port number to an unused one)"));
+			if (!m_bServiceProcess)
+				::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, sMsg, 0);
+			::LogLine(_T("%s"), sMsg);
 		}
+
+		// Autorun Devices
+		AutorunVideoDevices();
+
+		// Start Browser
+		if (m_bBrowserAutostart && !m_bServiceProcess)
+		{
+			CString sUrl, sPort;
+			sPort.Format(_T("%d"), m_nMicroApachePort);
+			if (sPort != _T("80"))
+				sUrl = _T("http://localhost:") + sPort + _T("/");
+			else
+				sUrl = _T("http://localhost/");
+			::ShellExecute(	NULL,
+							_T("open"),
+							sUrl,
+							NULL,
+							NULL,
+							SW_SHOWNORMAL);
+		}
+
+		// Flag indicating that the auto-starts have been executed
+		m_bAutostartsExecuted = TRUE;
 #endif
 
 		return TRUE;
@@ -1099,14 +1065,6 @@ void CUImagerApp::OnFileSettings()
 	dlg.DoModal();
 }
 
-void CUImagerApp::OnUpdateFileSettings(CCmdUI* pCmdUI) 
-{
-	// Enable if we are the main UI instance
-#ifdef VIDEODEVICEDOC
-	pCmdUI->Enable(!m_bForceSeparateInstance && !m_bServiceProcess);
-#endif
-}
-
 void CUImagerApp::OnFileOpen()
 {
 	if (!::AfxGetMainFrame()->m_bFullScreenMode)
@@ -1130,9 +1088,8 @@ void CUImagerApp::OnFileOpen()
 		dlgFile.m_ofn.lpstrDefExt = _T("bmp");
 		dlgFile.m_ofn.lpstrCustomFilter = NULL;
 		dlgFile.m_ofn.lpstrFilter = 
-					_T("Supported Files (*.bmp;*.gif;*.jpg;*.tif;*.png;*.pcx;*.emf;*.mp3;*.wav;*.wma;*.mid;*.au;*.aif)\0")
-					_T("*.bmp;*.dib;*.gif;*.png;*.jpg;*.jpeg;*.jpe;*.thm;*.tif;*.tiff;*.jfx;*.pcx;*.emf;")
-					_T("*.mp3;*.wav;*.wma;*.mid;*.rmi;*.au;*.aif;*.aiff\0")
+					_T("Supported Files (*.bmp;*.gif;*.jpg;*.tif;*.png;*.pcx;*.emf)\0")
+					_T("*.bmp;*.dib;*.gif;*.png;*.jpg;*.jpeg;*.jpe;*.thm;*.tif;*.tiff;*.jfx;*.pcx;*.emf\0")
 					_T("All Files (*.*)\0*.*\0")
 					_T("Windows Bitmap (*.bmp;*.dib)\0*.bmp;*.dib\0")
 					_T("Graphics Interchange Format (*.gif)\0*.gif\0")
@@ -1140,9 +1097,7 @@ void CUImagerApp::OnFileOpen()
 					_T("JPEG File Interchange Format (*.jpg;*.jpeg;*.jpe;*.thm)\0*.jpg;*.jpeg;*.jpe;*.thm\0")
 					_T("Tag Image File Format (*.tif;*.tiff;*.jfx)\0*.tif;*.tiff;*.jfx\0")
 					_T("PC Paintbrush (*.pcx)\0*.pcx\0")
-					_T("Enhanced Metafile (*.emf)\0*.emf\0")
-					_T("Audio Files (*.mp3;*.wav;*.wma;*.mid;*.au;*.aif)\0")
-					_T("*.mp3;*.wav;*.wma;*.mid;*.rmi;*.au;*.aif;*.aiff\0");
+					_T("Enhanced Metafile (*.emf)\0*.emf\0");
 		dlgFile.m_ofn.Flags |= OFN_FILEMUSTEXIST | OFN_ALLOWMULTISELECT;
 		dlgFile.m_ofn.lpstrFile = FileNames;
 		dlgFile.m_ofn.nMaxFile = MAX_FILEDLG_PATH;
@@ -1207,16 +1162,6 @@ void CUImagerApp::OnFileOpen()
 							((CPictureDoc*)pDoc)->SlideShow(FALSE, FALSE); // No Recursive Slideshow in Paused State
 						}
 					}
-					else if (pDoc->IsKindOf(RUNTIME_CLASS(CAudioMCIDoc)))
-					{
-						if (!((CAudioMCIDoc*)pDoc)->LoadAudio(Path))
-						{
-							((CAudioMCIDoc*)pDoc)->CloseDocumentForce();
-							delete [] FileNames;
-							delete [] InitDir;
-							return;
-						}
-					}
 				}
 
 				// Store Last Opened Directory
@@ -1276,16 +1221,6 @@ void CUImagerApp::OnFileOpen()
 									((CPictureDoc*)pDoc)->GetView()->UpdateWindowSizes(FALSE, FALSE, TRUE);
 								}
 								((CPictureDoc*)pDoc)->SlideShow(FALSE, FALSE); // No Recursive Slideshow in Paused State
-							}
-						}
-						else if (pDoc->IsKindOf(RUNTIME_CLASS(CAudioMCIDoc)))
-						{
-							if (!((CAudioMCIDoc*)pDoc)->LoadAudio(FileName))
-							{
-								((CAudioMCIDoc*)pDoc)->CloseDocumentForce();
-								delete [] FileNames;
-								delete [] InitDir;
-								return;
 							}
 						}
 					}
@@ -1499,14 +1434,6 @@ CDocument* CUImagerApp::OpenDocumentFile(LPCTSTR lpszFileName)
 					((CPictureDoc*)pDoc)->GetView()->UpdateWindowSizes(FALSE, FALSE, TRUE);
 				}
 				((CPictureDoc*)pDoc)->SlideShow(FALSE, FALSE); // No Recursive Slideshow in Paused State
-			}
-		}
-		else if (pDoc->IsKindOf(RUNTIME_CLASS(CAudioMCIDoc)))
-		{
-			if (!((CAudioMCIDoc*)pDoc)->LoadAudio(szFullPathName))
-			{
-				((CAudioMCIDoc*)pDoc)->CloseDocumentForce();
-				return NULL;
 			}
 		}
 	}
@@ -2315,11 +2242,7 @@ void CUImagerApp::CUImagerCommandLineInfo::ParseParam(const TCHAR* pszParam, BOO
 
 		if (pszParam)
 		{
-			if (_tcscmp(pszParam, _T("play")) == 0) // Case sensitive!
-				((CUImagerApp*)::AfxGetApp())->m_bStartPlay = TRUE;
-			else if (_tcscmp(pszParam, _T("close")) == 0) // Case sensitive!
-				((CUImagerApp*)::AfxGetApp())->m_bCloseAfterAudioPlayDone = TRUE;
-			else if (_tcscmp(pszParam, _T("hide")) == 0) // Case sensitive!
+			if (_tcscmp(pszParam, _T("hide")) == 0) // Case sensitive!
 				((CUImagerApp*)::AfxGetApp())->m_bHideMainFrame = TRUE;
 #ifdef VIDEODEVICEDOC
 			else if (_tcscmp(pszParam, _T("service")) == 0) // Case sensitive!
@@ -2339,11 +2262,7 @@ void CUImagerApp::CUImagerCommandLineInfo::ParseParam(const char* pszParam, BOOL
 	{
 		ParseParamFlag(pszParam);
 
-		if (strcmp(pszParam, "play") == 0) // Case sensitive!
-			((CUImagerApp*)::AfxGetApp())->m_bStartPlay = TRUE;
-		else if (strcmp(pszParam, "close") == 0) // Case sensitive!
-			((CUImagerApp*)::AfxGetApp())->m_bCloseAfterAudioPlayDone = TRUE;
-		else if (strcmp(pszParam, "hide") == 0) // Case sensitive!
+		if (strcmp(pszParam, "hide") == 0) // Case sensitive!
 			((CUImagerApp*)::AfxGetApp())->m_bHideMainFrame = TRUE;
 #ifdef VIDEODEVICEDOC
 		else if (strcmp(pszParam, "service") == 0) // Case sensitive!
@@ -3344,11 +3263,9 @@ void CUImagerApp::LoadPlacement(UINT showCmd/*=SW_SHOWNORMAL*/)
 {
 	CString sSection(_T("GeneralApp"));
 
-	if (!m_bForceSeparateInstance
 #ifdef VIDEODEVICEDOC
-		&& !m_bServiceProcess
+	if (!m_bServiceProcess)
 #endif
-		)
 	{
 		LPBYTE pData = NULL;
 		UINT nBytes = 0;
@@ -3808,32 +3725,10 @@ BOOL CUImagerApp::IsSupportedPictureFile(CString sFileName)
 		return FALSE;
 }
 
-BOOL CUImagerApp::IsSupportedMusicFile(CString sFileName)
-{
-	CString sExt = ::GetFileExt(sFileName);
-
-	if (sExt == _T(".mp3"))
-		return TRUE;
-	else if (sExt == _T(".wav"))
-		return TRUE;
-	else if (sExt == _T(".wma"))
-		return TRUE;
-	else if ((sExt == _T(".mid")) || (sExt == _T(".rmi")))
-		return TRUE;
-	else if (sExt == _T(".au"))
-		return TRUE;
-	else if ((sExt == _T(".aif")) || (sExt == _T(".aiff")))
-		return TRUE;
-	else
-		return FALSE;
-}
-
 CUImagerMultiDocTemplate* CUImagerApp::GetTemplateFromFileExtension(CString sFileName)
 {
 	if (IsSupportedPictureFile(sFileName))
 		return GetPictureDocTemplate();
-	else if (IsSupportedMusicFile(sFileName))
-		return GetAudioMCIDocTemplate();
 	else
 		return NULL;
 }
@@ -4017,14 +3912,7 @@ void CUImagerApp::UpdateFileAssociations()
 	BOOL bPng = FALSE;
 	BOOL bTiff = FALSE;
 	BOOL bGif = FALSE;
-	BOOL bAif = FALSE;
-	BOOL bAu = FALSE;
-	BOOL bMidi = FALSE;
-	BOOL bMp3 = FALSE;
-	BOOL bWav = FALSE;
-	BOOL bWma = FALSE;
 #ifndef VIDEODEVICEDOC
-	// Graphics
 	bBmp =		IsFileTypeAssociated(_T("bmp"));
 	bJpeg =		IsFileTypeAssociated(_T("jpg"))		&&
 				IsFileTypeAssociated(_T("jpeg"))	&&
@@ -4037,20 +3925,8 @@ void CUImagerApp::UpdateFileAssociations()
 				IsFileTypeAssociated(_T("tiff"))	&&
 				IsFileTypeAssociated(_T("jfx"));
 	bGif =		IsFileTypeAssociated(_T("gif"));
-
-	// Audio
-	bAif =		IsFileTypeAssociated(_T("aif"))		&&
-				IsFileTypeAssociated(_T("aiff"));
-	bAu =		IsFileTypeAssociated(_T("au"));
-	bMidi =		IsFileTypeAssociated(_T("mid"))		&&
-				IsFileTypeAssociated(_T("rmi"));
-	bMp3 =		IsFileTypeAssociated(_T("mp3"));
-	bWav =		IsFileTypeAssociated(_T("wav"));
-	bWma =		IsFileTypeAssociated(_T("wma"));
 #endif
 	
-	// Graphics
-
 	if (bBmp)
 		AssociateFileType(_T("bmp"));
 	else
@@ -4104,52 +3980,13 @@ void CUImagerApp::UpdateFileAssociations()
 	else
 		UnassociateFileType(_T("gif"));
 
-
-	// Audio
-
-	if (bAif)
-	{
-		AssociateFileType(_T("aif"));
-		AssociateFileType(_T("aiff"));
-	}
-	else
-	{
-		UnassociateFileType(_T("aif"));
-		UnassociateFileType(_T("aiff"));
-	}
-
-	if (bAu)
-		AssociateFileType(_T("au"));
-	else
-		UnassociateFileType(_T("au"));
-
-	if (bMidi)
-	{
-		AssociateFileType(_T("mid"));
-		AssociateFileType(_T("rmi"));
-	}
-	else
-	{
-		UnassociateFileType(_T("mid"));
-		UnassociateFileType(_T("rmi"));
-	}
-
-	if (bMp3)
-		AssociateFileType(_T("mp3"));
-	else
-		UnassociateFileType(_T("mp3"));
-
-	if (bWav)
-		AssociateFileType(_T("wav"));
-	else
-		UnassociateFileType(_T("wav"));
-
-	if (bWma)
-		AssociateFileType(_T("wma"));
-	else
-		UnassociateFileType(_T("wma"));
-
 	// Remove associations from older program versions
+	UnassociateFileType(_T("aif")); UnassociateFileType(_T("aiff"));
+	UnassociateFileType(_T("au"));
+	UnassociateFileType(_T("mid")); UnassociateFileType(_T("rmi"));
+	UnassociateFileType(_T("mp3"));
+	UnassociateFileType(_T("wav"));
+	UnassociateFileType(_T("wma"));
 	UnassociateFileType(_T("cda"));
 	UnassociateFileType(_T("avi")); UnassociateFileType(_T("divx"));
 	UnassociateFileType(_T("zip"));	
@@ -4351,7 +4188,7 @@ BOOL CUImagerApp::AssociateFileType(CString sExt, BOOL* pbHasUserChoice/*=NULL*/
 	// Shell Open Command
 	
 	// Icon order
-	// Note: IDR_CDAUDIO, IDR_VIDEOAVI, IDR_PICTURE_NOHQ, IDR_BIGPICTURE, IDR_BIGPICTURE_NOHQ
+	// Note: IDR_AUDIOMCI, IDR_CDAUDIO, IDR_VIDEOAVI, IDR_PICTURE_NOHQ, IDR_BIGPICTURE, IDR_BIGPICTURE_NOHQ
 	//       and IDI_ZIP are not used anymore, but icons remain to keep the same order!
 	/*
 	IDR_MAINFRAME			0
@@ -4379,77 +4216,53 @@ BOOL CUImagerApp::AssociateFileType(CString sExt, BOOL* pbHasUserChoice/*=NULL*/
 	IDI_PCX                 22
 	IDI_EMF					23
 	*/
-
-	// Audio
-	if (sExtNoPoint == _T("mp3")	||
-		sExtNoPoint == _T("wav")	||
-		sExtNoPoint == _T("wma")	||
-		sExtNoPoint == _T("mid")	||
-		sExtNoPoint == _T("rmi")	||
-		sExtNoPoint == _T("au")		||
-		sExtNoPoint == _T("aif")	||
-		sExtNoPoint == _T("aiff"))
-	{
-		::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",1"));
-
-		::SetRegistryStringValue(HKEY_CLASSES_ROOT,
-								sMyFileClassName +
-								_T("\\shell\\open\\command"),
-								_T(""),
-								_T("\"") + CString(szProgPath) +
-								_T("\"") + _T(" \"%1\""));
-	}
-	// Graphics
+	if (sExtNoPoint == _T("bmp"))
+		::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",17"));
+	else if (sExtNoPoint == _T("gif"))
+		::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",18"));
+	else if (::IsJPEGExt(sExtNoPoint))
+		::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",19"));
+	else if (::IsTIFFExt(sExtNoPoint))
+		::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",20"));
+	else if (sExtNoPoint == _T("png"))
+		::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",21"));
+	else if (sExtNoPoint == _T("pcx"))
+		::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",22"));
+	else if (sExtNoPoint == _T("emf"))
+		::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",23"));
 	else
-	{
-		if (sExtNoPoint == _T("bmp"))
-			::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",17"));
-		else if (sExtNoPoint == _T("gif"))
-			::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",18"));
-		else if (::IsJPEGExt(sExtNoPoint))
-			::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",19"));
-		else if (::IsTIFFExt(sExtNoPoint))
-			::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",20"));
-		else if (sExtNoPoint == _T("png"))
-			::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",21"));
-		else if (sExtNoPoint == _T("pcx"))
-			::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",22"));
-		else if (sExtNoPoint == _T("emf"))
-			::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",23"));
-		else
-			::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",4"));
+		::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",4"));
 
-		::SetRegistryStringValue(HKEY_CLASSES_ROOT,
-								sMyFileClassName +
-								_T("\\shell\\open\\command"),
-								_T(""),
-								_T("\"") + CString(szProgPath) +
-								_T("\"") + _T(" \"%1\""));
-		::SetRegistryStringValue(HKEY_CLASSES_ROOT,
-								sMyFileClassName +
-								_T("\\shell\\edit\\command"),
-								_T(""),
-								_T("\"") +  CString(szProgPath)
-								+ _T("\"") + _T(" \"%1\""));
-		::SetRegistryStringValue(HKEY_CLASSES_ROOT,
-								sMyFileClassName +
-								_T("\\shell\\print\\command"),
-								_T(""),
-								_T("\"") +  CString(szProgPath)
-								+ _T("\"") + _T(" /p") + _T(" \"%1\""));
-		::SetRegistryStringValue(HKEY_CLASSES_ROOT,
-								sMyFileClassName +
-								_T("\\shell\\printto\\command"),
-								_T(""),
-								_T("\"") +  CString(szProgPath) +
-								_T("\"") + _T(" /pt") + _T(" \"%1\""));
-		::SetRegistryStringValue(HKEY_CLASSES_ROOT,
-								sMyFileClassName +
-								_T("\\shell\\preview\\command"),
-								_T(""),
-								_T("\"") +  CString(szProgPath) +
-								_T("\"") + _T(" \"%1\""));
-	}
+	::SetRegistryStringValue(HKEY_CLASSES_ROOT,
+							sMyFileClassName +
+							_T("\\shell\\open\\command"),
+							_T(""),
+							_T("\"") + CString(szProgPath) +
+							_T("\"") + _T(" \"%1\""));
+	::SetRegistryStringValue(HKEY_CLASSES_ROOT,
+							sMyFileClassName +
+							_T("\\shell\\edit\\command"),
+							_T(""),
+							_T("\"") +  CString(szProgPath)
+							+ _T("\"") + _T(" \"%1\""));
+	::SetRegistryStringValue(HKEY_CLASSES_ROOT,
+							sMyFileClassName +
+							_T("\\shell\\print\\command"),
+							_T(""),
+							_T("\"") +  CString(szProgPath)
+							+ _T("\"") + _T(" /p") + _T(" \"%1\""));
+	::SetRegistryStringValue(HKEY_CLASSES_ROOT,
+							sMyFileClassName +
+							_T("\\shell\\printto\\command"),
+							_T(""),
+							_T("\"") +  CString(szProgPath) +
+							_T("\"") + _T(" /pt") + _T(" \"%1\""));
+	::SetRegistryStringValue(HKEY_CLASSES_ROOT,
+							sMyFileClassName +
+							_T("\\shell\\preview\\command"),
+							_T(""),
+							_T("\"") +  CString(szProgPath) +
+							_T("\"") + _T(" \"%1\""));
 
 	return TRUE;
 }

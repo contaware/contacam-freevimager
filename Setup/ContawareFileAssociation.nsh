@@ -86,21 +86,6 @@ ShellCommands:
 	;IDI_PCX                22
 	;IDI_EMF				23
 
-; Audio
-StrCmp $FILEEXTENSION "mp3" AudioExtension 0
-StrCmp $FILEEXTENSION "wav" AudioExtension 0
-StrCmp $FILEEXTENSION "wma" AudioExtension 0
-StrCmp $FILEEXTENSION "mid" AudioExtension 0
-StrCmp $FILEEXTENSION "rmi" AudioExtension 0
-StrCmp $FILEEXTENSION "au" AudioExtension 0
-StrCmp $FILEEXTENSION "aif" AudioExtension 0
-StrCmp $FILEEXTENSION "aiff" AudioExtension AudioExtensionEnd
-AudioExtension:
-  WriteRegStr HKCR "$MYFILECLASSNAME\DefaultIcon" "" "$INSTDIR\${APPNAME_EXT},1"
-  WriteRegStr HKCR "$MYFILECLASSNAME\shell\open\command" "" '"$INSTDIR\${APPNAME_EXT}" "%1"'
-  Return
-AudioExtensionEnd:
-
 ; Graphics
 StrCmp $FILEEXTENSION "bmp" 0 GifExtension
   WriteRegStr HKCR "$MYFILECLASSNAME\DefaultIcon" "" "$INSTDIR\${APPNAME_EXT},17"
