@@ -2939,6 +2939,7 @@
 #define IDC_STATIC2410                  2410
 #define IDC_STATIC2411                  2411
 #define IDC_STATIC2412                  2412
+#define IDC_LABEL_FRAMES_SEC            2412
 #define IDC_STATIC2413                  2413
 #define IDC_STATIC2414                  2414
 #define IDC_STATIC2415                  2415

@@ -2341,8 +2341,10 @@ void CBatchProcDlg::UpdateControls()
 		pEdit = (CEdit*)m_GeneralTab.GetDlgItem(IDC_LABEL_FRAMERATE);
 		if (pEdit)
 			pEdit->EnableWindow(FALSE);
-
 		pEdit = (CEdit*)m_GeneralTab.GetDlgItem(IDC_EDIT_FRAMERATE);
+		if (pEdit)
+			pEdit->EnableWindow(FALSE);
+		pEdit = (CEdit*)m_GeneralTab.GetDlgItem(IDC_LABEL_FRAMES_SEC);
 		if (pEdit)
 			pEdit->EnableWindow(FALSE);
 
@@ -2673,6 +2675,9 @@ void CBatchProcDlg::UpdateControls()
 		pEdit = (CEdit*)m_GeneralTab.GetDlgItem(IDC_EDIT_FRAMERATE);
 		if (pEdit)
 			pEdit->EnableWindow(TRUE);
+		pEdit = (CEdit*)m_GeneralTab.GetDlgItem(IDC_LABEL_FRAMES_SEC);
+		if (pEdit)
+			pEdit->EnableWindow(TRUE);
 	}
 
 	switch (m_nInputSelection)
@@ -2935,6 +2940,9 @@ void CBatchProcDlg::EnableAllControls(BOOL bEnable, BOOL bIncludeProcessButton)
 	if (pEdit)
 		pEdit->EnableWindow(bEnable);
 	pEdit = (CEdit*)m_GeneralTab.GetDlgItem(IDC_EDIT_FRAMERATE);
+	if (pEdit)
+		pEdit->EnableWindow(bEnable);
+	pEdit = (CEdit*)m_GeneralTab.GetDlgItem(IDC_LABEL_FRAMES_SEC);
 	if (pEdit)
 		pEdit->EnableWindow(bEnable);
 	pEdit = (CEdit*)m_TiffTab.GetDlgItem(IDC_LABEL_PAPER_SIZE);
