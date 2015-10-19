@@ -49,13 +49,17 @@ public:
 	CAVRec();
 
 	// Construction which calls Init()
-	CAVRec(LPCTSTR lpszFileName);
+	CAVRec(LPCTSTR lpszFileName, BOOL bMovFragmented);
 
 	// Destructor
 	virtual ~CAVRec();
 
-	// Init
-	bool Init(LPCTSTR lpszFileName);
+	// If bMovFragmented is set the packets and metadata about these packets
+	// are stored together. Writing a fragmented file has the advantage that the
+	// file is decodable even if the writing is still in progress or if it has
+	// been interrupted (the downside is that it is less compatible with some
+	// applications)
+	bool Init(LPCTSTR lpszFileName, BOOL bMovFragmented);
 
 	// Add Video Stream
 	int AddVideoStream(	const LPBITMAPINFO pSrcFormat,

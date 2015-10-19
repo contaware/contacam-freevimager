@@ -125,6 +125,7 @@ CUImagerApp::CUImagerApp()
 	m_bIPv6 = FALSE;
 	m_dwAutostartDelayMs = DEFAULT_AUTOSTART_DELAY_MS;
 	m_dwFirstStartDelayMs = DEFAULT_FIRSTSTART_DELAY_MS;
+	m_bMovFragmented = FALSE;
 	m_bStartMicroApache = FALSE;
 	m_nMicroApachePort = MICROAPACHE_DEFAULT_PORT;
 	m_bMicroApacheDigestAuth = TRUE;
@@ -3334,6 +3335,9 @@ void CUImagerApp::LoadSettings(UINT showCmd/*=SW_SHOWNORMAL*/)
 
 	// Wait time before autostarting first device
 	m_dwFirstStartDelayMs = (DWORD)GetProfileInt(sSection, _T("FirstStartDelayMs"), DEFAULT_FIRSTSTART_DELAY_MS);
+
+	// mov/mp4 saving fragmented
+	m_bMovFragmented = (BOOL)GetProfileInt(sSection, _T("MovFragmented"), FALSE);
 
 	// Start Micro Apache
 	m_bStartMicroApache = (BOOL)GetProfileInt(sSection, _T("StartMicroApache"), TRUE);

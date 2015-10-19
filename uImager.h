@@ -572,6 +572,9 @@ public:
 	// Wait time before autostarting first device
 	volatile DWORD m_dwFirstStartDelayMs;
 
+	// mov/mp4 saving fragmented
+	volatile BOOL m_bMovFragmented;
+
 	// Start the Micro Apache server
 	BOOL m_bStartMicroApache;
 

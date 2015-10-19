@@ -45,10 +45,10 @@ CAVRec::CAVRec()
 	InitVars();
 }
 
-CAVRec::CAVRec(LPCTSTR lpszFileName)
+CAVRec::CAVRec(LPCTSTR lpszFileName, BOOL bMovFragmented)
 {
 	InitVars();
-	Init(lpszFileName);
+	Init(lpszFileName, bMovFragmented);
 }
 
 void CAVRec::InitVars()
@@ -120,7 +120,7 @@ __forceinline void CAVRec::SetSrcWaveFormat(DWORD dwStreamNum, const LPWAVEFORMA
 	memcpy(m_pSrcWaveFormat[dwStreamNum], pWaveFormat, nWaveFormatSize);
 }
 
-bool CAVRec::Init(LPCTSTR lpszFileName)
+bool CAVRec::Init(LPCTSTR lpszFileName, BOOL bMovFragmented)
 {
 	// Make ffmpeg compatible file name
 	if (!::IsExistingFile(lpszFileName))
@@ -158,22 +158,34 @@ bool CAVRec::Init(LPCTSTR lpszFileName)
 		return false;
 	m_pOutputFormat = m_pFormatCtx->oformat;
 
-	// Run a second pass moving the moov atom to the top of the file making
-	// pseudo-streaming possible
-	//
-	// Note:
 	// A mov/mp4 file can have either all the metadata about all packets stored
 	// on top of the file (if setting the FF_MOV_FLAG_FASTSTART flag) or on bottom
-	// of the file. It can also be fragmented where packets and metadata about
-	// these packets are stored together. Writing a fragmented file has the
-	// advantage that the file is decodable even if the writing is interrupted
-	// (the downside is that it is less compatible with some applications)
+	// of the file. In both cases the file must be enterly recorded before being
+	// opened.
+	// It can also be fragmented where packets and metadata about these packets
+	// are stored together. Writing a fragmented file has the advantage that the
+	// file is decodable even if the writing is still in progress or if it has
+	// been interrupted (the downside is that it is less compatible with some
+	// applications)
 	if (strcmp(m_pFormatCtx->oformat->name, "mov") == 0 ||
 		strcmp(m_pFormatCtx->oformat->name, "mp4") == 0)
 	{
 		MOVMuxContext* mov = (MOVMuxContext*)m_pFormatCtx->priv_data;
 		if (mov)
-			mov->flags |= FF_MOV_FLAG_FASTSTART;
+		{
+			if (bMovFragmented)
+			{
+				mov->flags |=	(FF_MOV_FLAG_FRAG_KEYFRAME |	// fragment at video keyframes
+								FF_MOV_FLAG_EMPTY_MOOV);		// causes 100% fragmented output; without this the first fragment will
+																// be muxed as a short movie (using moov) followed by the rest of the
+																// media in fragments
+			}
+			else
+			{
+				mov->flags |= FF_MOV_FLAG_FASTSTART;			// run a second pass moving the moov atom to the top of the file making
+																// pseudo-streaming possible
+			}
+		}
 	}
 
 	return true;

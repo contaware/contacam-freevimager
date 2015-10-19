@@ -437,7 +437,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		// Init the Video File
 		CAVRec AVRecVideo;
 		if (bMakeVideo)
-			AVRecVideo.Init(sVideoTempFileName);
+			AVRecVideo.Init(sVideoTempFileName, ((CUImagerApp*)::AfxGetApp())->m_bMovFragmented);
 
 		// Store the Frames
 		POSITION nextpos = m_pFrameList->GetHeadPosition();
@@ -1289,7 +1289,7 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 					{
 						// Alloc
 						if (!pAVRecVideo)
-							pAVRecVideo = new CAVRec(sVideoTempFileName);
+							pAVRecVideo = new CAVRec(sVideoTempFileName, ((CUImagerApp*)::AfxGetApp())->m_bMovFragmented);
 						if (pAVRecVideo)
 						{
 							// Open
@@ -1326,7 +1326,7 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 					{
 						// Alloc
 						if (!pAVRecThumbVideo)
-							pAVRecThumbVideo = new CAVRec(sVideoTempThumbFileName);
+							pAVRecThumbVideo = new CAVRec(sVideoTempThumbFileName, ((CUImagerApp*)::AfxGetApp())->m_bMovFragmented);
 						if (pAVRecThumbVideo)
 						{
 							// Open
@@ -5501,7 +5501,7 @@ BOOL CVideoDeviceDoc::MakeAVRec(CAVRec** ppAVRec)
 		return FALSE;
 
 	// Init the Video File
-	if (!(*ppAVRec)->Init(sFileName))
+	if (!(*ppAVRec)->Init(sFileName, ((CUImagerApp*)::AfxGetApp())->m_bMovFragmented))
 		return FALSE;
 
 	// Add Video Stream
