@@ -2,6 +2,7 @@ FREEVIMAGER HISTORY
 
 5.0.3 (xxx yth 2015)
 
+- Jpeg loading is more fault tolerant: ignore missing SOI marker 
 - Removed fullscreen only slideshow mode as CD/DVD slideshows
   are from the old days
 - Removed audio file opening support as we are a graphics viewer

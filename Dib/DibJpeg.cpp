@@ -40,6 +40,7 @@ static void jpeg_error_load(j_common_ptr pcinfo)
 	// Be a bit error tolerant and ignore the following
 	if (myerr->pub.msg_code == JERR_SOF_DUPLICATE	||
 		myerr->pub.msg_code == JERR_SOI_DUPLICATE	||
+		myerr->pub.msg_code == JERR_NO_SOI			||
 		myerr->pub.msg_code == JERR_EOI_EXPECTED)
 	    return;
 
