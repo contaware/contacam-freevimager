@@ -4539,6 +4539,7 @@ END
 STRINGTABLE
 BEGIN
     IDS_STRING1872          "Try again after closing all cameras"
+    IDS_STRING1873          "usage of all cameras"
     IDS_STRING1874          "Detection always enabled (scheduler is off)"
     IDS_STRING1875          "Detection enabled:"
     IDS_STRING1876          "Detection disabled:"

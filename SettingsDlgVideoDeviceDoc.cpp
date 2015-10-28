@@ -316,11 +316,23 @@ void CSettingsDlgVideoDeviceDoc::OnButtonDocRoot()
 	if (!UpdateData(TRUE))
 		return;
 
+	// Calculate currently used size for all cameras
+	BeginWaitCursor();
+	ULONGLONG ullDirContentSize = ::GetDirContentSize(m_sMicroApacheDocRootOld).QuadPart;
+	CString sMsg;
+	if (ullDirContentSize >= (1024*1024*1024))
+		sMsg.Format(CString(_T("(")) + ML_STRING(1873, "usage of all cameras") + _T(" %I64u ") + ML_STRING(1826, "GB") + CString(_T(")")), ullDirContentSize >> 30);
+	else if (ullDirContentSize >= (1024*1024))
+		sMsg.Format(CString(_T("(")) + ML_STRING(1873, "usage of all cameras") + _T(" %I64u ") + ML_STRING(1825, "MB") + CString(_T(")")), ullDirContentSize >> 20);
+	else
+		sMsg.Format(CString(_T("(")) + ML_STRING(1873, "usage of all cameras") + _T(" %I64u ") + ML_STRING(1243, "KB") + CString(_T(")")), ullDirContentSize >> 10);
+	EndWaitCursor();
+
 	// Pop-up browse for folder dialog
 	CString sNewMicroApacheDocRoot = m_sMicroApacheDocRoot;
 	CBrowseDlg dlg(	::AfxGetMainFrame(),
 					&sNewMicroApacheDocRoot,
-					ML_STRING(1871, "Move all camera folders to selected directory"),
+					ML_STRING(1871, "Move all camera folders to selected directory") + _T("\n") + sMsg,
 					TRUE);
 	if (dlg.DoModal() == IDOK)
 	{
@@ -337,7 +349,6 @@ void CSettingsDlgVideoDeviceDoc::OnButtonDocRoot()
 		sSysDrive = ::GetDriveName(sSysDrive);
 		if (sSysDrive.CompareNoCase(sNewMicroApacheDocRoot) == 0)
 		{
-			CString sMsg;
 			sMsg.Format(ML_STRING(1869, "Choose a directory under the %s drive"), sSysDrive);
 			::AfxMessageBox(sMsg, MB_OK | MB_ICONERROR);
 			return;
