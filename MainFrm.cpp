@@ -57,7 +57,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_MINIMIZE, OnUpdateMinimize)
 	ON_COMMAND(ID_MAXIMIZE, OnMaximize)
 	ON_UPDATE_COMMAND_UI(ID_MAXIMIZE, OnUpdateMaximize)
-	ON_COMMAND(ID_MAINMONITOR, OnMainmonitor)
 	ON_WM_SETCURSOR()
 	ON_COMMAND(ID_FILE_ACQUIRE_TO_TIFF, OnFileAcquireToTiff)
 	ON_COMMAND(ID_FILE_ACQUIRE_TO_PDF, OnFileAcquireToPdf)
@@ -74,7 +73,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_MESSAGE(WM_PROGRESS, OnProgress)
 	ON_MESSAGE(WM_SETMESSAGESTRING, OnSetMessageString)
 	ON_MESSAGE(WM_THREADSAFE_OPEN_DOC, OnThreadSafeOpenDoc)
-	ON_MESSAGE(WM_TASKBAR_BUTTON, OnTaskBarButton)
 	ON_MESSAGE(WM_ALL_CLOSED, OnAllClosed)
 	ON_MESSAGE(WM_SCANANDEMAIL, OnScanAndEmail)
 	ON_MESSAGE(WM_TRAY_NOTIFICATION, OnTrayNotification)
@@ -2516,53 +2514,6 @@ void CMainFrame::OnOpenFromTray()
 	}
 }
 
-// The WPARAM is unused (zero) and the LPARAM contains the
-// mouse position in screen coordinates, in the usual format.
-//
-// Note: not working anymore on Windows 7 or higher. Could
-// implement toolbar buttons in the task preview through
-// the ITaskbarList3 interface (ThumbBarSetImageList and ThumbBarAddButtons)
-LONG CMainFrame::OnTaskBarButton(WPARAM wparam, LPARAM lparam)
-{
-	// Only show right-click taskbar context menu
-	// if no modal dialog running, if not resizing with FakeThread
-	// and not printing with FakeThread (they all disable the MainFrame)
-	if (IsWindowEnabled())
-	{
-		// Get active view and force cursor
-		CUImagerView* pActiveView = NULL;
-		if (m_bFullScreenMode)
-		{
-			CMDIChildWnd* pChild = MDIGetActive();
-			if (pChild)
-			{
-				pActiveView = (CUImagerView*)pChild->GetActiveView();
-				if (pActiveView && pActiveView->IsKindOf(RUNTIME_CLASS(CUImagerView)))
-					pActiveView->ForceCursor();
-				else
-					pActiveView = NULL;
-			}
-		}
-
-		CPoint point(lparam);
-		CMenu menu;
-		if (m_bFullScreenMode)
-			VERIFY(menu.LoadMenu(IDR_CONTEXT_TASKBAR_FULLSCREEN));
-		else
-			VERIFY(menu.LoadMenu(IDR_CONTEXT_TASKBAR));
-		CMenu* pPopup = menu.GetSubMenu(0);
-		ASSERT(pPopup != NULL);
-		pPopup->TrackPopupMenu(TPM_LEFTBUTTON|TPM_RIGHTBUTTON, point.x, point.y, this);
-
-		if (pActiveView)
-			pActiveView->ForceCursor(FALSE);
-
-		return 1;
-	}
-	else
-		return 0;
-}
-
 void CMainFrame::OnRestore() 
 {
 	if (m_bFullScreenMode)
@@ -2603,53 +2554,6 @@ void CMainFrame::OnMaximize()
 void CMainFrame::OnUpdateMaximize(CCmdUI* pCmdUI) 
 {
 	pCmdUI->Enable(!IsZoomed());
-}
-
-void CMainFrame::OnMainmonitor() 
-{
-	if (m_bFullScreenMode)
-		EnterExitFullscreen();
-
-	CRect rc;
-	CRect rcPrimaryMon = GetPrimaryMonitorWorkRect();
-	CPoint ptPrimaryMonCenter = rcPrimaryMon.CenterPoint();
-
-	// Place Main Window to Primary Monitor
-	WINDOWPLACEMENT wp;
-	::ZeroMemory(&wp, sizeof(WINDOWPLACEMENT));
-	wp.length = sizeof(WINDOWPLACEMENT);
-	rc = rcPrimaryMon;
-	rc.DeflateRect(60, 60, 60, 60);
-	wp.rcNormalPosition = rc;
-	wp.showCmd = SW_RESTORE;
-	SetWindowPlacement(&wp);
-
-	// Place Image Info Dialog(s) to Primary Monitor
-	CUImagerMultiDocTemplate* pPictureDocTemplate = ((CUImagerApp*)::AfxGetApp())->GetPictureDocTemplate();
-	POSITION posPictureDoc = pPictureDocTemplate->GetFirstDocPosition();
-	CPictureDoc* pDoc;
-	while (posPictureDoc)
-	{
-		pDoc = (CPictureDoc*)(pPictureDocTemplate->GetNextDoc(posPictureDoc));
-		if (pDoc && pDoc->m_pImageInfoDlg)
-		{
-			pDoc->m_pImageInfoDlg->GetWindowRect(&rc);
-			pDoc->m_pImageInfoDlg->SetWindowPos(NULL,
-												ptPrimaryMonCenter.x - rc.Width() / 2,
-												ptPrimaryMonCenter.y - rc.Height() / 2,
-												0, 0,
-												SWP_NOSIZE | SWP_NOZORDER);
-		}
-	}
-	HINSTANCE h = ::LoadLibrary(_T("user32.dll"));
-	if (h)
-	{
-		CString strAutoPos;
-		strAutoPos.Format(_T("ID=0x%08lx"), IDD_IMAGEINFO);
-		CString sSection = cdxCDynamicWndEx::MakeFullProfile(cdxCDynamicWndEx::M_lpszAutoPosProfileSection, strAutoPos);
-		::AfxGetApp()->WriteProfileInt(sSection, _T("(valid)"), 0);
-		::FreeLibrary(h);
-	}
 }
 
 BOOL CMainFrame::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message) 

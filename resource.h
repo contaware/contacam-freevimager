@@ -59,7 +59,6 @@
 #define IDC_GRAB_CLOSED                 211
 #define IDI_MAGNIFYPLUS                 212
 #define IDI_MAGNIFY                     213
-#define IDR_CONTEXT_TASKBAR             213
 #define IDI_MAGNIFYMINUS                214
 #define IDD_ZIP_PROGRESS                219
 #define IDR_LICENSE                     221
@@ -90,7 +89,6 @@
 #define IDD_HTTP_VIDEOFORMAT            281
 #define IDR_TRAYICON                    283
 #define IDR_CONTEXT_LAYERED_DLG         284
-#define IDR_CONTEXT_TASKBAR_FULLSCREEN  285
 #define IDI_PLAY                        291
 #define IDI_STOP                        292
 #define IDI_PAUSE                       293
@@ -3154,7 +3152,6 @@
 #define ID_RESTORE                      32947
 #define ID_MINIMIZE                     32948
 #define ID_MAXIMIZE                     32949
-#define ID_MAINMONITOR                  32950
 #define ID_APP_LICENSE                  32954
 #define ID_APP_CREDITS                  32955
 #define ID_VIEW_ALL_FIRST_PICTURE       32956

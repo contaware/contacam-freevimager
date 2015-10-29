@@ -636,20 +636,6 @@ BEGIN
     END
 END
 
-IDR_CONTEXT_TASKBAR MENU
-BEGIN
-    POPUP "_Context Menu_"
-    BEGIN
-        MENUITEM "To Primary Monitor",          ID_MAINMONITOR
-        MENUITEM SEPARATOR
-        MENUITEM "Restore",                     ID_RESTORE
-        MENUITEM "Minimize",                    ID_MINIMIZE
-        MENUITEM "Maximize",                    ID_MAXIMIZE
-        MENUITEM SEPARATOR
-        MENUITEM "Close\tAlt+F4",               ID_APP_EXIT
-    END
-END
-
 IDR_CONTEXT_PICTURE_FULLSCREEN MENU
 BEGIN
     POPUP "_Context Menu_"
@@ -911,23 +897,6 @@ BEGIN
         MENUITEM "Opacity 20 %",                ID_LAYEREDDLG_OPACITY_20
         MENUITEM SEPARATOR
         MENUITEM "Close",                       ID_LAYEREDDLG_CLOSE
-    END
-END
-
-IDR_CONTEXT_TASKBAR_FULLSCREEN MENU
-BEGIN
-    POPUP "_Context Menu_"
-    BEGIN
-        MENUITEM "Restore to Primary Monitor",  ID_MAINMONITOR
-        MENUITEM SEPARATOR
-        MENUITEM "To Next Monitor\tTAB",        ID_VIEW_NEXT_MONITOR
-        MENUITEM "To Previous Monitor\tShift+TAB", ID_VIEW_PREVIOUS_MONITOR
-        MENUITEM SEPARATOR
-        MENUITEM "Restore",                     ID_RESTORE
-        MENUITEM "Minimize",                    ID_MINIMIZE
-        MENUITEM "Maximize",                    ID_MAXIMIZE
-        MENUITEM SEPARATOR
-        MENUITEM "Close\tAlt+F4",               ID_APP_EXIT
     END
 END
 
@@ -3842,7 +3811,6 @@ BEGIN
     ID_RESTORE              "Restores the window to normal size\nRestore"
     ID_MINIMIZE             "Reduces the window to an icon\nMinimize"
     ID_MAXIMIZE             "Enlarges the window to full size\nMaximize"
-    ID_MAINMONITOR          "Move the main window to the primary monitor\nTo Primary Monitor"
     ID_APP_LICENSE          "Display program license\nLicense"
     ID_APP_CREDITS          "Display program contributors and used libraries\nCredits"
     ID_VIEW_STRETCH_HALFTONE "High quality stretch\nHigh Quality Stretch"

@@ -21,7 +21,6 @@ extern "C"
 }
 
 // Window Message IDs
-#define WM_TASKBAR_BUTTON							0x0313
 #define WM_THREADSAFE_OPEN_DOC						WM_USER + 100
 #define WM_THREADSAFE_POPUP_TOASTER					WM_USER + 101
 #define WM_ALL_CLOSED								WM_USER + 102
@@ -240,7 +239,6 @@ protected:
 	afx_msg void OnUpdateMinimize(CCmdUI* pCmdUI);
 	afx_msg void OnMaximize();
 	afx_msg void OnUpdateMaximize(CCmdUI* pCmdUI);
-	afx_msg void OnMainmonitor();
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 	afx_msg void OnFileAcquireToTiff();
 	afx_msg void OnFileAcquireToPdf();
@@ -257,7 +255,6 @@ protected:
 	afx_msg void OnUpdateIndicatorYCoordinate(CCmdUI* pCmdUI);
 	LRESULT OnSetMessageString(WPARAM wParam, LPARAM lParam);
 	afx_msg LONG OnThreadSafeOpenDoc(WPARAM wparam, LPARAM lparam);
-	afx_msg LONG OnTaskBarButton(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnAllClosed(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnScanAndEmail(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnTrayNotification(WPARAM uID, LPARAM lEvent);
