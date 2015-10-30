@@ -91,7 +91,7 @@ END_MESSAGE_MAP()
 #ifdef VIDEODEVICEDOC
 static TCHAR sba_HDHelp[MAX_PATH];
 static TCHAR sba_CPUHelp[MAX_PATH];
-static TCHAR sba_MEMHelp[MAX_PATH];
+static TCHAR sba_RAMHelp[MAX_PATH];
 #endif
 static TCHAR sba_CoordinateHelp[MAX_PATH];
 static SBACTPANEINFO sba_indicators[] = 
@@ -101,7 +101,7 @@ static SBACTPANEINFO sba_indicators[] =
 #ifdef VIDEODEVICEDOC
 	{ ID_INDICATOR_HD_USAGE, sba_HDHelp, SBACTF_AUTOFIT },
 	{ ID_INDICATOR_CPU_USAGE, sba_CPUHelp, SBACTF_AUTOFIT },
-	{ ID_INDICATOR_MEM_USAGE, sba_MEMHelp, SBACTF_AUTOFIT },
+	{ ID_INDICATOR_RAM_USAGE, sba_RAMHelp, SBACTF_AUTOFIT },
 #endif
 	{ ID_INDICATOR_XCOORDINATE, sba_CoordinateHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_HANDCURSOR },
 	{ ID_INDICATOR_YCOORDINATE, sba_CoordinateHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_HANDCURSOR },
@@ -176,10 +176,10 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 #ifdef VIDEODEVICEDOC
 	_tcsncpy(sba_HDHelp, ML_STRING(1761, "HD free space"), MAX_PATH);
 	sba_HDHelp[MAX_PATH - 1] = _T('\0');
-	_tcsncpy(sba_CPUHelp, CString(APPNAME_NOEXT) + _T(" ") + ML_STRING(1762, "CPU usage"), MAX_PATH);
+	_tcsncpy(sba_CPUHelp, CString(APPNAME_NOEXT) + _T(": ") + ML_STRING(1762, "CPU usage"), MAX_PATH);
 	sba_CPUHelp[MAX_PATH - 1] = _T('\0');
-	_tcsncpy(sba_MEMHelp, CString(APPNAME_NOEXT) + _T(" ") + ML_STRING(1763, "memory usage"), MAX_PATH);
-	sba_MEMHelp[MAX_PATH - 1] = _T('\0');
+	_tcsncpy(sba_RAMHelp, CString(APPNAME_NOEXT) + _T(": ") + ML_STRING(1763, "memory usage"), MAX_PATH);
+	sba_RAMHelp[MAX_PATH - 1] = _T('\0');
 #endif
 	_tcsncpy(sba_CoordinateHelp, ML_STRING(1768, "Double-click to change unit"), MAX_PATH);
 	sba_CoordinateHelp[MAX_PATH - 1] = _T('\0');
@@ -2242,10 +2242,10 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		sCPUUsage.Format(_T("CPU: %0.1f%%"), dCPUUsage);
 		GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_CPU_USAGE), sCPUUsage);
 
-		// Show MEM Usage
-		CString sMEMUsage;
-		sMEMUsage.Format(_T("MEM: %dMB"), nVMPrivateCommitSize);
-		GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_MEM_USAGE), sMEMUsage);
+		// Show RAM Usage
+		CString sRAMUsage;
+		sRAMUsage.Format(_T("RAM: %dMB"), nVMPrivateCommitSize);
+		GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_RAM_USAGE), sRAMUsage);
 
 		// Update the count of open video device docs with detection enabled
 		CUImagerMultiDocTemplate* pVideoDeviceDocTemplate = ((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate();

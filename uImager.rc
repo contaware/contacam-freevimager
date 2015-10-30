@@ -3785,7 +3785,7 @@ BEGIN
     ID_INDICATOR_PROGRESS   "                                   "
     ID_INDICATOR_HD_USAGE   "HD:              "
     ID_INDICATOR_CPU_USAGE  "CPU:             "
-    ID_INDICATOR_MEM_USAGE  "MEM:             "
+    ID_INDICATOR_RAM_USAGE  "RAM:             "
     ID_INDICATOR_XCOORDINATE "X:               "
     ID_INDICATOR_YCOORDINATE "Y:               "
 END
