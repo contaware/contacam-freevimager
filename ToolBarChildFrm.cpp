@@ -55,10 +55,11 @@ END_MESSAGE_MAP()
 
 BOOL CChildToolBar::Create(CWnd* pParentWnd)
 {
-	return CToolBar::CreateEx(pParentWnd,	TBSTYLE_FLAT, 
-											WS_VISIBLE | WS_CHILD | CBRS_ALIGN_BOTTOM |
-											CBRS_TOOLTIPS | CBRS_FLYBY |
-											CBRS_SIZE_FIXED, TOOLBAR_BORDERRECT);
+	return CToolBar::CreateEx(	pParentWnd,
+								TBSTYLE_FLAT, 
+								(((CUImagerApp*)::AfxGetApp())->m_bShowToolbar ? WS_VISIBLE : 0) |
+								WS_CHILD | CBRS_ALIGN_BOTTOM | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_FIXED,
+								TOOLBAR_BORDERRECT);
 }
 
 int CChildToolBar::OnCreate(LPCREATESTRUCT lpCreateStruct) 
@@ -241,9 +242,6 @@ BOOL CVideoDeviceToolBar::Create(CWnd* pParentWnd)
 	m_DetComboBox.Init();
 	m_DetComboBox.EnableWindow(TRUE);
 
-	ShowWindow(SW_SHOW);
-	UpdateWindow();
-
 	return TRUE;
 }
 
@@ -375,9 +373,6 @@ BOOL CPictureToolBar::Create(CWnd* pParentWnd)
 	m_BkgColorButtonPicker.SetDefaultText(ML_STRING(1273, "Default Background"));
 	m_BkgColorButtonPicker.SetProfileSection(_T("GeneralApp"));
 	m_BkgColorButtonPicker.EnableWindow(TRUE);
-
-	ShowWindow(SW_SHOW);
-	UpdateWindow();
 
 	return TRUE;
 }

@@ -65,6 +65,10 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_WM_SYSCOMMAND()
 	ON_WM_QUERYENDSESSION()
 	ON_WM_ENDSESSION()
+	ON_COMMAND(ID_VIEW_STATUS_BAR, OnViewStatusbar)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_STATUS_BAR, OnUpdateViewStatusbar)
+	ON_COMMAND(ID_VIEW_TOOLBAR, OnViewToolbar)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_TOOLBAR, OnUpdateViewToolbar)
 	//}}AFX_MSG_MAP
 	ON_COMMAND(ID_INDICATOR_XCOORDINATE, OnXCoordinatesDoubleClick)
 	ON_COMMAND(ID_INDICATOR_YCOORDINATE, OnYCoordinatesDoubleClick)
@@ -161,8 +165,9 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CMDIFrameWnd::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
-	if (!m_wndToolBar.CreateEx(this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP
-		| CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_FIXED) ||
+	// Create Toolbar
+	((CUImagerApp*)::AfxGetApp())->m_bShowToolbar = (BOOL)((CUImagerApp*)::AfxGetApp())->GetProfileInt(_T("GeneralApp"), _T("ShowToolbar"), TRUE);
+	if (!m_wndToolBar.CreateEx(this, TBSTYLE_FLAT, (((CUImagerApp*)::AfxGetApp())->m_bShowToolbar ? WS_VISIBLE : 0) | WS_CHILD | CBRS_TOP | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_FIXED) ||
 #ifdef VIDEODEVICEDOC
 		!m_wndToolBar.LoadToolBar(IDR_MAINFRAME_VIDEODEVICEDOC))
 #else
@@ -173,6 +178,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;      // fail to create
 	}
 
+	// Create Statusbar
+	((CUImagerApp*)::AfxGetApp())->m_bShowStatusbar = (BOOL)((CUImagerApp*)::AfxGetApp())->GetProfileInt(_T("GeneralApp"), _T("ShowStatusbar"), TRUE);
 #ifdef VIDEODEVICEDOC
 	_tcsncpy(sba_HDHelp, ML_STRING(1761, "HD free space"), MAX_PATH);
 	sba_HDHelp[MAX_PATH - 1] = _T('\0');
@@ -183,16 +190,15 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 #endif
 	_tcsncpy(sba_CoordinateHelp, ML_STRING(1768, "Double-click to change unit"), MAX_PATH);
 	sba_CoordinateHelp[MAX_PATH - 1] = _T('\0');
-	if (!m_wndStatusBar.Create(this) || 
-		!m_wndStatusBar.SetPanes(sba_indicators,
-		  sizeof(sba_indicators)/sizeof(SBACTPANEINFO)))
+	if (!m_wndStatusBar.Create(this, (((CUImagerApp*)::AfxGetApp())->m_bShowStatusbar ? WS_VISIBLE : 0) | WS_CHILD | CBRS_BOTTOM, AFX_IDW_STATUS_BAR) || 
+		!m_wndStatusBar.SetPanes(sba_indicators, sizeof(sba_indicators)/sizeof(SBACTPANEINFO)))
 	{
 		TRACE0("Failed to create status bar\n");
 		return -1;      // fail to create
 	}
 	m_wndStatusBar.SetHandCursor(IDC_HAND_CURSOR);
 
-	// Toolbar
+	// Dock Toolbar
 	m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);
 	EnableDocking(CBRS_ALIGN_ANY);
 	DockControlBar(&m_wndToolBar);
@@ -1813,11 +1819,12 @@ void CMainFrame::InitMenuPositions(CDocument* pDoc/*=NULL*/)
 		{
 			m_nFileMenuPos = 0;
 			m_nEditMenuPos = 1;
-			m_nCaptureMenuPos = 2;
-			m_nSettingsMenuPos = 3;
-			m_nHelpMenuPos = 4;
+			m_nViewMenuPos = 2;
+			m_nCaptureMenuPos = 3;
+			m_nSettingsMenuPos = 4;
+			m_nHelpMenuPos = 5;
 #ifndef VIDEODEVICEDOC
-			if (nCount == 5)
+			if (nCount == 6)
 				pMenu->DeleteMenu(m_nCaptureMenuPos, MF_BYPOSITION);
 			m_nCaptureMenuPos = -2;
 			m_nSettingsMenuPos--;
@@ -2040,6 +2047,77 @@ void CMainFrame::OnMenuSelect(UINT nItemID, UINT nFlags, HMENU hSysMenu)
 		}
 	}
 	CMDIFrameWnd::OnMenuSelect(nItemID, nFlags, hSysMenu);
+}
+
+void CMainFrame::OnViewStatusbar()
+{
+	// Toggle flag
+	((CUImagerApp*)::AfxGetApp())->m_bShowStatusbar = !((CUImagerApp*)::AfxGetApp())->m_bShowStatusbar;
+
+	// Store flag
+	((CUImagerApp*)::AfxGetApp())->WriteProfileInt(_T("GeneralApp"), _T("ShowStatusbar"), ((CUImagerApp*)::AfxGetApp())->m_bShowStatusbar);
+	
+	// Show / hide statusbar
+	ShowControlBar(&m_wndStatusBar, ((CUImagerApp*)::AfxGetApp())->m_bShowStatusbar, FALSE);
+}
+
+void CMainFrame::OnUpdateViewStatusbar(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(((CUImagerApp*)::AfxGetApp())->m_bShowStatusbar ? 1 : 0);
+}
+
+void CMainFrame::ToggleToolbars()
+{
+	// Toggle flag
+	((CUImagerApp*)::AfxGetApp())->m_bShowToolbar = !((CUImagerApp*)::AfxGetApp())->m_bShowToolbar;
+
+	// Store flag
+	((CUImagerApp*)::AfxGetApp())->WriteProfileInt(_T("GeneralApp"), _T("ShowToolbar"), ((CUImagerApp*)::AfxGetApp())->m_bShowToolbar);
+	
+	// Show / hide main toolbar
+	ShowControlBar(&m_wndToolBar, ((CUImagerApp*)::AfxGetApp())->m_bShowToolbar, FALSE);
+
+	// Show / hide document's toolbars
+	CDocument* pDoc;
+	CUImagerMultiDocTemplate* curTemplate;
+	POSITION posTemplate, posDoc;
+	posTemplate = ::AfxGetApp()->GetFirstDocTemplatePosition();
+	while (posTemplate)
+	{
+		curTemplate = (CUImagerMultiDocTemplate*)::AfxGetApp()->GetNextDocTemplate(posTemplate);
+		posDoc = curTemplate->GetFirstDocPosition();
+		while (posDoc)
+		{
+			pDoc = curTemplate->GetNextDoc(posDoc);
+			if (pDoc)
+			{
+				if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)) && ((CPictureDoc*)pDoc)->GetFrame())
+				{
+					CToolBar* pBar = ((CPictureDoc*)pDoc)->GetFrame()->GetToolBar();
+					if (pBar != NULL)
+						ShowControlBar(pBar, ((CUImagerApp*)::AfxGetApp())->m_bShowToolbar, FALSE);
+				}
+#ifdef VIDEODEVICEDOC
+				else if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoDeviceDoc)) && ((CVideoDeviceDoc*)pDoc)->GetFrame())
+				{
+					CToolBar* pBar = ((CVideoDeviceDoc*)pDoc)->GetFrame()->GetToolBar();
+					if (pBar != NULL)
+						ShowControlBar(pBar, ((CUImagerApp*)::AfxGetApp())->m_bShowToolbar, FALSE);
+				}
+#endif
+			}
+		}
+	}
+}
+
+void CMainFrame::OnViewToolbar()
+{
+	ToggleToolbars();
+}
+
+void CMainFrame::OnUpdateViewToolbar(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(((CUImagerApp*)::AfxGetApp())->m_bShowToolbar ? 1 : 0);
 }
 
 void CMainFrame::OnViewAllFirstPicture() 

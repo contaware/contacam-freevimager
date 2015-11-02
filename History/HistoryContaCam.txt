@@ -3,6 +3,7 @@ CONTACAM HISTORY
 5.0.3 (xxx yth 2015)
 
 - HD info display
+- Show/hide commands for Statusbar and Toolbars
 - Fixed crash opening "ManyCam Virtual Webcam"
 - Removed audio file playing support as there are better programs that
   can reproduce many more file types

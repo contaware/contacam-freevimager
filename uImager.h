@@ -491,6 +491,10 @@ public:
 	// Top Most
 	BOOL m_bTopMost;
 
+	// Statusbar and Toolbar visibility
+	BOOL m_bShowStatusbar;
+	BOOL m_bShowToolbar;
+
 	// Flag indicating whether it's possible to store window placements
 	BOOL m_bCanSavePlacements;
 

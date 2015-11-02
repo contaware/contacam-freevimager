@@ -194,6 +194,11 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Delete",                     ID_EDIT_DELETE
     END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
+        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+    END
     POPUP "&Capture"
     BEGIN
         MENUITEM "&Network",                    ID_CAPTURE_NETWORK
@@ -325,6 +330,9 @@ BEGIN
     END
     POPUP "&View"
     BEGIN
+        MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
+        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+        MENUITEM SEPARATOR
         MENUITEM "Preview",                     ID_VIEW_VIDEO
         MENUITEM "Fit",                         ID_VIEW_FIT
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
@@ -482,6 +490,9 @@ BEGIN
     END
     POPUP "&View"
     BEGIN
+        MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
+        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+        MENUITEM SEPARATOR
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
         MENUITEM SEPARATOR
         POPUP "Zoom"

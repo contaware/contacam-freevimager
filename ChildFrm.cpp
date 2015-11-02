@@ -19,6 +19,8 @@ IMPLEMENT_DYNCREATE(CChildFrame, CMDIChildWnd)
 
 BEGIN_MESSAGE_MAP(CChildFrame, CMDIChildWnd)
 	//{{AFX_MSG_MAP(CChildFrame)
+	ON_COMMAND(ID_VIEW_TOOLBAR, OnViewToolbar)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_TOOLBAR, OnUpdateViewToolbar)
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_SETMESSAGESTRING, OnSetMessageString)
 END_MESSAGE_MAP()
@@ -36,6 +38,16 @@ CChildFrame::CChildFrame()
 CChildFrame::~CChildFrame()
 {
 
+}
+
+void CChildFrame::OnViewToolbar()
+{
+	::AfxGetMainFrame()->ToggleToolbars();
+}
+
+void CChildFrame::OnUpdateViewToolbar(CCmdUI* pCmdUI) 
+{
+	pCmdUI->SetCheck(((CUImagerApp*)::AfxGetApp())->m_bShowToolbar);
 }
 
 LRESULT CChildFrame::OnSetMessageString(WPARAM wParam, LPARAM lParam)

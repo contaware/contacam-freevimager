@@ -127,7 +127,8 @@ public:
 
 	// Toolbar
 	CToolBar* GetToolBar() {return &m_wndToolBar;};
-	
+	void ToggleToolbars();
+
 	// Statusbar
 	void StatusText(CString sText = _T("")); // if sText is _T("") the idle message is displayed
 	CStatusBar* GetStatusBar() {return &m_wndStatusBar;};
@@ -226,6 +227,10 @@ protected:
 	afx_msg void OnFileSelecttwainsource();
 	afx_msg void OnFileAcquire();
 	afx_msg void OnMenuSelect(UINT nItemID, UINT nFlags, HMENU hSysMenu);
+	afx_msg void OnViewStatusbar();
+	afx_msg void OnUpdateViewStatusbar(CCmdUI* pCmdUI);
+	afx_msg void OnViewToolbar();
+	afx_msg void OnUpdateViewToolbar(CCmdUI* pCmdUI);
 	afx_msg void OnViewAllPreviousPicture();
 	afx_msg void OnViewAllNextPicture();
 	afx_msg void OnViewAllFirstPicture();
