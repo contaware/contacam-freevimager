@@ -3735,10 +3735,10 @@ BEGIN
     ID_PLAY_TRANSITION_OFF  "Turn transition effect off\nTransition Off"
     ID_PLAY_TRANSITION_RANDOM "Random transition effect\nRandom Transition"
     ID_PLAY_TRANSITION_CURTAININ 
-                            "Curtain in transition effect\nCurtain-InTransition"
-    ID_PLAY_TRANSITION_ROOLIN "Roll in transition effect\nRoll-InTransition"
+                            "Curtain in transition effect\nCurtain-In Transition"
+    ID_PLAY_TRANSITION_ROOLIN "Roll in transition effect\nRoll-In Transition"
     ID_PLAY_TRANSITION_SLIDEIN 
-                            "Slide in transition effect\nSlide-InTransition"
+                            "Slide in transition effect\nSlide-In Transition"
 END
 
 STRINGTABLE
