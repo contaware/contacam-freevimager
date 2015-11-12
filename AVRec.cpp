@@ -1060,6 +1060,53 @@ bool CAVRec::EncodeAndWriteFrame(DWORD dwStreamNum,
 	}
 }
 
+#if 0
+int CAVRec::CalcSrcResampleDelay(DWORD dwStreamNum)
+{
+	// Init vars
+	const int nSrcNumSamples = 256;
+	const int nDstNumSamples = 4096;
+	AVCodecContext* pCodecCtx = m_pFormatCtx->streams[dwStreamNum]->codec;
+	uint8_t** ppSrcBuf[MAX_STREAMS];
+	uint8_t** ppDstBuf[MAX_STREAMS];
+	AVSampleFormat src_sample_fmt = m_pSrcWaveFormat[dwStreamNum]->wBitsPerSample == 16 ? AV_SAMPLE_FMT_S16 : AV_SAMPLE_FMT_U8;
+	av_samples_alloc_array_and_samples(	&ppSrcBuf[dwStreamNum],
+										NULL,
+										m_pSrcWaveFormat[dwStreamNum]->nChannels,
+										nSrcNumSamples,
+										src_sample_fmt,
+										0);
+	av_samples_alloc_array_and_samples(	&ppDstBuf[dwStreamNum],
+										NULL,
+										pCodecCtx->channels,
+										nDstNumSamples,
+										pCodecCtx->sample_fmt,
+										0);
+
+	// How many samples remain buffer?
+	swr_convert(m_pAudioConvertCtx[dwStreamNum],
+				ppDstBuf[dwStreamNum], nDstNumSamples,
+				(const uint8_t **)ppSrcBuf[dwStreamNum], nSrcNumSamples);
+	int nBufferedSrcSamples = (int)swr_get_delay(m_pAudioConvertCtx[dwStreamNum], m_pSrcWaveFormat[dwStreamNum]->nSamplesPerSec);
+
+	// Clean-up
+	if (ppSrcBuf[dwStreamNum])
+	{
+		if (*ppSrcBuf[dwStreamNum])
+			av_freep(ppSrcBuf[dwStreamNum]);
+		av_freep(&ppSrcBuf[dwStreamNum]);
+	}
+	if (ppDstBuf[dwStreamNum])
+	{
+		if (*ppDstBuf[dwStreamNum])
+			av_freep(ppDstBuf[dwStreamNum]);
+		av_freep(&ppDstBuf[dwStreamNum]);
+	}
+
+	return nBufferedSrcSamples;
+}
+#endif
+
 bool CAVRec::AddAudioSamples(	DWORD dwStreamNum,
 								DWORD dwNumSamples,
 								LPBYTE pBuf,
@@ -1078,6 +1125,11 @@ bool CAVRec::AddAudioSamples(	DWORD dwStreamNum,
 		::LeaveCriticalSection(&m_csAV);
 		return false;
 	}
+
+	// Flush?
+	BOOL bFlush = FALSE;
+	if (dwNumSamples == 0 || pBuf == NULL)
+		bFlush = TRUE;
 
 	// Re-alloc source buffer?
 	AVSampleFormat src_sample_fmt = m_pSrcWaveFormat[dwStreamNum]->wBitsPerSample == 16 ? AV_SAMPLE_FMT_S16 : AV_SAMPLE_FMT_U8;
@@ -1121,18 +1173,53 @@ bool CAVRec::AddAudioSamples(	DWORD dwStreamNum,
 		memcpy(*m_ppSrcBuf[dwStreamNum], pBuf, nCopyBytes);
 
 	// Encode and Write frame by frame
-	bool res;
-	int nBufferedDstSamples;
+	// Note: swr_convert() buffers samples if you provide insufficient
+	//       output space or if sample rate conversion is done
 	AVCodecContext* pCodecCtx = m_pFormatCtx->streams[dwStreamNum]->codec;
-	do
+	while (TRUE)
 	{
+		// Make sure we have enough source samples to get a
+		// destination frame of m_nDstBufSize[dwStreamNum] samples
+		if (!bFlush)
+		{
+			// Calculate the source samples which would be used if converting
+			// Note: nResampleDelay value tested with CalcSrcResampleDelay()
+			int nBufferedSrcSamples = (int)swr_get_delay(m_pAudioConvertCtx[dwStreamNum], m_pSrcWaveFormat[dwStreamNum]->nSamplesPerSec);
+			int nResampleDelay = 0;
+			if (pCodecCtx->sample_rate > (int)m_pSrcWaveFormat[dwStreamNum]->nSamplesPerSec)		// upsampling
+				nResampleDelay = 16 + 4; // 16 bytes + rounding margin
+			else if (pCodecCtx->sample_rate < (int)m_pSrcWaveFormat[dwStreamNum]->nSamplesPerSec)	// downsampling
+				nResampleDelay = 16 * m_pSrcWaveFormat[dwStreamNum]->nSamplesPerSec / pCodecCtx->sample_rate + 4; // 16 bytes * sampling-ratio + rounding margin
+			int nUsableSrcSamples = nBufferedSrcSamples + (int)dwNumSamples - nResampleDelay;
+
+			// Calculate the usable destination samples from the source ones
+			int nUsableDstSamples = 0;
+			if (nUsableSrcSamples > 0)
+			{
+				nUsableDstSamples = (int)av_rescale_rnd(nUsableSrcSamples,
+														pCodecCtx->sample_rate,
+														m_pSrcWaveFormat[dwStreamNum]->nSamplesPerSec,
+														AV_ROUND_UP);
+			}
+
+			// If not enough samples available then buffer the passed ones and exit
+			if (nUsableDstSamples < m_nDstBufSize[dwStreamNum])
+			{
+				if (dwNumSamples > 0)
+				{
+					swr_convert(m_pAudioConvertCtx[dwStreamNum],
+								NULL, 0,
+								(const uint8_t **)m_ppSrcBuf[dwStreamNum], (int)dwNumSamples);
+				}
+				::LeaveCriticalSection(&m_csAV);
+				return true;
+			}
+		}
+	
 		// Convert to destination format
-		// in and in_count can be set to 0 to flush the last few samples out at the end.
-		// The samples may get buffered in swr if you provide insufficient
-		// output space or if sample rate conversion is done, which requires "future" samples
 		int nConvertedSamples = swr_convert(m_pAudioConvertCtx[dwStreamNum],
 											m_ppDstBuf[dwStreamNum], m_nDstBufSize[dwStreamNum],
-											(const uint8_t **)m_ppSrcBuf[dwStreamNum], (int)dwNumSamples);
+											(const uint8_t **)(bFlush ? NULL : m_ppSrcBuf[dwStreamNum]), (int)(bFlush ? 0 : dwNumSamples));
 		if (nConvertedSamples < 0)
 		{
 			::LeaveCriticalSection(&m_csAV);
@@ -1140,6 +1227,10 @@ bool CAVRec::AddAudioSamples(	DWORD dwStreamNum,
 		}
 		else if (nConvertedSamples > 0)
 		{
+#ifdef _DEBUG
+			if (!bFlush)
+				ASSERT(nConvertedSamples == m_nDstBufSize[dwStreamNum]);
+#endif
 			m_pFrame[dwStreamNum]->nb_samples = nConvertedSamples;
 			AVRational rational = {1, pCodecCtx->sample_rate};
 			m_pFrame[dwStreamNum]->pts = av_rescale_q(m_llTotalFramesOrSamples[dwStreamNum], rational, pCodecCtx->time_base);
@@ -1149,15 +1240,20 @@ bool CAVRec::AddAudioSamples(	DWORD dwStreamNum,
 		}
 
 		// Encode and write samples to file, if nConvertedSamples is 0 -> flush
-		res = EncodeAndWriteFrame(dwStreamNum, nConvertedSamples > 0 ? m_pFrame[dwStreamNum] : NULL, bInterleaved);
-		dwNumSamples = 0; // with next loop get the swr buffered samples
-		nBufferedDstSamples = (int)swr_get_delay(m_pAudioConvertCtx[dwStreamNum], pCodecCtx->sample_rate); // delay is in output samples unit
+		if (!EncodeAndWriteFrame(dwStreamNum, nConvertedSamples > 0 ? m_pFrame[dwStreamNum] : NULL, bInterleaved))
+		{
+			::LeaveCriticalSection(&m_csAV);
+			return false;
+		}
+
+		// With next loop get the swr buffered samples
+		dwNumSamples = 0;
 	}
-	while (nBufferedDstSamples >= m_nDstBufSize[dwStreamNum]);
 
+	// Should never reach this point
+	ASSERT(FALSE);
 	::LeaveCriticalSection(&m_csAV);
-
-	return res;
+	return false;
 }
 
 CString CAVRec::FourCCToString(DWORD dwFourCC)
