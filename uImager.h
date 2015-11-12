@@ -179,11 +179,7 @@ public:
 	//
 	// Supported Switches (they are case-sensitive!):
 	//
-	// /slideshow	 : start in slideshow only mode
 	// /service      : started from the ContaCamService
-	// /play         : play given audio file
-	// /close        : close app after finishing playing the audio file
-	// /hide         : hide mainframe
 	// /p			 : print preview the given file
 	// /pt			 : print the given file(s) to the specified printer
 	class CUImagerCommandLineInfo : public CCommandLineInfo

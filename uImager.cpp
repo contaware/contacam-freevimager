@@ -2243,13 +2243,10 @@ void CUImagerApp::CUImagerCommandLineInfo::ParseParam(const TCHAR* pszParam, BOO
 	{
 		USES_CONVERSION;
 		ParseParamFlag(T2CA(pszParam));
-
 		if (pszParam)
 		{
-			if (_tcscmp(pszParam, _T("hide")) == 0) // Case sensitive!
-				((CUImagerApp*)::AfxGetApp())->m_bHideMainFrame = TRUE;
 #ifdef VIDEODEVICEDOC
-			else if (_tcscmp(pszParam, _T("service")) == 0) // Case sensitive!
+			if (_tcscmp(pszParam, _T("service")) == 0) // Case sensitive!
 				((CUImagerApp*)::AfxGetApp())->m_bServiceProcess = TRUE;
 #endif
 		}
@@ -2265,13 +2262,13 @@ void CUImagerApp::CUImagerCommandLineInfo::ParseParam(const char* pszParam, BOOL
 	if (bFlag)
 	{
 		ParseParamFlag(pszParam);
-
-		if (strcmp(pszParam, "hide") == 0) // Case sensitive!
-			((CUImagerApp*)::AfxGetApp())->m_bHideMainFrame = TRUE;
+		if (pszParam)
+		{
 #ifdef VIDEODEVICEDOC
-		else if (strcmp(pszParam, "service") == 0) // Case sensitive!
-			((CUImagerApp*)::AfxGetApp())->m_bServiceProcess = TRUE;
+			if (strcmp(pszParam, "service") == 0) // Case sensitive!
+				((CUImagerApp*)::AfxGetApp())->m_bServiceProcess = TRUE;
 #endif
+		}
 	}
 	else
 		ParseParamNotFlag(pszParam);
