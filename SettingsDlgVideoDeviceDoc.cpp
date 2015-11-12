@@ -220,7 +220,7 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 		m_sMicroApacheDocRoot.CompareNoCase(m_sMicroApacheDocRootOld) != 0)
 	{
 		// Stop Micro Apache
-		if (pApp->m_bStartMicroApache && !CVideoDeviceDoc::MicroApacheShutdown())
+		if (pApp->m_bStartMicroApache && !CVideoDeviceDoc::MicroApacheShutdown(MICROAPACHE_TIMEOUT_MS))
 		{
 			EndWaitCursor();
 			::AfxMessageBox(ML_STRING(1474, "Failed to stop the web server"),
@@ -244,7 +244,7 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 		if (m_bStartMicroApache													&&
 			!(CVideoDeviceDoc::MicroApacheInitStart()							&&
 			CVideoDeviceDoc::MicroApacheWaitStartDone(MICROAPACHE_TIMEOUT_MS)	&&
-			CVideoDeviceDoc::MicroApacheWaitCanConnect()))
+			CVideoDeviceDoc::MicroApacheWaitCanConnect(MICROAPACHE_TIMEOUT_MS)))
 		{
 			EndWaitCursor();
 			::AfxMessageBox(ML_STRING(1475, "Failed to start the web server") + _T("\n") + 

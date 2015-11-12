@@ -794,7 +794,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			{
 #ifdef VIDEODEVICEDOC
 				// Try to set the microapache server to MICROAPACHE_PREFERRED_PORT
-				if (!CVideoDeviceDoc::MicroApacheIsPortUsed(MICROAPACHE_PREFERRED_PORT))
+				if (!CVideoDeviceDoc::MicroApacheIsPortUsed(MICROAPACHE_PREFERRED_PORT, MICROAPACHE_STARTUP_TIMEOUT_MS))
 				{
 					m_nMicroApachePort = MICROAPACHE_PREFERRED_PORT;
 					WriteProfileInt(_T("GeneralApp"), _T("MicroApachePort"), m_nMicroApachePort);
@@ -840,15 +840,16 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		CVideoDeviceDoc::MicroApacheUpdateMainFiles();
 
 		// Start Micro Apache
-		// Note: make sure the web server is running because the below devices
-		//       autorun which can connect to localhost's push.php or poll.php
-		//       and the browser autostart need it
-		if (m_bStartMicroApache														&&
-			!(CVideoDeviceDoc::MicroApacheInitStart()								&&
-			CVideoDeviceDoc::MicroApacheWaitStartDone(	m_bServiceProcess ?
-														MICROAPACHE_SERVICEPROCESS_TIMEOUT_MS :
-														MICROAPACHE_TIMEOUT_MS)		&&
-			CVideoDeviceDoc::MicroApacheWaitCanConnect()))
+		// Note:      make sure the web server is running because the below devices
+		//            autorun which can connect to localhost's push.php or poll.php
+		//            and the browser autostart need it
+		// Attention: with MicroApacheWaitStartDone() we make sure that mapache.exe
+		//            is really listening because MicroApacheWaitCanConnect() alone
+		//            could return TRUE if the configured port is used by another server
+		if (m_bStartMicroApache															&&
+			!(CVideoDeviceDoc::MicroApacheInitStart()									&&
+			CVideoDeviceDoc::MicroApacheWaitStartDone(MICROAPACHE_STARTUP_TIMEOUT_MS)	&&
+			CVideoDeviceDoc::MicroApacheWaitCanConnect(MICROAPACHE_STARTUP_TIMEOUT_MS)))
 		{
 			CString sMsg(	ML_STRING(1475, "Failed to start the web server") + _T(" ") +
 							ML_STRING(1476, "(change the Port number to an unused one)"));
@@ -1663,7 +1664,7 @@ void CUImagerApp::SaveOnEndSession()
 	{
 		CVideoDeviceDoc::VlmShutdown();
 		if (m_bStartMicroApache)
-			CVideoDeviceDoc::MicroApacheShutdown();
+			CVideoDeviceDoc::MicroApacheShutdown(MICROAPACHE_TIMEOUT_MS);
 		if (!m_bServiceProcess)
 			BrowserAutostart();
 		::LogLine(_T("%s"), ML_STRING(1566, "Closing") + _T(" ") + APPNAME_NOEXT + _T(" (Session End)"));
@@ -1850,7 +1851,7 @@ int CUImagerApp::ExitInstance()
 
 		// Micro Apache shutdown
 		if (m_bStartMicroApache)
-			CVideoDeviceDoc::MicroApacheShutdown();
+			CVideoDeviceDoc::MicroApacheShutdown(MICROAPACHE_TIMEOUT_MS);
 
 		// Browser autostart
 		if (!m_bServiceProcess)

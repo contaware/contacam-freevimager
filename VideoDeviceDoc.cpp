@@ -6367,7 +6367,7 @@ BOOL CVideoDeviceDoc::MicroApacheMakePasswordFile(BOOL bDigest, const CString& s
 	}
 }
 
-BOOL CVideoDeviceDoc::MicroApacheIsPortUsed(int nPort)
+BOOL CVideoDeviceDoc::MicroApacheIsPortUsed(int nPort, DWORD dwTimeout)
 {
 	BOOL bUsed = FALSE;
 	CNetCom NetCom;
@@ -6386,7 +6386,7 @@ BOOL CVideoDeviceDoc::MicroApacheIsPortUsed(int nPort)
 		DWORD Event = ::WaitForMultipleObjects(	2,
 												hEventArray,
 												FALSE,
-												MICROAPACHE_TIMEOUT_MS);
+												dwTimeout);
 		switch (Event)
 		{
 			// Http Connected Event
@@ -6444,7 +6444,7 @@ BOOL CVideoDeviceDoc::MicroApacheWaitStartDone(DWORD dwTimeout)
 	return TRUE;
 }
 
-BOOL CVideoDeviceDoc::MicroApacheWaitCanConnect()
+BOOL CVideoDeviceDoc::MicroApacheWaitCanConnect(DWORD dwTimeout)
 {
 	CNetCom NetCom;
 	HANDLE hEventArray[2];
@@ -6467,7 +6467,7 @@ BOOL CVideoDeviceDoc::MicroApacheWaitCanConnect()
 			DWORD Event = ::WaitForMultipleObjects(	2,
 													hEventArray,
 													FALSE,
-													MICROAPACHE_TIMEOUT_MS);
+													dwTimeout);
 			switch (Event)
 			{
 				// Http Connected Event
@@ -6499,7 +6499,7 @@ BOOL CVideoDeviceDoc::MicroApacheWaitCanConnect()
 	return FALSE;
 }
 
-BOOL CVideoDeviceDoc::MicroApacheShutdown()
+BOOL CVideoDeviceDoc::MicroApacheShutdown(DWORD dwTimeout)
 {
 	BOOL res;
 	LPBYTE pData = NULL;
@@ -6557,21 +6557,21 @@ BOOL CVideoDeviceDoc::MicroApacheShutdown()
 		::EnumKillProcByName(MICROAPACHE_FILENAME, TRUE);
 	}
 
-	// Wait a max of MICROAPACHE_TIMEOUT_MS
+	// Wait a max of dwTimeout
 	res = TRUE;
 	DWORD dwElapsedMs = 0U;
 	while (::EnumKillProcByName(MICROAPACHE_FILENAME) > 0)
 	{
 		dwElapsedMs += MICROAPACHE_WAITTIME_MS;
 		::Sleep(MICROAPACHE_WAITTIME_MS);
-		if (dwElapsedMs >= MICROAPACHE_TIMEOUT_MS)
+		if (dwElapsedMs >= dwTimeout)
 		{
 			res = FALSE;
 			break;
 		}
 	}
 
-	// Wait again a max of MICROAPACHE_TIMEOUT_MS
+	// Wait again a max of dwTimeout
 	if (!res)
 	{
 		::EnumKillProcByName(MICROAPACHE_FILENAME, TRUE);
@@ -6581,7 +6581,7 @@ BOOL CVideoDeviceDoc::MicroApacheShutdown()
 		{
 			dwElapsedMs += MICROAPACHE_WAITTIME_MS;
 			::Sleep(MICROAPACHE_WAITTIME_MS);
-			if (dwElapsedMs >= MICROAPACHE_TIMEOUT_MS)
+			if (dwElapsedMs >= dwTimeout)
 			{
 				res = FALSE;
 				break;

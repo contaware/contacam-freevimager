@@ -946,11 +946,11 @@ public:
 	static void MicroApacheUpdateMainFiles();
 	static BOOL MicroApacheUpdateWebFiles(CString sAutoSaveDir);
 	static BOOL MicroApacheMakePasswordFile(BOOL bDigest, const CString& sAreaname, const CString& sUsername, const CString& sPassword);
-	static BOOL MicroApacheIsPortUsed(int nPort);
+	static BOOL MicroApacheIsPortUsed(int nPort, DWORD dwTimeout);
 	static BOOL MicroApacheInitStart();
 	static BOOL MicroApacheWaitStartDone(DWORD dwTimeout);
-	static BOOL MicroApacheWaitCanConnect();
-	static BOOL MicroApacheShutdown();
+	static BOOL MicroApacheWaitCanConnect(DWORD dwTimeout);
+	static BOOL MicroApacheShutdown(DWORD dwTimeout);
 	
 	// Vlm
 	static CString VlmGetConfigFileName();
