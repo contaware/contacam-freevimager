@@ -25,8 +25,8 @@ REM get current version
 for /F "tokens=3" %%V in (CurrentVersion.nsh) do set CURRENTVERSION=%%~V
 
 REM Delete possible old output folder
-echo Deleting %CURRENTVERSION% output folder
-rmdir /S /Q .\%CURRENTVERSION%
+echo Deleting %CURRENTVERSION% output folder if existing
+rmdir /S /Q .\%CURRENTVERSION% >nul 2>&1
 
 REM 7-zip the source code
 echo Starting to compress source code
