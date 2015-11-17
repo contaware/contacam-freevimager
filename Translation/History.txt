@@ -2,7 +2,7 @@ TRANSLATIONS HISTORY
 
 5.0.3 (xxx yth 2015)
 
-- ...
+- Moved ID from 1867 -> 1800!
 
 5.0.1 (October 3rd 2015)
 

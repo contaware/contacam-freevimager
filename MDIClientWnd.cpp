@@ -118,8 +118,12 @@ void CMDIClientWnd::OnPaint()
 	DrawT(memDC, s, rcDraw);
 
 #ifdef VIDEODEVICEDOC
-	// Draw point 1.
+	// Draw Add Cam
 	rcDraw.top += 2*nLineHeight;
+	DrawT(memDC,  ML_STRING(1750, "ADD CAMERA"), rcDraw);
+
+	// Draw point 1.
+	rcDraw.top += nLineHeight;
 	DrawT(memDC, ML_STRING(1751, "1. Make sure your video capture device is plugged-in and drivers are installed"), rcDraw);
 	rcDraw.top += nLineHeight;
 	DrawT(memDC, _T("    ") + ML_STRING(1752, "(network and DV cameras do not need specific drivers)"), rcDraw);
@@ -138,7 +142,7 @@ void CMDIClientWnd::OnPaint()
 
 	// Draw point 4.
 	rcDraw.top += nLineHeight;	
-	DrawT(memDC, ML_STRING(1757, "4. Choose Browse from the View menu") +  _T(" ") + ML_STRING(1867, "or type in Web Browser's address bar") + _T(":"), rcDraw);
+	DrawT(memDC, ML_STRING(1757, "4. Choose Browse from the View menu") +  _T(" ") + ML_STRING(1800, "or type in Web Browser's address bar") + _T(":"), rcDraw);
 
 	// Draw indent
 	rcDraw.top += nLineHeight;
@@ -177,6 +181,19 @@ void CMDIClientWnd::OnPaint()
 	m_rcLinkLocalhost = rcLastText;
 	m_rcLinkLocalhost.top -= TextMetrics.tmAscent;
 	m_rcLinkLocalhost.bottom -= TextMetrics.tmAscent;
+
+	// Draw Remove Cams
+	rcDraw.left = m_nLeftMargin;
+	rcDraw.top += 2*nLineHeight;
+	DrawT(memDC, ML_STRING(1801, "REMOVE CAMERAS"), rcDraw);
+
+	// Draw point 1.
+	rcDraw.top += nLineHeight;
+	DrawT(memDC, ML_STRING(1802, "1. Close all running cameras"), rcDraw);
+
+	// Draw point 2.
+	rcDraw.top += nLineHeight;
+	DrawT(memDC, ML_STRING(1803, "2. Choose Delete from the Edit menu"), rcDraw);
 #endif
 
 	// Clean-Up

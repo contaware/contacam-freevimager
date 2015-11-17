@@ -110,7 +110,7 @@ BOOL CLicenseDlg::OnInitDialog()
 		// with 16-bit versions of Windows.
 		// It is not necessary for Win32-based
 		// applications to unlock and free resources. 
-		// LoadResource is automatically freed when the module is was loaded
+		// LoadResource is automatically freed when the module it was loaded
 		// from is unloaded.
 		//
 		// Also calling the dialog several times is not a problem,
