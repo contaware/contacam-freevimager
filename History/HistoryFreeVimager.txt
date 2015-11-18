@@ -1,6 +1,6 @@
 FREEVIMAGER HISTORY
 
-5.0.3 (xxx yth 2015)
+5.0.3 (November 18th 2015)
 
 - Jpeg loading is more fault tolerant: ignore missing SOI marker 
 - Show/hide commands for Statusbar and Toolbars
