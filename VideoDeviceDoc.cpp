@@ -4804,7 +4804,6 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("HTTPVideoSizeY"), m_nHttpVideoSizeY);
 
 	// All other
-	pApp->WriteProfileInt(sSection, _T("VideoView"), m_bVideoView);
 	pApp->WriteProfileInt(sSection, _T("Deinterlace"), (int)m_bDeinterlace);
 	pApp->WriteProfileInt(sSection, _T("Rotate180"), (int)m_bRotate180);
 	pApp->WriteProfileInt(sSection, _T("RecAutoOpen"), m_bRecAutoOpen);
@@ -4883,9 +4882,7 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("DetectionStopHour"), m_DetectionStopTime.GetHour());
 	pApp->WriteProfileInt(sSection, _T("DetectionStopMin"), m_DetectionStopTime.GetMinute());
 	pApp->WriteProfileInt(sSection, _T("DetectionStopSec"), m_DetectionStopTime.GetSecond());
-	pApp->WriteProfileInt(sSection, _T("ShowFrameTime"), m_bShowFrameTime);
 	pApp->WriteProfileInt(sSection, _T("RefFontSize"), m_nRefFontSize);
-	pApp->WriteProfileInt(sSection, _T("ShowMovementDetections"), m_bShowMovementDetections);
 	pApp->WriteProfileInt(sSection, _T("IntensityLimit"), m_nMovementDetectorIntensityLimit);
 	pApp->WriteProfileInt(sSection, _T("AnimatedGifWidth"), m_dwAnimatedGifWidth);
 	pApp->WriteProfileInt(sSection, _T("AnimatedGifHeight"), m_dwAnimatedGifHeight);
@@ -5950,6 +5947,7 @@ void CVideoDeviceDoc::OnViewVideo()
 	m_bVideoView = !m_bVideoView;
 	if (!m_bVideoView)
 		GetView()->Invalidate(FALSE);
+	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("VideoView"), m_bVideoView);
 }
 
 void CVideoDeviceDoc::OnUpdateViewVideo(CCmdUI* pCmdUI) 
@@ -8699,6 +8697,7 @@ __forceinline void CVideoDeviceDoc::SaveFrameList(BOOL bDetectionSequenceDone)
 void CVideoDeviceDoc::OnViewFrametime() 
 {
 	m_bShowFrameTime = !m_bShowFrameTime;
+	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("ShowFrameTime"), m_bShowFrameTime);
 }
 
 void CVideoDeviceDoc::OnUpdateViewFrametime(CCmdUI* pCmdUI) 
@@ -8710,6 +8709,7 @@ void CVideoDeviceDoc::OnViewDetections()
 {
 	m_bShowMovementDetections = !m_bShowMovementDetections;
 	GetView()->Invalidate(FALSE);
+	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("ShowMovementDetections"), m_bShowMovementDetections);
 }
 
 void CVideoDeviceDoc::OnUpdateViewDetections(CCmdUI* pCmdUI) 
