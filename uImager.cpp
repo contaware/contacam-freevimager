@@ -28,12 +28,10 @@
 #include "YuvToYuv.h"
 #include "sinstance.h"
 #include <atlbase.h>
-#include "ProgressDlg.h"
 #ifdef VIDEODEVICEDOC
 #include "DeleteCamFoldersDlg.h"
 #include "SettingsDlgVideoDeviceDoc.h"
 #include <WinSvc.h>
-#include "ProgressDlg.h"
 #include "HostPortDlg.h"
 #else
 #include "SettingsDlg.h"
@@ -319,9 +317,6 @@ static void my_av_log_empty(void* ptr, int level, const char* fmt, va_list vl)
 
 BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 {
-#ifdef VIDEODEVICEDOC
-	CProgressDlgThread* pProgressDlgThread = NULL;
-#endif
 	CInstanceChecker* pInstanceChecker = NULL;
 	try
 	{
@@ -674,17 +669,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			::AfxMessageBox(ML_STRING(1171, "No usable WinSock DLL found"), MB_OK | MB_ICONSTOP);
 			throw (int)0;
 		}
-
-		// Stop from Service flag
-		BOOL bStopFromService = !m_bServiceProcess && GetContaCamServiceState() == CONTACAMSERVICE_RUNNING;
-
-		// Stop from Service Progress Dialog
-		if (bStopFromService && (!m_bTrayIcon || m_bFirstRun)) // if m_bFirstRun set we will not minimize to tray in CMainFrame::OnCreate()
-		{
-			pProgressDlgThread = new CProgressDlgThread(ML_STRING(1764, "Starting") + _T(" ") + APPNAME_NOEXT + _T("..."),
-														0,
-														CONTACAMSERVICE_TIMEOUT);
-		}
 #endif
 
 		// Create main MDI Frame window (before stopping service so that the tray icon gets created)
@@ -710,20 +694,24 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			pInstanceChecker = NULL;
 		}
 
-#ifdef VIDEODEVICEDOC
 		// Do stop from Service, this may take some time...
-		if (bStopFromService)
+#ifdef VIDEODEVICEDOC
+		if (!m_bServiceProcess && GetContaCamServiceState() == CONTACAMSERVICE_RUNNING)
 		{
-			if (ControlContaCamService(CONTACAMSERVICE_CONTROL_END_PROC) == ERROR_SUCCESS)
-				m_bDoStartFromService = TRUE;
-		}
-
-		// The mainframe must be created before you delete pProgressDlgThread
-		// this to allow the AttachThreadInput to correctly pass the focus!
-		if (pProgressDlgThread)
-		{	
-			delete pProgressDlgThread;
-			pProgressDlgThread = NULL;
+			CServiceControlEndProcThread ServiceControlEndProcThread;
+			::AfxGetMainFrame()->PopupToaster(	ML_STRING(1764, "Starting") + _T(" ") + APPNAME_NOEXT,
+												ML_STRING(1565, "Please wait..."),
+												0);
+			ServiceControlEndProcThread.Start();
+			do 
+			{
+				ServiceControlEndProcThread.ProcMsg();	// pump messages to show toaster
+				::Sleep(10);
+			}
+			while (ServiceControlEndProcThread.IsAlive());
+			::AfxGetMainFrame()->CloseToaster();
+			ServiceControlEndProcThread.ProcMsg();		// pump messages to hide toaster
+			m_bDoStartFromService = TRUE;
 		}
 #endif
 
@@ -886,20 +874,12 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 	}
 	catch (int)
 	{
-#ifdef VIDEODEVICEDOC
-		if (pProgressDlgThread)
-			delete pProgressDlgThread;
-#endif
 		if (pInstanceChecker)
 			delete pInstanceChecker;
 		return FALSE;
 	}
 	catch (CException* e)
 	{
-#ifdef VIDEODEVICEDOC
-		if (pProgressDlgThread)
-			delete pProgressDlgThread;
-#endif
 		if (pInstanceChecker)
 			delete pInstanceChecker;
 		e->ReportError();

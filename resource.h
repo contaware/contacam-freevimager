@@ -100,7 +100,6 @@
 #define IDI_JPG                         296
 #define IDD_SNAPSHOT                    297
 #define IDI_TIF                         297
-#define IDD_PROGRESS                    298
 #define IDI_PNG                         298
 #define IDD_SNAPSHOT_FTP_CONFIGURATION  299
 #define IDI_PCX                         299

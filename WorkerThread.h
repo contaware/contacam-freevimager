@@ -12,20 +12,6 @@ public:
 	void Kill_NoBlocking();										// sets m_hKillEvent
 	bool WaitDone_Blocking(DWORD dwTimeout = INFINITE);			// returns false if after the given timeout the thread is not stopping
 	void SetProcMsg(bool bProcMsg) {m_bProcMsg = bProcMsg;};	// to "abuse" the thread class with a message loop instead of running a thread
-	__forceinline bool DoExit() {return (m_bProcMsg ? ProcMsg() : ::WaitForSingleObject(m_hKillEvent, 0) == WAIT_OBJECT_0);};
-	__forceinline HANDLE GetHandle() const {return m_hThread;};
-	__forceinline DWORD GetId() const {return m_nThreadID;};
-	__forceinline HANDLE GetKillEvent() const {return m_hKillEvent;};
-	__forceinline HANDLE GetStartupEvent() const {return m_hStartupEvent;};
-	__forceinline bool IsRunning() {return m_bRunning;};
-	__forceinline bool IsAlive() {return m_bAlive;};
-
-protected:
-	virtual BOOL InitInstance(){return TRUE;};
-	virtual BOOL OnInitThread(){return TRUE;};
-	virtual void OnExitThread(int nExitCode){nExitCode;};
-	virtual int Run();
-	virtual int Work();
 	__forceinline bool ProcMsg()
 	{
 		MSG Msg;
@@ -48,6 +34,20 @@ protected:
 		}
 		return false;
 	}
+	__forceinline bool DoExit() {return (m_bProcMsg ? ProcMsg() : ::WaitForSingleObject(m_hKillEvent, 0) == WAIT_OBJECT_0);};
+	__forceinline HANDLE GetHandle() const {return m_hThread;};
+	__forceinline DWORD GetId() const {return m_nThreadID;};
+	__forceinline HANDLE GetKillEvent() const {return m_hKillEvent;};
+	__forceinline HANDLE GetStartupEvent() const {return m_hStartupEvent;};
+	__forceinline bool IsRunning() {return m_bRunning;};
+	__forceinline bool IsAlive() {return m_bAlive;};
+
+protected:
+	virtual BOOL InitInstance(){return TRUE;};
+	virtual BOOL OnInitThread(){return TRUE;};
+	virtual void OnExitThread(int nExitCode){nExitCode;};
+	virtual int Run();
+	virtual int Work();
 
 	HANDLE volatile m_hStartupEvent;
 	HANDLE volatile m_hKillEvent;

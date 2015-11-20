@@ -79,7 +79,7 @@ public:
 
 	// Toaster window
 	void PopupToaster(const CString& sTitle, const CString& sText, DWORD dwWaitTimeMs = 10000);	// call from any thread
-	void CloseToaster(BOOL bLastToasterDone = FALSE);																		// call only from UI thread
+	void CloseToaster(BOOL bLastToasterDone = FALSE);											// call only from UI thread
 
 	// Enable / Disable Tray Icon
 	void TrayIcon(BOOL bEnable);

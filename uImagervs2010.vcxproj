@@ -963,7 +963,6 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="ProgressDlg.cpp" />
     <ClCompile Include="RedEyeDlg.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCam TraceLogFile|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -1454,7 +1453,6 @@
     <ClInclude Include="PreviewFileDlg.h" />
     <ClInclude Include="PrintPreviewScaleEdit.h" />
     <ClInclude Include="Progress.h" />
-    <ClInclude Include="ProgressDlg.h" />
     <ClInclude Include="RedEyeDlg.h" />
     <ClInclude Include="RenameDlg.h" />
     <ClInclude Include="ResizingDlg.h" />

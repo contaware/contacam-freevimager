@@ -228,9 +228,6 @@
     <ClCompile Include="PrintPreviewScaleEdit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ProgressDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="RedEyeDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -631,9 +628,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Progress.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ProgressDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RedEyeDlg.h">

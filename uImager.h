@@ -127,7 +127,6 @@
 class CVideoDeviceDoc;
 class CPictureDoc;
 class CUImagerDoc;
-class CProgressDlg;
 
 class CAboutDlg : public CDialog
 {
@@ -254,6 +253,17 @@ public:
 	CSchedulerEntry* GetDailySchedulerEntry(CString sDevicePathName);
 	void DeleteOnceSchedulerEntry(CString sDevicePathName);
 	void DeleteDailySchedulerEntry(CString sDevicePathName);
+
+	//  Service Control End Process Thread
+	class CServiceControlEndProcThread : public CWorkerThread
+	{
+		public:
+			CServiceControlEndProcThread(){;};
+			virtual ~CServiceControlEndProcThread(){Kill();};
+
+		protected:
+			int Work() {ControlContaCamService(CONTACAMSERVICE_CONTROL_END_PROC); return 0;};
+	};
 #endif
 
 	// Constructor & Destructor
