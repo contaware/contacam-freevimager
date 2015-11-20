@@ -151,12 +151,20 @@ BOOL CALLBACK EnumChildWindowCallBack(HWND hwnd, LPARAM lParam)
 	GetWindowText(hwnd, szTitle, MAX_PATH);
 	if (szTitle[0] != _T('\0')) 
 	{
-		*pbClosePosted = TRUE;
-		PostMessage(hwnd, WM_CLOSE, 0, 0);
-		return FALSE; // Stop enumerating
+		// Skip standard hidden windows
+		if (_tcsicmp(szTitle, _T("DDE Server Window")) == 0	||
+			_tcsicmp(szTitle, _T("MSCTFIME UI")) == 0		||
+			_tcsicmp(szTitle, _T("Default IME")) == 0)
+			return TRUE;	// Keep enumerating
+		else
+		{
+			*pbClosePosted = TRUE;
+			PostMessage(hwnd, WM_CLOSE, 0, 0);
+			return FALSE;	// Stop enumerating
+		}
 	} 
 	else
-		return TRUE; // Keep enumerating
+		return TRUE;		// Keep enumerating
 }
 
 BOOL CALLBACK EnumWindowCallBack(HWND hwnd, LPARAM lParam) 
@@ -166,17 +174,25 @@ BOOL CALLBACK EnumWindowCallBack(HWND hwnd, LPARAM lParam)
 	GetWindowText(hwnd, szTitle, MAX_PATH);
 	if (szTitle[0] != _T('\0'))
 	{
-		*pbClosePosted = TRUE;
-		PostMessage(hwnd, WM_CLOSE, 0, 0);
-		return FALSE; // Stop enumerating
+		// Skip standard hidden windows
+		if (_tcsicmp(szTitle, _T("DDE Server Window")) == 0	||
+			_tcsicmp(szTitle, _T("MSCTFIME UI")) == 0		||
+			_tcsicmp(szTitle, _T("Default IME")) == 0)
+			return TRUE;	// Keep enumerating
+		else
+		{
+			*pbClosePosted = TRUE;
+			PostMessage(hwnd, WM_CLOSE, 0, 0);
+			return FALSE;	// Stop enumerating
+		}
 	} 
 	else
 	{
 		EnumChildWindows(hwnd, EnumChildWindowCallBack, lParam);
 		if (*pbClosePosted)
-			return FALSE; // Stop enumerating
+			return FALSE;	// Stop enumerating
 		else
-			return TRUE; // Keep enumerating
+			return TRUE;	// Keep enumerating
 	}
 }
 
@@ -381,18 +397,17 @@ VOID WINAPI ContaCamServiceHandler(DWORD fdwControl)
 		case SERVICE_CONTROL_STOP:
 		case SERVICE_CONTROL_SHUTDOWN:
 		{
-			// Stop worker thread
+			// Stop all
 			StopWorkerThread();
-
+			for (int i = MAXPROCCOUNT - 1 ; i >= 0 ; i--)
+				EndProcess(i);
+			
 			// Set status
 			g_serviceStatus.dwWin32ExitCode = 0; 
 			g_serviceStatus.dwCurrentState  = SERVICE_STOPPED; 
 			g_serviceStatus.dwCheckPoint    = 0; 
 			g_serviceStatus.dwWaitHint      = 0;
 
-			// Terminate all processes started by this service before shutdown
-			for (int i = MAXPROCCOUNT - 1 ; i >= 0 ; i--)
-				EndProcess(i);
 			break;
 		}
 		case SERVICE_CONTROL_PAUSE:
@@ -891,26 +906,26 @@ void _tmain(int argc, TCHAR* argv[])
 			_tcsicmp(_T("/?"), argv[1]) == 0)
 		{
 			_tprintf(_T("This process(es) starter service has the following options\n"));
-			_tprintf(_T("(only one option at the time, example: -r -proc is not working!)\n\n"));
+			_tprintf(_T("(only one option at the time, example: -r -proc is not working):\n"));
 			_tprintf(_T("-h or -?  print this help page\n"));
-			_tprintf(_T("-i        install service using this executable name, current user and\n"));
-			_tprintf(_T("          entered password. Sequence: 1. uninstall 2. install\n"));
+			_tprintf(_T("-i        install service using this executable name, entered username\n"));
+			_tprintf(_T("          and password. This option will: 1. uninstall 2. install and\n"));
 			_tprintf(_T("          3. run service without starting ProgramName(s)\n"));
-			_tprintf(_T("-u        uninstall service, that stops also service exiting ProgramName(s)\n"));
+			_tprintf(_T("-u        uninstall service by first stopping it and exiting ProgramName(s)\n"));
 			_tprintf(_T("-r        run service without starting ProgramName(s)\n"));
-			_tprintf(_T("-k        stop service, that exits also ProgramName(s)\n"));
+			_tprintf(_T("-k        stop service exiting also ProgramName(s)\n"));
 			_tprintf(_T("-proc     start ProgramName(s) set in ini file\n"));
 			_tprintf(_T("-noproc   exit ProgramName(s) trying 1. WM_CLOSE 2. WM_QUIT 3. killing\n\n"));
-			_tprintf(_T("Ini file must be located in the same directory as this executable, format is:\n\n"));
+			_tprintf(_T("Ini file must be located in the same directory as this executable, format:\n"));
 			_tprintf(_T("[Settings]\n"));
 			_tprintf(_T("CheckProcessSeconds = 30  ; if 0 the restart watchdog is disabled\n"));
 			_tprintf(_T("[Process0]\n"));
-			_tprintf(_T("ProgramName = myprog.exe  ; if no path specified this executable's path is used\n"));
+			_tprintf(_T("ProgramName = myprog.exe  ; if no path specified this exe's path is used\n"));
 			_tprintf(_T("ProgramParams = /myparams ; optional parameter(s)\n"));
 			_tprintf(_T("StartProcessWait = 0      ; waits the given amount of ms after starting\n"));
 			_tprintf(_T("EndProcessTimeout = 15000 ; waits the given amount of ms before killing\n"));
 			_tprintf(_T("Restart = Yes ; if set ProgramName is verified each CheckProcessSeconds\n"));
-			_tprintf(_T("[Process1]\n...\n\n"));
+			_tprintf(_T("[Process1]\n...\n"));
 		}
 		// uninstall service
 		else if (_tcsicmp(_T("-u"), argv[1]) == 0)
