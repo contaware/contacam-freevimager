@@ -5142,6 +5142,8 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 		m_HttpGetFrameLocations.Add(_T("/cgi-bin/cmd/system?GET_STREAM"));	// ACTi
 
 		m_HttpGetFrameLocations.Add(_T("/control/faststream.jpg?stream=full"));	// Mobotix
+
+		m_HttpGetFrameLocations.Add(_T("/Streaming/channels/2/httppreview"));	// Hikvision (set sub-stream to MJPEG in web interface)
 		
 		m_HttpGetFrameLocations.Add(CString(_T("/image.cgi?mode=http")) +
 									_T("&id=") + HTTP_USERNAME_PLACEHOLDER + 
@@ -5217,6 +5219,8 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 		m_HttpGetFrameLocations.Add(_T("/netcam.jpg"));						// Stardot
 
 		m_HttpGetFrameLocations.Add(_T("/cgi-bin/encoder?SNAPSHOT"));		// ACTi
+
+		m_HttpGetFrameLocations.Add(_T("/Streaming/channels/1/picture"));	// Hikvision
 
 		m_HttpGetFrameLocations.Add(_T("/capture1.jpg"));					// Active WebCam Video Surveillance Software
 
