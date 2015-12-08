@@ -50,6 +50,12 @@ REM Move the 7-zipped source code
 echo Move source code
 move ..\uimager_Full.7z .\%CURRENTVERSION%\source-code\contacam-freevimager-src-ver%CURRENTVERSION%.7z
 
+REM Copy the .pdb files to the source-code folder
+echo Copy FreeVimager.pdb
+copy ..\bin\FreeVimager\FreeVimager.pdb .\%CURRENTVERSION%\source-code\FreeVimager.pdb
+echo Copy ContaCam.pdb
+copy ..\bin\ContaCam\ContaCam.pdb .\%CURRENTVERSION%\source-code\ContaCam.pdb
+
 REM Copy FreeVimager portable versions
 echo Copy FreeVimager.exe
 copy ..\bin\FreeVimager\FreeVimager.exe .\%CURRENTVERSION%\english\FreeVimager-%CURRENTVERSION%-Portable.exe
