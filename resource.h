@@ -105,6 +105,7 @@
 #define IDI_PCX                         299
 #define IDD_SETTINGS_VIDEODEVICEDOC     300
 #define IDI_EMF                         300
+#define IDI_BOMB                        303
 #define IDD_CAMERABASICSETTINGS         304
 #define IDD_RENAME                      305
 #define IDD_DELETE_CAM_FOLDERS          306
@@ -3076,6 +3077,7 @@
 #define IDC_EDIT_CREDITS                2564
 #define IDC_VIDEO_COMPRESSION_QUALITY_INFO 2565
 #define IDC_BUTTON_DOCROOT              2566
+#define IDC_BUTTON_CRASHME              2567
 #define ID_EDIT_ROTATE_FLIP             32778
 #define ID_FILE_SELECTTWAINSOURCE       32779
 #define ID_FILE_ACQUIRE                 32780
@@ -3300,7 +3302,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1496
 #define _APS_NEXT_COMMAND_VALUE         33510
-#define _APS_NEXT_CONTROL_VALUE         2567
+#define _APS_NEXT_CONTROL_VALUE         2568
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

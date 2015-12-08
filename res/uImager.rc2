@@ -46,6 +46,7 @@ IDI_TIF                 ICON    DISCARDABLE     "res\\tif.ico"
 IDI_PNG                 ICON    DISCARDABLE     "res\\png.ico"
 IDI_PCX                 ICON    DISCARDABLE     "res\\pcx.ico"
 IDI_EMF                 ICON    DISCARDABLE     "res\\emf.ico"
+IDI_BOMB                ICON    DISCARDABLE     "res\\bomb.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -153,6 +154,7 @@ IDI_TIF                 ICON    DISCARDABLE     "res\\tif.ico"
 IDI_PNG                 ICON    DISCARDABLE     "res\\png.ico"
 IDI_PCX                 ICON    DISCARDABLE     "res\\pcx.ico"
 IDI_EMF                 ICON    DISCARDABLE     "res\\emf.ico"
+IDI_BOMB                ICON    DISCARDABLE     "res\\bomb.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////

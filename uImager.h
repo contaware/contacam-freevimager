@@ -17,6 +17,7 @@
 #include "MainFrm.h"
 #include "WorkerThread.h"
 #include "XmpDlg.h"
+#include "XButtonXP.h"
 
 // Micro Apache
 #define MICROAPACHE_DIR									_T("microapache")
@@ -150,9 +151,11 @@ protected:
 	virtual BOOL OnInitDialog();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
-
+	CXButtonXP m_CrashMe;	// Crash me button
 	BOOL m_bClickableLinks;
-	CStaticLink m_WebLink;		// Hyperlink
+	CStaticLink m_WebLink;	// Hyperlink
+public:
+	afx_msg void OnBnClickedButtonCrashme();
 };
 
 class CUImagerMultiDocTemplate : public CMultiDocTemplate

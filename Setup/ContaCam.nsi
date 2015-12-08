@@ -253,6 +253,7 @@ Section "${APPNAME_NOEXT} Program (required)"
   Delete $INSTDIR\FullscreenBrowser.exe
   Delete $INSTDIR\Start.exe
   Delete $INSTDIR\${APPNAME_EXT}
+  Delete $INSTDIR\ContaCamDump.bat
   Delete $INSTDIR\NeroBurn.exe
   Delete $INSTDIR\ContaCamService.exe
   Delete $INSTDIR\${UNINSTNAME_EXT}
@@ -266,6 +267,7 @@ Section "${APPNAME_NOEXT} Program (required)"
 !else
   File "/oname=${APPNAME_NOEXT}.exe" "..\Translation\${APPNAME_NOEXT}${INSTALLER_LANGUAGE_SUFFIX}.exe"
 !endif
+  File "ContaCamDump.bat"
   File "/oname=License.txt" "..\License\License.txt"
   File "/oname=History.txt" "..\History\HistoryContaCam.txt"
   File "..\ContaCamService\Release\ContaCamService.exe"
@@ -549,7 +551,7 @@ Section "Uninstall"
   ; (see the above SetShellVarContext current)
   RMDir /r "$APPDATA\Contaware\${APPNAME_NOEXT}"
   RMDir /r "$APPDATA\Contaware\FullscreenBrowser"
-  RMDir "$APPDATA\Contaware"
+  RMDir "$APPDATA\Contaware" ; only remove if completely empty
   
   ; Remove files and uninstaller
   Delete $INSTDIR\License.txt
@@ -557,6 +559,7 @@ Section "Uninstall"
   Delete $INSTDIR\FullscreenBrowser.exe
   Delete $INSTDIR\Start.exe
   Delete $INSTDIR\${APPNAME_EXT}
+  Delete $INSTDIR\ContaCamDump.bat
   Delete $INSTDIR\NeroBurn.exe
   Delete $INSTDIR\ContaCamService.exe
   Delete $INSTDIR\ContaCamService.ini

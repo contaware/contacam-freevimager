@@ -223,6 +223,7 @@ Section "${APPNAME_NOEXT} Program (required)"
   Delete $INSTDIR\History.txt
   Delete $INSTDIR\Start.exe
   Delete $INSTDIR\${APPNAME_EXT}
+  Delete $INSTDIR\FreeVimagerDump.bat
   Delete $INSTDIR\NeroBurn.exe
   Delete $INSTDIR\${UNINSTNAME_EXT}
   RMDir /r "$INSTDIR\Tutorials"
@@ -233,6 +234,7 @@ Section "${APPNAME_NOEXT} Program (required)"
 !else
   File "/oname=${APPNAME_NOEXT}.exe" "..\Translation\${APPNAME_NOEXT}${INSTALLER_LANGUAGE_SUFFIX}.exe"
 !endif
+  File "FreeVimagerDump.bat"
   File "/oname=License.txt" "..\License\License.txt"
   File "/oname=History.txt" "..\History\HistoryFreeVimager.txt"
   SetOverwrite off
@@ -477,11 +479,17 @@ Section "Uninstall"
   Delete "$SMPROGRAMS\${APPNAME_NOEXT}\*.*"
   RMDir "$SMPROGRAMS\${APPNAME_NOEXT}"
   
+  ; Remove application data directories for Current User
+  ; (see the above SetShellVarContext current)
+  RMDir /r "$APPDATA\Contaware\${APPNAME_NOEXT}"
+  RMDir "$APPDATA\Contaware" ; only remove if completely empty
+  
   ; Remove files and uninstaller
   Delete $INSTDIR\License.txt
   Delete $INSTDIR\History.txt
   Delete $INSTDIR\Start.exe
   Delete $INSTDIR\${APPNAME_EXT}
+  Delete $INSTDIR\FreeVimagerDump.bat
   Delete $INSTDIR\NeroBurn.exe
   Delete $INSTDIR\MasterConfig.ini
   Delete $INSTDIR\${UNINSTNAME_EXT}

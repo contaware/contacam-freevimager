@@ -902,6 +902,9 @@
     <None Include="res\ZoomPlus.cur">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="res\bomb.ico">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="OpenSSLMfc.h">
