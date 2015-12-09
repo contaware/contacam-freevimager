@@ -510,7 +510,6 @@ CToolBarChildFrame::CToolBarChildFrame()
 BEGIN_MESSAGE_MAP(CToolBarChildFrame, CChildFrame)
 	//{{AFX_MSG_MAP(CToolBarChildFrame)
 	ON_WM_SIZE()
-	ON_WM_PAINT()
 	ON_WM_CREATE()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -538,40 +537,6 @@ void CToolBarChildFrame::OnSize(UINT nType, int cx, int cy)
 
 	// Update ToolBar and m_ZoomRect
 	pView->UpdateWindowSizes(FALSE, FALSE, FALSE);
-}
-
-void CToolBarChildFrame::OnPaint() 
-{
-	CPaintDC dc(this);
-
-	CUImagerView* pView = (CUImagerView*)GetActiveView();
-	if (!pView || !pView->IsKindOf(RUNTIME_CLASS(CUImagerView)))
-		return;
-
-	// If both ScrollBars are visible erase the background at
-	// the bottom-right corner between them!
-	if (pView->IsXAndYScroll())
-	{
-		CRect rcFrameClient;
-		GetClientRect(rcFrameClient);
-		CRect rcViewClient;
-		pView->GetClientRect(rcViewClient);
-		CToolBar* pToolBar = (CToolBar*)GetToolBar();
-		if (!pToolBar)
-			return;
-		CRect rcToolBar;
-		pToolBar->GetClientRect(&rcToolBar);
-		CRect rcBottomRight = CRect(rcFrameClient.right - (rcFrameClient.Width() - rcViewClient.Width()) + 2,
-								rcFrameClient.bottom - (rcFrameClient.Height() - rcViewClient.Height()) + 2,
-								rcFrameClient.right - 2,
-								rcFrameClient.bottom - rcToolBar.Height() -
-								(TOOLBAR_BORDERRECT.top + TOOLBAR_BORDERRECT.bottom));
-
-		CBrush br(::GetSysColor(COLOR_BTNFACE));
-		dc.FillRect(rcBottomRight, &br);
-	}
-
-	// Do not call CChildFrame::OnPaint() for painting messages
 }
 
 /////////////////////////////////////////////////////////////////////////////
