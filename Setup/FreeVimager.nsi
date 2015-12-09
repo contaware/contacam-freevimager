@@ -173,7 +173,7 @@ Function KillApp
 KillApp:
   KillProcDLL::KillProc "${APPNAME_EXT}"
   Sleep 1500				; give process some time to really stop
-  StrCmp $R0 "0" KillApp 0	; check return value of KillProc (Sleep doesn't set $R0)
+  StrCmp $R0 "0" KillApp 0	; to kill all instances check the return value of KillProc (Sleep doesn't set $R0)
   Goto lbl_end
 KillAppError:
   MessageBox MB_OK|MB_ICONEXCLAMATION $(CloseAppError) /SD IDOK
@@ -379,7 +379,7 @@ Function un.KillApp
 KillApp:
   KillProcDLL::KillProc "${APPNAME_EXT}"
   Sleep 1500				; give process some time to really stop
-  StrCmp $R0 "0" KillApp 0	; check return value of KillProc (Sleep doesn't set $R0)
+  StrCmp $R0 "0" KillApp 0	; to kill all instances check the return value of KillProc (Sleep doesn't set $R0)
   Goto lbl_end
 KillAppAbort:
   ClearErrors
@@ -490,6 +490,7 @@ Section "Uninstall"
   Delete $INSTDIR\Start.exe
   Delete $INSTDIR\${APPNAME_EXT}
   Delete $INSTDIR\FreeVimagerDump.bat
+  Delete $INSTDIR\procdump.exe
   Delete $INSTDIR\NeroBurn.exe
   Delete $INSTDIR\MasterConfig.ini
   Delete $INSTDIR\${UNINSTNAME_EXT}
