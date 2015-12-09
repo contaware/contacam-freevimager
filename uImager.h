@@ -132,7 +132,7 @@ class CUImagerDoc;
 class CAboutDlg : public CDialog
 {
 public:
-	CAboutDlg();
+	CAboutDlg(CWnd* pParent = NULL);
 
 // Dialog Data
 	//{{AFX_DATA(CAboutDlg)

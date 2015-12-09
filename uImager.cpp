@@ -920,9 +920,11 @@ IMPLEMENT_DYNAMIC(CUImagerMultiDocTemplate, CMultiDocTemplate)
 /////////////////////////////////////////////////////////////////////////////
 // CAboutDlg dialog used for App About
 
-CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
+CAboutDlg::CAboutDlg(CWnd* pParent /*=NULL*/)
+	: CDialog(CAboutDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CAboutDlg)
+		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
 }
 
