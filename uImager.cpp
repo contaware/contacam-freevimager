@@ -920,11 +920,10 @@ IMPLEMENT_DYNAMIC(CUImagerMultiDocTemplate, CMultiDocTemplate)
 /////////////////////////////////////////////////////////////////////////////
 // CAboutDlg dialog used for App About
 
-CAboutDlg::CAboutDlg(BOOL bClickableLinks/*=TRUE*/) : CDialog(CAboutDlg::IDD)
+CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
 {
 	//{{AFX_DATA_INIT(CAboutDlg)
 	//}}AFX_DATA_INIT
-	m_bClickableLinks = bClickableLinks;
 }
 
 void CAboutDlg::DoDataExchange(CDataExchange* pDX)
@@ -976,9 +975,8 @@ BOOL CAboutDlg::OnInitDialog()
 	CEdit* pPhysMemMB = (CEdit*)GetDlgItem(IDC_PHYSMEM);
 	pPhysMemMB->SetWindowText(sPhysMemMB);
 
-	// Clickable Links?
-	if (m_bClickableLinks)
-		m_WebLink.SubclassDlgItem(IDC_WEB_LINK, this);
+	// contaware.com site link
+	m_WebLink.SubclassDlgItem(IDC_WEB_LINK, this);
 
 	// Subclass the Crash me button
 	m_CrashMe.SubclassDlgItem(IDC_BUTTON_CRASHME, this);
@@ -1021,11 +1019,10 @@ BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
-// App command to run the dialog
+// Popup About Dialog
 void CUImagerApp::OnAppAbout()
 {	
-	// Clickable Links only in Normal Screen Mode!
-	CAboutDlg aboutDlg(!::AfxGetMainFrame()->m_bFullScreenMode);
+	CAboutDlg aboutDlg;
 	aboutDlg.DoModal();
 }
 

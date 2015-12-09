@@ -132,7 +132,7 @@ class CUImagerDoc;
 class CAboutDlg : public CDialog
 {
 public:
-	CAboutDlg(BOOL bClickableLinks = TRUE);
+	CAboutDlg();
 
 // Dialog Data
 	//{{AFX_DATA(CAboutDlg)
@@ -152,7 +152,6 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 	CXButtonXP m_CrashMe;	// Crash me button
-	BOOL m_bClickableLinks;
 	CStaticLink m_WebLink;	// Hyperlink
 public:
 	afx_msg void OnBnClickedButtonCrashme();

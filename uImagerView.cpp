@@ -26,8 +26,6 @@ BEGIN_MESSAGE_MAP(CUImagerView, CScrollView)
 	ON_WM_RBUTTONDBLCLK()
 	ON_WM_TIMER()
 	ON_WM_MOUSEMOVE()
-	ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
-	ON_COMMAND(ID_APP_LICENSE, OnAppLicense)
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_THREADSAFE_UPDATEWINDOWSIZES, OnThreadSafeUpdateWindowSizes)
 	ON_MESSAGE(WM_THREADSAFE_SETDOCUMENTTITLE, OnThreadSafeSetDocumentTitle)
@@ -711,27 +709,6 @@ int CUImagerView::DoRealizePalette(BOOL bForceBackground)
 void CUImagerView::OnDraw(CDC* pDC) 
 {
 	// TODO: Add your specialized code here and/or call the base class
-}
-
-void CUImagerView::OnAppAbout() 
-{
-	ForceCursor();
-	
-	// Clickable Links only in Normal Screen Mode!
-	CAboutDlg aboutDlg(!m_bFullScreenMode);
-	aboutDlg.DoModal();
-
-	ForceCursor(FALSE);
-}
-
-void CUImagerView::OnAppLicense() 
-{
-	ForceCursor();
-
-	CLicenseDlg licenseDlg;
-	licenseDlg.DoModal();
-
-	ForceCursor(FALSE);
 }
 
 void CUImagerView::OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView) 

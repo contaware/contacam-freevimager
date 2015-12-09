@@ -146,8 +146,6 @@ protected:
 	afx_msg void OnRButtonDblClk(UINT nFlags, CPoint point);
 	afx_msg void OnTimer(UINT nIDEvent);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
-	afx_msg void OnAppAbout();
-	afx_msg void OnAppLicense();
 	//}}AFX_MSG
 	afx_msg LONG OnThreadSafeUpdateWindowSizes(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeSetDocumentTitle(WPARAM wparam, LPARAM lparam);
