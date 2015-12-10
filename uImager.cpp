@@ -1002,8 +1002,7 @@ BOOL CAboutDlg::OnInitDialog()
 void CAboutDlg::OnBnClickedButtonCrashme()
 {
 	CString sMsg;
-	sMsg.Format(_T("If %s crashes then execute it with %sDump.bat found in the installation folder and send us the generated .dmp file.\n\n")
-				_T("Do you want to test the dump file generation by crashing %s now?"), APPNAME_NOEXT, APPNAME_NOEXT, APPNAME_NOEXT);
+	sMsg.Format(ML_STRING(1172, "If %s crashes then execute it with %sDump.bat found in the installation folder and send us the generated .dmp file.\n\nDo you want to test the dump file generation by crashing %s now?"), APPNAME_NOEXT, APPNAME_NOEXT, APPNAME_NOEXT);
 	if (::AfxMessageBox(sMsg, MB_YESNO | MB_DEFBUTTON2) == IDYES)
 	{
 		int a = 0;

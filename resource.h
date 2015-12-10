@@ -1125,6 +1125,7 @@
 #define IDC_COMBO_REGULATION_TYPE4      1171
 #define IDS_MULTILANG_1172              1172
 #define IDC_COMBO_REGULATION_TYPE5      1172
+#define IDS_STRING1172                  1172
 #define IDS_MULTILANG_1173              1173
 #define IDC_COMBO_REGULATION_TYPE6      1173
 #define IDS_MULTILANG_1174              1174

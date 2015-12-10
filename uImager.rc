@@ -3421,6 +3421,7 @@ STRINGTABLE
 BEGIN
     IDS_MULTILANG_1170      "Error: No MMX Processor"
     IDS_MULTILANG_1171      "No usable WinSock DLL found"
+    IDS_STRING1172          "If %s crashes then execute it with %sDump.bat found in the installation folder and send us the generated .dmp file.\n\nDo you want to test the dump file generation by crashing %s now?"
     IDS_MULTILANG_1173      "%u phys. processor(s), %u core(s), %u logical processor(s)"
     IDS_MULTILANG_1174      "Failed to Open:\n%s\nThe following extension is not supported:\n%s"
     IDS_MULTILANG_1175      "No Email Program Installed."
