@@ -2,6 +2,8 @@ FREEVIMAGER HISTORY
 
 5.0.5 (xxx yth 2015)
 
+- When sorting in Batch Processing dialog if the Date Taken doesn't
+  exist use the oldest between Date Created and Date Modified
 - Added crash dump support
 
 5.0.3 (November 18th 2015)

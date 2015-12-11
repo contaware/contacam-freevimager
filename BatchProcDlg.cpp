@@ -4032,12 +4032,20 @@ int CBatchProcDlg::Compare(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 				CString(pListElement1->m_pDibHdr->GetExifInfo()->DateTime) != _T(""))
 				Time1 = CMetadata::GetDateTimeFromExifString(CString(pListElement1->m_pDibHdr->GetExifInfo()->DateTime));
 			else
-				Time1 = GetCreatedFileTime(pListElement1->GetFileName());
+			{
+				CTime CreatedFileTime(GetCreatedFileTime(pListElement1->GetFileName()));
+				CTime ModifiedFileTime(GetModifiedFileTime(pListElement1->GetFileName()));
+				Time1 = (ModifiedFileTime < CreatedFileTime ? ModifiedFileTime : CreatedFileTime);
+			}
 			if (pListElement2->m_pDibHdr->GetExifInfo() &&
 				CString(pListElement2->m_pDibHdr->GetExifInfo()->DateTime) != _T(""))
 				Time2 = CMetadata::GetDateTimeFromExifString(CString(pListElement2->m_pDibHdr->GetExifInfo()->DateTime));
 			else
-				Time2 = GetCreatedFileTime(pListElement2->GetFileName());
+			{
+				CTime CreatedFileTime(GetCreatedFileTime(pListElement2->GetFileName()));
+				CTime ModifiedFileTime(GetModifiedFileTime(pListElement2->GetFileName()));
+				Time2 = (ModifiedFileTime < CreatedFileTime ? ModifiedFileTime : CreatedFileTime);
+			}
 			if (Time1 < Time2)
 				return -1;
 			else if (Time1 > Time2)
@@ -4051,12 +4059,20 @@ int CBatchProcDlg::Compare(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 				CString(pListElement1->m_pDibHdr->GetExifInfo()->DateTime) != _T(""))
 				Time1 = CMetadata::GetDateTimeFromExifString(CString(pListElement1->m_pDibHdr->GetExifInfo()->DateTime));
 			else
-				Time1 = GetCreatedFileTime(pListElement1->GetFileName());
+			{
+				CTime CreatedFileTime(GetCreatedFileTime(pListElement1->GetFileName()));
+				CTime ModifiedFileTime(GetModifiedFileTime(pListElement1->GetFileName()));
+				Time1 = (ModifiedFileTime < CreatedFileTime ? ModifiedFileTime : CreatedFileTime);
+			}
 			if (pListElement2->m_pDibHdr->GetExifInfo() &&
 				CString(pListElement2->m_pDibHdr->GetExifInfo()->DateTime) != _T(""))
 				Time2 = CMetadata::GetDateTimeFromExifString(CString(pListElement2->m_pDibHdr->GetExifInfo()->DateTime));
 			else
-				Time2 = GetCreatedFileTime(pListElement2->GetFileName());
+			{
+				CTime CreatedFileTime(GetCreatedFileTime(pListElement2->GetFileName()));
+				CTime ModifiedFileTime(GetModifiedFileTime(pListElement2->GetFileName()));
+				Time2 = (ModifiedFileTime < CreatedFileTime ? ModifiedFileTime : CreatedFileTime);
+			}
 			if (Time1 < Time2)
 				return 1;
 			else if (Time1 > Time2)
