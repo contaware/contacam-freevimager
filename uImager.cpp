@@ -87,6 +87,12 @@ BEGIN_MESSAGE_MAP(CUImagerApp, CWinApp)
 	ON_COMMAND(ID_APP_FAQ, OnAppFaq)
 	ON_COMMAND(ID_APP_MANUAL, OnAppManual)
 	ON_UPDATE_COMMAND_UI(ID_FILE_NEW, OnUpdateFileNew)
+	ON_COMMAND(ID_SETTINGS_NORMAL_LOGGING, OnSettingsNormalLogging)
+	ON_UPDATE_COMMAND_UI(ID_SETTINGS_NORMAL_LOGGING, OnUpdateSettingsNormalLogging)
+	ON_COMMAND(ID_SETTINGS_VERBOSE_LOGGING, OnSettingsVerboseLogging)
+	ON_UPDATE_COMMAND_UI(ID_SETTINGS_VERBOSE_LOGGING, OnUpdateSettingsVerboseLogging)
+	ON_COMMAND(ID_SETTINGS_LOG_ALL_MESSAGES, OnSettingsLogAllMessages)
+	ON_UPDATE_COMMAND_UI(ID_SETTINGS_LOG_ALL_MESSAGES, OnUpdateSettingsLogAllMessages)
 	ON_COMMAND(ID_SETTINGS_VIEW_LOGFILE, OnSettingsViewLogfile)
 	ON_COMMAND(ID_SETTINGS_BROWSE_CONFIGLOG_FILES, OnSettingsBrowseConfigLogFiles)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SHRINK_DIR_DOCS, OnUpdateFileShrinkDirDocs)
@@ -276,15 +282,24 @@ extern "C" float __cdecl hypotf(float x, float y)
 	return _hypotf(x, y);
 }
 
+/* level can be one of the following increasing values:
+AV_LOG_PANIC
+AV_LOG_FATAL
+AV_LOG_ERROR
+AV_LOG_WARNING
+AV_LOG_INFO
+AV_LOG_VERBOSE
+AV_LOG_DEBUG
+*/
 static void my_av_log_trace(void* ptr, int level, const char* fmt, va_list vl)
 {
-	// Comment this return to enable logging output
-	return;
-
-	/*
-	if(level > av_log_get_level())
+	// for g_nLogLevel <= 0: log panic and fatal levels
+	// for g_nLogLevel == 1: log panic, fatal and error levels
+	// for g_nLogLevel >= 2: log panic ... verbose levels
+	if ((g_nLogLevel <= 0 && level >= AV_LOG_ERROR)		||
+		(g_nLogLevel == 1 && level >= AV_LOG_WARNING)	||
+		(g_nLogLevel >= 2 && level >= AV_LOG_DEBUG))
 		return;
-	*/
 
 	// Fix Format
 	CString sFmt(fmt);
@@ -305,12 +320,7 @@ static void my_av_log_trace(void* ptr, int level, const char* fmt, va_list vl)
 	s[1023] = '\0';
 
 	// Output message string
-	TRACE(CString(s));
-}
-
-static void my_av_log_empty(void* ptr, int level, const char* fmt, va_list vl)
-{
-	return;
+	::LogLine(_T("%s"), CString(s));
 }
 
 #endif
@@ -385,7 +395,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		if (!::IsExistingDir(sConfigFilesDir))
 		{
 			if (!::CreateDir(sConfigFilesDir))
-				::ShowLastError(TRUE);
+				::ShowErrorMsg(::GetLastError(), TRUE);
 		}
 #endif
 
@@ -405,11 +415,10 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		m_sMicroApacheDocRoot += _T("\\") + CString(APPNAME_NOEXT);
 #endif
 
-		// Init Trace and Log files
-		// (containing folder is only created when Trace or Log Files are written)
-		::InitTraceLogFile(	sConfigFilesDir + _T("\\") + TRACENAME_EXT,
-							sConfigFilesDir + _T("\\") + LOGNAME_EXT,
-							MAX_TRACE_FILE_SIZE, MAX_LOG_FILE_SIZE);
+		// Init Debug Trace and Log File
+		// (containing folder is only created when the Log File is written)
+		::InitTraceLogFile(	sConfigFilesDir + _T("\\") + LOGNAME_EXT,
+							MAX_LOG_FILE_SIZE);
 
 		// Use registry?
 		BOOL bUseRegistry = TRUE;
@@ -476,7 +485,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			if (!::IsExistingDir(sProfileNamePath))
 			{
 				if (!::CreateDir(sProfileNamePath))
-					::ShowLastError(TRUE);
+					::ShowErrorMsg(::GetLastError(), TRUE);
 			}
 
 			// Force a unicode ini file by writing the UTF16-LE BOM (FFFE)
@@ -641,11 +650,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// AVCODEC Init
 		::InitializeCriticalSection(&g_csAVCodec);
 		g_bAVCodecCSInited = TRUE;
-#ifdef _DEBUG
 		av_log_set_callback(my_av_log_trace);
-#else
-		av_log_set_callback(my_av_log_empty);
-#endif
 		av_register_all();
 		
 		// Init WinSock 2.2
@@ -737,7 +742,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		else
 		{
 			if (!::CreateDir(m_sAppTempDir))
-				::ShowLastError(TRUE);
+				::ShowErrorMsg(::GetLastError(), TRUE);
 		}
 
 		// Dispatch commands specified on the command line,
@@ -941,11 +946,7 @@ BOOL CAboutDlg::OnInitDialog()
 
 	// Application Name
 	CEdit* pAppName = (CEdit*)GetDlgItem(IDC_APPNAME);
-#ifdef TRACELOGFILE
-	pAppName->SetWindowText(CString(APPNAME_NOEXT) + _T(" - ONLY FOR DEBUG"));
-#else
 	pAppName->SetWindowText(APPNAME_NOEXT);
-#endif
 
 	// Application Version
 	CEdit* pAppVer = (CEdit*)GetDlgItem(IDC_APPVER);
@@ -1890,10 +1891,8 @@ int CUImagerApp::ExitInstance()
 	}
 #endif
 
-#ifdef _DEBUG
-	// Only trace that in debug mode (do not write to Trace Log File in release mode)
+	// Note
 	TRACE(_T("*** FFMPEG LEAKS 47 or 63 BYTES, OPENSSL LEAKS 16 + 20 BYTES and SOMETIMES MORE, IT'S NORMAL ***\n"));
-#endif
 
 	// Clean-up big memory manager
 	::EndBigAlloc();
@@ -3299,12 +3298,15 @@ void CUImagerApp::LoadSettings(UINT showCmd/*=SW_SHOWNORMAL*/)
 {
 	CString sSection(_T("GeneralApp"));
 
+	// Log Level
+	g_nLogLevel = GetProfileInt(sSection, _T("LogLevel"), 0);
+
 	// MainFrame Placement
 	LoadPlacement(showCmd);
 
 	// Preview File Dialog
 	m_bFileDlgPreview = (BOOL)GetProfileInt(sSection, _T("FileDlgPreview"), TRUE);
-	g_nPreviewFileDlgViewMode = (int)GetProfileInt(sSection, _T("PreviewFileDlgViewMode"), SHVIEW_Default);
+	g_nPreviewFileDlgViewMode = GetProfileInt(sSection, _T("PreviewFileDlgViewMode"), SHVIEW_Default);
 
 	// Last Opened Directory
 	m_sLastOpenedDir = GetProfileString(sSection, _T("LastOpenedDir"), _T(""));
@@ -3432,7 +3434,7 @@ void CUImagerApp::SendOpenDocsAsMail()
 		{
 			if (!::CreateDir(sTempEmailDir))
 			{
-				::ShowLastError(TRUE);
+				::ShowErrorMsg(::GetLastError(), TRUE);
 				return;
 			}
 		}
@@ -3498,7 +3500,7 @@ void CUImagerApp::SendOpenDocsAsMail()
 			{
 				if (!::CreateDir(sTempEmailZipDir))
 				{
-					::ShowLastError(TRUE);
+					::ShowErrorMsg(::GetLastError(), TRUE);
 					return;
 				}
 			}
@@ -4358,6 +4360,42 @@ BOOL CUImagerApp::UnassociateFileType(CString sExt)
 	WriteProfileString(_T("UninstallUserApplication"), sExtNoPoint, _T(""));
 
 	return TRUE;
+}
+
+void CUImagerApp::OnSettingsNormalLogging()
+{
+	g_nLogLevel = 0;
+	WriteProfileInt(_T("GeneralApp"), _T("LogLevel"), g_nLogLevel);
+	::AfxGetMainFrame()->m_MDIClientWnd.Invalidate();
+}
+
+void CUImagerApp::OnUpdateSettingsNormalLogging(CCmdUI* pCmdUI) 
+{
+	pCmdUI->SetRadio(g_nLogLevel <= 0);
+}
+
+void CUImagerApp::OnSettingsVerboseLogging()
+{
+	g_nLogLevel = 1;
+	WriteProfileInt(_T("GeneralApp"), _T("LogLevel"), g_nLogLevel);
+	::AfxGetMainFrame()->m_MDIClientWnd.Invalidate();
+}
+
+void CUImagerApp::OnUpdateSettingsVerboseLogging(CCmdUI* pCmdUI) 
+{
+	pCmdUI->SetRadio(g_nLogLevel == 1);
+}
+
+void CUImagerApp::OnSettingsLogAllMessages()
+{
+	g_nLogLevel = 2;
+	WriteProfileInt(_T("GeneralApp"), _T("LogLevel"), g_nLogLevel);
+	::AfxGetMainFrame()->m_MDIClientWnd.Invalidate();
+}
+
+void CUImagerApp::OnUpdateSettingsLogAllMessages(CCmdUI* pCmdUI) 
+{
+	pCmdUI->SetRadio(g_nLogLevel >= 2);
 }
 
 void CUImagerApp::OnSettingsViewLogfile() 

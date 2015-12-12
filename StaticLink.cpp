@@ -97,5 +97,5 @@ void CStaticLink::OnClicked()
 		Invalidate();
 	}
 	else
-		TRACE(_T("Link Could Not Be Executed <%s>\n"), m_sLink);
+		::LogLine(_T("Link Could Not Be Executed <%s>"), m_sLink);
 }

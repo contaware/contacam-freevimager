@@ -507,8 +507,7 @@ BOOL CTwain::TwainAcquire(int numImages)
 	if (TwainIsDSOpen() || TwainOpenSource())
 	{
 		TwainDisableSource();
-		if (!TwainSetImageCount(numImages))
-			TRACE(_T("TWAIN Warning: Cannot Set the Images Count\n"));
+		TwainSetImageCount(numImages);
 		if (TwainEnableSource())
 			return TRUE;
 	}

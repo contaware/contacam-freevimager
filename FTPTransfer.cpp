@@ -49,7 +49,7 @@ int CFTPTransfer::CMakeConnectionThread::Work()
 																(DWORD)m_pFTPTransfer);
 	}
 	if (m_pFTPTransfer->m_hFTPConnection == NULL)
-		m_pFTPTransfer->m_sError = ::ShowLastError(FALSE);
+		m_pFTPTransfer->m_sError = ::ShowErrorMsg(::GetLastError(), FALSE);
 	return 0;
 }
 
@@ -176,7 +176,7 @@ BOOL CFTPTransfer::ResumeTransfer()
 	// Send the resume request
 	BOOL bSuccess = ::FtpCommand(m_hFTPConnection, FALSE, FTP_TRANSFER_TYPE_BINARY, sRequest, 0, NULL); 
 	if (!bSuccess)
-		m_sError = sRequest + _T(" -> ") + ::ShowLastError(FALSE);
+		m_sError = sRequest + _T(" -> ") + ::ShowErrorMsg(::GetLastError(), FALSE);
 	else
 	{
 		// Check the reponse to see if we get a "350" response code
@@ -256,7 +256,7 @@ int CFTPTransfer::Transfer()
 		m_hInternetSession = ::InternetOpen(AfxGetAppName(), INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
     if (m_hInternetSession == NULL)
     {
-		m_sError = ::ShowLastError(FALSE);
+		m_sError = ::ShowErrorMsg(::GetLastError(), FALSE);
 		m_LocalFile.Close();
 		if (m_bDownload)
 			::DeleteFile(m_sLocalFile);
@@ -277,7 +277,7 @@ int CFTPTransfer::Transfer()
 	INTERNET_STATUS_CALLBACK pOldCallback = ::InternetSetStatusCallback(m_hInternetSession, _OnStatusCallBack);
 	if (pOldCallback == INTERNET_INVALID_STATUS_CALLBACK)
 	{
-		m_sError = ::ShowLastError(FALSE);
+		m_sError = ::ShowErrorMsg(::GetLastError(), FALSE);
 		m_LocalFile.Close();
 		if (m_bDownload)
 			::DeleteFile(m_sLocalFile);
@@ -544,7 +544,7 @@ int CFTPTransfer::Transfer()
 		// Ftp Open File Error?
 		if (m_hFTPFile == NULL)
 		{
-			m_sError = ::ShowLastError(FALSE);
+			m_sError = ::ShowErrorMsg(::GetLastError(), FALSE);
 			m_LocalFile.Close();
 			if (m_bDownload)
 				::DeleteFile(m_sLocalFile);
@@ -584,7 +584,7 @@ int CFTPTransfer::Transfer()
 			// Read from the remote file
 			if (!::InternetReadFile(m_hFTPFile, szReadBuf, dwBytesToRead, &dwBytesRead))
 			{
-				m_sError = ::ShowLastError(FALSE);
+				m_sError = ::ShowErrorMsg(::GetLastError(), FALSE);
 				m_LocalFile.Close();
 				::DeleteFile(m_sLocalFile);
 				if (m_hInternetSession && pOldCallback)
@@ -653,7 +653,7 @@ int CFTPTransfer::Transfer()
 			{
 				if (!::InternetWriteFile(m_hFTPFile, szReadBuf, dwBytesRead, &dwBytesWritten))
 				{
-					m_sError = ::ShowLastError(FALSE);
+					m_sError = ::ShowErrorMsg(::GetLastError(), FALSE);
 					m_LocalFile.Close();
 					if (m_hInternetSession && pOldCallback)
 						::InternetSetStatusCallback(m_hInternetSession, pOldCallback);
@@ -719,7 +719,7 @@ BOOL CFTPTransfer::Test()
 		m_hInternetSession = ::InternetOpen(AfxGetAppName(), INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
     if (m_hInternetSession == NULL)
     {
-		m_sError = ::ShowLastError(FALSE);
+		m_sError = ::ShowErrorMsg(::GetLastError(), FALSE);
 		return FALSE;
     }
 
@@ -727,7 +727,7 @@ BOOL CFTPTransfer::Test()
 	INTERNET_STATUS_CALLBACK pOldCallback = ::InternetSetStatusCallback(m_hInternetSession, _OnStatusCallBack);
 	if (pOldCallback == INTERNET_INVALID_STATUS_CALLBACK)
 	{
-		m_sError = ::ShowLastError(FALSE);
+		m_sError = ::ShowErrorMsg(::GetLastError(), FALSE);
 		Close();
 		return FALSE;
 	}

@@ -168,13 +168,15 @@ int CNetCom::CMsgThread::CloseSocket()
 		::closesocket(m_pNetCom->m_hSocket);
 		m_pNetCom->m_hSocket = INVALID_SOCKET;
 	}
-	TRACE(_T("%s MsgThread ended (ID = 0x%08X)\n"), m_pNetCom->GetName(), GetId());
+	if (g_nLogLevel > 1)
+		::LogLine(_T("%s MsgThread ended (ID = 0x%08X)"), m_pNetCom->GetName(), GetId());
 	return 0;
 }
 
 int CNetCom::CMsgThread::Work()
 {
-	TRACE(_T("%s MsgThread started (ID = 0x%08X)\n"), m_pNetCom->GetName(), GetId());
+	if (g_nLogLevel > 1)
+		::LogLine(_T("%s MsgThread started (ID = 0x%08X)"), m_pNetCom->GetName(), GetId());
 	BOOL bShutdownInited = FALSE;
 	
 	for(;;)
@@ -184,7 +186,8 @@ int CNetCom::CMsgThread::Work()
 		{
 			// Thread Shutdown Event
 			case WAIT_OBJECT_0 :
-				TRACE(_T("%s MsgThread ended killed (ID = 0x%08X)\n"), m_pNetCom->GetName(), GetId());
+				if (g_nLogLevel > 0)
+					::LogLine(_T("%s MsgThread ended killed (ID = 0x%08X)"), m_pNetCom->GetName(), GetId());
 				return 0;
 
 			// Start Connection Shutdown Event
@@ -192,7 +195,8 @@ int CNetCom::CMsgThread::Work()
 				::ResetEvent(m_pNetCom->m_hStartConnectionShutdownEvent);
 				if (!bShutdownInited)
 				{
-					TRACE(_T("%s We are starting shutdown\n"), m_pNetCom->GetName());
+					if (g_nLogLevel > 1)
+						::LogLine(_T("%s We are starting shutdown"), m_pNetCom->GetName());
 					m_pNetCom->m_pTxThread->Kill(NETCOM_BLOCKING_TIMEOUT); // Stop the Tx and Rx Threads because after shutdown with SD_BOTH,
 					m_pNetCom->m_pRxThread->Kill(NETCOM_BLOCKING_TIMEOUT); // transmitting and receiving is not allowed!
 					if (m_pNetCom->m_hSocket != INVALID_SOCKET)
@@ -217,7 +221,8 @@ int CNetCom::CMsgThread::Work()
 					{
 						if (NetworkEvents.iErrorCode[FD_CONNECT_BIT] == 0)
 						{
-							TRACE(_T("%s Normal connection establishment to %s\n"), m_pNetCom->GetName(), m_pNetCom->GetPeerSockIP());
+							if (g_nLogLevel > 1)
+								::LogLine(_T("%s Normal connection establishment to %s"), m_pNetCom->GetName(), m_pNetCom->GetPeerSockIP());
 							m_pNetCom->m_pRxThread->Start();
 							m_pNetCom->m_pTxThread->Start();
 							if (m_pNetCom->m_hConnectEvent)
@@ -225,7 +230,8 @@ int CNetCom::CMsgThread::Work()
 						}
 						else
 						{
-							TRACE(_T("%s Failed to connect\n"), m_pNetCom->GetName());
+							if (g_nLogLevel > 0)
+								::LogLine(_T("%s Failed to connect"), m_pNetCom->GetName());
 							if (m_pNetCom->m_hConnectFailedEvent)
 								::SetEvent(m_pNetCom->m_hConnectFailedEvent);	// trigger Connect Failed Event
 							return CloseSocket();
@@ -272,7 +278,8 @@ int CNetCom::CMsgThread::Work()
 ///////////////////////////////////////////////////////////////////////////////
 int CNetCom::CRxThread::Work() 
 {
-	TRACE(_T("%s RxThread started (ID = 0x%08X)\n"), m_pNetCom->GetName(), GetId());
+	if (g_nLogLevel > 1)
+		::LogLine(_T("%s RxThread started (ID = 0x%08X)"), m_pNetCom->GetName(), GetId());
 	DWORD Flags;
 	DWORD NumberOfBytesReceived = 0;
 	BOOL  bResult;
@@ -301,7 +308,8 @@ int CNetCom::CRxThread::Work()
 					// Signal the thread shutdown to Parser
 					m_pNetCom->m_pParseProcess->OnThreadShutdown();
 				}
-				TRACE(_T("%s RxThread ended (ID = 0x%08X)\n"), m_pNetCom->GetName(), GetId());
+				if (g_nLogLevel > 1)
+					::LogLine(_T("%s RxThread ended (ID = 0x%08X)"), m_pNetCom->GetName(), GetId());
 				return 0;
 		
 			// Overlapped Event
@@ -397,7 +405,8 @@ __forceinline void CNetCom::CRxThread::Read()
 ///////////////////////////////////////////////////////////////////////////////
 int CNetCom::CTxThread::Work() 
 {
-	TRACE(_T("%s TxThread started (ID = 0x%08X)\n"), m_pNetCom->GetName(), GetId());
+	if (g_nLogLevel > 1)
+		::LogLine(_T("%s TxThread started (ID = 0x%08X)"), m_pNetCom->GetName(), GetId());
 	DWORD Flags;
 	BOOL  bResult;
 	DWORD NumberOfBytesSent = 0;
@@ -414,7 +423,8 @@ int CNetCom::CTxThread::Work()
 					delete m_pCurrentBuf;
 					m_pCurrentBuf = NULL;
 				}
-				TRACE(_T("%s TxThread ended (ID = 0x%08X)\n"), m_pNetCom->GetName(), GetId());
+				if (g_nLogLevel > 1)
+					::LogLine(_T("%s TxThread ended (ID = 0x%08X)"), m_pNetCom->GetName(), GetId());
 				return 0;
 
 			// Overlapped Event
@@ -530,8 +540,8 @@ CNetCom::CNetCom()
 {
 	// Init WinSock 2.2
 	WSADATA wsadata;
-	if(::WSAStartup(MAKEWORD(2, 2), &wsadata) != 0)
-		TRACE(_T("WSAStartup() failed\n"));
+	if (::WSAStartup(MAKEWORD(2, 2), &wsadata) != 0)
+		::LogLine(_T("WSAStartup() failed"));
 
 	/* Confirm that the WinSock DLL supports 2.2.*/
 	/* Note that if the DLL supports versions greater    */
@@ -543,7 +553,7 @@ CNetCom::CNetCom()
 		/* Tell the user that we could not find a usable */
 		/* WinSock DLL.                                  */
 		::WSACleanup();
-		TRACE(_T("No usable WinSock DLL found\n")); 
+		::LogLine(_T("No usable WinSock DLL found")); 
 	}
 
 	// Handle

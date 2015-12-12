@@ -19,6 +19,8 @@ CMDIClientWnd::CMDIClientWnd()
 	m_sFontFace = _T("Verdana");
 	m_crFontColor = RGB(255,255,255);
 	m_crLinkColor = RGB(0x99,0xdd,0xff);
+	m_crVerboseLoggingColor = RGB(0xff,0xdd,0x33);
+	m_crDebugLoggingColor = RGB(0xff,0xc0,0x60);
 	m_nLeftMargin = 2;
 	m_nTopMargin = 0;
 	m_rcLinkComputer = CRect(0,0,0,0);
@@ -110,15 +112,31 @@ void CMDIClientWnd::OnPaint()
 					rcClient.bottom);
 	rcDraw.top += TextMetrics.tmAscent;
 	CString s;
-#ifdef TRACELOGFILE
-	s.Format(_T("%s %s - ONLY FOR DEBUG (see %s with Browse Config/Log Files under Settings menu)"), APPNAME_NOEXT, APPVERSION, TRACENAME_EXT);
-#else
-	s.Format(_T("%s %s"), APPNAME_NOEXT, APPVERSION);
-#endif
-	DrawT(memDC, s, rcDraw);
+	if (g_nLogLevel <= 0)
+		s.Format(_T("%s %s"), APPNAME_NOEXT, APPVERSION);
+	else
+		s.Format(_T("%s %s - "), APPNAME_NOEXT, APPVERSION);
+	CRect rcLastText = DrawTAndCalcRect(memDC, s, rcDraw);
+	rcDraw.left = rcLastText.right;
+	COLORREF crPrevTextColor;
+	if (g_nLogLevel == 1)
+	{
+		crPrevTextColor = memDC.SetTextColor(m_crVerboseLoggingColor);
+		s = _T("VERBOSE LOGGING");
+		DrawT(memDC, s, rcDraw);
+		memDC.SetTextColor(crPrevTextColor);
+	}
+	else if (g_nLogLevel >= 2)
+	{
+		crPrevTextColor = memDC.SetTextColor(m_crDebugLoggingColor);
+		s = _T("DEBUG LOGGING");
+		DrawT(memDC, s, rcDraw);
+		memDC.SetTextColor(crPrevTextColor);
+	}
 
 #ifdef VIDEODEVICEDOC
 	// Draw Add Cam
+	rcDraw.left = m_nLeftMargin;
 	rcDraw.top += 2*nLineHeight;
 	DrawT(memDC,  ML_STRING(1750, "ADD CAMERA"), rcDraw);
 
@@ -146,12 +164,12 @@ void CMDIClientWnd::OnPaint()
 
 	// Draw indent
 	rcDraw.top += nLineHeight;
-	CRect rcLastText = DrawTAndCalcRect(memDC, _T("    "), rcDraw);
+	rcLastText = DrawTAndCalcRect(memDC, _T("    "), rcDraw);
 
 	// Draw computer link
 	rcDraw.left = rcLastText.right;
 	CFont* pPrevFont = memDC.SelectObject(&m_FontUnderline);
-	COLORREF crPrevTextColor = memDC.SetTextColor(m_crLinkColor);
+	crPrevTextColor = memDC.SetTextColor(m_crLinkColor);
 	if (((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort == 80)
 		s.Format(_T("http://%s"), ::GetComputerName());
 	else

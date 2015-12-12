@@ -13,21 +13,17 @@ extern CString GetFileNameNoExt(const CString& sFullFilePath);
 extern ULARGE_INTEGER GetFileSize64(LPCTSTR lpszFileName);
 extern int ToUTF8(const CString& s, LPBYTE* ppUtf8);
 
-CString g_sTraceFileName;
+volatile int g_nLogLevel = 0;
 CString g_sLogFileName;
-volatile ULONGLONG g_ullMaxTraceFileSize = 0;
 volatile ULONGLONG g_ullMaxLogFileSize = 0;
 #ifdef _DEBUG
 CRITICAL_SECTION g_csTraceDebug;
 CString g_sTraceDebugFileAndLine;
 #endif
-CRITICAL_SECTION g_csTraceFile;
 CRITICAL_SECTION g_csLogFile;
 volatile BOOL g_bTraceLogFileInited = FALSE;
 
-void InitTraceLogFile(LPCTSTR szTraceFileName,
-					  LPCTSTR szLogFileName,
-					  ULONGLONG ullMaxTraceFileSize/*=0*/,
+void InitTraceLogFile(LPCTSTR szLogFileName,
 					  ULONGLONG ullMaxLogFileSize/*=0*/)
 {
 	if (!g_bTraceLogFileInited)
@@ -35,11 +31,8 @@ void InitTraceLogFile(LPCTSTR szTraceFileName,
 #ifdef _DEBUG
 		InitializeCriticalSection(&g_csTraceDebug);
 #endif
-		InitializeCriticalSection(&g_csTraceFile);
 		InitializeCriticalSection(&g_csLogFile);
-		g_ullMaxTraceFileSize = ullMaxTraceFileSize;
 		g_ullMaxLogFileSize = ullMaxLogFileSize;
-		g_sTraceFileName = szTraceFileName;
 		g_sLogFileName = szLogFileName;
 		g_bTraceLogFileInited = TRUE;
 	}
@@ -51,7 +44,6 @@ void EndTraceLogFile()
 	{
 		g_bTraceLogFileInited = FALSE;
 		DeleteCriticalSection(&g_csLogFile);
-		DeleteCriticalSection(&g_csTraceFile);
 #ifdef _DEBUG
 		DeleteCriticalSection(&g_csTraceDebug);
 #endif
@@ -140,72 +132,6 @@ void LogLine(const TCHAR* pFormat, ...)
 
 	// Leave CS
 	LeaveCriticalSection(&g_csLogFile);
-}
-
-void TraceFile(const TCHAR* pFormat, ...)
-{
-	// Check
-	if (!g_bTraceLogFileInited)
-		return;
-
-	// Enter CS
-	EnterCriticalSection(&g_csTraceFile);
-
-	// Format
-	CString s;
-	va_list arguments;
-	va_start(arguments, pFormat);	
-	s.FormatV(pFormat, arguments);
-    va_end(arguments);
-
-	// Add current time
-	time_t CurrentTime;
-	time(&CurrentTime);
-	CString sCurrentTime(_tctime(&CurrentTime));
-	sCurrentTime.TrimRight(_T('\n'));
-	s = _T("[") + sCurrentTime + _T("] ") + s;
-
-	// Check file size
-	if (g_ullMaxTraceFileSize > 0)
-	{
-		ULARGE_INTEGER Size = GetFileSize64(g_sTraceFileName);
-		if (Size.QuadPart > g_ullMaxTraceFileSize)
-		{
-			CString sOldFileName = GetFileNameNoExt(g_sTraceFileName) + _T(".old");
-			DeleteFile(sOldFileName);
-			MoveFile(g_sTraceFileName, sOldFileName);
-		}
-	}
-
-	// Create directory
-	CString sPath = GetDriveAndDirName(g_sTraceFileName);
-	if (!IsExistingDir(sPath))
-		CreateDir(sPath);
-
-	// Trace To File
-	s.Replace(_T("\r\n"), _T("\n")); // make sure we do not have already \r\n endings
-	s.Replace(_T("\n"), _T("\r\n")); // convert to \r\n line endings
-	FILE* pf = _tfopen(g_sTraceFileName, _T("ab"));
-	if (pf)
-	{
-		LPBYTE pData = NULL;
-		int nSize = ToUTF8(s, &pData);
-		if (pData)
-		{
-			ULARGE_INTEGER Size = GetFileSize64(g_sTraceFileName);
-			if (Size.QuadPart == 0)
-			{
-				const BYTE BOM[3] = {0xEF, 0xBB, 0xBF};
-				fwrite(BOM, sizeof(BYTE), 3, pf);
-			}
-			fwrite(pData, sizeof(BYTE), nSize, pf);
-			delete [] pData;
-		}
-		fclose(pf);
-	}
-
-	// Leave CS
-	LeaveCriticalSection(&g_csTraceFile);
 }
 
 #ifdef _DEBUG

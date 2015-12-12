@@ -201,7 +201,7 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 		{
 			DWORD dwLastError = ::GetLastError();
 			EndWaitCursor();
-			::ShowError(dwLastError, TRUE);
+			::ShowErrorMsg(dwLastError, TRUE);
 			BeginWaitCursor();
 		}
 		else

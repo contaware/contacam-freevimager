@@ -737,7 +737,7 @@ void CCameraBasicSettingsDlg::Rename()
 	{
 		// Error Message
 		EndWaitCursor();
-		::ShowError(dwLastError, TRUE);
+		::ShowErrorMsg(dwLastError, TRUE);
 		BeginWaitCursor();
 
 		// Restore old name

@@ -927,7 +927,7 @@ void CMainFrame::OnFileAcquireAndEmail()
 	{
 		if (!::CreateDir(sScanAndEmailDir))
 		{
-			::ShowLastError(TRUE);
+			::ShowErrorMsg(GetLastError(), TRUE);
 			return;
 		}
 	}
@@ -1302,7 +1302,6 @@ void CMainFrame::FullScreenModeOn()
 	}
 	else if (style & WS_MINIMIZE)
 	{
-		TRACE(_T("Child is minimized\n"));
 		m_bChildMin = true;
 		m_bChildMax = false;
 		// Maximize the child window
@@ -2232,70 +2231,69 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 	}
 	else if (nIDEvent == ID_TIMER_1SEC)
 	{
-#if defined(TRACELOGFILE) || defined(VIDEODEVICEDOC)
 		// Get CPU Usage
 		double dCPUUsage = ::GetCPUUsage();
 
 		// Get VM Stats
 		int nVMPrivateCommitSize = ::GetVirtualMemUsedMB();
-#endif
 
-#ifdef TRACELOGFILE
-		// Get Used Phys. Mem Stats
-		int nPhysMemWorkingSetSize = ::GetPhysicalMemUsedMB();
-
-		// Get big allocation stats
-		double d64kUsed, d128kUsed, d256kUsed, d512kUsed, d1024kUsed;
-		::GetBigAllocStats(&d64kUsed, &d128kUsed, &d256kUsed, &d512kUsed, &d1024kUsed);
-
-		// Get virtual memory stats
-		DWORD dwRegions; DWORD dwFreeMB; DWORD dwReservedMB; DWORD dwCommittedMB;
-		DWORD dwMaxFree; DWORD dwMaxReserved; DWORD dwMaxCommitted; double dFragmentation;
-		::GetMemoryStats(	&dwRegions, &dwFreeMB, &dwReservedMB, &dwCommittedMB,
-							&dwMaxFree, &dwMaxReserved, &dwMaxCommitted, &dFragmentation);
-
-		// Get heap stats
-		SIZE_T DefaultHeapSize = 0; SIZE_T CRTHeapSize = 0; SIZE_T OtherHeapsSize = 0;
-		int nDefaultHeapType = 0; int nCRTHeapType = 0;
-		::GetHeapStats(&DefaultHeapSize, &CRTHeapSize, &OtherHeapsSize, &nDefaultHeapType, &nCRTHeapType);
-		CString sDefaultHeapType;
-		switch (nDefaultHeapType)
+		if (g_nLogLevel > 0)
 		{
-			case 0 :	sDefaultHeapType = _T("regular"); break;
-			case 1 :	sDefaultHeapType = _T("look-asides"); break;
-			case 2 :	sDefaultHeapType = _T("LFH"); break;
-			default :	sDefaultHeapType = _T("unknown"); break;
-		}
-		CString sCRTHeapType;
-		switch (nCRTHeapType)
-		{
-			case 0 :	sCRTHeapType = _T("regular"); break;
-			case 1 :	sCRTHeapType = _T("look-asides"); break;
-			case 2 :	sCRTHeapType = _T("LFH"); break;
-			default :	sCRTHeapType = _T("unknown"); break;
-		}
+			// Get Used Phys. Mem Stats
+			int nPhysMemWorkingSetSize = ::GetPhysicalMemUsedMB();
+
+			// Get big allocation stats
+			double d64kUsed, d128kUsed, d256kUsed, d512kUsed, d1024kUsed;
+			::GetBigAllocStats(&d64kUsed, &d128kUsed, &d256kUsed, &d512kUsed, &d1024kUsed);
+
+			// Get virtual memory stats
+			DWORD dwRegions; DWORD dwFreeMB; DWORD dwReservedMB; DWORD dwCommittedMB;
+			DWORD dwMaxFree; DWORD dwMaxReserved; DWORD dwMaxCommitted; double dFragmentation;
+			::GetMemoryStats(	&dwRegions, &dwFreeMB, &dwReservedMB, &dwCommittedMB,
+								&dwMaxFree, &dwMaxReserved, &dwMaxCommitted, &dFragmentation);
+
+			// Get heap stats
+			SIZE_T DefaultHeapSize = 0; SIZE_T CRTHeapSize = 0; SIZE_T OtherHeapsSize = 0;
+			int nDefaultHeapType = 0; int nCRTHeapType = 0;
+			::GetHeapStats(&DefaultHeapSize, &CRTHeapSize, &OtherHeapsSize, &nDefaultHeapType, &nCRTHeapType);
+			CString sDefaultHeapType;
+			switch (nDefaultHeapType)
+			{
+				case 0 :	sDefaultHeapType = _T("regular"); break;
+				case 1 :	sDefaultHeapType = _T("look-asides"); break;
+				case 2 :	sDefaultHeapType = _T("LFH"); break;
+				default :	sDefaultHeapType = _T("unknown"); break;
+			}
+			CString sCRTHeapType;
+			switch (nCRTHeapType)
+			{
+				case 0 :	sCRTHeapType = _T("regular"); break;
+				case 1 :	sCRTHeapType = _T("look-asides"); break;
+				case 2 :	sCRTHeapType = _T("LFH"); break;
+				default :	sCRTHeapType = _T("unknown"); break;
+			}
 		
-		// Check CRT heap status
-		int heapstatus = _heapchk();
-		CString sCRTHeapStatus;
-		switch (heapstatus)
-		{
-			case _HEAPOK :		sCRTHeapStatus = _T("ok" ); break;
-			case _HEAPEMPTY :	sCRTHeapStatus = _T("empty" ); break;
-			case _HEAPBADBEGIN :sCRTHeapStatus = _T("ERROR bad start of heap" ); break;
-			case _HEAPBADNODE :	sCRTHeapStatus = _T("ERROR bad node in heap" ); break;
-		}
+			// Check CRT heap status
+			int heapstatus = _heapchk();
+			CString sCRTHeapStatus;
+			switch (heapstatus)
+			{
+				case _HEAPOK :		sCRTHeapStatus = _T("ok" ); break;
+				case _HEAPEMPTY :	sCRTHeapStatus = _T("empty" ); break;
+				case _HEAPBADBEGIN :sCRTHeapStatus = _T("ERROR bad start of heap" ); break;
+				case _HEAPBADNODE :	sCRTHeapStatus = _T("ERROR bad node in heap" ); break;
+			}
 
-		// Print debug message
-		TRACE(	_T("CPU %0.1f%% | ")
-				_T("BIGALLOC 64k=%0.1f%% 128k=%0.1f%% 256k=%0.1f%% 512k=%0.1f%% 1024k=%0.1f%% | ")
-				_T("MEM phystotused=%dMB vmprivused=%dMB vmused=%uMB(max %uKB) vmres=%uMB(max %uKB) vmfree=%uMB(max %uKB) frag=%0.1f%% regions=%u | ")
-				_T("HEAPS default(%s)=%dMB crt(%s %s)=%dMB others=%dMB\n"),
-				dCPUUsage,
-				d64kUsed, d128kUsed, d256kUsed, d512kUsed, d1024kUsed,
-				nPhysMemWorkingSetSize, nVMPrivateCommitSize, dwCommittedMB, dwMaxCommitted>>10, dwReservedMB, dwMaxReserved>>10, dwFreeMB, dwMaxFree>>10, dFragmentation, dwRegions,
-				sDefaultHeapType, (int)(DefaultHeapSize>>20), sCRTHeapType, sCRTHeapStatus, (int)(CRTHeapSize>>20), (int)(OtherHeapsSize>>20));
-#endif
+			// Print debug message
+			::LogLine(	_T("CPU %0.1f%% | ")
+						_T("BIGALLOC 64k=%0.1f%% 128k=%0.1f%% 256k=%0.1f%% 512k=%0.1f%% 1024k=%0.1f%% | ")
+						_T("MEM phystotused=%dMB vmprivused=%dMB vmused=%uMB(max %uKB) vmres=%uMB(max %uKB) vmfree=%uMB(max %uKB) frag=%0.1f%% regions=%u | ")
+						_T("HEAPS default(%s)=%dMB crt(%s %s)=%dMB others=%dMB"),
+						dCPUUsage,
+						d64kUsed, d128kUsed, d256kUsed, d512kUsed, d1024kUsed,
+						nPhysMemWorkingSetSize, nVMPrivateCommitSize, dwCommittedMB, dwMaxCommitted>>10, dwReservedMB, dwMaxReserved>>10, dwFreeMB, dwMaxFree>>10, dFragmentation, dwRegions,
+						sDefaultHeapType, (int)(DefaultHeapSize>>20), sCRTHeapType, sCRTHeapStatus, (int)(CRTHeapSize>>20), (int)(OtherHeapsSize>>20));
+		}
 
 #ifdef VIDEODEVICEDOC
 		// Show HD Usage

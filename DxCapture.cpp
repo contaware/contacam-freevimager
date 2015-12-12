@@ -1215,7 +1215,8 @@ BOOL CDxCapture::Open(	HWND hWnd,
     // Init DirectShow interfaces
     if (!InitInterfaces())
     {
-		TRACE(_T("Failed to init video interfaces\n"));
+		if (g_nLogLevel > 0)
+			::LogLine(_T("Failed to init video interfaces"));
         return FALSE;
     }
 
@@ -1223,7 +1224,8 @@ BOOL CDxCapture::Open(	HWND hWnd,
     hr = m_pCaptureGraphBuilder->SetFiltergraph(m_pGraph);
     if (FAILED(hr))
     {
-		TRACE(_T("Failed to set capture filter graph\n"));
+		if (g_nLogLevel > 0)
+			::LogLine(_T("Failed to set capture filter graph"));
         return FALSE;
     }
 
@@ -1239,7 +1241,8 @@ BOOL CDxCapture::Open(	HWND hWnd,
 		// Find by Id
 		if (!BindFilter(nId))
 		{
-			TRACE(_T("Failed to Bind the source filter\n"));
+			if (g_nLogLevel > 0)
+				::LogLine(_T("Failed to Bind the source filter"));
 			return FALSE;
 		}
 	}
@@ -1248,8 +1251,8 @@ BOOL CDxCapture::Open(	HWND hWnd,
     hr = m_pGraph->AddFilter(m_pSrcFilter, L"Video Capture");
     if (FAILED(hr))
     {
-		TRACE(	_T("If you have a working video capture device, please make sure\n")
-				_T("that it is connected and is not being used by another application\n"));
+		if (g_nLogLevel > 0)
+			::LogLine(_T("If you have a working video capture device, please make sure that it is connected and is not being used by another application"));
         return FALSE;
     }
 
@@ -1273,26 +1276,30 @@ BOOL CDxCapture::Open(	HWND hWnd,
 								IID_IBaseFilter, (void**)&m_pDVSplitter);
 		if (FAILED(hr))
 		{
-			TRACE(_T("Failed to init DV Splitter interface\n"));
+			if (g_nLogLevel > 0)
+				::LogLine(_T("Failed to init DV Splitter interface"));
 			return FALSE;
 		}
 		hr = m_pGraph->AddFilter(m_pDVSplitter, L"DV Splitter");
 		if (FAILED(hr))
 		{
-			TRACE(_T("Failed to add DV Splitter to the filter graph\n"));
+			if (g_nLogLevel > 0)
+				::LogLine(_T("Failed to add DV Splitter to the filter graph"));
 			return FALSE;
 		}
 		hr = ::CoCreateInstance(CLSID_DVVideoCodec, NULL, CLSCTX_INPROC_SERVER,
 								IID_IBaseFilter, (void**)&m_pDVDecoder);
 		if (FAILED(hr))
 		{
-			TRACE(_T("Failed to init DV Decoder interface\n"));
+			if (g_nLogLevel > 0)
+				::LogLine(_T("Failed to init DV Decoder interface"));
 			return FALSE;
 		}
 		hr = m_pGraph->AddFilter(m_pDVDecoder, L"DV Decoder");
 		if (FAILED(hr))
 		{
-			TRACE(_T("Failed to add DV Decoder to the filter graph\n"));
+			if (g_nLogLevel > 0)
+				::LogLine(_T("Failed to add DV Decoder to the filter graph"));
 			return FALSE;
 		}
 	}
@@ -1301,7 +1308,8 @@ BOOL CDxCapture::Open(	HWND hWnd,
 	hr = m_pGraph->AddFilter(m_pGrabberFilter, L"Sample Grabber");
 	if (FAILED(hr))
 	{
-		TRACE(_T("Failed to add Sample Grabber to the filter graph\n"));
+		if (g_nLogLevel > 0)
+			::LogLine(_T("Failed to add Sample Grabber to the filter graph"));
         return FALSE;
 	}
 
@@ -1309,7 +1317,8 @@ BOOL CDxCapture::Open(	HWND hWnd,
 	hr = m_pGraph->AddFilter(m_pNullRendererFilter, L"NullRender");
 	if (FAILED(hr))
 	{
-		TRACE(_T("Failed to add Null Renderer to the filter graph\n"));
+		if (g_nLogLevel > 0)
+			::LogLine(_T("Failed to add Null Renderer to the filter graph"));
         return FALSE;
 	}
 
@@ -1366,7 +1375,8 @@ BOOL CDxCapture::Open(	HWND hWnd,
 	}
 	if (FAILED(hr))
 	{
-		TRACE(_T("Failed while getting the configuration interface\n"));
+		if (g_nLogLevel > 0)
+			::LogLine(_T("Failed while getting the configuration interface"));
 		return FALSE;
 	}
 
@@ -1581,13 +1591,15 @@ BOOL CDxCapture::Open(	HWND hWnd,
 	hr = m_pME->SetNotifyFlags(0); // Enable Events Notify
 	if (FAILED(hr))
     {
-		TRACE(_T("Failed to enable graph notify\n"));
+		if (g_nLogLevel > 0)
+			::LogLine(_T("Failed to enable graph notify"));
         return FALSE;
     }
     hr = m_pME->SetNotifyWindow((OAHWND)hWnd, WM_DIRECTSHOW_GRAPHNOTIFY, 0);
 	if (FAILED(hr))
     {
-		TRACE(_T("Failed to set graph notify window\n"));
+		if (g_nLogLevel > 0)
+			::LogLine(_T("Failed to set graph notify window"));
         return FALSE;
     }
 

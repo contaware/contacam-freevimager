@@ -88,7 +88,7 @@ int CBatchProcDlg::CProcessThread::Work()
 				sDstDir = sTempDstDirPath + _T("\\") + sDstDir;
 				if (!::CreateDir(sDstDir))
 				{
-					::ShowLastError(TRUE);
+					::ShowErrorMsg(::GetLastError(), TRUE);
 					throw (int)0;
 				}
 			}
@@ -366,7 +366,7 @@ int CBatchProcDlg::CProcessThread::Work()
 		// overwrite if target file exists and fail on copy error
 		else if (!::MergeDirContent(sTempDstDirPath, sOrigDstDirPath, TRUE, FALSE))
 		{
-			::ShowLastError(TRUE);
+			::ShowErrorMsg(::GetLastError(), TRUE);
 			throw (int)0;
 		}
 
@@ -873,14 +873,14 @@ BOOL CBatchProcDlg::CProcessThread::Copy(	const CString& sSrcFileName,
 	{
 		if (!::CopyFile(sSrcFileName, sDstFileNameSameExt, FALSE))
 		{
-			::ShowLastError(FALSE);	// Only TRACE error!
+			::ShowErrorMsg(::GetLastError(), FALSE);
 			return FALSE;
 		}
 		if (!::SetFileAttributes(sDstFileNameSameExt,
 								FILE_ATTRIBUTE_NORMAL |
 								FILE_ATTRIBUTE_TEMPORARY))
 		{
-			::ShowLastError(FALSE);// Only TRACE error!
+			::ShowErrorMsg(::GetLastError(), FALSE);
 			return FALSE;
 		}
 		return TRUE;
@@ -2055,7 +2055,7 @@ void CBatchProcDlg::OnOK()
 				// Create Dir
 				if (!::CreateDir(sOutputDirectory))
 				{
-					::ShowLastError(TRUE);
+					::ShowErrorMsg(::GetLastError(), TRUE);
 					return;
 				}
 				else
@@ -2074,7 +2074,7 @@ void CBatchProcDlg::OnOK()
 		{
 			if (!::CreateDir(sTempBatchOutDir))
 			{
-				::ShowLastError(TRUE);
+				::ShowErrorMsg(::GetLastError(), TRUE);
 				return;
 			}
 		}
@@ -4102,7 +4102,6 @@ int CBatchProcDlg::Compare(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 			else
 				return 0;
 		}
-
 		case MODIFIEDDATE_ASC :
 		{
 			Time1 = GetModifiedFileTime(pListElement1->GetFileName());

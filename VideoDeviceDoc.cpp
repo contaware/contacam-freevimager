@@ -95,7 +95,7 @@ BOOL CVideoDeviceDoc::CreateCheckYearMonthDayDir(CTime Time, CString sBaseDir, C
 	{
 		if (!::CreateDir(sBaseDir + _T("\\") + sYear))
 		{
-			::ShowLastError(FALSE);
+			::ShowErrorMsg(::GetLastError(), FALSE);
 			return FALSE;
 		}
 	}
@@ -106,7 +106,7 @@ BOOL CVideoDeviceDoc::CreateCheckYearMonthDayDir(CTime Time, CString sBaseDir, C
 	{
 		if (!::CreateDir(sBaseDir + _T("\\") + sYear + _T("\\") + sMonth))
 		{
-			::ShowLastError(FALSE);
+			::ShowErrorMsg(::GetLastError(), FALSE);
 			return FALSE;
 		}
 	}
@@ -117,7 +117,7 @@ BOOL CVideoDeviceDoc::CreateCheckYearMonthDayDir(CTime Time, CString sBaseDir, C
 	{
 		if (!::CreateDir(sBaseDir + _T("\\") + sYear + _T("\\") + sMonth + _T("\\") + sDay))
 		{
-			::ShowLastError(FALSE);
+			::ShowErrorMsg(::GetLastError(), FALSE);
 			return FALSE;
 		}
 	}
@@ -221,12 +221,19 @@ void CVideoDeviceDoc::CSaveFrameListThread::LoadAndDecodeFrame(CDib* pDib)
 		// In case that avcodec_decode_video2 fails try LoadJPEG
 		if (!res)
 		{
-			TRACE(_T("%s, m_AVDetDecoder.Decode() FAILURE, trying LoadJPEG() + Compress(I420)\n"), m_pDoc->GetAssignedDeviceName());
+			if (g_nLogLevel > 0)
+				::LogLine(_T("%s, m_AVDetDecoder.Decode() FAILURE, trying LoadJPEG() + Compress(I420)"), m_pDoc->GetAssignedDeviceName());
 			res = pDib->LoadJPEG(pOldBits, pOldBmi->bmiHeader.biSizeImage, 1, TRUE) && pDib->Compress(FCC('I420'));
 			if (res)
-				TRACE(_T("%s, LoadJPEG() + Compress(I420) success\n"), m_pDoc->GetAssignedDeviceName());
+			{
+				if (g_nLogLevel > 0)
+					::LogLine(_T("%s, LoadJPEG() + Compress(I420) success"), m_pDoc->GetAssignedDeviceName());
+			}
 			else
-				TRACE(_T("%s, LoadJPEG() + Compress(I420) FAILURE\n"), m_pDoc->GetAssignedDeviceName());
+			{
+				if (g_nLogLevel > 0)
+					::LogLine(_T("%s, LoadJPEG() + Compress(I420) FAILURE"), m_pDoc->GetAssignedDeviceName());
+			}
 		}
 
 		// Make sure we have valid bits, if not make a green frame
@@ -276,7 +283,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 	if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
 	{
 		if (!::CreateDir(sTempDetectionDir))
-			::ShowLastError(FALSE);
+			::ShowErrorMsg(::GetLastError(), FALSE);
 	}
 
 	// Save loop
@@ -1701,7 +1708,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::SendMailMessage(const CString& sTemp
 				if (!connection.MXLookup(sDomain, servers, priorities))
 				{
 					::LogLine(_T("%s, unable to perform a DNS MX lookup for the domain %s, Error: %d"),
-											m_pDoc->GetAssignedDeviceName(), sDomain, GetLastError());
+											m_pDoc->GetAssignedDeviceName(), sDomain, ::GetLastError());
 					bSend = FALSE;
 				}
 				else
@@ -2583,10 +2590,13 @@ end_of_software_detection:
 		// Update buffering flag
 		m_bMovDetHDBuffering = (dTotalDocsMovementDetecting * dDocLoad >= MOVDET_MEM_LOAD_HD_BUF);
 
-		// Debug
-		TRACE(_T("%s, DET %s Buf: %0.1f%% load of %dMB\n"), GetAssignedDeviceName(),
-															m_bMovDetHDBuffering ? _T("HD") : _T("RAM"),
-															dDocLoad, MOVDET_MEM_MAX_MB);
+		// Log Message
+		if (g_nLogLevel > 0)
+		{
+			::LogLine(_T("%s, DET %s Buf: %0.1f%% load of %dMB"),	GetAssignedDeviceName(),
+																m_bMovDetHDBuffering ? _T("HD") : _T("RAM"),
+																dDocLoad, MOVDET_MEM_MAX_MB);
+		}
 
 		// High threshold reached, frames saving is too slow:
 		// -> drop oldest 3 * MOVDET_MIN_FRAMES_IN_LIST / 2 frames
@@ -7230,15 +7240,20 @@ void CVideoDeviceDoc::ProcessOtherFrame(LPBYTE pData, DWORD dwSize)
 	// In case that avcodec_decode_video2 fails try LoadJPEG
 	else if (m_CaptureBMI.bmiHeader.biCompression == FCC('MJPG'))
 	{
-		TRACE(_T("%s, m_AVDecoder.Decode() FAILURE, trying LoadJPEG() + Compress(I420)\n"), GetAssignedDeviceName());
+		if (g_nLogLevel > 0)
+			::LogLine(_T("%s, m_AVDecoder.Decode() FAILURE, trying LoadJPEG() + Compress(I420)"), GetAssignedDeviceName());
 		if (m_pProcessFrameExtraDib->LoadJPEG(pData, dwSize, 1, TRUE) && m_pProcessFrameExtraDib->Compress(FCC('I420')))
 		{
-			TRACE(_T("%s, LoadJPEG() + Compress(I420) success\n"), GetAssignedDeviceName());
+			if (g_nLogLevel > 0)
+				::LogLine(_T("%s, LoadJPEG() + Compress(I420) success"), GetAssignedDeviceName());
 			m_lCompressedDataRateSum += dwSize;
 			ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize(), pData, dwSize);
 		}
 		else
-			TRACE(_T("%s, LoadJPEG() + Compress(I420) FAILURE\n"), GetAssignedDeviceName());
+		{
+			if (g_nLogLevel > 0)
+				::LogLine(_T("%s, LoadJPEG() + Compress(I420) FAILURE"), GetAssignedDeviceName());
+		}
 	}
 	// Other formats
 	else
@@ -7247,18 +7262,26 @@ void CVideoDeviceDoc::ProcessOtherFrame(LPBYTE pData, DWORD dwSize)
 		m_pProcessFrameExtraDib->SetBits(pData, dwSize);
 		if (m_pProcessFrameExtraDib->IsCompressed())
 		{
-			TRACE(_T("%s, m_AVDecoder.Decode() FAILURE, trying Decompress(32) + Compress(I420)\n"), GetAssignedDeviceName());
+			if (g_nLogLevel > 0)
+				::LogLine(_T("%s, m_AVDecoder.Decode() FAILURE, trying Decompress(32) + Compress(I420)"), GetAssignedDeviceName());
 			m_pProcessFrameExtraDib->Decompress(32);
 		}
 		else
-			TRACE(_T("%s, m_AVDecoder.Decode() FAILURE, trying Compress(I420)\n"), GetAssignedDeviceName());
+		{
+			if (g_nLogLevel > 0)
+				::LogLine(_T("%s, m_AVDecoder.Decode() FAILURE, trying Compress(I420)"), GetAssignedDeviceName());
+		}
 		if (m_pProcessFrameExtraDib->Compress(FCC('I420')))
 		{
-			TRACE(_T("%s, Compress(I420) success\n"), GetAssignedDeviceName());
+			if (g_nLogLevel > 0)
+				::LogLine(_T("%s, Compress(I420) success"), GetAssignedDeviceName());
 			ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize(), NULL, 0U);
 		}
 		else
-			TRACE(_T("%s, Compress(I420) FAILURE\n"), GetAssignedDeviceName());
+		{
+			if (g_nLogLevel > 0)
+				::LogLine(_T("%s, Compress(I420) FAILURE"), GetAssignedDeviceName());
+		}
 	}
 }
 
@@ -9296,7 +9319,8 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRawRequest(CString sRequest)
 	}
 
 	// Send
-	TRACE(_T("%s, %s"), m_pDoc->GetAssignedDeviceName(), ::SingleLine(sRequest + sHost + sMsg) + _T('\n'));
+	if (g_nLogLevel > 0)
+		::LogLine(_T("%s, %s"), m_pDoc->GetAssignedDeviceName(), ::SingleLine(sRequest + sHost + sMsg));
 	return (m_pNetCom->WriteStr(sRequest + sHost + sMsg) > 0);
 }
 
@@ -10271,10 +10295,8 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 				// Call mjpeg parser
 				res = ParseMultipart(pNetCom, nPosEndLine, nSize, pMsg, sMsg, sMsgLowerCase);
 				delete [] pMsg;
-#if defined(_DEBUG) || defined(TRACELOGFILE)
-				if (res && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0))
-					TRACE(_T("%s, %s"), m_pDoc->GetAssignedDeviceName(), ::SingleLine(sMsg.Left(nPosEnd)) + _T('\n'));
-#endif
+				if (g_nLogLevel > 0 && res && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0))
+					::LogLine(_T("%s, %s"), m_pDoc->GetAssignedDeviceName(), ::SingleLine(sMsg.Left(nPosEnd)));
 				return res;
 			}
 			// Single image
@@ -10287,10 +10309,8 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 				// Call jpeg parser
 				res = ParseSingle(bLastCall, nSize, sMsg, sMsgLowerCase);
 				delete [] pMsg;
-#if defined(_DEBUG) || defined(TRACELOGFILE)
-				if (res && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0))
-					TRACE(_T("%s, %s"), m_pDoc->GetAssignedDeviceName(), ::SingleLine(sMsg.Left(nPosEnd)) + _T('\n'));
-#endif
+				if (g_nLogLevel > 0 && res && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0))
+					::LogLine(_T("%s, %s"), m_pDoc->GetAssignedDeviceName(), ::SingleLine(sMsg.Left(nPosEnd)));
 				return res;
 			}
 			// Text
@@ -10420,10 +10440,8 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 						m_pDoc->CloseDocument();
 				}
 				delete [] pMsg;
-#if defined(_DEBUG) || defined(TRACELOGFILE)
-				if ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0)
-					TRACE(_T("%s, %s"), m_pDoc->GetAssignedDeviceName(), ::SingleLine(sMsg.Left(nPosEnd)) + _T('\n'));
-#endif
+				if (g_nLogLevel > 0 && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0))
+					::LogLine(_T("%s, %s"), m_pDoc->GetAssignedDeviceName(), ::SingleLine(sMsg.Left(nPosEnd)));
 				return FALSE; // Do not call Processor
 			}
 			// Html
@@ -10457,10 +10475,8 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 						m_pDoc->CloseDocument();
 				}
 				delete [] pMsg;
-#if defined(_DEBUG) || defined(TRACELOGFILE)
-				if ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0)
-					TRACE(_T("%s, %s"), m_pDoc->GetAssignedDeviceName(), ::SingleLine(sMsg.Left(nPosEnd)) + _T('\n'));
-#endif
+				if (g_nLogLevel > 0 && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0))
+					::LogLine(_T("%s, %s"), m_pDoc->GetAssignedDeviceName(), ::SingleLine(sMsg.Left(nPosEnd)));
 				return FALSE; // Do not call Processor
 			}
 			// Unknown or incomplete
@@ -10523,10 +10539,8 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 				m_pDoc->m_HttpThread.SetEventAudioConnect(sNewRequest);
 	
 			delete [] pMsg;
-#if defined(_DEBUG) || defined(TRACELOGFILE)
-			if ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0)
-				TRACE(_T("%s, %s"), m_pDoc->GetAssignedDeviceName(), ::SingleLine(sMsg.Left(nPosEnd)) + _T('\n'));
-#endif
+			if (g_nLogLevel > 0 && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0))
+				::LogLine(_T("%s, %s"), m_pDoc->GetAssignedDeviceName(), ::SingleLine(sMsg.Left(nPosEnd)));
 			return FALSE; // Do not call Processor
 		}
 		// Unauthorized
@@ -10682,10 +10696,8 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 				m_pDoc->m_HttpThread.SetEventAudioConnect(m_sLastRequest);
 	
 			delete [] pMsg;
-#if defined(_DEBUG) || defined(TRACELOGFILE)
-			if ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0)
-				TRACE(_T("%s, %s"), m_pDoc->GetAssignedDeviceName(), ::SingleLine(sMsg.Left(nPosEnd)) + _T('\n'));
-#endif
+			if (g_nLogLevel > 0 && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0))
+				::LogLine(_T("%s, %s"), m_pDoc->GetAssignedDeviceName(), ::SingleLine(sMsg.Left(nPosEnd)));
 			return FALSE; // Do not call Processor
 		}
 		else
@@ -10740,10 +10752,8 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 					m_pDoc->m_HttpThread.SetEventAudioConnect(_T(""), HTTP_RECONNECTION_DELAY);
 			}
 			delete [] pMsg;
-#if defined(_DEBUG) || defined(TRACELOGFILE)
-			if ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0)
-				TRACE(_T("%s, %s"), m_pDoc->GetAssignedDeviceName(), ::SingleLine(sMsg.Left(nPosEnd)) + _T('\n'));
-#endif
+			if (g_nLogLevel > 0 && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0))
+				::LogLine(_T("%s, %s"), m_pDoc->GetAssignedDeviceName(), ::SingleLine(sMsg.Left(nPosEnd)));
 			return FALSE; // Do not call Processor
 		}
 	}
@@ -10754,10 +10764,8 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 	{
 		res = ParseMultipart(pNetCom, 0, nSize, pMsg, sMsg, sMsgLowerCase);
 		delete [] pMsg;
-#if defined(_DEBUG) || defined(TRACELOGFILE)
-		if (res && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0))
-			TRACE(_T("%s, %s"), m_pDoc->GetAssignedDeviceName(), ::SingleLine(sMsg.Left(nPosEnd)) + _T('\n'));
-#endif
+		if (g_nLogLevel > 0 && res && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0))
+			::LogLine(_T("%s, %s"), m_pDoc->GetAssignedDeviceName(), ::SingleLine(sMsg.Left(nPosEnd)));
 		return res;
 	}
 }
@@ -10771,7 +10779,8 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::DecodeVideo(AVPacket* avpkt)
 									avpkt);
     if (len < 0)
 	{
-		TRACE(_T("%s, avcodec_decode_video2 FAILURE (returned=%d)\n"), m_pDoc->GetAssignedDeviceName(), len);
+		if (g_nLogLevel > 0)
+			::LogLine(_T("%s, avcodec_decode_video2 FAILURE (returned=%d)"), m_pDoc->GetAssignedDeviceName(), len);
 		return FALSE;
 	}
 
@@ -10878,15 +10887,20 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::DecodeVideo(AVPacket* avpkt)
 	{
 		CDib Dib;
 		Dib.SetShowMessageBoxOnError(FALSE);
-		TRACE(_T("%s, avcodec_decode_video2 FAILURE, trying LoadJPEG() + Compress(I420)\n"), m_pDoc->GetAssignedDeviceName());
+		if (g_nLogLevel > 0)
+			::LogLine(_T("%s, avcodec_decode_video2 FAILURE, trying LoadJPEG() + Compress(I420)"), m_pDoc->GetAssignedDeviceName());
 		if (Dib.LoadJPEG(avpkt->data, avpkt->size, 1, TRUE) && Dib.Compress(FCC('I420')))
 		{
-			TRACE(_T("%s, LoadJPEG() + Compress(I420) success\n"), m_pDoc->GetAssignedDeviceName());
+			if (g_nLogLevel > 0)
+				::LogLine(_T("%s, LoadJPEG() + Compress(I420) success"), m_pDoc->GetAssignedDeviceName());
 			m_pDoc->m_lCompressedDataRateSum += avpkt->size;
 			m_pDoc->ProcessI420Frame(Dib.GetBits(), Dib.GetImageSize(), avpkt->data, avpkt->size);
 		}
 		else
-			TRACE(_T("%s, LoadJPEG() + Compress(I420) FAILURE\n"), m_pDoc->GetAssignedDeviceName());
+		{
+			if (g_nLogLevel > 0)
+				::LogLine(_T("%s, LoadJPEG() + Compress(I420) FAILURE"), m_pDoc->GetAssignedDeviceName());
+		}
 	}
 
 	return TRUE;

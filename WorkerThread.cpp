@@ -178,10 +178,8 @@ int CWorkerThread::Work()
 	while (TRUE)
 	{
 		if (::WaitForSingleObject(m_hKillEvent, 1000) == WAIT_OBJECT_0)
-		{
 			return 0;
-		}
-		TRACE(_T("Thread: %lu\n"), m_nThreadID);
+		::LogLine(_T("Thread: %lu"), m_nThreadID);
 	}
 	return 0;
 }
@@ -191,7 +189,7 @@ bool CWorkerThread::Kill(DWORD dwTimeout/*=INFINITE*/)
 #ifdef _DEBUG
 	if (m_bAutoDelete)
 	{
-		TRACE(_T("Use Kill_NoBlocking() for auto delete threads!\n"));
+		// Use Kill_NoBlocking() for auto delete threads!
 		ASSERT(FALSE);
 	}
 #endif
@@ -247,7 +245,7 @@ bool CWorkerThread::WaitDone_Blocking(DWORD dwTimeout/*=INFINITE*/)
 {
 	if (m_hThread && ::WaitForSingleObject(m_hThread, dwTimeout) != WAIT_OBJECT_0)
 	{
-		TRACE(_T("Thread with ID = 0x%08X is not stopping after waiting for %u ms\n"), m_nThreadID, dwTimeout);
+		::LogLine(_T("Thread with ID = 0x%08X is not stopping after waiting for %u ms"), m_nThreadID, dwTimeout);
 		return false;
 	}
 	return true;

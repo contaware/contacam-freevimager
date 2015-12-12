@@ -1308,8 +1308,6 @@ int CPictureDoc::CJpegThread::Work()
 										TRANSITION_TIMER_RESOLUTION,
 										(LPTIMECALLBACK)m_hTimerEvent, 0,
 										TIME_PERIODIC | TIME_CALLBACK_EVENT_SET | TIME_KILL_SYNCHRONOUS);
-		if (uiTimerId == 0)
-			TRACE(_T("Load Full Jpeg Transition Effect Cannot Init Timer!\n"));
 
 		// Init Event Array
 		m_hEventArray[0] = GetKillEvent();
@@ -1759,8 +1757,6 @@ int CPictureDoc::CTransitionThread::Work()
 									TRANSITION_TIMER_RESOLUTION,
 									(LPTIMECALLBACK)m_hTimerEvent, 0,
 									TIME_PERIODIC | TIME_CALLBACK_EVENT_SET | TIME_KILL_SYNCHRONOUS);
-	if (uiTimerId == 0)
-		TRACE(_T("Transition Effect Cannot Init Timer!\n"));
 
 	// Send the Draw Messages each m_nTransitionDelay Milliseconds
 	while (	m_pDoc->m_bTransitionUI &&
@@ -3265,7 +3261,7 @@ BOOL CPictureDoc::SaveAsFromAnimGIFToAnimGIF(	const CString& sFileName,
 				::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
 			}
 			else
-				::ShowError(e->m_lOsError, TRUE);
+				::ShowErrorMsg(e->m_lOsError, TRUE);
 			
 			e->Delete();
 			return FALSE;
@@ -3592,7 +3588,7 @@ void CPictureDoc::OnFileCopyTo()
 
 			// Copy
 			if (!::CopyFile(m_sFileName, fd.GetPathName(), FALSE))
-				::ShowLastError(TRUE);
+				::ShowErrorMsg(::GetLastError(), TRUE);
 		}
 
 		// Free
@@ -3642,7 +3638,7 @@ void CPictureDoc::OnFileMoveTo()
 				m_SlideShowThread.NextPicture();
 			}
 			else
-				::ShowLastError(TRUE);
+				::ShowErrorMsg(::GetLastError(), TRUE);
 		}
 
 		// Free
@@ -4178,7 +4174,7 @@ void CPictureDoc::OnEditRename()
 			// Rename
 			if (!::MoveFile(m_sFileName, sNewFileName))
 			{
-				::ShowLastError(TRUE);
+				::ShowErrorMsg(::GetLastError(), TRUE);
 				sNewFileName = m_sFileName;
 			}
 			
@@ -5449,7 +5445,7 @@ int CPictureDoc::LossLessRotateFlip(BOOL bShowMessageBoxOnError, CRotationFlippi
 						::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
 				}
 				else
-					::ShowError(e->m_lOsError, bShowMessageBoxOnError);
+					::ShowErrorMsg(e->m_lOsError, bShowMessageBoxOnError);
 
 				e->Delete();
 				return 2;
@@ -6855,7 +6851,7 @@ void CPictureDoc::OnEditAddExifthumb()
 						::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
 				}
 				else
-					::ShowError(e->m_lOsError, bShowMessageBoxOnError);
+					::ShowErrorMsg(e->m_lOsError, bShowMessageBoxOnError);
 
 				e->Delete();
 			}
@@ -6940,7 +6936,7 @@ void CPictureDoc::OnEditRemoveExifthumb()
 						::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
 				}
 				else
-					::ShowError(e->m_lOsError, bShowMessageBoxOnError);
+					::ShowErrorMsg(e->m_lOsError, bShowMessageBoxOnError);
 
 				e->Delete();
 			}
@@ -7089,7 +7085,7 @@ void CPictureDoc::OnEditRemoveExif()
 							::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
 					}
 					else
-						::ShowError(e->m_lOsError, bShowMessageBoxOnError);
+						::ShowErrorMsg(e->m_lOsError, bShowMessageBoxOnError);
 
 					e->Delete();
 				}
@@ -7184,7 +7180,7 @@ void CPictureDoc::OnEditRemoveIcc()
 							::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
 					}
 					else
-						::ShowError(e->m_lOsError, bShowMessageBoxOnError);
+						::ShowErrorMsg(e->m_lOsError, bShowMessageBoxOnError);
 
 					e->Delete();
 				}
@@ -7279,7 +7275,7 @@ void CPictureDoc::OnEditRemoveXmp()
 							::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
 					}
 					else
-						::ShowError(e->m_lOsError, bShowMessageBoxOnError);
+						::ShowErrorMsg(e->m_lOsError, bShowMessageBoxOnError);
 
 					e->Delete();
 				}
@@ -7374,7 +7370,7 @@ void CPictureDoc::OnEditRemoveJfif()
 							::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
 					}
 					else
-						::ShowError(e->m_lOsError, bShowMessageBoxOnError);
+						::ShowErrorMsg(e->m_lOsError, bShowMessageBoxOnError);
 
 					e->Delete();
 				}
@@ -7469,7 +7465,7 @@ void CPictureDoc::OnEditRemoveIptc()
 							::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
 					}
 					else
-						::ShowError(e->m_lOsError, bShowMessageBoxOnError);
+						::ShowErrorMsg(e->m_lOsError, bShowMessageBoxOnError);
 
 					e->Delete();
 				}
@@ -7591,7 +7587,7 @@ void CPictureDoc::OnEditRemoveOtherApp()
 							::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
 					}
 					else
-						::ShowError(e->m_lOsError, bShowMessageBoxOnError);
+						::ShowErrorMsg(e->m_lOsError, bShowMessageBoxOnError);
 
 					e->Delete();
 				}
@@ -7689,7 +7685,7 @@ void CPictureDoc::OnEditRemoveCom()
 							::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
 					}
 					else
-						::ShowError(e->m_lOsError, bShowMessageBoxOnError);
+						::ShowErrorMsg(e->m_lOsError, bShowMessageBoxOnError);
 
 					e->Delete();
 				}
@@ -9400,7 +9396,7 @@ BOOL CPictureDoc::CopyDelCrop(BOOL bShowMessageBoxOnError, BOOL bCopy, BOOL bDel
 								::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
 						}
 						else
-							::ShowError(e->m_lOsError, bShowMessageBoxOnError);
+							::ShowErrorMsg(e->m_lOsError, bShowMessageBoxOnError);
 
 						e->Delete();
 						GetView()->ForceCursor(FALSE);

@@ -521,7 +521,6 @@ void CPictureView::OnFilePrintPreview()
 	{
 		// In derived classes, reverse special window handling here for
 		// Preview failure case
-		TRACE(_T("Error: DoPrintPreview failed.\n"));
 		AfxMessageBox(AFX_IDP_COMMAND_FAILURE);
 		delete pState;      // preview failed to initialize, delete State now
 		pState = NULL;

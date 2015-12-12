@@ -472,7 +472,7 @@ void BigAllocVMMapSnapshot()
 				if (!IsExistingDir(sStartDirectory))
 				{
 					if (!CreateDir(sStartDirectory))
-						ShowLastError(TRUE);
+						ShowErrorMsg(GetLastError(), TRUE);
 				}
 				HANDLE hProcess = ExecApp(sVMMapExec, sParams, sStartDirectory);
 				if (hProcess)

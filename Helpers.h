@@ -248,15 +248,12 @@ extern CString GetRegistryStringValue(HKEY hOpenKey, LPCTSTR szKey, LPCTSTR szVa
 extern BOOL DeleteRegistryValue(HKEY hOpenKey, LPCTSTR szKey, LPCTSTR szValue);
 extern BOOL DeleteRegistryKey(HKEY hOpenKey, LPCTSTR szKey);
 
-// TRACE, eventually show Message Box and return error as:
+// LogLine + eventually show MessageBox, format:
 // sHeader + GetLastError() in readable format + sFooter
-extern CString ShowError(	DWORD dwErrorCode,
+extern CString ShowErrorMsg(DWORD dwErrorCode,
 							BOOL bShowMessageBoxOnError,
 							CString sHeader = _T(""),
 							CString sFooter = _T(""));
-extern CString ShowLastError(	BOOL bShowMessageBoxOnError,
-								CString sHeader = _T(""),
-								CString sFooter = _T(""));
 
 // Get the local NetBIOS computer name
 extern CString GetComputerName();

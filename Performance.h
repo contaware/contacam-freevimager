@@ -151,23 +151,6 @@ class CPerformance
 			}
 			while (GetMicroSecDiff() < dwWaitMicroSec);
 		}
-		__forceinline void Trace(const TCHAR* pFormat = NULL, ...)
-		{
-			CString t(_T(""));
-			CString s(_T(""));
-			if (pFormat)
-			{
-				va_list arguments;
-				va_start(arguments, pFormat);	
-				t.FormatV(pFormat, arguments);
-				va_end(arguments);
-			}
-			if (t != _T(""))
-				s.Format(_T("%s : %uus\n"), t, GetMicroSecDiff());
-			else
-				s.Format(_T("%uus\n"), GetMicroSecDiff());
-			TRACE(s);
-		}
 		__forceinline void MessageBox(const TCHAR* pFormat = NULL, ...)
 		{
 			CString t(_T(""));
@@ -183,10 +166,9 @@ class CPerformance
 				s.Format(_T("%s : %uus\n"), t, GetMicroSecDiff());
 			else
 				s.Format(_T("%uus\n"), GetMicroSecDiff());
-			TRACE(s);
 			::AfxMessageBox(s);
 		}
-		__forceinline void Log(CString sFileName, const TCHAR* pFormat = NULL, ...)
+		__forceinline void Log(const TCHAR* pFormat = NULL, ...)
 		{
 			CString t(_T(""));
 			CString s(_T(""));
@@ -201,24 +183,7 @@ class CPerformance
 				s.Format(_T("%s : %uus\n"), t, GetMicroSecDiff());
 			else
 				s.Format(_T("%uus\n"), GetMicroSecDiff());
-			TRACE(s);
-			FILE* pf = _tfopen(sFileName, _T("at"));
-			if (pf)
-			{
-				_ftprintf(pf, _T("%s"), (LPCTSTR)s);
-				fclose(pf);
-			}
-		}
-		__forceinline void LogNewLine(CString sFileName)
-		{
-			CString s(_T("\n"));
-			TRACE(s);
-			FILE* pf = _tfopen(sFileName, _T("at"));
-			if (pf)
-			{
-				_ftprintf(pf, _T("%s"), (LPCTSTR)s);
-				fclose(pf);
-			}
+			::LogLine(_T("%s"), s);
 		}
 
 	protected:

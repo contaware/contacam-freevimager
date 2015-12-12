@@ -698,10 +698,6 @@ int CUImagerView::DoRealizePalette(BOOL bForceBackground)
 		}
 		appDC.SelectPalette(oldPalette, TRUE);
 	}
-	else
-	{
-		TRACE(_T("\tSelectPalette failed in CUImagerView::DoRealizePalette\n"));
-	}
 	
 	return nColorsChanged;
 }

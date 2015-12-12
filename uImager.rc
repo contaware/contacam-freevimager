@@ -209,6 +209,10 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "View Log File",               ID_SETTINGS_VIEW_LOGFILE
         MENUITEM "Browse Config/Log Files",     ID_SETTINGS_BROWSE_CONFIGLOG_FILES
+        MENUITEM SEPARATOR
+        MENUITEM "Normal logging",              ID_SETTINGS_NORMAL_LOGGING
+        MENUITEM "Verbose logging",             ID_SETTINGS_VERBOSE_LOGGING
+        MENUITEM "Debug logging",               ID_SETTINGS_LOG_ALL_MESSAGES
     END
     POPUP "&Help"
     BEGIN
@@ -359,6 +363,10 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "View Log File",               ID_SETTINGS_VIEW_LOGFILE
         MENUITEM "Browse Config/Log Files",     ID_SETTINGS_BROWSE_CONFIGLOG_FILES
+        MENUITEM SEPARATOR
+        MENUITEM "Normal logging",              ID_SETTINGS_NORMAL_LOGGING
+        MENUITEM "Verbose logging",             ID_SETTINGS_VERBOSE_LOGGING
+        MENUITEM "Debug logging",               ID_SETTINGS_LOG_ALL_MESSAGES
     END
     POPUP "&Window"
     BEGIN
@@ -594,6 +602,10 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "View Log File",               ID_SETTINGS_VIEW_LOGFILE
         MENUITEM "Browse Config/Log Files",     ID_SETTINGS_BROWSE_CONFIGLOG_FILES
+        MENUITEM SEPARATOR
+        MENUITEM "Normal logging",              ID_SETTINGS_NORMAL_LOGGING
+        MENUITEM "Verbose logging",             ID_SETTINGS_VERBOSE_LOGGING
+        MENUITEM "Debug logging",               ID_SETTINGS_LOG_ALL_MESSAGES
     END
     POPUP "&Window"
     BEGIN

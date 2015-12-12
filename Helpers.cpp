@@ -316,19 +316,34 @@ BOOL TakeOwnership(LPCTSTR lpszFile)
 					if (SetFileSecurity(lpszFile, info_owner, &sd))
 						return TRUE;
 					else
-						TRACE(_T("Error in SetFileSecurity No %u\n"), GetLastError());
+					{
+						if (g_nLogLevel > 0)
+							ShowErrorMsg(GetLastError(), FALSE, _T("SetFileSecurity(") + CString(lpszFile) + _T("): "));
+					}
 				}
 				else
-					TRACE(_T("Error in SetSecurityDescriptorOwner No %u\n"), GetLastError());
+				{
+					if (g_nLogLevel > 0)
+						ShowErrorMsg(GetLastError(), FALSE, _T("SetSecurityDescriptorOwner(") + CString(lpszFile) + _T("): "));
+				}
 			}
 			else
-				TRACE(_T("Error in GetTokenInformation No %u\n"), GetLastError());
+			{
+				if (g_nLogLevel > 0)
+					ShowErrorMsg(GetLastError(), FALSE, _T("GetTokenInformation(") + CString(lpszFile) + _T("): "));
+			}
 		}
 		else
-			TRACE(_T("Error in SetPrivilege No %u\n"), GetLastError());
+		{
+			if (g_nLogLevel > 0)
+				ShowErrorMsg(GetLastError(), FALSE, _T("SetPrivilege(") + CString(lpszFile) + _T("): "));
+		}
 	}
 	else
-		TRACE(_T("Error in OpenProcessToken No %u\n"), GetLastError());
+	{
+		if (g_nLogLevel > 0)
+			ShowErrorMsg(GetLastError(), FALSE, _T("OpenProcessToken(") + CString(lpszFile) + _T("): "));
+	}
 
 	SetPrivilege(token, SE_TAKE_OWNERSHIP_NAME, TRUE); // disabling the set privilege
 
@@ -389,7 +404,8 @@ BOOL SetPermission(LPCTSTR lpszFile, LPCTSTR lpszAccess, DWORD dwAccessMask)
 		acl = (ACL*)malloc(acl_size);
 		if (!acl)
 		{
-			TRACE(_T("Error allocating memory for the acl\n"));
+			if (g_nLogLevel > 0)
+				ShowErrorMsg(GetLastError(), FALSE, _T("Error allocating memory for the acl (") + CString(lpszFile) + _T("): "));
 			return FALSE;
 		}
 		InitializeAcl(acl, acl_size, ACL_REVISION);
@@ -404,16 +420,28 @@ BOOL SetPermission(LPCTSTR lpszFile, LPCTSTR lpszAccess, DWORD dwAccessMask)
 					return TRUE;
 				}
 				else
-					TRACE(_T("Error in SetFileSecurity No %u\n"), GetLastError());
+				{
+					if (g_nLogLevel > 0)
+						ShowErrorMsg(GetLastError(), FALSE, _T("SetFileSecurity(") + CString(lpszFile) + _T("): "));
+				}
 			}
 			else
-				TRACE(_T("Error in SetSecurityDescriptorDacl No %u\n"), GetLastError());
+			{
+				if (g_nLogLevel > 0)
+					ShowErrorMsg(GetLastError(), FALSE, _T("SetSecurityDescriptorDacl(") + CString(lpszFile) + _T("): "));
+			}
 		}
 		else
-			TRACE(_T("Error in AddAccessAllowedAce No %u\n"), GetLastError());
+		{
+			if (g_nLogLevel > 0)
+				ShowErrorMsg(GetLastError(), FALSE, _T("AddAccessAllowedAce(") + CString(lpszFile) + _T("): "));
+		}
 	}
 	else
-		TRACE(_T("Error in LookupAccountName No %u\n"), GetLastError());
+	{
+		if (g_nLogLevel > 0)
+			ShowErrorMsg(GetLastError(), FALSE, _T("LookupAccountName(") + CString(lpszFile) + _T("): "));
+	}
 
 	if (acl)
 		free(acl);
@@ -808,25 +836,22 @@ BOOL DeleteDirContent(LPCTSTR szDirName)
 		{
 			if (!DeleteFile(name))
 			{
-#if defined(_DEBUG) || defined(TRACELOGFILE)
-				::ShowLastError(FALSE, _T("DeleteFile(") + CString(name) + _T("): "), _T(" Trying to take ownership, set permission and remove readonly flag"));
-#endif
+				if (g_nLogLevel > 0)
+					ShowErrorMsg(GetLastError(), FALSE, _T("DeleteFile(") + CString(name) + _T("): "), _T(" Trying to take ownership, set permission and remove readonly flag"));
 				TakeOwnership(name);
 				SetPermission(name, _T("everyone"), GENERIC_ALL);
 				if (pInfo->dwFileAttributes & FILE_ATTRIBUTE_READONLY)
 				{
 					if (!SetFileAttributes(name, pInfo->dwFileAttributes & ~FILE_ATTRIBUTE_READONLY))
 					{
-#if defined(_DEBUG) || defined(TRACELOGFILE)
-						::ShowLastError(FALSE, _T("SetFileAttributes(") + CString(name) + _T(", REMOVE READONLY): "));
-#endif
+						if (g_nLogLevel > 0)
+							ShowErrorMsg(GetLastError(), FALSE, _T("SetFileAttributes(") + CString(name) + _T(", REMOVE READONLY): "));
 					}
 				}
 				if (!DeleteFile(name))
 				{
-#if defined(_DEBUG) || defined(TRACELOGFILE)
-					::ShowLastError(FALSE, _T("DeleteFile(") + CString(name) + _T("): "), _T(" Giving up..."));
-#endif
+					if (g_nLogLevel > 0)
+						ShowErrorMsg(GetLastError(), FALSE, _T("DeleteFile(") + CString(name) + _T("): "), _T(" Giving up..."));
 					FindClose(hp);
 					DELETEDIRCONTENT_FREE;
 					return FALSE;
@@ -849,9 +874,8 @@ BOOL DeleteDir(LPCTSTR szDirName)
 	{
 		if (!RemoveDirectory(szDirName))
 		{
-#if defined(_DEBUG) || defined(TRACELOGFILE)
-			::ShowLastError(FALSE, _T("RemoveDirectory(") + CString(szDirName) + _T("): "), _T(" Trying to take ownership, set permission and remove readonly flag"));
-#endif
+			if (g_nLogLevel > 0)
+				ShowErrorMsg(GetLastError(), FALSE, _T("RemoveDirectory(") + CString(szDirName) + _T("): "), _T(" Trying to take ownership, set permission and remove readonly flag"));
 			TakeOwnership(szDirName);
 			SetPermission(szDirName, _T("everyone"), GENERIC_ALL);
 			DWORD dwFileAttributes = GetFileAttributes(szDirName);
@@ -859,16 +883,14 @@ BOOL DeleteDir(LPCTSTR szDirName)
 			{
 				if (!SetFileAttributes(szDirName, dwFileAttributes & ~FILE_ATTRIBUTE_READONLY))
 				{
-#if defined(_DEBUG) || defined(TRACELOGFILE)
-					::ShowLastError(FALSE, _T("SetFileAttributes(") + CString(szDirName) + _T(", REMOVE READONLY): "));
-#endif
+					if (g_nLogLevel > 0)
+						ShowErrorMsg(GetLastError(), FALSE, _T("SetFileAttributes(") + CString(szDirName) + _T(", REMOVE READONLY): "));
 				}
 			}
 			if (!RemoveDirectory(szDirName))
 			{
-#if defined(_DEBUG) || defined(TRACELOGFILE)
-				::ShowLastError(FALSE, _T("RemoveDirectory(") + CString(szDirName) + _T("): "), _T(" Giving up..."));
-#endif
+				if (g_nLogLevel > 0)
+					ShowErrorMsg(GetLastError(), FALSE, _T("RemoveDirectory(") + CString(szDirName) + _T("): "), _T(" Giving up..."));
 				return FALSE;
 			}
 			else
@@ -2003,7 +2025,7 @@ BOOL DeleteRegistryKey(HKEY hOpenKey, LPCTSTR szKey)
 	return (RegDeleteKey(hOpenKey, sKey) == ERROR_SUCCESS);
 }
 
-CString ShowError(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, CString sHeader/*=_T("")*/, CString sFooter/*=_T("")*/)
+CString ShowErrorMsg(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, CString sHeader/*=_T("")*/, CString sFooter/*=_T("")*/)
 {
 	// Get message
 	LPVOID lpMsgBuf = NULL;
@@ -2068,18 +2090,11 @@ CString ShowError(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, CString sHeade
 
 	// Format and show error message
 	sText = sHeader + sText + sFooter;
-	if (sText[sText.GetLength() - 1] != _T('\n')) // this is ok because sText is never empty
-		TRACE(_T("%s"), sText + _T('\n'));
-	else
-		TRACE(_T("%s"), sText);
+	if (g_nLogLevel > 0)
+		LogLine(_T("%s"), sText);
 	if (bShowMessageBoxOnError)
 		AfxMessageBox(sText, MB_ICONSTOP);
 	return sText;
-}
-
-CString ShowLastError(BOOL bShowMessageBoxOnError, CString sHeader/*=_T("")*/, CString sFooter/*=_T("")*/)
-{
-	return ShowError(GetLastError(), bShowMessageBoxOnError, sHeader, sFooter);
 }
 
 static BOOL HasCpuId()
@@ -2504,7 +2519,7 @@ BOOL IsValidFileName(const CString& s, BOOL bShowMessageBoxOnError/*=FALSE*/)
 	if (s.FindOneOf(_T("\\/:*?\"<>|")) >= 0)
 	{
 		if (bShowMessageBoxOnError)
-			ShowError(ERROR_INVALID_NAME, TRUE);
+			ShowErrorMsg(ERROR_INVALID_NAME, TRUE);
 		return FALSE;
 	}
 	else

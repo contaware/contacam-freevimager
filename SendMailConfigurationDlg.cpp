@@ -309,7 +309,7 @@ void CSendMailConfigurationDlg::OnButtonTest()
 						{
 							EndWaitCursor();
 							CString sMsg;
-							sMsg.Format(ML_STRING(1413, "Unable to perform a DNS MX lookup for the domain %s, Error Code:%d\n"), sDomain, GetLastError());
+							sMsg.Format(ML_STRING(1413, "Unable to perform a DNS MX lookup for the domain %s, Error Code:%d\n"), sDomain, ::GetLastError());
 							TRACE(sMsg);
 							::AfxMessageBox(sMsg);
 							bSend = FALSE;

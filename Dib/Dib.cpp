@@ -6745,10 +6745,8 @@ void CDib::ShowError(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, const CStri
 		::LocalFree(lpMsgBuf);
 
 	// Show Error
-	if (sText.GetLength() > 0 && sText[sText.GetLength() - 1] != _T('\n'))
-		TRACE(_T("%s"), sText + _T('\n'));
-	else
-		TRACE(_T("%s"), sText);
+	if (g_nLogLevel > 0)
+		::LogLine(_T("%s"), sText);
 	if (bShowMessageBoxOnError)
 		::AfxMessageBox(sText, MB_ICONSTOP);
 }
