@@ -2237,7 +2237,7 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		// Get VM Stats
 		int nVMPrivateCommitSize = ::GetVirtualMemUsedMB();
 
-		if (g_nLogLevel > 0)
+		if (g_nLogLevel > 1)
 		{
 			// Get Used Phys. Mem Stats
 			int nPhysMemWorkingSetSize = ::GetPhysicalMemUsedMB();

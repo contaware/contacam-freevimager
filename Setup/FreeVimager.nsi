@@ -491,6 +491,7 @@ Section "Uninstall"
   Delete $INSTDIR\${APPNAME_EXT}
   Delete $INSTDIR\FreeVimagerDump.bat
   Delete $INSTDIR\procdump.exe
+  Delete $INSTDIR\vmmap.exe
   Delete $INSTDIR\NeroBurn.exe
   Delete $INSTDIR\MasterConfig.ini
   Delete $INSTDIR\${UNINSTNAME_EXT}

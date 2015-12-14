@@ -19,8 +19,8 @@ CMDIClientWnd::CMDIClientWnd()
 	m_sFontFace = _T("Verdana");
 	m_crFontColor = RGB(255,255,255);
 	m_crLinkColor = RGB(0x99,0xdd,0xff);
-	m_crVerboseLoggingColor = RGB(0xff,0xdd,0x33);
-	m_crDebugLoggingColor = RGB(0xff,0xc0,0x60);
+	m_crVerboseLoggingColor = RGB(0xee,0xdd,0x20);
+	m_crDebugLoggingColor = RGB(0xff,0xaa,0x33);
 	m_nLeftMargin = 2;
 	m_nTopMargin = 0;
 	m_rcLinkComputer = CRect(0,0,0,0);

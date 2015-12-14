@@ -561,6 +561,7 @@ Section "Uninstall"
   Delete $INSTDIR\${APPNAME_EXT}
   Delete $INSTDIR\ContaCamDump.bat
   Delete $INSTDIR\procdump.exe
+  Delete $INSTDIR\vmmap.exe
   Delete $INSTDIR\NeroBurn.exe
   Delete $INSTDIR\ContaCamService.exe
   Delete $INSTDIR\ContaCamService.ini
