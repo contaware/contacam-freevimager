@@ -4334,7 +4334,7 @@ BEGIN
     IDS_STRING1713          "Flash: no"
     IDS_STRING1714          "Flash:\tyes\r\n"
     IDS_STRING1715          "Flash:\tno\r\n"
-    IDS_STRING1719          "Example to play a sound on detection\r\nCmd\tPath to vlc.exe\r\nParams\t-I dummy --dummy-quiet --play-and-exit\r\n\t--no-loop ""audio file path"""
+    IDS_STRING1719          "Example to play a sound on detection\r\nCmd\tPath to vlc.exe\r\nParams\t-I dummy --dummy-quiet --play-and-exit\r\n\t--no-loop --no-repeat ""audio file path"""
     IDS_STRING1721          "1 Day"
     IDS_STRING1722          "2 Days"
     IDS_STRING1723          "3 Days"
