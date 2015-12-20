@@ -16,6 +16,8 @@ static char THIS_FILE[] = __FILE__;
 
 #pragma comment(lib, "psapi.lib")	// to support GetProcessMemoryInfo()
 #pragma comment(lib, "mpr.lib")		// to support WNetGetConnection()
+#pragma comment(lib, "Rpcrt4.lib")	// to support UuidCreate(), UuidToString(), RpcStringFree(), 
+#pragma comment(lib, "Wininet.lib")	// to support InternetGetLastResponseInfo()
 
 // If InitHelpers() is not called vars default to WinXP,
 // no multimedia instructions and 2GB RAM
@@ -1409,13 +1411,14 @@ CString GetSpecialFolderPath(int nSpecialFolder)
 
 HANDLE ExecApp(	const CString& sFileName,
 				const CString& sParams/*=_T("")*/,
-				const CString& sStartDirectory/*=_T("")*/)
+				const CString& sStartDirectory/*=_T("")*/,
+				BOOL bShow/*=TRUE*/)
 {
 	SHELLEXECUTEINFO sei;
 	memset(&sei, 0, sizeof(sei));
 	sei.cbSize = sizeof(sei);
 	sei.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
-	sei.nShow = SW_SHOW;
+	sei.nShow = bShow ? SW_SHOW : SW_HIDE;;
 	sei.lpFile = sFileName;
 	if (sStartDirectory.IsEmpty())
 		sei.lpDirectory = GetDriveAndDirName(sFileName);

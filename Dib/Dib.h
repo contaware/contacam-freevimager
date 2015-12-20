@@ -854,7 +854,7 @@ public:
 
 	// Bilinear Interpolation (Works on Bitmap Bits)
 	// Bilinear is good for decreasing and increasing image size,
-	// but not to much decreasing or increasing amount!
+	// but not too much decreasing or increasing amount!
 	BOOL BilinearResampleBits(	DWORD dwNewWidth,
 								DWORD dwNewHeight,
 								CDib* pSrcDib = NULL,

@@ -421,8 +421,6 @@ void CVideoDeviceView::DrawTextMsg(HDC hDC)
 		CString sProgress(_T(""));
 		if (pDoc->m_SaveFrameListThread.GetSaveProgress() < 100)
 			sProgress.Format(ML_STRING(1877, "Save: %d%%"), pDoc->m_SaveFrameListThread.GetSaveProgress());
-		else if (pDoc->m_SaveFrameListThread.GetSendMailProgress() < 100)
-			sProgress.Format(ML_STRING(1878, "Email: %d%%"), pDoc->m_SaveFrameListThread.GetSendMailProgress());
 		else if (pDoc->m_SaveFrameListThread.GetFTPUploadProgress() < 100)
 			sProgress.Format(ML_STRING(1879, "FTP: %d%%"), pDoc->m_SaveFrameListThread.GetFTPUploadProgress());
 		if (sProgress != _T(""))

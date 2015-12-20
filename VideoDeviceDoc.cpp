@@ -792,42 +792,15 @@ __forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::SendMailMovementDetect
 				sFileNames.Append(sJPGFileNames);
 				break;
 
-		case CVideoDeviceDoc::ATTACHMENT_GIF_VIDEO :
-				sFileNames.Add(sGIFFileName);
-				sFileNames.Add(sVideoFileName);
-				break;
-
-		case CVideoDeviceDoc::ATTACHMENT_JPG_VIDEO :
-				sFileNames.Append(sJPGFileNames);
-				sFileNames.Add(sVideoFileName);
-				break;
-		
-		case CVideoDeviceDoc::ATTACHMENT_GIF_JPG :
-				sFileNames.Add(sGIFFileName);	
-				sFileNames.Append(sJPGFileNames);
-				break;
-
-		case CVideoDeviceDoc::ATTACHMENT_GIF_JPG_VIDEO :
-				sFileNames.Add(sGIFFileName);
-				sFileNames.Append(sJPGFileNames);
-				sFileNames.Add(sVideoFileName);
-				break;
-
 		default :
 				break;
 	}
 
 	// Do Exit?
 	if (SendMail(Time, sFileNames) == -1)
-	{
-		m_nSendMailProgress = 100; // hide progress display
 		return FALSE;
-	}
 	else
-	{
-		m_nSendMailProgress = 100; // hide progress display
 		return TRUE;
-	}
 }
 
 __forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::FTPUploadMovementDetection(	const CTime& Time,
@@ -1586,179 +1559,6 @@ __forceinline CString CVideoDeviceDoc::CSaveSnapshotVideoThread::MakeVideoHistor
 		return sYearMonthDayDir + _T("\\") + _T("shot_") + sTime + m_sSnapshotVideoFileExt;
 }
 
-CPJNSMTPMessage* CVideoDeviceDoc::CreateEmailMessage(const CTime& Time, SendMailConfigurationStruct* pSendMailConfiguration)
-{
-	// Check
-	if (!pSendMailConfiguration)
-		return NULL;
-
-	// Create the message
-	CPJNSMTPMessage* pMessage = new CPJNSMTPMessage;
-	if (!pMessage)
-		return NULL;
-
-	// Set the mime flag
-	pMessage->SetMime(pSendMailConfiguration->m_bMime);
-
-	// Set the charset
-	pMessage->SetCharset(pSendMailConfiguration->m_sEncodingCharset);
-
-	// Set the message priority
-	pMessage->m_Priority = pSendMailConfiguration->m_Priority;
-
-	// ContaCam XMailer
-	pMessage->m_sXMailer = CString(APPNAME_NOEXT) + _T(" ") + CString(APPVERSION);
-
-	// Setup the from address
-	if (pSendMailConfiguration->m_sFromName.IsEmpty()) 
-	{
-		pMessage->m_From = pSendMailConfiguration->m_sFrom;
-		//pMessage->m_ReplyTo = pSendMailConfiguration->m_sFrom; uncomment this if you want to send a Reply-To header
-	}
-	else 
-	{
-		CPJNSMTPAddress address(pSendMailConfiguration->m_sFromName, pSendMailConfiguration->m_sFrom);
-		pMessage->m_From = address;
-		//pMessage->m_ReplyTo = address; //uncomment this if you want to send a Reply-To header
-	}
-
-	// Setup all the recipient types for this message
-	// (valid separators between addresses are ',' or ';')
-	pMessage->ParseMultipleRecipients(pSendMailConfiguration->m_sTo, pMessage->m_To);
-	if (!pSendMailConfiguration->m_sCC.IsEmpty())
-		pMessage->ParseMultipleRecipients(pSendMailConfiguration->m_sCC, pMessage->m_CC);
-	if (!pSendMailConfiguration->m_sBCC.IsEmpty())
-		pMessage->ParseMultipleRecipients(pSendMailConfiguration->m_sBCC, pMessage->m_BCC);
-
-	// Subject
-	if (!pSendMailConfiguration->m_sSubject.IsEmpty())
-	{
-		pMessage->m_sSubject = pSendMailConfiguration->m_sSubject;
-		pMessage->m_sSubject.Replace(_T("%name%"), GetAssignedDeviceName());
-		pMessage->m_sSubject.Replace(_T("%date%"), ::MakeDateLocalFormat(Time));
-		pMessage->m_sSubject.Replace(_T("%time%"), ::MakeTimeLocalFormat(Time, TRUE));
-	}
-
-	// Body
-	if (!pSendMailConfiguration->m_sBody.IsEmpty())
-	{
-		if (pSendMailConfiguration->m_bHTML)
-			pMessage->AddHTMLBody(pSendMailConfiguration->m_sBody, _T(""));
-		else
-			pMessage->AddTextBody(pSendMailConfiguration->m_sBody);
-	}
-
-	// Add the attachment(s) if necessary
-	// (valid separators between attachments are ',' or ';')
-	if (!pSendMailConfiguration->m_sFiles.IsEmpty()) 
-		pMessage->AddMultipleAttachments(pSendMailConfiguration->m_sFiles);
-
-	return pMessage;
-}
-
-BOOL CVideoDeviceDoc::CSaveFrameListSMTPConnection::OnSendProgress(DWORD dwCurrentBytes, DWORD dwTotalBytes)
-{
-	if (m_pThread)
-	{
-		m_bDoExit = m_pThread->DoExit();
-		if (dwTotalBytes > 0)
-			m_pThread->SetSendMailProgress(Round(dwCurrentBytes * 100.0 / dwTotalBytes));
-		else
-			m_pThread->SetSendMailProgress(100);
-		if (m_bDoExit)
-			Disconnect(FALSE);
-		return (m_bDoExit == false);
-	}
-	else
-		return TRUE;
-}
-
-void CVideoDeviceDoc::CSaveFrameListThread::SendMailMessage(const CString& sTempEmailFile, CVideoDeviceDoc::CSaveFrameListSMTPConnection& connection, CPJNSMTPMessage* pMessage)
-{
-	// Check
-	ASSERT(pMessage);
-
-	CString sHost;
-	BOOL bSend = TRUE;
-	if (m_pDoc->m_MovDetSendMailConfiguration.m_bDNSLookup)
-	{
-		if (pMessage->m_To.GetSize() == 0)
-		{
-			::LogLine(_T("%s, at least one recipient must be specified to use the DNS lookup option"),
-																	m_pDoc->GetAssignedDeviceName());
-			bSend = FALSE;
-		}
-		else
-		{
-			CString sAddress(pMessage->m_To.ElementAt(0).m_sEmailAddress);
-			int nAmpersand = sAddress.Find(_T("@"));
-			if (nAmpersand == -1)
-			{
-				::LogLine(_T("%s, unable to determine the domain for the email address %s"),
-															m_pDoc->GetAssignedDeviceName(), sAddress);
-				bSend = FALSE;
-			}
-			else
-			{
-				// We just pick the first MX record found, other implementations could ask the user
-				// or automatically pick the lowest priority record
-				CString sDomain(sAddress.Right(sAddress.GetLength() - nAmpersand - 1));
-				CStringArray servers;
-				CWordArray priorities;
-				if (!connection.MXLookup(sDomain, servers, priorities))
-				{
-					::LogLine(_T("%s, unable to perform a DNS MX lookup for the domain %s, Error: %d"),
-											m_pDoc->GetAssignedDeviceName(), sDomain, ::GetLastError());
-					bSend = FALSE;
-				}
-				else
-					sHost = servers.GetAt(0);
-			}
-		}
-	}
-	else
-		sHost = m_pDoc->m_MovDetSendMailConfiguration.m_sHost;
-
-	// Connect and send the message
-	if (bSend)
-	{
-		connection.SetBindAddress(m_pDoc->m_MovDetSendMailConfiguration.m_sBoundIP);
-		if (m_pDoc->m_MovDetSendMailConfiguration.m_sUsername == _T("") &&
-			m_pDoc->m_MovDetSendMailConfiguration.m_sPassword == _T(""))
-		{
-			connection.Connect(	sHost,
-								CPJNSMTPConnection::AUTH_NONE,
-								m_pDoc->m_MovDetSendMailConfiguration.m_sUsername,
-								m_pDoc->m_MovDetSendMailConfiguration.m_sPassword,
-								m_pDoc->m_MovDetSendMailConfiguration.m_nPort
-#ifndef CPJNSMTP_NOSSL
-								, m_pDoc->m_MovDetSendMailConfiguration.m_ConnectionType
-#endif
-								);
-		}
-		else
-		{
-			connection.Connect(	sHost,
-								m_pDoc->m_MovDetSendMailConfiguration.m_Auth,
-								m_pDoc->m_MovDetSendMailConfiguration.m_sUsername,
-								m_pDoc->m_MovDetSendMailConfiguration.m_sPassword,
-								m_pDoc->m_MovDetSendMailConfiguration.m_nPort
-#ifndef CPJNSMTP_NOSSL
-								, m_pDoc->m_MovDetSendMailConfiguration.m_ConnectionType
-#endif
-								);
-		}
-
-		// First save the message to disk then send it from disk
-		// so that we have a unique progress display from 0%..100%
-		// Note: connection.SendMessage(*pMessage) is not calling
-		//       CSaveFrameListSMTPConnection::OnSendProgress()
-		pMessage->SaveToDisk(sTempEmailFile);
-		CString sENVID;
-		connection.SendMessage(sTempEmailFile, pMessage->m_To, pMessage->m_From, sENVID);
-	}
-}
-
 // Return Values
 // -1 : Do Exit Thread
 // 0  : Error Sending Email
@@ -1781,132 +1581,41 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendMail(const CTime& Time, const CSt
 		return 0;
 	else 
 	{
-		CPJNSMTPMessage* pMessage = NULL;
-		CVideoDeviceDoc::CSaveFrameListSMTPConnection connection(this);
-		CString sTempEmailFile = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), _T("email.eml"));
-		try
+		CString sOptions;
+		CString sConnectionTypeOption;
+		CString sSubject = m_pDoc->m_MovDetSendMailConfiguration.m_sSubject;
+		CTime CurrentTime(CTime::GetCurrentTime());
+		sSubject.Replace(_T("%name%"), m_pDoc->GetAssignedDeviceName());
+		sSubject.Replace(_T("%date%"), ::MakeDateLocalFormat(CurrentTime));
+		sSubject.Replace(_T("%time%"), ::MakeTimeLocalFormat(CurrentTime, TRUE));
+		switch (m_pDoc->m_MovDetSendMailConfiguration.m_ConnectionType)
 		{
-			if (m_pDoc->m_MovDetSendMailConfiguration.m_bHTML == FALSE)
-			{
-				// Create the message
-				m_pDoc->m_MovDetSendMailConfiguration.m_bMime = (sFiles.GetSize() > 0); // attachments imply Mime
-				m_pDoc->m_MovDetSendMailConfiguration.m_sBody = ML_STRING(1844, "Det") + _T(": ") + m_pDoc->GetAssignedDeviceName();
-				m_pDoc->m_MovDetSendMailConfiguration.m_sFiles = _T("");
-				for (i = 0 ; i < sFiles.GetSize() ; i++)
-				{
-					if (m_pDoc->m_MovDetSendMailConfiguration.m_sFiles.IsEmpty())
-						m_pDoc->m_MovDetSendMailConfiguration.m_sFiles = sFiles[i];
-					else
-						m_pDoc->m_MovDetSendMailConfiguration.m_sFiles += _T(";") + sFiles[i];
-				}
-				pMessage = m_pDoc->CreateEmailMessage(Time, &m_pDoc->m_MovDetSendMailConfiguration);
-				if (!pMessage)
-					return 0;
-			}
-			else
-			{
-				// Create the message
-				m_pDoc->m_MovDetSendMailConfiguration.m_bMime = TRUE; // html emails imply Mime
-				m_pDoc->m_MovDetSendMailConfiguration.m_sBody = _T("");
-				m_pDoc->m_MovDetSendMailConfiguration.m_sFiles = _T("");
-				pMessage = m_pDoc->CreateEmailMessage(Time, &m_pDoc->m_MovDetSendMailConfiguration);
-				if (!pMessage)
-					return 0;
-
-				// Setup all the html body parts
-				LARGE_INTEGER PerformanceCounterSeed;
-				::QueryPerformanceCounter(&PerformanceCounterSeed);
-				srand(::makeseed(PerformanceCounterSeed.LowPart, (unsigned int)::time(NULL), ::GetCurrentThreadId())); // Seed
-				CString sRanNum;
-				sRanNum.Format(_T("%08X"), (DWORD)irand(4294967296.0)); // returns a hex random string in the range [0,0xFFFFFFFF]
-				CPJNSMTPBodyPart related;
-				related.SetContentType(_T("multipart/related"));
-				related.SetCharset(pMessage->GetCharset());
-				CPJNSMTPBodyPart html;
-				CString sHtml(_T("<html><body>"));
-				sHtml += _T("<p>") + ML_STRING(1844, "Det") + _T(": ") + ::HtmlEncode(m_pDoc->GetAssignedDeviceName()) + _T("</p>");
-				for (i = 0 ; i < sFiles.GetSize() ; i++)
-				{
-					if (::GetFileExt(sFiles[i]) == _T(".jpg") || ::GetFileExt(sFiles[i]) == _T(".gif"))
-					{
-						CString s;
-						s.Format(_T("<img src=\"cid:%s\" alt=\"Detection Image\" />"),
-								::GetShortFileName(sFiles[i]) + _T("@") + sRanNum + _T(".com"));
-						sHtml += s + _T("<br /><br />");
-					}
-				}
-				sHtml += _T("</body></html>");
-				html.SetText(sHtml);
-				html.SetContentType(_T("text/html"));
-				html.SetCharset(pMessage->GetCharset());
-				related.AddChildBodyPart(html);
-				for (i = 0 ; i < sFiles.GetSize() ; i++)
-				{
-					if (::GetFileExt(sFiles[i]) == _T(".jpg") || ::GetFileExt(sFiles[i]) == _T(".gif"))
-					{
-						CPJNSMTPBodyPart filebody;
-						filebody.SetFilename(sFiles[i]);
-						filebody.SetContentID(_T("<") + ::GetShortFileName(sFiles[i]) + _T("@") + sRanNum + _T(".com") + _T(">"));
-						filebody.SetContentType(::FileNameToMime(sFiles[i]));
-						related.AddChildBodyPart(filebody);
-					}
-				}
-				pMessage->AddBodyPart(related);
-
-				// Add other attachment(s) if necessary
-				// (valid separators between attachments are ',' or ';')
-				for (i = 0 ; i < sFiles.GetSize() ; i++)
-				{
-					if (::GetFileExt(sFiles[i]) != _T(".jpg") && ::GetFileExt(sFiles[i]) != _T(".gif"))
-					{
-						if (m_pDoc->m_MovDetSendMailConfiguration.m_sFiles.IsEmpty())
-							m_pDoc->m_MovDetSendMailConfiguration.m_sFiles = sFiles[i];
-						else
-							m_pDoc->m_MovDetSendMailConfiguration.m_sFiles += _T(";") + sFiles[i];
-					}
-				}
-				if (!m_pDoc->m_MovDetSendMailConfiguration.m_sFiles.IsEmpty()) 
-					pMessage->AddMultipleAttachments(m_pDoc->m_MovDetSendMailConfiguration.m_sFiles);
-			}
-
-			// Send It
-			SendMailMessage(sTempEmailFile, connection, pMessage);
-
-			// Clean-up
-			if (pMessage)
-				delete pMessage;
-			::DeleteFile(sTempEmailFile);
-
-			// Sending Interrupted (for old PJNSMTP version)
-			if (connection.m_bDoExit)
-				return -1;
-			else
-				return 1;
+			case 0 : sConnectionTypeOption = _T(""); break;				// Plain Text
+			case 1 : sConnectionTypeOption = _T("-ssl"); break;			// SSL and TLS
+			default: sConnectionTypeOption = _T("-starttls"); break;	// STARTTLS
 		}
-		catch (CPJNSMTPException* pEx)
+		sOptions.Format(_T("-t \"%s\" -f %s %s %s -port %d %s -smtp %s -cs \"iso-8859-1\" -sub \"%s\" +cc +bc -user \"%s\" -pass \"%s\""),
+						m_pDoc->m_MovDetSendMailConfiguration.m_sTo,
+						m_pDoc->m_MovDetSendMailConfiguration.m_sFrom, // must be comma separated, but can have white spaces in between
+						m_pDoc->m_MovDetSendMailConfiguration.m_sFromName.IsEmpty() ? _T("") : _T("-name \"") + m_pDoc->m_MovDetSendMailConfiguration.m_sFromName + _T("\""),
+						sConnectionTypeOption,
+						m_pDoc->m_MovDetSendMailConfiguration.m_nPort,
+						(m_pDoc->m_MovDetSendMailConfiguration.m_sUsername.IsEmpty() && m_pDoc->m_MovDetSendMailConfiguration.m_sPassword.IsEmpty()) ? _T("") : _T("-auth"),
+						m_pDoc->m_MovDetSendMailConfiguration.m_sHost,
+						sSubject,
+						m_pDoc->m_MovDetSendMailConfiguration.m_sUsername,
+						m_pDoc->m_MovDetSendMailConfiguration.m_sPassword);
+		for (i = 0 ; i < sFiles.GetSize() ; i++)
 		{
-			// Clean-up
-			if (pMessage)
-				delete pMessage;
-			::DeleteFile(sTempEmailFile);
-
-			// Sending Interrupted (new PJNSMTP version throws an exception for that)
-			if (connection.m_bDoExit)
-			{
-				pEx->Delete();
-				return -1;
-			}
-			// Display the error
+			if (::GetFileExt(sFiles[i]) == _T(".jpg") || ::GetFileExt(sFiles[i]) == _T(".gif"))
+				sOptions += _T(" -embed-image \"") + sFiles[i] + _T("\"");
 			else
-			{
-				::LogLine(	_T("%s, an error occurred sending the message, Error: %x, Description: %s"),
-							m_pDoc->GetAssignedDeviceName(),
-							pEx->m_hr,
-							pEx->GetErrorMessage());
-				pEx->Delete();
-				return 0;
-			}
+				sOptions += _T(" -M \"") + m_pDoc->GetAssignedDeviceName() + _T("\" -attach \"") + sFiles[i] + _T("\"");
 		}
+		HANDLE h = CVideoDeviceDoc::Mailer(sOptions);
+		if (h)
+			::CloseHandle(h);
+		return 1;
 	}
 }
 
@@ -3987,28 +3696,17 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_pCameraAdvancedSettingsPropertySheet = NULL;
 
 	// Email Settings
-	m_MovDetSendMailConfiguration.m_sBCC = _T("");
-	m_MovDetSendMailConfiguration.m_sBody = _T("");
-	m_MovDetSendMailConfiguration.m_sCC = _T("");
 	m_MovDetSendMailConfiguration.m_sFiles = _T("");
 	m_MovDetSendMailConfiguration.m_AttachmentType = ATTACHMENT_NONE;
 	m_MovDetSendMailConfiguration.m_sSubject = MOVDET_DEFAULT_EMAIL_SUBJECT;
 	m_MovDetSendMailConfiguration.m_sTo = _T("");
-	m_MovDetSendMailConfiguration.m_bDirectly = FALSE;
-	m_MovDetSendMailConfiguration.m_bDNSLookup = FALSE;
 	m_MovDetSendMailConfiguration.m_nPort = 25;
 	m_MovDetSendMailConfiguration.m_sFrom = _T("");
 	m_MovDetSendMailConfiguration.m_sHost = _T("");
 	m_MovDetSendMailConfiguration.m_sFromName = _T("");
-	m_MovDetSendMailConfiguration.m_Auth = CPJNSMTPConnection::AUTH_AUTO;
 	m_MovDetSendMailConfiguration.m_sUsername = _T("");
 	m_MovDetSendMailConfiguration.m_sPassword = _T("");
-	m_MovDetSendMailConfiguration.m_sBoundIP = _T("");
-	m_MovDetSendMailConfiguration.m_sEncodingCharset = _T("utf-8");
-	m_MovDetSendMailConfiguration.m_bMime = TRUE;
-	m_MovDetSendMailConfiguration.m_bHTML = TRUE;
-	m_MovDetSendMailConfiguration.m_ConnectionType = CPJNSMTPConnection::PlainText;
-	m_MovDetSendMailConfiguration.m_Priority = CPJNSMTPMessage::NoPriority;
+	m_MovDetSendMailConfiguration.m_ConnectionType = PlainText;
 
 	// FTP Settings
 	m_MovDetFTPUploadConfiguration.m_sHost = _T("");
@@ -4564,8 +4262,8 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_MovDetSendMailConfiguration.m_AttachmentType = (AttachmentType) pApp->GetProfileInt(sSection, _T("AttachmentType"), ATTACHMENT_NONE);
 	if (m_MovDetSendMailConfiguration.m_AttachmentType < ATTACHMENT_NONE)
 		m_MovDetSendMailConfiguration.m_AttachmentType = ATTACHMENT_NONE;
-	else if (m_MovDetSendMailConfiguration.m_AttachmentType > ATTACHMENT_GIF_JPG_VIDEO)
-		m_MovDetSendMailConfiguration.m_AttachmentType = ATTACHMENT_GIF_JPG_VIDEO;
+	else if (m_MovDetSendMailConfiguration.m_AttachmentType > ATTACHMENT_JPG)
+		m_MovDetSendMailConfiguration.m_AttachmentType = ATTACHMENT_JPG;
 	m_MovDetSendMailConfiguration.m_sSubject = pApp->GetProfileString(sSection, _T("SendMailSubject"), MOVDET_DEFAULT_EMAIL_SUBJECT);
 	if (m_MovDetSendMailConfiguration.m_sSubject.IsEmpty())
 		m_MovDetSendMailConfiguration.m_sSubject = MOVDET_DEFAULT_EMAIL_SUBJECT;
@@ -4574,11 +4272,9 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_MovDetSendMailConfiguration.m_sFrom = pApp->GetProfileString(sSection, _T("SendMailFrom"), _T(""));
 	m_MovDetSendMailConfiguration.m_sHost = pApp->GetProfileString(sSection, _T("SendMailHost"), _T(""));
 	m_MovDetSendMailConfiguration.m_sFromName = pApp->GetProfileString(sSection, _T("SendMailFromName"), _T(""));
-	m_MovDetSendMailConfiguration.m_Auth = (CPJNSMTPConnection::AuthenticationMethod) pApp->GetProfileInt(sSection, _T("SendMailAuth"), CPJNSMTPConnection::AUTH_AUTO);
 	m_MovDetSendMailConfiguration.m_sUsername = pApp->GetSecureProfileString(sSection, _T("SendMailUsername"), _T(""));
 	m_MovDetSendMailConfiguration.m_sPassword = pApp->GetSecureProfileString(sSection, _T("SendMailPassword"), _T(""));
-	m_MovDetSendMailConfiguration.m_bHTML = (BOOL) pApp->GetProfileInt(sSection, _T("SendMailHTML"), TRUE);
-	m_MovDetSendMailConfiguration.m_ConnectionType = (CPJNSMTPConnection::ConnectionType) pApp->GetProfileInt(sSection, _T("SendMailConnectionType"), CPJNSMTPConnection::PlainText);
+	m_MovDetSendMailConfiguration.m_ConnectionType = (ConnectionType) pApp->GetProfileInt(sSection, _T("SendMailConnectionType"), PlainText);
 
 	// FTP Settings
 	m_MovDetFTPUploadConfiguration.m_sHost = pApp->GetProfileString(sSection, _T("MovDetFTPHost"), _T(""));
@@ -4783,10 +4479,8 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileString(sSection, _T("SendMailFrom"), m_MovDetSendMailConfiguration.m_sFrom);
 	pApp->WriteProfileString(sSection, _T("SendMailHost"), m_MovDetSendMailConfiguration.m_sHost);
 	pApp->WriteProfileString(sSection, _T("SendMailFromName"), m_MovDetSendMailConfiguration.m_sFromName);
-	pApp->WriteProfileInt(sSection, _T("SendMailAuth"), (int)m_MovDetSendMailConfiguration.m_Auth);
 	pApp->WriteSecureProfileString(sSection, _T("SendMailUsername"), m_MovDetSendMailConfiguration.m_sUsername);
 	pApp->WriteSecureProfileString(sSection, _T("SendMailPassword"), m_MovDetSendMailConfiguration.m_sPassword);
-	pApp->WriteProfileInt(sSection, _T("SendMailHTML"), m_MovDetSendMailConfiguration.m_bHTML);
 	pApp->WriteProfileInt(sSection, _T("SendMailConnectionType"), (int)m_MovDetSendMailConfiguration.m_ConnectionType);
 
 	// FTP Settings
@@ -6436,7 +6130,7 @@ BOOL CVideoDeviceDoc::MicroApacheInitStart()
 	sMicroapacheStartFile += MICROAPACHE_RELPATH;
 	if (!::IsExistingFile(sMicroapacheStartFile))
 		return FALSE;
-	::DeleteFile(MicroApacheGetLogFileName()); // avoid growing it to much!
+	::DeleteFile(MicroApacheGetLogFileName()); // avoid growing it too much!
 	sMicroapacheConfigFile = ::GetASCIICompatiblePath(sMicroapacheConfigFile); // file must exist!
 	sMicroapacheConfigFile.Replace(_T('\\'), _T('/')); // change path from \ to / (otherwise apache is not happy)
 	CString sParams = _T("-f \"") + sMicroapacheConfigFile + _T("\"");
@@ -6605,6 +6299,45 @@ BOOL CVideoDeviceDoc::MicroApacheShutdown(DWORD dwTimeout)
 	::DeleteFile(MicroApacheGetPidFileName());
 
 	return res;
+}
+
+CString CVideoDeviceDoc::MailerGetLogFileName()
+{
+	CString sMailerLogFile = CUImagerApp::GetConfigFilesDir();
+	if (!IsExistingDir(sMailerLogFile))
+	{
+		if (!CreateDir(sMailerLogFile))
+			ShowErrorMsg(GetLastError(), FALSE);
+	}
+	return sMailerLogFile + CString(_T("\\")) + MAILPROG_LOGNAME_EXT;
+}
+
+HANDLE CVideoDeviceDoc::Mailer(CString sParams, BOOL bLog/*=FALSE*/, CString* pLogFileName/*=NULL*/)
+{
+	HANDLE h = NULL;
+	CString sLogFileName;
+	TCHAR szDrive[_MAX_DRIVE];
+	TCHAR szDir[_MAX_DIR];
+	TCHAR szProgramName[MAX_PATH];
+	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
+	{
+		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+		CString sMailerStartFile = CString(szDrive) + CString(szDir);
+		sMailerStartFile += MAILPROG_RELPATH;
+		if (::IsExistingFile(sMailerStartFile))
+		{
+			if (bLog)
+			{
+				sLogFileName = MailerGetLogFileName();
+				::DeleteFile(sLogFileName); // avoid growing it too much!
+				sParams = _T("-log \"") + sLogFileName + _T("\" ") + sParams;
+			}
+			h =  ::ExecApp(sMailerStartFile, sParams, _T(""), FALSE);
+		}
+	}
+	if (pLogFileName)
+		*pLogFileName = sLogFileName;
+	return h;
 }
 
 CString CVideoDeviceDoc::VlmGetConfigFileName()
@@ -7960,7 +7693,7 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 		DWORD dwCurrentUpTimeDiffInv = m_dwNextSnapshotUpTime - dwUpTime;
 		if (dwCurrentUpTimeDiff >= 0x80000000U)
 		{
-			if (dwCurrentUpTimeDiffInv >= dwMaxUpTimeDiff)	// m_dwNextSnapshotUpTime is to much in the future
+			if (dwCurrentUpTimeDiffInv >= dwMaxUpTimeDiff)	// m_dwNextSnapshotUpTime is too much in the future
 				m_dwNextSnapshotUpTime = dwUpTime;			// reset it!
 		}
 		else
@@ -9197,7 +8930,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRawRequest(CString sRequest)
 		LPCTSTR lpszAuthorization = A2T(pszEncoded);
 
 		// Keep it short because some stupid ip cams (like Planet)
-		// run out of buffer or do not parse well if we send to much!
+		// run out of buffer or do not parse well if we send too much!
 		sMsg.Format(_T("User-Agent: %s/%s\r\n")
 					_T("Connection: keep-alive\r\n")
 					_T("Authorization: Basic %s\r\n\r\n"),
@@ -9259,7 +8992,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRawRequest(CString sRequest)
 				sHResponse = hash.Format(FALSE);
 
 			// Keep it short because some stupid ip cams (like Planet)
-			// run out of buffer or do not parse well if we send to much!
+			// run out of buffer or do not parse well if we send too much!
 			sMsg.Format(_T("User-Agent: %s/%s\r\n")
 						_T("Connection: keep-alive\r\n")
 						_T("Authorization: Digest username=\"%s\",realm=\"%s\",nonce=\"%s\",uri=\"%s\",qop=auth,nc=%s,cnonce=\"%s\",response=\"%s\""),
@@ -9283,7 +9016,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRawRequest(CString sRequest)
 				sHResponse = hash.Format(FALSE);
 
 			// Keep it short because some stupid ip cams (like Planet)
-			// run out of buffer or do not parse well if we send to much!
+			// run out of buffer or do not parse well if we send too much!
 			sMsg.Format(_T("User-Agent: %s/%s\r\n")
 						_T("Connection: keep-alive\r\n")
 						_T("Authorization: Digest username=\"%s\",realm=\"%s\",nonce=\"%s\",uri=\"%s\",response=\"%s\""),
@@ -9311,7 +9044,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRawRequest(CString sRequest)
 	{
 		m_LastRequestAuthorizationType = AUTHNONE;
 		// Keep it short because some stupid ip cams (like Planet)
-		// run out of buffer or do not parse well if we send to much!
+		// run out of buffer or do not parse well if we send too much!
 		sMsg.Format(_T("User-Agent: %s/%s\r\n")
 					_T("Connection: keep-alive\r\n\r\n"),
 					APPNAME_NOEXT,

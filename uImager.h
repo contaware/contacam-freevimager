@@ -44,6 +44,13 @@
 #define MICROAPACHE_JS_DIR								_T("js")
 #define MICROAPACHE_DEFAULT_AUTH_AREANAME				_T("Secure Area")
 
+// Mailer
+#define MAILPROG_DIR									_T("mail")
+#define MAILPROG_FILENAME								_T("mailsend.exe")
+#define MAILPROG_RELPATH								(CString(MAILPROG_DIR) + CString(_T("\\")) + CString(MAILPROG_FILENAME))
+#define MAILPROG_LOGNAME_EXT							_T("mail_log.txt")
+#define MAILPROG_WAIT_TIMEOUT_MS						10000
+
 // Vlm
 #define VLM_CONFIGNAME_EXT								_T("vlm_conf.txt")
 
@@ -675,12 +682,6 @@ public:
 	DECLARE_MESSAGE_MAP()
 	
 protected:
-
-#ifndef CPJNSMTP_NOSSL
-	static CCriticalSection* m_pOpenSSLCritSections;
-	static void __cdecl OpenSSLLockingCallback(int mode, int type, const char* file, int line);
-#endif
-
 	CString PictureSlideMakeMsg(CPictureDoc* pDoc);
 	CString PictureMakeMsg(CPictureDoc* pDoc);
 

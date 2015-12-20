@@ -195,9 +195,6 @@
     <ClCompile Include="OddButton.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="OpenSSLMfc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="OsdDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -211,12 +208,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PictureView.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PJNNTLMAuth.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PJNSMTP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PostDelayedMessage.cpp">
@@ -274,9 +265,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SnapshotPage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SocMFC.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SoftBordersDlg.cpp">
@@ -609,15 +597,6 @@
     <ClInclude Include="PictureView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PJNMD5.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PJNNTLMAuth.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PJNSMTP.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="PostDelayedMessage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -682,9 +661,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SnapshotPage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SocMFC.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SoftBordersDlg.h">
@@ -790,6 +766,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="HelpersAudio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PJNMD5.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -905,10 +884,5 @@
     <None Include="res\bomb.ico">
       <Filter>Resource Files</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuildStep Include="OpenSSLMfc.h">
-      <Filter>Header Files</Filter>
-    </CustomBuildStep>
   </ItemGroup>
 </Project>

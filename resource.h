@@ -1232,7 +1232,6 @@
 #define IDS_MULTILANG_1225              1225
 #define IDS_MULTILANG_1226              1226
 #define IDS_MULTILANG_1227              1227
-#define IDC_HTML                        1227
 #define IDS_MULTILANG_1228              1228
 #define IDC_FTP_CONFIGURE               1228
 #define IDS_MULTILANG_1229              1229
@@ -3043,7 +3042,6 @@
 #define IDC_COMBO_SNAPSHOTHISTORY_SIZE  2533
 #define IDC_LABEL_SNAPSHOTHISTORY_SIZE  2534
 #define IDC_EDIT_MIN_DISK_FREE_PERCENT  2535
-#define IDC_AUTH_METHOD                 2536
 #define IDC_COMBO_FILEEXT               2536
 #define IDC_STATIC2537                  2537
 #define IDC_LABEL_PLUS_SIGN             2537

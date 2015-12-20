@@ -220,7 +220,8 @@ extern CString GetSpecialFolderPath(int nSpecialFolder);
 // Application execute/kill pair
 extern HANDLE ExecApp(	const CString& sFileName,	// close the returned process handle when not needed anymore
 						const CString& sParams = _T(""),
-						const CString& sStartDirectory = _T(""));
+						const CString& sStartDirectory = _T(""),
+						BOOL bShow = TRUE);
 extern void KillApp(HANDLE& hProcess);				// this closes the process handle and sets it to NULL
 
 // Enumerate or eventually kill process(es) by name

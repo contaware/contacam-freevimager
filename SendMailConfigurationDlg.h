@@ -35,15 +35,21 @@ public:
 // Implementation
 protected:
 	CVideoDeviceDoc* m_pDoc;
+	HANDLE m_hMailer;
+	CString m_sLogFileName;
+	int m_nRetryTimeMs;
 	void CopyToStruct();
 	// Generated message map functions
 	//{{AFX_MSG(CSendMailConfigurationDlg)
 	virtual BOOL OnInitDialog();
 	virtual void OnOK();
 	afx_msg void OnButtonTest();
-	afx_msg void OnSelchangeAuthMethod();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnDestroy();
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
+	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 };
 
 #endif

@@ -17,15 +17,6 @@ CXButtonXP 1.2
 - Centering multiline text
 
 
-CPJNSMTPConnection 3.08 with w3 mfc 1.97
-----------------------------------------
-
-- Thread Safe
-- Preprocessor define: CWSOCKET_MFC_EXTENSTIONS
-- Used files: PJNMD5.h, PJNNTLMAuth.h, PJNNTLMAuth.cpp, PJNSmtp.h, PJNSmtp.cpp
-- Used files: OpenSSLMfc.h, OpenSSLMfc.cpp, SocMFC.h, SocMFC.cpp
-
-
 CToasterWnd 1.18
 ----------------
 

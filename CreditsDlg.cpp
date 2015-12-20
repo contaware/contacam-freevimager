@@ -4,14 +4,10 @@
 #include "stdafx.h"
 #include "uimager.h"
 #include "CreditsDlg.h"
-#include "pjnsmtp.h"
 extern "C"
 {
 #ifdef VIDEODEVICEDOC
 #include "libavutil/ffversion.h"
-#endif
-#ifndef CPJNSMTP_NOSSL
-#include <openssl/crypto.h>
 #endif
 #include "jversion.h"
 #include "tiffio.h"
@@ -61,19 +57,14 @@ BOOL CCreditsDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	// ffmpeg
 #ifdef VIDEODEVICEDOC
+	// ffmpeg
 	CString sffmpeg = _T("ffmpeg ") + CString(FFMPEG_VERSION);
 	sffmpeg += CString(_T('\n')) + _T("http://www.ffmpeg.org");
-#endif
 
-	// openssl and smtp
-#ifndef CPJNSMTP_NOSSL
-	CString sopenssl(::SSLeay_version(SSLEAY_VERSION));
-	sopenssl += CString(_T('\n')) + _T("http://www.openssl.org");
-	CPJNSMTPMessage Message;
-	CString ssmtp(Message.m_sXMailer);
-	ssmtp += CString(_T('\n')) + _T("http://www.naughter.com");
+	// Smtp
+	CString ssmtp(_T("mailsend"));
+	ssmtp += CString(_T('\n')) + _T("http://github.com/muquit/mailsend");
 #endif
 
 	// CToasterWnd v1.18
@@ -119,9 +110,6 @@ BOOL CCreditsDlg::OnInitDialog()
 	CString sCredits =	
 #ifdef VIDEODEVICEDOC
 						sffmpeg		+ _T("\n\n") +
-#endif
-#ifndef CPJNSMTP_NOSSL
-						sopenssl	+ _T("\n\n") +
 						ssmtp		+ _T("\n\n") +
 #endif
 						stoaster	+ _T("\n\n") +

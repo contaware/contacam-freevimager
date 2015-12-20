@@ -8,7 +8,6 @@
 // Includes
 #include "uImagerDoc.h"
 #include "WorkerThread.h"
-#include "pjnsmtp.h"
 #include "NetCom.h"
 #include "AVRec.h"
 #include "AVDecoder.h"
@@ -203,16 +202,18 @@ public:
 	typedef CList<CNetCom*,CNetCom*> NETCOMLIST;
 	
 	// Enums
+	enum ConnectionType
+	{
+		PlainText					= 0, 
+		SSL_TLS						= 1,
+		STARTTLS					= 2
+	};
 	enum AttachmentType
 	{
 		ATTACHMENT_NONE				= 0,
 		ATTACHMENT_VIDEO			= 1,
 		ATTACHMENT_GIF				= 2,
-		ATTACHMENT_JPG				= 3,
-		ATTACHMENT_GIF_VIDEO		= 4,
-		ATTACHMENT_JPG_VIDEO		= 5,
-		ATTACHMENT_GIF_JPG			= 6,
-		ATTACHMENT_GIF_JPG_VIDEO	= 7
+		ATTACHMENT_JPG				= 3
 	};
 	enum FilesToUploadType
 	{
@@ -455,28 +456,17 @@ public:
 	// Email sending configuration structure
 	typedef struct tagSendMailConfigurationStruct
 	{
-		CString			m_sBCC;
-		CString			m_sBody;
-		CString			m_sCC;
 		CString			m_sFiles;
 		AttachmentType	m_AttachmentType;
 		CString			m_sSubject;
 		CString			m_sTo;
-		BOOL			m_bDirectly;
-		BOOL			m_bDNSLookup;
 		CString			m_sFrom;
 		CString			m_sHost;
 		CString			m_sFromName;
 		int				m_nPort;
-		CPJNSMTPConnection::AuthenticationMethod m_Auth;
-		CPJNSMTPConnection::ConnectionType m_ConnectionType;
+		ConnectionType	m_ConnectionType;
 		CString			m_sUsername;
 		CString			m_sPassword;
-		CString			m_sBoundIP;
-		CString			m_sEncodingCharset;
-		BOOL			m_bMime;
-		BOOL			m_bHTML;
-		CPJNSMTPMessage::PRIORITY m_Priority;
 	} SendMailConfigurationStruct;
 
 	// FTP upload configuration structure
@@ -495,18 +485,15 @@ public:
 	} FTPUploadConfigurationStruct;
 
 	// The Save Frame List Thread Class
-	class CSaveFrameListSMTPConnection; // forward declaration
 	class CSaveFrameListThread : public CWorkerThread
 	{
 		public:
 			CSaveFrameListThread(){	m_pDoc = NULL; m_pFrameList = NULL; m_nNumFramesToSave = 0;
-									m_nSaveProgress = 100; m_nSendMailProgress = 100; m_nFTPUploadProgress = 100;
+									m_nSaveProgress = 100; m_nFTPUploadProgress = 100;
 									m_bWorking = FALSE;};
 			virtual ~CSaveFrameListThread() {Kill();};
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
 			__forceinline int GetSaveProgress() const {return m_nSaveProgress;};
-			__forceinline void SetSendMailProgress(int nSendMailProgress) {m_nSendMailProgress = nSendMailProgress;};
-			__forceinline int GetSendMailProgress() const {return m_nSendMailProgress;};
 			__forceinline void SetFTPUploadProgress(int nFTPUploadProgress) {m_nFTPUploadProgress = nFTPUploadProgress;};
 			__forceinline int GetFTPUploadProgress() const {return m_nFTPUploadProgress;};
 			__forceinline BOOL IsWorking() const {return m_bWorking;};
@@ -567,18 +554,6 @@ public:
 							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
 								CVideoDeviceDoc::ATTACHMENT_VIDEO)					||
 
-							(m_pDoc->m_bSendMailMovementDetection &&
-							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_GIF_VIDEO)				||
-
-							(m_pDoc->m_bSendMailMovementDetection &&
-							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_JPG_VIDEO)				||
-
-							(m_pDoc->m_bSendMailMovementDetection &&
-							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_GIF_JPG_VIDEO)			||
-
 							(m_pDoc->m_bFTPUploadMovementDetection &&
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
 								CVideoDeviceDoc::FILES_TO_UPLOAD_VIDEO)				||
@@ -590,19 +565,7 @@ public:
 			__forceinline BOOL DoMakeJpeg() const {
 							return (m_pDoc->m_bSendMailMovementDetection &&
 							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_JPG)					||
-								
-							(m_pDoc->m_bSendMailMovementDetection &&
-							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_JPG_VIDEO)				||
-
-							(m_pDoc->m_bSendMailMovementDetection &&
-							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_GIF_JPG)				||
-
-							(m_pDoc->m_bSendMailMovementDetection &&
-							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_GIF_JPG_VIDEO);};
+								CVideoDeviceDoc::ATTACHMENT_JPG);};
 
 			__forceinline BOOL DoMakeGif() const {
 							return	m_pDoc->m_bSaveAnimGIFMovementDetection			||
@@ -610,18 +573,6 @@ public:
 							(m_pDoc->m_bSendMailMovementDetection &&
 							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
 								CVideoDeviceDoc::ATTACHMENT_GIF)					||
-
-							(m_pDoc->m_bSendMailMovementDetection &&
-							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_GIF_VIDEO)				||
-
-							(m_pDoc->m_bSendMailMovementDetection &&
-							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_GIF_JPG)				||
-
-							(m_pDoc->m_bSendMailMovementDetection &&
-							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_GIF_JPG_VIDEO)			||
 
 							(m_pDoc->m_bFTPUploadMovementDetection &&
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
@@ -636,14 +587,12 @@ public:
 			// 0  : Error Sending Email
 			// 1  : Ok
 			int SendMail(const CTime& Time, const CStringArray& sFiles);
-			void SendMailMessage(const CString& sTempEmailFile, CSaveFrameListSMTPConnection& connection, CPJNSMTPMessage* pMessage);
 
 			CVideoDeviceDoc* m_pDoc;
 			CDib::LIST* m_pFrameList;
 			int m_nNumFramesToSave;
 			CAVDecoder m_AVDetDecoder;
 			volatile int m_nSaveProgress;
-			volatile int m_nSendMailProgress;
 			volatile int m_nFTPUploadProgress;
 			volatile BOOL m_bWorking;
 	};
@@ -654,17 +603,6 @@ public:
 		public:
 			CSaveFrameListFTPTransfer(CSaveFrameListThread* pThread);
 			virtual void OnTransferProgress(DWORD dwPercentage);
-		protected:
-			CSaveFrameListThread* m_pThread;
-	};
-
-	// The SMTP Connection Class
-	class CSaveFrameListSMTPConnection : public CPJNSMTPConnection
-	{
-		public:
-			CSaveFrameListSMTPConnection(CSaveFrameListThread* pThread = NULL){m_pThread = pThread; m_bDoExit = false;};
-			virtual BOOL OnSendProgress(DWORD dwCurrentBytes, DWORD dwTotalBytes);
-			volatile bool m_bDoExit;
 		protected:
 			CSaveFrameListThread* m_pThread;
 	};
@@ -894,10 +832,6 @@ public:
 										int nMovDetSavesCount = 0);
 	void HideDetectionZones();
 
-	// Email Message Creation
-	// The returned CPJNSMTPMessage* is allocated on the heap -> has to be deleted when done!
-	CPJNSMTPMessage* CreateEmailMessage(const CTime& Time, SendMailConfigurationStruct* pSendMailConfiguration);
-
 	// FTP Upload
 	// Return Values
 	// -1 : Do Exit Thread (specified for CFTPTransfer constructor)
@@ -952,6 +886,10 @@ public:
 	static BOOL MicroApacheWaitCanConnect(DWORD dwTimeout);
 	static BOOL MicroApacheShutdown(DWORD dwTimeout);
 	
+	// Mailer
+	static CString MailerGetLogFileName();
+	static HANDLE Mailer(CString sParams, BOOL bLog = FALSE, CString* pLogFileName = NULL);
+
 	// Vlm
 	static CString VlmGetConfigFileName();
 	static BOOL VlmConfigFileFilled();
