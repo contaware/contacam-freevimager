@@ -395,20 +395,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		LastTime = CalcTime(dwLastUpTime, RefTime, dwRefUpTime);
 		CString sFirstTime(FirstTime.Format(_T("%Y_%m_%d_%H_%M_%S")));
 
-		// Directory to Store Detection
-		CString sDetectionAutoSaveDir;
-		if (m_pDoc->m_bSaveVideoMovementDetection || m_pDoc->m_bSaveAnimGIFMovementDetection)
-		{
-			sDetectionAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
-			dwAttrib = ::GetFileAttributes(sDetectionAutoSaveDir);
-			if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
-				sDetectionAutoSaveDir = sTempDetectionDir;
-			else
-				sDetectionAutoSaveDir.TrimRight(_T('\\'));
-		}
-		else
-			sDetectionAutoSaveDir = sTempDetectionDir;
-
 		// Load the detection sequences counter and reset it if entering a new day.
 		// The detection sequences are tagged 1, 2, 3, ... A detection sequence is
 		// composed of 1 or more movies all tagged with the same sequence number
@@ -429,17 +415,16 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 
 		// Detection creation flags and File Names
 		BOOL bMakeVideo = DoMakeVideo();
-		BOOL bMakeJpeg = DoMakeJpeg();
 		BOOL bMakeGif = DoMakeGif();
 		CString sVideoFileName;
-		CVideoDeviceDoc::CreateCheckYearMonthDayDir(FirstTime, sDetectionAutoSaveDir, sVideoFileName);
+		CVideoDeviceDoc::CreateCheckYearMonthDayDir(FirstTime, m_pDoc->m_sRecordAutoSaveDir, sVideoFileName);
+		if (!sVideoFileName.IsEmpty())
+			sVideoFileName += _T("\\");
 		CString sGIFFileName(sVideoFileName);
-		sVideoFileName += _T("\\det_") + sFirstTime + m_pDoc->m_sAVRecFileExt;
-		sGIFFileName += _T("\\det_") + sFirstTime + _T(".gif");
+		sVideoFileName += _T("det_") + sFirstTime + m_pDoc->m_sAVRecFileExt;
+		sGIFFileName += _T("det_") + sFirstTime + _T(".gif");
 		CString sVideoTempFileName(sTempDetectionDir + _T("\\") + ::GetShortFileName(sVideoFileName));
 		CString sGIFTempFileName(sTempDetectionDir + _T("\\") + ::GetShortFileName(sGIFFileName));
-		CString sJPGDir(sTempDetectionDir);
-		CStringArray sJPGFileNames;
 
 		// Init the Video File
 		CAVRec AVRecVideo;
@@ -454,7 +439,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		double dSpeedMul = 1.0;
 		CDib VideoSaveDib;
 		CDib GIFSaveDib;
-		CDib JPGSaveDib;
 		CDib* pDibPrev;
 		CDib* pDib = NULL;
 		BOOL bFirstGIFSave;
@@ -480,8 +464,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				::DeleteFile(sGIFTempFileName);
 				AVRecVideo.Close();
 				::DeleteFile(sVideoTempFileName);
-				for (int i = 0 ; i < sJPGFileNames.GetSize() ; i++)
-					::DeleteFile(sJPGFileNames[i]);
 				m_bWorking = FALSE;
 				((CUImagerApp*)::AfxGetApp())->MovDetSaveReservationRemove(dwCurrentThreadId);
 				::DeleteDir(sTempDetectionDir);
@@ -560,45 +542,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 						}
 					}
 				}
-			}
-
-			// Jpeg
-			if (bMakeJpeg)
-			{
-				// FIRST movement frame
-				if (sJPGFileNames.GetSize() == 0)
-				{
-					if (pDib->GetUserFlag() & FRAME_USER_FLAG_MOTION)
-					{
-						JPGSaveDib = *pDib;
-						CString sJPGFileName = SaveJpeg(&JPGSaveDib, sJPGDir, RefTime, dwRefUpTime);
-						if (sJPGFileName != _T(""))
-							sJPGFileNames.Add(sJPGFileName);
-					}
-				}
-				// MIDDLE frame
-				// Note: SaveJpeg() returns _T("") if a file already exists
-				// -> maximum one frame per second
-				else if (sJPGFileNames.GetSize() == 1)
-				{
-					if (nFrames <= m_nNumFramesToSave / 2)
-					{
-						JPGSaveDib = *pDib;
-						CString sJPGFileName = SaveJpeg(&JPGSaveDib, sJPGDir, RefTime, dwRefUpTime);
-						if (sJPGFileName != _T(""))
-							sJPGFileNames.Add(sJPGFileName);
-					}
-				}
-				// LAST frame
-				// Note: SaveJpeg() returns _T("") if a file already exists
-				// -> maximum one frame per second
-				if (nFrames == 1)
-				{
-					JPGSaveDib = *pDib;
-					CString sJPGFileName = SaveJpeg(&JPGSaveDib, sJPGDir, RefTime, dwRefUpTime);
-					if (sJPGFileName != _T(""))
-						sJPGFileNames.Add(sJPGFileName);
-				}	
 			}
 
 			// Animated Gif, because of differencing the saving is shifted by one frame
@@ -687,22 +630,13 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 
 		// SendMail and/or FTPUpload?
 		// (this function returns FALSE if we have to exit the thread)
-		DWORD dwMailFTPTimeMs = ::timeGetTime();
-		if (!SendMailFTPUpload(FirstTime, sVideoFileName, sGIFFileName, sJPGFileNames))
+		if (!SendMailFTPUpload(FirstTime, sVideoFileName, sGIFFileName))
 		{
-			// Delete Files if not wanted
-			if (!m_pDoc->m_bSaveAnimGIFMovementDetection)
-				::DeleteFile(sGIFFileName);
-			if (!m_pDoc->m_bSaveVideoMovementDetection)
-				::DeleteFile(sVideoFileName);
-			for (int i = 0 ; i < sJPGFileNames.GetSize() ; i++)
-				::DeleteFile(sJPGFileNames[i]);
 			m_bWorking = FALSE;
 			((CUImagerApp*)::AfxGetApp())->MovDetSaveReservationRemove(dwCurrentThreadId);
 			::DeleteDir(sTempDetectionDir);
 			return 0;
 		}
-		dwMailFTPTimeMs = ::timeGetTime() - dwMailFTPTimeMs;
 
 		// Execute Command After Save
 		if (m_pDoc->m_bExecCommandMovementDetection && m_pDoc->m_nExecModeMovementDetection == 1)
@@ -711,14 +645,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 													sVideoFileName, sGIFFileName,
 													m_pDoc->m_nMovDetSavesCount);
 		}
-
-		// Delete Files if not wanted
-		if (!m_pDoc->m_bSaveAnimGIFMovementDetection)
-			::DeleteFile(sGIFFileName);
-		if (!m_pDoc->m_bSaveVideoMovementDetection)
-			::DeleteFile(sVideoFileName);
-		for (int i = 0 ; i < sJPGFileNames.GetSize() ; i++)
-			::DeleteFile(sJPGFileNames[i]);
 
 		// Increment if detection sequence done and store settings
 		if (bDetectionSequenceDone)
@@ -735,15 +661,13 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		{
 			if (dwFramesTimeMs < dwSaveTimeMs)
 			{
-				::LogLine(	_T("%s, attention cannot realtime save the detections: SaveTime=%0.1fs > FramesTime=%0.1fs (MailFTP=%0.1fs)"),
-							m_pDoc->GetAssignedDeviceName(), (double)dwSaveTimeMs / 1000.0, (double)dwFramesTimeMs / 1000.0,
-							(double)dwMailFTPTimeMs / 1000.0);
+				::LogLine(	_T("%s, attention cannot realtime save the detections: SaveTime=%0.1fs > FramesTime=%0.1fs"),
+							m_pDoc->GetAssignedDeviceName(), (double)dwSaveTimeMs / 1000.0, (double)dwFramesTimeMs / 1000.0);
 			}
 			else
 			{
-				::LogLine(	_T("%s, realtime saving the detections is ok: SaveTime=%0.1fs < FramesTime=%0.1fs (MailFTP=%0.1fs)"),
-							m_pDoc->GetAssignedDeviceName(), (double)dwSaveTimeMs / 1000.0, (double)dwFramesTimeMs / 1000.0,
-							(double)dwMailFTPTimeMs / 1000.0);
+				::LogLine(	_T("%s, realtime saving the detections is ok: SaveTime=%0.1fs < FramesTime=%0.1fs"),
+							m_pDoc->GetAssignedDeviceName(), (double)dwSaveTimeMs / 1000.0, (double)dwFramesTimeMs / 1000.0);
 			}
 		}
 	}
@@ -756,13 +680,17 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 
 BOOL CVideoDeviceDoc::CSaveFrameListThread::SendMailFTPUpload(	const CTime& Time,
 																const CString& sVideoFileName,
-																const CString& sGIFFileName,
-																const CStringArray& sJPGFileNames)
+																const CString& sGIFFileName)
 {
 	// Send By E-Mail
-	if (m_pDoc->m_bSendMailMovementDetection &&
-		!SendMailMovementDetection(Time, sVideoFileName, sGIFFileName, sJPGFileNames))
-		return FALSE;
+	if (m_pDoc->m_bSendMailMovementDetection)
+	{
+		m_pDoc->SendMailMovementDetection(	Time,
+											m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType == CVideoDeviceDoc::ATTACHMENT_VIDEO ?
+											sVideoFileName : _T(""),
+											m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType == CVideoDeviceDoc::ATTACHMENT_GIF ?
+											sGIFFileName : _T(""));
+	}
 
 	// FTP Upload
 	if (m_pDoc->m_bFTPUploadMovementDetection &&
@@ -770,37 +698,6 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SendMailFTPUpload(	const CTime& Time
 		return FALSE;
 
 	return TRUE;
-}
-
-__forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::SendMailMovementDetection(	const CTime& Time,
-																						const CString& sVideoFileName,
-																						const CString& sGIFFileName,
-																						const CStringArray& sJPGFileNames)
-{
-	CStringArray sFileNames;
-	switch (m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType)
-	{
-		case CVideoDeviceDoc::ATTACHMENT_VIDEO :
-				sFileNames.Add(sVideoFileName);
-				break;
-
-		case CVideoDeviceDoc::ATTACHMENT_GIF :
-				sFileNames.Add(sGIFFileName);
-				break;
-
-		case CVideoDeviceDoc::ATTACHMENT_JPG :
-				sFileNames.Append(sJPGFileNames);
-				break;
-
-		default :
-				break;
-	}
-
-	// Do Exit?
-	if (SendMail(Time, sFileNames) == -1)
-		return FALSE;
-	else
-		return TRUE;
 }
 
 __forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::FTPUploadMovementDetection(	const CTime& Time,
@@ -1559,63 +1456,47 @@ __forceinline CString CVideoDeviceDoc::CSaveSnapshotVideoThread::MakeVideoHistor
 		return sYearMonthDayDir + _T("\\") + _T("shot_") + sTime + m_sSnapshotVideoFileExt;
 }
 
-// Return Values
-// -1 : Do Exit Thread
-// 0  : Error Sending Email
-// 1  : Ok
-int CVideoDeviceDoc::CSaveFrameListThread::SendMail(const CTime& Time, const CStringArray& sFiles) 
+void CVideoDeviceDoc::SendMailMovementDetection(const CTime& Time,
+												const CString& sVideoFileName/*=_T("")*/,
+												const CString& sGIFFileName/*=_T("")*/)
 {
-	int i;
-
-	// Check size -> Return Error
-	for (i = 0 ; i < sFiles.GetSize() ; i++)
-	{
-		if (::GetFileSize64(sFiles[i]).QuadPart == 0)
-			return 0;
-	}
-
-	// No Configuration -> Return Error
-	if (m_pDoc->m_MovDetSendMailConfiguration.m_sHost.IsEmpty()	||
-		m_pDoc->m_MovDetSendMailConfiguration.m_sFrom.IsEmpty()	||
-		m_pDoc->m_MovDetSendMailConfiguration.m_sTo.IsEmpty())
-		return 0;
-	else 
+	if (!m_MovDetSendMailConfiguration.m_sHost.IsEmpty()	&&
+		!m_MovDetSendMailConfiguration.m_sFrom.IsEmpty()	&&
+		!m_MovDetSendMailConfiguration.m_sTo.IsEmpty())
 	{
 		CString sOptions;
 		CString sConnectionTypeOption;
-		CString sSubject = m_pDoc->m_MovDetSendMailConfiguration.m_sSubject;
+		CString sSubject = m_MovDetSendMailConfiguration.m_sSubject;
 		CTime CurrentTime(CTime::GetCurrentTime());
-		sSubject.Replace(_T("%name%"), m_pDoc->GetAssignedDeviceName());
+		sSubject.Replace(_T("%name%"), GetAssignedDeviceName());
 		sSubject.Replace(_T("%date%"), ::MakeDateLocalFormat(CurrentTime));
 		sSubject.Replace(_T("%time%"), ::MakeTimeLocalFormat(CurrentTime, TRUE));
-		switch (m_pDoc->m_MovDetSendMailConfiguration.m_ConnectionType)
+		switch (m_MovDetSendMailConfiguration.m_ConnectionType)
 		{
 			case 0 : sConnectionTypeOption = _T(""); break;				// Plain Text
 			case 1 : sConnectionTypeOption = _T("-ssl"); break;			// SSL and TLS
 			default: sConnectionTypeOption = _T("-starttls"); break;	// STARTTLS
 		}
 		sOptions.Format(_T("-t \"%s\" -f %s %s %s -port %d %s -smtp %s -cs \"iso-8859-1\" -sub \"%s\" +cc +bc -user \"%s\" -pass \"%s\""),
-						m_pDoc->m_MovDetSendMailConfiguration.m_sTo,
-						m_pDoc->m_MovDetSendMailConfiguration.m_sFrom, // must be comma separated, but can have white spaces in between
-						m_pDoc->m_MovDetSendMailConfiguration.m_sFromName.IsEmpty() ? _T("") : _T("-name \"") + m_pDoc->m_MovDetSendMailConfiguration.m_sFromName + _T("\""),
+						m_MovDetSendMailConfiguration.m_sTo,
+						m_MovDetSendMailConfiguration.m_sFrom, // must be comma separated, but can have white spaces in between
+						m_MovDetSendMailConfiguration.m_sFromName.IsEmpty() ? _T("") : _T("-name \"") + m_MovDetSendMailConfiguration.m_sFromName + _T("\""),
 						sConnectionTypeOption,
-						m_pDoc->m_MovDetSendMailConfiguration.m_nPort,
-						(m_pDoc->m_MovDetSendMailConfiguration.m_sUsername.IsEmpty() && m_pDoc->m_MovDetSendMailConfiguration.m_sPassword.IsEmpty()) ? _T("") : _T("-auth"),
-						m_pDoc->m_MovDetSendMailConfiguration.m_sHost,
+						m_MovDetSendMailConfiguration.m_nPort,
+						(m_MovDetSendMailConfiguration.m_sUsername.IsEmpty() && m_MovDetSendMailConfiguration.m_sPassword.IsEmpty()) ? _T("") : _T("-auth"),
+						m_MovDetSendMailConfiguration.m_sHost,
 						sSubject,
-						m_pDoc->m_MovDetSendMailConfiguration.m_sUsername,
-						m_pDoc->m_MovDetSendMailConfiguration.m_sPassword);
-		for (i = 0 ; i < sFiles.GetSize() ; i++)
-		{
-			if (::GetFileExt(sFiles[i]) == _T(".jpg") || ::GetFileExt(sFiles[i]) == _T(".gif"))
-				sOptions += _T(" -embed-image \"") + sFiles[i] + _T("\"");
-			else
-				sOptions += _T(" -M \"") + m_pDoc->GetAssignedDeviceName() + _T("\" -attach \"") + sFiles[i] + _T("\"");
-		}
-		HANDLE h = CVideoDeviceDoc::Mailer(sOptions);
+						m_MovDetSendMailConfiguration.m_sUsername,
+						m_MovDetSendMailConfiguration.m_sPassword);
+		if (::GetFileSize64(sVideoFileName).QuadPart > 0)
+			sOptions += _T(" -M \"") + GetAssignedDeviceName() + _T("\" -attach \"") + sVideoFileName + _T("\"");
+		else if (::GetFileSize64(sGIFFileName).QuadPart > 0)
+			sOptions += _T(" -embed-image \"") + sGIFFileName + _T("\"");
+		else
+			sOptions += _T(" -M \"") + GetAssignedDeviceName() + _T("\"");
+		HANDLE h = Mailer(sOptions);
 		if (h)
 			::CloseHandle(h);
-		return 1;
 	}
 }
 
@@ -2247,7 +2128,6 @@ end_of_software_detection:
 	BOOL bStoreFrames =	dwVideoProcessorMode			&&
 						(m_bSaveVideoMovementDetection	||
 						m_bSaveAnimGIFMovementDetection	||
-						m_bSendMailMovementDetection	||
 						m_bFTPUploadMovementDetection);
 
 	// If Movement
@@ -3222,7 +3102,6 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 					!m_pDoc->m_SaveFrameListThread.IsWorking()			&&
 					(m_pDoc->m_bSaveVideoMovementDetection				||
 					m_pDoc->m_bSaveAnimGIFMovementDetection				||
-					m_pDoc->m_bSendMailMovementDetection				||
 					m_pDoc->m_bFTPUploadMovementDetection))
 					m_pDoc->SaveFrameList(FALSE);
 
@@ -3700,13 +3579,13 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_MovDetSendMailConfiguration.m_AttachmentType = ATTACHMENT_NONE;
 	m_MovDetSendMailConfiguration.m_sSubject = MOVDET_DEFAULT_EMAIL_SUBJECT;
 	m_MovDetSendMailConfiguration.m_sTo = _T("");
-	m_MovDetSendMailConfiguration.m_nPort = 25;
+	m_MovDetSendMailConfiguration.m_nPort = 587;
 	m_MovDetSendMailConfiguration.m_sFrom = _T("");
 	m_MovDetSendMailConfiguration.m_sHost = _T("");
 	m_MovDetSendMailConfiguration.m_sFromName = _T("");
 	m_MovDetSendMailConfiguration.m_sUsername = _T("");
 	m_MovDetSendMailConfiguration.m_sPassword = _T("");
-	m_MovDetSendMailConfiguration.m_ConnectionType = PlainText;
+	m_MovDetSendMailConfiguration.m_ConnectionType = STARTTLS;
 
 	// FTP Settings
 	m_MovDetFTPUploadConfiguration.m_sHost = _T("");
@@ -4262,19 +4141,19 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_MovDetSendMailConfiguration.m_AttachmentType = (AttachmentType) pApp->GetProfileInt(sSection, _T("AttachmentType"), ATTACHMENT_NONE);
 	if (m_MovDetSendMailConfiguration.m_AttachmentType < ATTACHMENT_NONE)
 		m_MovDetSendMailConfiguration.m_AttachmentType = ATTACHMENT_NONE;
-	else if (m_MovDetSendMailConfiguration.m_AttachmentType > ATTACHMENT_JPG)
-		m_MovDetSendMailConfiguration.m_AttachmentType = ATTACHMENT_JPG;
+	else if (m_MovDetSendMailConfiguration.m_AttachmentType > ATTACHMENT_GIF)
+		m_MovDetSendMailConfiguration.m_AttachmentType = ATTACHMENT_GIF;
 	m_MovDetSendMailConfiguration.m_sSubject = pApp->GetProfileString(sSection, _T("SendMailSubject"), MOVDET_DEFAULT_EMAIL_SUBJECT);
 	if (m_MovDetSendMailConfiguration.m_sSubject.IsEmpty())
 		m_MovDetSendMailConfiguration.m_sSubject = MOVDET_DEFAULT_EMAIL_SUBJECT;
 	m_MovDetSendMailConfiguration.m_sTo = pApp->GetProfileString(sSection, _T("SendMailTo"), _T(""));
-	m_MovDetSendMailConfiguration.m_nPort = (int) pApp->GetProfileInt(sSection, _T("SendMailPort"), 25);
+	m_MovDetSendMailConfiguration.m_nPort = (int) pApp->GetProfileInt(sSection, _T("SendMailPort"), 587);
 	m_MovDetSendMailConfiguration.m_sFrom = pApp->GetProfileString(sSection, _T("SendMailFrom"), _T(""));
 	m_MovDetSendMailConfiguration.m_sHost = pApp->GetProfileString(sSection, _T("SendMailHost"), _T(""));
 	m_MovDetSendMailConfiguration.m_sFromName = pApp->GetProfileString(sSection, _T("SendMailFromName"), _T(""));
 	m_MovDetSendMailConfiguration.m_sUsername = pApp->GetSecureProfileString(sSection, _T("SendMailUsername"), _T(""));
 	m_MovDetSendMailConfiguration.m_sPassword = pApp->GetSecureProfileString(sSection, _T("SendMailPassword"), _T(""));
-	m_MovDetSendMailConfiguration.m_ConnectionType = (ConnectionType) pApp->GetProfileInt(sSection, _T("SendMailConnectionType"), PlainText);
+	m_MovDetSendMailConfiguration.m_ConnectionType = (ConnectionType) pApp->GetProfileInt(sSection, _T("SendMailConnectionType"), STARTTLS);
 
 	// FTP Settings
 	m_MovDetFTPUploadConfiguration.m_sHost = pApp->GetProfileString(sSection, _T("MovDetFTPHost"), _T(""));

@@ -212,8 +212,7 @@ public:
 	{
 		ATTACHMENT_NONE				= 0,
 		ATTACHMENT_VIDEO			= 1,
-		ATTACHMENT_GIF				= 2,
-		ATTACHMENT_JPG				= 3
+		ATTACHMENT_GIF				= 2
 	};
 	enum FilesToUploadType
 	{
@@ -537,22 +536,13 @@ public:
 									DWORD dwRefUpTime);
 			BOOL SendMailFTPUpload(	const CTime& Time,
 									const CString& sVideoFileName,
-									const CString& sGIFFileName,
-									const CStringArray& sJPGFileNames);
-			__forceinline BOOL SendMailMovementDetection(	const CTime& Time,
-															const CString& sVideoFileName,
-															const CString& sGIFFileName,
-															const CStringArray& sJPGFileNames);
+									const CString& sGIFFileName);
 			__forceinline BOOL FTPUploadMovementDetection(	const CTime& Time,
 															const CString& sVideoFileName,
 															const CString& sGIFFileName);
 
 			__forceinline BOOL DoMakeVideo() const {
 							return m_pDoc->m_bSaveVideoMovementDetection			||
-
-							(m_pDoc->m_bSendMailMovementDetection &&
-							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_VIDEO)					||
 
 							(m_pDoc->m_bFTPUploadMovementDetection &&
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
@@ -562,17 +552,8 @@ public:
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
 								CVideoDeviceDoc::FILES_TO_UPLOAD_VIDEO_GIF);};
 
-			__forceinline BOOL DoMakeJpeg() const {
-							return (m_pDoc->m_bSendMailMovementDetection &&
-							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_JPG);};
-
 			__forceinline BOOL DoMakeGif() const {
 							return	m_pDoc->m_bSaveAnimGIFMovementDetection			||
-
-							(m_pDoc->m_bSendMailMovementDetection &&
-							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_GIF)					||
 
 							(m_pDoc->m_bFTPUploadMovementDetection &&
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
@@ -581,12 +562,6 @@ public:
 							(m_pDoc->m_bFTPUploadMovementDetection &&
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
 								CVideoDeviceDoc::FILES_TO_UPLOAD_VIDEO_GIF);};
-			
-			// Return Values
-			// -1 : Do Exit Thread
-			// 0  : Error Sending Email
-			// 1  : Ok
-			int SendMail(const CTime& Time, const CStringArray& sFiles);
 
 			CVideoDeviceDoc* m_pDoc;
 			CDib::LIST* m_pFrameList;
@@ -889,7 +864,10 @@ public:
 	// Mailer
 	static CString MailerGetLogFileName();
 	static HANDLE Mailer(CString sParams, BOOL bLog = FALSE, CString* pLogFileName = NULL);
-
+	void SendMailMovementDetection(	const CTime& Time,
+									const CString& sVideoFileName = _T(""),
+									const CString& sGIFFileName = _T(""));
+	
 	// Vlm
 	static CString VlmGetConfigFileName();
 	static BOOL VlmConfigFileFilled();
@@ -1068,7 +1046,7 @@ public:
 	volatile int m_nDetectionMaxFrames;					// Maximum number of frames for a detection sequence
 	volatile BOOL m_bSaveVideoMovementDetection;		// Save Movement Detections as Video File
 	volatile BOOL m_bSaveAnimGIFMovementDetection;		// Save Movement Detections as Animated GIF
-	volatile BOOL m_bSendMailMovementDetection;			// Send Email of Movement Detections
+	volatile BOOL m_bSendMailMovementDetection;			// Send Email on Movement Detections
 	volatile BOOL m_bFTPUploadMovementDetection;		// FTP Upload Movement Detections
 	volatile BOOL m_bExecCommandMovementDetection;		// Execute Command on Movement Detection
 	volatile BOOL m_nExecModeMovementDetection;			// Determines when to execute the command
