@@ -200,7 +200,7 @@ FunctionEnd
   
 ;--------------------------------
 
-Function KillMicroApache
+Function KillOtherApps
 
   Push $R0
   Push $R1
@@ -211,6 +211,11 @@ KillMApache:
   Sleep 1500					; give process some time to really stop
   StrCmp $R0 "0" KillMApache 0	; check return value of KillProc (Sleep doesn't set $R0)
 
+KillMail:
+  KillProcDLL::KillProc "mailsend.exe"
+  Sleep 1500					; give process some time to really stop
+  StrCmp $R0 "0" KillMail 0		; check return value of KillProc (Sleep doesn't set $R0)
+  
   Pop $R1
   Pop $R0
   
@@ -240,12 +245,12 @@ Section "${APPNAME_NOEXT} Program (required)"
   ; Section Read-Only (=User Cannot Change it's state)
   SectionIn RO
   
-  ; Stop service and app
+  ; Stop service and apps
   DetailPrint $(StoppingServiceMessage)
   nsExec::Exec '"$INSTDIR\ContaCamService.exe" -k'
   DetailPrint $(StoppingApplicationMessage)
   call KillApp
-  call KillMicroApache
+  call KillOtherApps
 
   ; Remove previous install files and directories
   Delete $INSTDIR\License.txt
@@ -260,6 +265,7 @@ Section "${APPNAME_NOEXT} Program (required)"
   RMDir /r "$INSTDIR\ActiveX"
   RMDir /r "$INSTDIR\Tutorials"
   RMDir /r "$INSTDIR\microapache"
+  RMDir /r "$INSTDIR\mail"
   
   ; Source Program File Path
 !if ${INSTALLER_LANGUAGE} == "English"
@@ -279,6 +285,9 @@ Section "${APPNAME_NOEXT} Program (required)"
   File /r /x .svn /x configuration*.* "..\microapache\*.*"
   SetOutPath $INSTDIR
   File "/oname=microapache\htdocs\configuration.php" "..\microapache\htdocs\configuration${INSTALLER_LANGUAGE_SUFFIX}.php"
+  SetOutPath $INSTDIR\mail
+  File /r "..\mail\*.*"
+  SetOutPath $INSTDIR
   
   ; Write the installation path into the registry
   WriteRegStr HKLM "Software\Contaware\${APPNAME_NOEXT}" "Install_Dir" "$INSTDIR"
@@ -438,7 +447,7 @@ FunctionEnd
   
 ;--------------------------------
 
-Function un.KillMicroApache
+Function un.KillOtherApps
 
   Push $R0
   Push $R1
@@ -449,6 +458,11 @@ KillMApache:
   Sleep 1500					; give process some time to really stop
   StrCmp $R0 "0" KillMApache 0	; check return value of KillProc (Sleep doesn't set $R0)
 
+KillMail:
+  KillProcDLL::KillProc "mailsend.exe"
+  Sleep 1500					; give process some time to really stop
+  StrCmp $R0 "0" KillMail 0		; check return value of KillProc (Sleep doesn't set $R0)
+  
   Pop $R1
   Pop $R0
   
@@ -471,7 +485,7 @@ Section "Uninstall"
   nsExec::Exec '"$INSTDIR\ContaCamService.exe" -u'
   DetailPrint $(StoppingApplicationMessage)
   call un.KillApp
-  call un.KillMicroApache
+  call un.KillOtherApps
   
   ; Remove / Restore Graphics File Associations
   StrCpy $FILEEXTENSION "bmp"
@@ -573,6 +587,7 @@ Section "Uninstall"
   RMDir /r "$INSTDIR\ActiveX"
   RMDir /r "$INSTDIR\Tutorials"
   RMDir /r "$INSTDIR\microapache"
+  RMDir /r "$INSTDIR\mail"
   RMDir "$INSTDIR"
   
   ; Refresh Icons
