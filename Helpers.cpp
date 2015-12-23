@@ -1418,10 +1418,11 @@ HANDLE ExecApp(	const CString& sFileName,
 	memset(&sei, 0, sizeof(sei));
 	sei.cbSize = sizeof(sei);
 	sei.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
-	sei.nShow = bShow ? SW_SHOW : SW_HIDE;;
+	sei.nShow = bShow ? SW_SHOW : SW_HIDE;
 	sei.lpFile = sFileName;
+	CString sDir = GetDriveAndDirName(sFileName);
 	if (sStartDirectory.IsEmpty())
-		sei.lpDirectory = GetDriveAndDirName(sFileName);
+		sei.lpDirectory = sDir;
 	else
 		sei.lpDirectory = sStartDirectory;
 	sei.lpParameters = sParams;
