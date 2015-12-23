@@ -534,9 +534,6 @@ public:
 									int nDiffMinLevel,
 									const CTime& RefTime,
 									DWORD dwRefUpTime);
-			BOOL SendMailFTPUpload(	const CTime& Time,
-									const CString& sVideoFileName,
-									const CString& sGIFFileName);
 			__forceinline BOOL FTPUploadMovementDetection(	const CTime& Time,
 															const CString& sVideoFileName,
 															const CString& sGIFFileName);
@@ -797,7 +794,8 @@ public:
 										LPBYTE pMJPGData,
 										DWORD dwMJPGSize,
 										DWORD dwVideoProcessorMode,
-										BOOL b1SecTick);
+										BOOL b1SecTick,
+										const CTime& CurrentTime);
 	BOOL MovementDetector(CDib* pDib, int nDetectionLevel);
 	void FreeMovementDetector();
 	void ExecCommandMovementDetection(	BOOL bReplaceVars = FALSE,

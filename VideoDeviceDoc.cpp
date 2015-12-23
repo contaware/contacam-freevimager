@@ -628,9 +628,20 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		CalcMovementDetectionListsSize();
 		::LeaveCriticalSection(&m_pDoc->m_csMovementDetectionsList);
 
-		// SendMail and/or FTPUpload?
-		// (this function returns FALSE if we have to exit the thread)
-		if (!SendMailFTPUpload(FirstTime, sVideoFileName, sGIFFileName))
+		// Send By E-Mail
+		if (m_pDoc->m_bSendMailMovementDetection &&
+			m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType != CVideoDeviceDoc::ATTACHMENT_NONE)
+		{
+			m_pDoc->SendMailMovementDetection(	FirstTime,
+												m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType == CVideoDeviceDoc::ATTACHMENT_VIDEO ?
+												sVideoFileName : _T(""),
+												m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType == CVideoDeviceDoc::ATTACHMENT_GIF ?
+												sGIFFileName : _T(""));
+		}
+
+		// FTP Upload
+		if (m_pDoc->m_bFTPUploadMovementDetection &&
+			!FTPUploadMovementDetection(FirstTime, sVideoFileName, sGIFFileName)) // returns FALSE if we have to exit the thread
 		{
 			m_bWorking = FALSE;
 			((CUImagerApp*)::AfxGetApp())->MovDetSaveReservationRemove(dwCurrentThreadId);
@@ -676,28 +687,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 	((CUImagerApp*)::AfxGetApp())->MovDetSaveReservationRemove(dwCurrentThreadId);
 	::DeleteDir(sTempDetectionDir);
 	return 0;
-}
-
-BOOL CVideoDeviceDoc::CSaveFrameListThread::SendMailFTPUpload(	const CTime& Time,
-																const CString& sVideoFileName,
-																const CString& sGIFFileName)
-{
-	// Send By E-Mail
-	if (m_pDoc->m_bSendMailMovementDetection)
-	{
-		m_pDoc->SendMailMovementDetection(	Time,
-											m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType == CVideoDeviceDoc::ATTACHMENT_VIDEO ?
-											sVideoFileName : _T(""),
-											m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType == CVideoDeviceDoc::ATTACHMENT_GIF ?
-											sGIFFileName : _T(""));
-	}
-
-	// FTP Upload
-	if (m_pDoc->m_bFTPUploadMovementDetection &&
-		!FTPUploadMovementDetection(Time, sVideoFileName, sGIFFileName))
-		return FALSE;
-
-	return TRUE;
 }
 
 __forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::FTPUploadMovementDetection(	const CTime& Time,
@@ -1957,7 +1946,7 @@ BOOL CVideoDeviceDoc::AudioListen(	LPBYTE pData, DWORD dwSizeInBytes,
 		return FALSE;
 }
 
-void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, LPBYTE pMJPGData, DWORD dwMJPGSize, DWORD dwVideoProcessorMode, BOOL b1SecTick)
+void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, LPBYTE pMJPGData, DWORD dwMJPGSize, DWORD dwVideoProcessorMode, BOOL b1SecTick, const CTime& CurrentTime)
 {
 	BOOL bSoftwareDetectionMovement = FALSE;
 	BOOL bExternalFileTriggerMovement = FALSE;
@@ -2152,7 +2141,14 @@ end_of_software_detection:
 		if (!m_bDetectingMinLengthMovement &&
 			(m_dwLastDetFrameUpTime - m_dwFirstDetFrameUpTime) >= (DWORD)m_nDetectionMinLengthMilliSeconds)
 		{
+			// Set flag
 			m_bDetectingMinLengthMovement = TRUE;
+
+			// Send E-Mail
+			if (m_bSendMailMovementDetection && m_MovDetSendMailConfiguration.m_AttachmentType == ATTACHMENT_NONE)
+				SendMailMovementDetection(CurrentTime);
+
+			// Execute Command
 			if (m_bExecCommandMovementDetection && m_nExecModeMovementDetection == 0)
 				ExecCommandMovementDetection();
 		}
@@ -2182,9 +2178,10 @@ end_of_software_detection:
 		// Log Message
 		if (g_nLogLevel > 0)
 		{
-			::LogLine(_T("%s, DET %s Buf: %0.1f%% load of %dMB"),	GetAssignedDeviceName(),
-																m_bMovDetHDBuffering ? _T("HD") : _T("RAM"),
-																dDocLoad, MOVDET_MEM_MAX_MB);
+			::LogLine(	_T("%s, DET %s Buf: %0.1f%% load of %dMB"),
+						GetAssignedDeviceName(),
+						m_bMovDetHDBuffering ? _T("HD") : _T("RAM"),
+						dDocLoad, MOVDET_MEM_MAX_MB);
 		}
 
 		// High threshold reached, frames saving is too slow:
@@ -7278,7 +7275,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize, LPBYTE pMJPGD
 			}
 
 			// Do Motion Detection Processing
-			MovementDetectionProcessing(pDib, pMJPGData, dwMJPGSize, dwVideoProcessorMode, b1SecTick);
+			MovementDetectionProcessing(pDib, pMJPGData, dwMJPGSize, dwVideoProcessorMode, b1SecTick, CurrentTime);
 		}
 
 		// Copy to Clipboard
