@@ -214,7 +214,7 @@ void CSendMailConfigurationDlg::OnButtonTest()
 						sSubject,
 						m_SendMailConfiguration.m_sUsername,
 						m_SendMailConfiguration.m_sPassword,
-						m_pDoc->GetAssignedDeviceName());
+						sSubject);
 		m_hMailer = CVideoDeviceDoc::Mailer(sOptions, TRUE, &m_sLogFileName);
 	}
 }

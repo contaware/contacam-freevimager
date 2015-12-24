@@ -466,6 +466,7 @@ public:
 		ConnectionType	m_ConnectionType;
 		CString			m_sUsername;
 		CString			m_sPassword;
+		int				m_nSecBetweenMsg;
 	} SendMailConfigurationStruct;
 
 	// FTP upload configuration structure
@@ -794,8 +795,7 @@ public:
 										LPBYTE pMJPGData,
 										DWORD dwMJPGSize,
 										DWORD dwVideoProcessorMode,
-										BOOL b1SecTick,
-										const CTime& CurrentTime);
+										BOOL b1SecTick);
 	BOOL MovementDetector(CDib* pDib, int nDetectionLevel);
 	void FreeMovementDetector();
 	void ExecCommandMovementDetection(	BOOL bReplaceVars = FALSE,
@@ -1091,6 +1091,7 @@ public:
 	volatile int m_nMovDetSavesCountDay;				// Day of the above count
 	volatile int m_nMovDetSavesCountMonth;				// Month of the above count
 	volatile int m_nMovDetSavesCountYear;				// Year of the above count
+	CTime m_LastSendMailMovementDetectionTime;
 	SendMailConfigurationStruct m_MovDetSendMailConfiguration;
 	FTPUploadConfigurationStruct m_MovDetFTPUploadConfiguration;
 
