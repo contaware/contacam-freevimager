@@ -3077,6 +3077,8 @@
 #define IDC_VIDEO_COMPRESSION_QUALITY_INFO 2565
 #define IDC_BUTTON_DOCROOT              2566
 #define IDC_BUTTON_CRASHME              2567
+#define IDC_EDIT_SEC_BETWEEN_EMAILS     2568
+#define IDC_SPIN_SEC_BETWEEN_EMAILS     2569
 #define ID_EDIT_ROTATE_FLIP             32778
 #define ID_FILE_SELECTTWAINSOURCE       32779
 #define ID_FILE_ACQUIRE                 32780
@@ -3304,7 +3306,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1496
 #define _APS_NEXT_COMMAND_VALUE         33513
-#define _APS_NEXT_CONTROL_VALUE         2568
+#define _APS_NEXT_CONTROL_VALUE         2570
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

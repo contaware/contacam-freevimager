@@ -55,6 +55,8 @@ BOOL CSendMailConfigurationDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
+	CString s;
+
 	// To Email
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_RECEIVER_MAIL);
 	pEdit->SetWindowText(m_SendMailConfiguration.m_sTo);
@@ -84,9 +86,8 @@ BOOL CSendMailConfigurationDlg::OnInitDialog()
 
 	// Server Port
 	pEdit = (CEdit*)GetDlgItem(IDC_HOST_PORT);
-	CString sPort;
-	sPort.Format(_T("%i"), m_SendMailConfiguration.m_nPort);
-	pEdit->SetWindowText(sPort);
+	s.Format(_T("%i"), m_SendMailConfiguration.m_nPort);
+	pEdit->SetWindowText(s);
 
 	// Username and Password
 	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_USERNAME);
@@ -101,6 +102,13 @@ BOOL CSendMailConfigurationDlg::OnInitDialog()
     pComboBox->AddString(ML_STRING(1835, "STARTTLS (Port 25 or 587)"));
 	pComboBox->SetCurSel(m_SendMailConfiguration.m_ConnectionType);
 
+	// Seconds between sent messages
+	CSpinButtonCtrl* pSpin = (CSpinButtonCtrl*)GetDlgItem(IDC_SPIN_SEC_BETWEEN_EMAILS);
+	pSpin->SetRange32(0, INT_MAX);
+	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_SEC_BETWEEN_EMAILS);
+	s.Format(_T("%i"), m_SendMailConfiguration.m_nSecBetweenMsg);
+	pEdit->SetWindowText(s);
+
 	// Set Timer
 	SetTimer(ID_TIMER_SENDMAILCONFIGURATIONDLG, SENDMAILCONFIGURATIONDLG_TIMER_MS, NULL);
 
@@ -110,6 +118,7 @@ BOOL CSendMailConfigurationDlg::OnInitDialog()
 
 void CSendMailConfigurationDlg::CopyToStruct()
 {
+	int nNum;
 	CString sText;
 
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_RECEIVER_MAIL);
@@ -140,10 +149,10 @@ void CSendMailConfigurationDlg::CopyToStruct()
 
 	pEdit = (CEdit*)GetDlgItem(IDC_HOST_PORT);
 	pEdit->GetWindowText(sText);
-	int nPort = _tcstol(sText.GetBuffer(0), NULL, 10);
+	nNum = _tcstol(sText.GetBuffer(0), NULL, 10);
 	sText.ReleaseBuffer();
-	if (nPort > 0 && nPort <= 65535) // Port 0 is Reserved
-		m_SendMailConfiguration.m_nPort = nPort;
+	if (nNum > 0 && nNum <= 65535) // Port 0 is Reserved
+		m_SendMailConfiguration.m_nPort = nNum;
 	else
 		m_SendMailConfiguration.m_nPort = 25;
 
@@ -158,6 +167,15 @@ void CSendMailConfigurationDlg::CopyToStruct()
 	pComboBox = (CComboBox*)GetDlgItem(IDC_CONNECTIONTYPE);
 	m_SendMailConfiguration.m_ConnectionType =
 			(CVideoDeviceDoc::ConnectionType)pComboBox->GetCurSel();
+
+	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_SEC_BETWEEN_EMAILS);
+	pEdit->GetWindowText(sText);
+	nNum = _tcstol(sText.GetBuffer(0), NULL, 10);
+	sText.ReleaseBuffer();
+	if (nNum < 0)
+		m_SendMailConfiguration.m_nSecBetweenMsg = 0;
+	else
+		m_SendMailConfiguration.m_nSecBetweenMsg = nNum;
 }
 
 void CSendMailConfigurationDlg::OnOK() 
