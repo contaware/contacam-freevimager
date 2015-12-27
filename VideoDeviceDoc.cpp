@@ -2329,12 +2329,18 @@ BOOL CVideoDeviceDoc::ResizeFast(CDib* pSrcDib, CDib* pDstDib)
 	// Check
 	if (!pSrcDib || !pSrcDib->GetBits() || !pDstDib || !pDstDib->GetBits())
 		goto exit;
+	src_pix_fmt = CAVRec::AVCodecBMIToPixFormat(pSrcDib->GetBMI());
+	dst_pix_fmt = CAVRec::AVCodecBMIToPixFormat(pDstDib->GetBMI());
+	if (pSrcDib->GetWidth() <= 0 || pSrcDib->GetHeight() <= 0	||
+		src_pix_fmt < 0 || src_pix_fmt >= AV_PIX_FMT_NB			||
+		pDstDib->GetWidth() <= 0 || pDstDib->GetHeight() <= 0	||
+		dst_pix_fmt < 0 || dst_pix_fmt >= AV_PIX_FMT_NB)
+		goto exit;
 
 	// Source frame
 	pSrcFrame = av_frame_alloc();
 	if (!pSrcFrame)
         goto exit;
-	src_pix_fmt = CAVRec::AVCodecBMIToPixFormat(pSrcDib->GetBMI());
 	avpicture_fill(	(AVPicture*)pSrcFrame,
 					(uint8_t*)pSrcDib->GetBits(),
 					src_pix_fmt,
@@ -2345,7 +2351,6 @@ BOOL CVideoDeviceDoc::ResizeFast(CDib* pSrcDib, CDib* pDstDib)
 	pDstFrame = av_frame_alloc();
 	if (!pDstFrame)
         goto exit;
-	dst_pix_fmt = CAVRec::AVCodecBMIToPixFormat(pDstDib->GetBMI());
 	avpicture_fill(	(AVPicture*)pDstFrame,
 					(uint8_t*)pDstDib->GetBits(),
 					dst_pix_fmt,
@@ -2404,12 +2409,15 @@ BOOL CVideoDeviceDoc::SaveJpegFast(CDib* pDib, CMJPEGEncoder* pMJPEGEncoder, con
 	// Check
 	if (!pDib || !pDib->GetBits() || !pMJPEGEncoder || sFileName.IsEmpty())
 		goto exit;
+	src_pix_fmt = CAVRec::AVCodecBMIToPixFormat(pDib->GetBMI());
+	if (pDib->GetWidth() <= 0 || pDib->GetHeight() <= 0	||
+		src_pix_fmt < 0 || src_pix_fmt >= AV_PIX_FMT_NB)
+		goto exit;
 
 	// Source frame
 	pSrcFrame = av_frame_alloc();
 	if (!pSrcFrame)
         goto exit;
-	src_pix_fmt = CAVRec::AVCodecBMIToPixFormat(pDib->GetBMI());
 	avpicture_fill(	(AVPicture*)pSrcFrame,
 					(uint8_t*)pDib->GetBits(),
 					src_pix_fmt,
@@ -10826,17 +10834,22 @@ void CVideoDeviceDoc::CHttpParseProcess::FreeAVCodec()
 
 BOOL CVideoDeviceDoc::CHttpParseProcess::InitImgConvert()
 {
-	// Determine required buffer size and allocate buffer if necessary.
-	// Make sure width and height are not 0 because otherwise
-	// avpicture_get_size() returns -1 which cast to DWORD gives 4GB - 1
-	if (m_pCodecCtx->width > 0 && m_pCodecCtx->height > 0)
+	// Check
+	if (m_pCodecCtx->width <= 0 || m_pCodecCtx->height <= 0	||
+		m_pCodecCtx->pix_fmt < 0 || m_pCodecCtx->pix_fmt >= AV_PIX_FMT_NB)
 	{
-		m_dwI420ImageSize = avpicture_get_size(	AV_PIX_FMT_YUV420P,
-												m_pCodecCtx->width,
-												m_pCodecCtx->height);
+		if (g_nLogLevel > 0)
+		{
+			::LogLine(	_T("%s, CVideoDeviceDoc::CHttpParseProcess::InitImgConvert() wrong format: m_pCodecCtx->width=%d, m_pCodecCtx->height=%d, m_pCodecCtx->pix_fmt=%d"),
+						m_pDoc->GetAssignedDeviceName(), m_pCodecCtx->width, m_pCodecCtx->height, m_pCodecCtx->pix_fmt);
+		}
+		return FALSE;
 	}
-	else
-		m_dwI420ImageSize = 0;
+
+	// Determine required buffer size and allocate buffer if necessary
+	m_dwI420ImageSize = avpicture_get_size(	AV_PIX_FMT_YUV420P,
+											m_pCodecCtx->width,
+											m_pCodecCtx->height);
 	if (m_dwI420BufSize < m_dwI420ImageSize || m_pI420Buf == NULL)
 	{
 		if (m_pI420Buf)

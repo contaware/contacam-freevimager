@@ -202,6 +202,14 @@ BOOL CAVDecoder::Decode(LPBITMAPINFO pSrcBMI,
 		}
 	}
 
+	// Check
+	if (m_pCodecCtx->width <= 0 || m_pCodecCtx->height <= 0	||
+		m_pCodecCtx->pix_fmt < 0 || m_pCodecCtx->pix_fmt >= AV_PIX_FMT_NB)
+	{
+		av_free_packet(&avpkt);
+		return FALSE;
+	}
+
 	// Allocate destination bits?
 	if (!pDstDib->GetBits())
 	{

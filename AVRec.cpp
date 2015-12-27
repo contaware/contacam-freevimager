@@ -768,6 +768,16 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 			pBmi->bmiHeader.biWidth != pCodecCtx->width	||
 			pBmi->bmiHeader.biHeight != pCodecCtx->height)
 		{
+			// Check
+			if (pBmi->bmiHeader.biWidth <= 0 || pBmi->bmiHeader.biHeight <= 0	||
+				SrcPixFormat < 0 || SrcPixFormat >= AV_PIX_FMT_NB				||
+				pCodecCtx->width <= 0 || pCodecCtx->height <= 0					||
+				pCodecCtx->pix_fmt < 0 || pCodecCtx->pix_fmt >= AV_PIX_FMT_NB)
+			{
+				::LeaveCriticalSection(&m_csAV);
+				return false;
+			}
+
 			// Get conversion context
 			m_pImgConvertCtx[dwStreamNum] = sws_getCachedContext(m_pImgConvertCtx[dwStreamNum],	// Re-use if already allocated
 																pBmi->bmiHeader.biWidth,		// Source Width
