@@ -662,10 +662,6 @@ public:
 	afx_msg void OnAppFaq();
 	afx_msg void OnAppManual();
 	afx_msg void OnUpdateFileNew(CCmdUI* pCmdUI);
-	afx_msg void OnSettingsNormalLogging();
-	afx_msg void OnUpdateSettingsNormalLogging(CCmdUI* pCmdUI);
-	afx_msg void OnSettingsVerboseLogging();
-	afx_msg void OnUpdateSettingsVerboseLogging(CCmdUI* pCmdUI);
 	afx_msg void OnSettingsLogAllMessages();
 	afx_msg void OnUpdateSettingsLogAllMessages(CCmdUI* pCmdUI);
 	afx_msg void OnSettingsViewLogfile();

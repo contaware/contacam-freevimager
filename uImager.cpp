@@ -67,10 +67,6 @@ BEGIN_MESSAGE_MAP(CUImagerApp, CWinApp)
 	ON_COMMAND(ID_APP_FAQ, OnAppFaq)
 	ON_COMMAND(ID_APP_MANUAL, OnAppManual)
 	ON_UPDATE_COMMAND_UI(ID_FILE_NEW, OnUpdateFileNew)
-	ON_COMMAND(ID_SETTINGS_NORMAL_LOGGING, OnSettingsNormalLogging)
-	ON_UPDATE_COMMAND_UI(ID_SETTINGS_NORMAL_LOGGING, OnUpdateSettingsNormalLogging)
-	ON_COMMAND(ID_SETTINGS_VERBOSE_LOGGING, OnSettingsVerboseLogging)
-	ON_UPDATE_COMMAND_UI(ID_SETTINGS_VERBOSE_LOGGING, OnUpdateSettingsVerboseLogging)
 	ON_COMMAND(ID_SETTINGS_LOG_ALL_MESSAGES, OnSettingsLogAllMessages)
 	ON_UPDATE_COMMAND_UI(ID_SETTINGS_LOG_ALL_MESSAGES, OnUpdateSettingsLogAllMessages)
 	ON_COMMAND(ID_SETTINGS_VIEW_LOGFILE, OnSettingsViewLogfile)
@@ -4311,40 +4307,19 @@ BOOL CUImagerApp::UnassociateFileType(CString sExt)
 	return TRUE;
 }
 
-void CUImagerApp::OnSettingsNormalLogging()
-{
-	g_nLogLevel = 0;
-	WriteProfileInt(_T("GeneralApp"), _T("LogLevel"), g_nLogLevel);
-	::AfxGetMainFrame()->m_MDIClientWnd.Invalidate();
-}
-
-void CUImagerApp::OnUpdateSettingsNormalLogging(CCmdUI* pCmdUI) 
-{
-	pCmdUI->SetRadio(g_nLogLevel <= 0);
-}
-
-void CUImagerApp::OnSettingsVerboseLogging()
-{
-	g_nLogLevel = 1;
-	WriteProfileInt(_T("GeneralApp"), _T("LogLevel"), g_nLogLevel);
-	::AfxGetMainFrame()->m_MDIClientWnd.Invalidate();
-}
-
-void CUImagerApp::OnUpdateSettingsVerboseLogging(CCmdUI* pCmdUI) 
-{
-	pCmdUI->SetRadio(g_nLogLevel == 1);
-}
-
 void CUImagerApp::OnSettingsLogAllMessages()
 {
-	g_nLogLevel = 2;
+	if (g_nLogLevel > 0)
+		g_nLogLevel = 0;
+	else
+		g_nLogLevel = 2;
 	WriteProfileInt(_T("GeneralApp"), _T("LogLevel"), g_nLogLevel);
 	::AfxGetMainFrame()->m_MDIClientWnd.Invalidate();
 }
 
 void CUImagerApp::OnUpdateSettingsLogAllMessages(CCmdUI* pCmdUI) 
 {
-	pCmdUI->SetRadio(g_nLogLevel >= 2);
+	pCmdUI->SetCheck(g_nLogLevel > 0 ? 1 : 0);
 }
 
 void CUImagerApp::OnSettingsViewLogfile() 

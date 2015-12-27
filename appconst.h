@@ -31,7 +31,7 @@
 #define FAQ_ONLINE_PAGE									_T("http://www.contaware.com/freevimagerfaq/")
 #define MANUAL_ONLINE_PAGE								_T("http://www.contaware.com/freevimagermanual/")
 #endif
-#define APPVERSION										_T("5.0.5beta4")
+#define APPVERSION										_T("5.0.5beta5")
 
 // Company
 #define MYCOMPANY										_T("Contaware")
@@ -44,7 +44,7 @@
 // Trace and Log files
 #define VMMAPNAME_EXT									_T("log_vmmap.mmp") // no spaces in filename please!
 #define LOGNAME_EXT										_T("log.txt")
-#define MAX_LOG_FILE_SIZE								67108864 /* 64MB */
+#define MAX_LOG_FILE_SIZE								268435456 /* 256MB */
 
 /////////////////////////////////////////////////////////////////////////////
 

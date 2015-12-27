@@ -207,12 +207,9 @@ BEGIN
     BEGIN
         MENUITEM "Global Settings...",          ID_FILE_SETTINGS
         MENUITEM SEPARATOR
+        MENUITEM "Verbose diagnostic logging",  ID_SETTINGS_LOG_ALL_MESSAGES
         MENUITEM "View Log File",               ID_SETTINGS_VIEW_LOGFILE
         MENUITEM "Browse Config/Log Files",     ID_SETTINGS_BROWSE_CONFIGLOG_FILES
-        MENUITEM SEPARATOR
-        MENUITEM "Normal logging",              ID_SETTINGS_NORMAL_LOGGING
-        MENUITEM "Verbose logging",             ID_SETTINGS_VERBOSE_LOGGING
-        MENUITEM "Debug logging",               ID_SETTINGS_LOG_ALL_MESSAGES
     END
     POPUP "&Help"
     BEGIN
@@ -361,12 +358,9 @@ BEGIN
         MENUITEM "Camera Basic Settings...",    ID_CAPTURE_CAMERABASICSETTINGS
         MENUITEM "Camera Advanced Settings...", ID_CAPTURE_CAMERAADVANCEDSETTINGS
         MENUITEM SEPARATOR
+        MENUITEM "Verbose diagnostic logging",  ID_SETTINGS_LOG_ALL_MESSAGES
         MENUITEM "View Log File",               ID_SETTINGS_VIEW_LOGFILE
         MENUITEM "Browse Config/Log Files",     ID_SETTINGS_BROWSE_CONFIGLOG_FILES
-        MENUITEM SEPARATOR
-        MENUITEM "Normal logging",              ID_SETTINGS_NORMAL_LOGGING
-        MENUITEM "Verbose logging",             ID_SETTINGS_VERBOSE_LOGGING
-        MENUITEM "Debug logging",               ID_SETTINGS_LOG_ALL_MESSAGES
     END
     POPUP "&Window"
     BEGIN
@@ -600,12 +594,9 @@ BEGIN
     BEGIN
         MENUITEM "Global Settings...",          ID_FILE_SETTINGS
         MENUITEM SEPARATOR
+        MENUITEM "Verbose diagnostic logging",  ID_SETTINGS_LOG_ALL_MESSAGES
         MENUITEM "View Log File",               ID_SETTINGS_VIEW_LOGFILE
         MENUITEM "Browse Config/Log Files",     ID_SETTINGS_BROWSE_CONFIGLOG_FILES
-        MENUITEM SEPARATOR
-        MENUITEM "Normal logging",              ID_SETTINGS_NORMAL_LOGGING
-        MENUITEM "Verbose logging",             ID_SETTINGS_VERBOSE_LOGGING
-        MENUITEM "Debug logging",               ID_SETTINGS_LOG_ALL_MESSAGES
     END
     POPUP "&Window"
     BEGIN
@@ -3790,6 +3781,8 @@ BEGIN
     ID_INDICATOR_RAM_USAGE  "RAM:             "
     ID_INDICATOR_XCOORDINATE "X:               "
     ID_INDICATOR_YCOORDINATE "Y:               "
+    ID_SETTINGS_LOG_ALL_MESSAGES 
+                            "Enable verbose diagnostic logging\nDiagnostic Log"
 END
 
 STRINGTABLE
@@ -4419,6 +4412,7 @@ BEGIN
     IDS_STRING1801          "REMOVE CAMERAS"
     IDS_STRING1802          "1. Close all running cameras"
     IDS_STRING1803          "2. Choose Delete from the Edit menu"
+    IDS_STRING1810          "VERBOSE DIAGNOSTIC LOGGING"
 END
 
 STRINGTABLE

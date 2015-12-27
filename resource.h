@@ -3294,9 +3294,7 @@
 #define ID_INDICATOR_RAM_USAGE          33507
 #define ID_INDICATOR_XCOORDINATE        33508
 #define ID_INDICATOR_YCOORDINATE        33509
-#define ID_SETTINGS_NORMAL_LOGGING      33510
-#define ID_SETTINGS_VERBOSE_LOGGING     33511
-#define ID_SETTINGS_LOG_ALL_MESSAGES    33512
+#define ID_SETTINGS_LOG_ALL_MESSAGES    33510
 #define ID_BUTTON_PRINT_SETUP           58120
 
 // Next default values for new objects
@@ -3305,7 +3303,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1496
-#define _APS_NEXT_COMMAND_VALUE         33513
+#define _APS_NEXT_COMMAND_VALUE         33511
 #define _APS_NEXT_CONTROL_VALUE         2570
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
