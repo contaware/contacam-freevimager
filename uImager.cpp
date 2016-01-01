@@ -939,10 +939,6 @@ BOOL CAboutDlg::OnInitDialog()
 	// contaware.com site link
 	m_WebLink.SubclassDlgItem(IDC_WEB_LINK, this);
 
-	// Subclass the Crash me button
-	m_CrashMe.SubclassDlgItem(IDC_BUTTON_CRASHME, this);
-	m_CrashMe.SetIcon(IDI_BOMB, CXButtonXP::CENTER);
-
 	// Compilation Time & Date
 	CString sCompilationTime;
 	sCompilationTime =	CString(_T("(")) +
@@ -956,30 +952,8 @@ BOOL CAboutDlg::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-// Disable warning C4723: potential divide by 0
-#pragma warning(disable:4723)
-void CAboutDlg::OnBnClickedButtonCrashme()
-{
-	CString sMsg;
-	sMsg.Format(ML_STRING(1172, "If %s crashes then execute it with %sDump.bat found in the installation folder and send us the generated .dmp file.\n\nDo you want to test the dump file generation by crashing %s now?"), APPNAME_NOEXT, APPNAME_NOEXT, APPNAME_NOEXT);
-	if (::AfxMessageBox(sMsg, MB_YESNO | MB_DEFBUTTON2) == IDYES)
-	{
-		// Too big allocation to test vmmap.exe
-		BIGALLOC(0x7fffffff);
-
-		// Division by zero to test procdump.exe
-		int a = 0;
-		int b = 5 / a;
-		CString s;
-		s.Format(_T("Divide by 0 is %d"), b);
-		::AfxMessageBox(s);
-	}
-	#pragma warning(default:4723)
-}
-
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
 	//{{AFX_MSG_MAP(CAboutDlg)
-	ON_BN_CLICKED(IDC_BUTTON_CRASHME, OnBnClickedButtonCrashme)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -1305,6 +1279,22 @@ BOOL CUImagerApp::PasteToFile(LPCTSTR lpszFileName, COLORREF crBackgroundColor/*
 	}
 
 	return FALSE;
+}
+
+// Disable warning C4723: potential divide by 0
+#pragma warning(disable:4723)
+void CUImagerApp::Crashme()
+{
+	// Too big allocation to test vmmap.exe
+	BIGALLOC(0x7fffffff);
+
+	// Division by zero to test procdump.exe
+	int a = 0;
+	int b = 5 / a;
+	CString s;
+	s.Format(_T("Divide by 0 is %d"), b);
+	::AfxMessageBox(s);
+	#pragma warning(default:4723)
 }
 
 void CUImagerApp::FileTypeNotSupportedMessageBox(LPCTSTR lpszFileName)

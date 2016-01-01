@@ -991,7 +991,6 @@ BEGIN
     LTEXT           "Translated By:",IDC_STATIC2151,15,124,51,8
     LTEXT           "This is the original language",IDC_STATIC2152,74,124,216,8
     GROUPBOX        "",IDC_STATIC2147,7,69,285,26
-    PUSHBUTTON      "",IDC_BUTTON_CRASHME,272,196,20,14
 END
 
 IDD_GENERAL DIALOGEX 0, 0, 417, 268
@@ -2431,9 +2430,9 @@ EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Snapshot"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    EDITTEXT        IDC_EDIT_SNAPSHOT_RATE,79,24,34,12,ES_RIGHT
-    PUSHBUTTON      "",IDC_BUTTON_THUMB_SIZE,158,21,189,17
-    CONTROL         "Slider1",IDC_COMPRESSION_QUALITY,"msctls_trackbar32",TBS_TOP | TBS_NOTICKS | WS_TABSTOP,153,56,199,18
+    EDITTEXT        IDC_EDIT_SNAPSHOT_RATE,97,24,34,12,ES_RIGHT
+    PUSHBUTTON      "",IDC_BUTTON_THUMB_SIZE,170,21,177,17
+    CONTROL         "Slider1",IDC_COMPRESSION_QUALITY,"msctls_trackbar32",TBS_TOP | TBS_NOTICKS | WS_TABSTOP,165,56,187,18
     PUSHBUTTON      "Live Snapshot File Names",IDC_BUTTON_SNAPSHOT_NAMES,13,90,121,17
     PUSHBUTTON      "Ftp Settings",IDC_FTP_CONFIGURE,158,90,111,17
     CONTROL         "Ftp Upload Live Snapshots",IDC_CHECK_FTP_SNAPSHOT,
@@ -2451,11 +2450,11 @@ BEGIN
     CONTROL         "Ftp Upload",IDC_CHECK_FTP_SNAPSHOT_HISTORY_VIDEO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,350,224,54,9
     CONTROL         "Open after manual shot",IDC_CHECK_MANUALSHOT_AUTOOPEN,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,255,89,10
-    LTEXT           "Snapshot each",IDC_STATIC2476,14,26,56,10
-    LTEXT           "sec",IDC_STATIC2477,123,26,14,10
+    LTEXT           "Snapshot each\n(0: as fast as possible)",IDC_STATIC2476,14,21,77,20
+    LTEXT           "sec",IDC_STATIC2477,136,26,14,10
     GROUPBOX        "Snapshot History",IDC_STATIC2479,7,187,404,59
     LTEXT           "qual.",IDC_COMPRESSION_QUALITY_NUM,368,59,17,11
-    LTEXT           "JPEG Quality\n(0: worst, 100: best)",IDC_STATIC2480,14,56,104,17
+    LTEXT           "JPEG Quality\n(0: worst, 100: best)",IDC_STATIC2480,14,55,104,17
     GROUPBOX        "General Settings",IDC_STATIC2481,7,4,404,115
     LTEXT           "Framerate (1 .. 99)",IDC_STATIC2482,143,224,77,8
     LTEXT           "frames/sec",IDC_STATIC2483,245,224,62,8
@@ -3426,7 +3425,6 @@ STRINGTABLE
 BEGIN
     IDS_MULTILANG_1170      "Error: No MMX Processor"
     IDS_MULTILANG_1171      "No usable WinSock DLL found"
-    IDS_STRING1172          "If %s crashes then execute it with %sDump.bat found in the installation folder and send us the generated .dmp file.\n\nDo you want to test the dump file generation by crashing %s now?"
     IDS_MULTILANG_1173      "%u phys. processor(s), %u core(s), %u logical processor(s)"
     IDS_MULTILANG_1174      "Failed to Open:\n%s\nThe following extension is not supported:\n%s"
     IDS_MULTILANG_1175      "No Email Program Installed."
@@ -4320,7 +4318,7 @@ BEGIN
     IDS_STRING1713          "Flash: no"
     IDS_STRING1714          "Flash:\tyes\r\n"
     IDS_STRING1715          "Flash:\tno\r\n"
-    IDS_STRING1719          "Example to play a sound on detection\r\nCmd\tPath to vlc.exe\r\nParams\t-I dummy --dummy-quiet --play-and-exit\r\n\t--no-loop --no-repeat ""audio file path"""
+    IDS_STRING1719          "Example to play a sound on detection\r\nCmd\tPath to vlc.exe\r\nParams\t-I dummy --dummy-quiet --play-and-exit\r\n\t--no-loop --no-repeat\r\n\t""audio file path"""
     IDS_STRING1721          "1 Day"
     IDS_STRING1722          "2 Days"
     IDS_STRING1723          "3 Days"
@@ -4412,11 +4410,11 @@ BEGIN
     IDS_STRING1801          "REMOVE CAMERAS"
     IDS_STRING1802          "1. Close all running cameras"
     IDS_STRING1803          "2. Choose Delete from the Edit menu"
-    IDS_STRING1810          "VERBOSE DIAGNOSTIC LOGGING"
 END
 
 STRINGTABLE
 BEGIN
+    IDS_STRING1810          "VERBOSE DIAGNOSTIC LOGGING"
     IDS_STRING1816          "Create a text file where each line represents a Paste\ncommand at the given position:\n  1. Origin: top left, top right, bottom left, bottom right\n  2. horizontal and vertical positions with sign and unit\n      (px, in, cm, mm)\n\nExample:\n\ntop left 1.57cm -1.32cm\nbottom right 12.1mm 5.5mm"
     IDS_STRING1817          "Dropping det frames:"
     IDS_STRING1818          "set lower framerate"

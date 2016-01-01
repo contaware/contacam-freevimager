@@ -17,7 +17,6 @@
 #include "MainFrm.h"
 #include "WorkerThread.h"
 #include "XmpDlg.h"
-#include "XButtonXP.h"
 
 // Micro Apache
 #define MICROAPACHE_DIR									_T("microapache")
@@ -158,10 +157,7 @@ protected:
 	virtual BOOL OnInitDialog();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
-	CXButtonXP m_CrashMe;	// Crash me button
 	CStaticLink m_WebLink;	// Hyperlink
-public:
-	afx_msg void OnBnClickedButtonCrashme();
 };
 
 class CUImagerMultiDocTemplate : public CMultiDocTemplate
@@ -481,6 +477,9 @@ public:
 
 	// Paste clipboard to given file
 	static BOOL PasteToFile(LPCTSTR lpszFileName, COLORREF crBackgroundColor = RGB(255,255,255));
+
+	// Cras this app for test
+	static void Crashme();
 
 	// Use Tray Icon
 	volatile BOOL m_bTrayIcon;

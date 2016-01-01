@@ -389,7 +389,7 @@ void CMovementDetectionPage::UpdateExecHelp()
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_EXEC_HELP);
 	CString s;
 	if (m_pDoc->m_nExecModeMovementDetection == 0)
-		s = ML_STRING(1719, "Example to play a sound on detection\r\nCmd\tPath to vlc.exe\r\nParams\t-I dummy --dummy-quiet --play-and-exit\r\n\t--no-loop --no-repeat \"audio file path\"");
+		s = ML_STRING(1719, "Example to play a sound on detection\r\nCmd\tPath to vlc.exe\r\nParams\t-I dummy --dummy-quiet --play-and-exit\r\n\t--no-loop --no-repeat\r\n\t\"audio file path\"");
 	else
 		s = ML_STRING(1862, "Params can include case sensitive variables\r\n%sec% %min% %hour%\r\n%day% %month% %year%\r\n%fullvideo% %smallvideo% %counter%");
 	pEdit->SetWindowText(s);

@@ -1199,7 +1199,6 @@
   <ItemGroup>
     <None Include="res\audiomcidoc.ico" />
     <None Include="res\Bitstream_Vera_11.bmp" />
-    <None Include="res\bomb.ico" />
     <None Include="res\cdaudiodoc.ico" />
     <None Include="res\device.ico" />
     <None Include="res\DragDropMulti.bmp" />

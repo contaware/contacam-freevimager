@@ -105,7 +105,6 @@
 #define IDI_PCX                         299
 #define IDD_SETTINGS_VIDEODEVICEDOC     300
 #define IDI_EMF                         300
-#define IDI_BOMB                        303
 #define IDD_CAMERABASICSETTINGS         304
 #define IDD_RENAME                      305
 #define IDD_DELETE_CAM_FOLDERS          306
@@ -3076,7 +3075,6 @@
 #define IDC_EDIT_CREDITS                2564
 #define IDC_VIDEO_COMPRESSION_QUALITY_INFO 2565
 #define IDC_BUTTON_DOCROOT              2566
-#define IDC_BUTTON_CRASHME              2567
 #define IDC_EDIT_SEC_BETWEEN_EMAILS     2568
 #define IDC_SPIN_SEC_BETWEEN_EMAILS     2569
 #define ID_EDIT_ROTATE_FLIP             32778

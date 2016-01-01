@@ -1,6 +1,10 @@
 @echo off
-SET batchdir=%~dp0
-SET dumpdir=%APPDATA%\Contaware\FreeVimager
+
+REM If FreeVimager crashes then run it through this .bat file,
+REM when it stops working send us the generated .dmp file
+
+set batchdir=%~dp0
+set dumpdir=%APPDATA%\Contaware\FreeVimager
 
 :procdump_download
 if exist "%batchdir%procdump.exe" goto vmmap_download
