@@ -455,7 +455,6 @@ public:
 	// Email sending configuration structure
 	typedef struct tagSendMailConfigurationStruct
 	{
-		CString			m_sFiles;
 		AttachmentType	m_AttachmentType;
 		CString			m_sSubject;
 		CString			m_sTo;
@@ -1091,7 +1090,7 @@ public:
 	volatile int m_nMovDetSavesCountDay;				// Day of the above count
 	volatile int m_nMovDetSavesCountMonth;				// Month of the above count
 	volatile int m_nMovDetSavesCountYear;				// Year of the above count
-	CTime m_LastSendMailMovementDetectionTime;
+	CTime m_MovDetLastSendMailTime;
 	SendMailConfigurationStruct m_MovDetSendMailConfiguration;
 	FTPUploadConfigurationStruct m_MovDetFTPUploadConfiguration;
 

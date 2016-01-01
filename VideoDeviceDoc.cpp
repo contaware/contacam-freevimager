@@ -1455,7 +1455,7 @@ void CVideoDeviceDoc::SendMailMovementDetection(const CTime& Time,
 												const CString& sGIFFileName/*=_T("")*/)
 {
 	CTime CurrentTime(CTime::GetCurrentTime());
-	CTimeSpan TimeDiff = CurrentTime - m_LastSendMailMovementDetectionTime;
+	CTimeSpan TimeDiff = CurrentTime - m_MovDetLastSendMailTime;
 	if (!m_MovDetSendMailConfiguration.m_sHost.IsEmpty()	&&
 		!m_MovDetSendMailConfiguration.m_sFrom.IsEmpty()	&&
 		!m_MovDetSendMailConfiguration.m_sTo.IsEmpty()		&&
@@ -1493,8 +1493,15 @@ void CVideoDeviceDoc::SendMailMovementDetection(const CTime& Time,
 		HANDLE h = Mailer(sOptions);
 		if (h)
 		{
-			m_LastSendMailMovementDetectionTime = CurrentTime;
 			::CloseHandle(h);
+			m_MovDetLastSendMailTime = CurrentTime;
+			CString sSection(GetDevicePathName());
+			::AfxGetApp()->WriteProfileInt(sSection, _T("SendMailYear"), m_MovDetLastSendMailTime.GetYear());
+			::AfxGetApp()->WriteProfileInt(sSection, _T("SendMailMonth"), m_MovDetLastSendMailTime.GetMonth());
+			::AfxGetApp()->WriteProfileInt(sSection, _T("SendMailDay"), m_MovDetLastSendMailTime.GetDay());
+			::AfxGetApp()->WriteProfileInt(sSection, _T("SendMailHour"), m_MovDetLastSendMailTime.GetHour());
+			::AfxGetApp()->WriteProfileInt(sSection, _T("SendMailMin"), m_MovDetLastSendMailTime.GetMinute());
+			::AfxGetApp()->WriteProfileInt(sSection, _T("SendMailSec"), m_MovDetLastSendMailTime.GetSecond());
 		}
 	}
 }
@@ -3590,8 +3597,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_pCameraAdvancedSettingsPropertySheet = NULL;
 
 	// Email Settings
-	m_LastSendMailMovementDetectionTime = CTime(0);
-	m_MovDetSendMailConfiguration.m_sFiles = _T("");
+	m_MovDetLastSendMailTime = 0;
 	m_MovDetSendMailConfiguration.m_AttachmentType = ATTACHMENT_NONE;
 	m_MovDetSendMailConfiguration.m_sSubject = MOVDET_DEFAULT_EMAIL_SUBJECT;
 	m_MovDetSendMailConfiguration.m_sTo = _T("");
@@ -4154,7 +4160,12 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_bDeviceFirstRun = (pApp->GetProfileString(sSection, _T("DeviceName"), _T("")) == _T(""));
 
 	// Email Settings
-	m_MovDetSendMailConfiguration.m_sFiles = pApp->GetProfileString(sSection, _T("SendMailFiles"), _T(""));
+	m_MovDetLastSendMailTime = CTime(	pApp->GetProfileInt(sSection, _T("SendMailYear"), 2000),
+										pApp->GetProfileInt(sSection, _T("SendMailMonth"), 1),
+										pApp->GetProfileInt(sSection, _T("SendMailDay"), 1),
+										pApp->GetProfileInt(sSection, _T("SendMailHour"), 12),
+										pApp->GetProfileInt(sSection, _T("SendMailMin"), 0),
+										pApp->GetProfileInt(sSection, _T("SendMailSec"), 0));
 	m_MovDetSendMailConfiguration.m_AttachmentType = (AttachmentType) pApp->GetProfileInt(sSection, _T("AttachmentType"), ATTACHMENT_NONE);
 	if (m_MovDetSendMailConfiguration.m_AttachmentType < ATTACHMENT_NONE)
 		m_MovDetSendMailConfiguration.m_AttachmentType = ATTACHMENT_NONE;
@@ -4368,7 +4379,12 @@ void CVideoDeviceDoc::SaveSettings()
 	SavePlacement();
 
 	// Email Settings
-	pApp->WriteProfileString(sSection, _T("SendMailFiles"), m_MovDetSendMailConfiguration.m_sFiles);
+	pApp->WriteProfileInt(sSection, _T("SendMailYear"), m_MovDetLastSendMailTime.GetYear());
+	pApp->WriteProfileInt(sSection, _T("SendMailMonth"), m_MovDetLastSendMailTime.GetMonth());
+	pApp->WriteProfileInt(sSection, _T("SendMailDay"), m_MovDetLastSendMailTime.GetDay());
+	pApp->WriteProfileInt(sSection, _T("SendMailHour"), m_MovDetLastSendMailTime.GetHour());
+	pApp->WriteProfileInt(sSection, _T("SendMailMin"), m_MovDetLastSendMailTime.GetMinute());
+	pApp->WriteProfileInt(sSection, _T("SendMailSec"), m_MovDetLastSendMailTime.GetSecond());
 	pApp->WriteProfileInt(sSection, _T("AttachmentType"), (int)m_MovDetSendMailConfiguration.m_AttachmentType);
 	pApp->WriteProfileString(sSection, _T("SendMailSubject"), m_MovDetSendMailConfiguration.m_sSubject);
 	pApp->WriteProfileString(sSection, _T("SendMailTo"), m_MovDetSendMailConfiguration.m_sTo);
