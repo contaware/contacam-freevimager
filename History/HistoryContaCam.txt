@@ -1,9 +1,18 @@
 CONTACAM HISTORY
 
-5.0.5 (xxx yth 2015)
+5.0.5 (xxx yth 2016)
 
 - Added Hikvision support
-- Added crash dump support
+- Malformed jpeg frames reaching ContaCam are now not stopping it from
+  running
+- Added crash dump support and verbose diagnostic logging
+- If no attachment is selected the motion detection email is sent really
+  fast (before it was only sent when the detection storing was done)
+- Configurable minimum time between motion detection email messages
+- Removed the possibility to email jpeg snapshots on motion detection as
+  it rarely catches what's moving. The Small Video (animated gif) is by
+  far better suited as it really shows the movement (if its size is too
+  small then adjust that under Save Small Video - Thumbnail Size)
 
 5.0.3 (November 18th 2015)
 
