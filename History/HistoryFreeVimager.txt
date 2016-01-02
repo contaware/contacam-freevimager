@@ -5,6 +5,7 @@ FREEVIMAGER HISTORY
 - When sorting in Batch Processing dialog if the Date Taken doesn't
   exist use the oldest between Date Created and Date Modified
 - Added crash dump support and verbose diagnostic logging
+- libpng updated to 1.2.56
 
 5.0.3 (November 18th 2015)
 
