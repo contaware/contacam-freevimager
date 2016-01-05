@@ -1,16 +1,6 @@
 <?php
 require_once( 'configuration.php' );
 require_once( LANGUAGEFILEPATH ); // Must be here at the top of this file because it outputs the UTF8-BOM!
-?>
-<!DOCTYPE html>
-<html>
-<head>
-<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="author" content="Oliver Pfister" />
-<?php
-echo "<title>" . SNAPSHOTTITLE . "</title>\n";
-echo "<link rel=\"stylesheet\" href=\"" . STYLEFILEPATH . "\" type=\"text/css\" />\n";
 if (USESERVERPUSH == 0 || getIEVersion() >= 0 || !isset($_GET['countdown']) || $_GET['countdown'] != 'no')
 	$doPoll = 1;
 else
@@ -27,6 +17,17 @@ else {
 	$width = THUMBWIDTH;
 	$height = THUMBHEIGHT;
 }
+?>
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=<?php echo $width; ?>" />
+<meta name="author" content="Oliver Pfister" />
+<?php
+echo "<title>" . SNAPSHOTTITLE . "</title>\n";
+echo "<link rel=\"stylesheet\" href=\"" . STYLEFILEPATH . "\" type=\"text/css\" />\n";
 if ($doPoll) {
 	echo "<script type=\"text/javascript\">\n";
 	echo "//<![CDATA[\n";

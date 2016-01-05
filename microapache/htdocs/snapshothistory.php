@@ -1,12 +1,26 @@
 <?php
 require_once( 'configuration.php' );
 require_once( LANGUAGEFILEPATH ); // Must be here at the top of this file because it outputs the UTF8-BOM!
+if (intval(WIDTH) > intval(THUMBWIDTH))
+	$iframe_width = intval(WIDTH) + 60;
+else
+	$iframe_width = intval(THUMBWIDTH) + 60;
+if (intval(HEIGHT) > intval(THUMBHEIGHT))
+	$iframe_height = intval(HEIGHT) + 90;
+else
+	$iframe_height = intval(THUMBHEIGHT) + 90;
+// Min. size 320x240:
+if ($iframe_width < 380)
+	$iframe_width = 380;
+if ($iframe_height < 330)
+	$iframe_height = 330;
 ?>
 <!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=<?php echo $iframe_width; ?>" />
 <meta name="author" content="Oliver Pfister" />
 <?php
 echo "<title>" . SNAPSHOTTITLE . "</title>\n";
@@ -39,19 +53,6 @@ document.write('<input id="DatePicker" type="date" value="' + now.getFullYear() 
 <br />
 <?php
 $srcuri = "snapshot.php?title=no&amp;menu=no&amp;clickurl=" . urlencode("snapshotfull.php?clickurl=snapshothistory.php");
-if (intval(WIDTH) > intval(THUMBWIDTH))
-	$iframe_width = intval(WIDTH) + 60;
-else
-	$iframe_width = intval(THUMBWIDTH) + 60;
-if (intval(HEIGHT) > intval(THUMBHEIGHT))
-	$iframe_height = intval(HEIGHT) + 90;
-else
-	$iframe_height = intval(THUMBHEIGHT) + 90;
-// Min. size 320x240:
-if ($iframe_width < 380)
-	$iframe_width = 380;
-if ($iframe_height < 330)
-	$iframe_height = 330;
 echo "<div style=\"text-align: center\">\n";
 echo "<iframe id=\"myiframe\" name=\"myiframe\" src=\"$srcuri\" style=\"border: 0; overflow: hidden;\" width=\"" . $iframe_width . "\" height=\"" . $iframe_height . "\" >\n";
 echo "<p>Click <a href=\"snapshot.php\">here</a> to see today's sequence of snapshots</p>\n";
