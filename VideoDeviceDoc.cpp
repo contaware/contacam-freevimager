@@ -4724,6 +4724,8 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 		
 		m_HttpGetFrameLocations.Add(_T("/mjpg/video.mjpg"));				// AirLink, AirLive, BlueStork, Edimax, Hawking, Planet, Rosewill, Savitmicro,
 																			// Sitecom, Zonet
+
+		m_HttpGetFrameLocations.Add(_T("/cgi-bin/mjpg/video.cgi"));			// Dahua (cheap and HD)
 		
 		m_HttpGetFrameLocations.Add(_T("/cgi/mjpg/mjpg.cgi"));				// 7Links, Activa, AirLink, Digitus, Encore, IPUX, QNAP, TrendNet
 		
@@ -4795,6 +4797,8 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 		m_HttpGetFrameLocations.Add(_T("/cgi/jpg/image.cgi"));				// 7Links, Activa, AirLink, A-Link, Allnet, Conceptronic, Digicom,
 																			// Digitus, Encore, Fitivision, IPUX, Marmitek, QNAP, Swann, TrendNet
 		
+		m_HttpGetFrameLocations.Add(_T("/cgi-bin/snapshot.cgi"));			// Dahua (cheap and HD)
+
 		m_HttpGetFrameLocations.Add(_T("/Jpeg/CamImg.jpg"));				// Aviosys, GadSpot, Grandtec, Orite, Pixord, Planet, Security,
 																			// Skyway Security, Solwise, SVAT, Sweex, Toshiba, Veo/Vidi, WowWee, Yoko
 		

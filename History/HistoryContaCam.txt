@@ -2,9 +2,11 @@ CONTACAM HISTORY
 
 5.0.5 (xxx yth 2016)
 
-- Added Hikvision support
+- Added Dahua and Hikvision support
+- Made the web interface more mobile friendly
 - Malformed jpeg frames reaching ContaCam are now not stopping it from
-  running
+  running (thanks to Mark P for reporting the problem and helping find
+  the bug)
 - Added crash dump support and verbose diagnostic logging
 - If no attachment is selected the motion detection email is sent really
   fast (before it was only sent when the detection storing was done)
