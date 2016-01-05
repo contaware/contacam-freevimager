@@ -9,6 +9,7 @@ require_once( LANGUAGEFILEPATH ); // Must be here at the top of this file becaus
 <head>
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="author" content="Oliver Pfister" />
 <?php
 $doc_root = $_SERVER['DOCUMENT_ROOT'];
@@ -308,21 +309,8 @@ function resizeSwf() {
 		width = 1;
 	if (height <= 0)
 		height = 1;
-	var windowWidth = 0;
-	var windowHeight = 0;
-	if (typeof(window.innerWidth) == 'number') {
-		// Non-IE
-		windowWidth = window.innerWidth;
-		windowHeight = window.innerHeight;
-	} else if (document.documentElement && (document.documentElement.clientWidth || document.documentElement.clientHeight)) {
-		// IE 6+ in 'standards compliant mode'
-		windowWidth = document.documentElement.clientWidth;
-		windowHeight = document.documentElement.clientHeight;
-	} else if (document.body && (document.body.clientWidth || document.body.clientHeight)) {
-		// IE 4 compatible
-		windowWidth = document.body.clientWidth;
-		windowHeight = document.body.clientHeight;
-	}
+	var windowWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+	var windowHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 	if (windowWidth <= 0 || windowHeight <= 0) { // in case not fully loaded
 		window.setTimeout("resizeSwf()", 1000);
 		return;
