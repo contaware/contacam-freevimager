@@ -43,23 +43,12 @@ ContaCam Program
 - Black squares where no detection and where image is obscured with black
   pixels (jeanbaptiste.guyot@orange.fr) or crop regions to also reduce the
   saving cpu usage (dodfr@yahoo.com)
+- Add detection grid layer drawing over recorded video file that will show
+  the square(s) that triggered the detection so it would help to fine tune
+  motion detection grid/sensitivity when first days videos are recorded
+  (dodfr@yahoo.com)
 - Checkbox in Camera Basic Settings to remove the files also from the FTP
   server (jeanbaptiste.guyot@orange.fr)
-- Robert Sauer <rosamei@gmx.de>:
-  Es treten Videos auf, in denen zwar ein Audio-Stream angelegt ist, der 
-  aber leer ist (Null Chunks, Null Samples). Es ist dabei egal, ob man 
-  eine Komprimierung wie z.B. mp3 verwendet, oder PCM abspeichert. 
-  Manchmal passiert das auch innerhalb eines Files: Nur am Anfang gibt es 
-  Audio; dann ist Stille! Zu meinem Ärger passiert das immer dann 
-  (Murphy's laws), wenn die Audio-Daten wichtig gewesen wären. 
-  Auffällig ist dabei die Tatsache, daß ContaCam, wenn es sich einmal 
-  entschieden hat, kein Audio abzuspeichern, dies auch bei den folgenden 
-  Files nicht mehr tun wird. Aber auch darauf kann man sich nicht immer 
-  verlassen: manchmal funktioniert es später wieder. 
-- Rewrite ContaCam to send emails after filtering ok, but only if no
-  attachment is selected (nedimlight@gmail.com)
-- Add "time between emails" setting to avoid too many detection emails
-  (matthewn_02@yahoo.com)
 - Change the color and position of the date and time on the camera frame
   (toan.nguyenk@gmail.com)
 - Snapshot scheduler like detection scheduler

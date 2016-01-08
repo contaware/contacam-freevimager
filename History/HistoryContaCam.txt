@@ -1,6 +1,6 @@
 CONTACAM HISTORY
 
-5.0.5 (xxx yth 2016)
+5.0.5 (January 8th 2016)
 
 - Added Dahua and Hikvision support
 - Made the web interface more mobile friendly

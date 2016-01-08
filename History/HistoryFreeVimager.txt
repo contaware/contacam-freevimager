@@ -1,6 +1,6 @@
 FREEVIMAGER HISTORY
 
-5.0.5 (xxx yth 2016)
+5.0.5 (January 8th 2016)
 
 - When sorting in Batch Processing dialog if the Date Taken doesn't
   exist use the oldest between Date Created and Date Modified
