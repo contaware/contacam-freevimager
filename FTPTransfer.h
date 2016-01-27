@@ -49,12 +49,9 @@ public:
 	CString			m_sUserName;				// Username to login to the server
 	CString			m_sPassword;				// Password to login to the server
 	INTERNET_PORT	m_nPort;					// If you want to change the port to make access on, by default it will be 21
-	BOOL			m_bBinary;					// TRUE if binary transfer, FALSE for ascii transfer
 	BOOL			m_bPromptOverwrite;			// Should the user be prompted to overwrite files
 	BOOL			m_bPasv;					// Should a PASV connection be used
 	BOOL			m_bUsePreconfig;			// Should preconfigured settings be used i.e. take proxy settings etc from the control panel
-	BOOL			m_bUseProxy;				// Should a proxy be used
-	CString			m_sProxy;					// The proxy connect string to use if "m_bUseProxy" is TRUE
 	double			m_dBandwidthLimit;			// For BANDWIDTH throttling, the value in KBytes / Second to limit the connection to (disable that with a value of 0.0)
 	DWORD			m_dwStartPos;				// Offset to resume the transfer at
 

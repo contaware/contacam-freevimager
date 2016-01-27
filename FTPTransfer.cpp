@@ -62,12 +62,10 @@ CFTPTransfer::CFTPTransfer(CWorkerThread* pThread)
 	m_hFTPFile = NULL;
 	m_bDownload = TRUE;
 	m_nPort = INTERNET_DEFAULT_FTP_PORT;
-	m_bBinary = TRUE;
 	m_bPromptOverwrite = FALSE;
 	m_dBandwidthLimit = 0.0;
 	m_bPasv = FALSE;
 	m_bUsePreconfig = TRUE;
-	m_bUseProxy = FALSE;
 	m_dwStartPos = 0;
 }
 
@@ -248,9 +246,7 @@ int CFTPTransfer::Transfer()
 	}
 
 	// Create the Internet session handle
-    if (m_bUseProxy)
-		m_hInternetSession = ::InternetOpen(AfxGetAppName(), INTERNET_OPEN_TYPE_PROXY, m_sProxy, NULL, 0);
-	else if (m_bUsePreconfig)
+	if (m_bUsePreconfig)
 		m_hInternetSession = ::InternetOpen(AfxGetAppName(), INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
     else
 		m_hInternetSession = ::InternetOpen(AfxGetAppName(), INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
@@ -505,21 +501,13 @@ int CFTPTransfer::Transfer()
 	// Open the remote file
 	if (m_bDownload)
 	{
-		if (m_bBinary)
-			m_hFTPFile = ::FtpOpenFile(m_hFTPConnection, m_sRemoteFile, GENERIC_READ, FTP_TRANSFER_TYPE_BINARY | 
-								   INTERNET_FLAG_RELOAD | INTERNET_FLAG_DONT_CACHE, (DWORD) this);
-		else
-			m_hFTPFile = ::FtpOpenFile(m_hFTPConnection, m_sRemoteFile, GENERIC_READ, FTP_TRANSFER_TYPE_ASCII | 
-								   INTERNET_FLAG_RELOAD | INTERNET_FLAG_DONT_CACHE, (DWORD) this);
+		m_hFTPFile = ::FtpOpenFile(m_hFTPConnection, m_sRemoteFile, GENERIC_READ, FTP_TRANSFER_TYPE_BINARY | 
+								INTERNET_FLAG_RELOAD | INTERNET_FLAG_DONT_CACHE, (DWORD) this);
 	}
 	else
-	{
-		if (m_bBinary)  
-			m_hFTPFile = ::FtpOpenFile(m_hFTPConnection, m_sRemoteFile, GENERIC_WRITE, FTP_TRANSFER_TYPE_BINARY | 
-								   INTERNET_FLAG_RELOAD | INTERNET_FLAG_DONT_CACHE, (DWORD) this);
-		else
-			m_hFTPFile = ::FtpOpenFile(m_hFTPConnection, m_sRemoteFile, GENERIC_WRITE, FTP_TRANSFER_TYPE_ASCII | 
-								   INTERNET_FLAG_RELOAD | INTERNET_FLAG_DONT_CACHE, (DWORD) this);
+	{ 
+		m_hFTPFile = ::FtpOpenFile(m_hFTPConnection, m_sRemoteFile, GENERIC_WRITE, FTP_TRANSFER_TYPE_BINARY | 
+								INTERNET_FLAG_RELOAD | INTERNET_FLAG_DONT_CACHE, (DWORD) this);
 	}
 	if (m_hFTPFile == NULL)
 	{
@@ -532,12 +520,8 @@ int CFTPTransfer::Transfer()
 			{
 				sRemoteDir = sRemoteDir.Left(pos);
 				CreateRemoteDir(sRemoteDir);
-				if (m_bBinary)  
-					m_hFTPFile = ::FtpOpenFile(m_hFTPConnection, m_sRemoteFile, GENERIC_WRITE, FTP_TRANSFER_TYPE_BINARY | 
-											INTERNET_FLAG_RELOAD | INTERNET_FLAG_DONT_CACHE, (DWORD) this);
-				else
-					m_hFTPFile = ::FtpOpenFile(m_hFTPConnection, m_sRemoteFile, GENERIC_WRITE, FTP_TRANSFER_TYPE_ASCII | 
-											INTERNET_FLAG_RELOAD | INTERNET_FLAG_DONT_CACHE, (DWORD) this);
+				m_hFTPFile = ::FtpOpenFile(m_hFTPConnection, m_sRemoteFile, GENERIC_WRITE, FTP_TRANSFER_TYPE_BINARY | 
+										INTERNET_FLAG_RELOAD | INTERNET_FLAG_DONT_CACHE, (DWORD) this);
 			}
 		}
 
@@ -711,9 +695,7 @@ BOOL CFTPTransfer::Test()
 	Close();
 
 	// Create the Internet session handle
-    if (m_bUseProxy)
-		m_hInternetSession = ::InternetOpen(AfxGetAppName(), INTERNET_OPEN_TYPE_PROXY, m_sProxy, NULL, 0);
-	else if (m_bUsePreconfig)
+	if (m_bUsePreconfig)
 		m_hInternetSession = ::InternetOpen(AfxGetAppName(), INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
     else
 		m_hInternetSession = ::InternetOpen(AfxGetAppName(), INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);

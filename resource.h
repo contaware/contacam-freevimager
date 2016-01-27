@@ -1224,7 +1224,6 @@
 #define IDC_HOST_PORT                   1222
 #define IDC_EDIT_DOCROOT                1222
 #define IDS_MULTILANG_1223              1223
-#define IDC_PROXY_HOST_NAME             1223
 #define IDC_SUBJECT_LINE                1223
 #define IDS_MULTILANG_1224              1224
 #define IDC_RECEIVER_MAIL               1224
@@ -1243,7 +1242,6 @@
 #define IDS_MULTILANG_1232              1232
 #define IDC_PASV                        1232
 #define IDS_MULTILANG_1233              1233
-#define IDC_PROXY                       1233
 #define IDS_MULTILANG_1234              1234
 #define IDC_FTP_REMOTEDIR               1234
 #define IDS_MULTILANG_1235              1235
@@ -2423,6 +2421,7 @@
 #define IDC_STATIC1883                  1883
 #define IDS_STRING1883                  1883
 #define IDC_STATIC1884                  1884
+#define IDS_STRING1884                  1884
 #define IDC_STATIC1885                  1885
 #define IDC_STATIC1886                  1886
 #define IDC_STATIC1887                  1887

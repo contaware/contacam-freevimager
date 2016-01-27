@@ -475,9 +475,6 @@ public:
 		CString			m_sRemoteDir;
 		int				m_nPort;
 		BOOL			m_bPasv;
-		BOOL			m_bBinary;
-		BOOL			m_bProxy;
-		CString			m_sProxy;
 		CString			m_sUsername;
 		CString			m_sPassword;
 		FilesToUploadType m_FilesToUpload;
@@ -864,6 +861,9 @@ public:
 	void SendMailMovementDetection(	const CTime& Time,
 									const CString& sVideoFileName = _T(""),
 									const CString& sGIFFileName = _T(""));
+
+	// Ftp
+	static HANDLE Ftp(CString sParams);
 	
 	// Vlm
 	static CString VlmGetConfigFileName();

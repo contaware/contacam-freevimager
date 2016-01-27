@@ -234,6 +234,11 @@ void CSendMailConfigurationDlg::OnButtonTest()
 						m_SendMailConfiguration.m_sPassword,
 						sSubject);
 		m_hMailer = CVideoDeviceDoc::Mailer(sOptions, TRUE, &m_sLogFileName);
+		if (!m_hMailer)
+		{
+			EndWaitCursor();
+			SendMessage(WM_SETCURSOR, (WPARAM)GetSafeHwnd(), MAKELPARAM(HTCLIENT, WM_MOUSEMOVE));
+		}
 	}
 }
 

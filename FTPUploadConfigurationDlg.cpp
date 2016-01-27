@@ -65,14 +65,6 @@ BOOL CFTPUploadConfigurationDlg::OnInitDialog()
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_PASV);
 	pCheck->SetCheck(m_FTPUploadConfiguration.m_bPasv ? 1 : 0);
 
-	// Use Proxy Server?
-	pCheck = (CButton*)GetDlgItem(IDC_PROXY);
-	pCheck->SetCheck(m_FTPUploadConfiguration.m_bProxy ? 1 : 0);
-	
-	// Proxy Server Name
-	pEdit = (CEdit*)GetDlgItem(IDC_PROXY_HOST_NAME);
-	pEdit->SetWindowText(m_FTPUploadConfiguration.m_sProxy);
-
 	// Username and Password
 	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_USERNAME);
 	pEdit->SetWindowText(m_FTPUploadConfiguration.m_sUsername);
@@ -83,9 +75,9 @@ BOOL CFTPUploadConfigurationDlg::OnInitDialog()
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_FILES_TO_UPLOAD);
 	if (pComboBox)
 	{
-		pComboBox->AddString(ML_STRING(1883, "Full Video"));
-		pComboBox->AddString(ML_STRING(1882, "Small Video"));
-		pComboBox->AddString(ML_STRING(1883, "Full Video") + _T(" + ") + ML_STRING(1882, "Small Video"));
+		pComboBox->AddString(ML_STRING(1883, "Full Video (\"Save Full Video\" must be ON)"));
+		pComboBox->AddString(ML_STRING(1882, "Small Video (\"Save Small Video\" must be ON)"));
+		pComboBox->AddString(ML_STRING(1884, "Full+Small Video (\"Save Full+Small Video\" must be ON)"));
 		pComboBox->SetCurSel((int)m_FTPUploadConfiguration.m_FilesToUpload);
 	}
 
@@ -116,13 +108,6 @@ void CFTPUploadConfigurationDlg::CopyToStruct()
 
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_PASV);
 	m_FTPUploadConfiguration.m_bPasv = pCheck->GetCheck();
-
-	pCheck = (CButton*)GetDlgItem(IDC_PROXY);
-	m_FTPUploadConfiguration.m_bProxy = pCheck->GetCheck();
-
-	pEdit = (CEdit*)GetDlgItem(IDC_PROXY_HOST_NAME);
-	pEdit->GetWindowText(sText);
-	m_FTPUploadConfiguration.m_sProxy = sText;
 
 	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_USERNAME);
 	pEdit->GetWindowText(sText);
@@ -162,13 +147,10 @@ void CFTPUploadConfigurationDlg::OnButtonTest()
 		FTP.m_sServer = m_FTPUploadConfiguration.m_sHost;
 		FTP.m_nPort = m_FTPUploadConfiguration.m_nPort;
 		FTP.m_bDownload = FALSE;
-		FTP.m_bBinary = m_FTPUploadConfiguration.m_bBinary;
 		FTP.m_bPromptOverwrite = FALSE;
 		FTP.m_dBandwidthLimit = 0.0;// For BANDWIDTH throttling, the value in KBytes / Second to limit the connection to
 		FTP.m_bPasv = m_FTPUploadConfiguration.m_bPasv;
 		FTP.m_bUsePreconfig = TRUE;	// Should preconfigured settings be used i.e. take proxy settings etc from the control panel
-		FTP.m_bUseProxy = m_FTPUploadConfiguration.m_bProxy;
-		FTP.m_sProxy = m_FTPUploadConfiguration.m_sProxy;
 		if (!m_FTPUploadConfiguration.m_sUsername.IsEmpty())
 		{
 			FTP.m_sUserName = m_FTPUploadConfiguration.m_sUsername;
