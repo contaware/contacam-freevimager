@@ -48,7 +48,12 @@
 #define MAILPROG_FILENAME								_T("mailsend.exe")
 #define MAILPROG_RELPATH								(CString(MAILPROG_DIR) + CString(_T("\\")) + CString(MAILPROG_FILENAME))
 #define MAILPROG_LOGNAME_EXT							_T("mail_log.txt")
-#define MAILPROG_WAIT_TIMEOUT_MS						10000
+#define MAILPROG_WAIT_TIMEOUT_MS						30000
+
+// Ftp
+#define FTPPROG_DIR										_T("ftp")
+#define FTPPROG_FILENAME								_T("lftp.exe")
+#define FTPPROG_RELPATH									(CString(FTPPROG_DIR) + CString(_T("\\")) + CString(FTPPROG_FILENAME))
 
 // Vlm
 #define VLM_CONFIGNAME_EXT								_T("vlm_conf.txt")

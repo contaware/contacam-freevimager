@@ -64,8 +64,8 @@ BOOL CSendMailConfigurationDlg::OnInitDialog()
 	// Attachment possibilities
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_ATTACHMENT);
     pComboBox->AddString(ML_STRING(1880, "None"));
-    pComboBox->AddString(ML_STRING(1883, "Full Video"));
-    pComboBox->AddString(ML_STRING(1882, "Small Video"));
+    pComboBox->AddString(ML_STRING(1883, "Full Video (\"Save Full Video\" must be ON)"));
+    pComboBox->AddString(ML_STRING(1882, "Small Video (\"Save Small Video\" must be ON)"));
 	pComboBox->SetCurSel((int)m_SendMailConfiguration.m_AttachmentType);
 
 	// From Name

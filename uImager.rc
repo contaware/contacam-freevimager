@@ -4510,8 +4510,8 @@ BEGIN
     IDS_STRING1877          "Save: %d%%"
     IDS_STRING1879          "FTP: %d%%"
     IDS_STRING1880          "None"
-    IDS_STRING1882          "Small Video"
-    IDS_STRING1883          "Full Video"
+    IDS_STRING1882          "Small Video (""Save Small Video"" must be ON)"
+    IDS_STRING1883          "Full Video (""Save Full Video"" must be ON)"
 END
 
 #endif    // English (United States) resources
