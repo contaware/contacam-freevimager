@@ -1,5 +1,9 @@
 FREEVIMAGER HISTORY
 
+5.0.7 (Month Xth 2016)
+
+- ...
+
 5.0.5 (January 8th 2016)
 
 - When sorting in Batch Processing dialog if the Date Taken doesn't

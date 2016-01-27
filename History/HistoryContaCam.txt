@@ -1,5 +1,9 @@
 CONTACAM HISTORY
 
+5.0.7 (Month Xth 2016)
+
+- Faster and more reliable FTP upload support
+
 5.0.5 (January 8th 2016)
 
 - Added Dahua and Hikvision support
