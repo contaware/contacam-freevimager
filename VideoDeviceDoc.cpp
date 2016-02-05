@@ -14,7 +14,6 @@
 #include "HttpVideoFormatDlg.h"
 #include "SendMailConfigurationDlg.h"
 #include "FTPUploadConfigurationDlg.h"
-#include "FTPTransfer.h"
 #include "BrowseDlg.h"
 #include "PostDelayedMessage.h"
 #include "MotionDetHelpers.h"
@@ -414,8 +413,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		}
 
 		// Detection creation flags and File Names
-		BOOL bMakeVideo = DoMakeVideo();
-		BOOL bMakeGif = DoMakeGif();
+		BOOL bMakeVideo = m_pDoc->m_bSaveVideoMovementDetection;
+		BOOL bMakeGif = m_pDoc->m_bSaveAnimGIFMovementDetection;
 		CString sVideoFileName;
 		CVideoDeviceDoc::CreateCheckYearMonthDayDir(FirstTime, m_pDoc->m_sRecordAutoSaveDir, sVideoFileName);
 		if (!sVideoFileName.IsEmpty())
@@ -645,14 +644,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		}
 
 		// FTP Upload
-		if (m_pDoc->m_bFTPUploadMovementDetection &&
-			!FTPUploadMovementDetection(FirstTime, sVideoFileName, sGIFFileName)) // returns FALSE if we have to exit the thread
-		{
-			m_bWorking = FALSE;
-			((CUImagerApp*)::AfxGetApp())->MovDetSaveReservationRemove(dwCurrentThreadId);
-			::DeleteDir(sTempDetectionDir);
-			return 0;
-		}
+		if (m_pDoc->m_bFTPUploadMovementDetection)
+			FTPUploadMovementDetection(FirstTime, sVideoFileName, sGIFFileName);
 
 		// Execute Command After Save
 		if (m_pDoc->m_bExecCommandMovementDetection && m_pDoc->m_nExecModeMovementDetection == 1)
@@ -694,47 +687,58 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 	return 0;
 }
 
-__forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::FTPUploadMovementDetection(	const CTime& Time,
-																						const CString& sVideoFileName,
-																						const CString& sGIFFileName)
+void CVideoDeviceDoc::CSaveFrameListThread::FTPUploadMovementDetection(	const CTime& Time,
+																		const CString& sVideoFileName,
+																		const CString& sGIFFileName)
 {
-	// Upload Directory
+	HANDLE hFTP;
 	CString sUploadDir = Time.Format(_T("%Y")) + _T("/") + Time.Format(_T("%m")) + _T("/") + Time.Format(_T("%d"));
-
-	int result = -1;
-	CSaveFrameListFTPTransfer FTP(this);
 	switch (m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload)
 	{
 		case CVideoDeviceDoc::FILES_TO_UPLOAD_VIDEO :
-				result = m_pDoc->FTPUpload(	&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
-											sVideoFileName, sUploadDir + _T("/") + ::GetShortFileName(sVideoFileName));
-				break;
+			if (::IsExistingFile(sVideoFileName))
+			{
+				hFTP = CVideoDeviceDoc::FTPUpload(	&m_pDoc->m_MovDetFTPUploadConfiguration,
+													sVideoFileName,
+													sUploadDir + _T("/") + ::GetShortFileName(sVideoFileName));
+				if (hFTP)
+					CloseHandle(hFTP);
+			}
+			break;
 
 		case CVideoDeviceDoc::FILES_TO_UPLOAD_GIF :
-				result = m_pDoc->FTPUpload(	&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
-											sGIFFileName, sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
-				break;
+			if (::IsExistingFile(sGIFFileName))
+			{
+				hFTP = CVideoDeviceDoc::FTPUpload(	&m_pDoc->m_MovDetFTPUploadConfiguration,
+													sGIFFileName,
+													sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
+				if (hFTP)
+					CloseHandle(hFTP);
+			}
+			break;
 
 		case CVideoDeviceDoc::FILES_TO_UPLOAD_VIDEO_GIF :
-				result = m_pDoc->FTPUpload(	&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
-											sVideoFileName, sUploadDir + _T("/") + ::GetShortFileName(sVideoFileName));
-				if (result == 1)
-					result = m_pDoc->FTPUpload(	&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
-												sGIFFileName, sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
-				break;
+			if (::IsExistingFile(sVideoFileName))
+			{
+				hFTP = CVideoDeviceDoc::FTPUpload(	&m_pDoc->m_MovDetFTPUploadConfiguration,
+													sVideoFileName,
+													sUploadDir + _T("/") + ::GetShortFileName(sVideoFileName));
+				if (hFTP)
+					CloseHandle(hFTP);
+			}
+			if (::IsExistingFile(sGIFFileName))
+			{
+				hFTP = CVideoDeviceDoc::FTPUpload(	&m_pDoc->m_MovDetFTPUploadConfiguration,
+													sGIFFileName,
+													sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
+				if (hFTP)
+					CloseHandle(hFTP);
+			}
+			break;
 
 		default :
 				break;
 	}
-
-	// Hide progress display
-	m_nFTPUploadProgress = 100;
-
-	// Do Exit?
-	if (result == -1)
-		return FALSE;
-	else
-		return TRUE;
 }
 
 CString CVideoDeviceDoc::CSaveFrameListThread::SaveJpeg(CDib* pDib,
@@ -1129,7 +1133,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 {
 	ASSERT(m_pDoc);
-	CFTPTransfer FTP(this);
+	HANDLE hFTP;
 
 	// Init
 	CDib Dib;
@@ -1256,33 +1260,30 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 	}
 
 	// Copy from temp to snapshots folder
-	if (m_bSnapshotHistoryVideo)
-	{
-		if (::IsExistingFile(sVideoTempFileName))
-			::CopyFile(sVideoTempFileName, sVideoFileName, FALSE);
-		if (::IsExistingFile(sVideoTempThumbFileName))
-			::CopyFile(sVideoTempThumbFileName, sVideoThumbFileName, FALSE);
-	}
+	if (::IsExistingFile(sVideoTempFileName))
+		::CopyFile(sVideoTempFileName, sVideoFileName, FALSE);
+	if (::IsExistingFile(sVideoTempThumbFileName))
+		::CopyFile(sVideoTempThumbFileName, sVideoThumbFileName, FALSE);
 
 	// Ftp upload
 	if (m_bSnapshotHistoryVideoFtp)
 	{
 		CString sUploadDir(m_Time.Format(_T("%Y")) + _T("/") + m_Time.Format(_T("%m")) + _T("/") + m_Time.Format(_T("%d")));
-		if (::IsExistingFile(sVideoTempFileName))
+		
+		// Upload video
+		if (::IsExistingFile(sVideoFileName))
 		{
-			// Do Exit?
-			if (m_pDoc->FTPUpload(	&FTP, &m_Config,
-									sVideoTempFileName,
-									sUploadDir + _T("/") + ::GetShortFileName(sVideoFileName)) == -1)
-				goto exit;
+			hFTP = CVideoDeviceDoc::FTPUpload(&m_Config, sVideoFileName, sUploadDir + _T("/") + ::GetShortFileName(sVideoFileName));
+			if (hFTP)
+				CloseHandle(hFTP);
 		}
-		if (::IsExistingFile(sVideoTempThumbFileName))
+
+		// Upload video thumb
+		if (::IsExistingFile(sVideoThumbFileName))
 		{
-			// Do Exit?
-			if (m_pDoc->FTPUpload(	&FTP, &m_Config,
-									sVideoTempThumbFileName,
-									sUploadDir + _T("/") + ::GetShortFileName(sVideoThumbFileName)) == -1)
-				goto exit;
+			hFTP = CVideoDeviceDoc::FTPUpload(&m_Config, sVideoThumbFileName, sUploadDir + _T("/") + ::GetShortFileName(sVideoThumbFileName));
+			if (hFTP)
+				CloseHandle(hFTP);
 		}
 	}
 
@@ -1307,7 +1308,7 @@ exit:
 int CVideoDeviceDoc::CSaveSnapshotThread::Work() 
 {
 	ASSERT(m_pDoc);
-	CFTPTransfer FTP(this);
+	HANDLE hFTP;
 
 	// Get uptime
 	DWORD dwUpTime = m_Dib.GetUpTime();
@@ -1353,16 +1354,31 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	::CopyFile(sTempThumbFileName, sLiveThumbFileName, FALSE);
 	if (m_bSnapshotLiveJpegFtp)
 	{
-		// Do Exit?
-		if (m_pDoc->FTPUpload(	&FTP, &m_Config,
-								sTempFileName,
-								m_sSnapshotLiveJpegName + _T(".jpg")) == -1)
-			goto exit;
-		// Do Exit?
-		if (m_pDoc->FTPUpload(	&FTP, &m_Config,
-								sTempThumbFileName,
-								m_sSnapshotLiveJpegThumbName + _T(".jpg")) == -1)
-			goto exit;
+		// Upload live jpeg
+		hFTP = CVideoDeviceDoc::FTPUpload(&m_Config, sTempFileName, m_sSnapshotLiveJpegName + _T(".jpg"));
+		if (hFTP)
+		{
+			if (::WaitForSingleObject(hFTP, FTPPROG_JPEGUPLOAD_WAIT_TIMEOUT_MS) == WAIT_TIMEOUT)
+			{
+				::KillApp(hFTP); // CloseHandle(hFTP) called inside this function 
+				goto exit;
+			}
+			else
+				CloseHandle(hFTP);
+		}
+
+		// Upload live jpeg thumb
+		hFTP = CVideoDeviceDoc::FTPUpload(&m_Config, sTempThumbFileName, m_sSnapshotLiveJpegThumbName + _T(".jpg"));
+		if (hFTP)
+		{
+			if (::WaitForSingleObject(hFTP, FTPPROG_JPEGUPLOAD_WAIT_TIMEOUT_MS) == WAIT_TIMEOUT)
+			{
+				::KillApp(hFTP); // CloseHandle(hFTP) called inside this function 
+				goto exit;
+			}
+			else
+				CloseHandle(hFTP);
+		}
 	}
 
 	// History
@@ -1374,16 +1390,32 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	if (m_bSnapshotHistoryJpegFtp)
 	{
 		CString sUploadDir(m_Time.Format(_T("%Y")) + _T("/") + m_Time.Format(_T("%m")) + _T("/") + m_Time.Format(_T("%d")));
-		// Do Exit?
-		if (m_pDoc->FTPUpload(	&FTP, &m_Config,
-								sTempFileName,
-								sUploadDir + _T("/") + ::GetShortFileName(sHistoryFileName)) == -1)
-			goto exit;
-		// Do Exit?
-		if (m_pDoc->FTPUpload(	&FTP, &m_Config,
-								sTempThumbFileName,
-								sUploadDir + _T("/") + ::GetShortFileName(sHistoryThumbFileName)) == -1)
-			goto exit;
+		
+		// Upload history jpeg
+		hFTP = CVideoDeviceDoc::FTPUpload(&m_Config, sTempFileName, sUploadDir + _T("/") + ::GetShortFileName(sHistoryFileName));
+		if (hFTP)
+		{
+			if (::WaitForSingleObject(hFTP, FTPPROG_JPEGUPLOAD_WAIT_TIMEOUT_MS) == WAIT_TIMEOUT)
+			{
+				::KillApp(hFTP); // CloseHandle(hFTP) called inside this function 
+				goto exit;
+			}
+			else
+				CloseHandle(hFTP);
+		}
+
+		// Upload history jpeg thumb
+		hFTP = CVideoDeviceDoc::FTPUpload(&m_Config, sTempThumbFileName, sUploadDir + _T("/") + ::GetShortFileName(sHistoryThumbFileName));
+		if (hFTP)
+		{
+			if (::WaitForSingleObject(hFTP, FTPPROG_JPEGUPLOAD_WAIT_TIMEOUT_MS) == WAIT_TIMEOUT)
+			{
+				::KillApp(hFTP); // CloseHandle(hFTP) called inside this function 
+				goto exit;
+			}
+			else
+				CloseHandle(hFTP);
+		}
 	}
 
 exit:
@@ -1506,92 +1538,123 @@ void CVideoDeviceDoc::SendMailMovementDetection(const CTime& Time,
 	}
 }
 
-CVideoDeviceDoc::CSaveFrameListFTPTransfer::CSaveFrameListFTPTransfer(CSaveFrameListThread* pThread) : CFTPTransfer(pThread)
+// Attention: remember to call CloseHandle() for the returned handle if it's != NULL
+HANDLE CVideoDeviceDoc::FTPCall(CString sParams, BOOL bShow/*=FALSE*/)
 {
-	m_pThread = pThread;
+	HANDLE h = NULL;
+	TCHAR szDrive[_MAX_DRIVE];
+	TCHAR szDir[_MAX_DIR];
+	TCHAR szProgramName[MAX_PATH];
+	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
+	{
+		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+		CString sFtpStartFile = CString(szDrive) + CString(szDir);
+		sFtpStartFile += FTPPROG_RELPATH;
+		if (::IsExistingFile(sFtpStartFile))
+		{
+			h =  ::ExecApp(	sFtpStartFile,
+							sParams,
+							_T(""), // to run ssh.exe correctly current/start dir is sFtpStartFile's dir
+							bShow);
+		}
+	}
+	return h;
 }
 
-void CVideoDeviceDoc::CSaveFrameListFTPTransfer::OnTransferProgress(DWORD dwPercentage)
+// Attention: remember to call CloseHandle() for the returned handle if it's != NULL
+HANDLE CVideoDeviceDoc::FTPUpload(	FTPUploadConfigurationStruct* pConfig,
+									CString sLocalFileName, CString sRemoteFileName)
 {
-	if (m_pThread)
-		m_pThread->SetFTPUploadProgress(dwPercentage);
-}
-
-// Return Values
-// -1 : Do Exit Thread
-// 0  : Error
-// 1  : Ok
-int CVideoDeviceDoc::FTPUpload(	CFTPTransfer* pFTP, FTPUploadConfigurationStruct* pConfig,
-								CString sLocalFileName, CString sRemoteFileName) 
-{
-	// Nothing To Upload
-	if (sLocalFileName.IsEmpty())
-		return 1;
-
-	// Check params
-	if (!pFTP || !pConfig)
-		return 0;
+	// Check
+	if (sLocalFileName.IsEmpty() || !pConfig || pConfig->m_sHost.IsEmpty())
+		return NULL;
 
 	// Default Remote File Name
 	if (sRemoteFileName.IsEmpty())
 		sRemoteFileName = ::GetShortFileName(sLocalFileName);
 
-	// No Configuration -> Return Error
-	if (pConfig->m_sHost.IsEmpty()) 
-		return 0;
-	else 
+	// Local filename
+	sLocalFileName.Replace(_T('\\'), _T('/'));
+	int nPos = sLocalFileName.Find(_T(':'));
+	if (nPos > 0)
 	{
-		if (pConfig->m_sRemoteDir.IsEmpty())
-			pFTP->m_sRemoteFile = sRemoteFileName;
-		else
-		{
-			// Adjust Remote File Name
-			sRemoteFileName.TrimLeft(_T("\\/"));
-
-			// Adjust Remote Dir Path
-			CString sRemoteDir = pConfig->m_sRemoteDir;
-			sRemoteDir.TrimRight(_T("\\/"));
-			
-			pFTP->m_sRemoteFile = sRemoteDir + _T("/") + sRemoteFileName;
-		}
-		pFTP->m_sLocalFile = sLocalFileName;
-		pFTP->m_sServer = pConfig->m_sHost;
-		pFTP->m_nPort = pConfig->m_nPort;
-		pFTP->m_bDownload = FALSE;
-		pFTP->m_bPromptOverwrite = FALSE;
-		pFTP->m_dBandwidthLimit = 0.0;	// For BANDWIDTH throttling, the value in KBytes / Second to limit the connection to
-		pFTP->m_bPasv = pConfig->m_bPasv;
-		pFTP->m_bUsePreconfig = TRUE;	// Should preconfigured settings be used i.e. take proxy settings etc from the control panel
-		if (!pConfig->m_sUsername.IsEmpty())
-		{
-			pFTP->m_sUserName = pConfig->m_sUsername;
-			pFTP->m_sPassword = pConfig->m_sPassword;
-		}
-
-		// Upload
-		int nRet = pFTP->Transfer();
-		if (nRet == 0 && pFTP->m_sError != _T(""))
-			::LogLine(_T("%s"), GetAssignedDeviceName() + _T(", ") + pFTP->m_sError);
-		return nRet;
+		sLocalFileName.Delete(nPos);
+		sLocalFileName.Insert(nPos - 1, _T("/cygdrive/"));
 	}
 
-	/*
-	CString sOptions;
-	sOptions.Format(_T("-e \"set ssl:verify-certificate no; set ftp:passive-mode %s; put -O '%s' '%s'; bye\" -p %d -u \"%s,%s\" ftp://%s"),
-					pConfig->m_bPasv ? _T("on") : _T("off"),
-					pConfig->m_sRemoteDir,
-					sLocalFileName,
-					pConfig->m_nPort,
-					pConfig->m_sUsername,
-					pConfig->m_sPassword,
-					pConfig->m_sHost);
-	
-	HANDLE h = Ftp(sOptions);
-	if (h)
+	// Remote filename and directory
+	CString sRemoteDir(pConfig->m_sRemoteDir);
+	sRemoteDir.Replace(_T('\\'), _T('/'));
+	sRemoteFileName.Replace(_T('\\'), _T('/'));
+	if (!sRemoteDir.IsEmpty())
 	{
-		::CloseHandle(h);
+		sRemoteDir.TrimRight(_T("/"));
+		sRemoteFileName.TrimLeft(_T("/"));
+		sRemoteFileName = sRemoteDir + _T("/") + sRemoteFileName;
 	}
-	*/
+	nPos = sRemoteFileName.ReverseFind(_T('/'));
+	if (nPos >= 0)
+		sRemoteDir = sRemoteFileName.Left(nPos); // sRemoteDir with no trailing / otherwise mkdir -p says that the directory already exists
+
+	// Remote temp filename
+	// Note: the xfer:use-temp-file logic fails when the target file already exists
+	//       because of the involved mv command. We are implementing the same
+	//       logic here but with a rm if the mv fails
+	CString sRemoteTempFileName(sRemoteFileName + _T(".in"));
+
+	// Set timeout to 10 sec, attempt 2 reconnection and abort the transfer if write target has a full disk
+	// Attention: do not enable net:persist-retries (setting it != 0) because of the below used
+	//            mkdir, mv and rm which can issue a 5xx message
+	CString sSets(_T("set net:timeout 10; set net:max-retries 3; set xfer:disk-full-fatal yes; "));
+
+	// Implicit FTPS
+	CString sProto;
+	if (pConfig->m_nPort == 990)
+	{
+		sSets += _T("set ssl:verify-certificate no; ");
+		sSets += pConfig->m_bPasv ? _T("set ftp:passive-mode on; ") : _T("set ftp:passive-mode off; ");
+		sProto = _T("ftps://");
+	}
+	// SSH File Transfer Protocol SFTP
+	else if (pConfig->m_nPort == 22)
+	{
+		sSets += _T("set sftp:auto-confirm yes; ");
+		sSets += _T("set sftp:connect-program './ssh.exe'; "); // when executing lftp.exe current directory must contain ssh.exe
+		sProto = _T("sftp://");
+	}
+	// Unencrypted or explicit FTPES (both on port 21)
+	else
+	{
+		sSets += _T("set ssl:verify-certificate no; ");
+		sSets += pConfig->m_bPasv ? _T("set ftp:passive-mode on; ") : _T("set ftp:passive-mode off; ");
+		sProto = _T("ftp://");
+	}
+
+	// Upload to temp (create directory if not existing),
+	// on success remove target and rename
+	CString sPut;
+	sPut.Format(_T("put '%s' -o '%s' || (mkdir -p '%s'; put '%s' -o '%s') && (rm '%s'; mv '%s' '%s'); "),
+				sLocalFileName, sRemoteTempFileName,
+				sRemoteDir,
+				sLocalFileName, sRemoteTempFileName,
+				sRemoteFileName,
+				sRemoteTempFileName, sRemoteFileName);
+
+	// Port
+	CString sPort;
+	sPort.Format(_T("-p %d "), pConfig->m_nPort);
+
+	// Username and password (lftp uses anonymous if nothing supplied)
+	CString sUser;
+	if (!pConfig->m_sUsername.IsEmpty() && !pConfig->m_sPassword.IsEmpty())
+		sUser.Format(_T("-u \"%s,%s\" "), pConfig->m_sUsername, pConfig->m_sPassword);
+	else if (!pConfig->m_sUsername.IsEmpty() && pConfig->m_sPassword.IsEmpty())
+		sUser.Format(_T("-u \"%s\" "), pConfig->m_sUsername);
+
+	// FTP
+	CString sOptions(CString(_T("-e \"")) + sSets + sPut + _T("exit\" ") +
+					sPort + sUser + sProto + pConfig->m_sHost);
+	return FTPCall(sOptions);
 }
 
 CVideoDeviceDoc::CCaptureAudioThread::CCaptureAudioThread() 
@@ -2146,10 +2209,8 @@ end_of_software_detection:
 	}
 
 	// Store frames?
-	BOOL bStoreFrames =	dwVideoProcessorMode			&&
-						(m_bSaveVideoMovementDetection	||
-						m_bSaveAnimGIFMovementDetection	||
-						m_bFTPUploadMovementDetection);
+	BOOL bStoreFrames =	dwVideoProcessorMode &&
+						(m_bSaveVideoMovementDetection || m_bSaveAnimGIFMovementDetection);
 
 	// If Movement
 	if (bSoftwareDetectionMovement || bExternalFileTriggerMovement)
@@ -3138,8 +3199,7 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 					m_pDoc->m_SaveFrameListThread.IsAlive()				&&
 					!m_pDoc->m_SaveFrameListThread.IsWorking()			&&
 					(m_pDoc->m_bSaveVideoMovementDetection				||
-					m_pDoc->m_bSaveAnimGIFMovementDetection				||
-					m_pDoc->m_bFTPUploadMovementDetection))
+					m_pDoc->m_bSaveAnimGIFMovementDetection))
 					m_pDoc->SaveFrameList(FALSE);
 
 				// Http reconnect
@@ -6259,23 +6319,6 @@ HANDLE CVideoDeviceDoc::Mailer(CString sParams, BOOL bLog/*=FALSE*/, CString* pL
 	return h;
 }
 
-HANDLE CVideoDeviceDoc::Ftp(CString sParams)
-{
-	HANDLE h = NULL;
-	TCHAR szDrive[_MAX_DRIVE];
-	TCHAR szDir[_MAX_DIR];
-	TCHAR szProgramName[MAX_PATH];
-	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
-	{
-		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-		CString sFtpStartFile = CString(szDrive) + CString(szDir);
-		sFtpStartFile += FTPPROG_RELPATH;
-		if (::IsExistingFile(sFtpStartFile))
-			h =  ::ExecApp(sFtpStartFile, sParams, _T(""), FALSE); // current dir is sFtpStartFile's dir
-	}
-	return h;
-}
-
 CString CVideoDeviceDoc::VlmGetConfigFileName()
 {
 	CString sVlmConfigFile = CUImagerApp::GetConfigFilesDir();
@@ -7673,7 +7716,7 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 	// (we need the history jpgs to make the video file inside the snapshot video thread,
 	// user unwanted history jpgs are deleted in snapshot video thread)
 	m_SaveSnapshotThread.m_Dib = *pDib;
-	m_SaveSnapshotThread.m_bSnapshotHistoryJpeg = (m_bSnapshotHistoryJpeg || m_bSnapshotHistoryVideo || m_bSnapshotHistoryVideoFtp);
+	m_SaveSnapshotThread.m_bSnapshotHistoryJpeg = (m_bSnapshotHistoryJpeg || m_bSnapshotHistoryVideo);
 	m_SaveSnapshotThread.m_bSnapshotHistoryJpegFtp = m_bSnapshotHistoryJpegFtp;
 	m_SaveSnapshotThread.m_bShowFrameTime = m_bShowFrameTime;
 	m_SaveSnapshotThread.m_nRefFontSize = m_nRefFontSize;
@@ -7691,7 +7734,7 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 	m_SaveSnapshotThread.Start();
 
 	// Start Snapshot Video Thread?
-	if ((m_bSnapshotHistoryVideo || m_bSnapshotHistoryVideoFtp) && !m_SaveSnapshotVideoThread.IsAlive())
+	if (m_bSnapshotHistoryVideo && !m_SaveSnapshotVideoThread.IsAlive())
 	{
 		CTime Yesterday = Time - CTimeSpan(1, 0, 0, 0);	// - 1 day
 		Yesterday = CTime(	Yesterday.GetYear(),
@@ -7701,7 +7744,6 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 		if (m_SaveSnapshotVideoThread.m_ThreadExecutedForTime < Yesterday)
 		{
 			m_SaveSnapshotVideoThread.m_bSnapshotHistoryJpeg = m_bSnapshotHistoryJpeg;
-			m_SaveSnapshotVideoThread.m_bSnapshotHistoryVideo = m_bSnapshotHistoryVideo;
 			m_SaveSnapshotVideoThread.m_bSnapshotHistoryVideoFtp = m_bSnapshotHistoryVideoFtp;
 			m_SaveSnapshotVideoThread.m_fSnapshotVideoCompressorQuality = m_fVideoRecQuality;
 			m_SaveSnapshotVideoThread.m_sSnapshotVideoFileExt = m_sAVRecFileExt;

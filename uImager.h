@@ -54,6 +54,7 @@
 #define FTPPROG_DIR										_T("ftp")
 #define FTPPROG_FILENAME								_T("lftp.exe")
 #define FTPPROG_RELPATH									(CString(FTPPROG_DIR) + CString(_T("\\")) + CString(FTPPROG_FILENAME))
+#define FTPPROG_JPEGUPLOAD_WAIT_TIMEOUT_MS				10000 /* FTPPROG_JPEGUPLOAD_WAIT_TIMEOUT_MS < NETCOM_BLOCKING_TIMEOUT */
 
 // Vlm
 #define VLM_CONFIGNAME_EXT								_T("vlm_conf.txt")

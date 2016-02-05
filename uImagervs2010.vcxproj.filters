@@ -117,9 +117,6 @@
     <ClCompile Include="EnumPrinters.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FTPTransfer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="FTPUploadConfigurationDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -490,9 +487,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EnumPrinters.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FTPTransfer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FTPUploadConfigurationDlg.h">

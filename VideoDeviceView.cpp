@@ -383,7 +383,7 @@ void CVideoDeviceView::Draw(HDC hDC)
 
 		// Draw Text
 		if (pDoc->m_bDetectingMinLengthMovement ||
-			pDoc->m_SaveFrameListThread.IsWorking())
+			(pDoc->m_SaveFrameListThread.IsWorking() && pDoc->m_SaveFrameListThread.GetSaveProgress() < 100))
 			DrawTextMsg(hDC);
 	}
 	// Display: Preview Off
@@ -415,20 +415,14 @@ void CVideoDeviceView::DrawTextMsg(HDC hDC)
 						OPAQUE, DRAW_BKG_COLOR);
 	}
 
-	// Save / Email / FTP progress display
-	if (pDoc->m_SaveFrameListThread.IsWorking())
+	// Save progress display
+	if (pDoc->m_SaveFrameListThread.IsWorking() && pDoc->m_SaveFrameListThread.GetSaveProgress() < 100)
 	{
-		CString sProgress(_T(""));
-		if (pDoc->m_SaveFrameListThread.GetSaveProgress() < 100)
-			sProgress.Format(ML_STRING(1877, "Save: %d%%"), pDoc->m_SaveFrameListThread.GetSaveProgress());
-		else if (pDoc->m_SaveFrameListThread.GetFTPUploadProgress() < 100)
-			sProgress.Format(ML_STRING(1879, "FTP: %d%%"), pDoc->m_SaveFrameListThread.GetFTPUploadProgress());
-		if (sProgress != _T(""))
-		{
-			::DrawBigText(	hDC, CRect(0, 0, rcClient.Width(), rcClient.Height()),
-							sProgress, DRAW_MESSAGE_COLOR, nMaxFontSize, DT_TOP | DT_RIGHT,
-							OPAQUE, DRAW_BKG_COLOR);
-		}
+		CString sProgress;
+		sProgress.Format(ML_STRING(1877, "Save: %d%%"), pDoc->m_SaveFrameListThread.GetSaveProgress());
+		::DrawBigText(	hDC, CRect(0, 0, rcClient.Width(), rcClient.Height()),
+						sProgress, DRAW_MESSAGE_COLOR, nMaxFontSize, DT_TOP | DT_RIGHT,
+						OPAQUE, DRAW_BKG_COLOR);
 	}
 }
 

@@ -5,7 +5,6 @@
 #include "uimager.h"
 #include "VideoDeviceDoc.h"
 #include "FTPUploadConfigurationDlg.h"
-#include "FTPTransfer.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -139,35 +138,51 @@ void CFTPUploadConfigurationDlg::OnButtonTest()
 		::AfxMessageBox(ML_STRING(1770, "Please Enter A Host Name"));
 	else 
 	{
-		BeginWaitCursor();
+		// Set timeout to 10 sec and do not reconnect
+		// Note: we set net:reconnect-interval-base to 1 sec because even if
+		//       net:max-retries is configured to not retry in some circumstances one retry attempt is made
+		CString sSets(_T("set net:timeout 10; set net:max-retries 1; set net:reconnect-interval-base 1; "));
 
-		CFTPTransfer FTP(NULL);
-		FTP.m_sRemoteFile = _T("");
-		FTP.m_sLocalFile = _T("");
-		FTP.m_sServer = m_FTPUploadConfiguration.m_sHost;
-		FTP.m_nPort = m_FTPUploadConfiguration.m_nPort;
-		FTP.m_bDownload = FALSE;
-		FTP.m_bPromptOverwrite = FALSE;
-		FTP.m_dBandwidthLimit = 0.0;// For BANDWIDTH throttling, the value in KBytes / Second to limit the connection to
-		FTP.m_bPasv = m_FTPUploadConfiguration.m_bPasv;
-		FTP.m_bUsePreconfig = TRUE;	// Should preconfigured settings be used i.e. take proxy settings etc from the control panel
-		if (!m_FTPUploadConfiguration.m_sUsername.IsEmpty())
+		// Implicit FTPS
+		CString sProto;
+		if (m_FTPUploadConfiguration.m_nPort == 990)
 		{
-			FTP.m_sUserName = m_FTPUploadConfiguration.m_sUsername;
-			FTP.m_sPassword = m_FTPUploadConfiguration.m_sPassword;
+			sSets += _T("set ssl:verify-certificate no; ");
+			sSets += m_FTPUploadConfiguration.m_bPasv ? _T("set ftp:passive-mode on; ") : _T("set ftp:passive-mode off; ");
+			sProto = _T("ftps://");
 		}
-
-		// Test Connection
-		if (FTP.Test())
+		// SSH File Transfer Protocol SFTP
+		else if (m_FTPUploadConfiguration.m_nPort == 22)
 		{
-			EndWaitCursor();
-			::AfxMessageBox(ML_STRING(1771, "Success: Host Reachable"), MB_ICONINFORMATION);
+			sSets += _T("set sftp:auto-confirm yes; ");
+			sSets += _T("set sftp:connect-program './ssh.exe'; "); // when executing lftp.exe current directory must contain ssh.exe
+			sProto = _T("sftp://");
 		}
+		// Explicit FTPES or unencrypted (both on port 21)
 		else
 		{
-			EndWaitCursor();
-			::AfxMessageBox(FTP.m_sError, MB_ICONSTOP);
+			sSets += _T("set ssl:verify-certificate no; ");
+			sSets += m_FTPUploadConfiguration.m_bPasv ? _T("set ftp:passive-mode on; ") : _T("set ftp:passive-mode off; ");
+			sProto = _T("ftp://");
 		}
+
+		// Port
+		CString sPort;
+		sPort.Format(_T("-p %d "), m_FTPUploadConfiguration.m_nPort);
+
+		// Username and password (lftp uses anonymous if nothing supplied)
+		CString sUser;
+		if (!m_FTPUploadConfiguration.m_sUsername.IsEmpty() && !m_FTPUploadConfiguration.m_sPassword.IsEmpty())
+			sUser.Format(_T("-u \"%s,%s\" "), m_FTPUploadConfiguration.m_sUsername, m_FTPUploadConfiguration.m_sPassword);
+		else if (!m_FTPUploadConfiguration.m_sUsername.IsEmpty() && m_FTPUploadConfiguration.m_sPassword.IsEmpty())
+			sUser.Format(_T("-u \"%s\" "), m_FTPUploadConfiguration.m_sUsername);
+
+		// FTP
+		CString sOptions(CString(_T("-e \"")) + sSets + _T("cls -a -l -s --filesize -h --sort=name -I -D && echo '[OK]'; pwd\" ") +
+						sPort + sUser + sProto + m_FTPUploadConfiguration.m_sHost);
+		HANDLE hFTP = CVideoDeviceDoc::FTPCall(sOptions, TRUE);
+		if (hFTP)
+			CloseHandle(hFTP);
 	}	
 }
 

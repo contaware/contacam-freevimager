@@ -3582,7 +3582,6 @@ END
 STRINGTABLE
 BEGIN
     IDS_MULTILANG_1384      "Loading..."
-    IDS_MULTILANG_1388      "The file %s already exists.\nDo you want to replace it?"
     IDS_MULTILANG_1390      "Save edited metadata to %s?"
     IDS_MULTILANG_1391      "Please save the image before proceeding\n"
 END
@@ -4358,11 +4357,6 @@ BEGIN
     IDS_STRING1768          "Double-click to change unit"
     IDS_STRING1769          "Thumbnail Size %i x %i"
     IDS_STRING1770          "Please Enter A Host Name"
-    IDS_STRING1771          "Success: Host Reachable"
-    IDS_STRING1772          "An error occurred while opening the file to be downloaded:\n%s\n"
-    IDS_STRING1773          "An error occurred while seeking to the end of the file to be downloaded:\n%s\n"
-    IDS_STRING1774          "An error occurred while opening the file to be uploaded:\n%s\n"
-    IDS_STRING1775          "Failed connecting to the FTP server in a timely manner\n"
 END
 
 STRINGTABLE
@@ -4372,15 +4366,12 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_STRING1776          "An exception occurred while writing to the download file:\n%s\n"
-    IDS_STRING1777          "An exception occurred while reading the local file:\n%s\n"
     IDS_STRING1780          "The request to connect could not be completed because the supplied user name and/or password are incorrect"
     IDS_STRING1784          "Error with code %u."
     IDS_STRING1785          "General"
     IDS_STRING1786          "Shrink"
     IDS_STRING1787          "Jpeg"
     IDS_STRING1788          "Tiff / Pdf"
-    IDS_STRING1789          "An error occurred while seeking to the resume point of the file to be uploaded:\n%s\n"
 END
 
 STRINGTABLE
@@ -4487,7 +4478,6 @@ BEGIN
     IDS_STRING1875          "Detection enabled:"
     IDS_STRING1876          "Detection disabled:"
     IDS_STRING1877          "Save: %d%%"
-    IDS_STRING1879          "FTP: %d%%"
     IDS_STRING1880          "None"
     IDS_STRING1882          "Small Video (""Save Small Video"" must be ON)"
     IDS_STRING1883          "Full Video (""Save Full Video"" must be ON)"

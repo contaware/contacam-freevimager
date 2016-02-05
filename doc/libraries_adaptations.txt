@@ -23,14 +23,6 @@ CToasterWnd 1.18
 - Used files: ToasterWnd.h, ToasterWnd.cpp
 
 
-CFTPTransfer
-------------
-
-- Thread Safe
-
-- Inspired by ftptransferdlg-1.0.8.zip, changed quite everything!
-
-
 ffmpeg
 ------
 

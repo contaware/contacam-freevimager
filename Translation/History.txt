@@ -2,7 +2,8 @@ TRANSLATIONS HISTORY
 
 5.0.7 (Month Xth 2016)
 
-- ...
+- Removed ftp messages:
+  1388, 1771, 1772, 1773, 1774, 1775, 1776, 1777, 1789, 1879
 
 5.0.5 (January 8th 2016)
 

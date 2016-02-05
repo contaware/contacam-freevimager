@@ -15,7 +15,6 @@
 #include "YuvToRgb.h"
 #include "HelpersAudio.h"
 #include "SortableFileFind.h"
-#include "FTPTransfer.h"
 #include "HostPortDlg.h"
 extern "C"
 {
@@ -485,13 +484,10 @@ public:
 	{
 		public:
 			CSaveFrameListThread(){	m_pDoc = NULL; m_pFrameList = NULL; m_nNumFramesToSave = 0;
-									m_nSaveProgress = 100; m_nFTPUploadProgress = 100;
-									m_bWorking = FALSE;};
+									m_nSaveProgress = 100; m_bWorking = FALSE;};
 			virtual ~CSaveFrameListThread() {Kill();};
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
 			__forceinline int GetSaveProgress() const {return m_nSaveProgress;};
-			__forceinline void SetFTPUploadProgress(int nFTPUploadProgress) {m_nFTPUploadProgress = nFTPUploadProgress;};
-			__forceinline int GetFTPUploadProgress() const {return m_nFTPUploadProgress;};
 			__forceinline BOOL IsWorking() const {return m_bWorking;};
 
 		protected:
@@ -531,49 +527,16 @@ public:
 									int nDiffMinLevel,
 									const CTime& RefTime,
 									DWORD dwRefUpTime);
-			__forceinline BOOL FTPUploadMovementDetection(	const CTime& Time,
-															const CString& sVideoFileName,
-															const CString& sGIFFileName);
-
-			__forceinline BOOL DoMakeVideo() const {
-							return m_pDoc->m_bSaveVideoMovementDetection			||
-
-							(m_pDoc->m_bFTPUploadMovementDetection &&
-							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_VIDEO)				||
-
-							(m_pDoc->m_bFTPUploadMovementDetection &&
-							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_VIDEO_GIF);};
-
-			__forceinline BOOL DoMakeGif() const {
-							return	m_pDoc->m_bSaveAnimGIFMovementDetection			||
-
-							(m_pDoc->m_bFTPUploadMovementDetection &&
-							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_GIF)				||
-
-							(m_pDoc->m_bFTPUploadMovementDetection &&
-							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_VIDEO_GIF);};
+			void FTPUploadMovementDetection(const CTime& Time,
+											const CString& sVideoFileName,
+											const CString& sGIFFileName);
 
 			CVideoDeviceDoc* m_pDoc;
 			CDib::LIST* m_pFrameList;
 			int m_nNumFramesToSave;
 			CAVDecoder m_AVDetDecoder;
 			volatile int m_nSaveProgress;
-			volatile int m_nFTPUploadProgress;
 			volatile BOOL m_bWorking;
-	};
-
-	// FTP Transfer Class
-	class CSaveFrameListFTPTransfer : public CFTPTransfer
-	{
-		public:
-			CSaveFrameListFTPTransfer(CSaveFrameListThread* pThread);
-			virtual void OnTransferProgress(DWORD dwPercentage);
-		protected:
-			CSaveFrameListThread* m_pThread;
 	};
 
 	// The Save Snapshot Video Thread Class
@@ -585,7 +548,6 @@ public:
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
 
 			BOOL m_bSnapshotHistoryJpeg;
-			BOOL m_bSnapshotHistoryVideo;
 			BOOL m_bSnapshotHistoryVideoFtp;
 			float m_fSnapshotVideoCompressorQuality;
 			CString m_sSnapshotVideoFileExt;
@@ -801,13 +763,12 @@ public:
 										int nMovDetSavesCount = 0);
 	void HideDetectionZones();
 
-	// FTP Upload
-	// Return Values
-	// -1 : Do Exit Thread (specified for CFTPTransfer constructor)
-	// 0  : Error
-	// 1  : Ok
-	int FTPUpload(	CFTPTransfer* pFTP, FTPUploadConfigurationStruct* pConfig,
-					CString sLocalFileName, CString sRemoteFileName);
+	// FTP
+	// Returns the handle of the started lftp process
+	// (remember to call CloseHandle() for the returned handle if != NULL)
+	static HANDLE FTPCall(CString sParams, BOOL bShow = FALSE);
+	static HANDLE FTPUpload(FTPUploadConfigurationStruct* pConfig,
+							CString sLocalFileName, CString sRemoteFileName);
 
 	// Validate Name
 	static CString GetValidName(CString sName);
@@ -861,9 +822,6 @@ public:
 	void SendMailMovementDetection(	const CTime& Time,
 									const CString& sVideoFileName = _T(""),
 									const CString& sGIFFileName = _T(""));
-
-	// Ftp
-	static HANDLE Ftp(CString sParams);
 	
 	// Vlm
 	static CString VlmGetConfigFileName();
