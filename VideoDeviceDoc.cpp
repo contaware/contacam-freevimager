@@ -696,48 +696,31 @@ void CVideoDeviceDoc::CSaveFrameListThread::FTPUploadMovementDetection(	const CT
 	switch (m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload)
 	{
 		case CVideoDeviceDoc::FILES_TO_UPLOAD_VIDEO :
-			if (::IsExistingFile(sVideoFileName))
-			{
-				hFTP = CVideoDeviceDoc::FTPUpload(	&m_pDoc->m_MovDetFTPUploadConfiguration,
-													sVideoFileName,
-													sUploadDir + _T("/") + ::GetShortFileName(sVideoFileName));
-				if (hFTP)
-					CloseHandle(hFTP);
-			}
+			hFTP = CVideoDeviceDoc::FTPUpload(	&m_pDoc->m_MovDetFTPUploadConfiguration,
+												sVideoFileName,
+												sUploadDir + _T("/") + ::GetShortFileName(sVideoFileName));
+			if (hFTP)
+				CloseHandle(hFTP);
 			break;
 
 		case CVideoDeviceDoc::FILES_TO_UPLOAD_GIF :
-			if (::IsExistingFile(sGIFFileName))
-			{
-				hFTP = CVideoDeviceDoc::FTPUpload(	&m_pDoc->m_MovDetFTPUploadConfiguration,
-													sGIFFileName,
-													sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
-				if (hFTP)
-					CloseHandle(hFTP);
-			}
+			hFTP = CVideoDeviceDoc::FTPUpload(	&m_pDoc->m_MovDetFTPUploadConfiguration,
+												sGIFFileName,
+												sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
+			if (hFTP)
+				CloseHandle(hFTP);
 			break;
 
 		case CVideoDeviceDoc::FILES_TO_UPLOAD_VIDEO_GIF :
-			if (::IsExistingFile(sVideoFileName))
-			{
-				hFTP = CVideoDeviceDoc::FTPUpload(	&m_pDoc->m_MovDetFTPUploadConfiguration,
-													sVideoFileName,
-													sUploadDir + _T("/") + ::GetShortFileName(sVideoFileName));
-				if (hFTP)
-					CloseHandle(hFTP);
-			}
-			if (::IsExistingFile(sGIFFileName))
-			{
-				hFTP = CVideoDeviceDoc::FTPUpload(	&m_pDoc->m_MovDetFTPUploadConfiguration,
-													sGIFFileName,
-													sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
-				if (hFTP)
-					CloseHandle(hFTP);
-			}
+			hFTP = CVideoDeviceDoc::FTPUpload(	&m_pDoc->m_MovDetFTPUploadConfiguration,
+												sVideoFileName, sUploadDir + _T("/") + ::GetShortFileName(sVideoFileName),
+												sGIFFileName, sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
+			if (hFTP)
+				CloseHandle(hFTP);
 			break;
 
 		default :
-				break;
+			break;
 	}
 }
 
@@ -1260,31 +1243,18 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 	}
 
 	// Copy from temp to snapshots folder
-	if (::IsExistingFile(sVideoTempFileName))
-		::CopyFile(sVideoTempFileName, sVideoFileName, FALSE);
-	if (::IsExistingFile(sVideoTempThumbFileName))
-		::CopyFile(sVideoTempThumbFileName, sVideoThumbFileName, FALSE);
+	::CopyFile(sVideoTempFileName, sVideoFileName, FALSE);
+	::CopyFile(sVideoTempThumbFileName, sVideoThumbFileName, FALSE);
 
 	// Ftp upload
 	if (m_bSnapshotHistoryVideoFtp)
 	{
 		CString sUploadDir(m_Time.Format(_T("%Y")) + _T("/") + m_Time.Format(_T("%m")) + _T("/") + m_Time.Format(_T("%d")));
-		
-		// Upload video
-		if (::IsExistingFile(sVideoFileName))
-		{
-			hFTP = CVideoDeviceDoc::FTPUpload(&m_Config, sVideoFileName, sUploadDir + _T("/") + ::GetShortFileName(sVideoFileName));
-			if (hFTP)
-				CloseHandle(hFTP);
-		}
-
-		// Upload video thumb
-		if (::IsExistingFile(sVideoThumbFileName))
-		{
-			hFTP = CVideoDeviceDoc::FTPUpload(&m_Config, sVideoThumbFileName, sUploadDir + _T("/") + ::GetShortFileName(sVideoThumbFileName));
-			if (hFTP)
-				CloseHandle(hFTP);
-		}
+		hFTP = CVideoDeviceDoc::FTPUpload(	&m_Config,
+											sVideoFileName, sUploadDir + _T("/") + ::GetShortFileName(sVideoFileName),
+											sVideoThumbFileName, sUploadDir + _T("/") + ::GetShortFileName(sVideoThumbFileName));
+		if (hFTP)
+			CloseHandle(hFTP);
 	}
 
 	// Set thread executed variable
@@ -1354,21 +1324,9 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	::CopyFile(sTempThumbFileName, sLiveThumbFileName, FALSE);
 	if (m_bSnapshotLiveJpegFtp)
 	{
-		// Upload live jpeg
-		hFTP = CVideoDeviceDoc::FTPUpload(&m_Config, sTempFileName, m_sSnapshotLiveJpegName + _T(".jpg"));
-		if (hFTP)
-		{
-			if (::WaitForSingleObject(hFTP, FTPPROG_JPEGUPLOAD_WAIT_TIMEOUT_MS) == WAIT_TIMEOUT)
-			{
-				::KillApp(hFTP); // CloseHandle(hFTP) called inside this function 
-				goto exit;
-			}
-			else
-				CloseHandle(hFTP);
-		}
-
-		// Upload live jpeg thumb
-		hFTP = CVideoDeviceDoc::FTPUpload(&m_Config, sTempThumbFileName, m_sSnapshotLiveJpegThumbName + _T(".jpg"));
+		hFTP = CVideoDeviceDoc::FTPUpload(	&m_Config,
+											sTempFileName, m_sSnapshotLiveJpegName + _T(".jpg"),
+											sTempThumbFileName, m_sSnapshotLiveJpegThumbName + _T(".jpg"));
 		if (hFTP)
 		{
 			if (::WaitForSingleObject(hFTP, FTPPROG_JPEGUPLOAD_WAIT_TIMEOUT_MS) == WAIT_TIMEOUT)
@@ -1386,35 +1344,22 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	{
 		::CopyFile(sTempFileName, sHistoryFileName, FALSE);
 		::CopyFile(sTempThumbFileName, sHistoryThumbFileName, FALSE);
-	}
-	if (m_bSnapshotHistoryJpegFtp)
-	{
-		CString sUploadDir(m_Time.Format(_T("%Y")) + _T("/") + m_Time.Format(_T("%m")) + _T("/") + m_Time.Format(_T("%d")));
-		
-		// Upload history jpeg
-		hFTP = CVideoDeviceDoc::FTPUpload(&m_Config, sTempFileName, sUploadDir + _T("/") + ::GetShortFileName(sHistoryFileName));
-		if (hFTP)
+		if (m_bSnapshotHistoryJpegFtp)
 		{
-			if (::WaitForSingleObject(hFTP, FTPPROG_JPEGUPLOAD_WAIT_TIMEOUT_MS) == WAIT_TIMEOUT)
+			CString sUploadDir(m_Time.Format(_T("%Y")) + _T("/") + m_Time.Format(_T("%m")) + _T("/") + m_Time.Format(_T("%d")));
+			hFTP = CVideoDeviceDoc::FTPUpload(	&m_Config,
+												sTempFileName, sUploadDir + _T("/") + ::GetShortFileName(sHistoryFileName),
+												sTempThumbFileName, sUploadDir + _T("/") + ::GetShortFileName(sHistoryThumbFileName));
+			if (hFTP)
 			{
-				::KillApp(hFTP); // CloseHandle(hFTP) called inside this function 
-				goto exit;
+				if (::WaitForSingleObject(hFTP, FTPPROG_JPEGUPLOAD_WAIT_TIMEOUT_MS) == WAIT_TIMEOUT)
+				{
+					::KillApp(hFTP); // CloseHandle(hFTP) called inside this function 
+					goto exit;
+				}
+				else
+					CloseHandle(hFTP);
 			}
-			else
-				CloseHandle(hFTP);
-		}
-
-		// Upload history jpeg thumb
-		hFTP = CVideoDeviceDoc::FTPUpload(&m_Config, sTempThumbFileName, sUploadDir + _T("/") + ::GetShortFileName(sHistoryThumbFileName));
-		if (hFTP)
-		{
-			if (::WaitForSingleObject(hFTP, FTPPROG_JPEGUPLOAD_WAIT_TIMEOUT_MS) == WAIT_TIMEOUT)
-			{
-				::KillApp(hFTP); // CloseHandle(hFTP) called inside this function 
-				goto exit;
-			}
-			else
-				CloseHandle(hFTP);
 		}
 	}
 
@@ -1563,44 +1508,82 @@ HANDLE CVideoDeviceDoc::FTPCall(CString sParams, BOOL bShow/*=FALSE*/)
 
 // Attention: remember to call CloseHandle() for the returned handle if it's != NULL
 HANDLE CVideoDeviceDoc::FTPUpload(	FTPUploadConfigurationStruct* pConfig,
-									CString sLocalFileName, CString sRemoteFileName)
+									CString sLocalFileName1, CString sRemoteFileName1,
+									CString sLocalFileName2/*=_T("")*/, CString sRemoteFileName2/*=_T("")*/)
 {
+	int nPos;
+
 	// Check
-	if (sLocalFileName.IsEmpty() || !pConfig || pConfig->m_sHost.IsEmpty())
+	if ((sLocalFileName1.IsEmpty() && sLocalFileName2.IsEmpty())	||
+		!pConfig													||
+		pConfig->m_sHost.IsEmpty())
 		return NULL;
 
-	// Default Remote File Name
-	if (sRemoteFileName.IsEmpty())
-		sRemoteFileName = ::GetShortFileName(sLocalFileName);
+	// Default remote file name 1
+	if (sRemoteFileName1.IsEmpty())
+		sRemoteFileName1 = ::GetShortFileName(sLocalFileName1);
 
-	// Local filename
-	sLocalFileName.Replace(_T('\\'), _T('/'));
-	int nPos = sLocalFileName.Find(_T(':'));
+	// Default remote file name 2
+	if (sRemoteFileName2.IsEmpty())
+		sRemoteFileName2 = ::GetShortFileName(sLocalFileName2);
+
+	// Adjust Local filename 1
+	sLocalFileName1.Replace(_T('\\'), _T('/'));
+	nPos = sLocalFileName1.Find(_T(':'));
 	if (nPos > 0)
 	{
-		sLocalFileName.Delete(nPos);
-		sLocalFileName.Insert(nPos - 1, _T("/cygdrive/"));
+		sLocalFileName1.Delete(nPos);
+		sLocalFileName1.Insert(nPos - 1, _T("/cygdrive/"));
 	}
 
-	// Remote filename and directory
-	CString sRemoteDir(pConfig->m_sRemoteDir);
-	sRemoteDir.Replace(_T('\\'), _T('/'));
-	sRemoteFileName.Replace(_T('\\'), _T('/'));
-	if (!sRemoteDir.IsEmpty())
+	// Adjust Local filename 2
+	sLocalFileName2.Replace(_T('\\'), _T('/'));
+	nPos = sLocalFileName2.Find(_T(':'));
+	if (nPos > 0)
 	{
-		sRemoteDir.TrimRight(_T("/"));
-		sRemoteFileName.TrimLeft(_T("/"));
-		sRemoteFileName = sRemoteDir + _T("/") + sRemoteFileName;
+		sLocalFileName2.Delete(nPos);
+		sLocalFileName2.Insert(nPos - 1, _T("/cygdrive/"));
 	}
-	nPos = sRemoteFileName.ReverseFind(_T('/'));
-	if (nPos >= 0)
-		sRemoteDir = sRemoteFileName.Left(nPos); // sRemoteDir with no trailing / otherwise mkdir -p says that the directory already exists
 
-	// Remote temp filename
+	// Remote filename and directory 1
+	CString sRemoteDir1(pConfig->m_sRemoteDir);
+	sRemoteDir1.Replace(_T('\\'), _T('/'));
+	sRemoteFileName1.Replace(_T('\\'), _T('/'));
+	if (!sRemoteDir1.IsEmpty())
+	{
+		sRemoteDir1.TrimRight(_T("/"));
+		sRemoteFileName1.TrimLeft(_T("/"));
+		sRemoteFileName1 = sRemoteDir1 + _T("/") + sRemoteFileName1;
+	}
+	nPos = sRemoteFileName1.ReverseFind(_T('/'));
+	if (nPos >= 0)
+		sRemoteDir1 = sRemoteFileName1.Left(nPos); // sRemoteDir1 with no trailing / otherwise mkdir -p says that the directory already exists
+
+	// Remote filename and directory 2
+	CString sRemoteDir2(pConfig->m_sRemoteDir);
+	sRemoteDir2.Replace(_T('\\'), _T('/'));
+	sRemoteFileName2.Replace(_T('\\'), _T('/'));
+	if (!sRemoteDir2.IsEmpty())
+	{
+		sRemoteDir2.TrimRight(_T("/"));
+		sRemoteFileName2.TrimLeft(_T("/"));
+		sRemoteFileName2 = sRemoteDir2 + _T("/") + sRemoteFileName2;
+	}
+	nPos = sRemoteFileName2.ReverseFind(_T('/'));
+	if (nPos >= 0)
+		sRemoteDir2 = sRemoteFileName2.Left(nPos); // sRemoteDir2 with no trailing / otherwise mkdir -p says that the directory already exists
+
+	// Remote temp filename 1
 	// Note: the xfer:use-temp-file logic fails when the target file already exists
 	//       because of the involved mv command. We are implementing the same
 	//       logic here but with a rm if the mv fails
-	CString sRemoteTempFileName(sRemoteFileName + _T(".in"));
+	CString sRemoteTempFileName1(sRemoteFileName1 + _T(".in"));
+
+	// Remote temp filename 2
+	// Note: the xfer:use-temp-file logic fails when the target file already exists
+	//       because of the involved mv command. We are implementing the same
+	//       logic here but with a rm if the mv fails
+	CString sRemoteTempFileName2(sRemoteFileName2 + _T(".in"));
 
 	// Set timeout to 10 sec, attempt 2 reconnection and abort the transfer if write target has a full disk
 	// Attention: do not enable net:persist-retries (setting it != 0) because of the below used
@@ -1633,12 +1616,42 @@ HANDLE CVideoDeviceDoc::FTPUpload(	FTPUploadConfigurationStruct* pConfig,
 	// Upload to temp (create directory if not existing),
 	// on success remove target and rename
 	CString sPut;
-	sPut.Format(_T("put '%s' -o '%s' || (mkdir -p '%s'; put '%s' -o '%s') && (rm '%s'; mv '%s' '%s'); "),
-				sLocalFileName, sRemoteTempFileName,
-				sRemoteDir,
-				sLocalFileName, sRemoteTempFileName,
-				sRemoteFileName,
-				sRemoteTempFileName, sRemoteFileName);
+
+	if (!sLocalFileName1.IsEmpty() && !sLocalFileName2.IsEmpty())
+	{
+		sPut.Format(_T("(put '%s' -o '%s' || (mkdir -p '%s'; put '%s' -o '%s') && (rm '%s'; mv '%s' '%s'))& ")
+					_T("(put '%s' -o '%s' || (mkdir -p '%s'; put '%s' -o '%s') && (rm '%s'; mv '%s' '%s'))& ")
+					_T("wait all; "),
+					sLocalFileName1, sRemoteTempFileName1,
+					sRemoteDir1,
+					sLocalFileName1, sRemoteTempFileName1,
+					sRemoteFileName1,
+					sRemoteTempFileName1, sRemoteFileName1,
+					sLocalFileName2, sRemoteTempFileName2,
+					sRemoteDir2,
+					sLocalFileName2, sRemoteTempFileName2,
+					sRemoteFileName2,
+					sRemoteTempFileName2, sRemoteFileName2);
+
+	}
+	else if (!sLocalFileName1.IsEmpty())
+	{
+		sPut.Format(_T("put '%s' -o '%s' || (mkdir -p '%s'; put '%s' -o '%s') && (rm '%s'; mv '%s' '%s'); "),
+					sLocalFileName1, sRemoteTempFileName1,
+					sRemoteDir1,
+					sLocalFileName1, sRemoteTempFileName1,
+					sRemoteFileName1,
+					sRemoteTempFileName1, sRemoteFileName1);
+	}
+	else if (!sLocalFileName2.IsEmpty())
+	{
+		sPut.Format(_T("put '%s' -o '%s' || (mkdir -p '%s'; put '%s' -o '%s') && (rm '%s'; mv '%s' '%s'); "),
+					sLocalFileName2, sRemoteTempFileName2,
+					sRemoteDir2,
+					sLocalFileName2, sRemoteTempFileName2,
+					sRemoteFileName2,
+					sRemoteTempFileName2, sRemoteFileName2);
+	}
 
 	// Port
 	CString sPort;

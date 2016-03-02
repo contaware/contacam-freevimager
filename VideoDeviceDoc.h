@@ -768,7 +768,8 @@ public:
 	// (remember to call CloseHandle() for the returned handle if != NULL)
 	static HANDLE FTPCall(CString sParams, BOOL bShow = FALSE);
 	static HANDLE FTPUpload(FTPUploadConfigurationStruct* pConfig,
-							CString sLocalFileName, CString sRemoteFileName);
+							CString sLocalFileName1, CString sRemoteFileName1,
+							CString sLocalFileName2 = _T(""), CString sRemoteFileName2 = _T(""));
 
 	// Validate Name
 	static CString GetValidName(CString sName);
