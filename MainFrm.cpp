@@ -206,11 +206,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// Enable Drag'n'Drop
 	DragAcceptFiles(TRUE);
 
-	// Init timers
+	// Init timer
 	SetTimer(ID_TIMER_1SEC, 1000U, NULL);
-#ifdef VIDEODEVICEDOC
-	SetTimer(ID_TIMER_30SEC, 30000U, NULL);
-#endif
 
 	// Init Menu Positions
 	InitMenuPositions();
@@ -294,11 +291,8 @@ void CMainFrame::TrayIcon(BOOL bEnable)
 
 void CMainFrame::OnDestroy() 
 {
-	// Kill timers
+	// Kill timer
 	KillTimer(ID_TIMER_1SEC);
-#ifdef VIDEODEVICEDOC
-	KillTimer(ID_TIMER_30SEC);
-#endif
 
 	// Close toaster
 	CloseToaster(TRUE); // TRUE: do not allow further toaster windows
@@ -2402,24 +2396,6 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		}
 #endif
 	}
-#ifdef VIDEODEVICEDOC
-	else if (nIDEvent == ID_TIMER_30SEC)
-	{
-		if (((CUImagerApp*)::AfxGetApp())->AreVideoDeviceDocsOpen())
-		{
-			// Disallow standby and hibernate
-			DWORD dwAwaymodeRequired = 0;
-			if (g_bWinVistaOrHigher)
-				dwAwaymodeRequired = ES_AWAYMODE_REQUIRED;
-			::SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | dwAwaymodeRequired);
-		}
-		else
-		{
-			// Allow standby and hibernate
-			::SetThreadExecutionState(ES_CONTINUOUS);
-		}
-	}
-#endif
 }
 
 void CMainFrame::StatusText(CString sText/*=_T("")*/)

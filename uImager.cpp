@@ -1623,7 +1623,6 @@ void CUImagerApp::SaveOnEndSession()
 			BrowserAutostart();
 		::LogLine(_T("%s"), ML_STRING(1566, "Closing") + _T(" ") + APPNAME_NOEXT + _T(" (Session End)"));
 	}
-	::SetThreadExecutionState(ES_CONTINUOUS);
 	if (m_bDoStartFromService && GetContaCamServiceState() == CONTACAMSERVICE_RUNNING)
 		ControlContaCamService(CONTACAMSERVICE_CONTROL_START_PROC);
 #endif
@@ -1814,9 +1813,6 @@ int CUImagerApp::ExitInstance()
 		// Log the stopping of the application
 		::LogLine(_T("%s"), ML_STRING(1566, "Closing") + _T(" ") + APPNAME_NOEXT);
 	}
-
-	// Allow standby and hibernate
-	::SetThreadExecutionState(ES_CONTINUOUS);
 #endif
 
 	// Close The Application Mutex

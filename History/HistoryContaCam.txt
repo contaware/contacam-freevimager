@@ -3,6 +3,8 @@ CONTACAM HISTORY
 5.0.7 (Month Xth 2016)
 
 - Faster and more reliable FTP upload support
+- Removed the standby and hibernate disabling feature introduced with
+  version 5.0.1 because it also blocked entering these states manually
 
 5.0.5 (January 8th 2016)
 
