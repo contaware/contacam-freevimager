@@ -216,6 +216,11 @@ KillMail:
   Sleep 1500					; give process some time to really stop
   StrCmp $R0 "0" KillMail 0		; check return value of KillProc (Sleep doesn't set $R0)
   
+KillFtp:
+  KillProcDLL::KillProc "lftp.exe"
+  Sleep 1500					; give process some time to really stop
+  StrCmp $R0 "0" KillFtp 0		; check return value of KillProc (Sleep doesn't set $R0)
+  
   Pop $R1
   Pop $R0
   
@@ -266,8 +271,9 @@ Section "${APPNAME_NOEXT} Program (required)"
   RMDir /r "$INSTDIR\Tutorials"
   RMDir /r "$INSTDIR\microapache"
   RMDir /r "$INSTDIR\mail"
+  RMDir /r "$INSTDIR\ftp"
   
-  ; Source Program File Path
+  ; Main Program Files
 !if ${INSTALLER_LANGUAGE} == "English"
   File "..\Bin\${APPNAME_NOEXT}\${APPNAME_EXT}"
 !else
@@ -277,16 +283,27 @@ Section "${APPNAME_NOEXT} Program (required)"
   File "/oname=License.txt" "..\License\License.txt"
   File "/oname=History.txt" "..\History\HistoryContaCam.txt"
   File "..\ContaCamService\Release\ContaCamService.exe"
+  
+  ; Configuration files which should not be overwritten
   SetOverwrite off
   File "..\ContaCamService\Release\ContaCamService.ini"
   File "MasterConfig.ini"
   SetOverwrite on
+  
+  ; Microapache files
   SetOutPath $INSTDIR\microapache
   File /r /x .svn /x configuration*.* "..\microapache\*.*"
   SetOutPath $INSTDIR
   File "/oname=microapache\htdocs\configuration.php" "..\microapache\htdocs\configuration${INSTALLER_LANGUAGE_SUFFIX}.php"
+  
+  ; Mailer files
   SetOutPath $INSTDIR\mail
   File /r "..\mail\*.*"
+  SetOutPath $INSTDIR
+  
+  ; lftp files
+  SetOutPath $INSTDIR\ftp
+  File /r "..\ftp\*.*"
   SetOutPath $INSTDIR
   
   ; Write the installation path into the registry
@@ -463,6 +480,11 @@ KillMail:
   Sleep 1500					; give process some time to really stop
   StrCmp $R0 "0" KillMail 0		; check return value of KillProc (Sleep doesn't set $R0)
   
+KillFtp:
+  KillProcDLL::KillProc "lftp.exe"
+  Sleep 1500					; give process some time to really stop
+  StrCmp $R0 "0" KillFtp 0		; check return value of KillProc (Sleep doesn't set $R0)
+  
   Pop $R1
   Pop $R0
   
@@ -588,6 +610,7 @@ Section "Uninstall"
   RMDir /r "$INSTDIR\Tutorials"
   RMDir /r "$INSTDIR\microapache"
   RMDir /r "$INSTDIR\mail"
+  RMDir /r "$INSTDIR\ftp"
   RMDir "$INSTDIR"
   
   ; Refresh Icons
