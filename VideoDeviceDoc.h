@@ -473,7 +473,6 @@ public:
 		CString			m_sHost;
 		CString			m_sRemoteDir;
 		int				m_nPort;
-		BOOL			m_bPasv;
 		CString			m_sUsername;
 		CString			m_sPassword;
 		FilesToUploadType m_FilesToUpload;

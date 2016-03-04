@@ -60,10 +60,6 @@ BOOL CFTPUploadConfigurationDlg::OnInitDialog()
 	sPort.Format(_T("%i"), m_FTPUploadConfiguration.m_nPort);
 	pEdit->SetWindowText(sPort);
 
-	// Passive Mode?
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_PASV);
-	pCheck->SetCheck(m_FTPUploadConfiguration.m_bPasv ? 1 : 0);
-
 	// Username and Password
 	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_USERNAME);
 	pEdit->SetWindowText(m_FTPUploadConfiguration.m_sUsername);
@@ -74,9 +70,9 @@ BOOL CFTPUploadConfigurationDlg::OnInitDialog()
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_FILES_TO_UPLOAD);
 	if (pComboBox)
 	{
-		pComboBox->AddString(ML_STRING(1883, "Full Video (\"Save Full Video\" must be ON)"));
-		pComboBox->AddString(ML_STRING(1882, "Small Video (\"Save Small Video\" must be ON)"));
-		pComboBox->AddString(ML_STRING(1884, "Full+Small Video (\"Save Full+Small Video\" must be ON)"));
+		pComboBox->AddString(ML_STRING(1883, "Full Video (check \"Save Full Video\")"));
+		pComboBox->AddString(ML_STRING(1882, "Small Video (check \"Save Small Video\")"));
+		pComboBox->AddString(ML_STRING(1884, "Full+Small Video (check \"Save Full+Small Video\")"));
 		pComboBox->SetCurSel((int)m_FTPUploadConfiguration.m_FilesToUpload);
 	}
 
@@ -104,9 +100,6 @@ void CFTPUploadConfigurationDlg::CopyToStruct()
 		m_FTPUploadConfiguration.m_nPort = nPort;
 	else
 		m_FTPUploadConfiguration.m_nPort = 21;
-
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_PASV);
-	m_FTPUploadConfiguration.m_bPasv = pCheck->GetCheck();
 
 	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_USERNAME);
 	pEdit->GetWindowText(sText);
@@ -148,7 +141,7 @@ void CFTPUploadConfigurationDlg::OnButtonTest()
 		if (m_FTPUploadConfiguration.m_nPort == 990)
 		{
 			sSets += _T("set ssl:verify-certificate no; ");
-			sSets += m_FTPUploadConfiguration.m_bPasv ? _T("set ftp:passive-mode on; ") : _T("set ftp:passive-mode off; ");
+			sSets += _T("set ftp:passive-mode on; ");
 			sProto = _T("ftps://");
 		}
 		// SSH File Transfer Protocol SFTP
@@ -162,7 +155,7 @@ void CFTPUploadConfigurationDlg::OnButtonTest()
 		else
 		{
 			sSets += _T("set ssl:verify-certificate no; ");
-			sSets += m_FTPUploadConfiguration.m_bPasv ? _T("set ftp:passive-mode on; ") : _T("set ftp:passive-mode off; ");
+			sSets += _T("set ftp:passive-mode on; ");
 			sProto = _T("ftp://");
 		}
 

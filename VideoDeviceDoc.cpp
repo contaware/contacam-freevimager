@@ -1595,7 +1595,7 @@ HANDLE CVideoDeviceDoc::FTPUpload(	FTPUploadConfigurationStruct* pConfig,
 	if (pConfig->m_nPort == 990)
 	{
 		sSets += _T("set ssl:verify-certificate no; ");
-		sSets += pConfig->m_bPasv ? _T("set ftp:passive-mode on; ") : _T("set ftp:passive-mode off; ");
+		sSets += _T("set ftp:passive-mode on; ");
 		sProto = _T("ftps://");
 	}
 	// SSH File Transfer Protocol SFTP
@@ -1609,7 +1609,7 @@ HANDLE CVideoDeviceDoc::FTPUpload(	FTPUploadConfigurationStruct* pConfig,
 	else
 	{
 		sSets += _T("set ssl:verify-certificate no; ");
-		sSets += pConfig->m_bPasv ? _T("set ftp:passive-mode on; ") : _T("set ftp:passive-mode off; ");
+		sSets += _T("set ftp:passive-mode on; ");
 		sProto = _T("ftp://");
 	}
 
@@ -3702,14 +3702,12 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_MovDetFTPUploadConfiguration.m_sHost = _T("");
 	m_MovDetFTPUploadConfiguration.m_sRemoteDir = _T("");
 	m_MovDetFTPUploadConfiguration.m_nPort = 21;
-	m_MovDetFTPUploadConfiguration.m_bPasv = TRUE;
 	m_MovDetFTPUploadConfiguration.m_sUsername = _T("");
 	m_MovDetFTPUploadConfiguration.m_sPassword = _T("");
 	m_MovDetFTPUploadConfiguration.m_FilesToUpload = FILES_TO_UPLOAD_VIDEO_GIF;
 	m_SnapshotFTPUploadConfiguration.m_sHost = _T("");
 	m_SnapshotFTPUploadConfiguration.m_sRemoteDir = _T("");
 	m_SnapshotFTPUploadConfiguration.m_nPort = 21;
-	m_SnapshotFTPUploadConfiguration.m_bPasv = TRUE;
 	m_SnapshotFTPUploadConfiguration.m_sUsername = _T("");
 	m_SnapshotFTPUploadConfiguration.m_sPassword = _T("");
 	m_SnapshotFTPUploadConfiguration.m_FilesToUpload = FILES_TO_UPLOAD_VIDEO; // Not used
@@ -4270,7 +4268,6 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_MovDetFTPUploadConfiguration.m_sHost = pApp->GetProfileString(sSection, _T("MovDetFTPHost"), _T(""));
 	m_MovDetFTPUploadConfiguration.m_sRemoteDir = pApp->GetProfileString(sSection, _T("MovDetFTPRemoteDir"), _T(""));
 	m_MovDetFTPUploadConfiguration.m_nPort = (int) pApp->GetProfileInt(sSection, _T("MovDetFTPPort"), 21);
-	m_MovDetFTPUploadConfiguration.m_bPasv = (BOOL) pApp->GetProfileInt(sSection, _T("MovDetFTPPasv"), TRUE);
 	m_MovDetFTPUploadConfiguration.m_sUsername = pApp->GetSecureProfileString(sSection, _T("MovDetFTPUsername"), _T(""));
 	m_MovDetFTPUploadConfiguration.m_sPassword = pApp->GetSecureProfileString(sSection, _T("MovDetFTPPassword"), _T(""));
 	m_MovDetFTPUploadConfiguration.m_FilesToUpload = (FilesToUploadType) pApp->GetProfileInt(sSection, _T("MovDetFilesToUpload"), FILES_TO_UPLOAD_VIDEO_GIF);
@@ -4281,7 +4278,6 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_SnapshotFTPUploadConfiguration.m_sHost = pApp->GetProfileString(sSection, _T("SnapshotFTPHost"), _T(""));
 	m_SnapshotFTPUploadConfiguration.m_sRemoteDir = pApp->GetProfileString(sSection, _T("SnapshotFTPRemoteDir"), _T(""));
 	m_SnapshotFTPUploadConfiguration.m_nPort = (int) pApp->GetProfileInt(sSection, _T("SnapshotFTPPort"), 21);
-	m_SnapshotFTPUploadConfiguration.m_bPasv = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotFTPPasv"), TRUE);
 	m_SnapshotFTPUploadConfiguration.m_sUsername = pApp->GetSecureProfileString(sSection, _T("SnapshotFTPUsername"), _T(""));
 	m_SnapshotFTPUploadConfiguration.m_sPassword = pApp->GetSecureProfileString(sSection, _T("SnapshotFTPPassword"), _T(""));
 
@@ -4479,14 +4475,12 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileString(sSection, _T("MovDetFTPHost"), m_MovDetFTPUploadConfiguration.m_sHost);
 	pApp->WriteProfileString(sSection, _T("MovDetFTPRemoteDir"), m_MovDetFTPUploadConfiguration.m_sRemoteDir);
 	pApp->WriteProfileInt(sSection, _T("MovDetFTPPort"), m_MovDetFTPUploadConfiguration.m_nPort);
-	pApp->WriteProfileInt(sSection, _T("MovDetFTPPasv"), m_MovDetFTPUploadConfiguration.m_bPasv);
 	pApp->WriteSecureProfileString(sSection, _T("MovDetFTPUsername"), m_MovDetFTPUploadConfiguration.m_sUsername);
 	pApp->WriteSecureProfileString(sSection, _T("MovDetFTPPassword"), m_MovDetFTPUploadConfiguration.m_sPassword);
 	pApp->WriteProfileInt(sSection, _T("MovDetFilesToUpload"), (int)m_MovDetFTPUploadConfiguration.m_FilesToUpload);
 	pApp->WriteProfileString(sSection, _T("SnapshotFTPHost"), m_SnapshotFTPUploadConfiguration.m_sHost);
 	pApp->WriteProfileString(sSection, _T("SnapshotFTPRemoteDir"), m_SnapshotFTPUploadConfiguration.m_sRemoteDir);
 	pApp->WriteProfileInt(sSection, _T("SnapshotFTPPort"), m_SnapshotFTPUploadConfiguration.m_nPort);
-	pApp->WriteProfileInt(sSection, _T("SnapshotFTPPasv"), m_SnapshotFTPUploadConfiguration.m_bPasv);
 	pApp->WriteSecureProfileString(sSection, _T("SnapshotFTPUsername"), m_SnapshotFTPUploadConfiguration.m_sUsername);
 	pApp->WriteSecureProfileString(sSection, _T("SnapshotFTPPassword"), m_SnapshotFTPUploadConfiguration.m_sPassword);
 
