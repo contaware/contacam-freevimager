@@ -177,6 +177,14 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		TRACE(_T("Failed to create toolbar\n"));
 		return -1;      // fail to create
 	}
+	
+	// Size the toolbar
+	CSize sizeMax;
+	CRect rc;
+	m_wndToolBar.GetItemRect(0, &rc);
+	sizeMax.cx = (int)(((CUImagerApp*)::AfxGetApp())->m_dToolbarsZoom * rc.Width());
+	sizeMax.cy = (int)(((CUImagerApp*)::AfxGetApp())->m_dToolbarsZoom * rc.Height());
+	m_wndToolBar.SetSizes(sizeMax, CSize(16, 15));
 
 	// Create Statusbar
 	((CUImagerApp*)::AfxGetApp())->m_bShowStatusbar = (BOOL)((CUImagerApp*)::AfxGetApp())->GetProfileInt(_T("GeneralApp"), _T("ShowStatusbar"), TRUE);

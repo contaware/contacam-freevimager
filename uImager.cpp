@@ -121,6 +121,7 @@ CUImagerApp::CUImagerApp()
 	m_bSingleInstance = FALSE;
 #endif
 	m_bTopMost = FALSE;
+	m_dToolbarsZoom = 1.3;
 	m_bShowStatusbar = TRUE;
 	m_bShowToolbar = TRUE;
 	m_pPictureDocTemplate = NULL;

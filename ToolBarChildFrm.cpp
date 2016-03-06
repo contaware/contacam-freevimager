@@ -228,16 +228,30 @@ BOOL CVideoDeviceToolBar::Create(CWnd* pParentWnd)
 	if (!LoadToolBar(IDR_VIDEO_DEVICE_TOOLBAR))
 		return FALSE;
 
-	CFont Font;
-	if (!Font.CreateStockObject(DEFAULT_GUI_FONT))
-		return FALSE;
+	// Size the toolbar
+	CSize sizeMax;
+	CRect rc;
+	GetItemRect(0, &rc);
+	sizeMax.cx = (int)(((CUImagerApp*)::AfxGetApp())->m_dToolbarsZoom * rc.Width());
+	sizeMax.cy = (int)(((CUImagerApp*)::AfxGetApp())->m_dToolbarsZoom * rc.Height());
+	SetSizes(sizeMax, CSize(16, 15));
+
+	// Create the font
+	LOGFONT lf;
+	memset(&lf, 0, sizeof(LOGFONT));
+	_tcscpy(lf.lfFaceName, _T("MS Shell Dlg 2"));
+	HDC hDC = ::GetDC(GetSafeHwnd());
+	lf.lfHeight = -Round(::MulDiv(8, ::GetDeviceCaps(hDC, LOGPIXELSY), 72) * ((CUImagerApp*)::AfxGetApp())->m_dToolbarsZoom);
+	::ReleaseDC(GetSafeHwnd(), hDC);
+	lf.lfWeight = FW_NORMAL;
+	m_DetComboBoxFont.CreateFontIndirect(&lf);
 
 	// Det Combo Box
 	m_DetComboBoxIndex = CommandToIndex(ID_DET_COMBOX);
 	if (m_DetComboBoxIndex != -1)
 		if (!m_DetComboBox.Create(CBS_DROPDOWNLIST | WS_VISIBLE | WS_CHILD, CRect(0,0,0,0), this, ID_DET_COMBOX))
 			return FALSE;
-	m_DetComboBox.SetFont(&Font);
+	m_DetComboBox.SetFont(&m_DetComboBoxFont);
 	m_DetComboBox.SetExtendedUI(TRUE);
 	m_DetComboBox.Init();
 	m_DetComboBox.EnableWindow(TRUE);
@@ -253,13 +267,14 @@ void CVideoDeviceToolBar::UpdateControls(void)
 	if (::IsWindow(m_DetComboBox))
 	{
 		GetItemRect(m_DetComboBoxIndex, rect);
-		rect.right = rect.left + DETCOMBOBOX_WIDTH;
+		rect.right = rect.left + (LONG)(DETCOMBOBOX_WIDTH * ((CUImagerApp*)::AfxGetApp())->m_dToolbarsZoom);
 		SetButtonInfo(	m_DetComboBoxIndex,
 						ID_DET_COMBOX,
 						TBBS_SEPARATOR,
 						rect.Width());
 		rect.left += 2;
 		(rect.right)--;
+		m_DetComboBox.SetItemHeight(-1, rect.Height() - 4*::GetSystemMetrics(SM_CYEDGE) + 1); // height of the static-text control
 		rect.bottom += 300;
 
 		// To Avoid Flickering Of The ComboBox
@@ -346,16 +361,30 @@ BOOL CPictureToolBar::Create(CWnd* pParentWnd)
 	if (!LoadToolBar(IDR_PICTURE_TOOLBAR))
 		return FALSE;
 
-	CFont Font;
-	if (!Font.CreateStockObject(DEFAULT_GUI_FONT))
-		return FALSE;
+	// Size the toolbar
+	CSize sizeMax;
+	CRect rc;
+	GetItemRect(0, &rc);
+	sizeMax.cx = (int)(((CUImagerApp*)::AfxGetApp())->m_dToolbarsZoom * rc.Width());
+	sizeMax.cy = (int)(((CUImagerApp*)::AfxGetApp())->m_dToolbarsZoom * rc.Height());
+	SetSizes(sizeMax, CSize(16, 15));
 
+	// Create the font
+	LOGFONT lf;
+	memset(&lf, 0, sizeof(LOGFONT));
+	_tcscpy(lf.lfFaceName, _T("MS Shell Dlg 2"));
+	HDC hDC = ::GetDC(GetSafeHwnd());
+	lf.lfHeight = -Round(::MulDiv(8, ::GetDeviceCaps(hDC, LOGPIXELSY), 72) * ((CUImagerApp*)::AfxGetApp())->m_dToolbarsZoom);
+	::ReleaseDC(GetSafeHwnd(), hDC);
+	lf.lfWeight = FW_NORMAL;
+	m_ZoomComboBoxFont.CreateFontIndirect(&lf);
+	
 	// Zoom Combo Box
 	m_ZoomComboBoxIndex = CommandToIndex(ID_ZOOM_COMBOX);
 	if (m_ZoomComboBoxIndex != -1)
 		if (!m_ZoomComboBox.Create(CBS_DROPDOWNLIST | WS_VISIBLE | WS_CHILD, CRect(0,0,0,0), this, ID_ZOOM_COMBOX))
 			return FALSE;
-	m_ZoomComboBox.SetFont(&Font);
+	m_ZoomComboBox.SetFont(&m_ZoomComboBoxFont);
 	m_ZoomComboBox.SetExtendedUI(TRUE);
 	m_ZoomComboBox.Init();
 	m_ZoomComboBox.EnableWindow(TRUE);
@@ -406,13 +435,14 @@ void CPictureToolBar::UpdateControls(void)
 	if (::IsWindow(m_ZoomComboBox))
 	{
 		GetItemRect(m_ZoomComboBoxIndex, rect);
-		rect.right = rect.left + ZOOMCOMBOBOX_WIDTH;
+		rect.right = rect.left + (LONG)(ZOOMCOMBOBOX_WIDTH * ((CUImagerApp*)::AfxGetApp())->m_dToolbarsZoom);
 		SetButtonInfo(	m_ZoomComboBoxIndex,
 						ID_ZOOM_COMBOX,
 						TBBS_SEPARATOR,
 						rect.Width());
 		rect.left += 2;
 		(rect.right)--;
+		m_ZoomComboBox.SetItemHeight(-1, rect.Height() - 4*::GetSystemMetrics(SM_CYEDGE) + 1); // height of the static-text control
 		rect.bottom += 300;
 
 		// To Avoid Flickering Of The ComboBox
@@ -427,7 +457,7 @@ void CPictureToolBar::UpdateControls(void)
 	if (::IsWindow(m_BkgColorButtonPicker))
 	{
 		GetItemRect(m_BkgColorButtonPickerIndex, rect);
-		rect.right = rect.left + 36;
+		rect.right = rect.left + (LONG)(COLORBUTTONPICKER_WIDTH * ((CUImagerApp*)::AfxGetApp())->m_dToolbarsZoom);
 		SetButtonInfo(	m_BkgColorButtonPickerIndex,
 						ID_BACKGROUND_COLOR,
 						TBBS_SEPARATOR,

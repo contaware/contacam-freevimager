@@ -511,6 +511,9 @@ public:
 	// Top Most
 	BOOL m_bTopMost;
 
+	// Toolbars zoom (must be >= 1.0)
+	double m_dToolbarsZoom;
+
 	// Statusbar and Toolbar visibility
 	BOOL m_bShowStatusbar;
 	BOOL m_bShowToolbar;

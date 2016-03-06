@@ -15,6 +15,7 @@
 #define MAX_ZOOM_COMBOBOX_INDEX						10
 #define ZOOMCOMBOBOX_WIDTH							92
 #define DETCOMBOBOX_WIDTH							136
+#define COLORBUTTONPICKER_WIDTH						36
 
 /////////////////////////////////////////////////////////////////////////////
 // CChildToolBar
@@ -86,6 +87,7 @@ public:
 	CDetComboBox m_DetComboBox;
 
 protected:
+	CFont m_DetComboBoxFont;
 	int m_DetComboBoxIndex;
 	CRect m_rcLastDetComboBox;
 
@@ -144,6 +146,7 @@ public:
 	CColorButtonPicker m_BkgColorButtonPicker;
 
 protected:
+	CFont m_ZoomComboBoxFont;
 	int m_ZoomComboBoxIndex;
 	CRect m_rcLastZoomComboBox;
 	int m_BkgColorButtonPickerIndex;
