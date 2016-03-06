@@ -409,27 +409,6 @@ BOOL CPictureToolBar::Create(CWnd* pParentWnd)
 void CPictureToolBar::UpdateControls(void)
 {
 	CRect rect;
-	CPictureDoc* pDoc = NULL;
-
-	// Show / Hide Buttons
-	if (GetParent())
-	{
-		pDoc = (CPictureDoc*)(((CPictureChildFrame*)GetParent())->GetActiveDocument());
-		if (pDoc)
-		{
-			ASSERT_VALID(pDoc);
-			if (pDoc->IsMultiPageTIFF() || pDoc->m_GifAnimationThread.IsAlive())
-			{
-				GetToolBarCtrl().HideButton(ID_VIEW_NEXT_PAGE_FRAME, FALSE);
-				GetToolBarCtrl().HideButton(ID_VIEW_PREVIOUS_PAGE_FRAME, FALSE);
-			}
-			else
-			{
-				GetToolBarCtrl().HideButton(ID_VIEW_NEXT_PAGE_FRAME, TRUE);
-				GetToolBarCtrl().HideButton(ID_VIEW_PREVIOUS_PAGE_FRAME, TRUE);
-			}
-		}
-	}
 
 	// Place Zoom ComboBox
 	if (::IsWindow(m_ZoomComboBox))
