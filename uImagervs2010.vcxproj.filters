@@ -294,9 +294,6 @@
     <ClCompile Include="ToolBarChildFrm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ToolbarSliderCtrl.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="TraceLogFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -685,9 +682,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ToolBarChildFrm.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ToolbarSliderCtrl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TraceLogFile.h">

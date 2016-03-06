@@ -9,7 +9,6 @@
 #include "ChildFrm.h"
 #include "uxtheme.h"
 #include "ColorButtonPicker.h"
-#include "ToolbarSliderCtrl.h"
 
 #define MIN_ZOOM_COMBOBOX_INDEX						0
 #define MAX_ZOOM_COMBOBOX_INDEX						10
