@@ -18,6 +18,9 @@
 #include "WorkerThread.h"
 #include "XmpDlg.h"
 
+// Toolbars zoom (must be >= 1.0)
+#define TOOLBARS_ZOOM									1.3
+
 // Micro Apache
 #define MICROAPACHE_DIR									_T("microapache")
 #define MICROAPACHE_HTDOCS								(CString(MICROAPACHE_DIR) + CString(_T("\\htdocs")))

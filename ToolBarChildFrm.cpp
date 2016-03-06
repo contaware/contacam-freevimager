@@ -239,9 +239,9 @@ BOOL CVideoDeviceToolBar::Create(CWnd* pParentWnd)
 	// Create the font
 	LOGFONT lf;
 	memset(&lf, 0, sizeof(LOGFONT));
-	_tcscpy(lf.lfFaceName, _T("MS Shell Dlg 2"));
+	_tcscpy(lf.lfFaceName, COMBOBOX_FONTFACENAME);
 	HDC hDC = ::GetDC(GetSafeHwnd());
-	lf.lfHeight = -Round(::MulDiv(8, ::GetDeviceCaps(hDC, LOGPIXELSY), 72) * ((CUImagerApp*)::AfxGetApp())->m_dToolbarsZoom);
+	lf.lfHeight = -Round(::MulDiv(COMBOBOX_FONTSIZE, ::GetDeviceCaps(hDC, LOGPIXELSY), 72) * ((CUImagerApp*)::AfxGetApp())->m_dToolbarsZoom);
 	::ReleaseDC(GetSafeHwnd(), hDC);
 	lf.lfWeight = FW_NORMAL;
 	m_DetComboBoxFont.CreateFontIndirect(&lf);
@@ -372,9 +372,9 @@ BOOL CPictureToolBar::Create(CWnd* pParentWnd)
 	// Create the font
 	LOGFONT lf;
 	memset(&lf, 0, sizeof(LOGFONT));
-	_tcscpy(lf.lfFaceName, _T("MS Shell Dlg 2"));
+	_tcscpy(lf.lfFaceName, COMBOBOX_FONTFACENAME);
 	HDC hDC = ::GetDC(GetSafeHwnd());
-	lf.lfHeight = -Round(::MulDiv(8, ::GetDeviceCaps(hDC, LOGPIXELSY), 72) * ((CUImagerApp*)::AfxGetApp())->m_dToolbarsZoom);
+	lf.lfHeight = -Round(::MulDiv(COMBOBOX_FONTSIZE, ::GetDeviceCaps(hDC, LOGPIXELSY), 72) * ((CUImagerApp*)::AfxGetApp())->m_dToolbarsZoom);
 	::ReleaseDC(GetSafeHwnd(), hDC);
 	lf.lfWeight = FW_NORMAL;
 	m_ZoomComboBoxFont.CreateFontIndirect(&lf);
