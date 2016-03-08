@@ -18,8 +18,25 @@
 #include "WorkerThread.h"
 #include "XmpDlg.h"
 
-// Toolbars zoom (must be >= 1.0)
-#define TOOLBARS_ZOOM									1.3
+// Default toolbar images are 16x15 pixels
+// CToolBar::SetSizes() would support enlarging the buttons while keeping the
+// standard 16x15 images, but when performing a user switch and then back or
+// connecting and disconnecting through RDP the buttons are resized to the
+// minimum leaving the toolbar at the previous size ... The solution is to
+// enlarge the images while keeping the minimum button increment:
+// + 7 pixels on X
+// + 6 pixels on Y
+// Note: toolbar resource with images different from the standard 16x15 are not
+//       supported by the visual studio editor (we placed them in uImager.rc2)
+#define TOOLBAR_IMAGE_SIZE_X							22
+#define TOOLBAR_IMAGE_SIZE_Y							21
+#define TOOLBAR_BUTTON_SIZE_X							(TOOLBAR_IMAGE_SIZE_X+7)
+#define TOOLBAR_BUTTON_SIZE_Y							(TOOLBAR_IMAGE_SIZE_Y+6)
+#define TOOLBAR_COMBOBOX_FONTFACENAME					_T("MS Shell Dlg 2")
+#define TOOLBAR_COMBOBOX_FONTHEIGHT						-14
+#define TOOLBAR_DETCOMBOBOX_WIDTH						176
+#define TOOLBAR_ZOOMCOMBOBOX_WIDTH						130
+#define TOOLBAR_COLORBUTTONPICKER_WIDTH					46
 
 // Micro Apache
 #define MICROAPACHE_DIR									_T("microapache")
@@ -513,9 +530,6 @@ public:
 
 	// Top Most
 	BOOL m_bTopMost;
-
-	// Toolbars zoom (must be >= 1.0)
-	double m_dToolbarsZoom;
 
 	// Statusbar and Toolbar visibility
 	BOOL m_bShowStatusbar;

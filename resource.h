@@ -27,7 +27,6 @@
 #define IDR_CONTEXT_VIDEO_DEVICE        149
 #define IDR_CONTEXT_CROP                150
 #define IDD_HLS                         150
-#define IDR_MAINFRAME_VIDEODEVICEDOC    150
 #define IDD_AUDIOIN_SOURCE              151
 #define IDR_CONTEXT_VIDEO_DEVICE_ZONES  151
 #define IDR_EMPTY_TOOLBAR               154
@@ -3298,7 +3297,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        1496
+#define _APS_NEXT_RESOURCE_VALUE        1498
 #define _APS_NEXT_COMMAND_VALUE         33511
 #define _APS_NEXT_CONTROL_VALUE         2570
 #define _APS_NEXT_SYMED_VALUE           101

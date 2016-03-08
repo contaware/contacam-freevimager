@@ -229,24 +229,18 @@ BOOL CVideoDeviceToolBar::Create(CWnd* pParentWnd)
 		return FALSE;
 
 	// Size the toolbar
-	CSize sizeMax;
-	CRect rc;
-	GetItemRect(0, &rc);
-	sizeMax.cx = (int)(((CUImagerApp*)::AfxGetApp())->m_dToolbarsZoom * rc.Width());
-	sizeMax.cy = (int)(((CUImagerApp*)::AfxGetApp())->m_dToolbarsZoom * rc.Height());
-	SetSizes(sizeMax, CSize(16, 15));
+	SetSizes(	CSize(TOOLBAR_BUTTON_SIZE_X, TOOLBAR_BUTTON_SIZE_Y),
+				CSize(TOOLBAR_IMAGE_SIZE_X, TOOLBAR_IMAGE_SIZE_Y));
 
-	// Create the font
+	// Det Combo Box
 	LOGFONT lf;
 	memset(&lf, 0, sizeof(LOGFONT));
-	_tcscpy(lf.lfFaceName, COMBOBOX_FONTFACENAME);
+	_tcscpy(lf.lfFaceName, TOOLBAR_COMBOBOX_FONTFACENAME);
 	HDC hDC = ::GetDC(GetSafeHwnd());
-	lf.lfHeight = -Round(::MulDiv(COMBOBOX_FONTSIZE, ::GetDeviceCaps(hDC, LOGPIXELSY), 72) * ((CUImagerApp*)::AfxGetApp())->m_dToolbarsZoom);
+	lf.lfHeight = TOOLBAR_COMBOBOX_FONTHEIGHT;
 	::ReleaseDC(GetSafeHwnd(), hDC);
 	lf.lfWeight = FW_NORMAL;
 	m_DetComboBoxFont.CreateFontIndirect(&lf);
-
-	// Det Combo Box
 	m_DetComboBoxIndex = CommandToIndex(ID_DET_COMBOX);
 	if (m_DetComboBoxIndex != -1)
 		if (!m_DetComboBox.Create(CBS_DROPDOWNLIST | WS_VISIBLE | WS_CHILD, CRect(0,0,0,0), this, ID_DET_COMBOX))
@@ -267,7 +261,7 @@ void CVideoDeviceToolBar::UpdateControls(void)
 	if (::IsWindow(m_DetComboBox))
 	{
 		GetItemRect(m_DetComboBoxIndex, rect);
-		rect.right = rect.left + (LONG)(DETCOMBOBOX_WIDTH * ((CUImagerApp*)::AfxGetApp())->m_dToolbarsZoom);
+		rect.right = rect.left + TOOLBAR_DETCOMBOBOX_WIDTH;
 		SetButtonInfo(	m_DetComboBoxIndex,
 						ID_DET_COMBOX,
 						TBBS_SEPARATOR,
@@ -275,7 +269,7 @@ void CVideoDeviceToolBar::UpdateControls(void)
 		rect.left += 2;
 		(rect.right)--;
 		m_DetComboBox.SetItemHeight(-1, rect.Height() - 4*::GetSystemMetrics(SM_CYEDGE) + 1); // height of the static-text control
-		rect.bottom += 300;
+		rect.bottom += 10; // set a minimum height for the dropdown to open and size itself correctly on Win XP and Win 2003
 
 		// To Avoid Flickering Of The ComboBox
 		if (m_rcLastDetComboBox != rect)
@@ -362,24 +356,18 @@ BOOL CPictureToolBar::Create(CWnd* pParentWnd)
 		return FALSE;
 
 	// Size the toolbar
-	CSize sizeMax;
-	CRect rc;
-	GetItemRect(0, &rc);
-	sizeMax.cx = (int)(((CUImagerApp*)::AfxGetApp())->m_dToolbarsZoom * rc.Width());
-	sizeMax.cy = (int)(((CUImagerApp*)::AfxGetApp())->m_dToolbarsZoom * rc.Height());
-	SetSizes(sizeMax, CSize(16, 15));
+	SetSizes(	CSize(TOOLBAR_BUTTON_SIZE_X, TOOLBAR_BUTTON_SIZE_Y),
+				CSize(TOOLBAR_IMAGE_SIZE_X, TOOLBAR_IMAGE_SIZE_Y));
 
-	// Create the font
+	// Zoom Combo Box
 	LOGFONT lf;
 	memset(&lf, 0, sizeof(LOGFONT));
-	_tcscpy(lf.lfFaceName, COMBOBOX_FONTFACENAME);
+	_tcscpy(lf.lfFaceName, TOOLBAR_COMBOBOX_FONTFACENAME);
 	HDC hDC = ::GetDC(GetSafeHwnd());
-	lf.lfHeight = -Round(::MulDiv(COMBOBOX_FONTSIZE, ::GetDeviceCaps(hDC, LOGPIXELSY), 72) * ((CUImagerApp*)::AfxGetApp())->m_dToolbarsZoom);
+	lf.lfHeight = TOOLBAR_COMBOBOX_FONTHEIGHT;
 	::ReleaseDC(GetSafeHwnd(), hDC);
 	lf.lfWeight = FW_NORMAL;
 	m_ZoomComboBoxFont.CreateFontIndirect(&lf);
-	
-	// Zoom Combo Box
 	m_ZoomComboBoxIndex = CommandToIndex(ID_ZOOM_COMBOX);
 	if (m_ZoomComboBoxIndex != -1)
 		if (!m_ZoomComboBox.Create(CBS_DROPDOWNLIST | WS_VISIBLE | WS_CHILD, CRect(0,0,0,0), this, ID_ZOOM_COMBOX))
@@ -414,7 +402,7 @@ void CPictureToolBar::UpdateControls(void)
 	if (::IsWindow(m_ZoomComboBox))
 	{
 		GetItemRect(m_ZoomComboBoxIndex, rect);
-		rect.right = rect.left + (LONG)(ZOOMCOMBOBOX_WIDTH * ((CUImagerApp*)::AfxGetApp())->m_dToolbarsZoom);
+		rect.right = rect.left + TOOLBAR_ZOOMCOMBOBOX_WIDTH;
 		SetButtonInfo(	m_ZoomComboBoxIndex,
 						ID_ZOOM_COMBOX,
 						TBBS_SEPARATOR,
@@ -422,7 +410,7 @@ void CPictureToolBar::UpdateControls(void)
 		rect.left += 2;
 		(rect.right)--;
 		m_ZoomComboBox.SetItemHeight(-1, rect.Height() - 4*::GetSystemMetrics(SM_CYEDGE) + 1); // height of the static-text control
-		rect.bottom += 300;
+		rect.bottom += 10; // set a minimum height for the dropdown to open and size itself correctly on Win XP and Win 2003
 
 		// To Avoid Flickering Of The ComboBox
 		if (m_rcLastZoomComboBox != rect)
@@ -436,7 +424,7 @@ void CPictureToolBar::UpdateControls(void)
 	if (::IsWindow(m_BkgColorButtonPicker))
 	{
 		GetItemRect(m_BkgColorButtonPickerIndex, rect);
-		rect.right = rect.left + (LONG)(COLORBUTTONPICKER_WIDTH * ((CUImagerApp*)::AfxGetApp())->m_dToolbarsZoom);
+		rect.right = rect.left + TOOLBAR_COLORBUTTONPICKER_WIDTH;
 		SetButtonInfo(	m_BkgColorButtonPickerIndex,
 						ID_BACKGROUND_COLOR,
 						TBBS_SEPARATOR,

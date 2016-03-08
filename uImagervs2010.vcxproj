@@ -1180,7 +1180,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="res\audiomcidoc.ico" />
-    <None Include="res\Bitstream_Vera_11.bmp" />
     <None Include="res\cdaudiodoc.ico" />
     <None Include="res\device.ico" />
     <None Include="res\DragDropMulti.bmp" />
@@ -1189,26 +1188,20 @@
     <None Include="res\grab_normal.cur" />
     <None Include="res\hand.cur" />
     <None Include="res\HeaderArrows.bmp" />
-    <None Include="res\license.bin" />
     <None Include="res\magnifyminus.ico" />
     <None Include="res\magnifyp.ico" />
     <None Include="res\magnifyplus.ico" />
     <None Include="res\manifestcontacam.bin" />
     <None Include="res\manifestfreevimager.bin" />
     <None Include="res\pause.ico" />
-    <None Include="res\picture.bmp" />
     <None Include="res\picturedoc.ico" />
     <None Include="res\play.ico" />
     <None Include="res\selectcolor.cur" />
     <None Include="res\stop.ico" />
-    <None Include="res\TeleTextDH_26.bmp" />
-    <None Include="res\Toolbar.bmp" />
-    <None Include="res\toolbarvideodevicedoc.bmp" />
     <None Include="res\uimager.ico" />
     <None Include="res\uImager.rc2" />
     <None Include="res\uimager_videodevicedoc.ico" />
     <None Include="res\videoavidoc.ico" />
-    <None Include="res\videodevice.bmp" />
     <None Include="res\videodevicedoc.ico" />
     <None Include="res\zip.ico" />
     <None Include="res\ZoneMinus.cur" />

@@ -10,13 +10,8 @@
 #include "uxtheme.h"
 #include "ColorButtonPicker.h"
 
-#define COMBOBOX_FONTFACENAME						_T("MS Shell Dlg 2")
-#define COMBOBOX_FONTSIZE							8
 #define MIN_ZOOM_COMBOBOX_INDEX						0
 #define MAX_ZOOM_COMBOBOX_INDEX						10
-#define ZOOMCOMBOBOX_WIDTH							100
-#define DETCOMBOBOX_WIDTH							136
-#define COLORBUTTONPICKER_WIDTH						36
 
 /////////////////////////////////////////////////////////////////////////////
 // CChildToolBar

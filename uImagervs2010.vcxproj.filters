@@ -764,9 +764,6 @@
     <None Include="res\audiomcidoc.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\Bitstream_Vera_11.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\cdaudiodoc.ico">
       <Filter>Resource Files</Filter>
     </None>
@@ -791,9 +788,6 @@
     <None Include="res\HeaderArrows.bmp">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\license.bin">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\magnifyminus.ico">
       <Filter>Resource Files</Filter>
     </None>
@@ -812,9 +806,6 @@
     <None Include="res\pause.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\picture.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\picturedoc.ico">
       <Filter>Resource Files</Filter>
     </None>
@@ -827,15 +818,6 @@
     <None Include="res\stop.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\TeleTextDH_26.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\Toolbar.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\toolbarvideodevicedoc.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\uimager.ico">
       <Filter>Resource Files</Filter>
     </None>
@@ -846,9 +828,6 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\videoavidoc.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\videodevice.bmp">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\videodevicedoc.ico">

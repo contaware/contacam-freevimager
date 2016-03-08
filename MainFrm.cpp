@@ -168,23 +168,15 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// Create Toolbar
 	((CUImagerApp*)::AfxGetApp())->m_bShowToolbar = (BOOL)((CUImagerApp*)::AfxGetApp())->GetProfileInt(_T("GeneralApp"), _T("ShowToolbar"), TRUE);
 	if (!m_wndToolBar.CreateEx(this, TBSTYLE_FLAT, (((CUImagerApp*)::AfxGetApp())->m_bShowToolbar ? WS_VISIBLE : 0) | WS_CHILD | CBRS_TOP | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_FIXED) ||
-#ifdef VIDEODEVICEDOC
-		!m_wndToolBar.LoadToolBar(IDR_MAINFRAME_VIDEODEVICEDOC))
-#else
 		!m_wndToolBar.LoadToolBar(IDR_MAINFRAME))
-#endif
 	{
 		TRACE(_T("Failed to create toolbar\n"));
 		return -1;      // fail to create
 	}
 	
 	// Size the toolbar
-	CSize sizeMax;
-	CRect rc;
-	m_wndToolBar.GetItemRect(0, &rc);
-	sizeMax.cx = (int)(((CUImagerApp*)::AfxGetApp())->m_dToolbarsZoom * rc.Width());
-	sizeMax.cy = (int)(((CUImagerApp*)::AfxGetApp())->m_dToolbarsZoom * rc.Height());
-	m_wndToolBar.SetSizes(sizeMax, CSize(16, 15));
+	m_wndToolBar.SetSizes(	CSize(TOOLBAR_BUTTON_SIZE_X, TOOLBAR_BUTTON_SIZE_Y),
+							CSize(TOOLBAR_IMAGE_SIZE_X, TOOLBAR_IMAGE_SIZE_Y));
 
 	// Create Statusbar
 	((CUImagerApp*)::AfxGetApp())->m_bShowStatusbar = (BOOL)((CUImagerApp*)::AfxGetApp())->GetProfileInt(_T("GeneralApp"), _T("ShowStatusbar"), TRUE);
