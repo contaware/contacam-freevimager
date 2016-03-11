@@ -8,7 +8,26 @@
 
 #ifdef VIDEODEVICEDOC
 
-class CVideoDeviceDoc;
+// Email sending configuration structure
+enum ConnectionType
+{
+	PlainText					= 0, 
+	SSL_TLS						= 1,
+	STARTTLS					= 2
+};
+typedef struct tagSendMailConfigurationStruct
+{
+	CString			m_sSubject;
+	CString			m_sTo;
+	CString			m_sFrom;
+	CString			m_sHost;
+	CString			m_sFromName;
+	int				m_nPort;
+	ConnectionType	m_ConnectionType;
+	CString			m_sUsername;
+	CString			m_sPassword;
+	int				m_nSecBetweenMsg;
+} SendMailConfigurationStruct;
 
 /////////////////////////////////////////////////////////////////////////////
 // CSendMailConfigurationDlg dialog
@@ -17,8 +36,8 @@ class CSendMailConfigurationDlg : public CDialog
 {
 // Construction
 public:
-	CSendMailConfigurationDlg(CVideoDeviceDoc* pDoc);
-	CVideoDeviceDoc::SendMailConfigurationStruct m_SendMailConfiguration;
+	CSendMailConfigurationDlg(const CString& sName);
+	SendMailConfigurationStruct m_SendMailConfiguration;
 // Dialog Data
 	//{{AFX_DATA(CSendMailConfigurationDlg)
 	enum { IDD = IDD_SENDMAIL_CONFIGURATION };
@@ -34,7 +53,7 @@ public:
 
 // Implementation
 protected:
-	CVideoDeviceDoc* m_pDoc;
+	CString m_sName;
 	HANDLE m_hMailer;
 	CString m_sLogFileName;
 	int m_nRetryTimeMs;

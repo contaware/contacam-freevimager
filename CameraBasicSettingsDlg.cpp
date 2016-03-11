@@ -61,6 +61,7 @@ BEGIN_MESSAGE_MAP(CCameraBasicSettingsDlg, CDialog)
 	ON_WM_TIMER()
 	ON_WM_SETCURSOR()
 	ON_BN_CLICKED(IDC_RADIO_NOCHANGE, OnRadioNochange)
+	ON_BN_CLICKED(IDC_SENDMAIL_CONFIGURE, OnSendmailConfigure)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -306,6 +307,7 @@ BOOL CCameraBasicSettingsDlg::OnInitDialog()
 		if (pComboBox->SelectString(-1, ::GetShortFileNameNoExt(sStyleFilePath)) == CB_ERR)
 			pComboBox->SetCurSel(0);
 	}
+	m_CurrentSendMailConfiguration = m_pDoc->m_SendMailConfiguration;
 
 	// This calls UpdateData(FALSE) -> vars to view
 	CDialog::OnInitDialog();
@@ -469,7 +471,9 @@ void CCameraBasicSettingsDlg::EnableDisableAllCtrls(BOOL bEnable)
 	pEdit->EnableWindow(bEnable);
 	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_MIN_DISK_FREE_PERCENT);
 	pEdit->EnableWindow(bEnable);
-	CButton* pButton = (CButton*)GetDlgItem(IDOK);
+	CButton* pButton = (CButton*)GetDlgItem(IDC_SENDMAIL_CONFIGURE);
+	pButton->EnableWindow(bEnable);
+	pButton = (CButton*)GetDlgItem(IDOK);
 	pButton->EnableWindow(bEnable);
 	pButton = (CButton*)GetDlgItem(IDCANCEL);
 	pButton->EnableWindow(bEnable);
@@ -745,6 +749,14 @@ void CCameraBasicSettingsDlg::Rename()
 	}
 }
 
+void CCameraBasicSettingsDlg::OnSendmailConfigure()
+{
+	CSendMailConfigurationDlg dlg(m_pDoc->GetAssignedDeviceName());
+	dlg.m_SendMailConfiguration = m_CurrentSendMailConfiguration;
+	if (dlg.DoModal() == IDOK)
+		m_CurrentSendMailConfiguration = dlg.m_SendMailConfiguration;
+}
+
 void CCameraBasicSettingsDlg::ApplySettingsSnapshot(int nThumbWidth, int nThumbHeight, double dSnapshotRate)
 {
 	m_pDoc->SnapshotRate(dSnapshotRate);
@@ -796,6 +808,9 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	// Is 24h rec.?
 	BOOL bDo24hRec = Is24hRec();
 
+	// Stop watchdog thread
+	m_pDoc->m_WatchdogThread.Kill();
+
 	// Stop delete thread
 	m_pDoc->m_DeleteThread.Kill();
 
@@ -804,7 +819,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	if (m_pDoc->m_bCaptureAudio)
 	{
 		bDoCaptureAudio = TRUE;
-		m_pDoc->m_bCaptureAudio = FALSE; // disables audio watchdog
+		m_pDoc->m_bCaptureAudio = FALSE;
 		if (m_pDoc->m_pAudioNetCom)
 			m_pDoc->m_pAudioNetCom->Close();
 		else
@@ -1108,9 +1123,13 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	else if (m_pDoc->m_nMinDiskFreePermillion > 1000000)
 		m_pDoc->m_nMinDiskFreePermillion = 1000000;
 
+	// Update send mail configuration
+	m_pDoc->m_SendMailConfiguration = m_CurrentSendMailConfiguration;
+
 	// Restart audio
 	if (bDoCaptureAudio)
 	{
+		::InterlockedExchange(&m_pDoc->m_lLastAudioFramesUpTime, (LONG)::timeGetTime());
 		m_pDoc->m_bCaptureAudio = TRUE;
 		if (m_pDoc->m_pAudioNetCom)
 			m_pDoc->m_HttpThread.SetEventAudioConnect();
@@ -1120,6 +1139,9 @@ void CCameraBasicSettingsDlg::ApplySettings()
 
 	// Restart delete thread
 	m_pDoc->m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
+
+	// Restart watchdog thread
+	m_pDoc->m_WatchdogThread.Start();
 
 	// Do mov. det.?
 	if (bDoMovDet)

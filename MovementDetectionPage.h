@@ -64,7 +64,6 @@ protected:
 	afx_msg void OnReleasedcaptureDetectionLevel(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnAnimatedgifSize();
 	afx_msg void OnSaveAnimGifMovementDetection();
-	afx_msg void OnSendmailConfigure();
 	afx_msg void OnSendmailMovementDetection();
 	afx_msg void OnFtpMovementDetection();
 	afx_msg void OnFtpConfigure();
@@ -79,6 +78,7 @@ protected:
 	afx_msg void OnCheckWaitExecCommand();
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	afx_msg void OnSelchangeDetectionZoneSize();
+	afx_msg void OnSelchangeMovDetAttachmentType();
 	afx_msg void OnSelchangeExecmodeMovementDetection();
 	afx_msg void OnCheckSchedulerSunday();
 	afx_msg void OnCheckSchedulerMonday();

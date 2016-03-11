@@ -18,17 +18,15 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CSendMailConfigurationDlg dialog
 
-CSendMailConfigurationDlg::CSendMailConfigurationDlg(CVideoDeviceDoc* pDoc)
+CSendMailConfigurationDlg::CSendMailConfigurationDlg(const CString& sName)
 	: CDialog(CSendMailConfigurationDlg::IDD, NULL)
 {
 	//{{AFX_DATA_INIT(CSendMailConfigurationDlg)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
-	ASSERT_VALID(pDoc);
-	m_pDoc = pDoc;
+	m_sName = sName;
 	m_hMailer = NULL;
 	m_nRetryTimeMs = 0;
-	m_SendMailConfiguration = pDoc->m_MovDetSendMailConfiguration;
 }
 
 void CSendMailConfigurationDlg::DoDataExchange(CDataExchange* pDX)
@@ -61,13 +59,6 @@ BOOL CSendMailConfigurationDlg::OnInitDialog()
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_RECEIVER_MAIL);
 	pEdit->SetWindowText(m_SendMailConfiguration.m_sTo);
 
-	// Attachment possibilities
-	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_ATTACHMENT);
-    pComboBox->AddString(ML_STRING(1880, "None"));
-    pComboBox->AddString(ML_STRING(1883, "Full Video (check \"Save Full Video\")"));
-    pComboBox->AddString(ML_STRING(1882, "Small Video (check \"Save Small Video\")"));
-	pComboBox->SetCurSel((int)m_SendMailConfiguration.m_AttachmentType);
-
 	// From Name
 	pEdit = (CEdit*)GetDlgItem(IDC_SENDER_NAME);
 	pEdit->SetWindowText(m_SendMailConfiguration.m_sFromName);
@@ -96,7 +87,7 @@ BOOL CSendMailConfigurationDlg::OnInitDialog()
 	pEdit->SetWindowText(m_SendMailConfiguration.m_sPassword);
 
 	// Connection Type
-	pComboBox = (CComboBox*)GetDlgItem(IDC_CONNECTIONTYPE);
+	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_CONNECTIONTYPE);
 	pComboBox->AddString(ML_STRING(1833, "Plain Text (Port 25 or 587)"));
     pComboBox->AddString(ML_STRING(1834, "SSL/TLS (Port 465)"));	
     pComboBox->AddString(ML_STRING(1835, "STARTTLS (Port 25 or 587)"));
@@ -124,10 +115,6 @@ void CSendMailConfigurationDlg::CopyToStruct()
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_RECEIVER_MAIL);
 	pEdit->GetWindowText(sText);
 	m_SendMailConfiguration.m_sTo = sText;
-
-	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_ATTACHMENT);
-	m_SendMailConfiguration.m_AttachmentType =
-			(CVideoDeviceDoc::AttachmentType)pComboBox->GetCurSel();
 
 	pEdit = (CEdit*)GetDlgItem(IDC_SENDER_NAME);
 	pEdit->GetWindowText(sText);
@@ -164,9 +151,8 @@ void CSendMailConfigurationDlg::CopyToStruct()
 	pEdit->GetWindowText(sText);
 	m_SendMailConfiguration.m_sPassword = sText;
 
-	pComboBox = (CComboBox*)GetDlgItem(IDC_CONNECTIONTYPE);
-	m_SendMailConfiguration.m_ConnectionType =
-			(CVideoDeviceDoc::ConnectionType)pComboBox->GetCurSel();
+	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_CONNECTIONTYPE);
+	m_SendMailConfiguration.m_ConnectionType = (ConnectionType)pComboBox->GetCurSel();
 
 	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_SEC_BETWEEN_EMAILS);
 	pEdit->GetWindowText(sText);
@@ -181,13 +167,13 @@ void CSendMailConfigurationDlg::CopyToStruct()
 void CSendMailConfigurationDlg::OnOK() 
 {
 	CopyToStruct();
-	m_pDoc->m_MovDetSendMailConfiguration = m_SendMailConfiguration;
 	CDialog::OnOK();
 }
 
 void CSendMailConfigurationDlg::OnButtonTest() 
 {
 	CopyToStruct();
+
 	if (m_SendMailConfiguration.m_sHost.IsEmpty()	||
 		m_SendMailConfiguration.m_sFrom.IsEmpty()	||
 		m_SendMailConfiguration.m_sTo.IsEmpty()) 
@@ -212,7 +198,7 @@ void CSendMailConfigurationDlg::OnButtonTest()
 		CString sConnectionTypeOption;
 		CString sSubject = m_SendMailConfiguration.m_sSubject;
 		CTime CurrentTime(CTime::GetCurrentTime());
-		sSubject.Replace(_T("%name%"), m_pDoc->GetAssignedDeviceName());
+		sSubject.Replace(_T("%name%"), m_sName);
 		sSubject.Replace(_T("%date%"), ::MakeDateLocalFormat(CurrentTime));
 		sSubject.Replace(_T("%time%"), ::MakeTimeLocalFormat(CurrentTime, TRUE));
 		switch (m_SendMailConfiguration.m_ConnectionType)

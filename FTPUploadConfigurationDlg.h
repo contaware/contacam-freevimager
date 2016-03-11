@@ -8,7 +8,22 @@
 
 #ifdef VIDEODEVICEDOC
 
-class CVideoDeviceDoc;
+// FTP upload configuration structure
+enum FilesToUploadType
+{
+	FILES_TO_UPLOAD_VIDEO		= 0,
+	FILES_TO_UPLOAD_GIF			= 1,
+	FILES_TO_UPLOAD_VIDEO_GIF	= 2
+};
+typedef struct tagFTPUploadConfigurationStruct
+{
+	CString			m_sHost;
+	CString			m_sRemoteDir;
+	int				m_nPort;
+	CString			m_sUsername;
+	CString			m_sPassword;
+	FilesToUploadType m_FilesToUpload;
+} FTPUploadConfigurationStruct;
 
 /////////////////////////////////////////////////////////////////////////////
 // CFTPUploadConfigurationDlg dialog
@@ -18,7 +33,7 @@ class CFTPUploadConfigurationDlg : public CDialog
 // Construction
 public:
 	CFTPUploadConfigurationDlg(UINT idd);
-	CVideoDeviceDoc::FTPUploadConfigurationStruct m_FTPUploadConfiguration;
+	FTPUploadConfigurationStruct m_FTPUploadConfiguration;
 // Dialog Data
 	//{{AFX_DATA(CFTPUploadConfigurationDlg)
 	//}}AFX_DATA

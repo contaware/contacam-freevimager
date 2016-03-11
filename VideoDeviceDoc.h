@@ -16,6 +16,8 @@
 #include "HelpersAudio.h"
 #include "SortableFileFind.h"
 #include "HostPortDlg.h"
+#include "SendMailConfigurationDlg.h"
+#include "FTPUploadConfigurationDlg.h"
 extern "C"
 {
 #include "libavutil/opt.h"
@@ -200,24 +202,12 @@ public:
 	typedef CList<CDib::LIST*,CDib::LIST*> DIBLISTLIST;
 	typedef CList<CNetCom*,CNetCom*> NETCOMLIST;
 	
-	// Enums
-	enum ConnectionType
-	{
-		PlainText					= 0, 
-		SSL_TLS						= 1,
-		STARTTLS					= 2
-	};
+	// Email Attachment Type
 	enum AttachmentType
 	{
-		ATTACHMENT_NONE				= 0,
-		ATTACHMENT_VIDEO			= 1,
-		ATTACHMENT_GIF				= 2
-	};
-	enum FilesToUploadType
-	{
-		FILES_TO_UPLOAD_VIDEO		= 0,
-		FILES_TO_UPLOAD_GIF			= 1,
-		FILES_TO_UPLOAD_VIDEO_GIF	= 2
+		ATTACHMENT_NONE		= 0,
+		ATTACHMENT_VIDEO	= 1,
+		ATTACHMENT_GIF		= 2
 	};
 
 	// The Http Networking Parser & Processor Class
@@ -421,13 +411,14 @@ public:
 	class CWatchdogThread : public CWorkerThread
 	{
 		public:
-			CWatchdogThread() {m_pDoc = NULL;};
+			CWatchdogThread() {m_pDoc = NULL; m_bPollCaptureStarted = TRUE;};
 			virtual ~CWatchdogThread() {Kill();};
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
 
 		protected:
 			int Work();
 			CVideoDeviceDoc* m_pDoc;
+			BOOL m_bPollCaptureStarted;
 	};
 
 	// Delete Thread
@@ -450,33 +441,6 @@ public:
 							const CTime& CurrentTime);
 			CVideoDeviceDoc* m_pDoc;
 	};
-
-	// Email sending configuration structure
-	typedef struct tagSendMailConfigurationStruct
-	{
-		AttachmentType	m_AttachmentType;
-		CString			m_sSubject;
-		CString			m_sTo;
-		CString			m_sFrom;
-		CString			m_sHost;
-		CString			m_sFromName;
-		int				m_nPort;
-		ConnectionType	m_ConnectionType;
-		CString			m_sUsername;
-		CString			m_sPassword;
-		int				m_nSecBetweenMsg;
-	} SendMailConfigurationStruct;
-
-	// FTP upload configuration structure
-	typedef struct tagFTPUploadConfigurationStruct
-	{
-		CString			m_sHost;
-		CString			m_sRemoteDir;
-		int				m_nPort;
-		CString			m_sUsername;
-		CString			m_sPassword;
-		FilesToUploadType m_FilesToUpload;
-	} FTPUploadConfigurationStruct;
 
 	// The Save Frame List Thread Class
 	class CSaveFrameListThread : public CWorkerThread
@@ -1048,9 +1012,12 @@ public:
 	volatile int m_nMovDetSavesCountDay;				// Day of the above count
 	volatile int m_nMovDetSavesCountMonth;				// Month of the above count
 	volatile int m_nMovDetSavesCountYear;				// Year of the above count
-	CTime m_MovDetLastSendMailTime;
-	SendMailConfigurationStruct m_MovDetSendMailConfiguration;
+	AttachmentType m_MovDetAttachmentType;				// The attachment type
+	CTime m_MovDetLastSendMailTime;						// Last sent motion detection mail
 	FTPUploadConfigurationStruct m_MovDetFTPUploadConfiguration;
+
+	// Send mail configuration
+	SendMailConfigurationStruct m_SendMailConfiguration;
 
 	// Property Sheet Pointer
 	CCameraAdvancedSettingsPropertySheet* volatile m_pCameraAdvancedSettingsPropertySheet;

@@ -8,7 +8,6 @@
 #include "VideoDeviceDoc.h"
 #include "VideoDeviceView.h"
 #include "ResizingDlg.h"
-#include "SendMailConfigurationDlg.h"
 #include "FTPUploadConfigurationDlg.h"
 #include "BrowseDlg.h"
 
@@ -76,7 +75,6 @@ BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	ON_NOTIFY(NM_RELEASEDCAPTURE, IDC_DETECTION_LEVEL, OnReleasedcaptureDetectionLevel)
 	ON_BN_CLICKED(IDC_ANIMATEDGIF_SIZE, OnAnimatedgifSize)
 	ON_BN_CLICKED(IDC_SAVE_ANIMATEDGIF_MOVEMENT_DETECTION, OnSaveAnimGifMovementDetection)
-	ON_BN_CLICKED(IDC_SENDMAIL_CONFIGURE, OnSendmailConfigure)
 	ON_BN_CLICKED(IDC_SENDMAIL_MOVEMENT_DETECTION, OnSendmailMovementDetection)
 	ON_BN_CLICKED(IDC_FTP_MOVEMENT_DETECTION, OnFtpMovementDetection)
 	ON_BN_CLICKED(IDC_FTP_CONFIGURE, OnFtpConfigure)
@@ -91,6 +89,7 @@ BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_WAIT_EXEC_COMMAND, OnCheckWaitExecCommand)
 	ON_WM_CTLCOLOR()
 	ON_CBN_SELCHANGE(IDC_DETECTION_ZONE_SIZE, OnSelchangeDetectionZoneSize)
+	ON_CBN_SELCHANGE(IDC_ATTACHMENT, OnSelchangeMovDetAttachmentType)
 	ON_CBN_SELCHANGE(IDC_EXECMODE_MOVEMENT_DETECTION, OnSelchangeExecmodeMovementDetection)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_SUNDAY, OnCheckSchedulerSunday)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_MONDAY, OnCheckSchedulerMonday)
@@ -126,6 +125,10 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	pComboBoxDetectionScheduler->AddString(ML_STRING(1874, "Detection always enabled (scheduler is off)"));
 	pComboBoxDetectionScheduler->AddString(ML_STRING(1875, "Detection enabled:"));
 	pComboBoxDetectionScheduler->AddString(ML_STRING(1876, "Detection disabled:"));
+	CComboBox* pComboBoxAttachment = (CComboBox*)GetDlgItem(IDC_ATTACHMENT);
+    pComboBoxAttachment->AddString(ML_STRING(1880, "No Attachment"));
+    pComboBoxAttachment->AddString(ML_STRING(1883, "Saved Full Video"));
+    pComboBoxAttachment->AddString(ML_STRING(1882, "Saved Small Video"));
 	CComboBox* pComboBoxExexMode = (CComboBox*)GetDlgItem(IDC_EXECMODE_MOVEMENT_DETECTION);
 	pComboBoxExexMode->AddString(ML_STRING(1842, "After Detection Filter OK"));
 	pComboBoxExexMode->AddString(ML_STRING(1843, "After Save,Email,Ftp"));
@@ -189,12 +192,13 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	CButton* pButtonAnimGIFSize = (CButton*)GetDlgItem(IDC_ANIMATEDGIF_SIZE);
 	pButtonAnimGIFSize->SetWindowText(sSize);
 
-	// Send Email Movement Detection Check Box
+	// Send Email on Detection
 	CButton* pCheckSendMailMovementDetection = (CButton*)GetDlgItem(IDC_SENDMAIL_MOVEMENT_DETECTION);
 	if (m_pDoc->m_bSendMailMovementDetection)
 		pCheckSendMailMovementDetection->SetCheck(1);
 	else
 		pCheckSendMailMovementDetection->SetCheck(0);
+	pComboBoxAttachment->SetCurSel((int)m_pDoc->m_MovDetAttachmentType);
 
 	// FTP Upload Movement Detection Check Box
 	CButton* pCheckFTPUploadMovementDetection = (CButton*)GetDlgItem(IDC_FTP_MOVEMENT_DETECTION);
@@ -246,11 +250,11 @@ void CMovementDetectionPage::UpdateDetectionState()
 		if (m_pDoc->m_dwVideoProcessorMode)
 		{
 			if (!m_pDoc->m_sDetectionTriggerFileName.IsEmpty() && m_pDoc->m_nDetectionLevel > 0)
-				sDetectionMode = ML_STRING(1848, "Trigger File + Software");
+				sDetectionMode = ML_STRING(1848, "Motion + Trigger File");
 			else if (!m_pDoc->m_sDetectionTriggerFileName.IsEmpty())
 				sDetectionMode = ML_STRING(1846, "Trigger File");
 			else if (m_pDoc->m_nDetectionLevel > 0)
-				sDetectionMode = ML_STRING(1847, "Software");
+				sDetectionMode = ML_STRING(1847, "Motion");
 		}
 		pEdit->SetWindowText(sDetectionMode);
 	}
@@ -384,6 +388,12 @@ void CMovementDetectionPage::OnSelchangeDetectionZoneSize()
 	m_pDoc->m_nDetectionZoneSize = pComboBox->GetCurSel();
 }
 
+void CMovementDetectionPage::OnSelchangeMovDetAttachmentType() 
+{
+	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_ATTACHMENT);
+	m_pDoc->m_MovDetAttachmentType = (CVideoDeviceDoc::AttachmentType)pComboBox->GetCurSel();
+}
+
 void CMovementDetectionPage::UpdateExecHelp() 
 {
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_EXEC_HELP);
@@ -447,19 +457,6 @@ void CMovementDetectionPage::OnSendmailMovementDetection()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_SENDMAIL_MOVEMENT_DETECTION);
 	m_pDoc->m_bSendMailMovementDetection = pCheck->GetCheck() > 0;
-}
-
-void CMovementDetectionPage::OnSendmailConfigure() 
-{
-	// Stop Save Frame List Thread
-	m_pDoc->m_SaveFrameListThread.Kill();
-
-	// SendMail Config Dialog
-	CSendMailConfigurationDlg dlg(m_pDoc);
-	dlg.DoModal();
-
-	// Restart Save Frame List Thread
-	m_pDoc->m_SaveFrameListThread.Start();
 }
 
 void CMovementDetectionPage::OnFtpMovementDetection()

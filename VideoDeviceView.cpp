@@ -93,6 +93,9 @@ LONG CVideoDeviceView::OnThreadSafeDVChangeVideoFormat(WPARAM wparam, LPARAM lpa
 		{
 			if (!pDoc->m_bClosing)
 			{
+				// Stop watchdog thread
+				pDoc->m_WatchdogThread.Kill();
+
 				// Stop
 				pDoc->m_pDxCapture->Stop();
 
@@ -107,6 +110,7 @@ LONG CVideoDeviceView::OnThreadSafeDVChangeVideoFormat(WPARAM wparam, LPARAM lpa
 				pDoc->m_dwFrameCountUp = 0U;
 				pDoc->m_dwNextSnapshotUpTime = ::timeGetTime();
 				::InterlockedExchange(&pDoc->m_lCurrentInitUpTime, (LONG)pDoc->m_dwNextSnapshotUpTime);
+				::InterlockedExchange(&pDoc->m_lLastAudioFramesUpTime, (LONG)pDoc->m_dwNextSnapshotUpTime);
 
 				// Restart
 				if (pDoc->m_pDxCapture->Run())
@@ -119,6 +123,9 @@ LONG CVideoDeviceView::OnThreadSafeDVChangeVideoFormat(WPARAM wparam, LPARAM lpa
 					// Restart process frame
 					pDoc->StartProcessFrame(PROCESSFRAME_DVFORMATDIALOG);
 				}
+
+				// Restart watchdog thread
+				pDoc->m_WatchdogThread.Start();
 			}
 			pDoc->m_bStopAndChangeFormat = FALSE;
 
@@ -955,6 +962,7 @@ BOOL CVideoDeviceView::ReOpenDxDevice()
 		pDoc->m_dwFrameCountUp = 0U;
 		pDoc->m_dwNextSnapshotUpTime = ::timeGetTime();
 		::InterlockedExchange(&pDoc->m_lCurrentInitUpTime, (LONG)pDoc->m_dwNextSnapshotUpTime);
+		::InterlockedExchange(&pDoc->m_lLastAudioFramesUpTime, (LONG)pDoc->m_dwNextSnapshotUpTime);
 
 		// Re-Open
 		if (pDoc->m_pDxCapture->Open(	GetSafeHwnd(),

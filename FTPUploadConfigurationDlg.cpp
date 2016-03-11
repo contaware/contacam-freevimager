@@ -70,9 +70,9 @@ BOOL CFTPUploadConfigurationDlg::OnInitDialog()
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_FILES_TO_UPLOAD);
 	if (pComboBox)
 	{
-		pComboBox->AddString(ML_STRING(1883, "Full Video (check \"Save Full Video\")"));
-		pComboBox->AddString(ML_STRING(1882, "Small Video (check \"Save Small Video\")"));
-		pComboBox->AddString(ML_STRING(1884, "Full+Small Video (check \"Save Full+Small Video\")"));
+		pComboBox->AddString(ML_STRING(1883, "Saved Full Video"));
+		pComboBox->AddString(ML_STRING(1882, "Saved Small Video"));
+		pComboBox->AddString(ML_STRING(1884, "Saved Full+Small Videos"));
 		pComboBox->SetCurSel((int)m_FTPUploadConfiguration.m_FilesToUpload);
 	}
 
@@ -111,10 +111,7 @@ void CFTPUploadConfigurationDlg::CopyToStruct()
 
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_FILES_TO_UPLOAD);
 	if (pComboBox)
-	{
-		m_FTPUploadConfiguration.m_FilesToUpload =
-			(CVideoDeviceDoc::FilesToUploadType)pComboBox->GetCurSel();
-	}
+		m_FTPUploadConfiguration.m_FilesToUpload = (FilesToUploadType)pComboBox->GetCurSel();
 }
 
 void CFTPUploadConfigurationDlg::OnOK() 

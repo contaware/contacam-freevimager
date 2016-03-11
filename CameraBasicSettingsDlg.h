@@ -6,6 +6,8 @@
 // CameraBasicSettingsDlg.h : header file
 //
 
+#include "SendMailConfigurationDlg.h"
+
 #ifdef VIDEODEVICEDOC
 
 // Forward Declaration
@@ -48,6 +50,7 @@ public:
 // Implementation
 protected:
 	CVideoDeviceDoc* m_pDoc;
+	SendMailConfigurationStruct m_CurrentSendMailConfiguration;
 	BOOL m_bDoApplySettings;
 	int m_nRetryTimeMs;
 	void EnableDisableCtrls();
@@ -68,6 +71,7 @@ protected:
 	afx_msg void OnTimer(UINT nIDEvent);
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 	afx_msg void OnRadioNochange();
+	afx_msg void OnSendmailConfigure();
 	virtual void OnOK();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
