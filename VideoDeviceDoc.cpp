@@ -1425,6 +1425,47 @@ __forceinline CString CVideoDeviceDoc::CSaveSnapshotVideoThread::MakeVideoHistor
 		return sYearMonthDayDir + _T("\\") + _T("shot_") + sTime + m_sSnapshotVideoFileExt;
 }
 
+HANDLE CVideoDeviceDoc::SendMail(	const SendMailConfigurationStruct& SendMailConfiguration,
+									const CString& sName,
+									const CTime& Time,
+									const CString& sBody/*=_T("")*/,
+									BOOL bLog/*=FALSE*/,
+									CString* pLogFileName/*=NULL*/)
+{
+	if (!SendMailConfiguration.m_sHost.IsEmpty()	&&
+		!SendMailConfiguration.m_sFrom.IsEmpty()	&&
+		!SendMailConfiguration.m_sTo.IsEmpty())
+	{
+		CString sOptions;
+		CString sConnectionTypeOption;
+		CString sSubject = SendMailConfiguration.m_sSubject;
+		sSubject.Replace(_T("%name%"), sName);
+		sSubject.Replace(_T("%date%"), ::MakeDateLocalFormat(Time));
+		sSubject.Replace(_T("%time%"), ::MakeTimeLocalFormat(Time, TRUE));
+		switch (SendMailConfiguration.m_ConnectionType)
+		{
+			case 0 : sConnectionTypeOption = _T(""); break;				// Plain Text
+			case 1 : sConnectionTypeOption = _T("-ssl"); break;			// SSL and TLS
+			default: sConnectionTypeOption = _T("-starttls"); break;	// STARTTLS
+		}
+		sOptions.Format(_T("-t \"%s\" -f %s %s %s -port %d %s -smtp %s -cs \"iso-8859-1\" -sub \"%s\" +cc +bc -user \"%s\" -pass \"%s\" -M \"%s\""),
+						SendMailConfiguration.m_sTo,
+						SendMailConfiguration.m_sFrom,
+						SendMailConfiguration.m_sFromName.IsEmpty() ? _T("") : _T("-name \"") + SendMailConfiguration.m_sFromName + _T("\""),
+						sConnectionTypeOption,
+						SendMailConfiguration.m_nPort,
+						(SendMailConfiguration.m_sUsername.IsEmpty() && SendMailConfiguration.m_sPassword.IsEmpty()) ? _T("") : _T("-auth"),
+						SendMailConfiguration.m_sHost,
+						sSubject,
+						SendMailConfiguration.m_sUsername,
+						SendMailConfiguration.m_sPassword,
+						sBody.IsEmpty() ? sSubject : sBody);
+		return Mailer(sOptions, bLog, pLogFileName);
+	}
+	else
+		return NULL;
+}
+
 void CVideoDeviceDoc::SendMailMovementDetection(const CTime& Time,
 												const CString& sVideoFileName/*=_T("")*/,
 												const CString& sGIFFileName/*=_T("")*/)
@@ -1434,7 +1475,7 @@ void CVideoDeviceDoc::SendMailMovementDetection(const CTime& Time,
 	if (!m_SendMailConfiguration.m_sHost.IsEmpty()	&&
 		!m_SendMailConfiguration.m_sFrom.IsEmpty()	&&
 		!m_SendMailConfiguration.m_sTo.IsEmpty()	&&
-		TimeDiff.GetTotalSeconds() >= (LONGLONG)(m_SendMailConfiguration.m_nSecBetweenMsg))
+		TimeDiff.GetTotalSeconds() >= (LONGLONG)m_nMovDetSendMailSecBetweenMsg)
 	{
 		CString sOptions;
 		CString sConnectionTypeOption;
@@ -1470,13 +1511,6 @@ void CVideoDeviceDoc::SendMailMovementDetection(const CTime& Time,
 		{
 			::CloseHandle(h);
 			m_MovDetLastSendMailTime = CurrentTime;
-			CString sSection(GetDevicePathName());
-			::AfxGetApp()->WriteProfileInt(sSection, _T("SendMailYear"), m_MovDetLastSendMailTime.GetYear());
-			::AfxGetApp()->WriteProfileInt(sSection, _T("SendMailMonth"), m_MovDetLastSendMailTime.GetMonth());
-			::AfxGetApp()->WriteProfileInt(sSection, _T("SendMailDay"), m_MovDetLastSendMailTime.GetDay());
-			::AfxGetApp()->WriteProfileInt(sSection, _T("SendMailHour"), m_MovDetLastSendMailTime.GetHour());
-			::AfxGetApp()->WriteProfileInt(sSection, _T("SendMailMin"), m_MovDetLastSendMailTime.GetMinute());
-			::AfxGetApp()->WriteProfileInt(sSection, _T("SendMailSec"), m_MovDetLastSendMailTime.GetSecond());
 		}
 	}
 }
@@ -3167,9 +3201,11 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 		}
 	}
 
-	// Set time far in the past
-	CTime LastHttpReconnectTime = CTime(0);
-	CTime LastMailReportTime = CTime(0);
+	// Init vars
+	CTime LastHttpReconnectTime = CTime(0); // set time far in the past
+	CTime AlertBeginTime = CTime(0);		// set time far in the past
+	int bAlertLevel = 0; 
+	BOOL bDeviceAlert = (BOOL)::AfxGetApp()->GetProfileInt(m_pDoc->GetDevicePathName(), _T("DeviceAlert"), FALSE);
 
 	// Watch
 	for (;;)
@@ -3215,7 +3251,7 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 					m_pDoc->m_bSaveAnimGIFMovementDetection))
 					m_pDoc->SaveFrameList(FALSE);
 
-				// Watchdog action
+				// Watchdog actions
 				if (m_pDoc->m_bWatchDogVideoAlarm || m_pDoc->m_bWatchDogAudioAlarm)
 				{
 					// Http reconnect
@@ -3237,16 +3273,45 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 						}
 					}
 
-					// TODO: Send Email Alert
-					CTimeSpan TimeSpan = CurrentTime - LastMailReportTime;
-					if (!m_pDoc->m_SendMailConfiguration.m_sHost.IsEmpty()	&&
-						!m_pDoc->m_SendMailConfiguration.m_sFrom.IsEmpty()	&&
-						!m_pDoc->m_SendMailConfiguration.m_sTo.IsEmpty()	&&
-						TimeSpan.GetTotalSeconds() > (LONGLONG)(m_pDoc->m_SendMailConfiguration.m_nSecBetweenMsg))
+					// Device Alert
+					if (bAlertLevel == 0)
 					{
-						LastMailReportTime = CurrentTime;
-						// Send alert here
-						// ...
+						bAlertLevel = 1;
+						AlertBeginTime = CurrentTime;
+					}
+					else if (bAlertLevel == 1)
+					{
+						CTimeSpan TimeSpan = CurrentTime - AlertBeginTime;
+						if (TimeSpan.GetTotalSeconds() > WATCHDOG_ALERT_SEND_TIMEOUT)
+							bAlertLevel = 2;
+					}
+					else if (bAlertLevel == 2)
+					{
+						if (!bDeviceAlert)
+						{
+							CString sBody;
+							sBody.Format(_T("%s: OFF!"), m_pDoc->GetAssignedDeviceName());
+							HANDLE h = CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), CTime::GetCurrentTime(), sBody);
+							if (h)
+								::CloseHandle(h);
+							bDeviceAlert = TRUE;
+							::AfxGetApp()->WriteProfileInt(m_pDoc->GetDevicePathName(), _T("DeviceAlert"), bDeviceAlert);
+						}
+					}
+				}
+				// Clear
+				else
+				{
+					bAlertLevel = 0;
+					if (bDeviceAlert)
+					{
+						CString sBody;
+						sBody.Format(_T("%s: OK"), m_pDoc->GetAssignedDeviceName());
+						HANDLE h = CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), CTime::GetCurrentTime(), sBody);
+						if (h)
+							::CloseHandle(h);
+						bDeviceAlert = FALSE;
+						::AfxGetApp()->WriteProfileInt(m_pDoc->GetDevicePathName(), _T("DeviceAlert"), bDeviceAlert);
 					}
 				}
 
@@ -3703,6 +3768,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	// Email Settings
 	m_MovDetLastSendMailTime = 0;
 	m_MovDetAttachmentType = ATTACHMENT_NONE;
+	m_nMovDetSendMailSecBetweenMsg = 0;
 	m_SendMailConfiguration.m_sSubject = MOVDET_DEFAULT_EMAIL_SUBJECT;
 	m_SendMailConfiguration.m_sTo = _T("");
 	m_SendMailConfiguration.m_nPort = 587;
@@ -3712,7 +3778,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_SendMailConfiguration.m_sUsername = _T("");
 	m_SendMailConfiguration.m_sPassword = _T("");
 	m_SendMailConfiguration.m_ConnectionType = STARTTLS;
-	m_SendMailConfiguration.m_nSecBetweenMsg = 0;
 
 	// FTP Settings
 	m_MovDetFTPUploadConfiguration.m_sHost = _T("");
@@ -4256,17 +4321,12 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_bDeviceFirstRun = (pApp->GetProfileString(sSection, _T("DeviceName"), _T("")) == _T(""));
 
 	// Email Settings
-	m_MovDetLastSendMailTime = CTime(	pApp->GetProfileInt(sSection, _T("SendMailYear"), 2000),
-										pApp->GetProfileInt(sSection, _T("SendMailMonth"), 1),
-										pApp->GetProfileInt(sSection, _T("SendMailDay"), 1),
-										pApp->GetProfileInt(sSection, _T("SendMailHour"), 12),
-										pApp->GetProfileInt(sSection, _T("SendMailMin"), 0),
-										pApp->GetProfileInt(sSection, _T("SendMailSec"), 0));
 	m_MovDetAttachmentType = (AttachmentType) pApp->GetProfileInt(sSection, _T("AttachmentType"), ATTACHMENT_NONE);
 	if (m_MovDetAttachmentType < ATTACHMENT_NONE)
 		m_MovDetAttachmentType = ATTACHMENT_NONE;
 	else if (m_MovDetAttachmentType > ATTACHMENT_GIF)
 		m_MovDetAttachmentType = ATTACHMENT_GIF;
+	m_nMovDetSendMailSecBetweenMsg = (int) pApp->GetProfileInt(sSection, _T("SendMailSecBetweenMsg"), 0);
 	m_SendMailConfiguration.m_sSubject = pApp->GetProfileString(sSection, _T("SendMailSubject"), MOVDET_DEFAULT_EMAIL_SUBJECT);
 	if (m_SendMailConfiguration.m_sSubject.IsEmpty())
 		m_SendMailConfiguration.m_sSubject = MOVDET_DEFAULT_EMAIL_SUBJECT;
@@ -4278,7 +4338,6 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_SendMailConfiguration.m_sUsername = pApp->GetSecureProfileString(sSection, _T("SendMailUsername"), _T(""));
 	m_SendMailConfiguration.m_sPassword = pApp->GetSecureProfileString(sSection, _T("SendMailPassword"), _T(""));
 	m_SendMailConfiguration.m_ConnectionType = (ConnectionType) pApp->GetProfileInt(sSection, _T("SendMailConnectionType"), STARTTLS);
-	m_SendMailConfiguration.m_nSecBetweenMsg = (int) pApp->GetProfileInt(sSection, _T("SendMailSecBetweenMsg"), 0);
 
 	// FTP Settings
 	m_MovDetFTPUploadConfiguration.m_sHost = pApp->GetProfileString(sSection, _T("MovDetFTPHost"), _T(""));
@@ -4470,12 +4529,7 @@ void CVideoDeviceDoc::SaveSettings()
 
 	// Email Settings
 	pApp->WriteProfileInt(sSection, _T("AttachmentType"), (int)m_MovDetAttachmentType);
-	pApp->WriteProfileInt(sSection, _T("SendMailYear"), m_MovDetLastSendMailTime.GetYear());
-	pApp->WriteProfileInt(sSection, _T("SendMailMonth"), m_MovDetLastSendMailTime.GetMonth());
-	pApp->WriteProfileInt(sSection, _T("SendMailDay"), m_MovDetLastSendMailTime.GetDay());
-	pApp->WriteProfileInt(sSection, _T("SendMailHour"), m_MovDetLastSendMailTime.GetHour());
-	pApp->WriteProfileInt(sSection, _T("SendMailMin"), m_MovDetLastSendMailTime.GetMinute());
-	pApp->WriteProfileInt(sSection, _T("SendMailSec"), m_MovDetLastSendMailTime.GetSecond());
+	pApp->WriteProfileInt(sSection, _T("SendMailSecBetweenMsg"), m_nMovDetSendMailSecBetweenMsg);
 	pApp->WriteProfileString(sSection, _T("SendMailSubject"), m_SendMailConfiguration.m_sSubject);
 	pApp->WriteProfileString(sSection, _T("SendMailTo"), m_SendMailConfiguration.m_sTo);
 	pApp->WriteProfileInt(sSection, _T("SendMailPort"), m_SendMailConfiguration.m_nPort);
@@ -4485,7 +4539,6 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteSecureProfileString(sSection, _T("SendMailUsername"), m_SendMailConfiguration.m_sUsername);
 	pApp->WriteSecureProfileString(sSection, _T("SendMailPassword"), m_SendMailConfiguration.m_sPassword);
 	pApp->WriteProfileInt(sSection, _T("SendMailConnectionType"), (int)m_SendMailConfiguration.m_ConnectionType);
-	pApp->WriteProfileInt(sSection, _T("SendMailSecBetweenMsg"), m_SendMailConfiguration.m_nSecBetweenMsg);
 
 	// FTP Settings
 	pApp->WriteProfileString(sSection, _T("MovDetFTPHost"), m_MovDetFTPUploadConfiguration.m_sHost);

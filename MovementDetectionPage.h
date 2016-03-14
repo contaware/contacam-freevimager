@@ -36,8 +36,10 @@ public:
 	int m_nDetectionMaxFrames;
 	CSpinButtonCtrl	m_SpinDetectionMinLengthSeconds;
 	CSliderCtrl	m_DetectionLevel;
-	CTime	m_DetectionStartTime;
-	CTime	m_DetectionStopTime;
+	CTime m_DetectionStartTime;
+	CTime m_DetectionStopTime;
+	int m_nSendMailSecBetweenMsg;
+	CSpinButtonCtrl	m_SpinSendMailSecBetweenMsg;
 	//}}AFX_DATA
 
 
@@ -79,6 +81,7 @@ protected:
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	afx_msg void OnSelchangeDetectionZoneSize();
 	afx_msg void OnSelchangeMovDetAttachmentType();
+	afx_msg void OnChangeEditSendMailSecBetweenMsg();
 	afx_msg void OnSelchangeExecmodeMovementDetection();
 	afx_msg void OnCheckSchedulerSunday();
 	afx_msg void OnCheckSchedulerMonday();

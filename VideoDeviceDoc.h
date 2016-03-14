@@ -89,6 +89,7 @@ class CMovementDetectionPage;
 // Watch Dog
 #define WATCHDOG_CHECK_TIME					1000U		// ms
 #define WATCHDOG_THRESHOLD					30000U		// ms, make sure that: 1000 / MIN_FRAMERATE < WATCHDOG_THRESHOLD
+#define WATCHDOG_ALERT_SEND_TIMEOUT			900			// sec, 15 min
 
 // Snapshot
 #define MIN_SNAPSHOT_RATE					1			// one snapshot per second
@@ -783,6 +784,12 @@ public:
 	// Mailer
 	static CString MailerGetLogFileName();
 	static HANDLE Mailer(CString sParams, BOOL bLog = FALSE, CString* pLogFileName = NULL);
+	static HANDLE SendMail(	const SendMailConfigurationStruct& SendMailConfiguration,	
+							const CString& sName,			// sName is replaces in subject if %name% present					
+							const CTime& Time,				// Time is replaced in subject if %date% and/or %time% present
+							const CString& sBody = _T(""),	// if no body given use subject as body
+							BOOL bLog = FALSE,				// log to file?
+							CString* pLogFileName = NULL);	// returns the generated log filename if bLog is TRUE
 	void SendMailMovementDetection(	const CTime& Time,
 									const CString& sVideoFileName = _T(""),
 									const CString& sGIFFileName = _T(""));
@@ -1012,8 +1019,9 @@ public:
 	volatile int m_nMovDetSavesCountDay;				// Day of the above count
 	volatile int m_nMovDetSavesCountMonth;				// Month of the above count
 	volatile int m_nMovDetSavesCountYear;				// Year of the above count
-	AttachmentType m_MovDetAttachmentType;				// The attachment type
-	CTime m_MovDetLastSendMailTime;						// Last sent motion detection mail
+	volatile AttachmentType m_MovDetAttachmentType;		// The email attachment type
+	volatile int m_nMovDetSendMailSecBetweenMsg;		// Minimum seconds between Detection Emails
+	CTime m_MovDetLastSendMailTime;						// Last sent Detection Email Time
 	FTPUploadConfigurationStruct m_MovDetFTPUploadConfiguration;
 
 	// Send mail configuration

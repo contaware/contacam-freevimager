@@ -62,6 +62,9 @@ void CMovementDetectionPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_SPIN_DETECTION_MIN_LENGTH, m_SpinDetectionMinLengthSeconds);
 	DDX_Text(pDX, IDC_EDIT_DETECTION_MAX_FRAMES, m_nDetectionMaxFrames);
 	DDV_MinMaxInt(pDX, m_nDetectionMaxFrames, 1, 1000000);
+	DDX_Text(pDX, IDC_EDIT_SENDMAIL_SEC_BETWEEN_MSG, m_nSendMailSecBetweenMsg);
+	DDV_MinMaxInt(pDX, m_nSendMailSecBetweenMsg, 0, INT_MAX);
+	DDX_Control(pDX, IDC_SPIN_SENDMAIL_SEC_BETWEEN_MSG, m_SpinSendMailSecBetweenMsg);
 	//}}AFX_DATA_MAP
 }
 
@@ -90,6 +93,7 @@ BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	ON_WM_CTLCOLOR()
 	ON_CBN_SELCHANGE(IDC_DETECTION_ZONE_SIZE, OnSelchangeDetectionZoneSize)
 	ON_CBN_SELCHANGE(IDC_ATTACHMENT, OnSelchangeMovDetAttachmentType)
+	ON_EN_CHANGE(IDC_EDIT_SENDMAIL_SEC_BETWEEN_MSG, OnChangeEditSendMailSecBetweenMsg)
 	ON_CBN_SELCHANGE(IDC_EXECMODE_MOVEMENT_DETECTION, OnSelchangeExecmodeMovementDetection)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_SUNDAY, OnCheckSchedulerSunday)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_MONDAY, OnCheckSchedulerMonday)
@@ -115,6 +119,7 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	m_nDetectionMaxFrames = m_pDoc->m_nDetectionMaxFrames;
 	m_DetectionStartTime = m_pDoc->m_DetectionStartTime;
 	m_DetectionStopTime = m_pDoc->m_DetectionStopTime;
+	m_nSendMailSecBetweenMsg = m_pDoc->m_nMovDetSendMailSecBetweenMsg;
 
 	// Init Combo Boxes
 	CComboBox* pComboBoxZoneSize = (CComboBox*)GetDlgItem(IDC_DETECTION_ZONE_SIZE);
@@ -142,6 +147,9 @@ BOOL CMovementDetectionPage::OnInitDialog()
 
 	// Movement Detection minimum detection length in seconds, below this value SaveFrameList() is not called
 	m_SpinDetectionMinLengthSeconds.SetRange(0, 99);
+
+	// Minimum seconds between Motion Emails Spin Control
+	m_SpinSendMailSecBetweenMsg.SetRange32(0, INT_MAX);
 
 	// Detection Level Slider & Edit Controls
 	m_DetectionLevel.SetRange(0, 100, TRUE);
@@ -392,6 +400,15 @@ void CMovementDetectionPage::OnSelchangeMovDetAttachmentType()
 {
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_ATTACHMENT);
 	m_pDoc->m_MovDetAttachmentType = (CVideoDeviceDoc::AttachmentType)pComboBox->GetCurSel();
+}
+
+void CMovementDetectionPage::OnChangeEditSendMailSecBetweenMsg() 
+{
+	if (::IsWindow(m_SpinSendMailSecBetweenMsg.GetSafeHwnd()))
+	{
+		if (UpdateData(TRUE))
+			m_pDoc->m_nMovDetSendMailSecBetweenMsg = m_nSendMailSecBetweenMsg;
+	}
 }
 
 void CMovementDetectionPage::UpdateExecHelp() 

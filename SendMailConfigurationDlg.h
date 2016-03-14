@@ -26,7 +26,6 @@ typedef struct tagSendMailConfigurationStruct
 	ConnectionType	m_ConnectionType;
 	CString			m_sUsername;
 	CString			m_sPassword;
-	int				m_nSecBetweenMsg;
 } SendMailConfigurationStruct;
 
 /////////////////////////////////////////////////////////////////////////////

@@ -93,13 +93,6 @@ BOOL CSendMailConfigurationDlg::OnInitDialog()
     pComboBox->AddString(ML_STRING(1835, "STARTTLS (Port 25 or 587)"));
 	pComboBox->SetCurSel(m_SendMailConfiguration.m_ConnectionType);
 
-	// Seconds between sent messages
-	CSpinButtonCtrl* pSpin = (CSpinButtonCtrl*)GetDlgItem(IDC_SPIN_SEC_BETWEEN_EMAILS);
-	pSpin->SetRange32(0, INT_MAX);
-	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_SEC_BETWEEN_EMAILS);
-	s.Format(_T("%i"), m_SendMailConfiguration.m_nSecBetweenMsg);
-	pEdit->SetWindowText(s);
-
 	// Set Timer
 	SetTimer(ID_TIMER_SENDMAILCONFIGURATIONDLG, SENDMAILCONFIGURATIONDLG_TIMER_MS, NULL);
 
@@ -153,15 +146,6 @@ void CSendMailConfigurationDlg::CopyToStruct()
 
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_CONNECTIONTYPE);
 	m_SendMailConfiguration.m_ConnectionType = (ConnectionType)pComboBox->GetCurSel();
-
-	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_SEC_BETWEEN_EMAILS);
-	pEdit->GetWindowText(sText);
-	nNum = _tcstol(sText.GetBuffer(0), NULL, 10);
-	sText.ReleaseBuffer();
-	if (nNum < 0)
-		m_SendMailConfiguration.m_nSecBetweenMsg = 0;
-	else
-		m_SendMailConfiguration.m_nSecBetweenMsg = nNum;
 }
 
 void CSendMailConfigurationDlg::OnOK() 
@@ -194,32 +178,7 @@ void CSendMailConfigurationDlg::OnButtonTest()
 		SendMessage(WM_SETCURSOR, (WPARAM)GetSafeHwnd(), MAKELPARAM(HTCLIENT, WM_MOUSEMOVE));
 
 		// Mail
-		CString sOptions;
-		CString sConnectionTypeOption;
-		CString sSubject = m_SendMailConfiguration.m_sSubject;
-		CTime CurrentTime(CTime::GetCurrentTime());
-		sSubject.Replace(_T("%name%"), m_sName);
-		sSubject.Replace(_T("%date%"), ::MakeDateLocalFormat(CurrentTime));
-		sSubject.Replace(_T("%time%"), ::MakeTimeLocalFormat(CurrentTime, TRUE));
-		switch (m_SendMailConfiguration.m_ConnectionType)
-		{
-			case 0 : sConnectionTypeOption = _T(""); break;				// Plain Text
-			case 1 : sConnectionTypeOption = _T("-ssl"); break;			// SSL and TLS
-			default: sConnectionTypeOption = _T("-starttls"); break;	// STARTTLS
-		}
-		sOptions.Format(_T("-t \"%s\" -f %s %s %s -port %d %s -smtp %s -cs \"iso-8859-1\" -sub \"%s\" +cc +bc -user \"%s\" -pass \"%s\" -M \"%s\""),
-						m_SendMailConfiguration.m_sTo,
-						m_SendMailConfiguration.m_sFrom,
-						m_SendMailConfiguration.m_sFromName.IsEmpty() ? _T("") : _T("-name \"") + m_SendMailConfiguration.m_sFromName + _T("\""),
-						sConnectionTypeOption,
-						m_SendMailConfiguration.m_nPort,
-						(m_SendMailConfiguration.m_sUsername.IsEmpty() && m_SendMailConfiguration.m_sPassword.IsEmpty()) ? _T("") : _T("-auth"),
-						m_SendMailConfiguration.m_sHost,
-						sSubject,
-						m_SendMailConfiguration.m_sUsername,
-						m_SendMailConfiguration.m_sPassword,
-						sSubject);
-		m_hMailer = CVideoDeviceDoc::Mailer(sOptions, TRUE, &m_sLogFileName);
+		m_hMailer = CVideoDeviceDoc::SendMail(m_SendMailConfiguration, m_sName, CTime::GetCurrentTime(), _T(""), TRUE, &m_sLogFileName);
 		if (!m_hMailer)
 		{
 			EndWaitCursor();
