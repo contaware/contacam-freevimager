@@ -863,11 +863,14 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 				}
 				m_nDstBufSize[dwStreamNum] = nNewDstBufSize;
 			}
+			m_pFrame[dwStreamNum]->format = pCodecCtx->pix_fmt;	// to avoid the avcodec_encode_video2 warning: "AVFrame.format is not set"
+			m_pFrame[dwStreamNum]->width = pCodecCtx->width;	// to avoid the avcodec_encode_video2 warning: "AVFrame.width or height is not set"
+			m_pFrame[dwStreamNum]->height = pCodecCtx->height;	// to avoid the avcodec_encode_video2 warning: "AVFrame.width or height is not set"
 			avpicture_fill(	(AVPicture*)(m_pFrame[dwStreamNum]),
 							*m_ppDstBuf[dwStreamNum],
-							pCodecCtx->pix_fmt,
-							pCodecCtx->width,
-							pCodecCtx->height);
+							(enum AVPixelFormat)m_pFrame[dwStreamNum]->format,
+							m_pFrame[dwStreamNum]->width,
+							m_pFrame[dwStreamNum]->height);
 
 			// Convert (first try fast conversion, if not supported fall back to sws_scale)
 			BOOL bOk = FALSE;
@@ -901,11 +904,14 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 		else
 		{
 			// Init Src Frame
+			m_pFrame[dwStreamNum]->format = SrcPixFormat;				// to avoid the avcodec_encode_video2 warning: "AVFrame.format is not set"
+			m_pFrame[dwStreamNum]->width = pBmi->bmiHeader.biWidth;		// to avoid the avcodec_encode_video2 warning: "AVFrame.width or height is not set"
+			m_pFrame[dwStreamNum]->height = pBmi->bmiHeader.biHeight;	// to avoid the avcodec_encode_video2 warning: "AVFrame.width or height is not set"
 			avpicture_fill(	(AVPicture*)(m_pFrame[dwStreamNum]),
 							*m_ppSrcBuf[dwStreamNum],
-							SrcPixFormat,
-							pBmi->bmiHeader.biWidth,
-							pBmi->bmiHeader.biHeight);
+							(enum AVPixelFormat)m_pFrame[dwStreamNum]->format,
+							m_pFrame[dwStreamNum]->width,
+							m_pFrame[dwStreamNum]->height);
 			if (SrcPixFormat == AV_PIX_FMT_PAL8)
 			{
 				if (m_pAVPalette[dwStreamNum] == NULL)

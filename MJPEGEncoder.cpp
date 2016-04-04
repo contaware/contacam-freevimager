@@ -138,12 +138,15 @@ DWORD CMJPEGEncoder::Encode(int qscale, LPBITMAPINFO pSrcBMI, LPBYTE pSrcBits, i
 	}
 
 	// Encode
+	m_pFrame->format = CAVRec::AVCodecBMIToPixFormat(pSrcBMI);	// to avoid the avcodec_encode_video2 warning: "AVFrame.format is not set"
+	m_pFrame->width = pSrcBMI->bmiHeader.biWidth;				// to avoid the avcodec_encode_video2 warning: "AVFrame.width or height is not set"
+	m_pFrame->height = pSrcBMI->bmiHeader.biHeight;				// to avoid the avcodec_encode_video2 warning: "AVFrame.width or height is not set"
+	m_pFrame->quality = FF_QP2LAMBDA * qscale;
 	avpicture_fill(	(AVPicture*)m_pFrame,
 					(uint8_t*)pSrcBits,
-					CAVRec::AVCodecBMIToPixFormat(pSrcBMI),
-					pSrcBMI->bmiHeader.biWidth,
-					pSrcBMI->bmiHeader.biHeight);
-	m_pFrame->quality = FF_QP2LAMBDA * qscale;
+					(enum AVPixelFormat)m_pFrame->format,
+					m_pFrame->width,
+					m_pFrame->height);
 	AVPacket avpkt;
 	av_init_packet(&avpkt);
 	avpkt.data = m_pOutbuf;
