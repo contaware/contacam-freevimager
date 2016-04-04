@@ -32,6 +32,13 @@ static char THIS_FILE[] = __FILE__;
 // Defined in uImager.cpp
 int avcodec_open_thread_safe(AVCodecContext *avctx, AVCodec *codec);
 int avcodec_close_thread_safe(AVCodecContext *avctx);
+SwsContext *sws_getContextHelper(	int srcW, int srcH, enum AVPixelFormat srcFormat,
+									int dstW, int dstH, enum AVPixelFormat dstFormat,
+									int flags);
+SwsContext *sws_getCachedContextHelper(	struct SwsContext *context,
+										int srcW, int srcH, enum AVPixelFormat srcFormat,
+                                        int dstW, int dstH, enum AVPixelFormat dstFormat,
+										int flags);
 
 /////////////////////////////////////////////////////////////////////////////
 // PictureDoc
@@ -2486,16 +2493,13 @@ BOOL CVideoDeviceDoc::ResizeFast(CDib* pSrcDib, CDib* pDstDib)
 					pDstDib->GetHeight());
 
 	// Prepare Image Conversion Context
-	pImgConvertCtx = sws_getContext(pSrcDib->GetWidth(),	// Source Width
-									pSrcDib->GetHeight(),	// Source Height
-									src_pix_fmt,			// Source Format
-									pDstDib->GetWidth(),	// Destination Width
-									pDstDib->GetHeight(),	// Destination Height
-									dst_pix_fmt,			// Destination Format
-									SWS_BICUBIC,			// Interpolation (add SWS_PRINT_INFO to debug)
-									NULL,					// No Source Filter
-									NULL,					// No Destination Filter
-									NULL);					// Param
+	pImgConvertCtx = sws_getContextHelper(	pSrcDib->GetWidth(),	// Source Width
+											pSrcDib->GetHeight(),	// Source Height
+											src_pix_fmt,			// Source Format
+											pDstDib->GetWidth(),	// Destination Width
+											pDstDib->GetHeight(),	// Destination Height
+											dst_pix_fmt,			// Destination Format
+											SWS_BICUBIC);			// Interpolation (add SWS_PRINT_INFO to debug)
 	if (!pImgConvertCtx)
 		goto exit;
 
@@ -2570,20 +2574,6 @@ BOOL CVideoDeviceDoc::SaveJpegFast(CDib* pDib, CMJPEGEncoder* pMJPEGEncoder, con
 					pDib->GetWidth(),
 					pDib->GetHeight());
 
-	// Prepare Image Conversion Context
-	pImgConvertCtx = sws_getContext(pDib->GetWidth(),		// Source Width
-									pDib->GetHeight(),		// Source Height
-									src_pix_fmt,			// Source Format
-									pDib->GetWidth(),		// Destination Width
-									pDib->GetHeight(),		// Destination Height
-									dst_pix_fmt,			// Destination Format
-									SWS_BICUBIC,			// Interpolation (add SWS_PRINT_INFO to debug)
-									NULL,					// No Source Filter
-									NULL,					// No Destination Filter
-									NULL);					// Param
-	if (!pImgConvertCtx)
-		goto exit;
-
 	// Convert (first try fast conversion, if source format not supported fall back to sws_scale)
 	if (!ITU601JPEGConvert(	src_pix_fmt,			// Source Format
 							dst_pix_fmt,			// Destination Format
@@ -2594,6 +2584,15 @@ BOOL CVideoDeviceDoc::SaveJpegFast(CDib* pDib, CMJPEGEncoder* pMJPEGEncoder, con
 							pDib->GetWidth(),		// Width
 							pDib->GetHeight()))		// Height
 	{
+		pImgConvertCtx = sws_getContextHelper(	pDib->GetWidth(),	// Source Width
+												pDib->GetHeight(),	// Source Height
+												src_pix_fmt,		// Source Format
+												pDib->GetWidth(),	// Destination Width
+												pDib->GetHeight(),	// Destination Height
+												dst_pix_fmt,		// Destination Format
+												SWS_BICUBIC);		// Interpolation (add SWS_PRINT_INFO to debug)
+		if (!pImgConvertCtx)
+			goto exit;
 		if (sws_scale(	pImgConvertCtx,				// Image Convert Context
 						pSrcFrame->data,			// Source Data
 						pSrcFrame->linesize,		// Source Stride
@@ -11024,17 +11023,14 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::InitImgConvert()
 					m_pCodecCtx->height);
 
 	// Prepare Image Conversion Context
-	m_pImgConvertCtx = sws_getCachedContext(m_pImgConvertCtx,		// Re-use if already allocated
-											m_pCodecCtx->width,		// Source Width
-											m_pCodecCtx->height,	// Source Height
-											m_pCodecCtx->pix_fmt,	// Source Format
-											m_pCodecCtx->width,		// Destination Width
-											m_pCodecCtx->height,	// Destination Height
-											AV_PIX_FMT_YUV420P,		// Destination Format
-											SWS_BICUBIC,			// Interpolation (add SWS_PRINT_INFO to debug)
-											NULL,					// No Source Filter
-											NULL,					// No Destination Filter
-											NULL);					// Param
+	m_pImgConvertCtx = sws_getCachedContextHelper(	m_pImgConvertCtx,		// Re-use if already allocated
+													m_pCodecCtx->width,		// Source Width
+													m_pCodecCtx->height,	// Source Height
+													m_pCodecCtx->pix_fmt,	// Source Format
+													m_pCodecCtx->width,		// Destination Width
+													m_pCodecCtx->height,	// Destination Height
+													AV_PIX_FMT_YUV420P,		// Destination Format
+													SWS_BICUBIC);			// Interpolation (add SWS_PRINT_INFO to debug)
 
 	return (m_pImgConvertCtx != NULL);
 }

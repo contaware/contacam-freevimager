@@ -247,6 +247,166 @@ int avcodec_close_thread_safe(AVCodecContext *avctx)
 	return ret;
 }
 
+static int handle_jpeg_helper(enum AVPixelFormat *format)
+{
+    switch (*format) {
+    case AV_PIX_FMT_YUVJ420P:
+        *format = AV_PIX_FMT_YUV420P;
+        return 1;
+    case AV_PIX_FMT_YUVJ411P:
+        *format = AV_PIX_FMT_YUV411P;
+        return 1;
+    case AV_PIX_FMT_YUVJ422P:
+        *format = AV_PIX_FMT_YUV422P;
+        return 1;
+    case AV_PIX_FMT_YUVJ444P:
+        *format = AV_PIX_FMT_YUV444P;
+        return 1;
+    case AV_PIX_FMT_YUVJ440P:
+        *format = AV_PIX_FMT_YUV440P;
+        return 1;
+    case AV_PIX_FMT_GRAY8:
+    case AV_PIX_FMT_GRAY16LE:
+    case AV_PIX_FMT_GRAY16BE:
+        return 1;
+    default:
+        return 0;
+    }
+}
+
+// To avoid the "deprecated pixel format used, make sure you did set range correctly"
+// warning in sws_init_context() use this instead of sws_getContext()
+SwsContext *sws_getContextHelper(	int srcW, int srcH, enum AVPixelFormat srcFormat,
+									int dstW, int dstH, enum AVPixelFormat dstFormat,
+									int flags)
+{
+	SwsContext *c;
+
+    if (!(c = sws_alloc_context()))
+        return NULL;
+
+	// YUV range
+	// 0 = limited MPEG YUV range
+	// 1 = full JPEG YUV range
+	int srcRange = handle_jpeg_helper(&srcFormat);
+    int dstRange = handle_jpeg_helper(&dstFormat);
+	
+	av_opt_set_int(c, "srcw",       srcW, 0);
+	av_opt_set_int(c, "srch",       srcH, 0);
+	av_opt_set_int(c, "src_format", srcFormat, 0);
+	av_opt_set_int(c, "src_range",  srcRange, 0);
+	av_opt_set_int(c, "dstw",       dstW, 0);
+	av_opt_set_int(c, "dsth",       dstH, 0);
+	av_opt_set_int(c, "dst_format", dstFormat, 0);
+	av_opt_set_int(c, "dst_range",  dstRange, 0);
+	av_opt_set_int(c, "sws_flags",  flags, 0);
+
+	sws_setColorspaceDetails(c,
+							sws_getCoefficients(SWS_CS_DEFAULT), srcRange,
+							sws_getCoefficients(SWS_CS_DEFAULT), dstRange,
+							0, 1<<16, 1<<16);
+
+	if (sws_init_context(c, NULL, NULL) < 0)
+	{
+		sws_freeContext(c);
+		return NULL;
+	}
+
+	return c;
+}
+
+// To avoid the "deprecated pixel format used, make sure you did set range correctly"
+// warning in sws_init_context() use this instead of sws_getCachedContext()
+SwsContext *sws_getCachedContextHelper(	struct SwsContext *context,
+										int srcW, int srcH, enum AVPixelFormat srcFormat,
+                                        int dstW, int dstH, enum AVPixelFormat dstFormat,
+										int flags)
+{
+    int64_t src_h_chr_pos = -513, dst_h_chr_pos = -513,
+            src_v_chr_pos = -513, dst_v_chr_pos = -513;
+
+	// YUV range
+	// 0 = limited MPEG YUV range
+	// 1 = full JPEG YUV range
+	int srcRange = handle_jpeg_helper(&srcFormat);
+	int dstRange = handle_jpeg_helper(&dstFormat);
+
+	// If a param changed free context
+    if (context)
+	{
+		int64_t current_srcW;
+		int64_t current_srcH;
+		int64_t current_srcFormat;
+		int64_t current_srcRange;
+		int64_t current_dstW;
+		int64_t current_dstH;
+		int64_t current_dstFormat;
+		int64_t current_dstRange;
+		int64_t current_flags;
+		av_opt_get_int(context, "srcw",       0, &current_srcW);
+		av_opt_get_int(context, "srch",       0, &current_srcH);
+		av_opt_get_int(context, "src_format", 0, &current_srcFormat);
+		av_opt_get_int(context, "src_range",  0, &current_srcRange);
+		av_opt_get_int(context, "dstw",       0, &current_dstW);
+		av_opt_get_int(context, "dsth",       0, &current_dstH);
+		av_opt_get_int(context, "dst_format", 0, &current_dstFormat);
+		av_opt_get_int(context, "dst_range",  0, &current_dstRange);
+		av_opt_get_int(context, "sws_flags",  0, &current_flags);
+        if (current_srcW		!= srcW			||
+			current_srcH		!= srcH			||
+			current_srcFormat	!= srcFormat	||
+			current_srcRange	!= srcRange		||
+			current_dstW		!= dstW			||
+			current_dstH		!= dstH			||
+			current_dstFormat	!= dstFormat	||
+			current_dstRange	!= dstRange		||
+			current_flags		!= flags)
+		{
+			av_opt_get_int(context, "src_h_chr_pos", 0, &src_h_chr_pos);
+			av_opt_get_int(context, "src_v_chr_pos", 0, &src_v_chr_pos);
+			av_opt_get_int(context, "dst_h_chr_pos", 0, &dst_h_chr_pos);
+			av_opt_get_int(context, "dst_v_chr_pos", 0, &dst_v_chr_pos);
+			sws_freeContext(context);
+			context = NULL;
+		}
+	}
+
+	// Allocate and init context if not yet done
+    if (!context)
+	{
+        if (!(context = sws_alloc_context()))
+            return NULL;
+
+		av_opt_set_int(context, "srcw",       srcW, 0);
+		av_opt_set_int(context, "srch",       srcH, 0);
+		av_opt_set_int(context, "src_format", srcFormat, 0);
+		av_opt_set_int(context, "src_range",  srcRange, 0);
+		av_opt_set_int(context, "dstw",       dstW, 0);
+		av_opt_set_int(context, "dsth",       dstH, 0);
+		av_opt_set_int(context, "dst_format", dstFormat, 0);
+		av_opt_set_int(context, "dst_range",  dstRange, 0);
+		av_opt_set_int(context, "sws_flags",  flags, 0);
+
+        av_opt_set_int(context, "src_h_chr_pos", src_h_chr_pos, 0);
+        av_opt_set_int(context, "src_v_chr_pos", src_v_chr_pos, 0);
+        av_opt_set_int(context, "dst_h_chr_pos", dst_h_chr_pos, 0);
+        av_opt_set_int(context, "dst_v_chr_pos", dst_v_chr_pos, 0);
+
+		sws_setColorspaceDetails(context,
+								sws_getCoefficients(SWS_CS_DEFAULT), srcRange,
+								sws_getCoefficients(SWS_CS_DEFAULT), dstRange,
+								0, 1<<16, 1<<16);
+
+        if (sws_init_context(context, NULL, NULL) < 0)
+		{
+			sws_freeContext(context);
+			return NULL;
+		}
+    }
+
+    return context;
+}
+
 // Necessary hack to correctly link to ffmpeg which needs hypot,
 // the following two functions are declared in wrapperheaders\math.h
 extern "C" double __cdecl hypot(double x, double y)

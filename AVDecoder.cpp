@@ -14,6 +14,10 @@ static char THIS_FILE[] = __FILE__;
 // Defined in uImager.cpp
 int avcodec_open_thread_safe(AVCodecContext *avctx, AVCodec *codec);
 int avcodec_close_thread_safe(AVCodecContext *avctx);
+SwsContext *sws_getCachedContextHelper(	struct SwsContext *context,
+										int srcW, int srcH, enum AVPixelFormat srcFormat,
+                                        int dstW, int dstH, enum AVPixelFormat dstFormat,
+										int flags);
 
 BOOL CAVDecoder::Open(LPBITMAPINFO pSrcBMI)
 {
@@ -237,17 +241,14 @@ BOOL CAVDecoder::Decode(LPBITMAPINFO pSrcBMI,
 	memcpy(&m_DstBMI, pDstDib->GetBMI(), MIN(pDstDib->GetBMISize(), sizeof(BITMAPINFOFULL)));
 
 	// Prepare Image Conversion Context
-	m_pImgConvertCtx = sws_getCachedContext(m_pImgConvertCtx,				// Re-use if already allocated
-											m_pCodecCtx->width,				// Source Width
-											m_pCodecCtx->height,			// Source Height
-											m_pCodecCtx->pix_fmt,			// Source Format
-											pDstDib->GetWidth(),			// Destination Width
-											pDstDib->GetHeight(),			// Destination Height
-											dst_pix_fmt,					// Destination Format
-											SWS_BICUBIC,					// Interpolation (add SWS_PRINT_INFO to debug)
-											NULL,							// No Source Filter
-											NULL,							// No Destination Filter
-											NULL);							// Param
+	m_pImgConvertCtx = sws_getCachedContextHelper(	m_pImgConvertCtx,		// Re-use if already allocated
+													m_pCodecCtx->width,		// Source Width
+													m_pCodecCtx->height,	// Source Height
+													m_pCodecCtx->pix_fmt,	// Source Format
+													pDstDib->GetWidth(),	// Destination Width
+													pDstDib->GetHeight(),	// Destination Height
+													dst_pix_fmt,			// Destination Format
+													SWS_BICUBIC);			// Interpolation (add SWS_PRINT_INFO to debug)
 	if (!m_pImgConvertCtx)
 	{
 		av_free_packet(&avpkt);

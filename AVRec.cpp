@@ -15,6 +15,10 @@ static char THIS_FILE[] = __FILE__;
 // Defined in uImager.cpp
 int avcodec_open_thread_safe(AVCodecContext *avctx, AVCodec *codec);
 int avcodec_close_thread_safe(AVCodecContext *avctx);
+SwsContext *sws_getCachedContextHelper(	struct SwsContext *context,
+										int srcW, int srcH, enum AVPixelFormat srcFormat,
+                                        int dstW, int dstH, enum AVPixelFormat dstFormat,
+										int flags);
 
 // Ffmpeg libs
 #pragma comment(lib, "ffmpeg\\libavcodec\\libavcodec.a")
@@ -779,17 +783,14 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 			}
 
 			// Get conversion context
-			m_pImgConvertCtx[dwStreamNum] = sws_getCachedContext(m_pImgConvertCtx[dwStreamNum],	// Re-use if already allocated
-																pBmi->bmiHeader.biWidth,		// Source Width
-																pBmi->bmiHeader.biHeight,		// Source Height
-																SrcPixFormat,					// Source Format
-																pCodecCtx->width,				// Destination Width
-																pCodecCtx->height,				// Destination Height
-																pCodecCtx->pix_fmt,				// Destination Format
-																SWS_BICUBIC,					// Interpolation (add SWS_PRINT_INFO to debug)
-																NULL,							// No Source Filter
-																NULL,							// No Destination Filter
-																NULL);							// Param
+			m_pImgConvertCtx[dwStreamNum] = sws_getCachedContextHelper(	m_pImgConvertCtx[dwStreamNum],	// Re-use if already allocated
+																		pBmi->bmiHeader.biWidth,		// Source Width
+																		pBmi->bmiHeader.biHeight,		// Source Height
+																		SrcPixFormat,					// Source Format
+																		pCodecCtx->width,				// Destination Width
+																		pCodecCtx->height,				// Destination Height
+																		pCodecCtx->pix_fmt,				// Destination Format
+																		SWS_BICUBIC);					// Interpolation (add SWS_PRINT_INFO to debug)
 			if (!m_pImgConvertCtx[dwStreamNum])
 			{
 				::LeaveCriticalSection(&m_csAV);
