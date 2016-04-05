@@ -197,8 +197,8 @@ bool CAVRec::Init(LPCTSTR lpszFileName, BOOL bMovFragmented)
 
 int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 							const LPBITMAPINFO pDstFormat,
-							DWORD dwDstRate,
-							DWORD dwDstScale,
+							DWORD dwDstTimeBaseDenominator,
+							DWORD dwDstTimeBaseNumerator,
 							int keyframes_rate,
 							float qscale,	// 2.0f best quality, 31.0f worst quality, for H.264 clamped to [VIDEO_QUALITY_BEST, VIDEO_QUALITY_LOW]
 							int nThreadCount)
@@ -206,8 +206,8 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 	int nStreamNum = -1;
 
 	// Check
-	if (!pSrcFormat || !pDstFormat || dwDstScale == 0 ||
-		dwDstRate == 0 || !m_pOutputFormat || !m_pFormatCtx)
+	if (!pSrcFormat || !pDstFormat || dwDstTimeBaseNumerator == 0 ||
+		dwDstTimeBaseDenominator == 0 || !m_pOutputFormat || !m_pFormatCtx)
 		return -1;
 
 	// Set the Codec ID
@@ -334,12 +334,12 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 	pCodecCtx->width = pDstFormat->bmiHeader.biWidth;
 	pCodecCtx->height = pDstFormat->bmiHeader.biHeight;
 
-	// Time base
-	// is the fundamental unit of time (in seconds) in terms of which frame
-	// timestamps are represented. For fixed framerate content, timebase should
-	// be 1/framerate and timestamp increments should be identically to 1.
+	// Reduce Timebase
+	// Timebase is the fundamental unit of time (in seconds) in terms of which
+	// frame timestamps are represented. For fixed framerate content, timebase
+	// should be 1/framerate and timestamp increments should be identically to 1.
 	// For variable framerate we can set a ms resolution time base like:
-	// pCodecCtx->time_base.num = 1 and pCodecCtx->time_base.den = 1000
+	// time_base.num = 1 and time_base.den = 1000
 	//
 	// Most container formats are supporting VFR, except swf which is not.
 	// Although avi is not designed for variable framerates, it is possible to 
@@ -348,11 +348,23 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 	// multiple of all framerates used, and produces slight overhead compared 
 	// to true VFR (ffmpeg avi muxer correctly adds 0-byte chunks as delta
 	// frames so that seeking works well)
-	int dst_rate, dst_scale;
-	av_reduce(&dst_scale, &dst_rate, (int64_t)dwDstScale, (int64_t)dwDstRate, MAX_SIZE_FOR_RATIONAL);
-	pCodecCtx->time_base.den = dst_rate;
-	pCodecCtx->time_base.num = dst_scale;
-	
+	int nReducedTimeBaseNumerator, nReducedTimeBaseDenominator;
+	av_reduce(	&nReducedTimeBaseNumerator, &nReducedTimeBaseDenominator,
+				(int64_t)dwDstTimeBaseNumerator, (int64_t)dwDstTimeBaseDenominator,
+				MAX_SIZE_FOR_RATIONAL);
+
+	// Set the wanted Codec Timebase
+	pCodecCtx->time_base.num = nReducedTimeBaseNumerator;
+	pCodecCtx->time_base.den = nReducedTimeBaseDenominator;
+
+	// Provide a hint to the muxer (init_muxer() in mux.c) about the
+	// desired Stream Timebase. In avformat_write_header(), the muxer
+	// overwrites this field with the timebase that will actually be
+	// used for the timestamps written into the file (which may or may
+	// not be related to the user-provided one, depending on the format)
+	pVideoStream->time_base.num = nReducedTimeBaseNumerator;
+	pVideoStream->time_base.den = nReducedTimeBaseDenominator;
+
 	// Emit one intra frame every given frames at most
 	pCodecCtx->gop_size = keyframes_rate;	// keyframe interval(=GOP length) determines the maximum distance between I-frames.
 											// Normally it defaults to 12, for H.264 it defaults to -1 which means there is

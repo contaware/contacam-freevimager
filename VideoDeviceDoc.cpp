@@ -7484,10 +7484,10 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize, LPBYTE pMJPGD
 					pts = 0;
 				else
 				{
-					int64_t Rate = m_pAVRec->GetRate(m_pAVRec->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM));
-					int64_t Scale = m_pAVRec->GetScale(m_pAVRec->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM));
+					int64_t TimeBaseDenominator = m_pAVRec->GetTimeBaseDenominator(m_pAVRec->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM));
+					int64_t TimeBaseNumerator = m_pAVRec->GetTimeBaseNumerator(m_pAVRec->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM));
 					DWORD dwDiffMS = dwCurrentInitUpTime - m_dwRecFirstUpTime;
-					pts = (int64_t)dwDiffMS * Rate / Scale / 1000;
+					pts = (int64_t)dwDiffMS * TimeBaseDenominator / TimeBaseNumerator / 1000;
 				}
 				BOOL bOk = m_pAVRec->AddFrame(	m_pAVRec->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
 												pDib,

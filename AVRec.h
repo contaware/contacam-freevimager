@@ -64,8 +64,8 @@ public:
 	// Add Video Stream
 	int AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 						const LPBITMAPINFO pDstFormat,
-						DWORD dwDstRate,
-						DWORD dwDstScale,
+						DWORD dwDstTimeBaseDenominator,
+						DWORD dwDstTimeBaseNumerator,
 						int keyframes_rate,
 						float qscale,	// 2.0f best quality, 31.0f worst quality, for H.264 clamped to [VIDEO_QUALITY_BEST, VIDEO_QUALITY_LOW]
 						int nThreadCount);
@@ -123,24 +123,15 @@ public:
 	//   by the nBlockAlign member of WAVEFORMATEX
 	bool AddAudioSamples(DWORD dwStreamNum, DWORD dwNumSamples, LPBYTE pBuf, bool bInterleaved);
 
-	// Video Frame Manipulation Functions
-	__forceinline LONGLONG GetFrameCount(DWORD dwStreamNum) const					{return m_llTotalFramesOrSamples[dwStreamNum];};
-	__forceinline double GetFrameRate(DWORD dwStreamNum) const						{return (double)(GetRate(dwStreamNum)) / (double)(GetScale(dwStreamNum));};
-	__forceinline bool GetFrameRate(DWORD dwStreamNum, DWORD* pdwRate, DWORD* pdwScale) const
-	{
-		if (pdwRate)
-			*pdwRate = GetRate(dwStreamNum);
-		if (pdwScale)
-			*pdwScale = GetScale(dwStreamNum);
-		return (pdwRate || pdwScale);
-	};
-	__forceinline DWORD GetRate(DWORD dwStreamNum) const {return	(m_pFormatCtx								&&
+	// Video Frame Count and Timebase
+	__forceinline LONGLONG GetFrameCount(DWORD dwStreamNum) const {return m_llTotalFramesOrSamples[dwStreamNum];};
+	__forceinline DWORD GetTimeBaseDenominator(DWORD dwStreamNum) const {return	(m_pFormatCtx					&&
 																	dwStreamNum < m_pFormatCtx->nb_streams		&&
 																	m_pFormatCtx->streams[dwStreamNum]			&&
 																	m_pFormatCtx->streams[dwStreamNum]->codec) ?
 																	m_pFormatCtx->streams[dwStreamNum]->codec->time_base.den :
 																	1;};
-	__forceinline DWORD GetScale(DWORD dwStreamNum) const {return	(m_pFormatCtx								&&
+	__forceinline DWORD GetTimeBaseNumerator(DWORD dwStreamNum) const {return	(m_pFormatCtx					&&
 																	dwStreamNum < m_pFormatCtx->nb_streams		&&
 																	m_pFormatCtx->streams[dwStreamNum]			&&
 																	m_pFormatCtx->streams[dwStreamNum]->codec) ?
@@ -162,16 +153,16 @@ public:
 																	0;};
 	
 	// Audio Streams Count
-	__forceinline DWORD GetAudioStreamsCount() const								{return m_dwTotalAudioStreams;};
+	__forceinline DWORD GetAudioStreamsCount() const				{return m_dwTotalAudioStreams;};
 
 	// Audio Streams Number to Overall Stream Number
 	__forceinline DWORD AudioStreamNumToStreamNum(DWORD dwAudioStreamNum);
 
 	// Audio Samples Manipulation Functions
-	__forceinline LONGLONG GetSampleCount(DWORD dwStreamNum) const					{return m_llTotalFramesOrSamples[dwStreamNum];};
+	__forceinline LONGLONG GetSampleCount(DWORD dwStreamNum) const	{return m_llTotalFramesOrSamples[dwStreamNum];};
 
 	// Audio Format Functions
-	__forceinline LPWAVEFORMATEX GetSrcWaveFormat(DWORD dwStreamNum)				{return m_pSrcWaveFormat[dwStreamNum];};
+	__forceinline LPWAVEFORMATEX GetSrcWaveFormat(DWORD dwStreamNum){return m_pSrcWaveFormat[dwStreamNum];};
 	
 	// Helpers
 	static CString FourCCToString(DWORD dwFourCC);
