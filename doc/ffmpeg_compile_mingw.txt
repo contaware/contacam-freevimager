@@ -137,7 +137,7 @@ av_force_cpu_flags(uiFlags & ~(	AV_CPU_FLAG_3DNOWEXT |
 								AV_CPU_FLAG_FMA4     |
 								AV_CPU_FLAG_AVX2     ));
 
-or with the following options:
+and the following build options:
 --disable-amd3dnowext
 --disable-sse2
 --disable-sse3
