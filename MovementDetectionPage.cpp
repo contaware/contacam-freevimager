@@ -258,11 +258,11 @@ void CMovementDetectionPage::UpdateDetectionState()
 		if (m_pDoc->m_dwVideoProcessorMode)
 		{
 			if (!m_pDoc->m_sDetectionTriggerFileName.IsEmpty() && m_pDoc->m_nDetectionLevel > 0)
-				sDetectionMode = ML_STRING(1848, "Motion + Trigger File");
+				sDetectionMode = ML_STRING(1848, "Software + Trigger File");
 			else if (!m_pDoc->m_sDetectionTriggerFileName.IsEmpty())
 				sDetectionMode = ML_STRING(1846, "Trigger File");
 			else if (m_pDoc->m_nDetectionLevel > 0)
-				sDetectionMode = ML_STRING(1847, "Motion");
+				sDetectionMode = ML_STRING(1847, "Software");
 		}
 		pEdit->SetWindowText(sDetectionMode);
 	}
