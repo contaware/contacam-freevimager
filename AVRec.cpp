@@ -445,6 +445,7 @@ int CAVRec::AddAudioStream(	const LPWAVEFORMATEX pSrcWaveFormat,
 	pCodecCtx->bit_rate = pDstWaveFormat->nAvgBytesPerSec * 8;
 	pCodecCtx->sample_rate = pDstWaveFormat->nSamplesPerSec;
 	pCodecCtx->channels = pDstWaveFormat->nChannels;
+	pCodecCtx->channel_layout = (pCodecCtx->channels == 1 ? AV_CH_LAYOUT_MONO : AV_CH_LAYOUT_STEREO);
 	if (strcmp(m_pFormatCtx->oformat->name, "avi") == 0)
 		pCodecCtx->codec_tag = pDstWaveFormat->wFormatTag;
 	pCodecCtx->strict_std_compliance = FF_COMPLIANCE_EXPERIMENTAL; // to enable AAC
