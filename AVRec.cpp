@@ -362,8 +362,8 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 	// overwrites this field with the timebase that will actually be
 	// used for the timestamps written into the file (which may or may
 	// not be related to the user-provided one, depending on the format)
-	pVideoStream->time_base.num = nReducedTimeBaseNumerator;
-	pVideoStream->time_base.den = nReducedTimeBaseDenominator;
+	pVideoStream->time_base.num = pCodecCtx->time_base.num;
+	pVideoStream->time_base.den = pCodecCtx->time_base.den;
 
 	// Emit one intra frame every given frames at most
 	pCodecCtx->gop_size = keyframes_rate;	// keyframe interval(=GOP length) determines the maximum distance between I-frames.
@@ -448,6 +448,18 @@ int CAVRec::AddAudioStream(	const LPWAVEFORMATEX pSrcWaveFormat,
 	if (strcmp(m_pFormatCtx->oformat->name, "avi") == 0)
 		pCodecCtx->codec_tag = pDstWaveFormat->wFormatTag;
 	pCodecCtx->strict_std_compliance = FF_COMPLIANCE_EXPERIMENTAL; // to enable AAC
+
+	// Set the wanted Codec Timebase
+	pCodecCtx->time_base.num = 1;
+	pCodecCtx->time_base.den = pCodecCtx->sample_rate;
+
+	// Provide a hint to the muxer (init_muxer() in mux.c) about the
+	// desired Stream Timebase. In avformat_write_header(), the muxer
+	// overwrites this field with the timebase that will actually be
+	// used for the timestamps written into the file (which may or may
+	// not be related to the user-provided one, depending on the format)
+	pAudioStream->time_base.num = pCodecCtx->time_base.num;
+	pAudioStream->time_base.den = pCodecCtx->time_base.den;
 
 	// Some formats want stream headers to be separate
 	if (m_pFormatCtx->oformat->flags & AVFMT_GLOBALHEADER)

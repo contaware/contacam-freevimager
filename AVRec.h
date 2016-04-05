@@ -125,13 +125,13 @@ public:
 
 	// Video Frame Count and Timebase
 	__forceinline LONGLONG GetFrameCount(DWORD dwStreamNum) const {return m_llTotalFramesOrSamples[dwStreamNum];};
-	__forceinline DWORD GetTimeBaseDenominator(DWORD dwStreamNum) const {return	(m_pFormatCtx					&&
+	__forceinline int GetTimeBaseDenominator(DWORD dwStreamNum) const {return	(m_pFormatCtx					&&
 																	dwStreamNum < m_pFormatCtx->nb_streams		&&
 																	m_pFormatCtx->streams[dwStreamNum]			&&
 																	m_pFormatCtx->streams[dwStreamNum]->codec) ?
 																	m_pFormatCtx->streams[dwStreamNum]->codec->time_base.den :
 																	1;};
-	__forceinline DWORD GetTimeBaseNumerator(DWORD dwStreamNum) const {return	(m_pFormatCtx					&&
+	__forceinline int GetTimeBaseNumerator(DWORD dwStreamNum) const {return	(m_pFormatCtx					&&
 																	dwStreamNum < m_pFormatCtx->nb_streams		&&
 																	m_pFormatCtx->streams[dwStreamNum]			&&
 																	m_pFormatCtx->streams[dwStreamNum]->codec) ?
