@@ -11,5 +11,3 @@ define("NOFILESFOR","Нет файлов для");
 define("PAGES","Страницы");
 define("IMAGERELOADIN","Изображение будет перезагружено в");
 define("SECONDS","секунд");
-define("RELOAD","Перезагрузить");
-define("HOME","Выбор камеры");

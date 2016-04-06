@@ -11,5 +11,3 @@ define("NOFILESFOR","Geen bestanden voor");
 define("PAGES","pagina's");
 define("IMAGERELOADIN","Afbeelding word geladen in");
 define("SECONDS","seconden");
-define("RELOAD","Herlaad");
-define("HOME","Selecteer Camera");

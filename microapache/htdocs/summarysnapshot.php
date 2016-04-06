@@ -181,8 +181,10 @@ echo "<iframe style=\"display: block; float: right; border: 0; overflow: hidden;
 
 // Top Menu
 echo "<div>\n";
-echo "<a href=\"#\" onclick=\"window.location.reload(); return false;\">" . RELOAD . "</a> |\n";
-echo "<a href=\"" . getParentUrl() . "\" target=\"_top\">" . HOME . "</a>\n";
+echo "<span class=\"globalbuttons\">";
+echo "<a class=\"homebuttons\" href=\"" . getParentUrl() . "\" target=\"_top\">&nbsp;</a>&nbsp;";
+echo "<a class=\"reloadbuttons\" href=\"#\" onclick=\"window.location.reload(); return false;\">&nbsp;</a>\n";
+echo "</span>\n";
 echo "</div>\n";
 
 // Centered Header

@@ -30,7 +30,9 @@ echo "<link rel=\"stylesheet\" href=\"" . STYLEFILEPATH . "\" type=\"text/css\" 
 <body>
 <?php echo "<div style=\"text-align: center\"><h1>" . SNAPSHOTTITLE . "</h1></div>"; ?>
 <div class="menutop">
-<a href="<?php echo getParentUrl();?>" target="_top"><?php echo HOME;?></a>
+<span class="globalbuttons">
+<a class="homebuttons" href="<?php echo getParentUrl();?>" target="_top">&nbsp;</a>
+</span>
 </div>
 <div class="wrap">
 <form>

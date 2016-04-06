@@ -11,5 +11,3 @@ define("NOFILESFOR","No hay archivos por");
 define("PAGES","Páginas");
 define("IMAGERELOADIN","La imagen se actualizará en");
 define("SECONDS","Segundos");
-define("RELOAD","Actualizar");
-define("HOME","Seleccione Cámara");

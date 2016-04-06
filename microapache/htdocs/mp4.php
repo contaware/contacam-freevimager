@@ -70,18 +70,18 @@ if (!isset($_GET['back']) || $_GET['back'] != 'no') {
 	if ($prevkey >= 0) {
 		$prevrequesturi = str_replace($currentmp4 . '.mp4', $_GET["$prevkey"] . '.mp4', $_SERVER['REQUEST_URI']);
 		$prevrequesturi = htmlspecialchars($prevrequesturi);
-		echo "<a href=\"javascript:;\" onclick=\"parent.window.name = '" . $_GET["$prevkey"] . "'; window.location.href = '" . $prevrequesturi . "'; return false;\">&lt;</a>";
+		echo "<a href=\"javascript:;\" onclick=\"parent.window.name = '" . $_GET["$prevkey"] . "'; window.location.href = '" . $prevrequesturi . "'; return false;\">&lt;</a>&nbsp;";
 	}
 	if (isset($_GET['backuri']))
-		echo "<a class=\"backbuttons\" href=\"" . htmlspecialchars($_GET['backuri']) . "\">&nbsp;</a>";
+		echo "<a class=\"backbuttons\" href=\"" . htmlspecialchars($_GET['backuri']) . "\">&nbsp;</a>&nbsp;";
 	else
-		echo "<a class=\"backbuttons\" href=\"javascript:history.back();\">&nbsp;</a>";
+		echo "<a class=\"backbuttons\" href=\"javascript:history.back();\">&nbsp;</a>&nbsp;";
 	if ($nextkey <= $lastkey) {
 		$nextrequesturi = str_replace($currentmp4 . '.mp4', $_GET["$nextkey"] . '.mp4', $_SERVER['REQUEST_URI']);
 		$nextrequesturi = htmlspecialchars($nextrequesturi);
-		echo "<a href=\"javascript:;\" onclick=\"parent.window.name = '" . $_GET["$nextkey"] . "'; window.location.href = '" . $nextrequesturi . "'; return false;\">&gt;</a>";
+		echo "<a href=\"javascript:;\" onclick=\"parent.window.name = '" . $_GET["$nextkey"] . "'; window.location.href = '" . $nextrequesturi . "'; return false;\">&gt;</a>&nbsp;";
 	}
-	echo "&nbsp;&nbsp;<a class=\"savebuttons\" href=\"download.php?file=" . urlencode($filename) . "\">&nbsp;</a>";
+	echo "<a class=\"savebuttons\" href=\"download.php?file=" . urlencode($filename) . "\">&nbsp;</a>";
 	echo "</span>\n";
 	echo "</div>\n";
 }

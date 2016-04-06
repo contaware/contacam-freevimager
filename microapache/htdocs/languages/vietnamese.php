@@ -11,5 +11,3 @@ define("NOFILESFOR","Không có tệp trong");
 define("PAGES","trang");
 define("IMAGERELOADIN","Ảnh sẽ nạp lại sau");
 define("SECONDS","giây");
-define("RELOAD","Nạp lại");
-define("HOME","Chọn máy quay");

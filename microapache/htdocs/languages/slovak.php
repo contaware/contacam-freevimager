@@ -11,5 +11,3 @@ define("NOFILESFOR","Žiadne súbory z");
 define("PAGES","strany");
 define("IMAGERELOADIN","Obraz bude obnovený za");
 define("SECONDS","sekúnd");
-define("RELOAD","Obnoviť");
-define("HOME","Vybrať kameru");
