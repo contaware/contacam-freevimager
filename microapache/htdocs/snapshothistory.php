@@ -28,12 +28,12 @@ echo "<link rel=\"stylesheet\" href=\"" . STYLEFILEPATH . "\" type=\"text/css\" 
 ?>
 </head>
 <body>
-<?php echo "<div style=\"text-align: center\"><h1>" . SNAPSHOTTITLE . "</h1></div>"; ?>
-<div class="menutop">
+<div>
 <span class="globalbuttons">
 <a class="homebuttons" href="<?php echo getParentUrl();?>" target="_top">&nbsp;</a>
 </span>
 </div>
+<?php echo "<div style=\"text-align: center\"><h1>" . SNAPSHOTTITLE . "</h1></div>"; ?>
 <div class="wrap">
 <form>
 <span class="globalbuttons">

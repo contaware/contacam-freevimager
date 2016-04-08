@@ -128,16 +128,16 @@ img.campicturepoll {
 
 <body>
 <?php
-if (!isset($_GET['title']) || $_GET['title'] != 'no')
-	echo "<div style=\"text-align: center\"><h1>" . SNAPSHOTTITLE . "</h1></div>\n";
 if (!isset($_GET['menu']) || $_GET['menu'] != 'no') {
-	echo "<div class=\"menutop\">\n";
+	echo "<div>\n";
 	echo "<span class=\"globalbuttons\">";
 	echo "<a class=\"homebuttons\" href=\"" . getParentUrl() . "\" target=\"_top\">&nbsp;</a>&nbsp;";
 	echo "<a class=\"reloadbuttons\" href=\"#\" onclick=\"window.location.reload(); return false;\">&nbsp;</a>\n";
 	echo "</span>\n";
 	echo "</div>\n";
 }
+if (!isset($_GET['title']) || $_GET['title'] != 'no')
+	echo "<div style=\"text-align: center\"><h1>" . SNAPSHOTTITLE . "</h1></div>\n";
 if (isset($_GET['clickurl']))
 	$clickurl = $_GET['clickurl'];
 else

@@ -38,18 +38,6 @@ div.wrap {
 	text-align: center;
 }
 
-/* Menu */
-div.menubottom {
-	position: absolute;
-	bottom: 0;
-	left: 0;
-}
-div.menutop {
-	position: absolute;
-	top: 0;
-	left: 0;
-}
-
 /* Links */
 a {
 	font-size: 14px;
