@@ -30,7 +30,6 @@ BEGIN_MESSAGE_MAP(CVideoDeviceView, CUImagerView)
 	ON_WM_KEYDOWN()
 	ON_WM_SETCURSOR()
 	ON_WM_MOUSEMOVE()
-	ON_WM_KEYUP()
 	ON_COMMAND(ID_VIEW_FULLSCREEN, OnViewFullscreen)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FULLSCREEN, OnUpdateViewFullscreen)
 	ON_COMMAND(ID_EDIT_SELECTALL, OnEditSelectall)
@@ -384,7 +383,7 @@ void CVideoDeviceView::Draw(HDC hDC)
 		::LeaveCriticalSection(&pDoc->m_csDib);
 
 		// Draw Zones
-		if (pDoc->m_bShowEditDetectionZones ||
+		if (pDoc->m_nShowEditDetectionZones ||
 			(pDoc->m_dwVideoProcessorMode && pDoc->m_bShowMovementDetections))
 			DrawZones(hDC);
 
@@ -518,7 +517,7 @@ void CVideoDeviceView::DrawZones(HDC hDC)
 			nSensitivityTextSize = 4;
 
 		// Draw Zones where Detection is enabled
-		if (pDoc->m_bShowEditDetectionZones)
+		if (pDoc->m_nShowEditDetectionZones)
 		{
 			HPEN hPen = ::CreatePen(PS_SOLID, 1, MOVDET_SELECTED_ZONES_COLOR);
 			HGDIOBJ hOldPen = ::SelectObject(hDC, hPen);
@@ -679,7 +678,7 @@ void CVideoDeviceView::OnRButtonDown(UINT nFlags, CPoint point)
 
 	ForceCursor();
 
-	if (pDoc->m_bShowEditDetectionZones)
+	if (pDoc->m_nShowEditDetectionZones)
 	{
 		CMenu menu;
 		VERIFY(menu.LoadMenu(IDR_CONTEXT_VIDEO_DEVICE_ZONES));
@@ -735,7 +734,7 @@ void CVideoDeviceView::OnLButtonDown(UINT nFlags, CPoint point)
 
 	CUImagerView::OnLButtonDown(nFlags, point);
 
-	if (pDoc->m_bShowEditDetectionZones && pDoc->m_lMovDetTotalZones > 0)
+	if (pDoc->m_nShowEditDetectionZones && pDoc->m_lMovDetTotalZones > 0)
 	{
 		// Get client rectangle
 		CRect rcClient;
@@ -759,13 +758,8 @@ void CVideoDeviceView::OnLButtonDown(UINT nFlags, CPoint point)
 		// The Selected Zone Index
 		int nZone = x + y * pDoc->m_lMovDetXZonesCount;
 
-		// Reset Zone Value
-		if ((nFlags & MK_SHIFT) ||
-			(nFlags & MK_CONTROL))
-			pDoc->m_DoMovementDetection[nZone] = 0;
-		// Set Zone Value
-		else
-			pDoc->m_DoMovementDetection[nZone] = m_MovDetSingleZoneSensitivity;
+		// Add / Remove Zone Value
+		pDoc->m_DoMovementDetection[nZone] = (pDoc->m_nShowEditDetectionZones == 1 ? m_MovDetSingleZoneSensitivity : 0);
 
 		// Paint
 		Invalidate(FALSE);
@@ -778,7 +772,7 @@ void CVideoDeviceView::OnLButtonDblClk(UINT nFlags, CPoint point)
 	ASSERT_VALID(pDoc);
 
 	// No fullscreen enter/exit when editing zones!
-	if (pDoc->m_bShowEditDetectionZones)
+	if (pDoc->m_nShowEditDetectionZones)
 	{
 		EnableCursor();
 		CScrollView::OnLButtonDblClk(nFlags, point);
@@ -840,7 +834,7 @@ void CVideoDeviceView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		case VK_ESCAPE :
 			if (pDoc->m_pCameraAdvancedSettingsPropertySheet && pDoc->m_pCameraAdvancedSettingsPropertySheet->IsWindowVisible())
 				pDoc->m_pCameraAdvancedSettingsPropertySheet->Hide(TRUE);
-			else if (pDoc->m_bShowEditDetectionZones)
+			else if (pDoc->m_nShowEditDetectionZones)
 			{
 				pDoc->HideDetectionZones();
 				pDoc->SaveSettings();
@@ -855,18 +849,9 @@ void CVideoDeviceView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			pDoc->m_bDoEditSnapshot = TRUE;
 			break;
 
-		case VK_CONTROL :
-		case VK_SHIFT :
-			if (pDoc->m_bShowEditDetectionZones)
-			{
-				pDoc->m_bShowEditDetectionZonesMinus = TRUE;
-				UpdateCursor();
-			}
-			break;
-
 		case VK_APPS :
 			ForceCursor();
-			if (pDoc->m_bShowEditDetectionZones)
+			if (pDoc->m_nShowEditDetectionZones)
 			{
 				VERIFY(menu.LoadMenu(IDR_CONTEXT_VIDEO_DEVICE_ZONES));
 				pPopup = menu.GetSubMenu(0);
@@ -894,37 +879,6 @@ void CVideoDeviceView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	CUImagerView::OnKeyDown(nChar, nRepCnt, nFlags);
 }
 
-void CVideoDeviceView::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags) 
-{
-	CVideoDeviceDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-
-	switch (nChar)
-	{
-		case VK_CONTROL :
-		case VK_SHIFT :
-			if (pDoc->m_bShowEditDetectionZones)
-			{
-				pDoc->m_bShowEditDetectionZonesMinus = FALSE;
-				UpdateCursor();
-			}
-			break;
-
-		case VK_MENU :	// Alt Gr returns this
-			if (pDoc->m_bShowEditDetectionZones)
-			{
-				pDoc->m_bShowEditDetectionZonesMinus = FALSE;
-				UpdateCursor();
-			}
-			break;
-
-		default : 
-			break;
-	}
-	
-	CUImagerView::OnKeyUp(nChar, nRepCnt, nFlags);
-}
-
 BOOL CVideoDeviceView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message) 
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
@@ -937,12 +891,16 @@ BOOL CVideoDeviceView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 		RestoreWaitCursor();
 		return TRUE;
 	}
-	else if (pDoc->m_bShowEditDetectionZones)
+	else if (pDoc->m_nShowEditDetectionZones == 1)
 	{
-		if (pDoc->m_bShowEditDetectionZonesMinus)
-			hCursor = ::AfxGetApp()->LoadCursor(IDC_ZONEMINUS_CURSOR);
-		else
-			hCursor = ::AfxGetApp()->LoadCursor(IDC_ZONEPLUS_CURSOR);
+		hCursor = ::AfxGetApp()->LoadCursor(IDC_ZONEPLUS_CURSOR);
+		ASSERT(hCursor);
+		::SetCursor(hCursor);
+		return TRUE;
+	}
+	else if (pDoc->m_nShowEditDetectionZones == 2)
+	{
+		hCursor = ::AfxGetApp()->LoadCursor(IDC_ZONEMINUS_CURSOR);
 		ASSERT(hCursor);
 		::SetCursor(hCursor);
 		return TRUE;
@@ -1059,24 +1017,7 @@ void CVideoDeviceView::OnMouseMove(UINT nFlags, CPoint point)
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-	// Status Text
-	if (pDoc->m_bShowEditDetectionZones)
-		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** Press Ctrl (or Shift) to Remove Zones ***"));
-	else
-		::AfxGetMainFrame()->StatusText();
-
-	// In some cases releasing the shift or control key
-	// is captured by another program. Check state here!
-	if (pDoc->m_bShowEditDetectionZones)
-	{
-		if ((nFlags & MK_SHIFT) ||
-			(nFlags & MK_CONTROL))
-			pDoc->m_bShowEditDetectionZonesMinus = TRUE;
-		else
-			pDoc->m_bShowEditDetectionZonesMinus = FALSE;
-	}
-
-	if (pDoc->m_bShowEditDetectionZones	&&
+	if (pDoc->m_nShowEditDetectionZones	&&
 		(nFlags & MK_LBUTTON)			&&
 		pDoc->m_lMovDetTotalZones > 0)
 	{
@@ -1102,13 +1043,8 @@ void CVideoDeviceView::OnMouseMove(UINT nFlags, CPoint point)
 		// The Selected Zone Index
 		int nZone = x + y * pDoc->m_lMovDetXZonesCount;
 
-		// Reset Zone Value
-		if ((nFlags & MK_SHIFT) ||
-			(nFlags & MK_CONTROL))
-			pDoc->m_DoMovementDetection[nZone] = 0;
-		// Set Zone Value
-		else
-			pDoc->m_DoMovementDetection[nZone] = m_MovDetSingleZoneSensitivity;
+		// Add / Remove Zone Value
+		pDoc->m_DoMovementDetection[nZone] = (pDoc->m_nShowEditDetectionZones == 1 ? m_MovDetSingleZoneSensitivity : 0);
 
 		// Paint
 		Invalidate(FALSE);

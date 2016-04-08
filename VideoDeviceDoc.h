@@ -956,8 +956,7 @@ public:
 	CString m_sDetectionTriggerFileName;				// The external detection trigger file name
 	FILETIME m_DetectionTriggerLastWriteTime;			// Last known write time of detection trigger file
 	BOOL m_bShowMovementDetections;						// Show / Hide Movement Detection Zones
-	BOOL m_bShowEditDetectionZones;						// Show & Edit / Hide Movement Detection Zones
-	BOOL m_bShowEditDetectionZonesMinus;				// Add / Remove Movement Detection Zone
+	int m_nShowEditDetectionZones;						// Edit Detection zones, 0: disabled, 1: add, 2: remove
 	volatile BOOL m_bDetectingMovement;					// Flag indicating a Detection
 	volatile BOOL m_bDetectingMinLengthMovement;		// Flag indicating a Movement of at least m_nDetectionMinLengthMilliSeconds
 	volatile BOOL m_bMovDetHDBuffering;					// Flag indicating whether frames are buffered in RAM or on HD
@@ -1076,8 +1075,10 @@ protected:
 	afx_msg void OnViewDetections();
 	afx_msg void OnUpdateViewDetections(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateCaptureCameraAdvancedSettings(CCmdUI* pCmdUI);
-	afx_msg void OnViewDetectionZones();
-	afx_msg void OnUpdateViewDetectionZones(CCmdUI* pCmdUI);
+	afx_msg void OnViewDetectionZonesAdd();
+	afx_msg void OnUpdateViewDetectionZonesAdd(CCmdUI* pCmdUI);
+	afx_msg void OnViewDetectionZonesRemove();
+	afx_msg void OnUpdateViewDetectionZonesRemove(CCmdUI* pCmdUI);
 	afx_msg void OnEditDelete();
 	afx_msg void OnEditCopy();
 	afx_msg void OnFileSave();

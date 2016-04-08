@@ -58,8 +58,10 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_COMMAND(ID_VIEW_DETECTIONS, OnViewDetections)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_DETECTIONS, OnUpdateViewDetections)
 	ON_UPDATE_COMMAND_UI(ID_CAPTURE_CAMERAADVANCEDSETTINGS, OnUpdateCaptureCameraAdvancedSettings)
-	ON_COMMAND(ID_VIEW_DETECTION_ZONES, OnViewDetectionZones)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_DETECTION_ZONES, OnUpdateViewDetectionZones)
+	ON_COMMAND(ID_VIEW_DETECTION_ZONES_ADD, OnViewDetectionZonesAdd)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_DETECTION_ZONES_ADD, OnUpdateViewDetectionZonesAdd)
+	ON_COMMAND(ID_VIEW_DETECTION_ZONES_REMOVE, OnViewDetectionZonesRemove)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_DETECTION_ZONES_REMOVE, OnUpdateViewDetectionZonesRemove)
 	ON_COMMAND(ID_EDIT_DELETE, OnEditDelete)
 	ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
 	ON_COMMAND(ID_FILE_SAVE, OnFileSave)
@@ -3698,8 +3700,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_pDifferencingDib = NULL;
 	m_pMovementDetectorBackgndDib = NULL;
 	m_bShowMovementDetections = FALSE;
-	m_bShowEditDetectionZones = FALSE;
-	m_bShowEditDetectionZonesMinus = FALSE;
+	m_nShowEditDetectionZones = 0;
 	m_bDetectingMovement = FALSE;
 	m_bDetectingMinLengthMovement = FALSE;
 	m_bMovDetHDBuffering = FALSE;
@@ -8532,35 +8533,68 @@ void CVideoDeviceDoc::OnUpdateViewDetections(CCmdUI* pCmdUI)
 
 void CVideoDeviceDoc::HideDetectionZones()
 {
-	if (m_bShowEditDetectionZones)
+	if (m_nShowEditDetectionZones)
 	{
-		m_bShowEditDetectionZones = FALSE;
+		m_nShowEditDetectionZones = 0;
 		GetView()->ForceCursor(FALSE);
-		m_bShowEditDetectionZonesMinus = FALSE;
 		GetView()->Invalidate(FALSE);
-		::AfxGetMainFrame()->StatusText();
 	}
 }
 
-void CVideoDeviceDoc::OnViewDetectionZones()
+void CVideoDeviceDoc::OnViewDetectionZonesAdd()
 {
-	if (m_bShowEditDetectionZones)
+	// Enable Add
+	if (m_nShowEditDetectionZones == 0)
+	{
+		m_nShowEditDetectionZones = 1;
+		GetView()->ForceCursor();
+		GetView()->Invalidate(FALSE);
+	}
+	// Disable Add
+	else if (m_nShowEditDetectionZones == 1)
 	{
 		HideDetectionZones();
 		SaveSettings();
 	}
-	else
+	// Switch from Remove to Add
+	else if (m_nShowEditDetectionZones == 2)
 	{
-		m_bShowEditDetectionZones = TRUE;
-		GetView()->ForceCursor();
+		m_nShowEditDetectionZones = 1;
 		GetView()->Invalidate(FALSE);
-		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** Press Ctrl (or Shift) to Remove Zones ***"));
 	}
 }
 
-void CVideoDeviceDoc::OnUpdateViewDetectionZones(CCmdUI* pCmdUI) 
+void CVideoDeviceDoc::OnUpdateViewDetectionZonesAdd(CCmdUI* pCmdUI) 
 {
-	pCmdUI->SetCheck(m_bShowEditDetectionZones ? 1 : 0);
+	pCmdUI->SetCheck(m_nShowEditDetectionZones == 1 ? 1 : 0);
+}
+
+void CVideoDeviceDoc::OnViewDetectionZonesRemove()
+{
+	// Enable Remove
+	if (m_nShowEditDetectionZones == 0)
+	{
+		m_nShowEditDetectionZones = 2;
+		GetView()->ForceCursor();
+		GetView()->Invalidate(FALSE);
+	}
+	// Disable Remove
+	else if (m_nShowEditDetectionZones == 2)
+	{
+		HideDetectionZones();
+		SaveSettings();
+	}
+	// Switch from Add to Remove
+	else if (m_nShowEditDetectionZones == 1)
+	{
+		m_nShowEditDetectionZones = 2;
+		GetView()->Invalidate(FALSE);
+	}
+}
+
+void CVideoDeviceDoc::OnUpdateViewDetectionZonesRemove(CCmdUI* pCmdUI) 
+{
+	pCmdUI->SetCheck(m_nShowEditDetectionZones == 2 ? 1 : 0);
 }
 
 void CVideoDeviceDoc::OnViewFit() 

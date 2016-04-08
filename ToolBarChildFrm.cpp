@@ -982,7 +982,7 @@ void CVideoDeviceChildFrame::OnClose()
 			pView->KillTimer(ID_TIMER_RELOAD_SETTINGS);
 
 			// Hide detection zones
-			if (pDoc->m_bShowEditDetectionZones)
+			if (pDoc->m_nShowEditDetectionZones)
 				pDoc->HideDetectionZones();
 	
 			// Save Settings

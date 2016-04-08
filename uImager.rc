@@ -199,7 +199,8 @@ BEGIN
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
         MENUITEM SEPARATOR
         MENUITEM "Show Detections",             ID_VIEW_DETECTIONS
-        MENUITEM "Detection Zones",             ID_VIEW_DETECTION_ZONES
+        MENUITEM "Add Detection Zones",         ID_VIEW_DETECTION_ZONES_ADD
+        MENUITEM "Remove Detection Zones",      ID_VIEW_DETECTION_ZONES_REMOVE
     END
 END
 
@@ -251,7 +252,8 @@ BEGIN
         MENUITEM "Show Frame Time",             ID_VIEW_FRAMETIME
         MENUITEM SEPARATOR
         MENUITEM "Show Detections",             ID_VIEW_DETECTIONS
-        MENUITEM "Detection Zones",             ID_VIEW_DETECTION_ZONES
+        MENUITEM "Add Detection Zones",         ID_VIEW_DETECTION_ZONES_ADD
+        MENUITEM "Remove Detection Zones",      ID_VIEW_DETECTION_ZONES_REMOVE
         MENUITEM SEPARATOR
         MENUITEM "Browse",                      ID_VIEW_WEB
         MENUITEM "Browse Files",                ID_VIEW_FILES
@@ -556,7 +558,8 @@ BEGIN
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
         MENUITEM SEPARATOR
         MENUITEM "Show Detections",             ID_VIEW_DETECTIONS
-        MENUITEM "Detection Zones",             ID_VIEW_DETECTION_ZONES
+        MENUITEM "Add Detection Zones",         ID_VIEW_DETECTION_ZONES_ADD
+        MENUITEM "Remove Detection Zones",      ID_VIEW_DETECTION_ZONES_REMOVE
     END
 END
 
@@ -3526,7 +3529,6 @@ BEGIN
     IDS_MULTILANG_1474      "Failed to stop the web server"
     IDS_MULTILANG_1475      "Failed to start the web server"
     IDS_STRING1476          "(change the Port number to an unused one)"
-    IDS_MULTILANG_1483      "*** Press Ctrl (or Shift) to Remove Zones ***"
     IDS_MULTILANG_1484      "&Copying...\tCtrl+C"
     IDS_MULTILANG_1485      "&Copy\tCtrl+C"
 END
@@ -3598,7 +3600,7 @@ STRINGTABLE
 BEGIN
     ID_PLAY_SLIDESHOW       "Start slideshow (inside current directory)\nStart Slideshow"
     ID_STOP_SLIDESHOW       "Stop slideshow\nStop Slideshow"
-    ID_VIEW_FRAMETIME       "Enable / disable frame time display\nShow Frame Time"
+    ID_VIEW_FRAMETIME       "Enable / disable frame time display\nShow / Hide Frame Time"
     ID_FILE_INFO            "Show file information\nFile Info"
     ID_PLAY_TRANSITION_OFF  "Turn transition effect off\nTransition Off"
     ID_PLAY_TRANSITION_RANDOM "Random transition effect\nRandom Transition"
@@ -3639,12 +3641,14 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_VIEW_DETECTIONS      "Enable / disable detection zones display\nShow Detections"
-    ID_VIEW_DETECTION_ZONES "Show / setup detection zones\nDetection Zones"
+    ID_VIEW_DETECTIONS      "Enable / disable detections display\nShow / Hide Detections"
+    ID_VIEW_DETECTION_ZONES_ADD "Add detection zones\nAdd Detection Zones"
 END
 
 STRINGTABLE
 BEGIN
+    ID_VIEW_DETECTION_ZONES_REMOVE 
+                            "Remove detection zones\nRemove Detection Zones"
     ID_EDIT_SELECTALL       "Select all detection zones\nSelect All"
     ID_EDIT_SELECTNONE      "Clear all detection zones\nSelect None"
     ID_CAPTURE_NETWORK      "Capture frames from the network\nCapture From Network"
