@@ -417,7 +417,7 @@ void CVideoDeviceView::DrawTextMsg(HDC hDC)
 	if (pDoc->m_bDetectingMinLengthMovement)
 	{
 		::DrawBigText(	hDC, CRect(0, 0, rcClient.Width(), rcClient.Height()),
-						ML_STRING(1844, "Det"), DRAW_MESSAGE_SUCCESS_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT,
+						ML_STRING(1844, "Detection"), DRAW_MESSAGE_SUCCESS_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT,
 						OPAQUE, DRAW_BKG_COLOR);
 	}
 

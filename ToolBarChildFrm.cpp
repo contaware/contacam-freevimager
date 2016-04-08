@@ -159,8 +159,8 @@ END_MESSAGE_MAP()
 
 void CDetComboBox::Init()
 {
-	AddString(ML_STRING(1844, "Det") + CString(_T(" ")) + ML_STRING(1845, "OFF"));
-	AddString(ML_STRING(1844, "Det") + CString(_T(" ")) + ML_STRING(1851, "ON"));
+	AddString(ML_STRING(1844, "Detection") + CString(_T(" ")) + ML_STRING(1845, "OFF"));
+	AddString(ML_STRING(1844, "Detection") + CString(_T(" ")) + ML_STRING(1851, "ON"));
 	SetCurSel(0);
 }
 

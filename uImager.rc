@@ -4324,7 +4324,7 @@ STRINGTABLE
 BEGIN
     ID_EDIT_EXPORT_ZONES    "Export detection zones to a ini file\nExport Detection Zones"
     ID_EDIT_IMPORT_ZONES    "Import detection zones from a ini file\nImport Detection Zones"
-    ID_DET_COMBOX           "Enable / disable movement detection\nDetection"
+    ID_DET_COMBOX           "Enable / disable movement detection\nMovement Detection"
     ID_CAPTURE_CAMERABASICSETTINGS 
                             "Camera basic settings\nCamera Basic Settings"
     ID_EDIT_ZONE_SENSITIVITY_100 
@@ -4343,7 +4343,7 @@ STRINGTABLE
 BEGIN
     IDS_STRING1842          "After Detection Filter OK"
     IDS_STRING1843          "After Save,Email,Ftp"
-    IDS_STRING1844          "Det"
+    IDS_STRING1844          "Detection"
     IDS_STRING1845          "OFF"
     IDS_STRING1846          "Trigger File"
     IDS_STRING1847          "Software"
