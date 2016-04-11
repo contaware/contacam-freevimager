@@ -293,9 +293,6 @@ protected:
 	// Set Exif Date Column
 	void SetExifDateColumn(int nItem);
 
-	// Format Size Number
-	CString FormatNumber(CString& sNumber);
-
 	// Set Created Date Column
 	void SetCreatedDateColumn(int nItem);
 

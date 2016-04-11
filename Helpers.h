@@ -125,6 +125,9 @@ extern ULARGE_INTEGER GetDirContentSize(LPCTSTR szDirName,
 extern BOOL IsDirEmpty(LPCTSTR szDirName);
 extern BOOL DeleteToRecycleBin(LPCTSTR szName); // delete file or directory
 
+// Format Integer Number
+extern CString FormatIntegerNumber(const CString& sNumber);
+
 // Date / Time Formatting According to Local Settings
 extern CString MakeTimeLocalFormat(	const CTime& Time,
 									BOOL bShowSeconds = FALSE);

@@ -3169,40 +3169,6 @@ void CBatchProcDlg::SetExifDateColumn(int nItem)
 	}
 }
 
-CString CBatchProcDlg::FormatNumber(CString& sNumber)
-{
-	// Format
-	int nSize = ::GetNumberFormat(LOCALE_USER_DEFAULT,
-								0,
-								sNumber,
-								NULL,
-								NULL,
-								0);
-	CString sOutNumber;
-	::GetNumberFormat(LOCALE_USER_DEFAULT,
-					0,
-					sNumber,
-					NULL,
-					sOutNumber.GetBuffer(nSize),
-					nSize);
-	sOutNumber.ReleaseBuffer();
-
-	// Remove Decimals
-	CString sDecSeparator;
-	nSize = ::GetLocaleInfo(LOCALE_USER_DEFAULT,
-							LOCALE_SDECIMAL,
-							NULL,
-							0);
-	::GetLocaleInfo(LOCALE_USER_DEFAULT,
-					LOCALE_SDECIMAL,
-					sDecSeparator.GetBuffer(nSize),
-					nSize);
-	int nPos = sOutNumber.Find(sDecSeparator);
-	sOutNumber = sOutNumber.Left(nPos);
-
-	return sOutNumber;
-}
-
 void CBatchProcDlg::SetCreatedDateColumn(int nItem)
 {
 	CListElement* pListElement = (CListElement*)m_List.GetItemData(nItem);
@@ -3258,7 +3224,7 @@ void CBatchProcDlg::SetFileSizeColumn(int nItem)
 		sFileSize.Format(_T("%I64d"),	(FileSize.QuadPart >= 1024) ?
 										FileSize.QuadPart >> 10 :
 										FileSize.QuadPart);
-		sFileSize = FormatNumber(sFileSize);
+		sFileSize = ::FormatIntegerNumber(sFileSize);
 		sFileSize += (FileSize.QuadPart >= 1024) ?
 					_T(" ") + ML_STRING(1243, "KB") : _T(" ") + ML_STRING(1244, "Bytes");
 		lvItem.pszText = sFileSize.GetBuffer(sFileSize.GetLength());
@@ -3282,7 +3248,7 @@ void CBatchProcDlg::SetImageSizeColumn(int nItem)
 			sImageSize.Format(_T("%i"),	(pListElement->m_pDibHdr->GetImageSize() >= 1024) ?
 										pListElement->m_pDibHdr->GetImageSize() >> 10 :
 										pListElement->m_pDibHdr->GetImageSize());
-			sImageSize = FormatNumber(sImageSize);
+			sImageSize = ::FormatIntegerNumber(sImageSize);
 			sImageSize += (pListElement->m_pDibHdr->GetImageSize() >= 1024) ?
 						_T(" ") + ML_STRING(1243, "KB") : _T(" ") + ML_STRING(1244, "Bytes");
 			lvItem.pszText = sImageSize.GetBuffer(sImageSize.GetLength());

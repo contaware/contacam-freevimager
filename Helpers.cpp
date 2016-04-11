@@ -1070,6 +1070,40 @@ BOOL DeleteToRecycleBin(LPCTSTR szName)
 	return (SHFileOperation(&FileOp) == 0);
 }
 
+CString FormatIntegerNumber(const CString& sNumber)
+{
+	// Format
+	int nSize = ::GetNumberFormat(LOCALE_USER_DEFAULT,
+								0,
+								sNumber,
+								NULL,
+								NULL,
+								0);
+	CString sOutNumber;
+	::GetNumberFormat(LOCALE_USER_DEFAULT,
+					0,
+					sNumber,
+					NULL,
+					sOutNumber.GetBuffer(nSize),
+					nSize);
+	sOutNumber.ReleaseBuffer();
+
+	// Remove Decimals
+	CString sDecSeparator;
+	nSize = ::GetLocaleInfo(LOCALE_USER_DEFAULT,
+							LOCALE_SDECIMAL,
+							NULL,
+							0);
+	::GetLocaleInfo(LOCALE_USER_DEFAULT,
+					LOCALE_SDECIMAL,
+					sDecSeparator.GetBuffer(nSize),
+					nSize);
+	int nPos = sOutNumber.Find(sDecSeparator);
+	sOutNumber = sOutNumber.Left(nPos);
+
+	return sOutNumber;
+}
+
 CString MakeTimeLocalFormat(const CTime& Time,
 							BOOL bShowSeconds/*=FALSE*/)
 {
