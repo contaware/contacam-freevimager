@@ -1104,6 +1104,30 @@ CString FormatIntegerNumber(const CString& sNumber)
 	return sOutNumber;
 }
 
+// given nMonth: 1..12
+// returned day: 1..31 (0 on error)
+int GetLastDayOfMonth(int nMonth, int nYear)
+{
+	// Check
+	if (nYear < 1971	||
+		nYear > 3000	|| // MFC CTime Limitation
+		nMonth < 1		||
+		nMonth > 12)
+		return 0;
+
+	// If month is February, take first day of March and go back one day
+	if (nMonth == 2)
+	{
+		CTime Time(nYear, 3, 1, 12, 0, 0);	// first of March for given nYear
+		Time -= CTimeSpan(1, 0, 0, 0);		// go back one day (the class will take leap years into account)
+		return Time.GetDay();
+	}
+	else if (nMonth == 4 || nMonth == 6 || nMonth == 9 || nMonth == 11)
+		return 30;
+	else
+		return 31;
+}
+
 CString MakeTimeLocalFormat(const CTime& Time,
 							BOOL bShowSeconds/*=FALSE*/)
 {

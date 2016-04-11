@@ -433,11 +433,9 @@ public:
 		protected:
 			int Work();
 			BOOL CalcOldestDir(	CSortableFileFind& FileFind,
-								int nAutoSaveDirSize,
 								CTime& OldestDirTime,
 								const CTime& CurrentTime);
 			BOOL DeleteOld(	CSortableFileFind& FileFind,
-							int nAutoSaveDirSize,
 							LONGLONG llDeleteOlderThanDays,
 							const CTime& CurrentTime);
 			CVideoDeviceDoc* m_pDoc;
@@ -906,7 +904,7 @@ public:
 	volatile float m_fVideoRecQuality;					// 2.0f best quality, 31.0f worst quality, for H.264 clamped to [VIDEO_QUALITY_BEST, VIDEO_QUALITY_LOW]
 	volatile int m_nVideoRecKeyframesRate;				// Keyframes Rate
 	volatile int m_nDeleteRecordingsOlderThanDays;		// Delete Recordings older than the given amount of days,
-														// 0 means never delete any file!
+														// 0 means never delete any file
 	volatile int m_nMaxCameraFolderSizeMB;				// Maximum size of a camera folder, after that oldest files are removed,
 														// 0 means no limit
 	volatile int m_nMinDiskFreePermillion;				// Minimum disk free size in permillion, if the free space is lower than that the oldest files are removed

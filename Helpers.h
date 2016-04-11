@@ -128,7 +128,8 @@ extern BOOL DeleteToRecycleBin(LPCTSTR szName); // delete file or directory
 // Format Integer Number
 extern CString FormatIntegerNumber(const CString& sNumber);
 
-// Date / Time Formatting According to Local Settings
+// Date / Time Handling
+extern int GetLastDayOfMonth(int nMonth, int nYear);
 extern CString MakeTimeLocalFormat(	const CTime& Time,
 									BOOL bShowSeconds = FALSE);
 extern CString MakeDateLocalFormat(	const CTime& Time,

@@ -3335,7 +3335,6 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 }
 
 BOOL CVideoDeviceDoc::CDeleteThread::DeleteOld(	CSortableFileFind& FileFind,
-												int nAutoSaveDirSize,	
 												LONGLONG llDeleteOlderThanDays,
 												const CTime& CurrentTime)
 {
@@ -3345,7 +3344,10 @@ BOOL CVideoDeviceDoc::CDeleteThread::DeleteOld(	CSortableFileFind& FileFind,
 	{
 		sDir = FileFind.GetDirName(pos);
 		sDir.TrimRight(_T('\\'));
-		sDir.Delete(0, nAutoSaveDirSize);
+		CString sRootDirName = FileFind.GetRootDirName();
+		sRootDirName.TrimRight(_T('\\'));
+		int nRootDirNameSize = sRootDirName.GetLength() + 1; // + 1 for ending backslash
+		sDir.Delete(0, nRootDirNameSize);
 		if (sDir.GetLength() == 4)			// Year
 		{
 			nYear = _ttoi(sDir);
@@ -3357,28 +3359,7 @@ BOOL CVideoDeviceDoc::CDeleteThread::DeleteOld(	CSortableFileFind& FileFind,
 			nYear = _ttoi(sDir.Left(4));
 			sDir.Delete(0, 5);
 			nMonth = _ttoi(sDir);
-
-			// Determine last Day of Month
-			int nNextYear = nYear;
-			int nNextMonth = nMonth + 1;
-			if (nNextMonth > 12)
-			{
-				nNextYear++;
-				nNextMonth = 1;
-			}
-			if (nNextYear < 1971	||
-				nNextYear > 3000	||	// MFC CTime Limitation
-				nYear < 1971		||
-				nYear > 3000		||	// MFC CTime Limitation		
-				nNextMonth < 1		||
-				nNextMonth > 12		||
-				nMonth < 1			||
-				nMonth > 12)
-				continue;
-			CTime NextMonthTime(nNextYear, nNextMonth, 1, 12, 0, 0);
-			CTime ThisMonthTime(nYear, nMonth, 28, 12, 0, 0);
-			CTimeSpan DaysTime = NextMonthTime - ThisMonthTime;
-			nDay = 27 + (int)DaysTime.GetDays();
+			nDay = ::GetLastDayOfMonth(nMonth, nYear);
 		}
 		else if (sDir.GetLength() == 10)	// Year + Month + Day
 		{
@@ -3405,7 +3386,7 @@ BOOL CVideoDeviceDoc::CDeleteThread::DeleteOld(	CSortableFileFind& FileFind,
 		// returns one or greater only after 24-hours passed from 23:59:59 
 		CTime DirTime(nYear, nMonth, nDay, 23, 59, 59);
 		CTimeSpan TimeDiff = CurrentTime - DirTime;
-		if ((LONGLONG)TimeDiff.GetDays() >= llDeleteOlderThanDays &&
+		if (TimeDiff.GetDays() >= llDeleteOlderThanDays &&
 			::IsExistingDir(FileFind.GetDirName(pos)))
 			::DeleteDir(FileFind.GetDirName(pos));
 
@@ -3418,7 +3399,6 @@ BOOL CVideoDeviceDoc::CDeleteThread::DeleteOld(	CSortableFileFind& FileFind,
 }
 
 BOOL CVideoDeviceDoc::CDeleteThread::CalcOldestDir(	CSortableFileFind& FileFind,
-													int nAutoSaveDirSize,
 													CTime& OldestDirTime,
 													const CTime& CurrentTime)
 {
@@ -3429,7 +3409,10 @@ BOOL CVideoDeviceDoc::CDeleteThread::CalcOldestDir(	CSortableFileFind& FileFind,
 	{
 		sDir = FileFind.GetDirName(pos),
 		sDir.TrimRight(_T('\\'));
-		sDir.Delete(0, nAutoSaveDirSize);
+		CString sRootDirName = FileFind.GetRootDirName();
+		sRootDirName.TrimRight(_T('\\'));
+		int nRootDirNameSize = sRootDirName.GetLength() + 1; // + 1 for ending backslash
+		sDir.Delete(0, nRootDirNameSize);
 		if (sDir.GetLength() == 10)	// Year + Month + Day
 		{
 			nYear = _ttoi(sDir.Left(4));
@@ -3472,14 +3455,13 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 	DWORD Event;
 	CString sAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
 	sAutoSaveDir.TrimRight(_T('\\'));
-	int nAutoSaveDirSize = sAutoSaveDir.GetLength() + 1; // + 1 for ending backslash
 	DWORD dwAttrib;
 	CSortableFileFind FileFind;
 	CTime CurrentTime, OldestDirTime;
 	CTimeSpan TimeDiff;
-	LONGLONG llDaysAgo;
-	ULONGLONG ullMaxCameraFolderSize;
-	ULONGLONG ullMinDiskFreeSpace;
+	LONGLONG llDaysAgo, llStartDiskFreeSpaceDaysAgo, llStartCameraFolderSizeDaysAgo;
+	ULONGLONG ullStartDiskFreeSpace, ullDiskFreeSpace, ullMinDiskFreeSpace;
+	ULONGLONG ullStartCameraFolderSize, ullCameraFolderSize, ullMaxCameraFolderSize;
 
 	for (;;)
 	{
@@ -3513,51 +3495,91 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 					CurrentTime = CTime::GetCurrentTime();
 
 					// Delete dirs which are older than the given days amount
-					if (m_pDoc->m_nDeleteRecordingsOlderThanDays > 0)
+					int nDeleteRecordingsOlderThanDays = m_pDoc->m_nDeleteRecordingsOlderThanDays;
+					if (nDeleteRecordingsOlderThanDays > 0) // 0 means never delete any file
 					{
-						if (!DeleteOld(	FileFind,
-										nAutoSaveDirSize,
-										m_pDoc->m_nDeleteRecordingsOlderThanDays,
-										CurrentTime))
+						if (!DeleteOld(FileFind, nDeleteRecordingsOlderThanDays, CurrentTime))
 							return 0; // Exit Thread
-					}
-
-					// Maximum camera folder size
-					ullMaxCameraFolderSize = ULLONG_MAX;
-					if (m_pDoc->m_nMaxCameraFolderSizeMB > 0)
-					{
-						ullMaxCameraFolderSize = m_pDoc->m_nMaxCameraFolderSizeMB;
-						ullMaxCameraFolderSize <<= 20; // MB to Bytes
 					}
 
 					// Minimum wanted disk free space
 					ullMinDiskFreeSpace = ::GetDiskTotalSize(sAutoSaveDir) / 1000000 * m_pDoc->m_nMinDiskFreePermillion;
 
-					// Get the time of the oldest existing directory
-					if (!CalcOldestDir(	FileFind,
-										nAutoSaveDirSize,
-										OldestDirTime,
-										CurrentTime))
-						return 0; // Exit Thread
+					// Maximum allowed camera folder size
+					ullMaxCameraFolderSize = m_pDoc->m_nMaxCameraFolderSizeMB;
+					ullMaxCameraFolderSize <<= 20; // MB to Bytes
+					if (ullMaxCameraFolderSize == 0) // 0 means no limit
+						ullMaxCameraFolderSize = ULLONG_MAX;
 
-					// Delete old dirs
-					// - GetDiskTotalSize() and GetDiskAvailableFreeSpace() may both return 0,
-					//   the below 'less than' comparison operator is mandatory
-					// - GetDirContentSize() returns the size it could calculate
-					//   up to the point this thread was flagged to exit,
-					//   that's ok for the below check
+					// Oldest existing directory
+					if (!CalcOldestDir(FileFind, OldestDirTime, CurrentTime))
+						return 0; // Exit Thread
 					TimeDiff = CurrentTime - OldestDirTime;
-					llDaysAgo = (LONGLONG)TimeDiff.GetDays();
+					llDaysAgo = TimeDiff.GetDays();
+
+					// Delete oldest dirs if space limit reached 
+					llStartDiskFreeSpaceDaysAgo = 0;
+					llStartCameraFolderSizeDaysAgo = 0;
+					ullDiskFreeSpace = ::GetDiskAvailableFreeSpace(sAutoSaveDir);
+					ullCameraFolderSize = ::GetDirContentSize(sAutoSaveDir, NULL, this).QuadPart;
 					while (	llDaysAgo > 0 &&
-							(::GetDiskAvailableFreeSpace(sAutoSaveDir) < ullMinDiskFreeSpace ||
-							::GetDirContentSize(sAutoSaveDir, NULL, this).QuadPart > ullMaxCameraFolderSize))
-					{
-						if (!DeleteOld(	FileFind,
-										nAutoSaveDirSize,
-										llDaysAgo,
-										CurrentTime))
+							(ullDiskFreeSpace < ullMinDiskFreeSpace ||		// 'less than' is mandatory because both vars may be 0
+							ullCameraFolderSize > ullMaxCameraFolderSize))	// 'greater than' is mandatory because ullMaxCameraFolderSize may be ULLONG_MAX 
+					{														// (if exiting GetDirContentSize() may return less than the actual size, that's ok)
+						// Store start vars
+						if (llStartDiskFreeSpaceDaysAgo == 0 && ullDiskFreeSpace < ullMinDiskFreeSpace)
+						{
+							llStartDiskFreeSpaceDaysAgo = llDaysAgo;
+							ullStartDiskFreeSpace = ullDiskFreeSpace;
+						}
+						if (llStartCameraFolderSizeDaysAgo == 0 && ullCameraFolderSize > ullMaxCameraFolderSize)
+						{
+							llStartCameraFolderSizeDaysAgo = llDaysAgo;
+							ullStartCameraFolderSize = ullCameraFolderSize;
+						}
+
+						// Delete old
+						if (!DeleteOld(FileFind, llDaysAgo, CurrentTime))
 							return 0; // Exit Thread
+
+						// Update vars
 						llDaysAgo--;
+						ullDiskFreeSpace = ::GetDiskAvailableFreeSpace(sAutoSaveDir);
+						ullCameraFolderSize = ::GetDirContentSize(sAutoSaveDir, NULL, this).QuadPart;
+					}
+
+					// Log
+					if (llStartDiskFreeSpaceDaysAgo != 0)
+					{
+						CString sStartDiskFreeSpaceMB, sDiskFreeSpaceMB, sMinDiskFreeSpaceMB, sDaysAgo;
+						sStartDiskFreeSpaceMB.Format(_T("%I64u"), ullStartDiskFreeSpace >> 20);
+						sDiskFreeSpaceMB.Format(_T("%I64u"), ullDiskFreeSpace >> 20);
+						sMinDiskFreeSpaceMB.Format(_T("%I64u"), ullMinDiskFreeSpace >> 20);
+						if (llStartDiskFreeSpaceDaysAgo == (llDaysAgo + 1))
+							sDaysAgo.Format(_T("%I64d day%s ago"), llStartDiskFreeSpaceDaysAgo, llStartDiskFreeSpaceDaysAgo == 1 ? _T("") : _T("s"));
+						else
+							sDaysAgo.Format(_T("%I64d->%I64d days ago"), llStartDiskFreeSpaceDaysAgo, llDaysAgo + 1);
+						::LogLine(	_T("%s, deleted %s: ") + ML_STRING(1761, "HD free space") + _T(" %s->%s ") + ML_STRING(1825, "MB") +
+									_T(" (set min %s ") + ML_STRING(1825, "MB") + _T(")"),
+									m_pDoc->GetAssignedDeviceName(), sDaysAgo,
+									::FormatIntegerNumber(sStartDiskFreeSpaceMB), ::FormatIntegerNumber(sDiskFreeSpaceMB),
+									::FormatIntegerNumber(sMinDiskFreeSpaceMB));
+					}
+					if (llStartCameraFolderSizeDaysAgo != 0)
+					{
+						CString sStartCameraFolderSizeMB, sCameraFolderSizeMB, sMaxCameraFolderSizeMB, sDaysAgo;
+						sStartCameraFolderSizeMB.Format(_T("%I64u"), ullStartCameraFolderSize >> 20);
+						sCameraFolderSizeMB.Format(_T("%I64u"), ullCameraFolderSize >> 20);
+						sMaxCameraFolderSizeMB.Format(_T("%I64u"), ullMaxCameraFolderSize >> 20);
+						if (llStartCameraFolderSizeDaysAgo == (llDaysAgo + 1))
+							sDaysAgo.Format(_T("%I64d day%s ago"), llStartCameraFolderSizeDaysAgo, llStartCameraFolderSizeDaysAgo == 1 ? _T("") : _T("s"));
+						else
+							sDaysAgo.Format(_T("%I64d->%I64d days ago"), llStartCameraFolderSizeDaysAgo, llDaysAgo + 1);
+						::LogLine(	_T("%s, deleted %s: camera folder size %s->%s ") + ML_STRING(1825, "MB") +
+									_T(" (set max %s ") + ML_STRING(1825, "MB") + _T(")"),
+									m_pDoc->GetAssignedDeviceName(), sDaysAgo,
+									::FormatIntegerNumber(sStartCameraFolderSizeMB), ::FormatIntegerNumber(sCameraFolderSizeMB),
+									::FormatIntegerNumber(sMaxCameraFolderSizeMB));
 					}
 				}
 				break;

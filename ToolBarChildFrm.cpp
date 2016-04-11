@@ -997,7 +997,7 @@ void CVideoDeviceChildFrame::OnClose()
 				{
 					sMsg.Format(_T("%s stopping (running for %I64dday%s, %dhour%s, %dmin and %dsec)"),
 						pDoc->GetAssignedDeviceName(),
-						(LONGLONG)TimeSpan.GetDays(),
+						TimeSpan.GetDays(),
 						(TimeSpan.GetDays() == 1) ? _T("") : _T("s"),
 						TimeSpan.GetHours(),
 						(TimeSpan.GetHours() == 1) ? _T("") : _T("s"),
