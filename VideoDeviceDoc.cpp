@@ -4913,6 +4913,8 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 		m_HttpGetFrameLocations.Add(_T("/video/mjpg.cgi"));					// D-Link, Sparklan, TrendNet
 		
 		m_HttpGetFrameLocations.Add(_T("/mjpegStreamer.cgi"));				// Compro, PROCCTV, Zyxel
+
+		m_HttpGetFrameLocations.Add(_T("/cgi-bin/video.cgi?msubmenu=mjpg"));// Samsung
 		
 		m_HttpGetFrameLocations.Add(_T("/-wvhttp-01-/GetOneShot?frame_count=0")); // Canon, NuSpectra
 		

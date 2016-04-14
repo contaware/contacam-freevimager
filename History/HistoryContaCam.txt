@@ -5,6 +5,7 @@ CONTACAM HISTORY
 - Email alert when device unplugged or not reachable
 - Faster and more reliable FTP upload support
 - Bigger toolbar buttons
+- Added support for some Samsung cameras
 - Removed the standby and hibernate disabling feature introduced with
   version 5.0.1 because it also blocked entering these states manually
 
