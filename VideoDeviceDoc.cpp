@@ -3522,10 +3522,12 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 					llStartCameraFolderSizeDaysAgo = 0;
 					ullDiskFreeSpace = ::GetDiskAvailableFreeSpace(sAutoSaveDir);
 					ullCameraFolderSize = ::GetDirContentSize(sAutoSaveDir, NULL, this).QuadPart;
+					if (DoExit())
+						return 0; // GetDirContentSize() may return before finishing calculating the size
 					while (	llDaysAgo > 0 &&
 							(ullDiskFreeSpace < ullMinDiskFreeSpace ||		// 'less than' is mandatory because both vars may be 0
 							ullCameraFolderSize > ullMaxCameraFolderSize))	// 'greater than' is mandatory because ullMaxCameraFolderSize may be ULLONG_MAX 
-					{														// (if exiting GetDirContentSize() may return less than the actual size, that's ok)
+					{
 						// Store start vars
 						if (llStartDiskFreeSpaceDaysAgo == 0 && ullDiskFreeSpace < ullMinDiskFreeSpace)
 						{
@@ -3546,6 +3548,8 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 						llDaysAgo--;
 						ullDiskFreeSpace = ::GetDiskAvailableFreeSpace(sAutoSaveDir);
 						ullCameraFolderSize = ::GetDirContentSize(sAutoSaveDir, NULL, this).QuadPart;
+						if (DoExit())
+							return 0; // GetDirContentSize() may return before finishing calculating the size
 					}
 
 					// Log
