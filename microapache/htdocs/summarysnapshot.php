@@ -233,7 +233,7 @@ $doc_root = $_SERVER['DOCUMENT_ROOT'];
 if ($doc_root == "")
 	$dir = "$filesdirpath/".$selected_year_string."/".$selected_month_string."/".$selected_day_string;
 else
-	$dir = "$doc_root/".ltrim($filesdirpath,"\\/")."/".$selected_year_string."/".$selected_month_string."/".$selected_day_string;
+	$dir = rtrim($doc_root,"\\/")."/".ltrim($filesdirpath,"\\/")."/".$selected_year_string."/".$selected_month_string."/".$selected_day_string;
 if ($handle = @opendir($dir)) {
 	// Clear flag
 	$day_has_files = false;
@@ -307,7 +307,7 @@ if ($handle = @opendir($dir)) {
 			$day_has_files = true;			
 			if ($pos >= $page_offset && $count < $max_per_page) {
 				$file_date = getdate($file_time);
-				$file_timestamp = sprintf("%02d:%02d:%02d ", $file_date['hours'], $file_date['minutes'], $file_date['seconds']); // leave a final space so that the text can wrap in the browser!
+				$file_timestamp = sprintf("%02d:%02d:%02d", $file_date['hours'], $file_date['minutes'], $file_date['seconds']);
 				$filenamenoext = basename($file, ".".$path_parts['extension']);
 				list($file_prefix, $file_year, $file_month, $file_day, $file_hour, $file_min, $file_sec, $file_postfix) = sscanf($filenamenoext, "%[a-z,A-Z]_%d_%d_%d_%d_%d_%d_%[a-z,A-Z]");
 				$uribasenoext = "$filesdirpath/$selected_year_string/$selected_month_string/$selected_day_string/$filenamenoext";
@@ -315,11 +315,12 @@ if ($handle = @opendir($dir)) {
 				$swfuri = "$uribasenoext.swf"; $swfuri_get = urlencode($swfuri); $swffile = "$dir/$filenamenoext.swf";
 				$aviuri = "$uribasenoext.avi"; $aviuri_for_html = htmlspecialchars(str_replace("%2F", "/", rawurlencode($aviuri))); $avifile = "$dir/$filenamenoext.avi";
 				$gifuri = "$uribasenoext.gif"; $gifuri_for_html = htmlspecialchars(str_replace("%2F", "/", rawurlencode($gifuri)));
+				echo "<span class=\"thumbcontainer\">";
 				if ($path_parts['extension'] == 'gif') {
 					if (is_file($mp4file))
 						echo "<a href=\"mp4.php?file=$mp4uri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . $mp4s . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri_for_html\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a>";
 					else if (is_file($swffile) && is_file($avifile))
-						echo "<span class=\"thumbcontainer\"><a href=\"swf.php?file=$swfuri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . $swfs . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri_for_html\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a><a class=\"avilink\" href=\"$aviuri_for_html\">AVI</a></span>";
+						echo "<a href=\"swf.php?file=$swfuri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . $swfs . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri_for_html\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a><a class=\"avilink\" href=\"$aviuri_for_html\">AVI</a>";
 					else if (is_file($swffile))
 						echo "<a href=\"swf.php?file=$swfuri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . $swfs . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri_for_html\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a>";
 					else if (is_file($avifile))
@@ -333,11 +334,14 @@ if ($handle = @opendir($dir)) {
 					echo "<a href=\"jpeg.php?file=$jpeguri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$jpegthumburi_for_html\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a>";
 				}
 				else if ($path_parts['extension'] == 'avi')
-					echo "<span class=\"line1\">" . strtoupper($file_prefix) . "</span><a class=\"line2\" href=\"$aviuri_for_html\" >$file_timestamp</a>";
+					echo strtoupper($file_prefix) . "<br /><a href=\"$aviuri_for_html\" >$file_timestamp</a>";
 				else if ($path_parts['extension'] == 'mp4')
-					echo "<span class=\"line1\">" . strtoupper($file_prefix) . "</span><a class=\"line2\" href=\"mp4.php?file=$mp4uri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\" >$file_timestamp</a>";
+					echo strtoupper($file_prefix) . "<br /><a href=\"mp4.php?file=$mp4uri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\" >$file_timestamp</a>";
 				else if ($path_parts['extension'] == 'swf')
-					echo "<span class=\"line1\">" . strtoupper($file_prefix) . "</span><a class=\"line2\" href=\"swf.php?file=$swfuri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\" >$file_timestamp</a>";
+					echo strtoupper($file_prefix) . "<br /><a href=\"swf.php?file=$swfuri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\" >$file_timestamp</a>";
+				if ($show_trash_command)
+					echo "<a class=\"trashbuttons\" href=\"recycle.php?year=$selected_year_string&amp;month=$selected_month_string&amp;day=$selected_day_string&amp;filenamenoext=$filenamenoext&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\">&nbsp;</a>";
+				echo "</span>";
 				$count++;
 			}
 			$pos++;

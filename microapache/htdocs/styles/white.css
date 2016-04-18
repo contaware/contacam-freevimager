@@ -68,35 +68,27 @@ a.highlight:link, a.highlight:visited, a.highlight:active, a.highlight:hover, a.
 	text-decoration: underline;
 }
 
-/* Two line Rec text and AVI link for summaries */
-span.line1 {
-	line-height: 52px;
-	position: relative;
-	left: 28px;
-}
-a.line2 {
-	outline: none;
-	line-height: 52px;
-	position: relative;
-	left: -11px;
-	top: 15px;
-}
+/* Thumb container */
 span.thumbcontainer {
 	display: inline-block;
+	padding: 10px;
+	text-align: left;
+	vertical-align: middle;
 }
+span.thumbcontainer a:visited {
+	color: #00df00;
+}
+span.thumbcontainer a:active, span.thumbcontainer a:focus {
+	color: #eca200;
+}
+
+/* AVI link */
 a.avilink {
-	outline: none;
-	right: 3px;
+	right: 2px;
 	bottom: 2px;
 	position: relative;
 	vertical-align: bottom;
 	font-size: 10px;
-}
-a.avilink:visited, a.line2:visited {
-	color: #00df00;
-}
-a.avilink:active, a.avilink:focus, a.line2:active, a.line2:focus {
-	color: #eca200;
 }
 
 /* Thumbs margin for summaries */
@@ -165,6 +157,19 @@ a.savebuttons {
 }
 a.backbuttons {
 	background: transparent url('back_white.png') no-repeat center center;
+}
+a.trashbuttons {
+	display: inline-block;
+	width: 17px;
+	height: 20px;
+	line-height: 20px;
+	text-align: center;
+	vertical-align: bottom;
+	text-decoration: none;
+	background: transparent url('trash.png') no-repeat left top;
+}
+a.trashbuttons:hover {
+	background: transparent url('trashhover.png') no-repeat left top;
 }
 table#navcontrols {
 	margin: 0 auto;

@@ -3,7 +3,10 @@
 session_start();
 
 // Image and video files directory (path relative to document root)
-$filesdirpath = str_replace("\\", "/", FILESDIRPATH);
+if (defined('FILESDIRPATH'))
+	$filesdirpath = str_replace("\\", "/", FILESDIRPATH);
+else
+	$filesdirpath = "";
 $filesdirpath = rtrim($filesdirpath,"/");
 if ($filesdirpath == "") {
 	$filesdirpath = dirname($_SERVER['PHP_SELF']);
@@ -22,6 +25,12 @@ if (!empty($_SERVER['HTTPS']) && (strtolower($_SERVER['HTTPS']) != 'off'))
 	$scheme = 'https';
 else
 	$scheme = 'http';
+
+// Trash command
+if (defined('SHOW_TRASH_COMMAND'))
+	$show_trash_command = SHOW_TRASH_COMMAND;
+else
+	$show_trash_command = 0;
 
 // Get Internet Explorer version
 function getIEVersion() {
