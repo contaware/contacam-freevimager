@@ -6630,6 +6630,7 @@ CString CVideoDeviceDoc::PhpLoadConfigFile()
 
 BOOL CVideoDeviceDoc::PhpSaveConfigFile(const CString& sConfig)
 {
+	// Get config file name
 	CString sPhpConfigFile = PhpGetConfigFileName();
 	if (sPhpConfigFile == _T(""))
 		return FALSE;
@@ -6639,6 +6640,8 @@ BOOL CVideoDeviceDoc::PhpSaveConfigFile(const CString& sConfig)
 		if (!::CreateDir(sPath))
 			return FALSE;
 	}
+
+	// Convert given data to ANSI
 	LPSTR pData = NULL;
 	int nLen = ::ToANSI(sConfig, &pData);
 	if (nLen <= 0 || !pData)
@@ -6647,15 +6650,19 @@ BOOL CVideoDeviceDoc::PhpSaveConfigFile(const CString& sConfig)
 			delete [] pData;
 		return FALSE;
 	}
+
+	// Make a unique temp file on the same volume so that we are sure MoveFileEx() is atomic
+	CString sTmpPhpConfigFile(::GetFileNameNoExt(sPhpConfigFile) + _T("-") + ::GetUuidString() + _T(".tmp"));
+	
+	// Write to temp file and free data
 	try
 	{
-		CFile f(sPhpConfigFile,
+		CFile f(sTmpPhpConfigFile,
 				CFile::modeCreate		|
 				CFile::modeWrite		|
 				CFile::shareDenyWrite);
 		f.Write(pData, nLen);
 		delete [] pData;
-		return TRUE;
 	}
 	catch (CFileException* e)
 	{
@@ -6663,14 +6670,31 @@ BOOL CVideoDeviceDoc::PhpSaveConfigFile(const CString& sConfig)
 		e->Delete();
 		return FALSE;
 	}
+
+	// Try moving for two seconds
+	BOOL bOK = FALSE;
+	int nRetry = 20;
+	while (nRetry-- > 0)
+	{
+		bOK = ::MoveFileEx(	sTmpPhpConfigFile, sPhpConfigFile,
+							MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH);
+		if (bOK)
+			break;
+		else
+			::Sleep(100);
+	}
+
+	// On failure clean-up temp file
+	if (!bOK)
+		::DeleteFile(sTmpPhpConfigFile);
+
+	return bOK;
 }
 
 BOOL CVideoDeviceDoc::PhpConfigFileSetParam(const CString& sParam, const CString& sValue)
 {
 	// Load Config File
 	CString sConfig = PhpLoadConfigFile();
-	if (sConfig == _T(""))
-		return FALSE;
 
 	// Get length
 	int nLength = sConfig.GetLength();
@@ -6756,26 +6780,20 @@ BOOL CVideoDeviceDoc::PhpConfigFileSetParam(const CString& sParam, const CString
 			nIndexDefine = sConfigLowerCase.Find(sDefine, nIndexDefine + 1);
 	}
 
-	// If not found -> insert before last comment
-	int nIndexInsert = sConfigLowerCase.Find(_T("/**************************************\r\n* initialization, do not remove that! *\r\n**************************************/"));
+	// If not found -> insert after <?php
+	int nIndexInsert = sConfigLowerCase.Find(_T("<?php"));
 	if (nIndexInsert >= 0)
 	{
-		sConfig.Insert(nIndexInsert, sDefine + _T(" (\"") + sParam + _T("\",\"") + sValue + _T("\");") + _T("\r\n\r\n"));
+		nIndexInsert += 5; // Skip <?php
+		sConfig.Insert(nIndexInsert, _T("\r\n") + sDefine + _T(" (\"") + sParam + _T("\",\"") + sValue + _T("\");"));
 		return PhpSaveConfigFile(sConfig);
 	}
-	// If also not found -> insert after <?php
+	// If also not found -> add <?php and insert after it
 	else
 	{
-		nIndexInsert = sConfigLowerCase.Find(_T("<?php"));
-		if (nIndexInsert >= 0)
-		{
-			nIndexInsert += 5; // Skip <?php
-			sConfig.Insert(nIndexInsert, _T("\r\n") + sDefine + _T(" (\"") + sParam + _T("\",\"") + sValue + _T("\");"));
-			return PhpSaveConfigFile(sConfig);
-		}
+		sConfig.Insert(0, _T("<?php\r\n") + sDefine + _T(" (\"") + sParam + _T("\",\"") + sValue + _T("\");"));
+		return PhpSaveConfigFile(sConfig);
 	}
-
-	return FALSE;
 }
 
 CString CVideoDeviceDoc::PhpConfigFileGetParam(const CString& sParam)
