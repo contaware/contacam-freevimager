@@ -744,8 +744,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		m_hAppMutex = ::CreateMutex(NULL, FALSE, APPMUTEXNAME);
 
 		// Is Mail Available?
-		m_bMailAvailable =	(::GetProfileInt(_T("MAIL"), _T("MAPI"), 0) != 0) &&
-							(SearchPath(NULL, _T("MAPI32.DLL"), NULL, 0, NULL, NULL) != 0);
+		m_bMailAvailable = (::SearchPath(NULL, _T("MAPI32.DLL"), NULL, 0, NULL, NULL) != 0);
 
 		// Check for MMX
 		if (!g_bMMX)
