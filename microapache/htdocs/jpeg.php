@@ -21,7 +21,7 @@ $doc_root = $_SERVER['DOCUMENT_ROOT'];
 if ($doc_root == "")
 	$full_path = trim($filename,"\\/");
 else
-	$full_path = "$doc_root/" . trim($filename,"\\/");
+	$full_path = rtrim($doc_root,"\\/")."/".trim($filename,"\\/");
 if (!is_file("$full_path")) {
 	echo "<div style=\"text-align: center\"><h2>\n";
 	echo NOFILE;

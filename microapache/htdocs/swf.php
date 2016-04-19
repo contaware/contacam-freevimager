@@ -17,7 +17,7 @@ $filename = $_GET['file'];
 if ($doc_root == "")
 	$full_path = trim($filename,"\\/");
 else
-	$full_path = "$doc_root/" . trim($filename,"\\/");
+	$full_path = rtrim($doc_root,"\\/")."/".trim($filename,"\\/");
 $currentswf = basename(substr($filename, strrpos($filename, '/') + 1), '.swf');
 echo "<title>$currentswf</title>\n";
 echo "<link rel=\"stylesheet\" href=\"" . STYLEFILEPATH . "\" type=\"text/css\" />\n";

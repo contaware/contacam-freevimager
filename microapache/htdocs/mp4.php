@@ -15,7 +15,7 @@ $filename = $_GET['file'];
 if ($doc_root == "")
 	$full_path = trim($filename,"\\/");
 else
-	$full_path = "$doc_root/" . trim($filename,"\\/");
+	$full_path = rtrim($doc_root,"\\/")."/".trim($filename,"\\/");
 $currentmp4 = basename(substr($filename, strrpos($filename, '/') + 1), '.mp4');
 echo "<title>$currentmp4</title>\n";
 echo "<link rel=\"stylesheet\" href=\"" . STYLEFILEPATH . "\" type=\"text/css\" />\n";

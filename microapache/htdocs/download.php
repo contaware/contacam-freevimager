@@ -4,7 +4,7 @@ $doc_root = $_SERVER['DOCUMENT_ROOT'];
 if ($doc_root == "")
 	$full_path = trim($filename,"\\/");
 else
-	$full_path = "$doc_root/" . trim($filename,"\\/");
+	$full_path = rtrim($doc_root,"\\/")."/".trim($filename,"\\/");
 @set_time_limit(0); // PHP must not terminate this script
 if (@ini_get('zlib.output_compression'))
 	@ini_set('zlib.output_compression', 'Off');

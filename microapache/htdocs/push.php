@@ -97,5 +97,5 @@ $doc_root = $_SERVER['DOCUMENT_ROOT'];
 if ($doc_root == "")
 	$full_path = trim($filename,"\\/");
 else
-	$full_path = "$doc_root/" . trim($filename,"\\/");
+	$full_path = rtrim($doc_root,"\\/")."/".trim($filename,"\\/");
 doServerPush($full_path, 'image/jpeg', SERVERPUSH_POLLRATE_MS);

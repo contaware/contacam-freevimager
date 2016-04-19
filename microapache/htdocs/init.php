@@ -3,6 +3,7 @@
 session_start();
 
 // Image and video files directory (path relative to document root)
+// Note: $filesdirpath is not ending with a slash!
 if (defined('FILESDIRPATH'))
 	$filesdirpath = str_replace("\\", "/", FILESDIRPATH);
 else

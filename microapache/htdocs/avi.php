@@ -16,7 +16,7 @@ $filename = $_GET['file'];
 if ($doc_root == "")
 	$full_path = trim($filename,"\\/");
 else
-	$full_path = "$doc_root/" . trim($filename,"\\/");
+	$full_path = rtrim($doc_root,"\\/")."/".trim($filename,"\\/");
 $currentavi = basename(substr($filename, strrpos($filename, '/') + 1), '.avi');
 echo "<title>$currentavi</title>\n";
 echo "<link rel=\"stylesheet\" href=\"" . STYLEFILEPATH . "\" type=\"text/css\" />\n";
