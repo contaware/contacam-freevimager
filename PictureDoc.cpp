@@ -9977,7 +9977,10 @@ void CPictureDoc::ViewMap()
 
 		// Use comment, filename or user's country
 		if (sQuery == _T("") && ::IsJPEG(m_sFileName) && m_pDib->GetMetadata())
-			sQuery = m_pDib->GetMetadata()->m_sJpegComment;
+		{
+			sQuery = ::FromUTF8((const unsigned char*)(LPCSTR)(m_pDib->GetMetadata()->m_sJpegComment),
+								m_pDib->GetMetadata()->m_sJpegComment.GetLength());
+		}
 		if (sQuery == _T("") && ::GetFileExt(m_sFileName) == _T(".gif"))
 		{
 			if (m_GifAnimationThread.IsAlive() &&

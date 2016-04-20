@@ -1101,15 +1101,15 @@ BOOL CImageInfoDlg::SaveMetadata()
 				m_pDoc->m_JpegThread.Kill();
 			}
 
-			// Write Comment
-			LPSTR pAnsi = NULL;
-			::ToANSI(m_sCurrentComment, &pAnsi);
+			// Write Comment with UTF-8 Encoding
+			LPBYTE pUTF8 = NULL;
+			::ToUTF8(m_sCurrentComment, &pUTF8);
 			res = CDib::JPEGWriteComment(	m_pDoc->m_sFileName,
 											((CUImagerApp*)AfxGetApp())->GetAppTempDir(),		
-											pAnsi,
+											(LPCSTR)pUTF8,
 											TRUE); // Show Message Box on error!
-			if (pAnsi)
-				delete [] pAnsi;
+			if (pUTF8)
+				delete [] pUTF8;
 			
 			// Update Info
 			if (res)
@@ -2817,7 +2817,8 @@ void CImageInfoDlg::UpdateMetadata()
 	// Jpeg
 	if (::IsJPEG(m_pDoc->m_sFileName))
 	{
-		CString sJpegComment = m_pDoc->m_pDib->GetMetadata()->m_sJpegComment;
+		CString sJpegComment = ::FromUTF8(	(const unsigned char*)(LPCSTR)(m_pDoc->m_pDib->GetMetadata()->m_sJpegComment),
+											m_pDoc->m_pDib->GetMetadata()->m_sJpegComment.GetLength());
 		::MakeLineBreakCRLF(sJpegComment);
 		m_sOrigComment = sJpegComment;
 		m_sCurrentComment = sJpegComment;

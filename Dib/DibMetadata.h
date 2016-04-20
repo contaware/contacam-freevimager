@@ -734,7 +734,7 @@ public:
 	// Public Metadata Member Vars
 	bool m_bHasJfif;				// Jpeg Has JFIF Section in APP0
 	bool m_bHasCom;					// Jpeg Has COM Section
-	CString m_sJpegComment;
+	CStringA m_sJpegComment;		// The encoding for the COM segment is not specified (like many software we use UTF-8)
 	bool m_bHasOtherAppSections;	// Has at least one of the remaining APP Sections
 	EXIFINFO m_ExifInfo;
 	EXIFINFOINPLACEWRITE m_ExifInfoWrite;

@@ -112,7 +112,7 @@ CMetadata::CMetadata()
 	// Other Metadata
 	m_bHasJfif = false;
 	m_bHasCom = false;
-	m_sJpegComment = _T("");
+	m_sJpegComment = "";
 	m_bHasOtherAppSections = false;
 	m_pXmpData = NULL;
 	m_dwXmpSize = 0;
@@ -369,7 +369,7 @@ void CMetadata::Free()
 	}
 	m_bHasJfif = false;
 	m_bHasCom = false;
-	m_sJpegComment = _T("");
+	m_sJpegComment = "";
 	m_bHasOtherAppSections = false;
 	m_nExifImageWidth = 0;
 	m_bMotorolaOrder = false;
@@ -3866,11 +3866,11 @@ void CMetadata::ParseCOMSection(const unsigned char* pData, int nLength)
 	{
 		memcpy(p, pData, nLength);
 		p[nLength] = '\0';
-		m_sJpegComment = CString(p);
+		m_sJpegComment = CStringA(p);
 		delete [] p;
 	}
 	else
-		m_sJpegComment = _T("");
+		m_sJpegComment = "";
 }
 
 void CMetadata::ParseSOFnSection(int nMarker, const unsigned char* pData, int nLength)
