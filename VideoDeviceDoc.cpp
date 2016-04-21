@@ -49,6 +49,8 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	//{{AFX_MSG_MAP(CVideoDeviceDoc)
 	ON_COMMAND(ID_CAPTURE_RECORD, OnCaptureRecord)
 	ON_UPDATE_COMMAND_UI(ID_CAPTURE_RECORD, OnUpdateCaptureRecord)
+	ON_COMMAND(ID_CAPTURE_MOVDET, OnCaptureMovDet)
+	ON_UPDATE_COMMAND_UI(ID_CAPTURE_MOVDET, OnUpdateCaptureMovDet)
 	ON_COMMAND(ID_CAPTURE_CAMERAADVANCEDSETTINGS, OnCaptureCameraAdvancedSettings)
 	ON_COMMAND(ID_VIEW_VIDEO, OnViewVideo)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_VIDEO, OnUpdateViewVideo)
@@ -4476,8 +4478,6 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_bHideExecCommandMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("HideExecCommandMovementDetection"), FALSE);
 	m_bWaitExecCommandMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("WaitExecCommandMovementDetection"), FALSE);
 	m_dwVideoProcessorMode = (DWORD) MIN(1, MAX(0, pApp->GetProfileInt(sSection, _T("VideoProcessorMode"), 0)));
-	if (GetFrame() && GetFrame()->GetToolBar())
-		((CVideoDeviceToolBar*)(GetFrame()->GetToolBar()))->m_DetComboBox.SetCurSel(m_dwVideoProcessorMode);
 	m_sAVRecFileExt = pApp->GetProfileString(sSection, _T("VideoFileExt"), DEFAULT_VIDEO_FILEEXT);
 	UpdateDstWaveFormat(); // this updates m_pDstWaveFormat from m_sAVRecFileExt
 	m_fVideoRecQuality = (float) CAVRec::ClipVideoQuality((float)pApp->GetProfileInt(sSection, _T("VideoRecQuality"), (int)DEFAULT_VIDEO_QUALITY));
@@ -5461,6 +5461,19 @@ BOOL CVideoDeviceDoc::CaptureRecord()
 
 		return TRUE;
 	}
+}
+
+void CVideoDeviceDoc::OnCaptureMovDet()
+{
+	m_dwVideoProcessorMode = !m_dwVideoProcessorMode;
+	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("VideoProcessorMode"), m_dwVideoProcessorMode);
+	if (m_pMovementDetectionPage)
+		m_pMovementDetectionPage->UpdateDetectionState();
+}
+
+void CVideoDeviceDoc::OnUpdateCaptureMovDet(CCmdUI* pCmdUI) 
+{	
+	pCmdUI->SetCheck(m_dwVideoProcessorMode ? 1 : 0);
 }
 
 // Function called from the UI thread and when ProcessI420Frame() is not called

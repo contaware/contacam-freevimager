@@ -143,70 +143,13 @@ LRESULT CChildToolBar::DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 #ifdef VIDEODEVICEDOC
 
 /////////////////////////////////////////////////////////////////////////////
-// CDetComboBox
-
-CDetComboBox::CDetComboBox()
-{
-
-}
-
-BEGIN_MESSAGE_MAP(CDetComboBox, CComboBox)
-	//{{AFX_MSG_MAP(CDetComboBox)
-	ON_CONTROL_REFLECT(CBN_SELENDOK, OnSelEndOk)
-	ON_CONTROL_REFLECT(CBN_CLOSEUP, OnCloseUp)
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-void CDetComboBox::Init()
-{
-	AddString(ML_STRING(1844, "Detection") + CString(_T(" ")) + ML_STRING(1845, "OFF"));
-	AddString(ML_STRING(1844, "Detection") + CString(_T(" ")) + ML_STRING(1851, "ON"));
-	SetCurSel(0);
-}
-
-void CDetComboBox::OnSelEndOk()
-{
-	int Index = GetCurSel();
-	if (Index != CB_ERR)
-	{
-		CVideoDeviceView* pView = (CVideoDeviceView*)(((CControlBar*)GetParent())->GetDockingFrame()->GetActiveView());
-		ASSERT_VALID(pView);
-		CVideoDeviceDoc* pDoc = pView->GetDocument();
-		ASSERT_VALID(pDoc);
-		pDoc->m_dwVideoProcessorMode = Index;
-		::AfxGetApp()->WriteProfileInt(pDoc->GetDevicePathName(), _T("VideoProcessorMode"), pDoc->m_dwVideoProcessorMode);
-		if (pDoc->m_pMovementDetectionPage)
-			pDoc->m_pMovementDetectionPage->UpdateDetectionState();
-	}
-}
-
-// The following restore code is necessary on some OSs.
-// Do not use OnSelendcancel(), not working well on some
-// OSs in conjunction with SetCurSel().
-void CDetComboBox::OnCloseUp()
-{
-	CVideoDeviceView* pView = (CVideoDeviceView*)(((CControlBar*)GetParent())->GetDockingFrame()->GetActiveView());
-	ASSERT_VALID(pView);
-	CVideoDeviceDoc* pDoc = pView->GetDocument();
-	ASSERT_VALID(pDoc);
-	SetCurSel(pDoc->m_dwVideoProcessorMode);
-	pView->SetFocus();
-}
-
-BOOL CDetComboBox::Create(DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID)
-{
-	return CComboBox::Create(dwStyle | CBS_AUTOHSCROLL | WS_VSCROLL, rect, pParentWnd, nID); 
-}
-
-/////////////////////////////////////////////////////////////////////////////
 // CVideoDeviceToolBar
 
 IMPLEMENT_DYNAMIC(CVideoDeviceToolBar, CChildToolBar)
 
 CVideoDeviceToolBar::CVideoDeviceToolBar()
 {
-	m_DetComboBoxIndex = -1;
-	m_rcLastDetComboBox = CRect(0,0,0,0);
+
 }
 
 CVideoDeviceToolBar::~CVideoDeviceToolBar()
@@ -232,53 +175,11 @@ BOOL CVideoDeviceToolBar::Create(CWnd* pParentWnd)
 	SetSizes(	CSize(TOOLBAR_BUTTON_SIZE_X, TOOLBAR_BUTTON_SIZE_Y),
 				CSize(TOOLBAR_IMAGE_SIZE_X, TOOLBAR_IMAGE_SIZE_Y));
 
-	// Det Combo Box
-	LOGFONT lf;
-	memset(&lf, 0, sizeof(LOGFONT));
-	_tcscpy(lf.lfFaceName, TOOLBAR_COMBOBOX_FONTFACENAME);
-	HDC hDC = ::GetDC(GetSafeHwnd());
-	lf.lfHeight = TOOLBAR_COMBOBOX_FONTHEIGHT;
-	::ReleaseDC(GetSafeHwnd(), hDC);
-	lf.lfWeight = FW_NORMAL;
-	m_DetComboBoxFont.CreateFontIndirect(&lf);
-	m_DetComboBoxIndex = CommandToIndex(ID_DET_COMBOX);
-	if (m_DetComboBoxIndex != -1)
-		if (!m_DetComboBox.Create(CBS_DROPDOWNLIST | WS_VISIBLE | WS_CHILD, CRect(0,0,0,0), this, ID_DET_COMBOX))
-			return FALSE;
-	m_DetComboBox.SetFont(&m_DetComboBoxFont);
-	m_DetComboBox.SetExtendedUI(TRUE);
-	m_DetComboBox.Init();
-	m_DetComboBox.EnableWindow(TRUE);
-
 	return TRUE;
 }
 
 void CVideoDeviceToolBar::UpdateControls(void)
 {
-	CRect rect;
-
-	// Place Det ComboBox
-	if (::IsWindow(m_DetComboBox))
-	{
-		GetItemRect(m_DetComboBoxIndex, rect);
-		rect.right = rect.left + TOOLBAR_DETCOMBOBOX_WIDTH;
-		SetButtonInfo(	m_DetComboBoxIndex,
-						ID_DET_COMBOX,
-						TBBS_SEPARATOR,
-						rect.Width());
-		rect.left += 2;
-		(rect.right)--;
-		m_DetComboBox.SetItemHeight(-1, rect.Height() - 4*::GetSystemMetrics(SM_CYEDGE) + 1); // height of the static-text control
-		rect.bottom += 10; // set a minimum height for the dropdown to open and size itself correctly on Win XP and Win 2003
-
-		// To Avoid Flickering Of The ComboBox
-		if (m_rcLastDetComboBox != rect)
-		{
-			m_DetComboBox.MoveWindow(&rect);
-			m_rcLastDetComboBox = rect;
-		}
-	}
-
 	// Set Min Toolbar Width
 	if (GetCount() > 0)
 	{
@@ -288,28 +189,25 @@ void CVideoDeviceToolBar::UpdateControls(void)
 		CRect rcButton(0,0,0,0);
 		for (int i = 0 ; i < GetCount() ; i++)
 		{
-			if (i != m_DetComboBoxIndex)
+			if (GetButtonStyle(i) == TBBS_SEPARATOR)
 			{
-				if (GetButtonStyle(i) == TBBS_SEPARATOR)
+				nSeparatorCount++;
+				if (rcSep.Width() == 0)
+					GetItemRect(i, &rcSep);
+			}
+			else
+			{
+				CRect rc;
+				GetItemRect(i, &rc);
+				if (rc.Width() > 0)
 				{
-					nSeparatorCount++;
-					if (rcSep.Width() == 0)
-						GetItemRect(i, &rcSep);
-				}
-				else
-				{
-					GetItemRect(i, &rect);
-					if (rect.Width() > 0)
-					{
-						nButtonCount++;
-						if (rcButton.Width() == 0)
-							rcButton = rect;
-					}
+					nButtonCount++;
+					if (rcButton.Width() == 0)
+						rcButton = rc;
 				}
 			}
 		}
-		m_nMinToolbarWidth =	m_rcLastDetComboBox.Width() + 3 +
-								rcButton.Width() * nButtonCount	+
+		m_nMinToolbarWidth = 3 + rcButton.Width() * nButtonCount +
 								rcSep.Width() * nSeparatorCount + 4;
 	}
 }

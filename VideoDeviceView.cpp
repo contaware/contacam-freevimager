@@ -800,8 +800,6 @@ void CVideoDeviceView::OnTimer(UINT nIDEvent)
 			if (dwVideoProcessorMode != pDoc->m_dwVideoProcessorMode)
 			{
 				pDoc->m_dwVideoProcessorMode = dwVideoProcessorMode;
-				if (pDoc->GetFrame() && pDoc->GetFrame()->GetToolBar())
-					((CVideoDeviceToolBar*)(pDoc->GetFrame()->GetToolBar()))->m_DetComboBox.SetCurSel(pDoc->m_dwVideoProcessorMode);
 				if (pDoc->m_pMovementDetectionPage)
 					pDoc->m_pMovementDetectionPage->UpdateDetectionState();
 			}

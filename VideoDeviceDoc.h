@@ -1065,6 +1065,8 @@ protected:
 	//{{AFX_MSG(CVideoDeviceDoc)
 	afx_msg void OnCaptureRecord();
 	afx_msg void OnUpdateCaptureRecord(CCmdUI* pCmdUI);
+	afx_msg void OnCaptureMovDet();
+	afx_msg void OnUpdateCaptureMovDet(CCmdUI* pCmdUI);
 	afx_msg void OnCaptureCameraAdvancedSettings();
 	afx_msg void OnViewVideo();
 	afx_msg void OnUpdateViewVideo(CCmdUI* pCmdUI);

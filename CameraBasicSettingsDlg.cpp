@@ -1159,8 +1159,6 @@ void CCameraBasicSettingsDlg::ApplySettings()
 		m_pDoc->m_dwVideoProcessorMode = 1;
 		::AfxGetApp()->WriteProfileInt(m_pDoc->GetDevicePathName(), _T("VideoProcessorMode"), m_pDoc->m_dwVideoProcessorMode);
 	}
-	if (m_pDoc->GetFrame() && m_pDoc->GetFrame()->GetToolBar())
-		((CVideoDeviceToolBar*)(m_pDoc->GetFrame()->GetToolBar()))->m_DetComboBox.SetCurSel(m_pDoc->m_dwVideoProcessorMode);
 	if (m_pDoc->m_pMovementDetectionPage)
 		m_pDoc->m_pMovementDetectionPage->UpdateDetectionState();
 	m_pDoc->m_SaveFrameListThread.Start();

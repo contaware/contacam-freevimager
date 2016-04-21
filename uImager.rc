@@ -191,6 +191,7 @@ BEGIN
     POPUP "_Context Menu_"
     BEGIN
         MENUITEM "Record\tEnter",               ID_CAPTURE_RECORD
+		MENUITEM "Movement Detection",          ID_CAPTURE_MOVDET
         MENUITEM SEPARATOR
         MENUITEM "Global Settings...",          ID_FILE_SETTINGS
         MENUITEM "Camera Basic Settings...",    ID_CAPTURE_CAMERABASICSETTINGS
@@ -263,6 +264,7 @@ BEGIN
         MENUITEM "&Network",                    ID_CAPTURE_NETWORK
         MENUITEM SEPARATOR
         MENUITEM "Record\tEnter",               ID_CAPTURE_RECORD
+		MENUITEM "Movement Detection",          ID_CAPTURE_MOVDET
     END
     POPUP "&Settings"
     BEGIN
@@ -4325,7 +4327,7 @@ STRINGTABLE
 BEGIN
     ID_EDIT_EXPORT_ZONES    "Export detection zones to a ini file\nExport Detection Zones"
     ID_EDIT_IMPORT_ZONES    "Import detection zones from a ini file\nImport Detection Zones"
-    ID_DET_COMBOX           "Enable / disable movement detection\nMovement Detection"
+    ID_CAPTURE_MOVDET       "Enable / disable movement detection\nMovement Detection"
     ID_CAPTURE_CAMERABASICSETTINGS 
                             "Camera basic settings\nCamera Basic Settings"
     ID_EDIT_ZONE_SENSITIVITY_100 
@@ -4351,7 +4353,6 @@ BEGIN
     IDS_STRING1848          "Software + Trigger File"
     IDS_STRING1849          "Saved"
     IDS_STRING1850          "Save Failed!"
-    IDS_STRING1851          "ON"
     IDS_STRING1852          "Name"
     IDS_STRING1853          "Date Taken"
     IDS_STRING1854          "Date Created"
