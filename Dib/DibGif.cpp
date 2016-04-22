@@ -3335,7 +3335,7 @@ BOOL CGif::SaveClose()
 	return res;
 }
 
-void CGif::SetComment(LPCTSTR szComment)
+void CGif::SetComment(const CString& sComment)
 {
 	// Free
 	if (m_lpszComment)
@@ -3345,11 +3345,22 @@ void CGif::SetComment(LPCTSTR szComment)
 	}
 
 	// Return if given comment is empty
-	if (szComment == NULL || szComment[0] == _T('\0'))
+	if (sComment.IsEmpty())
 		return;
 
-	// Convert to Ansi
-	::ToANSI(szComment, &m_lpszComment);
+	// Convert to UTF-8
+	// (the gif89a specification states that the comment
+	// should be in the 7-bits ASCII character set,
+	// UTF-8 is an extension of that set)
+	::ToUTF8(sComment, (LPBYTE*)&m_lpszComment);
+}
+
+CString CGif::GetComment() const
+{
+	if (m_lpszComment)
+		return ::FromUTF8((const unsigned char*)m_lpszComment, strlen(m_lpszComment)); // strlen() returns the bytes count
+	else
+		return _T("");
 }
 
 // Copy GIF ColorMap into Windows BITMAPINFO

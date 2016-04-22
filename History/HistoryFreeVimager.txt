@@ -5,6 +5,7 @@ FREEVIMAGER HISTORY
 - Bigger toolbar buttons
 - Fixed the recognition of the email client used to send pictures
 - Using UTF-8 encoding for JPEG/JFIF COM comment sections
+- Using UTF-8 encoding for GIF comments
 
 5.0.5 (January 8th 2016)
 

@@ -1143,11 +1143,11 @@ BOOL CImageInfoDlg::SaveMetadata()
 			CString sOrigFileComment;
 			if (m_pDoc->m_GifAnimationThread.m_DibAnimationArray.GetSize() > 0)
 			{
-				sOrigFileComment = CString(m_pDoc->m_GifAnimationThread.m_DibAnimationArray[nFrame]->GetGif()->GetComment());
+				sOrigFileComment = m_pDoc->m_GifAnimationThread.m_DibAnimationArray[nFrame]->GetGif()->GetComment();
 				m_pDoc->m_GifAnimationThread.m_DibAnimationArray[nFrame]->GetGif()->SetComment(m_sCurrentComment);
 			}
 			else
-				sOrigFileComment = CString(m_pDoc->m_pDib->GetGif()->GetComment());
+				sOrigFileComment = m_pDoc->m_pDib->GetGif()->GetComment();
 			if (nFrame == 0)
 				m_pDoc->m_pDib->GetGif()->SetComment(m_sCurrentComment);
 			res = CDib::GIFWriteComment(nFrame,
@@ -2834,20 +2834,16 @@ void CImageInfoDlg::UpdateMetadata()
 	// Gif
 	if (::GetFileExt(m_pDoc->m_sFileName) == _T(".gif"))
 	{
-		CString sGifComment(_T(""));
+		CString sGifComment;
 		if (m_pDoc->m_GifAnimationThread.IsAlive() &&
 			m_pDoc->m_GifAnimationThread.m_dwDibAnimationCount > 1 &&
 			!m_pDoc->m_GifAnimationThread.IsRunning())
 		{
 			CDib* pDib = m_pDoc->m_GifAnimationThread.m_DibAnimationArray.GetAt(m_pDoc->m_GifAnimationThread.m_dwDibAnimationPos);
-			if (pDib->GetGif()->GetComment())
-				sGifComment = CString(pDib->GetGif()->GetComment());
+			sGifComment = pDib->GetGif()->GetComment();
 		}
 		else
-		{
-			if (m_pDoc->m_pDib->GetGif()->GetComment())
-				sGifComment = CString(m_pDoc->m_pDib->GetGif()->GetComment());
-		}
+			sGifComment = m_pDoc->m_pDib->GetGif()->GetComment();
 		::MakeLineBreakCRLF(sGifComment);
 		m_sOrigComment = sGifComment;
 		m_sCurrentComment = sGifComment;

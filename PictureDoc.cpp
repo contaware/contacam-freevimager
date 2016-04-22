@@ -9988,13 +9988,13 @@ void CPictureDoc::ViewMap()
 				!m_GifAnimationThread.IsRunning())
 			{
 				CDib* pDib = m_GifAnimationThread.m_DibAnimationArray.GetAt(m_GifAnimationThread.m_dwDibAnimationPos);
-				if (pDib && pDib->GetGif() && pDib->GetGif()->GetComment())
-					sQuery = CString(pDib->GetGif()->GetComment());
+				if (pDib && pDib->GetGif())
+					sQuery = pDib->GetGif()->GetComment();
 			}
 			else
 			{
-				if (m_pDib->GetGif() && m_pDib->GetGif()->GetComment())
-					sQuery = CString(m_pDib->GetGif()->GetComment());
+				if (m_pDib->GetGif())
+					sQuery = m_pDib->GetGif()->GetComment();
 			}
 		}
 		if (sQuery == _T(""))

@@ -71,8 +71,8 @@ public:
 	int GetPlayTimes() const {	return (m_bHasLoopExtension == FALSE) ?
 								1 : ((m_wLoopCount == 0) ? 0 : (int)m_wLoopCount + 1);};
 
-	void SetComment(LPCTSTR szComment);
-	char* GetComment() const {return m_lpszComment;};
+	void SetComment(const CString& sComment);
+	CString GetComment() const;
 
 	/*	GIF_DISPOSE_NONE	0	
 		No disposal specified. The decoder is
