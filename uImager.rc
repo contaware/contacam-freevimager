@@ -191,7 +191,7 @@ BEGIN
     POPUP "_Context Menu_"
     BEGIN
         MENUITEM "Record\tEnter",               ID_CAPTURE_RECORD
-		MENUITEM "Movement Detection",          ID_CAPTURE_MOVDET
+        MENUITEM "Movement Detection",          ID_CAPTURE_MOVDET
         MENUITEM SEPARATOR
         MENUITEM "Global Settings...",          ID_FILE_SETTINGS
         MENUITEM "Camera Basic Settings...",    ID_CAPTURE_CAMERABASICSETTINGS
@@ -264,7 +264,7 @@ BEGIN
         MENUITEM "&Network",                    ID_CAPTURE_NETWORK
         MENUITEM SEPARATOR
         MENUITEM "Record\tEnter",               ID_CAPTURE_RECORD
-		MENUITEM "Movement Detection",          ID_CAPTURE_MOVDET
+        MENUITEM "Movement Detection",          ID_CAPTURE_MOVDET
     END
     POPUP "&Settings"
     BEGIN
@@ -2347,30 +2347,28 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,301,94,101,10
     CONTROL         "Enable Snapshots (if not checked always enabled)",IDC_CHECK_SCHEDULER_DAILY,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,150,177,10
-    CONTROL         "DateTimePicker1",IDC_TIME_DAILY_START,"SysDateTimePick32",DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,247,147,66,16
+    CONTROL         "DateTimePicker1",IDC_TIME_DAILY_START,"SysDateTimePick32",DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,243,147,66,16
     CONTROL         "DateTimePicker1",IDC_TIME_DAILY_STOP,"SysDateTimePick32",DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,338,147,66,16
-    CONTROL         "Save History as Jpegs",IDC_CHECK_SNAPSHOT_HISTORY_JPEG,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,200,86,10
-    CONTROL         "Ftp Upload\n(check ""Save History as Jpegs"")",IDC_CHECK_FTP_SNAPSHOT_HISTORY_JPEG,
-                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,275,194,131,22
-    CONTROL         "Save History as Daily Video with",IDC_CHECK_SNAPSHOT_HISTORY_VIDEO,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,224,118,10
-    EDITTEXT        IDC_EDIT_SNAPSHOT_HISTORY_FRAMERATE,132,223,14,12,ES_RIGHT | ES_NUMBER
-    CONTROL         "Ftp Upload\n(check ""Save History as Daily Video"")",IDC_CHECK_FTP_SNAPSHOT_HISTORY_VIDEO,
-                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,275,218,132,22
+    CONTROL         "Enable",IDC_CHECK_SNAPSHOT_HISTORY_JPEG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,199,37,10
+    CONTROL         "Ftp Upload",IDC_CHECK_FTP_SNAPSHOT_HISTORY_JPEG,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,28,213,51,10
+    CONTROL         "Enable",IDC_CHECK_SNAPSHOT_HISTORY_VIDEO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,220,199,37,10
+    CONTROL         "Ftp Upload",IDC_CHECK_FTP_SNAPSHOT_HISTORY_VIDEO,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,234,213,51,10
+    EDITTEXT        IDC_EDIT_SNAPSHOT_HISTORY_FRAMERATE,274,225,14,12,ES_RIGHT | ES_NUMBER
     CONTROL         "Open after manual shot",IDC_CHECK_MANUALSHOT_AUTOOPEN,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,255,89,10
     LTEXT           "Snapshot each\n(0: as fast as possible)",IDC_STATIC2476,14,21,77,20
     LTEXT           "sec",IDC_STATIC2477,135,26,14,10
-    GROUPBOX        "Snapshot History",IDC_STATIC2479,7,184,404,61
+    GROUPBOX        "Snapshot History as JPEGs",IDC_STATIC2479,7,184,198,61
     LTEXT           "qual.",IDC_COMPRESSION_QUALITY_NUM,368,59,17,11
     LTEXT           "JPEG Quality\n(0: worst, 100: best)",IDC_STATIC2480,14,55,104,17
     GROUPBOX        "General Settings",IDC_STATIC2481,7,4,404,115
-    LTEXT           "frames/sec",IDC_STATIC2483,150,225,36,8
+    LTEXT           "frames/sec",IDC_STATIC2483,293,227,36,8
     GROUPBOX        "Snapshot Scheduling",IDC_STATIC2484,7,129,404,45
-    LTEXT           "From",IDC_STATIC2485,224,151,16,8
+    LTEXT           "From",IDC_STATIC2485,219,151,16,8
     LTEXT           "To",IDC_STATIC2486,323,151,10,8
     LTEXT           "(multiple of 4)",IDC_STATIC2491,354,26,49,9
+    GROUPBOX        "Snapshot History as Daily Video",IDC_STATIC2482,213,184,198,61
+    LTEXT           "Framerate",IDC_STATIC2487,235,227,34,8
 END
 
 IDD_SNAPSHOT_FTP_CONFIGURATION DIALOGEX 0, 0, 245, 161
