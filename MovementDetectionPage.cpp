@@ -134,6 +134,7 @@ BOOL CMovementDetectionPage::OnInitDialog()
     pComboBoxAttachment->AddString(ML_STRING(1880, "No Attachment"));
     pComboBoxAttachment->AddString(ML_STRING(1883, "Saved Full Video"));
     pComboBoxAttachment->AddString(ML_STRING(1882, "Saved Small Video"));
+	pComboBoxAttachment->AddString(ML_STRING(1881, "Snapshot"));
 	CComboBox* pComboBoxExexMode = (CComboBox*)GetDlgItem(IDC_EXECMODE_MOVEMENT_DETECTION);
 	pComboBoxExexMode->AddString(ML_STRING(1842, "After Detection Filter OK"));
 	pComboBoxExexMode->AddString(ML_STRING(1843, "After Save,Email,Ftp"));

@@ -209,7 +209,8 @@ public:
 	{
 		ATTACHMENT_NONE		= 0,
 		ATTACHMENT_VIDEO	= 1,
-		ATTACHMENT_GIF		= 2
+		ATTACHMENT_GIF		= 2,
+		ATTACHMENT_JPG		= 3
 	};
 
 	// The Http Networking Parser & Processor Class
@@ -459,10 +460,6 @@ public:
 			void CalcMovementDetectionListsSize();
 			void LoadAndDecodeFrame(CDib* pDib);
 			int Work();
-			CString SaveJpeg(	CDib* pDib,
-								CString sJPGDir,
-								const CTime& RefTime,
-								DWORD dwRefUpTime);
 			BOOL SaveSingleGif(		CDib* pDib,
 									const CString& sGIFFileName,
 									RGBQUAD* pGIFColors,
@@ -791,7 +788,7 @@ public:
 							CString* pLogFileName = NULL);	// returns the generated log filename if bLog is TRUE
 	void SendMailMovementDetection(	const CTime& Time,
 									const CString& sVideoFileName = _T(""),
-									const CString& sGIFFileName = _T(""));
+									const CString& sImageFileName = _T(""));
 	
 	// Vlm
 	static CString VlmGetConfigFileName();
@@ -812,7 +809,9 @@ protected:
 	void Snapshot(CDib* pDib, const CTime& Time);
 	BOOL EditCopy(CDib* pDib, const CTime& Time);
 	BOOL EditSnapshot(CDib* pDib, const CTime& Time);
+	CString SaveJpegMail(CDib* pDib);
 	CString MakeJpegManualSnapshotFileName(const CTime& Time);
+	CString MakeJpegMailFileName(const CTime& Time);
 	BOOL ThumbMessage(	const CString& sMessage1,
 						const CString& sMessage2,
 						const CString& sMessage3,
@@ -824,8 +823,6 @@ protected:
 									int posY,
 									int rx,
 									int ry);
-
-	// Networking Functions
 	void InitHttpGetFrameLocations();
 	static double GetDefaultNetworkFrameRate(NetworkDeviceTypeMode nNetworkDeviceTypeMode);
 

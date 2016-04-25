@@ -56,6 +56,7 @@ ContaCam Program
 
 ContaCam Web Interface
 ----------------------
+- Password protect cameras with PHP session and not with apache
 - Number of detections in index.php at the bottom of each preview for
   quick reference on which cameras have had detections in last 24 hours
   (pauls583@yahoo.com.au)

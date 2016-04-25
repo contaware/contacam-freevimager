@@ -3098,3 +3098,64 @@ int DrawBigText(HDC hDC,
 
 	return nUsedHeightPix;
 }
+
+BOOL CalcShrink(	DWORD dwOrigWidth,
+					DWORD dwOrigHeight,
+					DWORD dwMaxSize,
+					BOOL bMaxSizePercent,
+					DWORD& dwShrinkWidth,
+					DWORD& dwShrinkHeight)
+{
+	// Init
+	BOOL bDoShrink = FALSE;
+	dwShrinkWidth = dwOrigWidth;
+	dwShrinkHeight = dwOrigHeight;
+
+	// Check
+	if (dwOrigWidth == 0 || dwOrigHeight == 0)
+		return FALSE;
+
+	// Calc. aspect ratio
+	double dAspectRatio = (double)dwOrigWidth / (double)dwOrigHeight;
+
+	// Landscape
+	if (dwOrigWidth > dwOrigHeight)
+	{
+		// From Percent to Pixels
+		DWORD dwMaxSizePercent;
+		if (bMaxSizePercent)
+		{
+			dwMaxSizePercent = dwMaxSize;
+			dwMaxSize = (DWORD)Round(dwMaxSize / 100.0 * dwOrigWidth);
+		}
+		
+		// Resize to dwMaxSize x XYZ
+		if (dwOrigWidth > dwMaxSize)
+		{
+			bDoShrink = TRUE;
+			dwShrinkWidth = dwMaxSize;
+			dwShrinkHeight = (DWORD)Round(dwMaxSize / dAspectRatio);
+		}
+	}
+	// Portrait
+	else
+	{
+		// From Percent to Pixels
+		DWORD dwMaxSizePercent;
+		if (bMaxSizePercent)
+		{
+			dwMaxSizePercent = dwMaxSize;
+			dwMaxSize = (DWORD)Round(dwMaxSize / 100.0 * dwOrigHeight);
+		}
+
+		// Resize to XYZ x dwMaxSize
+		if (dwOrigHeight > dwMaxSize)
+		{
+			bDoShrink = TRUE;
+			dwShrinkWidth = (DWORD)Round(dwMaxSize * dAspectRatio);
+			dwShrinkHeight = dwMaxSize;
+		}
+	}
+
+	return bDoShrink;
+}

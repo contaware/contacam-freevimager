@@ -7,6 +7,8 @@ CONTACAM HISTORY
 - Trash / delete button option for web interface 
 - Bigger toolbar buttons
 - Added support for some Samsung cameras
+- Re-added the option to email a jpeg snapshot on motion detection
+  (with respect to previous implementation it is sent really fast)
 - Removed the standby and hibernate disabling feature introduced with
   version 5.0.1 because it also blocked entering these states manually
 

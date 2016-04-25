@@ -137,6 +137,9 @@
 #define DEFAULT_JPEGCOMPRESSION							80
 #endif
 
+// Maximum size of movement detection snapshot used for mail attachment
+#define	MOVDET_MAX_SNAPSHOT_SIZE						640
+
 // Default settings for auto shrink
 #define	AUTO_SHRINK_MAX_SIZE							1024
 
@@ -725,12 +728,6 @@ protected:
 										CWnd* pProgressWnd,
 										BOOL bProgressSend,
 										CWorkerThread* pThread);
-
-	static BOOL CalcShrink(	const CDib& SrcDib,
-							DWORD dwMaxSize,
-							BOOL bMaxSizePercent,
-							DWORD& dwResizeWidth,
-							DWORD& dwResizeHeight);
 
 	// Application's Temporary Directory (it is _T('\\') terminated)
 	CString m_sAppTempDir;

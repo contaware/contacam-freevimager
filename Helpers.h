@@ -486,4 +486,15 @@ extern int DrawBigText(	HDC hDC,
 						int nBkMode = TRANSPARENT,
 						COLORREF crBkColor = RGB(0,0,0));
 
+// Calculates the shrink size keeping the aspect ratio
+// supply a maximum size in pixels or percent
+// returns TRUE if shrinking is necessary
+extern BOOL CalcShrink(	DWORD dwOrigWidth,
+						DWORD dwOrigHeight,
+						DWORD dwMaxSize,
+						BOOL bMaxSizePercent,
+						DWORD& dwShrinkWidth,
+						DWORD& dwShrinkHeight);
+
+
 #endif // !defined(AFX_HELPERS_H__8FD88286_7192_47B9_B311_4C2F27BF8B85__INCLUDED_)

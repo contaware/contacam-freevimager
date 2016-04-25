@@ -643,7 +643,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 
 		// Send By E-Mail
 		if (m_pDoc->m_bSendMailMovementDetection &&
-			m_pDoc->m_MovDetAttachmentType != CVideoDeviceDoc::ATTACHMENT_NONE)
+			(m_pDoc->m_MovDetAttachmentType == CVideoDeviceDoc::ATTACHMENT_VIDEO ||
+			m_pDoc->m_MovDetAttachmentType == CVideoDeviceDoc::ATTACHMENT_GIF))
 		{
 			m_pDoc->SendMailMovementDetection(	FirstDetFrameTime,
 												m_pDoc->m_MovDetAttachmentType == CVideoDeviceDoc::ATTACHMENT_VIDEO ?
@@ -731,36 +732,6 @@ void CVideoDeviceDoc::CSaveFrameListThread::FTPUploadMovementDetection(	const CT
 		default :
 			break;
 	}
-}
-
-CString CVideoDeviceDoc::CSaveFrameListThread::SaveJpeg(CDib* pDib,
-														CString sJPGDir,
-														const CTime& RefTime,
-														DWORD dwRefUpTime)
-{
-	// Calc. time and create file name
-	CTime Time = CalcTime(pDib->GetUpTime(), RefTime, dwRefUpTime);
-	CString sTime(Time.Format(_T("%Y_%m_%d_%H_%M_%S")));
-	sJPGDir.TrimRight(_T('\\'));
-	sJPGDir += _T("\\det_") + sTime + _T(".jpg");
-
-	// Do not overwrite previous jpeg save
-	if (::IsExistingFile(sJPGDir))
-		return _T("");
-
-	// Add frame tags
-	if (m_pDoc->m_bShowFrameTime)
-	{
-		AddFrameTime(pDib, RefTime, dwRefUpTime, m_pDoc->m_nRefFontSize);
-		AddFrameCount(pDib, m_pDoc->m_nMovDetSavesCount, m_pDoc->m_nRefFontSize);
-	}
-
-	// Save
-	CMJPEGEncoder MJPEGEncoder;
-	if (CVideoDeviceDoc::SaveJpegFast(pDib, &MJPEGEncoder, sJPGDir, DEFAULT_JPEGCOMPRESSION))
-		return sJPGDir;
-	else
-		return _T("");
 }
 
 void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors,
@@ -1479,7 +1450,7 @@ HANDLE CVideoDeviceDoc::SendMail(	const SendMailConfigurationStruct& SendMailCon
 
 void CVideoDeviceDoc::SendMailMovementDetection(const CTime& Time,
 												const CString& sVideoFileName/*=_T("")*/,
-												const CString& sGIFFileName/*=_T("")*/)
+												const CString& sImageFileName/*=_T("")*/)
 {
 	CTime CurrentTime(CTime::GetCurrentTime());
 	CTimeSpan TimeDiff = CurrentTime - m_MovDetLastSendMailTime;
@@ -1513,8 +1484,8 @@ void CVideoDeviceDoc::SendMailMovementDetection(const CTime& Time,
 						m_SendMailConfiguration.m_sPassword);
 		if (::GetFileSize64(sVideoFileName).QuadPart > 0)
 			sOptions += _T(" -M \"") + sSubject + _T("\" -attach \"") + sVideoFileName + _T("\"");
-		else if (::GetFileSize64(sGIFFileName).QuadPart > 0)
-			sOptions += _T(" -embed-image \"") + sGIFFileName + _T("\"");
+		else if (::GetFileSize64(sImageFileName).QuadPart > 0)
+			sOptions += _T(" -embed-image \"") + sImageFileName + _T("\"");
 		else
 			sOptions += _T(" -M \"") + sSubject + _T("\"");
 		HANDLE h = Mailer(sOptions);
@@ -2294,8 +2265,17 @@ end_of_software_detection:
 			m_bDetectingMinLengthMovement = TRUE;
 
 			// Send E-Mail
-			if (m_bSendMailMovementDetection && m_MovDetAttachmentType == ATTACHMENT_NONE)
-				SendMailMovementDetection(CalcTime(m_dwFirstDetFrameUpTime, CTime::GetCurrentTime(), ::timeGetTime()));
+			if (m_bSendMailMovementDetection)
+			{
+				if (m_MovDetAttachmentType == ATTACHMENT_NONE)
+					SendMailMovementDetection(CalcTime(m_dwFirstDetFrameUpTime, CTime::GetCurrentTime(), ::timeGetTime()));
+				else if (m_MovDetAttachmentType == ATTACHMENT_JPG)
+				{
+					SendMailMovementDetection(	CalcTime(m_dwFirstDetFrameUpTime, CTime::GetCurrentTime(), ::timeGetTime()),
+												_T(""),
+												SaveJpegMail(pDib));
+				}
+			}
 
 			// Execute Command
 			if (m_bExecCommandMovementDetection && m_nExecModeMovementDetection == 0)
@@ -4352,8 +4332,8 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_MovDetAttachmentType = (AttachmentType) pApp->GetProfileInt(sSection, _T("AttachmentType"), ATTACHMENT_NONE);
 	if (m_MovDetAttachmentType < ATTACHMENT_NONE)
 		m_MovDetAttachmentType = ATTACHMENT_NONE;
-	else if (m_MovDetAttachmentType > ATTACHMENT_GIF)
-		m_MovDetAttachmentType = ATTACHMENT_GIF;
+	else if (m_MovDetAttachmentType > ATTACHMENT_JPG)
+		m_MovDetAttachmentType = ATTACHMENT_JPG;
 	m_nMovDetSendMailSecBetweenMsg = (int) pApp->GetProfileInt(sSection, _T("SendMailSecBetweenMsg"), 0);
 	m_SendMailConfiguration.m_sSubject = pApp->GetProfileString(sSection, _T("SendMailSubject"), MOVDET_DEFAULT_EMAIL_SUBJECT);
 	if (m_SendMailConfiguration.m_sSubject.IsEmpty())
@@ -5239,6 +5219,34 @@ CString CVideoDeviceDoc::MakeJpegManualSnapshotFileName(const CTime& Time)
 		return _T("manualshot_") + sTime + _T(".jpg");
 	else
 		return sYearMonthDayDir + _T("\\") + _T("manualshot_") + sTime + _T(".jpg");
+}
+
+CString CVideoDeviceDoc::MakeJpegMailFileName(const CTime& Time)
+{
+	CString sYearMonthDayDir(_T(""));
+
+	// Snapshot time
+	CString sTime = Time.Format(_T("%Y_%m_%d_%H_%M_%S"));
+
+	// Adjust Directory Name
+	CString sSnapshotAutoSaveDir = m_sRecordAutoSaveDir;
+	sSnapshotAutoSaveDir.TrimRight(_T('\\'));
+
+	// Create directory if necessary
+	if (sSnapshotAutoSaveDir != _T(""))
+	{
+		DWORD dwAttrib = ::GetFileAttributes(sSnapshotAutoSaveDir);
+		if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
+			::CreateDir(sSnapshotAutoSaveDir);
+		if (!CVideoDeviceDoc::CreateCheckYearMonthDayDir(Time, sSnapshotAutoSaveDir, sYearMonthDayDir))
+			return _T("");
+	}
+
+	// Return file name
+	if (sYearMonthDayDir == _T(""))
+		return _T("mail_") + sTime + _T(".jpg");
+	else
+		return sYearMonthDayDir + _T("\\") + _T("mail_") + sTime + _T(".jpg");
 }
 
 void CVideoDeviceDoc::FreeVideoFile()
@@ -7989,6 +7997,53 @@ BOOL CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 		::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, ML_STRING(1850, "Save Failed!"), 0);
 
 	return res;
+}
+
+CString CVideoDeviceDoc::SaveJpegMail(CDib* pDib)
+{
+	// Times
+	CTime RefTime = CTime::GetCurrentTime();
+	DWORD dwRefUpTime = ::timeGetTime();
+	CTime Time = CalcTime(pDib->GetUpTime(), RefTime, dwRefUpTime);
+
+	// Make FileName
+	CString sFileName = MakeJpegMailFileName(Time);
+
+	// Do not overwrite previous jpeg save
+	if (::IsExistingFile(sFileName))
+		return _T("");
+
+	// Shrink?
+	CDib Dib;
+	DWORD dwShrinkWidth, dwShrinkHeight;
+	if (::CalcShrink(	pDib->GetWidth(), pDib->GetHeight(),
+						MOVDET_MAX_SNAPSHOT_SIZE, FALSE,
+						dwShrinkWidth, dwShrinkHeight))
+	{
+		Dib.SetShowMessageBoxOnError(FALSE); // no Message Box on Error
+		if (Dib.AllocateBitsFast(12, FCC('I420'), dwShrinkWidth, dwShrinkHeight))
+		{
+			CVideoDeviceDoc::ResizeFast(pDib, &Dib);
+			Dib.SetUpTime(pDib->GetUpTime());
+		}
+	}
+	else
+		Dib = *pDib;
+
+	// Check
+	if (!Dib.IsValid())
+		return _T("");
+
+	// Add frame time
+	if (m_bShowFrameTime)
+		AddFrameTime(&Dib, RefTime, dwRefUpTime, m_nRefFontSize);
+
+	// Save to JPEG File
+	CMJPEGEncoder MJPEGEncoder;
+	if (CVideoDeviceDoc::SaveJpegFast(&Dib, &MJPEGEncoder, sFileName, DEFAULT_JPEGCOMPRESSION))
+		return sFileName;
+	else
+		return _T("");
 }
 
 void CVideoDeviceDoc::OpenVideoFile(const CString& sFileName)

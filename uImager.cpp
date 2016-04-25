@@ -2707,57 +2707,6 @@ void CUImagerApp::ShrinkOpenDocs(LPCTSTR szDstDirPath,
 	::AfxGetMainFrame()->StatusText();
 }
 
-BOOL CUImagerApp::CalcShrink(	const CDib& SrcDib,
-								DWORD dwMaxSize,
-								BOOL bMaxSizePercent,
-								DWORD& dwShrinkWidth,
-								DWORD& dwShrinkHeight)
-{		
-	BOOL bDoShrink = FALSE;
-	double dAspectRatio = (double)SrcDib.GetWidth() / (double)SrcDib.GetHeight();
-
-	// Landscape
-	if (SrcDib.GetWidth() > SrcDib.GetHeight())
-	{
-		// From Percent to Pixels
-		DWORD dwMaxSizePercent;
-		if (bMaxSizePercent)
-		{
-			dwMaxSizePercent = dwMaxSize;
-			dwMaxSize = (DWORD)Round(dwMaxSize / 100.0 * SrcDib.GetWidth());
-		}
-		
-		// Resize to dwMaxSize x XYZ
-		if (SrcDib.GetWidth() > dwMaxSize)
-		{
-			bDoShrink = TRUE;
-			dwShrinkWidth = dwMaxSize;
-			dwShrinkHeight = (DWORD)Round(dwMaxSize / dAspectRatio);
-		}
-	}
-	// Portrait
-	else
-	{
-		// From Percent to Pixels
-		DWORD dwMaxSizePercent;
-		if (bMaxSizePercent)
-		{
-			dwMaxSizePercent = dwMaxSize;
-			dwMaxSize = (DWORD)Round(dwMaxSize / 100.0 * SrcDib.GetHeight());
-		}
-
-		// Resize to XYZ x dwMaxSize
-		if (SrcDib.GetHeight() > dwMaxSize)
-		{
-			bDoShrink = TRUE;
-			dwShrinkWidth = (DWORD)Round(dwMaxSize * dAspectRatio);
-			dwShrinkHeight = dwMaxSize;
-		}
-	}
-
-	return bDoShrink;
-}
-
 // Return Value:
 // -1 : Just Copied
 // 0  : Error
@@ -2843,11 +2792,12 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 	if (bShrinkPictureSize)
 	{
 		// Calc. Shrink
-		BOOL bDoShrink = CalcShrink(SrcDib,
-									dwMaxSize,
-									bMaxSizePercent,
-									dwShrinkWidth,
-									dwShrinkHeight);
+		BOOL bDoShrink = ::CalcShrink(	SrcDib.GetWidth(),
+										SrcDib.GetHeight(),
+										dwMaxSize,
+										bMaxSizePercent,
+										dwShrinkWidth,
+										dwShrinkHeight);
 
 		// Shrink
 		if (bDoShrink)
@@ -3208,11 +3158,12 @@ int CUImagerApp::ShrinkPictureMultiPage(LPCTSTR szSrcFileName,
 		if (bShrinkPictureSize)
 		{
 			// Calc Shrink
-			BOOL bDoShrink = CalcShrink(*a[a.GetUpperBound()],
-										dwMaxSize,
-										bMaxSizePercent,
-										dwShrinkWidth,
-										dwShrinkHeight);
+			BOOL bDoShrink = ::CalcShrink(	a[a.GetUpperBound()]->GetWidth(),
+											a[a.GetUpperBound()]->GetHeight(),
+											dwMaxSize,
+											bMaxSizePercent,
+											dwShrinkWidth,
+											dwShrinkHeight);
 
 			// Shrink
 			if (bDoShrink)
