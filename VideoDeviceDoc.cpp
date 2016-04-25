@@ -5244,9 +5244,9 @@ CString CVideoDeviceDoc::MakeJpegMailFileName(const CTime& Time)
 
 	// Return file name
 	if (sYearMonthDayDir == _T(""))
-		return _T("mail_") + sTime + _T(".jpg");
+		return _T("mailshot_") + sTime + _T(".jpg");
 	else
-		return sYearMonthDayDir + _T("\\") + _T("mail_") + sTime + _T(".jpg");
+		return sYearMonthDayDir + _T("\\") + _T("mailshot_") + sTime + _T(".jpg");
 }
 
 void CVideoDeviceDoc::FreeVideoFile()
@@ -7793,97 +7793,99 @@ void CVideoDeviceDoc::SnapshotRate(double dRate)
 
 void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 {
-	// Check
-	if (m_SaveSnapshotThread.IsAlive())
-		return;
-
-	// Get uptime
-	DWORD dwUpTime = pDib->GetUpTime();
-
-	// Init bDoSnapshot flag
-	BOOL bDoSnapshot = FALSE;
-	int nFrameTime = Round(1000.0 / m_dFrameRate);
-	if (m_dEffectiveFrameRate > 0.0)
-		nFrameTime = Round(1000.0 / m_dEffectiveFrameRate);
-	int nSnapshotRateMs = 1000 * m_nSnapshotRate + m_nSnapshotRateMs;
-	if (nFrameTime >= nSnapshotRateMs)
-		bDoSnapshot = TRUE;
-	else
+	// Snapshot Thread
+	if (!m_SaveSnapshotThread.IsAlive())
 	{
-		DWORD dwMaxUpTimeDiff = (DWORD)(3 * nSnapshotRateMs);
-		DWORD dwCurrentUpTimeDiff = dwUpTime - m_dwNextSnapshotUpTime;
-		DWORD dwCurrentUpTimeDiffInv = m_dwNextSnapshotUpTime - dwUpTime;
-		if (dwCurrentUpTimeDiff >= 0x80000000U)
-		{
-			if (dwCurrentUpTimeDiffInv >= dwMaxUpTimeDiff)	// m_dwNextSnapshotUpTime is too much in the future
-				m_dwNextSnapshotUpTime = dwUpTime;			// reset it!
-		}
+		// Check the elapsed time to update bDoSnapshot
+		BOOL bDoSnapshot = FALSE;
+		DWORD dwUpTime = pDib->GetUpTime();
+		int nFrameTime = Round(1000.0 / m_dFrameRate);
+		if (m_dEffectiveFrameRate > 0.0)
+			nFrameTime = Round(1000.0 / m_dEffectiveFrameRate);
+		int nSnapshotRateMs = 1000 * m_nSnapshotRate + m_nSnapshotRateMs;
+		if (nFrameTime >= nSnapshotRateMs)
+			bDoSnapshot = TRUE;
 		else
 		{
-			if (dwCurrentUpTimeDiff >= dwMaxUpTimeDiff)		// m_dwNextSnapshotUpTime is to old
-				m_dwNextSnapshotUpTime = dwUpTime;			// reset it!
+			DWORD dwMaxUpTimeDiff = (DWORD)(3 * nSnapshotRateMs);
+			DWORD dwCurrentUpTimeDiff = dwUpTime - m_dwNextSnapshotUpTime;
+			DWORD dwCurrentUpTimeDiffInv = m_dwNextSnapshotUpTime - dwUpTime;
+			if (dwCurrentUpTimeDiff >= 0x80000000U)
+			{
+				if (dwCurrentUpTimeDiffInv >= dwMaxUpTimeDiff)	// m_dwNextSnapshotUpTime is too much in the future
+					m_dwNextSnapshotUpTime = dwUpTime;			// reset it!
+			}
 			else
 			{
-				m_dwNextSnapshotUpTime += (DWORD)nSnapshotRateMs;
-				bDoSnapshot = TRUE;
+				if (dwCurrentUpTimeDiff >= dwMaxUpTimeDiff)		// m_dwNextSnapshotUpTime is to old
+					m_dwNextSnapshotUpTime = dwUpTime;			// reset it!
+				else
+				{
+					m_dwNextSnapshotUpTime += (DWORD)nSnapshotRateMs;
+					bDoSnapshot = TRUE;
+				}
 			}
 		}
-	}
-	if (bDoSnapshot && m_bSnapshotStartStop)
-	{
-		CTime timeonly(	2000,
-						1,
-						1,
-						Time.GetHour(),
-						Time.GetMinute(),
-						Time.GetSecond());
-		::EnterCriticalSection(&m_csSnapshotConfiguration);
-		if (m_SnapshotStartTime <= m_SnapshotStopTime)
+
+		// Check the scheduler to update bDoSnapshot
+		if (bDoSnapshot && m_bSnapshotStartStop)
 		{
-			if (timeonly < m_SnapshotStartTime || timeonly > m_SnapshotStopTime)
-				bDoSnapshot = FALSE;
+			CTime timeonly(	2000,
+							1,
+							1,
+							Time.GetHour(),
+							Time.GetMinute(),
+							Time.GetSecond());
+			::EnterCriticalSection(&m_csSnapshotConfiguration);
+			if (m_SnapshotStartTime <= m_SnapshotStopTime)
+			{
+				if (timeonly < m_SnapshotStartTime || timeonly > m_SnapshotStopTime)
+					bDoSnapshot = FALSE;
+			}
+			else
+			{
+				if (timeonly < m_SnapshotStartTime && timeonly > m_SnapshotStopTime)
+					bDoSnapshot = FALSE;
+			}
+			::LeaveCriticalSection(&m_csSnapshotConfiguration);
 		}
-		else
+
+		// Start Thread?
+		if (bDoSnapshot)
 		{
-			if (timeonly < m_SnapshotStartTime && timeonly > m_SnapshotStopTime)
-				bDoSnapshot = FALSE;
+			// Note: we need the history jpgs to make the video file inside the snapshot video thread,
+			// user unwanted history jpgs are deleted in snapshot video thread
+			m_SaveSnapshotThread.m_Dib = *pDib;
+			m_SaveSnapshotThread.m_bSnapshotHistoryJpeg = (m_bSnapshotHistoryJpeg || m_bSnapshotHistoryVideo);
+			m_SaveSnapshotThread.m_bSnapshotHistoryJpegFtp = m_bSnapshotHistoryJpegFtp;
+			m_SaveSnapshotThread.m_bShowFrameTime = m_bShowFrameTime;
+			m_SaveSnapshotThread.m_nRefFontSize = m_nRefFontSize;
+			m_SaveSnapshotThread.m_bSnapshotLiveJpegFtp = m_bSnapshotLiveJpegFtp;
+			m_SaveSnapshotThread.m_nSnapshotThumbWidth = m_nSnapshotThumbWidth;
+			m_SaveSnapshotThread.m_nSnapshotThumbHeight = m_nSnapshotThumbHeight;
+			m_SaveSnapshotThread.m_nSnapshotCompressionQuality = m_nSnapshotCompressionQuality;
+			m_SaveSnapshotThread.m_Time = Time;
+			m_SaveSnapshotThread.m_sSnapshotAutoSaveDir = m_sRecordAutoSaveDir;
+			::EnterCriticalSection(&m_csSnapshotConfiguration);
+			m_SaveSnapshotThread.m_sSnapshotLiveJpegName = m_sSnapshotLiveJpegName;
+			m_SaveSnapshotThread.m_sSnapshotLiveJpegThumbName = m_sSnapshotLiveJpegThumbName;
+			m_SaveSnapshotThread.m_Config = m_SnapshotFTPUploadConfiguration;
+			::LeaveCriticalSection(&m_csSnapshotConfiguration);
+			m_SaveSnapshotThread.Start();
 		}
-		::LeaveCriticalSection(&m_csSnapshotConfiguration);
 	}
 
-	// If nothing to do, return
-	if (!bDoSnapshot)
-		return;
-
-	// Start Snapshot Thread
-	// (we need the history jpgs to make the video file inside the snapshot video thread,
-	// user unwanted history jpgs are deleted in snapshot video thread)
-	m_SaveSnapshotThread.m_Dib = *pDib;
-	m_SaveSnapshotThread.m_bSnapshotHistoryJpeg = (m_bSnapshotHistoryJpeg || m_bSnapshotHistoryVideo);
-	m_SaveSnapshotThread.m_bSnapshotHistoryJpegFtp = m_bSnapshotHistoryJpegFtp;
-	m_SaveSnapshotThread.m_bShowFrameTime = m_bShowFrameTime;
-	m_SaveSnapshotThread.m_nRefFontSize = m_nRefFontSize;
-	m_SaveSnapshotThread.m_bSnapshotLiveJpegFtp = m_bSnapshotLiveJpegFtp;
-	m_SaveSnapshotThread.m_nSnapshotThumbWidth = m_nSnapshotThumbWidth;
-	m_SaveSnapshotThread.m_nSnapshotThumbHeight = m_nSnapshotThumbHeight;
-	m_SaveSnapshotThread.m_nSnapshotCompressionQuality = m_nSnapshotCompressionQuality;
-	m_SaveSnapshotThread.m_Time = Time;
-	m_SaveSnapshotThread.m_sSnapshotAutoSaveDir = m_sRecordAutoSaveDir;
-	::EnterCriticalSection(&m_csSnapshotConfiguration);
-	m_SaveSnapshotThread.m_sSnapshotLiveJpegName = m_sSnapshotLiveJpegName;
-	m_SaveSnapshotThread.m_sSnapshotLiveJpegThumbName = m_sSnapshotLiveJpegThumbName;
-	m_SaveSnapshotThread.m_Config = m_SnapshotFTPUploadConfiguration;
-	::LeaveCriticalSection(&m_csSnapshotConfiguration);
-	m_SaveSnapshotThread.Start();
-
-	// Start Snapshot Video Thread?
+	// Snapshot Video Thread
 	if (m_bSnapshotHistoryVideo && !m_SaveSnapshotVideoThread.IsAlive())
 	{
+		// Yesterday time
 		CTime Yesterday = Time - CTimeSpan(1, 0, 0, 0);	// - 1 day
 		Yesterday = CTime(	Yesterday.GetYear(),
 							Yesterday.GetMonth(),
 							Yesterday.GetDay(),
 							0, 0, 0);					// Back to midnight
+
+		// Start Thread if not already executed for Yesterday
 		if (m_SaveSnapshotVideoThread.m_ThreadExecutedForTime < Yesterday)
 		{
 			m_SaveSnapshotVideoThread.m_bSnapshotHistoryJpeg = m_bSnapshotHistoryJpeg;
