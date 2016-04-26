@@ -43,8 +43,8 @@ to determine its length.
 CStringA <-> CStringW
 ---------------------
 
-When converting between CStringA <-> CStringW the CP_ACP code page is 
-passed to MultiByteToWideChar() and WideCharToMultiByte(). This code 
+When converting between CStringA <-> CStringW the CP_THREAD_ACP code page 
+is passed to MultiByteToWideChar() and WideCharToMultiByte(). This code 
 page is localization dependent. I tested whether all 256 8 bit chars are 
 converted from ANSI to Unicode and back. It seems to work even when the 
 tested CP-1252 codepage defines 81, 8D, 8F, 90, and 9D as invalid. But I 
@@ -53,3 +53,26 @@ all the other codepages and with different OS versions. So it's ok to
 store UTF-8 in CStringA but converting that to CStringW and then back to 
 CStringA is not a good idea. When working with UTF-8 only use CStringA 
 and do not convert it. 
+
+Attention:
+
+In versions of ATL up to and including ATL 3.0 in Visual C++ 6.0, string 
+conversions in atlconv.h were always performed using the ANSI code page 
+of the system (CP_ACP). Starting with ATL 7.0 in Visual C++ .NET, string 
+conversions are performed using the default ANSI code page of the 
+current thread. So CStringW <-> CStringA, T2A and A2T are all using 
+CP_THREAD_ACP. 
+
+LOCALE_USER_DEFAULT -> CP_THREAD_ACP:
+
+In the "Region" dialog at the "Format" tab you can select that. This 
+setting is per-user, changes are effective immediately. When a thread is 
+created in Windows it takes the user default locale as initial thread 
+locale. Note that the user default is supposed to be used for 
+formatting and not for character conversion...!?!?
+
+LOCALE_SYSTEM_DEFAULT -> CP_ACP:
+
+This setting is found on the third tab of the "Region" dialog as 
+"Language for non-Unicode programs". Changing the setting changes it for 
+the entire machine and requires a reboot to take effect. 
