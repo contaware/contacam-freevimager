@@ -295,11 +295,13 @@ if ($handle = @opendir($dir)) {
 			$pos++;
 		}
 		
+		// Show top pages navigation
+		PrintPageNavigation();
+		
 		// Display
 		$pos = 0;
 		$count = 0;
 		echo "<div style=\"text-align: center\">\n";
-		PrintPageNavigation();
 		foreach($file_array as $file => $file_time) {
 			$path_parts = pathinfo($file);
 			if (!isset($path_parts['filename']))
