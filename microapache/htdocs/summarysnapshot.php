@@ -129,8 +129,8 @@ function PrintPageNavigation() {
 			$pages++;
 	}
 	
-	// Show pages navigation if more than a page available
-	if ($pages > 1) {
+	// Show pages navigation if more than a page available or if a page offset is given
+	if ($pages > 1 || $page_offset > 0) {
 		echo "<div style=\"text-align: center\">" . PAGES . " [\n";
 		$current_page_offset = 0;
 		$file_time_array = array_values($file_array);
@@ -356,7 +356,7 @@ if ($handle = @opendir($dir)) {
 		echo "</h2></div>\n";
 	}
 	
-	// Show pages navigation if more than a page available
+	// Show bottom pages navigation
 	PrintPageNavigation();
 }
 // Given day doesn't exist
