@@ -2434,7 +2434,7 @@ BEGIN
     LTEXT           "sec",IDC_STATIC,300,45,12,8
 END
 
-IDD_CAMERABASICSETTINGS DIALOGEX 0, 0, 417, 316
+IDD_CAMERABASICSETTINGS DIALOGEX 0, 0, 417, 305
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Camera Basic Settings"
@@ -2446,47 +2446,45 @@ BEGIN
                     "Button",BS_AUTORADIOBUTTON,16,27,89,10
     CONTROL         "Snapshots without History",IDC_RADIO_SNAPSHOT,"Button",BS_AUTORADIOBUTTON,16,41,100,10
     CONTROL         "Manual record",IDC_RADIO_MANUAL,"Button",BS_AUTORADIOBUTTON,16,54,61,10
-    CONTROL         "No change (to update name, appearance and storage)",IDC_RADIO_NOCHANGE,
-                    "Button",BS_AUTORADIOBUTTON,16,67,191,10
     CONTROL         "24h continuous recording",IDC_CHECK_24H_REC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,14,97,10
-    COMBOBOX        IDC_COMBO_THUMBSPERPAGE,368,11,38,288,CBS_DROPDOWNLIST | WS_TABSTOP
     COMBOBOX        IDC_COMBO_SNAPSHOTHISTORY_RATE,152,26,114,222,CBS_DROPDOWNLIST | WS_TABSTOP
     COMBOBOX        IDC_COMBO_SNAPSHOTHISTORY_SIZE,368,26,38,72,CBS_DROPDOWNLIST | WS_TABSTOP
     COMBOBOX        IDC_COMBO_SNAPSHOT_RATE,152,40,114,198,CBS_DROPDOWNLIST | WS_TABSTOP
     CONTROL         "Full stretch (for mobile applications)",IDC_CHECK_FULLSTRETCH,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,279,42,129,10
-    EDITTEXT        IDC_EDIT_NAME,152,98,254,13,ES_AUTOHSCROLL
-    COMBOBOX        IDC_COMBO_LANGUAGE,152,131,114,222,CBS_DROPDOWNLIST | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_STYLE,152,146,114,222,CBS_DROPDOWNLIST | WS_TABSTOP
-    CONTROL         "Trash command",IDC_CHECK_TRASHCOMMAND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,343,140,63,10
-    COMBOBOX        IDC_COMBO_FILEEXT,152,177,254,116,CBS_DROPDOWNLIST | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_KEEPFOR,152,192,254,116,CBS_DROPDOWNLIST | WS_TABSTOP
-    EDITTEXT        IDC_EDIT_MIN_DISK_FREE_PERCENT,152,207,35,13,ES_RIGHT
-    EDITTEXT        IDC_EDIT_MAX_CAMERA_FOLDER_SIZE,152,221,35,13,ES_RIGHT
-    PUSHBUTTON      "Email Settings",IDC_SENDMAIL_CONFIGURE,200,253,206,15
-    PUSHBUTTON      "OK",IDOK,152,292,58,20,BS_MULTILINE
-    PUSHBUTTON      "Cancel",IDCANCEL,220,292,58,20
-    GROUPBOX        "1. Usage",IDC_STATIC,5,3,407,77
-    LTEXT           "Thumbs per page",IDC_LABEL_THUMBSPERPAGE,280,15,56,8
-    GROUPBOX        "2. Name",IDC_STATIC,5,84,407,33
-    LTEXT           "Enter a friendly name for your camera",IDC_STATIC,16,95,123,8
-    LTEXT           "Web interface language",IDC_STATIC,16,134,78,8
-    LTEXT           "Web interface style",IDC_STATIC,16,148,64,8
-    GROUPBOX        "4. Storage",IDC_STATIC,5,168,407,71
-    LTEXT           "Keep files for",IDC_STATIC,16,195,133,8
-    LTEXT           "NOTE: if the free disk space becomes low or the maximum camera folder size is reached the oldest files are deleted",IDC_STATIC,211,213,195,20
-    GROUPBOX        "5. Notification",IDC_STATIC,5,244,407,42
-    LTEXT           "Email to receive Malfunction Alerts and Motion Events",IDC_STATIC,16,257,179,8
+    EDITTEXT        IDC_EDIT_NAME,152,86,254,13,ES_AUTOHSCROLL
+    COMBOBOX        IDC_COMBO_LANGUAGE,152,121,114,222,CBS_DROPDOWNLIST | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_STYLE,152,136,114,222,CBS_DROPDOWNLIST | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_THUMBSPERPAGE,368,121,38,288,CBS_DROPDOWNLIST | WS_TABSTOP
+    CONTROL         "Allow deleting files",IDC_CHECK_TRASHCOMMAND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,279,138,75,10
+    COMBOBOX        IDC_COMBO_FILEEXT,152,167,254,116,CBS_DROPDOWNLIST | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_KEEPFOR,152,182,254,116,CBS_DROPDOWNLIST | WS_TABSTOP
+    EDITTEXT        IDC_EDIT_MIN_DISK_FREE_PERCENT,152,197,35,13,ES_RIGHT
+    EDITTEXT        IDC_EDIT_MAX_CAMERA_FOLDER_SIZE,152,211,35,13,ES_RIGHT
+    PUSHBUTTON      "Email Settings",IDC_SENDMAIL_CONFIGURE,200,243,206,15
+    PUSHBUTTON      "OK",IDOK,152,281,58,20,BS_MULTILINE
+    PUSHBUTTON      "Cancel",IDCANCEL,220,281,58,20
+    GROUPBOX        "1. Usage",IDC_STATIC,5,3,407,65
+    LTEXT           "Thumbnails per page",IDC_LABEL_THUMBSPERPAGE,280,123,72,8
+    GROUPBOX        "2. Name",IDC_STATIC,5,73,407,33
+    LTEXT           "Enter a friendly name for your camera",IDC_STATIC,16,84,123,8
+    LTEXT           "Language",IDC_STATIC,16,124,32,8
+    LTEXT           "Style / color",IDC_STATIC,16,138,39,8
+    GROUPBOX        "4. Storage",IDC_STATIC,5,158,407,71
+    LTEXT           "Keep files for",IDC_STATIC,16,185,133,8
+    LTEXT           "NOTE: if the free disk space becomes low or the maximum camera folder size is reached the oldest files are deleted",IDC_STATIC,211,203,195,20
+    GROUPBOX        "5. Notification",IDC_STATIC,5,234,407,42
+    LTEXT           "Email to receive Malfunction Alerts and Motion Events",IDC_STATIC,16,247,179,8
     LTEXT           "History video size",IDC_LABEL_SNAPSHOTHISTORY_SIZE,280,28,57,8
-    GROUPBOX        "3. Appearance",IDC_STATIC,5,122,407,41
-    LTEXT           "(that's also the camera folder name)",IDC_STATIC,16,104,117,8
+    GROUPBOX        "3. Web interface",IDC_STATIC,5,112,407,41
+    LTEXT           "(that's also the camera folder name)",IDC_STATIC,16,93,117,8
     LTEXT           "+",IDC_LABEL_PLUS_SIGN,139,15,8,8
-    LTEXT           "Maximum camera folder size\n(0.0: unlimited)",IDC_STATIC,16,219,133,16
-    LTEXT           "GB",IDC_STATIC,190,223,10,8
-    LTEXT           "%",IDC_STATIC,190,210,8,8
-    LTEXT           "Minimum disk free space",IDC_STATIC,16,208,132,8
-    LTEXT           "Video file format",IDC_STATIC,16,180,133,8
-    LTEXT           "Note: Motion Events have to be enabled in ""Camera Advanced Settings""",IDC_STATIC,16,272,392,8
+    LTEXT           "Maximum camera folder size\n(0.0: unlimited)",IDC_STATIC,16,209,133,16
+    LTEXT           "GB",IDC_STATIC,190,213,10,8
+    LTEXT           "%",IDC_STATIC,190,200,8,8
+    LTEXT           "Minimum disk free space",IDC_STATIC,16,198,132,8
+    LTEXT           "Video file format",IDC_STATIC,16,170,133,8
+    LTEXT           "Note: Motion Events have to be enabled in ""Camera Advanced Settings""",IDC_STATIC,16,262,392,8
 END
 
 IDD_RENAME DIALOG 0, 0, 186, 47
@@ -3132,7 +3130,7 @@ BEGIN
         VERTGUIDE, 279
         VERTGUIDE, 406
         TOPMARGIN, 2
-        BOTTOMMARGIN, 312
+        BOTTOMMARGIN, 301
     END
 
     IDD_RENAME, DIALOG

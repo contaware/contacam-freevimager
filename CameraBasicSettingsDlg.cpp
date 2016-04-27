@@ -61,7 +61,6 @@ BEGIN_MESSAGE_MAP(CCameraBasicSettingsDlg, CDialog)
 	ON_BN_CLICKED(IDC_RADIO_MANUAL, OnRadioManual)
 	ON_WM_TIMER()
 	ON_WM_SETCURSOR()
-	ON_BN_CLICKED(IDC_RADIO_NOCHANGE, OnRadioNochange)
 	ON_BN_CLICKED(IDC_SENDMAIL_CONFIGURE, OnSendmailConfigure)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -199,10 +198,8 @@ BOOL CCameraBasicSettingsDlg::OnInitDialog()
 		m_nUsage = 2;
 		m_bCheckFullStretch = TRUE;
 	}
-	else if (sInitDefaultPage.CompareNoCase(PHPCONFIG_SUMMARYIFRAME_PHP) == 0)
-		m_nUsage = 3;
 	else
-		m_nUsage = 4;
+		m_nUsage = 3;
 	if (m_pDoc->m_nDeleteRecordingsOlderThanDays > 366)
 		m_nComboKeepFor = 11;	// Infinite
 	else if (m_pDoc->m_nDeleteRecordingsOlderThanDays > 183)
@@ -354,10 +351,6 @@ void CCameraBasicSettingsDlg::EnableDisableCtrls()
 		pCheck->EnableWindow(TRUE);
 		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_PLUS_SIGN);
 		pEdit->EnableWindow(TRUE);
-		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_THUMBSPERPAGE);
-		pEdit->EnableWindow(TRUE);
-		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_THUMBSPERPAGE);
-		pComboBox->EnableWindow(TRUE);
 	}
 	else if (pCheckSnapshotHistory->GetCheck())
 	{
@@ -375,10 +368,6 @@ void CCameraBasicSettingsDlg::EnableDisableCtrls()
 		pCheck->EnableWindow(FALSE);
 		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_PLUS_SIGN);
 		pEdit->EnableWindow(FALSE);
-		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_THUMBSPERPAGE);
-		pEdit->EnableWindow(FALSE);
-		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_THUMBSPERPAGE);
-		pComboBox->EnableWindow(FALSE);
 	}
 	else if (pCheckSnapshot->GetCheck())
 	{
@@ -396,10 +385,6 @@ void CCameraBasicSettingsDlg::EnableDisableCtrls()
 		pCheck->EnableWindow(FALSE);
 		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_PLUS_SIGN);
 		pEdit->EnableWindow(FALSE);
-		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_THUMBSPERPAGE);
-		pEdit->EnableWindow(FALSE);
-		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_THUMBSPERPAGE);
-		pComboBox->EnableWindow(FALSE);
 	}
 	else
 	{
@@ -417,10 +402,6 @@ void CCameraBasicSettingsDlg::EnableDisableCtrls()
 		pCheck->EnableWindow(FALSE);
 		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_PLUS_SIGN);
 		pEdit->EnableWindow(FALSE);
-		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_THUMBSPERPAGE);
-		pEdit->EnableWindow(FALSE);
-		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_THUMBSPERPAGE);
-		pComboBox->EnableWindow(FALSE);
 	}
 }
 
@@ -444,10 +425,6 @@ void CCameraBasicSettingsDlg::EnableDisableAllCtrls(BOOL bEnable)
 		pCheck->EnableWindow(FALSE);
 		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_PLUS_SIGN);
 		pEdit->EnableWindow(FALSE);
-		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_THUMBSPERPAGE);
-		pEdit->EnableWindow(FALSE);
-		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_THUMBSPERPAGE);
-		pComboBox->EnableWindow(FALSE);
 	}
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_RADIO_MOVDET);
 	pCheck->EnableWindow(bEnable);
@@ -457,16 +434,16 @@ void CCameraBasicSettingsDlg::EnableDisableAllCtrls(BOOL bEnable)
 	pCheck->EnableWindow(bEnable);
 	pCheck = (CButton*)GetDlgItem(IDC_RADIO_MANUAL);
 	pCheck->EnableWindow(bEnable);
-	pCheck = (CButton*)GetDlgItem(IDC_RADIO_NOCHANGE);
-	pCheck->EnableWindow(bEnable);
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_TRASHCOMMAND);
-	pCheck->EnableWindow(bEnable);
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_NAME);
 	pEdit->EnableWindow(bEnable);
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_LANGUAGE);
 	pComboBox->EnableWindow(bEnable);
 	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_STYLE);
 	pComboBox->EnableWindow(bEnable);
+	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_THUMBSPERPAGE);
+	pComboBox->EnableWindow(bEnable);
+	pCheck = (CButton*)GetDlgItem(IDC_CHECK_TRASHCOMMAND);
+	pCheck->EnableWindow(bEnable);
 	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_KEEPFOR);
 	pComboBox->EnableWindow(bEnable);
 	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_FILEEXT);
@@ -499,11 +476,6 @@ void CCameraBasicSettingsDlg::OnRadioSnapshot()
 }
 
 void CCameraBasicSettingsDlg::OnRadioManual() 
-{
-	EnableDisableCtrls();
-}
-
-void CCameraBasicSettingsDlg::OnRadioNochange() 
 {
 	EnableDisableCtrls();
 }
@@ -861,6 +833,14 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	if (sStyleName != _T(""))
 		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_STYLEFILEPATH, CString(MICROAPACHE_STYLE_DIR) + _T("/") + sStyleName + _T(".css"));
 
+	// Thumbnails per page
+	CString sMaxPerPage;
+	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_THUMBSPERPAGE);
+	if (pComboBox && pComboBox->GetCurSel() >= 0)
+		pComboBox->GetLBText(pComboBox->GetCurSel(), sMaxPerPage);
+	if (sMaxPerPage != _T(""))
+		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_MAX_PER_PAGE, sMaxPerPage);
+
 	// Trash command
 	if (m_bCheckTrashCommand)
 		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SHOW_TRASH_COMMAND, _T("1"));
@@ -885,6 +865,10 @@ void CCameraBasicSettingsDlg::ApplySettings()
 			sWidth.Format(_T("%d"), m_pDoc->m_DocRect.right);
 			sHeight.Format(_T("%d"), m_pDoc->m_DocRect.bottom);
 
+			// Init snapshot rate var
+			double dCurrentSnapshotRate = (double)(m_pDoc->m_nSnapshotRate) + (double)(m_pDoc->m_nSnapshotRateMs) / 1000.0;
+			double dSnapshotRate = dCurrentSnapshotRate < MIN_SNAPSHOT_RATE ? dCurrentSnapshotRate : MIN_SNAPSHOT_RATE;
+
 			// Init thumb vars
 			int nThumbWidth =	(m_pDoc->m_nSnapshotThumbWidth < 4 * DEFAULT_SNAPSHOT_THUMB_WIDTH / 3 &&
 								m_pDoc->m_nSnapshotThumbWidth > 2 * DEFAULT_SNAPSHOT_THUMB_WIDTH / 3) ?
@@ -895,10 +879,6 @@ void CCameraBasicSettingsDlg::ApplySettings()
 			CString sThumbWidth, sThumbHeight;
 			sThumbWidth.Format(_T("%d"), nThumbWidth);
 			sThumbHeight.Format(_T("%d"), nThumbHeight);
-			CString sMaxPerPage;
-			pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_THUMBSPERPAGE);
-			if (pComboBox && pComboBox->GetCurSel() >= 0)
-				pComboBox->GetLBText(pComboBox->GetCurSel(), sMaxPerPage);
 
 			// Update configuration.php
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SUMMARYSNAPSHOT_PHP);
@@ -906,8 +886,6 @@ void CCameraBasicSettingsDlg::ApplySettings()
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_HEIGHT, sHeight);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBWIDTH, sThumbWidth);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBHEIGHT, sThumbHeight);
-			if (sMaxPerPage != _T(""))
-				m_pDoc->PhpConfigFileSetParam(PHPCONFIG_MAX_PER_PAGE, sMaxPerPage);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTHISTORY_THUMB, _T("0"));
 
 			// Disable snapshot history
@@ -915,7 +893,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 			m_pDoc->m_bSnapshotHistoryVideoFtp = FALSE;
 
 			// Update snapshot settings
-			ApplySettingsSnapshot(nThumbWidth, nThumbHeight, MIN_SNAPSHOT_RATE);
+			ApplySettingsSnapshot(nThumbWidth, nThumbHeight, dSnapshotRate);
 
 			break;
 		}
@@ -930,17 +908,17 @@ void CCameraBasicSettingsDlg::ApplySettings()
 			sWidth.Format(_T("%d"), m_pDoc->m_DocRect.right);
 			sHeight.Format(_T("%d"), m_pDoc->m_DocRect.bottom);
 
-			// Init snapshot rate vars
-			int nSnapshotRate;
+			// Init snapshot rate var
+			double dSnapshotRate;
 			switch (m_nComboSnapshotHistoryRate)
 			{
-				case 0  : nSnapshotRate = 15;   break;	// 15 Seconds
-				case 1  : nSnapshotRate = 30;   break;	// 30 Seconds
-				case 2  : nSnapshotRate = 60;   break;	// 1 Minute
-				case 3  : nSnapshotRate = 120;  break;	// 2 Minutes
-				case 4  : nSnapshotRate = 180;  break;	// 3 Minutes
-				case 5  : nSnapshotRate = 240;  break;	// 4 Minutes
-				default : nSnapshotRate = 300;  break;	// 5 Minutes
+				case 0  : dSnapshotRate = 15.0;   break;	// 15 Seconds
+				case 1  : dSnapshotRate = 30.0;   break;	// 30 Seconds
+				case 2  : dSnapshotRate = 60.0;   break;	// 1 Minute
+				case 3  : dSnapshotRate = 120.0;  break;	// 2 Minutes
+				case 4  : dSnapshotRate = 180.0;  break;	// 3 Minutes
+				case 5  : dSnapshotRate = 240.0;  break;	// 4 Minutes
+				default : dSnapshotRate = 300.0;  break;	// 5 Minutes
 			}
 
 			// Init thumb vars: must be a multiple of 4 for some video codecs,
@@ -983,7 +961,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 			m_pDoc->m_bSnapshotHistoryVideo = TRUE;
 
 			// Update snapshot settings
-			ApplySettingsSnapshot(nThumbWidth, nThumbHeight, nSnapshotRate);
+			ApplySettingsSnapshot(nThumbWidth, nThumbHeight, dSnapshotRate);
 
 			break;
 		}
@@ -998,7 +976,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 			sWidth.Format(_T("%d"), m_pDoc->m_DocRect.right);
 			sHeight.Format(_T("%d"), m_pDoc->m_DocRect.bottom);
 
-			// Init snapshot rate vars
+			// Init snapshot rate var
 			double dSnapshotRate;
 			switch (m_nComboSnapshotRate)
 			{
@@ -1060,6 +1038,10 @@ void CCameraBasicSettingsDlg::ApplySettings()
 			sWidth.Format(_T("%d"), m_pDoc->m_DocRect.right);
 			sHeight.Format(_T("%d"), m_pDoc->m_DocRect.bottom);
 
+			// Init snapshot rate var
+			double dCurrentSnapshotRate = (double)(m_pDoc->m_nSnapshotRate) + (double)(m_pDoc->m_nSnapshotRateMs) / 1000.0;
+			double dSnapshotRate = dCurrentSnapshotRate < MIN_SNAPSHOT_RATE ? dCurrentSnapshotRate : MIN_SNAPSHOT_RATE;
+
 			// Init thumb vars
 			int nThumbWidth =	(m_pDoc->m_nSnapshotThumbWidth < 4 * DEFAULT_SNAPSHOT_THUMB_WIDTH / 3 &&
 								m_pDoc->m_nSnapshotThumbWidth > 2 * DEFAULT_SNAPSHOT_THUMB_WIDTH / 3) ?
@@ -1084,7 +1066,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 			m_pDoc->m_bSnapshotHistoryVideoFtp = FALSE;
 
 			// Update snapshot settings
-			ApplySettingsSnapshot(nThumbWidth, nThumbHeight, MIN_SNAPSHOT_RATE);
+			ApplySettingsSnapshot(nThumbWidth, nThumbHeight, dSnapshotRate);
 
 			break;
 		}

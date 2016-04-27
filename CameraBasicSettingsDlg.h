@@ -71,7 +71,6 @@ protected:
 	afx_msg void OnRadioManual();
 	afx_msg void OnTimer(UINT nIDEvent);
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
-	afx_msg void OnRadioNochange();
 	afx_msg void OnSendmailConfigure();
 	virtual void OnOK();
 	//}}AFX_MSG
