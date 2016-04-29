@@ -20,6 +20,22 @@ $currentmp4 = basename(substr($filename, strrpos($filename, '/') + 1), '.mp4');
 echo "<title>$currentmp4</title>\n";
 echo "<link rel=\"stylesheet\" href=\"" . STYLEFILEPATH . "\" type=\"text/css\" />\n";
 ?>
+<script type="text/javascript">
+//<![CDATA[
+var previousTime = 0; 
+function playRate(rate) {
+	var v = document.getElementById("myMp4Movie");
+	if (!isNaN(v.duration))	// make sure currentTime is valid
+		previousTime = v.currentTime;
+	v.defaultPlaybackRate = rate;
+	v.playbackRate = rate;
+	v.load();
+}
+function restoreTime(v) {
+	v.currentTime = previousTime; // currentTime can now be set
+}
+//]]>
+</script>
 </head>
 
 <body>
@@ -44,7 +60,7 @@ if (!isset($_GET['height']))
 	$height = HEIGHT;
 else
 	$height = $_GET['height'];
-echo "<video id=\"myMp4Movie\"  width=\"$width\" height=\"$height\" autoplay controls>\n";
+echo "<video onloadedmetadata=\"restoreTime(this);\" id=\"myMp4Movie\" width=\"$width\" height=\"$height\" autoplay controls loop>\n";
 echo "<source src=\"$filename\" type=\"video/mp4\">\n";
 echo "<p>Try this page in a modern browser or <a href=\"$filename\">download the video</a> instead.</p>\n";
 echo "</video>\n";
@@ -81,6 +97,8 @@ if (!isset($_GET['back']) || $_GET['back'] != 'no') {
 		$nextrequesturi = htmlspecialchars($nextrequesturi);
 		echo "<a href=\"javascript:;\" onclick=\"parent.window.name = '" . $_GET["$nextkey"] . "'; window.location.href = '" . $nextrequesturi . "'; return false;\">&gt;</a>&nbsp;";
 	}
+	echo "<a href=\"javascript:;\" onclick=\"playRate(0.25);\">0.25x</a>&nbsp;";
+	echo "<a href=\"javascript:;\" onclick=\"playRate(1.0);\">1.0x</a>&nbsp;";
 	echo "<a class=\"savebuttons\" href=\"download.php?file=" . urlencode($filename) . "\">&nbsp;</a>";
 	echo "</span>\n";
 	echo "</div>\n";
@@ -143,9 +161,7 @@ function resizeMp4() {
 	mp4Movie.width = fittedWidth;
 	mp4Movie.height = fittedHeight;
 }
-window.addEventListener('resize', function(event){
-	resizeMp4();
-});
+window.addEventListener('resize', resizeMp4);
 resizeMp4();
 //]]>
 </script>
