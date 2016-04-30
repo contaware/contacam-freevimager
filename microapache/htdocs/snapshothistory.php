@@ -114,17 +114,17 @@ function loadIFrame(y,m,d) {
 		if (urlExists(videouri_get + '.mp4')) {
 			videouri_get += '.mp4';
 			videouri_get = videouri_get.replace(/\//g, "%2F");
-			srcuri = 'mp4.php' + srcuri + videouri_get + '&back=no';
+			srcuri = 'mp4.php' + srcuri + videouri_get;
 		}
 		else if (urlExists(videouri_get + '.swf')) {
 			videouri_get += '.swf';
 			videouri_get = videouri_get.replace(/\//g, "%2F");
-			srcuri = 'swf.php' + srcuri + videouri_get + '&back=no';
+			srcuri = 'swf.php' + srcuri + videouri_get;
 		}
 		else {
 			videouri_get += '.avi';
 			videouri_get = videouri_get.replace(/\//g, "%2F");
-			srcuri = 'avi.php' + srcuri + videouri_get + '&back=no';
+			srcuri = 'avi.php' + srcuri + videouri_get;
 		}
 	}
 	document.getElementById('myiframe').src = srcuri;

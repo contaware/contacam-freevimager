@@ -36,14 +36,11 @@ if (!is_file("$full_path")) {
 echo "<div class=\"wrap\" id=\"playercontainer\">\n";
 echo "<a href=\"$filename\">" . basename($full_path) . "</a>\n";
 echo "</div>\n";
-if (!isset($_GET['back']) || $_GET['back'] != 'no') {
+if (isset($_GET['backuri'])) {
 	echo "<br/>\n";
 	echo "<div style=\"text-align: center\">\n";
 	echo "<span class=\"globalbuttons\">";
-	if (isset($_GET['backuri']))
-		echo "<a class=\"backbuttons\" href=\"" . htmlspecialchars($_GET['backuri']) . "\">&nbsp;</a>";
-	else
-		echo "<a class=\"backbuttons\" href=\"javascript:history.back();\">&nbsp;</a>";
+	echo "<a class=\"backbuttons\" href=\"" . htmlspecialchars($_GET['backuri']) . "\">&nbsp;</a>";
 	echo "</span>\n";
 	echo "</div>\n";
 }

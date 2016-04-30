@@ -255,40 +255,35 @@ echo "<div id=\"handle1\" style=\"width: 13px; height: 26px;\"><img src=\"styles
 echo "</div>\n";
 echo "</div>\n";
 echo "</div>\n";
-
-if (!isset($_GET['back']) || $_GET['back'] != 'no') {
-	$currentkey = '0';
-	$lastkey = 0;
-	foreach($_GET as $key=>$val) {
-		if (is_numeric($key) && intval($key) >= 0) {
-			if ($currentswf == $val)
-				$currentkey = $key;
-			$lastkey = intval($key);
-		}
+$currentkey = '0';
+$lastkey = 0;
+foreach($_GET as $key=>$val) {
+	if (is_numeric($key) && intval($key) >= 0) {
+		if ($currentswf == $val)
+			$currentkey = $key;
+		$lastkey = intval($key);
 	}
-	$prevkey = intval($currentkey) - 1;
-	$nextkey = intval($currentkey) + 1;
-	echo "<br/>\n";
-	echo "<div style=\"text-align: center\">\n";
-	echo "<span class=\"globalbuttons\">";
-	if ($prevkey >= 0) {
-		$prevrequesturi = str_replace($currentswf . '.swf', $_GET["$prevkey"] . '.swf', $_SERVER['REQUEST_URI']);
-		$prevrequesturi = htmlspecialchars($prevrequesturi);
-		echo "<a href=\"javascript:;\" onclick=\"parent.window.name = '" . $_GET["$prevkey"] . "'; window.location.href = '" . $prevrequesturi . "'; return false;\">&lt;</a>&nbsp;";
-	}
-	if (isset($_GET['backuri']))
-		echo "<a class=\"backbuttons\" href=\"" . htmlspecialchars($_GET['backuri']) . "\">&nbsp;</a>&nbsp;";
-	else
-		echo "<a class=\"backbuttons\" href=\"javascript:history.back();\">&nbsp;</a>&nbsp;";
-	if ($nextkey <= $lastkey) {
-		$nextrequesturi = str_replace($currentswf . '.swf', $_GET["$nextkey"] . '.swf', $_SERVER['REQUEST_URI']);
-		$nextrequesturi = htmlspecialchars($nextrequesturi);
-		echo "<a href=\"javascript:;\" onclick=\"parent.window.name = '" . $_GET["$nextkey"] . "'; window.location.href = '" . $nextrequesturi . "'; return false;\">&gt;</a>&nbsp;";
-	}
-	echo "<a class=\"savebuttons\" href=\"download.php?file=" . urlencode($filename) . "\">&nbsp;</a>";
-	echo "</span>\n";
-	echo "</div>\n";
 }
+$prevkey = intval($currentkey) - 1;
+$nextkey = intval($currentkey) + 1;
+echo "<br/>\n";
+echo "<div style=\"text-align: center\">\n";
+echo "<span class=\"globalbuttons\">";
+if ($prevkey >= 0) {
+	$prevrequesturi = str_replace($currentswf . '.swf', $_GET["$prevkey"] . '.swf', $_SERVER['REQUEST_URI']);
+	$prevrequesturi = htmlspecialchars($prevrequesturi);
+	echo "<a href=\"javascript:;\" onclick=\"parent.window.name = '" . $_GET["$prevkey"] . "'; window.location.href = '" . $prevrequesturi . "'; return false;\">&lt;</a>&nbsp;";
+}
+if (isset($_GET['backuri']))
+	echo "<a class=\"backbuttons\" href=\"" . htmlspecialchars($_GET['backuri']) . "\">&nbsp;</a>&nbsp;";
+if ($nextkey <= $lastkey) {
+	$nextrequesturi = str_replace($currentswf . '.swf', $_GET["$nextkey"] . '.swf', $_SERVER['REQUEST_URI']);
+	$nextrequesturi = htmlspecialchars($nextrequesturi);
+	echo "<a href=\"javascript:;\" onclick=\"parent.window.name = '" . $_GET["$nextkey"] . "'; window.location.href = '" . $nextrequesturi . "'; return false;\">&gt;</a>&nbsp;";
+}
+echo "<a class=\"savebuttons\" href=\"download.php?file=" . urlencode($filename) . "\">&nbsp;</a>";
+echo "</span>\n";
+echo "</div>\n";
 ?>
 
 <script src="js/prototype.js" type="text/javascript"></script>
@@ -297,12 +292,6 @@ if (!isset($_GET['back']) || $_GET['back'] != 'no') {
 //<![CDATA[
 var mySlider = new Control.Slider('handle1','track1',{axis:'horizontal'});
 function resizeSwf() {
-<?php
-	if (isset($_GET['back']) && $_GET['back'] == 'no')
-		echo "	var back = false;\n";
-	else
-		echo "	var back = true;\n";
-?>
 	var width = parseInt("<?php echo $width;?>");
 	var height = parseInt("<?php echo $height;?>");
 	if (width <= 0)
@@ -317,11 +306,8 @@ function resizeSwf() {
 	}
 	// Left and right margin
 	windowWidth -= 50; // this must be less than 60, see snapshothistory.php!
-	// Bottom player control and ev. back button
-	if (back)
-		windowHeight -= 120;
-	else
-		windowHeight -= 80; // this must be less than 90, see snapshothistory.php!
+	// Bottom player control and back button
+	windowHeight -= 120;
 	// Set a min. size
 	if (windowWidth < 32)
 		windowWidth = 32;

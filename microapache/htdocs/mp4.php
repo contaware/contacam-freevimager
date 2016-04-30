@@ -68,52 +68,42 @@ echo "</video>\n";
 </div>
 
 <?php
-if (!isset($_GET['back']) || $_GET['back'] != 'no') {
-	$currentkey = '0';
-	$lastkey = 0;
-	foreach($_GET as $key=>$val) {
-		if (is_numeric($key) && intval($key) >= 0) {
-			if ($currentmp4 == $val)
-				$currentkey = $key;
-			$lastkey = intval($key);
-		}
+$currentkey = '0';
+$lastkey = 0;
+foreach($_GET as $key=>$val) {
+	if (is_numeric($key) && intval($key) >= 0) {
+		if ($currentmp4 == $val)
+			$currentkey = $key;
+		$lastkey = intval($key);
 	}
-	$prevkey = intval($currentkey) - 1;
-	$nextkey = intval($currentkey) + 1;
-	echo "<br/>\n";
-	echo "<div style=\"text-align: center\">\n";
-	echo "<span class=\"globalbuttons\">";
-	if ($prevkey >= 0) {
-		$prevrequesturi = str_replace($currentmp4 . '.mp4', $_GET["$prevkey"] . '.mp4', $_SERVER['REQUEST_URI']);
-		$prevrequesturi = htmlspecialchars($prevrequesturi);
-		echo "<a href=\"javascript:;\" onclick=\"parent.window.name = '" . $_GET["$prevkey"] . "'; window.location.href = '" . $prevrequesturi . "'; return false;\">&lt;</a>&nbsp;";
-	}
-	if (isset($_GET['backuri']))
-		echo "<a class=\"backbuttons\" href=\"" . htmlspecialchars($_GET['backuri']) . "\">&nbsp;</a>&nbsp;";
-	else
-		echo "<a class=\"backbuttons\" href=\"javascript:history.back();\">&nbsp;</a>&nbsp;";
-	if ($nextkey <= $lastkey) {
-		$nextrequesturi = str_replace($currentmp4 . '.mp4', $_GET["$nextkey"] . '.mp4', $_SERVER['REQUEST_URI']);
-		$nextrequesturi = htmlspecialchars($nextrequesturi);
-		echo "<a href=\"javascript:;\" onclick=\"parent.window.name = '" . $_GET["$nextkey"] . "'; window.location.href = '" . $nextrequesturi . "'; return false;\">&gt;</a>&nbsp;";
-	}
-	echo "<a href=\"javascript:;\" onclick=\"playRate(0.25);\">0.25x</a>&nbsp;";
-	echo "<a href=\"javascript:;\" onclick=\"playRate(1.0);\">1.0x</a>&nbsp;";
-	echo "<a class=\"savebuttons\" href=\"download.php?file=" . urlencode($filename) . "\">&nbsp;</a>";
-	echo "</span>\n";
-	echo "</div>\n";
 }
+$prevkey = intval($currentkey) - 1;
+$nextkey = intval($currentkey) + 1;
+echo "<br/>\n";
+echo "<div style=\"text-align: center\">\n";
+echo "<span class=\"globalbuttons\">";
+if ($prevkey >= 0) {
+	$prevrequesturi = str_replace($currentmp4 . '.mp4', $_GET["$prevkey"] . '.mp4', $_SERVER['REQUEST_URI']);
+	$prevrequesturi = htmlspecialchars($prevrequesturi);
+	echo "<a href=\"javascript:;\" onclick=\"parent.window.name = '" . $_GET["$prevkey"] . "'; window.location.href = '" . $prevrequesturi . "'; return false;\">&lt;</a>&nbsp;";
+}
+if (isset($_GET['backuri']))
+	echo "<a class=\"backbuttons\" href=\"" . htmlspecialchars($_GET['backuri']) . "\">&nbsp;</a>&nbsp;";
+if ($nextkey <= $lastkey) {
+	$nextrequesturi = str_replace($currentmp4 . '.mp4', $_GET["$nextkey"] . '.mp4', $_SERVER['REQUEST_URI']);
+	$nextrequesturi = htmlspecialchars($nextrequesturi);
+	echo "<a href=\"javascript:;\" onclick=\"parent.window.name = '" . $_GET["$nextkey"] . "'; window.location.href = '" . $nextrequesturi . "'; return false;\">&gt;</a>&nbsp;";
+}
+echo "<a href=\"javascript:;\" onclick=\"playRate(0.25);\">0.25x</a>&nbsp;";
+echo "<a href=\"javascript:;\" onclick=\"playRate(1.0);\">1.0x</a>&nbsp;";
+echo "<a class=\"savebuttons\" href=\"download.php?file=" . urlencode($filename) . "\">&nbsp;</a>";
+echo "</span>\n";
+echo "</div>\n";
 ?>
 
 <script type="text/javascript">
 //<![CDATA[
 function resizeMp4() {
-<?php
-	if (isset($_GET['back']) && $_GET['back'] == 'no')
-		echo "	var back = false;\n";
-	else
-		echo "	var back = true;\n";
-?>
 	var width = parseInt("<?php echo $width;?>");
 	var height = parseInt("<?php echo $height;?>");
 	if (width <= 0)
@@ -129,10 +119,7 @@ function resizeMp4() {
 	// Left and right margin
 	windowWidth -= 50; // this must be less than 60, see snapshothistory.php!
 	// Back button
-	if (back)
-		windowHeight -= 50;
-	else
-		windowHeight -= 10; // this must be less than 90, see snapshothistory.php!
+	windowHeight -= 50;
 	// Set a min. size
 	if (windowWidth < 32)
 		windowWidth = 32;
