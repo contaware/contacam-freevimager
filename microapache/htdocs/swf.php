@@ -306,7 +306,7 @@ function resizeSwf() {
 	}
 	// Left and right margin
 	windowWidth -= 50; // this must be less than 60, see snapshothistory.php!
-	// Bottom player control and back button
+	// Bottom player control and button(s)
 	windowHeight -= 120;
 	// Set a min. size
 	if (windowWidth < 32)

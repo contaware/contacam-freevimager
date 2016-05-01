@@ -118,7 +118,7 @@ function resizeMp4() {
 	}
 	// Left and right margin
 	windowWidth -= 50; // this must be less than 60, see snapshothistory.php!
-	// Back button
+	// Buttons
 	windowHeight -= 50;
 	// Set a min. size
 	if (windowWidth < 32)
