@@ -60,6 +60,7 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CSendMailConfigurationDlg)
 	virtual BOOL OnInitDialog();
+	afx_msg void OnChangeEditSenderMail();
 	virtual void OnOK();
 	afx_msg void OnButtonTest();
 	//}}AFX_MSG

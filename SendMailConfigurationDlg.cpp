@@ -40,6 +40,7 @@ void CSendMailConfigurationDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CSendMailConfigurationDlg, CDialog)
 	//{{AFX_MSG_MAP(CSendMailConfigurationDlg)
 	ON_BN_CLICKED(IDC_BUTTON_TEST, OnButtonTest)
+	ON_EN_CHANGE(IDC_SENDER_MAIL, OnChangeEditSenderMail)
 	//}}AFX_MSG_MAP
 	ON_WM_DESTROY()
 	ON_WM_TIMER()
@@ -100,6 +101,58 @@ BOOL CSendMailConfigurationDlg::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
+void CSendMailConfigurationDlg::OnChangeEditSenderMail() 
+{
+	// Get sender mail
+	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_SENDER_MAIL);
+	CString sSenderMail;
+	pEdit->GetWindowText(sSenderMail);
+
+	// Check for common sender domains
+	CString sDomain, sKnownSmtpServer;
+	int i = sSenderMail.Find(_T('@'));
+	if (i >= 0)
+	{
+		sDomain = sSenderMail.Mid(i + 1);
+		if (sDomain == _T("gmail.com"))
+			sKnownSmtpServer = _T("smtp.gmail.com");
+		else if (sDomain == _T("yahoo.com"))
+			sKnownSmtpServer = _T("smtp.mail.yahoo.com");
+		else if (sDomain == _T("hotmail.com") || sDomain == _T("live.com") || sDomain == _T("outlook.com"))
+			sKnownSmtpServer = _T("smtp-mail.outlook.com");
+		else if (sDomain == _T("office365.com"))
+			sKnownSmtpServer = _T("smtp.office365.com");
+	}
+
+	// Found known smtp server?
+	if (!sKnownSmtpServer.IsEmpty())
+	{
+		// Get current smtp server
+		CString sCurrentSmtpServer;
+		pEdit = (CEdit*)GetDlgItem(IDC_HOST_NAME);
+		pEdit->GetWindowText(sCurrentSmtpServer);
+
+		// Only update if empty!
+		if (sCurrentSmtpServer.IsEmpty())
+		{
+			// Smtp hostname
+			pEdit->SetWindowText(sKnownSmtpServer);
+
+			// Host port
+			pEdit = (CEdit*)GetDlgItem(IDC_HOST_PORT);
+			pEdit->SetWindowText(_T("587"));
+
+			// Username
+			pEdit = (CEdit*)GetDlgItem(IDC_AUTH_USERNAME);
+			pEdit->SetWindowText(sSenderMail);
+
+			// Connection type
+			CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_CONNECTIONTYPE);
+			pComboBox->SetCurSel(STARTTLS);
+		}
+	}
+}
+
 void CSendMailConfigurationDlg::CopyToStruct()
 {
 	int nNum;
@@ -134,7 +187,7 @@ void CSendMailConfigurationDlg::CopyToStruct()
 	if (nNum > 0 && nNum <= 65535) // Port 0 is Reserved
 		m_SendMailConfiguration.m_nPort = nNum;
 	else
-		m_SendMailConfiguration.m_nPort = 25;
+		m_SendMailConfiguration.m_nPort = 587;
 
 	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_USERNAME);
 	pEdit->GetWindowText(sText);
