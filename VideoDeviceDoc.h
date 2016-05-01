@@ -781,7 +781,7 @@ public:
 	static CString MailerGetLogFileName();
 	static HANDLE Mailer(CString sParams, BOOL bLog = FALSE, CString* pLogFileName = NULL);
 	static HANDLE SendMail(	const SendMailConfigurationStruct& SendMailConfiguration,	
-							const CString& sName,			// sName is replaces in subject if %name% present					
+							const CString& sName,			// sName is replaced in subject if %name% present					
 							const CTime& Time,				// Time is replaced in subject if %date% and/or %time% present
 							const CString& sBody = _T(""),	// if no body given use subject as body
 							BOOL bLog = FALSE,				// log to file?
@@ -811,7 +811,7 @@ protected:
 	BOOL EditSnapshot(CDib* pDib, const CTime& Time);
 	CString SaveJpegMail(CDib* pDib);
 	CString MakeJpegManualSnapshotFileName(const CTime& Time);
-	CString MakeJpegMailFileName(const CTime& Time);
+	CString MakeJpegMailSnapshotFileName(const CTime& Time);
 	BOOL ThumbMessage(	const CString& sMessage1,
 						const CString& sMessage2,
 						const CString& sMessage3,

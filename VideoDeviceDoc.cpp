@@ -5221,7 +5221,7 @@ CString CVideoDeviceDoc::MakeJpegManualSnapshotFileName(const CTime& Time)
 		return sYearMonthDayDir + _T("\\") + _T("manualshot_") + sTime + _T(".jpg");
 }
 
-CString CVideoDeviceDoc::MakeJpegMailFileName(const CTime& Time)
+CString CVideoDeviceDoc::MakeJpegMailSnapshotFileName(const CTime& Time)
 {
 	CString sYearMonthDayDir(_T(""));
 
@@ -8009,7 +8009,7 @@ CString CVideoDeviceDoc::SaveJpegMail(CDib* pDib)
 	CTime Time = CalcTime(pDib->GetUpTime(), RefTime, dwRefUpTime);
 
 	// Make FileName
-	CString sFileName = MakeJpegMailFileName(Time);
+	CString sFileName = MakeJpegMailSnapshotFileName(Time);
 
 	// Do not overwrite previous jpeg save
 	if (::IsExistingFile(sFileName))
