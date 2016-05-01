@@ -63,12 +63,11 @@ protected:
 	afx_msg void OnChangeEditSenderMail();
 	virtual void OnOK();
 	afx_msg void OnButtonTest();
-	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
-public:
 	afx_msg void OnDestroy();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
+	//}}AFX_MSG
+	DECLARE_MESSAGE_MAP()
 };
 
 #endif
