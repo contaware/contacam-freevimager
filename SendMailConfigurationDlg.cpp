@@ -174,7 +174,7 @@ void CSendMailConfigurationDlg::CopyToStruct()
 	pEdit->GetWindowText(sText);
 	m_SendMailConfiguration.m_sSubject = sText;
 	if (m_SendMailConfiguration.m_sSubject.IsEmpty())
-		m_SendMailConfiguration.m_sSubject = MOVDET_DEFAULT_EMAIL_SUBJECT;
+		m_SendMailConfiguration.m_sSubject = DEFAULT_EMAIL_SUBJECT;
 
 	pEdit = (CEdit*)GetDlgItem(IDC_HOST_NAME);
 	pEdit->GetWindowText(sText);
@@ -231,7 +231,7 @@ void CSendMailConfigurationDlg::OnButtonTest()
 		SendMessage(WM_SETCURSOR, (WPARAM)GetSafeHwnd(), MAKELPARAM(HTCLIENT, WM_MOUSEMOVE));
 
 		// Mail
-		m_hMailer = CVideoDeviceDoc::SendMail(m_SendMailConfiguration, m_sName, CTime::GetCurrentTime(), _T(""), TRUE, &m_sLogFileName);
+		m_hMailer = CVideoDeviceDoc::SendMailText(m_SendMailConfiguration, m_sName, CTime::GetCurrentTime(), _T("TEST"), _T(""), TRUE, &m_sLogFileName);
 		if (!m_hMailer)
 		{
 			EndWaitCursor();

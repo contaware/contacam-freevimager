@@ -1410,12 +1410,13 @@ __forceinline CString CVideoDeviceDoc::CSaveSnapshotVideoThread::MakeVideoHistor
 		return sYearMonthDayDir + _T("\\") + _T("shot_") + sTime + m_sSnapshotVideoFileExt;
 }
 
-HANDLE CVideoDeviceDoc::SendMail(	const SendMailConfigurationStruct& SendMailConfiguration,
-									const CString& sName,
-									const CTime& Time,
-									const CString& sBody/*=_T("")*/,
-									BOOL bLog/*=FALSE*/,
-									CString* pLogFileName/*=NULL*/)
+HANDLE CVideoDeviceDoc::SendMailText(	const SendMailConfigurationStruct& SendMailConfiguration,
+										const CString& sName,
+										const CTime& Time,
+										const CString& sNote,
+										const CString& sBody/*=_T("")*/,
+										BOOL bLog/*=FALSE*/,
+										CString* pLogFileName/*=NULL*/)
 {
 	if (!SendMailConfiguration.m_sHost.IsEmpty()	&&
 		!SendMailConfiguration.m_sFrom.IsEmpty()	&&
@@ -1427,6 +1428,7 @@ HANDLE CVideoDeviceDoc::SendMail(	const SendMailConfigurationStruct& SendMailCon
 		sSubject.Replace(_T("%name%"), sName);
 		sSubject.Replace(_T("%date%"), ::MakeDateLocalFormat(Time));
 		sSubject.Replace(_T("%time%"), ::MakeTimeLocalFormat(Time, TRUE));
+		sSubject.Replace(_T("%note%"), sNote);
 		switch (SendMailConfiguration.m_ConnectionType)
 		{
 			case 0 : sConnectionTypeOption = _T(""); break;				// Plain Text
@@ -1463,9 +1465,13 @@ void CVideoDeviceDoc::SendMailMovementDetection(const CTime& Time, const CString
 		CString sOptions;
 		CString sConnectionTypeOption;
 		CString sSubject = m_SendMailConfiguration.m_sSubject;
+		CString sExt(::GetFileExt(sFileName));
+		sExt.MakeUpper();
+		sExt.TrimLeft(_T('.'));
 		sSubject.Replace(_T("%name%"), GetAssignedDeviceName());
 		sSubject.Replace(_T("%date%"), ::MakeDateLocalFormat(Time));
 		sSubject.Replace(_T("%time%"), ::MakeTimeLocalFormat(Time, TRUE));
+		sSubject.Replace(_T("%note%"), sExt);
 		switch (m_SendMailConfiguration.m_ConnectionType)
 		{
 			case 0 : sConnectionTypeOption = _T(""); break;				// Plain Text
@@ -3281,8 +3287,8 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 						if (!bDeviceAlert)
 						{
 							CString sBody;
-							sBody.Format(_T("%s: OFF!"), m_pDoc->GetAssignedDeviceName());
-							HANDLE h = CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), CTime::GetCurrentTime(), sBody);
+							sBody.Format(_T("%s: OFF"), m_pDoc->GetAssignedDeviceName());
+							HANDLE h = CVideoDeviceDoc::SendMailText(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), CTime::GetCurrentTime(), _T("OFF"), sBody);
 							if (h)
 								::CloseHandle(h);
 							bDeviceAlert = TRUE;
@@ -3297,8 +3303,8 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 					if (bDeviceAlert)
 					{
 						CString sBody;
-						sBody.Format(_T("%s: OK"), m_pDoc->GetAssignedDeviceName());
-						HANDLE h = CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), CTime::GetCurrentTime(), sBody);
+						sBody.Format(_T("%s: ON"), m_pDoc->GetAssignedDeviceName());
+						HANDLE h = CVideoDeviceDoc::SendMailText(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), CTime::GetCurrentTime(), _T("ON"), sBody);
 						if (h)
 							::CloseHandle(h);
 						bDeviceAlert = FALSE;
@@ -3785,7 +3791,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_MovDetLastSendMailTime = 0;
 	m_MovDetAttachmentType = ATTACHMENT_NONE;
 	m_nMovDetSendMailSecBetweenMsg = 0;
-	m_SendMailConfiguration.m_sSubject = MOVDET_DEFAULT_EMAIL_SUBJECT;
+	m_SendMailConfiguration.m_sSubject = DEFAULT_EMAIL_SUBJECT;
 	m_SendMailConfiguration.m_sTo = _T("");
 	m_SendMailConfiguration.m_nPort = 587;
 	m_SendMailConfiguration.m_sFrom = _T("");
@@ -4343,9 +4349,9 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	else if (m_MovDetAttachmentType > ATTACHMENT_JPG_GIF)
 		m_MovDetAttachmentType = ATTACHMENT_JPG_GIF;
 	m_nMovDetSendMailSecBetweenMsg = (int) pApp->GetProfileInt(sSection, _T("SendMailSecBetweenMsg"), 0);
-	m_SendMailConfiguration.m_sSubject = pApp->GetProfileString(sSection, _T("SendMailSubject"), MOVDET_DEFAULT_EMAIL_SUBJECT);
+	m_SendMailConfiguration.m_sSubject = pApp->GetProfileString(sSection, _T("SendMailSubject"), DEFAULT_EMAIL_SUBJECT);
 	if (m_SendMailConfiguration.m_sSubject.IsEmpty())
-		m_SendMailConfiguration.m_sSubject = MOVDET_DEFAULT_EMAIL_SUBJECT;
+		m_SendMailConfiguration.m_sSubject = DEFAULT_EMAIL_SUBJECT;
 	m_SendMailConfiguration.m_sTo = pApp->GetProfileString(sSection, _T("SendMailTo"), _T(""));
 	m_SendMailConfiguration.m_nPort = (int) pApp->GetProfileInt(sSection, _T("SendMailPort"), 587);
 	m_SendMailConfiguration.m_sFrom = pApp->GetProfileString(sSection, _T("SendMailFrom"), _T(""));

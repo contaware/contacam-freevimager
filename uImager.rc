@@ -1229,7 +1229,7 @@ BEGIN
     GROUPBOX        "To",IDC_STATIC2260,7,4,240,36
     LTEXT           "Connection\nType",IDC_STATIC2539,14,223,40,19
     GROUPBOX        "Subject",IDC_STATIC2262,7,98,240,47
-    LTEXT           "Allowed case sensitive variables: %name% %date% %time%",IDC_STATIC2263,14,130,226,8
+    LTEXT           "Allowed case sensitive: %name% %date% %time% %note%",IDC_STATIC2263,14,130,226,8
 END
 
 IDD_MOVDET_FTP_CONFIGURATION DIALOGEX 0, 0, 245, 204

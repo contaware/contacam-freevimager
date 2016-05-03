@@ -63,6 +63,7 @@ class CMovementDetectionPage;
 #define DEFAULT_DEL_RECS_OLDER_THAN_DAYS	31			// by default delete recordings older than a month
 #define MIN_DISK_FREE_PERMILLION			50000		// 5%
 #define DEFAULT_VIDEO_FILEEXT				_T(".mp4")	// default file extension
+#define DEFAULT_EMAIL_SUBJECT				_T("%name%: %date% %time% %note%")
 
 // Frame tag, thumb message and draw message
 #define FRAMETAG_REFWIDTH					640
@@ -138,7 +139,6 @@ class CMovementDetectionPage;
 #define MOVDET_ANIMGIF_DEFAULT_HEIGHT		96			// Default animated gif height
 #define MOVDET_DETECTING_ZONES_COLOR		RGB(0xFF,0x00,0x00)
 #define MOVDET_SELECTED_ZONES_COLOR			RGB(0x00,0x00,0xFF)
-#define MOVDET_DEFAULT_EMAIL_SUBJECT		_T("%name%: %date%  %time%")
 #define MOVDET_MIX_THRESHOLD				4.0			// Above this engine frequency switch from 3To1 to the 7To1 mixer
 #define MOVDET_WANTED_FREQ					5.0			// Wanted motion detection engine frequency (calculations / sec)
 														// Half of DEFAULT_FRAMERATE
@@ -782,12 +782,13 @@ public:
 	// Mailer
 	static CString MailerGetLogFileName();
 	static HANDLE Mailer(CString sParams, BOOL bLog = FALSE, CString* pLogFileName = NULL);
-	static HANDLE SendMail(	const SendMailConfigurationStruct& SendMailConfiguration,	
-							const CString& sName,			// sName is replaced in subject if %name% present					
-							const CTime& Time,				// Time is replaced in subject if %date% and/or %time% present
-							const CString& sBody = _T(""),	// if no body given use subject as body
-							BOOL bLog = FALSE,				// log to file?
-							CString* pLogFileName = NULL);	// returns the generated log filename if bLog is TRUE
+	static HANDLE SendMailText(	const SendMailConfigurationStruct& SendMailConfiguration,	
+								const CString& sName,			// sName is replaced in subject if %name% present					
+								const CTime& Time,				// Time is replaced in subject if %date% and/or %time% present
+								const CString& sNote,			// sNote is replaced in subject if %note% present					
+								const CString& sBody = _T(""),	// if no body given use subject as body
+								BOOL bLog = FALSE,				// log to file?
+								CString* pLogFileName = NULL);	// returns the generated log filename if bLog is TRUE
 	void SendMailMovementDetection(const CTime& Time, const CString& sFileName = _T(""));
 	
 	// Vlm
