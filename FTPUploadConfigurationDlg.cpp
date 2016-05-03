@@ -72,7 +72,7 @@ BOOL CFTPUploadConfigurationDlg::OnInitDialog()
 	{
 		pComboBox->AddString(ML_STRING(1883, "Saved Full Video"));
 		pComboBox->AddString(ML_STRING(1882, "Saved Small Video"));
-		pComboBox->AddString(ML_STRING(1884, "Saved Full+Small Videos"));
+		pComboBox->AddString(ML_STRING(1883, "Saved Full Video") + _T(" + ") + ML_STRING(1882, "Saved Small Video"));
 		pComboBox->SetCurSel((int)m_FTPUploadConfiguration.m_FilesToUpload);
 	}
 

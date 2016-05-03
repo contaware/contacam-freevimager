@@ -642,15 +642,18 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		::LeaveCriticalSection(&m_pDoc->m_csMovementDetectionsList);
 
 		// Send By E-Mail
-		if (m_pDoc->m_bSendMailMovementDetection &&
-			(m_pDoc->m_MovDetAttachmentType == CVideoDeviceDoc::ATTACHMENT_VIDEO ||
-			m_pDoc->m_MovDetAttachmentType == CVideoDeviceDoc::ATTACHMENT_GIF))
+		if (m_pDoc->m_bSendMailMovementDetection)
 		{
-			m_pDoc->SendMailMovementDetection(	FirstDetFrameTime,
-												m_pDoc->m_MovDetAttachmentType == CVideoDeviceDoc::ATTACHMENT_VIDEO ?
-												sVideoFileName : _T(""),
-												m_pDoc->m_MovDetAttachmentType == CVideoDeviceDoc::ATTACHMENT_GIF ?
-												sGIFFileName : _T(""));
+			if (m_pDoc->m_MovDetAttachmentType == CVideoDeviceDoc::ATTACHMENT_VIDEO	||
+				m_pDoc->m_MovDetAttachmentType == CVideoDeviceDoc::ATTACHMENT_JPG_VIDEO)
+			{
+				m_pDoc->SendMailMovementDetection(FirstDetFrameTime, sVideoFileName);
+			}
+			else if (	m_pDoc->m_MovDetAttachmentType == CVideoDeviceDoc::ATTACHMENT_GIF ||
+						m_pDoc->m_MovDetAttachmentType == CVideoDeviceDoc::ATTACHMENT_JPG_GIF)
+			{
+				m_pDoc->SendMailMovementDetection(FirstDetFrameTime, sGIFFileName);
+			}
 		}
 
 		// FTP Upload
@@ -1448,9 +1451,7 @@ HANDLE CVideoDeviceDoc::SendMail(	const SendMailConfigurationStruct& SendMailCon
 		return NULL;
 }
 
-void CVideoDeviceDoc::SendMailMovementDetection(const CTime& Time,
-												const CString& sVideoFileName/*=_T("")*/,
-												const CString& sImageFileName/*=_T("")*/)
+void CVideoDeviceDoc::SendMailMovementDetection(const CTime& Time, const CString& sFileName/*=_T("")*/)
 {
 	CTime CurrentTime(CTime::GetCurrentTime());
 	CTimeSpan TimeDiff = CurrentTime - m_MovDetLastSendMailTime;
@@ -1482,10 +1483,14 @@ void CVideoDeviceDoc::SendMailMovementDetection(const CTime& Time,
 						sSubject,
 						m_SendMailConfiguration.m_sUsername,
 						m_SendMailConfiguration.m_sPassword);
-		if (::GetFileSize64(sVideoFileName).QuadPart > 0)
-			sOptions += _T(" -M \"") + sSubject + _T("\" -attach \"") + sVideoFileName + _T("\"");
-		else if (::GetFileSize64(sImageFileName).QuadPart > 0)
-			sOptions += _T(" -embed-image \"") + sImageFileName + _T("\"");
+		if (::GetFileSize64(sFileName).QuadPart > 0)
+		{
+			CString sExt(::GetFileExt(sFileName));
+			if (sExt == _T(".jpg") || sExt == _T(".gif"))
+				sOptions += _T(" -embed-image \"") + sFileName + _T("\"");
+			else
+				sOptions += _T(" -M \"") + sSubject + _T("\" -attach \"") + sFileName + _T("\"");
+		}
 		else
 			sOptions += _T(" -M \"") + sSubject + _T("\"");
 		HANDLE h = Mailer(sOptions);
@@ -2268,11 +2273,14 @@ end_of_software_detection:
 			if (m_bSendMailMovementDetection)
 			{
 				if (m_MovDetAttachmentType == ATTACHMENT_NONE)
+				{
 					SendMailMovementDetection(CalcTime(m_dwFirstDetFrameUpTime, CTime::GetCurrentTime(), ::timeGetTime()));
-				else if (m_MovDetAttachmentType == ATTACHMENT_JPG)
+				}
+				else if (	m_MovDetAttachmentType == ATTACHMENT_JPG		||
+							m_MovDetAttachmentType == ATTACHMENT_JPG_VIDEO	||
+							m_MovDetAttachmentType == ATTACHMENT_JPG_GIF)
 				{
 					SendMailMovementDetection(	CalcTime(m_dwFirstDetFrameUpTime, CTime::GetCurrentTime(), ::timeGetTime()),
-												_T(""),
 												SaveJpegMail(pDib));
 				}
 			}
@@ -4332,8 +4340,8 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_MovDetAttachmentType = (AttachmentType) pApp->GetProfileInt(sSection, _T("AttachmentType"), ATTACHMENT_NONE);
 	if (m_MovDetAttachmentType < ATTACHMENT_NONE)
 		m_MovDetAttachmentType = ATTACHMENT_NONE;
-	else if (m_MovDetAttachmentType > ATTACHMENT_JPG)
-		m_MovDetAttachmentType = ATTACHMENT_JPG;
+	else if (m_MovDetAttachmentType > ATTACHMENT_JPG_GIF)
+		m_MovDetAttachmentType = ATTACHMENT_JPG_GIF;
 	m_nMovDetSendMailSecBetweenMsg = (int) pApp->GetProfileInt(sSection, _T("SendMailSecBetweenMsg"), 0);
 	m_SendMailConfiguration.m_sSubject = pApp->GetProfileString(sSection, _T("SendMailSubject"), MOVDET_DEFAULT_EMAIL_SUBJECT);
 	if (m_SendMailConfiguration.m_sSubject.IsEmpty())

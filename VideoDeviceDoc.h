@@ -207,10 +207,12 @@ public:
 	// Email Attachment Type
 	enum AttachmentType
 	{
-		ATTACHMENT_NONE		= 0,
-		ATTACHMENT_VIDEO	= 1,
-		ATTACHMENT_GIF		= 2,
-		ATTACHMENT_JPG		= 3
+		ATTACHMENT_NONE			= 0,
+		ATTACHMENT_VIDEO		= 1,
+		ATTACHMENT_GIF			= 2,
+		ATTACHMENT_JPG			= 3,
+		ATTACHMENT_JPG_VIDEO	= 4,
+		ATTACHMENT_JPG_GIF		= 5
 	};
 
 	// The Http Networking Parser & Processor Class
@@ -786,9 +788,7 @@ public:
 							const CString& sBody = _T(""),	// if no body given use subject as body
 							BOOL bLog = FALSE,				// log to file?
 							CString* pLogFileName = NULL);	// returns the generated log filename if bLog is TRUE
-	void SendMailMovementDetection(	const CTime& Time,
-									const CString& sVideoFileName = _T(""),
-									const CString& sImageFileName = _T(""));
+	void SendMailMovementDetection(const CTime& Time, const CString& sFileName = _T(""));
 	
 	// Vlm
 	static CString VlmGetConfigFileName();
