@@ -11,9 +11,9 @@
 // Email sending configuration structure
 enum ConnectionType
 {
-	PlainText					= 0, 
-	SSL_TLS						= 1,
-	STARTTLS					= 2
+	PlainText		= 0, 
+	SSL_TLS			= 1,
+	STARTTLS		= 2
 };
 typedef struct tagSendMailConfigurationStruct
 {
@@ -53,9 +53,6 @@ public:
 // Implementation
 protected:
 	CString m_sName;
-	HANDLE m_hMailer;
-	CString m_sLogFileName;
-	int m_nRetryTimeMs;
 	void CopyToStruct();
 	// Generated message map functions
 	//{{AFX_MSG(CSendMailConfigurationDlg)
@@ -63,9 +60,6 @@ protected:
 	afx_msg void OnChangeEditSenderMail();
 	virtual void OnOK();
 	afx_msg void OnButtonTest();
-	afx_msg void OnDestroy();
-	afx_msg void OnTimer(UINT_PTR nIDEvent);
-	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

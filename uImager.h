@@ -66,8 +66,6 @@
 #define MAILPROG_DIR									_T("mail")
 #define MAILPROG_FILENAME								_T("mailsend.exe")
 #define MAILPROG_RELPATH								(CString(MAILPROG_DIR) + CString(_T("\\")) + CString(MAILPROG_FILENAME))
-#define MAILPROG_LOGNAME_EXT							_T("mail_log.txt")
-#define MAILPROG_WAIT_TIMEOUT_MS						30000
 
 // Ftp
 #define FTPPROG_DIR										_T("ftp")

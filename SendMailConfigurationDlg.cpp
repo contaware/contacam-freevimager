@@ -25,8 +25,6 @@ CSendMailConfigurationDlg::CSendMailConfigurationDlg(const CString& sName)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
 	m_sName = sName;
-	m_hMailer = NULL;
-	m_nRetryTimeMs = 0;
 }
 
 void CSendMailConfigurationDlg::DoDataExchange(CDataExchange* pDX)
@@ -42,9 +40,6 @@ BEGIN_MESSAGE_MAP(CSendMailConfigurationDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_TEST, OnButtonTest)
 	ON_EN_CHANGE(IDC_SENDER_MAIL, OnChangeEditSenderMail)
 	//}}AFX_MSG_MAP
-	ON_WM_DESTROY()
-	ON_WM_TIMER()
-	ON_WM_SETCURSOR()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -93,9 +88,6 @@ BOOL CSendMailConfigurationDlg::OnInitDialog()
     pComboBox->AddString(ML_STRING(1834, "SSL/TLS (Port 465)"));	
     pComboBox->AddString(ML_STRING(1835, "STARTTLS (Port 25 or 587)"));
 	pComboBox->SetCurSel(m_SendMailConfiguration.m_ConnectionType);
-
-	// Set Timer
-	SetTimer(ID_TIMER_SENDMAILCONFIGURATIONDLG, SENDMAILCONFIGURATIONDLG_TIMER_MS, NULL);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -217,79 +209,11 @@ void CSendMailConfigurationDlg::OnButtonTest()
 		::AfxMessageBox(ML_STRING(1406, "Please Enter A Host Name, a From and a To Address"));
 	else 
 	{
-		// Reset
-		if (m_hMailer)
-		{
-			::CloseHandle(m_hMailer);
-			m_hMailer = NULL;
-			EndWaitCursor();
-		}
-		m_nRetryTimeMs = 0;
-
-		// Begin Wait Cursor
-		BeginWaitCursor();
-		SendMessage(WM_SETCURSOR, (WPARAM)GetSafeHwnd(), MAKELPARAM(HTCLIENT, WM_MOUSEMOVE));
-
 		// Mail
-		m_hMailer = CVideoDeviceDoc::SendMailText(m_SendMailConfiguration, m_sName, CTime::GetCurrentTime(), _T("TEST"), _T(""), TRUE, &m_sLogFileName);
-		if (!m_hMailer)
-		{
-			EndWaitCursor();
-			SendMessage(WM_SETCURSOR, (WPARAM)GetSafeHwnd(), MAKELPARAM(HTCLIENT, WM_MOUSEMOVE));
-		}
+		HANDLE hMailer = CVideoDeviceDoc::SendMailText(m_SendMailConfiguration, m_sName, CTime::GetCurrentTime(), _T("TEST"), _T(""), TRUE);
+		if (hMailer)
+			CloseHandle(hMailer);
 	}
-}
-
-void CSendMailConfigurationDlg::OnDestroy()
-{
-	// Kill timer
-	KillTimer(ID_TIMER_SENDMAILCONFIGURATIONDLG);
-
-	// Close
-	if (m_hMailer)
-	{
-		::CloseHandle(m_hMailer);
-		m_hMailer = NULL;
-		EndWaitCursor();
-	}
-
-	// Base class
-	CDialog::OnDestroy();
-}
-
-void CSendMailConfigurationDlg::OnTimer(UINT_PTR nIDEvent)
-{
-	if (m_hMailer)
-	{
-		if (::WaitForSingleObject(m_hMailer, 0) == WAIT_OBJECT_0)
-		{
-			::CloseHandle(m_hMailer);
-			m_hMailer = NULL;
-			EndWaitCursor();
-			if (::IsExistingFile(m_sLogFileName))
-				::ShellExecute(NULL, _T("open"), m_sLogFileName, NULL, NULL, SW_SHOWNORMAL);
-		}
-		else if (m_nRetryTimeMs > MAILPROG_WAIT_TIMEOUT_MS)
-		{
-			::CloseHandle(m_hMailer);
-			m_hMailer = NULL;
-			EndWaitCursor();
-		}
-		else
-			m_nRetryTimeMs += SENDMAILCONFIGURATIONDLG_TIMER_MS;
-	}
-	CDialog::OnTimer(nIDEvent);
-}
-
-BOOL CSendMailConfigurationDlg::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
-{
-	if (m_hMailer)
-	{
-		SetCursor(::AfxGetApp()->LoadStandardCursor(IDC_WAIT));
-		return TRUE;
-	}
-	else
-		return CDialog::OnSetCursor(pWnd, nHitTest, message);
 }
 
 #endif

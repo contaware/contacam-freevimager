@@ -726,12 +726,15 @@ public:
 	void HideDetectionZones();
 
 	// FTP
-	// Returns the handle of the started lftp process
+	// Both functions return the handle of the started lftp process
 	// (remember to call CloseHandle() for the returned handle if != NULL)
-	static HANDLE FTPCall(CString sParams, BOOL bShow = FALSE);
-	static HANDLE FTPUpload(FTPUploadConfigurationStruct* pConfig,
-							CString sLocalFileName1, CString sRemoteFileName1,
-							CString sLocalFileName2 = _T(""), CString sRemoteFileName2 = _T(""));
+	static HANDLE FTPCall(	CString sParams,					// command line params for lftp.exe
+							BOOL bShow = FALSE);				// show / hide the console window
+	static HANDLE FTPUpload(const FTPUploadConfigurationStruct* pConfig,
+							CString sLocalFileName1,			// first file to upload
+							CString sRemoteFileName1,			// target name of first file
+							CString sLocalFileName2 = _T(""),	// optional second file to upload
+							CString sRemoteFileName2 = _T(""));	// target name of second file
 
 	// Validate Name
 	static CString GetValidName(CString sName);
@@ -780,15 +783,18 @@ public:
 	static BOOL MicroApacheShutdown(DWORD dwTimeout);
 	
 	// Mailer
-	static CString MailerGetLogFileName();
-	static HANDLE Mailer(CString sParams, BOOL bLog = FALSE, CString* pLogFileName = NULL);
+	// Both functions return the handle of the started mailsend process
+	// (remember to call CloseHandle() for the returned handle if != NULL)
+	static HANDLE Mailer(		CString sParams,				// command line params for mailsend.exe
+								BOOL bShow = FALSE);			// show / hide the console window
 	static HANDLE SendMailText(	const SendMailConfigurationStruct& SendMailConfiguration,	
 								const CString& sName,			// sName is replaced in subject if %name% present					
 								const CTime& Time,				// Time is replaced in subject if %date% and/or %time% present
 								const CString& sNote,			// sNote is replaced in subject if %note% present					
 								const CString& sBody = _T(""),	// if no body given use subject as body
-								BOOL bLog = FALSE,				// log to file?
-								CString* pLogFileName = NULL);	// returns the generated log filename if bLog is TRUE
+								BOOL bShow = FALSE);			// show / hide the console window
+
+	// Send movement detection mail with optional attachment
 	void SendMailMovementDetection(const CTime& Time, const CString& sFileName = _T(""));
 	
 	// Vlm

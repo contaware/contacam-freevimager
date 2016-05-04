@@ -1410,13 +1410,13 @@ __forceinline CString CVideoDeviceDoc::CSaveSnapshotVideoThread::MakeVideoHistor
 		return sYearMonthDayDir + _T("\\") + _T("shot_") + sTime + m_sSnapshotVideoFileExt;
 }
 
+// Attention: remember to call CloseHandle() for the returned handle if it's != NULL
 HANDLE CVideoDeviceDoc::SendMailText(	const SendMailConfigurationStruct& SendMailConfiguration,
 										const CString& sName,
 										const CTime& Time,
 										const CString& sNote,
 										const CString& sBody/*=_T("")*/,
-										BOOL bLog/*=FALSE*/,
-										CString* pLogFileName/*=NULL*/)
+										BOOL bShow/*=FALSE*/)
 {
 	if (!SendMailConfiguration.m_sHost.IsEmpty()	&&
 		!SendMailConfiguration.m_sFrom.IsEmpty()	&&
@@ -1447,7 +1447,7 @@ HANDLE CVideoDeviceDoc::SendMailText(	const SendMailConfigurationStruct& SendMai
 						SendMailConfiguration.m_sUsername,
 						SendMailConfiguration.m_sPassword,
 						sBody.IsEmpty() ? sSubject : sBody);
-		return Mailer(sOptions, bLog, pLogFileName);
+		return Mailer(sOptions, bShow);
 	}
 	else
 		return NULL;
@@ -1532,9 +1532,11 @@ HANDLE CVideoDeviceDoc::FTPCall(CString sParams, BOOL bShow/*=FALSE*/)
 }
 
 // Attention: remember to call CloseHandle() for the returned handle if it's != NULL
-HANDLE CVideoDeviceDoc::FTPUpload(	FTPUploadConfigurationStruct* pConfig,
-									CString sLocalFileName1, CString sRemoteFileName1,
-									CString sLocalFileName2/*=_T("")*/, CString sRemoteFileName2/*=_T("")*/)
+HANDLE CVideoDeviceDoc::FTPUpload(	const FTPUploadConfigurationStruct* pConfig,
+									CString sLocalFileName1,
+									CString sRemoteFileName1,
+									CString sLocalFileName2/*=_T("")*/,
+									CString sRemoteFileName2/*=_T("")*/)
 {
 	int nPos;
 
@@ -6419,21 +6421,10 @@ BOOL CVideoDeviceDoc::MicroApacheShutdown(DWORD dwTimeout)
 	return res;
 }
 
-CString CVideoDeviceDoc::MailerGetLogFileName()
-{
-	CString sMailerLogFile = CUImagerApp::GetConfigFilesDir();
-	if (!IsExistingDir(sMailerLogFile))
-	{
-		if (!CreateDir(sMailerLogFile))
-			ShowErrorMsg(GetLastError(), FALSE);
-	}
-	return sMailerLogFile + CString(_T("\\")) + MAILPROG_LOGNAME_EXT;
-}
-
-HANDLE CVideoDeviceDoc::Mailer(CString sParams, BOOL bLog/*=FALSE*/, CString* pLogFileName/*=NULL*/)
+// Attention: remember to call CloseHandle() for the returned handle if it's != NULL
+HANDLE CVideoDeviceDoc::Mailer(CString sParams, BOOL bShow/*=FALSE*/)
 {
 	HANDLE h = NULL;
-	CString sLogFileName;
 	TCHAR szDrive[_MAX_DRIVE];
 	TCHAR szDir[_MAX_DIR];
 	TCHAR szProgramName[MAX_PATH];
@@ -6444,17 +6435,14 @@ HANDLE CVideoDeviceDoc::Mailer(CString sParams, BOOL bLog/*=FALSE*/, CString* pL
 		sMailerStartFile += MAILPROG_RELPATH;
 		if (::IsExistingFile(sMailerStartFile))
 		{
-			if (bLog)
-			{
-				sLogFileName = MailerGetLogFileName();
-				::DeleteFile(sLogFileName); // avoid growing it too much!
-				sParams = _T("-log \"") + sLogFileName + _T("\" ") + sParams;
-			}
-			h =  ::ExecApp(sMailerStartFile, sParams, _T(""), FALSE);
+			if (bShow)
+				sParams = _T("-w ") + sParams; // wait for a CR after sending the mail
+			h =  ::ExecApp(	sMailerStartFile,
+							sParams,
+							_T(""),
+							bShow);
 		}
 	}
-	if (pLogFileName)
-		*pLogFileName = sLogFileName;
 	return h;
 }
 
