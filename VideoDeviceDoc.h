@@ -730,11 +730,11 @@ public:
 	// (remember to call CloseHandle() for the returned handle if != NULL)
 	static HANDLE FTPCall(	CString sParams,					// command line params for lftp.exe
 							BOOL bShow = FALSE);				// show / hide the console window
-	static HANDLE FTPUpload(const FTPUploadConfigurationStruct* pConfig,
+	static HANDLE FTPUpload(const FTPUploadConfigurationStruct& Config,
 							CString sLocalFileName1,			// first file to upload
-							CString sRemoteFileName1,			// target name of first file
+							CString sRemoteFileName1,			// remote name of first file
 							CString sLocalFileName2 = _T(""),	// optional second file to upload
-							CString sRemoteFileName2 = _T(""));	// target name of second file
+							CString sRemoteFileName2 = _T(""));	// remote name of second file
 
 	// Validate Name
 	static CString GetValidName(CString sName);
@@ -787,7 +787,7 @@ public:
 	// (remember to call CloseHandle() for the returned handle if != NULL)
 	static HANDLE Mailer(		CString sParams,				// command line params for mailsend.exe
 								BOOL bShow = FALSE);			// show / hide the console window
-	static HANDLE SendMailText(	const SendMailConfigurationStruct& SendMailConfiguration,	
+	static HANDLE SendMailText(	const SendMailConfigurationStruct& Config,	
 								const CString& sName,			// sName is replaced in subject if %name% present					
 								const CTime& Time,				// Time is replaced in subject if %date% and/or %time% present
 								const CString& sNote,			// sNote is replaced in subject if %note% present					

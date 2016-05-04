@@ -709,7 +709,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::FTPUploadMovementDetection(	const CT
 	switch (m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload)
 	{
 		case FILES_TO_UPLOAD_VIDEO :
-			hFTP = CVideoDeviceDoc::FTPUpload(	&m_pDoc->m_MovDetFTPUploadConfiguration,
+			hFTP = CVideoDeviceDoc::FTPUpload(	m_pDoc->m_MovDetFTPUploadConfiguration,
 												sVideoFileName,
 												sUploadDir + _T("/") + ::GetShortFileName(sVideoFileName));
 			if (hFTP)
@@ -717,7 +717,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::FTPUploadMovementDetection(	const CT
 			break;
 
 		case FILES_TO_UPLOAD_GIF :
-			hFTP = CVideoDeviceDoc::FTPUpload(	&m_pDoc->m_MovDetFTPUploadConfiguration,
+			hFTP = CVideoDeviceDoc::FTPUpload(	m_pDoc->m_MovDetFTPUploadConfiguration,
 												sGIFFileName,
 												sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
 			if (hFTP)
@@ -725,7 +725,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::FTPUploadMovementDetection(	const CT
 			break;
 
 		case FILES_TO_UPLOAD_VIDEO_GIF :
-			hFTP = CVideoDeviceDoc::FTPUpload(	&m_pDoc->m_MovDetFTPUploadConfiguration,
+			hFTP = CVideoDeviceDoc::FTPUpload(	m_pDoc->m_MovDetFTPUploadConfiguration,
 												sVideoFileName, sUploadDir + _T("/") + ::GetShortFileName(sVideoFileName),
 												sGIFFileName, sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
 			if (hFTP)
@@ -1233,7 +1233,7 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 	if (m_bSnapshotHistoryVideoFtp)
 	{
 		CString sUploadDir(m_Time.Format(_T("%Y")) + _T("/") + m_Time.Format(_T("%m")) + _T("/") + m_Time.Format(_T("%d")));
-		hFTP = CVideoDeviceDoc::FTPUpload(	&m_Config,
+		hFTP = CVideoDeviceDoc::FTPUpload(	m_Config,
 											sVideoFileName, sUploadDir + _T("/") + ::GetShortFileName(sVideoFileName),
 											sVideoThumbFileName, sUploadDir + _T("/") + ::GetShortFileName(sVideoThumbFileName));
 		if (hFTP)
@@ -1307,7 +1307,7 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	::CopyFile(sTempThumbFileName, sLiveThumbFileName, FALSE);
 	if (m_bSnapshotLiveJpegFtp)
 	{
-		hFTP = CVideoDeviceDoc::FTPUpload(	&m_Config,
+		hFTP = CVideoDeviceDoc::FTPUpload(	m_Config,
 											sTempFileName, m_sSnapshotLiveJpegName + _T(".jpg"),
 											sTempThumbFileName, m_sSnapshotLiveJpegThumbName + _T(".jpg"));
 		if (hFTP)
@@ -1330,7 +1330,7 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 		if (m_bSnapshotHistoryJpegFtp)
 		{
 			CString sUploadDir(m_Time.Format(_T("%Y")) + _T("/") + m_Time.Format(_T("%m")) + _T("/") + m_Time.Format(_T("%d")));
-			hFTP = CVideoDeviceDoc::FTPUpload(	&m_Config,
+			hFTP = CVideoDeviceDoc::FTPUpload(	m_Config,
 												sTempFileName, sUploadDir + _T("/") + ::GetShortFileName(sHistoryFileName),
 												sTempThumbFileName, sUploadDir + _T("/") + ::GetShortFileName(sHistoryThumbFileName));
 			if (hFTP)
@@ -1411,41 +1411,41 @@ __forceinline CString CVideoDeviceDoc::CSaveSnapshotVideoThread::MakeVideoHistor
 }
 
 // Attention: remember to call CloseHandle() for the returned handle if it's != NULL
-HANDLE CVideoDeviceDoc::SendMailText(	const SendMailConfigurationStruct& SendMailConfiguration,
+HANDLE CVideoDeviceDoc::SendMailText(	const SendMailConfigurationStruct& Config,
 										const CString& sName,
 										const CTime& Time,
 										const CString& sNote,
 										const CString& sBody/*=_T("")*/,
 										BOOL bShow/*=FALSE*/)
 {
-	if (!SendMailConfiguration.m_sHost.IsEmpty()	&&
-		!SendMailConfiguration.m_sFrom.IsEmpty()	&&
-		!SendMailConfiguration.m_sTo.IsEmpty())
+	if (!Config.m_sHost.IsEmpty()	&&
+		!Config.m_sFrom.IsEmpty()	&&
+		!Config.m_sTo.IsEmpty())
 	{
 		CString sOptions;
 		CString sConnectionTypeOption;
-		CString sSubject = SendMailConfiguration.m_sSubject;
+		CString sSubject = Config.m_sSubject;
 		sSubject.Replace(_T("%name%"), sName);
 		sSubject.Replace(_T("%date%"), ::MakeDateLocalFormat(Time));
 		sSubject.Replace(_T("%time%"), ::MakeTimeLocalFormat(Time, TRUE));
 		sSubject.Replace(_T("%note%"), sNote);
-		switch (SendMailConfiguration.m_ConnectionType)
+		switch (Config.m_ConnectionType)
 		{
 			case 0 : sConnectionTypeOption = _T(""); break;				// Plain Text
 			case 1 : sConnectionTypeOption = _T("-ssl"); break;			// SSL and TLS
 			default: sConnectionTypeOption = _T("-starttls"); break;	// STARTTLS
 		}
 		sOptions.Format(_T("-t \"%s\" -f %s %s %s -port %d %s -smtp %s -cs \"iso-8859-1\" -sub \"%s\" +cc +bc -user \"%s\" -pass \"%s\" -M \"%s\""),
-						SendMailConfiguration.m_sTo,
-						SendMailConfiguration.m_sFrom,
-						SendMailConfiguration.m_sFromName.IsEmpty() ? _T("") : _T("-name \"") + SendMailConfiguration.m_sFromName + _T("\""),
+						Config.m_sTo,
+						Config.m_sFrom,
+						Config.m_sFromName.IsEmpty() ? _T("") : _T("-name \"") + Config.m_sFromName + _T("\""),
 						sConnectionTypeOption,
-						SendMailConfiguration.m_nPort,
-						(SendMailConfiguration.m_sUsername.IsEmpty() && SendMailConfiguration.m_sPassword.IsEmpty()) ? _T("") : _T("-auth"),
-						SendMailConfiguration.m_sHost,
+						Config.m_nPort,
+						(Config.m_sUsername.IsEmpty() && Config.m_sPassword.IsEmpty()) ? _T("") : _T("-auth"),
+						Config.m_sHost,
 						sSubject,
-						SendMailConfiguration.m_sUsername,
-						SendMailConfiguration.m_sPassword,
+						Config.m_sUsername,
+						Config.m_sPassword,
 						sBody.IsEmpty() ? sSubject : sBody);
 		return Mailer(sOptions, bShow);
 	}
@@ -1532,7 +1532,7 @@ HANDLE CVideoDeviceDoc::FTPCall(CString sParams, BOOL bShow/*=FALSE*/)
 }
 
 // Attention: remember to call CloseHandle() for the returned handle if it's != NULL
-HANDLE CVideoDeviceDoc::FTPUpload(	const FTPUploadConfigurationStruct* pConfig,
+HANDLE CVideoDeviceDoc::FTPUpload(	const FTPUploadConfigurationStruct& Config,
 									CString sLocalFileName1,
 									CString sRemoteFileName1,
 									CString sLocalFileName2/*=_T("")*/,
@@ -1541,9 +1541,8 @@ HANDLE CVideoDeviceDoc::FTPUpload(	const FTPUploadConfigurationStruct* pConfig,
 	int nPos;
 
 	// Check
-	if ((sLocalFileName1.IsEmpty() && sLocalFileName2.IsEmpty())	||
-		!pConfig													||
-		pConfig->m_sHost.IsEmpty())
+	if (Config.m_sHost.IsEmpty() ||
+		(sLocalFileName1.IsEmpty() && sLocalFileName2.IsEmpty()))
 		return NULL;
 
 	// Default remote file name 1
@@ -1573,7 +1572,7 @@ HANDLE CVideoDeviceDoc::FTPUpload(	const FTPUploadConfigurationStruct* pConfig,
 	}
 
 	// Remote filename and directory 1
-	CString sRemoteDir1(pConfig->m_sRemoteDir);
+	CString sRemoteDir1(Config.m_sRemoteDir);
 	sRemoteDir1.Replace(_T('\\'), _T('/'));
 	sRemoteFileName1.Replace(_T('\\'), _T('/'));
 	if (!sRemoteDir1.IsEmpty())
@@ -1587,7 +1586,7 @@ HANDLE CVideoDeviceDoc::FTPUpload(	const FTPUploadConfigurationStruct* pConfig,
 		sRemoteDir1 = sRemoteFileName1.Left(nPos); // sRemoteDir1 with no trailing / otherwise mkdir -p says that the directory already exists
 
 	// Remote filename and directory 2
-	CString sRemoteDir2(pConfig->m_sRemoteDir);
+	CString sRemoteDir2(Config.m_sRemoteDir);
 	sRemoteDir2.Replace(_T('\\'), _T('/'));
 	sRemoteFileName2.Replace(_T('\\'), _T('/'));
 	if (!sRemoteDir2.IsEmpty())
@@ -1619,14 +1618,14 @@ HANDLE CVideoDeviceDoc::FTPUpload(	const FTPUploadConfigurationStruct* pConfig,
 
 	// Implicit FTPS
 	CString sProto;
-	if (pConfig->m_nPort == 990)
+	if (Config.m_nPort == 990)
 	{
 		sSets += _T("set ssl:verify-certificate no; ");
 		sSets += _T("set ftp:passive-mode on; ");
 		sProto = _T("ftps://");
 	}
 	// SSH File Transfer Protocol SFTP
-	else if (pConfig->m_nPort == 22)
+	else if (Config.m_nPort == 22)
 	{
 		sSets += _T("set sftp:auto-confirm yes; ");
 		sSets += _T("set sftp:connect-program './ssh.exe'; "); // when executing lftp.exe current directory must contain ssh.exe
@@ -1682,18 +1681,18 @@ HANDLE CVideoDeviceDoc::FTPUpload(	const FTPUploadConfigurationStruct* pConfig,
 
 	// Port
 	CString sPort;
-	sPort.Format(_T("-p %d "), pConfig->m_nPort);
+	sPort.Format(_T("-p %d "), Config.m_nPort);
 
 	// Username and password (lftp uses anonymous if nothing supplied)
 	CString sUser;
-	if (!pConfig->m_sUsername.IsEmpty() && !pConfig->m_sPassword.IsEmpty())
-		sUser.Format(_T("-u \"%s,%s\" "), pConfig->m_sUsername, pConfig->m_sPassword);
-	else if (!pConfig->m_sUsername.IsEmpty() && pConfig->m_sPassword.IsEmpty())
-		sUser.Format(_T("-u \"%s\" "), pConfig->m_sUsername);
+	if (!Config.m_sUsername.IsEmpty() && !Config.m_sPassword.IsEmpty())
+		sUser.Format(_T("-u \"%s,%s\" "), Config.m_sUsername, Config.m_sPassword);
+	else if (!Config.m_sUsername.IsEmpty() && Config.m_sPassword.IsEmpty())
+		sUser.Format(_T("-u \"%s\" "), Config.m_sUsername);
 
 	// FTP
 	CString sOptions(CString(_T("-e \"")) + sSets + sPut + _T("exit\" ") +
-					sPort + sUser + sProto + pConfig->m_sHost);
+					sPort + sUser + sProto + Config.m_sHost);
 	return FTPCall(sOptions);
 }
 
