@@ -795,7 +795,7 @@ public:
 								BOOL bShow = FALSE);			// show / hide the console window
 
 	// Send movement detection mail with optional attachment
-	void SendMailMovementDetection(const CTime& Time, const CString& sFileName = _T(""));
+	BOOL SendMailMovementDetection(const CTime& Time, const CString& sFileName = _T(""));
 	
 	// Vlm
 	static CString VlmGetConfigFileName();
@@ -1022,8 +1022,11 @@ public:
 	volatile int m_nMovDetSavesCountMonth;				// Month of the above count
 	volatile int m_nMovDetSavesCountYear;				// Year of the above count
 	volatile AttachmentType m_MovDetAttachmentType;		// The email attachment type
-	volatile int m_nMovDetSendMailSecBetweenMsg;		// Minimum seconds between Detection Emails
-	CTime m_MovDetLastSendMailTime;						// Last sent Detection Email Time
+	volatile int m_nMovDetSendMailSecBetweenMsg;		// Minimum seconds between detection emails
+	CTime m_MovDetLastMailTime;							// Time of last sent detection email with no attachment
+	CTime m_MovDetLastJPGMailTime;						// Time of last sent detection email with JPG attachment
+	CTime m_MovDetLastVideoMailTime;					// Time of last sent detection email with video attachment
+	CTime m_MovDetLastGIFMailTime;						// Time of last sent detection email with GIF attachment
 	FTPUploadConfigurationStruct m_MovDetFTPUploadConfiguration;
 
 	// Send mail configuration
