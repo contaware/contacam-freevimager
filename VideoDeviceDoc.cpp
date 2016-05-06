@@ -451,7 +451,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		CDib* pDib = NULL;
 		BOOL bFirstGIFSave;
 		RGBQUAD* pGIFColors = NULL;
-		CTime FirstDetFrameTime(0);
 		double dCalcFrameRate = 1.0;
 		if (nFrames > 1)
 			dCalcFrameRate = (1000.0 * (nFrames - 1)) / (double)(dwLastUpTime - dwFirstUpTime);
@@ -483,10 +482,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			currentpos = nextpos;
 			pDib = m_pFrameList->GetNext(nextpos);
 			LoadAndDecodeFrame(pDib);
-
-			// Find first detection frame time
-			if ((FirstDetFrameTime == CTime(0)) && (pDib->GetUserFlag() & FRAME_USER_FLAG_MOTION))
-				FirstDetFrameTime = CalcTime(pDib->GetUpTime(), RefTime, dwRefUpTime);
 
 			// Calc. detection lists size
 			if ((nFrames % MOVDET_MIN_FRAMES_IN_LIST) == 0)
@@ -648,19 +643,19 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				(m_pDoc->m_MovDetAttachmentType == CVideoDeviceDoc::ATTACHMENT_VIDEO		||
 				m_pDoc->m_MovDetAttachmentType == CVideoDeviceDoc::ATTACHMENT_JPG_VIDEO))
 			{
-				CTimeSpan TimeDiff = FirstDetFrameTime - m_pDoc->m_MovDetLastVideoMailTime;
+				CTimeSpan TimeDiff = FirstTime - m_pDoc->m_MovDetLastVideoMailTime;
 				if (TimeDiff.GetTotalSeconds() >= (LONGLONG)m_pDoc->m_nMovDetSendMailSecBetweenMsg &&
-					m_pDoc->SendMailMovementDetection(FirstDetFrameTime, sVideoFileName))
-					m_pDoc->m_MovDetLastVideoMailTime = FirstDetFrameTime;
+					m_pDoc->SendMailMovementDetection(FirstTime, sVideoFileName))
+					m_pDoc->m_MovDetLastVideoMailTime = FirstTime;
 			}
 			else if (	::GetFileSize64(sGIFFileName).QuadPart > 0							&&
 						(m_pDoc->m_MovDetAttachmentType == CVideoDeviceDoc::ATTACHMENT_GIF	||
 						m_pDoc->m_MovDetAttachmentType == CVideoDeviceDoc::ATTACHMENT_JPG_GIF))
 			{
-				CTimeSpan TimeDiff = FirstDetFrameTime - m_pDoc->m_MovDetLastGIFMailTime;
+				CTimeSpan TimeDiff = FirstTime - m_pDoc->m_MovDetLastGIFMailTime;
 				if (TimeDiff.GetTotalSeconds() >= (LONGLONG)m_pDoc->m_nMovDetSendMailSecBetweenMsg &&
-					m_pDoc->SendMailMovementDetection(FirstDetFrameTime, sGIFFileName))
-					m_pDoc->m_MovDetLastGIFMailTime = FirstDetFrameTime;
+					m_pDoc->SendMailMovementDetection(FirstTime, sGIFFileName))
+					m_pDoc->m_MovDetLastGIFMailTime = FirstTime;
 			}
 		}
 
@@ -2287,21 +2282,25 @@ end_of_software_detection:
 			{
 				if (m_MovDetAttachmentType == ATTACHMENT_NONE)
 				{
-					CTime FirstDetFrameTime(CalcTime(m_dwFirstDetFrameUpTime, CTime::GetCurrentTime(), ::timeGetTime()));
-					CTimeSpan TimeDiff = FirstDetFrameTime - m_MovDetLastMailTime;
+					CTime RefTime = CTime::GetCurrentTime();
+					DWORD dwRefUpTime = ::timeGetTime();
+					CTime Time = CalcTime(pDib->GetUpTime(), RefTime, dwRefUpTime);
+					CTimeSpan TimeDiff = Time - m_MovDetLastMailTime;
 					if (TimeDiff.GetTotalSeconds() >= (LONGLONG)m_nMovDetSendMailSecBetweenMsg &&
-						SendMailMovementDetection(FirstDetFrameTime))
-						m_MovDetLastMailTime = FirstDetFrameTime;
+						SendMailMovementDetection(Time))
+						m_MovDetLastMailTime = Time;
 				}
 				else if (	m_MovDetAttachmentType == ATTACHMENT_JPG		||
 							m_MovDetAttachmentType == ATTACHMENT_JPG_VIDEO	||
 							m_MovDetAttachmentType == ATTACHMENT_JPG_GIF)
 				{
-					CTime FirstDetFrameTime(CalcTime(m_dwFirstDetFrameUpTime, CTime::GetCurrentTime(), ::timeGetTime()));
-					CTimeSpan TimeDiff = FirstDetFrameTime - m_MovDetLastJPGMailTime;
+					CTime RefTime = CTime::GetCurrentTime();
+					DWORD dwRefUpTime = ::timeGetTime();
+					CTime Time = CalcTime(pDib->GetUpTime(), RefTime, dwRefUpTime);
+					CTimeSpan TimeDiff = Time - m_MovDetLastJPGMailTime;
 					if (TimeDiff.GetTotalSeconds() >= (LONGLONG)m_nMovDetSendMailSecBetweenMsg &&
-						SendMailMovementDetection(FirstDetFrameTime, SaveJpegMail(pDib)))
-						m_MovDetLastJPGMailTime = FirstDetFrameTime;
+						SendMailMovementDetection(Time, SaveJpegMail(pDib, RefTime, dwRefUpTime)))
+						m_MovDetLastJPGMailTime = Time;
 				}
 			}
 
@@ -8018,11 +8017,13 @@ BOOL CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 	return res;
 }
 
-CString CVideoDeviceDoc::SaveJpegMail(CDib* pDib)
+CString CVideoDeviceDoc::SaveJpegMail(CDib* pDib, const CTime& RefTime, DWORD dwRefUpTime)
 {
-	// Times
-	CTime RefTime = CTime::GetCurrentTime();
-	DWORD dwRefUpTime = ::timeGetTime();
+	// Check
+	if (!pDib || !pDib->IsValid())
+		return _T("");
+
+	// Time
 	CTime Time = CalcTime(pDib->GetUpTime(), RefTime, dwRefUpTime);
 
 	// Make FileName

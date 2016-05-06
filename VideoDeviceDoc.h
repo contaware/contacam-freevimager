@@ -816,7 +816,7 @@ protected:
 	void Snapshot(CDib* pDib, const CTime& Time);
 	BOOL EditCopy(CDib* pDib, const CTime& Time);
 	BOOL EditSnapshot(CDib* pDib, const CTime& Time);
-	CString SaveJpegMail(CDib* pDib);
+	CString SaveJpegMail(CDib* pDib, const CTime& RefTime, DWORD dwRefUpTime);
 	CString MakeJpegManualSnapshotFileName(const CTime& Time);
 	CString MakeJpegMailSnapshotFileName(const CTime& Time);
 	BOOL ThumbMessage(	const CString& sMessage1,
