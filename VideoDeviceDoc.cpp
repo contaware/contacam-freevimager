@@ -644,16 +644,18 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		// Send By E-Mail
 		if (m_pDoc->m_bSendMailMovementDetection)
 		{
-			if (m_pDoc->m_MovDetAttachmentType == CVideoDeviceDoc::ATTACHMENT_VIDEO	||
-				m_pDoc->m_MovDetAttachmentType == CVideoDeviceDoc::ATTACHMENT_JPG_VIDEO)
+			if (::GetFileSize64(sVideoFileName).QuadPart > 0								&&
+				(m_pDoc->m_MovDetAttachmentType == CVideoDeviceDoc::ATTACHMENT_VIDEO		||
+				m_pDoc->m_MovDetAttachmentType == CVideoDeviceDoc::ATTACHMENT_JPG_VIDEO))
 			{
 				CTimeSpan TimeDiff = FirstDetFrameTime - m_pDoc->m_MovDetLastVideoMailTime;
 				if (TimeDiff.GetTotalSeconds() >= (LONGLONG)m_pDoc->m_nMovDetSendMailSecBetweenMsg &&
 					m_pDoc->SendMailMovementDetection(FirstDetFrameTime, sVideoFileName))
 					m_pDoc->m_MovDetLastVideoMailTime = FirstDetFrameTime;
 			}
-			else if (	m_pDoc->m_MovDetAttachmentType == CVideoDeviceDoc::ATTACHMENT_GIF ||
-						m_pDoc->m_MovDetAttachmentType == CVideoDeviceDoc::ATTACHMENT_JPG_GIF)
+			else if (	::GetFileSize64(sGIFFileName).QuadPart > 0							&&
+						(m_pDoc->m_MovDetAttachmentType == CVideoDeviceDoc::ATTACHMENT_GIF	||
+						m_pDoc->m_MovDetAttachmentType == CVideoDeviceDoc::ATTACHMENT_JPG_GIF))
 			{
 				CTimeSpan TimeDiff = FirstDetFrameTime - m_pDoc->m_MovDetLastGIFMailTime;
 				if (TimeDiff.GetTotalSeconds() >= (LONGLONG)m_pDoc->m_nMovDetSendMailSecBetweenMsg &&
