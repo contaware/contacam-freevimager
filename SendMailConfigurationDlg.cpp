@@ -101,19 +101,43 @@ void CSendMailConfigurationDlg::OnChangeEditSenderMail()
 	pEdit->GetWindowText(sSenderMail);
 
 	// Check for common sender domains
+	// (only servers that support STARTTLS on port 587
+	//  and use the email address as username)
 	CString sDomain, sKnownSmtpServer;
 	int i = sSenderMail.Find(_T('@'));
 	if (i >= 0)
 	{
 		sDomain = sSenderMail.Mid(i + 1);
-		if (sDomain == _T("gmail.com"))
+		if (sDomain == _T("aol.com"))
+			sKnownSmtpServer = _T("smtp.aol.com");
+		else if (sDomain == _T("att.net"))
+			sKnownSmtpServer = _T("outbound.att.net");
+		else if (sDomain == _T("comcast.net"))
+			sKnownSmtpServer = _T("smtp.comcast.net");
+		else if (sDomain == _T("gmail.com"))
 			sKnownSmtpServer = _T("smtp.gmail.com");
-		else if (sDomain == _T("yahoo.com"))
-			sKnownSmtpServer = _T("smtp.mail.yahoo.com");
+		else if (sDomain == _T("gmx.net") || sDomain == _T("gmx.de") || sDomain == _T("gmx.ch") || sDomain == _T("gmx.at") || sDomain == _T("gmx.li"))
+			sKnownSmtpServer = _T("mail.gmx.net");
+		else if (sDomain == _T("gmx.com") || sDomain == _T("gmx.co.uk") || sDomain == _T("gmx.us") || sDomain == _T("gmx.fr") || sDomain == _T("gmx.es"))
+			sKnownSmtpServer = _T("mail.gmx.com");
 		else if (sDomain == _T("hotmail.com") || sDomain == _T("live.com") || sDomain == _T("outlook.com"))
 			sKnownSmtpServer = _T("smtp-mail.outlook.com");
+		else if (sDomain == _T("icloud.com") || sDomain == _T("me.com") || sDomain == _T("mac.com"))
+			sKnownSmtpServer = _T("smtp.mail.me.com");
+		else if (sDomain == _T("libero.it"))
+			sKnownSmtpServer = _T("smtp.libero.it");
+		else if (sDomain == _T("mail.com"))
+			sKnownSmtpServer = _T("smtp.mail.com");
 		else if (sDomain == _T("office365.com"))
 			sKnownSmtpServer = _T("smtp.office365.com");
+		else if (sDomain == _T("yahoo.com"))
+			sKnownSmtpServer = _T("smtp.mail.yahoo.com");
+		else if (sDomain == _T("yandex.com"))
+			sKnownSmtpServer = _T("smtp.yandex.com");
+		else if (sDomain == _T("yandex.ru"))
+			sKnownSmtpServer = _T("smtp.yandex.ru");
+		else if (sDomain == _T("zoho.com"))
+			sKnownSmtpServer = _T("smtp.zoho.com");
 	}
 
 	// Found known smtp server?
