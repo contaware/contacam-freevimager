@@ -1,6 +1,6 @@
 FREEVIMAGER HISTORY
 
-5.0.7 (Month Xth 2016)
+5.0.7 (May 9th 2016)
 
 - Bigger toolbar buttons
 - Fixed the recognition of the email client used to send pictures

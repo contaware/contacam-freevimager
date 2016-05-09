@@ -36,10 +36,7 @@ ContaCam Program
   configuration profiles. For example, if I'm at home, I may want to 
   disable motion email alerts but have them on when I'm away. It would be 
   most convenient if you could toggle between stay/away from either the 
-  software or the web interface (tyler.barnes@telus.net) 
-- Get an alert via email when an IP camera connection drops for a given
-  period of time or if the screen freezes (jgminwa@gmail.com and
-  corwin92@gmail.com)
+  software or the web interface (tyler.barnes@telus.net)
 - Black squares where no detection and where image is obscured with black
   pixels (jeanbaptiste.guyot@orange.fr) or crop regions to also reduce the
   saving cpu usage (dodfr@yahoo.com)
@@ -62,8 +59,6 @@ ContaCam Web Interface
   (pauls583@yahoo.com.au)
 - In index.php when clicking on live thumb open fullscreen and when
   clicking text open detections (matthewn_02@yahoo.com)
-- Add 2 links to the "summary snapshot" web page with "previous camera"
-  and "next camera" (either with text, arrow or + and -) 
 - If live snapshot file time stamp remains the same then output a red
   border to alert
 - Possibility to browse the detections from multiple cameras at the same

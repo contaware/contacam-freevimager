@@ -1,12 +1,14 @@
 CONTACAM HISTORY
 
-5.0.7 (Month Xth 2016)
+5.0.7 (May 9th 2016)
 
 - Email alert when device unplugged or not reachable
 - Faster and more reliable FTP upload support
-- Trash / delete button option for web interface 
+- Web interface video play rate buttons: 0.25x and 1.0x
+- Web interface has now an optional trash / delete button
 - Bigger toolbar buttons
 - Added support for some Samsung cameras
+- Email settings auto-fill for most common smtp servers
 - Re-added the option to email a jpeg snapshot on motion detection
   (with respect to previous implementation it is sent really fast)
 - Removed the standby and hibernate disabling feature introduced with

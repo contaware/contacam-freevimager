@@ -60,6 +60,10 @@ BOOL CSendMailConfigurationDlg::OnInitDialog()
 	pEdit->SetWindowText(m_SendMailConfiguration.m_sFromName);
 
 	// From Email
+	// Note: SetWindowText() calls OnChangeEditSenderMail() which can init:
+	// IDC_HOST_NAME, IDC_HOST_PORT, IDC_AUTH_USERNAME and IDC_CONNECTIONTYPE.
+	// That's not a problem because those fields are overwritten below after
+	// the mentioned OnChangeEditSenderMail() call!
 	pEdit = (CEdit*)GetDlgItem(IDC_SENDER_MAIL);
 	pEdit->SetWindowText(m_SendMailConfiguration.m_sFrom);
 
