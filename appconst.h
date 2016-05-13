@@ -41,8 +41,7 @@
 // and tells the program whether to use the registry or an ini file 
 #define MASTERCONFIG_INI_NAME_EXT						_T("MasterConfig.ini")
 
-// Trace and Log files
-#define VMMAPNAME_EXT									_T("log_vmmap.mmp") // no spaces in filename please!
+// Log file
 #define LOGNAME_EXT										_T("log.txt")
 #define MAX_LOG_FILE_SIZE								268435456 /* 256MB */
 

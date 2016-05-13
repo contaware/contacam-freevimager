@@ -2228,36 +2228,18 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		// Get CPU Usage
 		double dCPUUsage = ::GetCPUUsage();
 
-		// Get VM Stats
-		int nVMPrivateCommitSize = ::GetVirtualMemUsedMB();
-
 		if (g_nLogLevel > 1)
 		{
-			// Get Used Phys. Mem Stats
-			int nPhysMemWorkingSetSize = ::GetPhysicalMemUsedMB();
-
-			// Get big allocation stats
-			double d64kUsed, d128kUsed, d256kUsed, d512kUsed, d1024kUsed;
-			::GetBigAllocStats(&d64kUsed, &d128kUsed, &d256kUsed, &d512kUsed, &d1024kUsed);
-
 			// Get virtual memory stats
 			DWORD dwRegions; DWORD dwFreeMB; DWORD dwReservedMB; DWORD dwCommittedMB;
 			DWORD dwMaxFree; DWORD dwMaxReserved; DWORD dwMaxCommitted; double dFragmentation;
 			::GetMemoryStats(	&dwRegions, &dwFreeMB, &dwReservedMB, &dwCommittedMB,
 								&dwMaxFree, &dwMaxReserved, &dwMaxCommitted, &dFragmentation);
 
-			// Get heap stats
-			SIZE_T DefaultHeapSize = 0; SIZE_T CRTHeapSize = 0; SIZE_T OtherHeapsSize = 0;
-			int nDefaultHeapType = 0; int nCRTHeapType = 0;
-			::GetHeapStats(&DefaultHeapSize, &CRTHeapSize, &OtherHeapsSize, &nDefaultHeapType, &nCRTHeapType);
-			CString sDefaultHeapType;
-			switch (nDefaultHeapType)
-			{
-				case 0 :	sDefaultHeapType = _T("regular"); break;
-				case 1 :	sDefaultHeapType = _T("look-asides"); break;
-				case 2 :	sDefaultHeapType = _T("LFH"); break;
-				default :	sDefaultHeapType = _T("unknown"); break;
-			}
+			// Get crt heap stats
+			SIZE_T CRTHeapSize = 0;
+			int nCRTHeapType = 0;
+			::GetHeapStats(NULL, &CRTHeapSize, NULL, NULL, &nCRTHeapType);
 			CString sCRTHeapType;
 			switch (nCRTHeapType)
 			{
@@ -2266,8 +2248,6 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 				case 2 :	sCRTHeapType = _T("LFH"); break;
 				default :	sCRTHeapType = _T("unknown"); break;
 			}
-		
-			// Check CRT heap status
 			int heapstatus = _heapchk();
 			CString sCRTHeapStatus;
 			switch (heapstatus)
@@ -2280,13 +2260,11 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 
 			// Print debug message
 			::LogLine(	_T("CPU %0.1f%% | ")
-						_T("BIGALLOC 64k=%0.1f%% 128k=%0.1f%% 256k=%0.1f%% 512k=%0.1f%% 1024k=%0.1f%% | ")
-						_T("MEM phystotused=%dMB vmprivused=%dMB vmused=%uMB(max %uKB) vmres=%uMB(max %uKB) vmfree=%uMB(max %uKB) frag=%0.1f%% regions=%u | ")
-						_T("HEAPS default(%s)=%dMB crt(%s %s)=%dMB others=%dMB"),
+						_T("MEM vmused=%uMB(max %uKB) vmres=%uMB(max %uKB) vmfree=%uMB(max %uKB) frag=%0.1f%% regions=%u | ")
+						_T("HEAP crt(%s %s)=%dMB"),
 						dCPUUsage,
-						d64kUsed, d128kUsed, d256kUsed, d512kUsed, d1024kUsed,
-						nPhysMemWorkingSetSize, nVMPrivateCommitSize, dwCommittedMB, dwMaxCommitted>>10, dwReservedMB, dwMaxReserved>>10, dwFreeMB, dwMaxFree>>10, dFragmentation, dwRegions,
-						sDefaultHeapType, (int)(DefaultHeapSize>>20), sCRTHeapType, sCRTHeapStatus, (int)(CRTHeapSize>>20), (int)(OtherHeapsSize>>20));
+						dwCommittedMB, dwMaxCommitted>>10, dwReservedMB, dwMaxReserved>>10, dwFreeMB, dwMaxFree>>10, dFragmentation, dwRegions,
+						sCRTHeapType, sCRTHeapStatus, (int)(CRTHeapSize>>20));
 		}
 
 #ifdef VIDEODEVICEDOC
@@ -2314,7 +2292,7 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 
 		// Show RAM Usage
 		CString sRAMUsage;
-		sRAMUsage.Format(_T("RAM: %dMB"), nVMPrivateCommitSize);
+		sRAMUsage.Format(_T("RAM: %dMB"), ::GetVirtualMemUsedMB());
 		GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_RAM_USAGE), sRAMUsage);
 
 		// Update the count of open video device docs with detection enabled

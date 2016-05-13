@@ -19,8 +19,10 @@ static char THIS_FILE[] = __FILE__;
 #pragma comment(lib, "Rpcrt4.lib")	// to support UuidCreate(), UuidToString(), RpcStringFree(), 
 #pragma comment(lib, "Wininet.lib")	// to support InternetGetLastResponseInfo()
 
-// If InitHelpers() is not called vars default to WinXP,
-// no multimedia instructions and 2GB RAM
+// If InitHelpers() is not called vars default to:
+// WinXP
+// no multimedia instructions,
+// 64K allocation granularity, 4096 page size and 2GB RAM
 BOOL g_bWin2003 = FALSE;
 BOOL g_bWin2003OrHigher = FALSE;
 BOOL g_bWinVista = FALSE;
@@ -29,6 +31,8 @@ BOOL g_bMMX = FALSE;
 BOOL g_bSSE = FALSE;
 BOOL g_bSSE2 = FALSE;
 BOOL g_b3DNOW = FALSE;
+DWORD g_dwAllocationGranularity = 65536;
+DWORD g_dwPageSize = 4096;
 int g_nInstalledPhysRamMB = 2048;
 int g_nAvailablePhysRamMB = 2048;
 static int g_nNumProcessors = 1;
@@ -43,25 +47,19 @@ int GetCpuInstr();
 int GetTotPhysMemMB(BOOL bInstalled);
 void InitHelpers()
 {
+	// Windows version
 	OSVERSIONINFO ovi = {0};
     ovi.dwOSVersionInfoSize = sizeof(ovi);
 	GetVersionEx(&ovi);
-
-	// Win 2003 Server
 	g_bWin2003 =			(ovi.dwPlatformId == 2)		&&
 							(ovi.dwMajorVersion == 5)	&&
 							(ovi.dwMinorVersion == 2);
-
 	g_bWin2003OrHigher =	(ovi.dwPlatformId == 2)		&&
 							((ovi.dwMajorVersion == 5 && ovi.dwMinorVersion >= 2) ||
 							(ovi.dwMajorVersion > 5));
-
-
-	// Win Vista
 	g_bWinVista =			(ovi.dwPlatformId == 2)		&&
 							(ovi.dwMajorVersion == 6)	&&
 							(ovi.dwMinorVersion == 0);
-
 	g_bWinVistaOrHigher =	(ovi.dwPlatformId == 2)		&&
 							(ovi.dwMajorVersion >= 6);
 
@@ -76,13 +74,14 @@ void InitHelpers()
 	if (nInstructionSets & CPU_FEATURE_3DNOW)
 		g_b3DNOW = TRUE;
 
-	// RAM
+	// System Info
+	SYSTEM_INFO sysInfo;
+	memset(&sysInfo, 0, sizeof(sysInfo));
+	GetSystemInfo(&sysInfo);
+	g_dwAllocationGranularity = sysInfo.dwAllocationGranularity;
+	g_dwPageSize = sysInfo.dwPageSize;
 	g_nInstalledPhysRamMB = GetTotPhysMemMB(TRUE);
 	g_nAvailablePhysRamMB = GetTotPhysMemMB(FALSE);
-
-	// CPU usage
-	SYSTEM_INFO sysInfo;
-	GetSystemInfo(&sysInfo);
 	g_nNumProcessors = sysInfo.dwNumberOfProcessors;
 	GetCPUUsage();	// this initializes g_ullLastCPUUsageMeasureTime,
 					// g_ullLastProcKernelTime and g_ullLastProcUserTime

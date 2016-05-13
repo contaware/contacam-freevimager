@@ -25,6 +25,8 @@ extern BOOL g_bMMX;
 extern BOOL g_bSSE;
 extern BOOL g_bSSE2;
 extern BOOL g_b3DNOW;
+extern DWORD g_dwAllocationGranularity;
+extern DWORD g_dwPageSize;
 extern int g_nInstalledPhysRamMB;
 extern int g_nAvailablePhysRamMB;
 

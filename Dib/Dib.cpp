@@ -12,12 +12,18 @@ static char THIS_FILE[] = __FILE__;
 CDib::CDib()
 {
 	m_GetClosestColorIndexLookUp = NULL;
+#ifdef VIDEODEVICEDOC
+	m_hBitsSharedMemory = NULL;
+#endif
 	Init();
 }
 
 CDib::CDib(CBitmap* pBitmap, CPalette* pPal)
 {
 	m_GetClosestColorIndexLookUp = NULL;
+#ifdef VIDEODEVICEDOC
+	m_hBitsSharedMemory = NULL;
+#endif
 	Init();
 	SetDibSectionFromDDB(pBitmap, pPal);
 }
@@ -25,6 +31,9 @@ CDib::CDib(CBitmap* pBitmap, CPalette* pPal)
 CDib::CDib(HBITMAP hBitmap, HPALETTE hPal)
 {
 	m_GetClosestColorIndexLookUp = NULL;
+#ifdef VIDEODEVICEDOC
+	m_hBitsSharedMemory = NULL;
+#endif
 	Init();
 	SetDibSectionFromDDB(hBitmap, hPal);
 }
@@ -32,6 +41,9 @@ CDib::CDib(HBITMAP hBitmap, HPALETTE hPal)
 CDib::CDib(HBITMAP hDibSection)
 {
 	m_GetClosestColorIndexLookUp = NULL;
+#ifdef VIDEODEVICEDOC
+	m_hBitsSharedMemory = NULL;
+#endif
 	Init();
 	AttachDibSection(hDibSection);
 }
@@ -92,6 +104,9 @@ void CDib::CopyVars(const CDib& SrcDib)
 CDib::CDib(const CDib& dib) // Copy Constructor (CDib dib1 = dib2 or CDib dib1(dib2))
 {
 	m_GetClosestColorIndexLookUp = NULL;
+#ifdef VIDEODEVICEDOC
+	m_hBitsSharedMemory = NULL;
+#endif
 
 	// Init the object
 	Init();
@@ -287,8 +302,8 @@ CDib::~CDib()
 	FreeGetClosestColorIndex();
 #ifdef VIDEODEVICEDOC
 	FreeUserList();
-	if (!m_sBitsRawFileName.IsEmpty())
-		::DeleteFile(m_sBitsRawFileName);
+	if (m_hBitsSharedMemory)
+		::CloseHandle(m_hBitsSharedMemory);
 #endif
 }
 
@@ -313,53 +328,61 @@ void CDib::FreeList(CDib::LIST& l)
 }
 
 #ifdef VIDEODEVICEDOC
-BOOL CDib::BitsToRawFile(LPCTSTR szBitsRawFileName)
+BOOL CDib::BitsToSharedMemory()
 {
 	// Check
-	if (szBitsRawFileName == NULL || !m_sBitsRawFileName.IsEmpty())
+	if (m_hBitsSharedMemory)
 		return FALSE;
 
-	// Create file (truncate file if it already exists)
-	DWORD dwNumberOfBytesWritten;
-	HANDLE hFile = ::CreateFile(szBitsRawFileName, GENERIC_WRITE,
-								FILE_SHARE_READ, NULL, CREATE_ALWAYS,
-								FILE_ATTRIBUTE_NORMAL, NULL);
-	if (hFile == INVALID_HANDLE_VALUE)
+	// Calculate Shared Memory Size
+	DWORD dwSharedMemorySize = CalcSharedMemorySize();
+
+	// Create mapping
+	HANDLE mapping = ::CreateFileMapping(	INVALID_HANDLE_VALUE,	// use paging file
+											NULL,					// default security
+											PAGE_READWRITE,			// read/write access
+											0,						// maximum object size (high-order DWORD)
+											dwSharedMemorySize,		// maximum object size (low-order DWORD)
+											NULL);					// no name for mapping object
+	if (mapping == NULL)
 		return FALSE;
 
-	// Copy Bits to file
-	if (m_pBits && GetImageSize() > 0)
+	// Map
+	void* region = ::MapViewOfFile(	mapping,				// handle to map object
+									FILE_MAP_ALL_ACCESS,	// read/write permission
+									0,						// offset high
+									0,						// offset low, the offset must be a multiple of the allocation granularity
+									dwSharedMemorySize);	// number of bytes to map
+	if (region == NULL)
 	{
-		if (!::WriteFile(hFile, m_pBits, GetImageSize(), &dwNumberOfBytesWritten, NULL))
-		{
-			::CloseHandle(hFile);
-			::DeleteFile(szBitsRawFileName);
-			return FALSE;
-		}
+		::CloseHandle(mapping);	// free if we cannot map into address space
+		return FALSE;
 	}
-	else if (GetImageSize() > 0) // fix inconsistency: buffer NULL but size set
-		SetImageSize(0);
 
-	// Copy User buffers to file
+	// Copy image bits
+	LPBYTE p = (LPBYTE)region;
+	if (GetImageSize() > 0)
+	{
+		if (m_pBits)
+			memcpy(p, m_pBits, GetImageSize());
+		p += GetImageSize();
+	}
+
+	// Copy User buffers
 	POSITION pos = m_UserList.GetHeadPosition();
 	while (pos)
 	{
 		CUserBuf& UserBuf = m_UserList.GetNext(pos);
-		if (UserBuf.m_pBuf && UserBuf.m_dwSize > 0)
+		if (UserBuf.m_dwSize > 0)
 		{
-			if (!::WriteFile(hFile, UserBuf.m_pBuf, UserBuf.m_dwSize, &dwNumberOfBytesWritten, NULL))
-			{
-				::CloseHandle(hFile);
-				::DeleteFile(szBitsRawFileName);
-				return FALSE;
-			}
+			if (UserBuf.m_pBuf)
+				memcpy(p, UserBuf.m_pBuf, UserBuf.m_dwSize);
+			p += UserBuf.m_dwSize;
 		}
-		else if (UserBuf.m_dwSize > 0) // fix inconsistency: buffer NULL but size set
-			UserBuf.m_dwSize = 0;
 	}
 
-	// Close file
-	::CloseHandle(hFile);
+	// Unmap
+	::UnmapViewOfFile(region);
 
 	// Free memory
 	if (m_pBits)
@@ -379,43 +402,45 @@ BOOL CDib::BitsToRawFile(LPCTSTR szBitsRawFileName)
 		}
 	}
 
-	// Store file name
-	m_sBitsRawFileName = szBitsRawFileName;
+	// Store mapping
+	m_hBitsSharedMemory = mapping;
 
     return TRUE;
 }
 
-BOOL CDib::RawFileToBits()
+BOOL CDib::SharedMemoryToBits()
 {
 	// Check
-	if (m_sBitsRawFileName.IsEmpty())
-		return FALSE;
-
-	// Open file
-	DWORD dwNumberOfBytesRead;
-	HANDLE hFile = ::CreateFile(m_sBitsRawFileName, GENERIC_READ,
-								FILE_SHARE_READ, NULL, OPEN_EXISTING,
-								FILE_ATTRIBUTE_NORMAL, NULL);
-	if (hFile == INVALID_HANDLE_VALUE)
+	if (!m_hBitsSharedMemory)
 		return FALSE;
 	
-	// Copy Bits from file
+	// Calculate Shared Memory Size
+	DWORD dwSharedMemorySize = CalcSharedMemorySize();
+
+	// Map
+	void* region = ::MapViewOfFile(	m_hBitsSharedMemory,	// handle to map object
+									FILE_MAP_ALL_ACCESS,	// read/write permission
+									0,						// offset high
+									0,						// offset low, the offset must be a multiple of the allocation granularity
+									dwSharedMemorySize);	// number of bytes to map
+	if (region == NULL)
+		return FALSE;
+
+	// Copy image bits
+	LPBYTE p = (LPBYTE)region;
 	if (GetImageSize() > 0)
 	{
 		m_pBits = (LPBYTE)BIGALLOC(GetImageSize());
 		if (!m_pBits)
 		{
-			::CloseHandle(hFile);
+			::UnmapViewOfFile(region);
 			return FALSE;
 		}
-		if (!::ReadFile(hFile, m_pBits, GetImageSize(), &dwNumberOfBytesRead, NULL))
-		{
-			::CloseHandle(hFile);
-			return FALSE;
-		}
+		memcpy(m_pBits, p, GetImageSize());
+		p += GetImageSize();
 	}
 
-	// Copy User bufs from file
+	// Copy User buffers
 	POSITION pos = m_UserList.GetHeadPosition();
 	while (pos)
 	{
@@ -425,28 +450,20 @@ BOOL CDib::RawFileToBits()
 			UserBuf.m_pBuf = (LPBYTE)av_malloc(UserBuf.m_dwSize);
 			if (!UserBuf.m_pBuf)
 			{
-				::CloseHandle(hFile);
+				::UnmapViewOfFile(region);
 				return FALSE;
 			}
-			if (!::ReadFile(hFile, UserBuf.m_pBuf, UserBuf.m_dwSize, &dwNumberOfBytesRead, NULL))
-			{
-				::CloseHandle(hFile);
-				return FALSE;
-			}
+			memcpy(UserBuf.m_pBuf, p, UserBuf.m_dwSize);
+			p += UserBuf.m_dwSize;
 		}
 	}
 
-	// Make sur we reached the EOF
-	ASSERT(::SetFilePointer(hFile, 0, NULL, FILE_CURRENT) == ::GetFileSize(hFile, NULL));
+	// Unmap
+	::UnmapViewOfFile(region);
 
-	// Close file
-	::CloseHandle(hFile);
-
-	// Delete file
-	::DeleteFile(m_sBitsRawFileName);
-
-	// Clear file name
-	m_sBitsRawFileName.Empty();
+	// Free mapping
+	::CloseHandle(m_hBitsSharedMemory);
+	m_hBitsSharedMemory = NULL;
 
 	return TRUE;
 }

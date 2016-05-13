@@ -123,7 +123,6 @@ class CMovementDetectionPage;
 #define MOVDET_MAX_FRAMES_IN_LIST			15000		// Default maximum frames per list
 #define MOVDET_SAVE_MIN_FRAMERATE_RATIO		0.3			// Min ratio between calculated (last - first) and m_dEffectiveFrameRate
 #define MOVDET_TIMEOUT						1000U		// Timeout in ms for detection zones
-#define MOVDET_MEM_LOAD_HD_BUF				15.0		// Above this load the detection frames are buffered in HD instead of RAM
 #define MOVDET_MEM_LOAD_PRE_BUF				25.0		// Above this load the oldest pre-buffer frames are dropped
 #define MOVDET_MEM_LOAD_SAVE				35.0		// Above this load the detected frames are saved and freed
 #define MOVDET_MEM_LOAD_CRITICAL			75.0		// Above this load the detected frames are dropped
@@ -962,7 +961,6 @@ public:
 	int m_nShowEditDetectionZones;						// Edit Detection zones, 0: disabled, 1: add, 2: remove
 	volatile BOOL m_bDetectingMovement;					// Flag indicating a Detection
 	volatile BOOL m_bDetectingMinLengthMovement;		// Flag indicating a Movement of at least m_nDetectionMinLengthMilliSeconds
-	volatile BOOL m_bMovDetHDBuffering;					// Flag indicating whether frames are buffered in RAM or on HD
 	volatile int m_nDetectionLevel;						// 0 = Off .. 100 = Max Sensitivity
 	volatile int m_nDetectionZoneSize;					// Configured detection zone size: 0->Big, 1->Medium, 2->Small
 	volatile int m_nCurrentDetectionZoneSize;			// Current detection zone size: 0->Big, 1->Medium, 2->Small

@@ -354,7 +354,7 @@ public:
 	static RGBQUAD ms_StdColors[];
 
 #ifdef VIDEODEVICEDOC
-	CString m_sBitsRawFileName;	// Bits Raw File Name
+	HANDLE m_hBitsSharedMemory;	// Bits in shared memory
 	USERLIST m_UserList;		// General Purpose User List
 #endif
 
@@ -600,9 +600,16 @@ public:
 	void Init();
 
 #ifdef VIDEODEVICEDOC
-	// Moving: Bits <--> Raw File
-	BOOL BitsToRawFile(LPCTSTR szBitsRawFileName);
-	BOOL RawFileToBits();
+	// Moving: Bits <--> Shared Memory
+	__forceinline DWORD CalcSharedMemorySize() const {
+			DWORD dwSize = GetImageSize();
+			POSITION pos = m_UserList.GetHeadPosition();
+			while (pos)
+				dwSize += m_UserList.GetNext(pos).m_dwSize;
+			return ALLOC_GRANULARITY(dwSize);
+	};
+	BOOL BitsToSharedMemory();
+	BOOL SharedMemoryToBits();
 
 	// User list handling
 	void CopyUserList(const USERLIST& UserList);

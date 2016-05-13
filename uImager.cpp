@@ -699,9 +699,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			::EnableLFHeap();
 #endif
 
-		// Init big memory manager
-		::InitBigAlloc();
-
 		// Init for the PostDelayedMessage() Function
 		CPostDelayedMessageThread::Init();
 
@@ -2006,9 +2003,6 @@ int CUImagerApp::ExitInstance()
 
 	// Note
 	TRACE(_T("*** FFMPEG LEAKS 47 or 63 BYTES, IT'S NORMAL ***\n"));
-
-	// Clean-up big memory manager
-	::EndBigAlloc();
 
 	// Clean-Up Trace Log File
 	::EndTraceLogFile();

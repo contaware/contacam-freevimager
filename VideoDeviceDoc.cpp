@@ -153,32 +153,11 @@ void CVideoDeviceDoc::CSaveFrameListThread::CalcMovementDetectionListsSize()
 					CDib* pDib = pList->GetNext(posDibs);
 					if (pDib)
 					{
-						DWORD dwVideoUsedSize = sizeof(CDib) + pDib->GetBMISize(); // approximate size used by the CDib object
-						DWORD dwAudioUsedSize = 0U; // size used by the audio list logic is negligible
-
-						// Only count size if buffers are in memory!
-						if (pDib->m_sBitsRawFileName.IsEmpty())
-						{
-							// For video frames BIGALLOC_USEDSIZE accounts for the
-							// allocation granularity and the address space waste
-							dwVideoUsedSize += BIGALLOC_USEDSIZE(pDib->GetBits(), pDib->GetImageSize());
-
-							// For audio the maximum allocated size for a single buffer
-							// with AUDIO_IN_MIN_BUF_SIZE set to 256 is
-							// (see CCaptureAudioThread::OpenInAudio()):
-							// AAC        = 8192  bytes (2 * Max AAC Frame Size)
-							// PCM        = 5120  bytes (5 * AUDIO_IN_MIN_BUF_SIZE * nBlockAlign)
-							// ADPCM      = 8136  bytes (2 * Max ADPCM Frame Size)
-							// MP3        = 9216  bytes (2 * Max MP3 Frame Size)
-							POSITION posAudioBuf = pDib->m_UserList.GetHeadPosition();
-							while (posAudioBuf)
-							{
-								// av_malloc wastes some few bytes for alignment but we do not account for that here
-								dwAudioUsedSize += pDib->m_UserList.GetNext(posAudioBuf).m_dwSize;
-							}
-						}
-
-						// Sum
+						DWORD dwVideoUsedSize = sizeof(CDib) + pDib->GetBMISize();	// approximate size used by the CDib object
+						DWORD dwAudioUsedSize = 0U;									// size used by the audio list logic
+						POSITION posAudioBuf = pDib->m_UserList.GetHeadPosition();
+						while (posAudioBuf)
+							dwAudioUsedSize += sizeof(CUserBuf);
 						m_pDoc->m_dwNewestMovementDetectionListSize += dwVideoUsedSize + dwAudioUsedSize;
 					}
 				}
@@ -190,9 +169,9 @@ void CVideoDeviceDoc::CSaveFrameListThread::CalcMovementDetectionListsSize()
 
 void CVideoDeviceDoc::CSaveFrameListThread::LoadAndDecodeFrame(CDib* pDib)
 {
-	// Move back the bits from file to memory
-	if (pDib && !pDib->m_sBitsRawFileName.IsEmpty())
-		pDib->RawFileToBits();
+	// Move back the bits from shared memory
+	if (pDib && pDib->m_hBitsSharedMemory)
+		pDib->SharedMemoryToBits();
 
 	// Check whether still compressed, could already have
 	// been decompressed by thread loop or AnimatedGifInit()
@@ -2328,18 +2307,6 @@ end_of_software_detection:
 		// Get the total amount of devices which are movement detecting
 		dTotalDocsMovementDetecting = (double)((CUImagerApp*)::AfxGetApp())->m_nTotalVideoDeviceDocsMovementDetecting;
 
-		// Update buffering flag
-		m_bMovDetHDBuffering = (dTotalDocsMovementDetecting * dDocLoad >= MOVDET_MEM_LOAD_HD_BUF);
-
-		// Log Message
-		if (g_nLogLevel > 0)
-		{
-			::LogLine(	_T("%s, DET %s Buf: %0.1f%% load of %dMB"),
-						GetAssignedDeviceName(),
-						m_bMovDetHDBuffering ? _T("HD") : _T("RAM"),
-						dDocLoad, MOVDET_MEM_MAX_MB);
-		}
-
 		// High threshold reached, frames saving is too slow:
 		// -> drop oldest 3 * MOVDET_MIN_FRAMES_IN_LIST / 2 frames
 		// -> notify user with a gif thumb and in log file 
@@ -3738,7 +3705,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nShowEditDetectionZones = 0;
 	m_bDetectingMovement = FALSE;
 	m_bDetectingMinLengthMovement = FALSE;
-	m_bMovDetHDBuffering = FALSE;
 	m_sDetectionTriggerFileName = _T("");
 	m_DetectionTriggerLastWriteTime.dwLowDateTime = 0;
 	m_DetectionTriggerLastWriteTime.dwHighDateTime = 0;
@@ -8490,13 +8456,7 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestList(CDib* pDib, LPBYTE p
 				CDib* pNewDib = AllocMJPGFrame(pDib, pMJPGData, dwMJPGSize);
 				if (pNewDib)
 				{
-					if (m_bMovDetHDBuffering)
-					{
-						CString sTempFileName;
-						sTempFileName.Format(_T("Doc08%xFrame%u.raw"), this, m_dwFrameCountUp);
-						sTempFileName = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + sTempFileName;
-						pNewDib->BitsToRawFile(sTempFileName);
-					}
+					pNewDib->BitsToSharedMemory();
 					pTail->AddTail(pNewDib);
 				}
 			}
@@ -8530,13 +8490,7 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestListAndShrink(CDib* pDib,
 				if (pNewDib)
 				{
 					// Add the new frame
-					if (m_bMovDetHDBuffering)
-					{
-						CString sTempFileName;
-						sTempFileName.Format(_T("Doc08%xFrame%u.raw"), this, m_dwFrameCountUp);
-						sTempFileName = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + sTempFileName;
-						pNewDib->BitsToRawFile(sTempFileName);
-					}
+					pNewDib->BitsToSharedMemory();
 					pTail->AddTail(pNewDib);
 
 					// Shrink to a size of m_nMilliSecondsRecBeforeMovementBegin
