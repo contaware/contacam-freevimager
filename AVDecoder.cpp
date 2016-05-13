@@ -157,8 +157,9 @@ BOOL CAVDecoder::Decode(LPBITMAPINFO pSrcBMI,
 			return FALSE;
 	}
 
-	// Copy source data to have a correctly aligned buffer
-	// ending with FF_INPUT_BUFFER_PADDING_SIZE zero bytes
+	// Copy source data to the buffer created by av_new_packet
+	// which is correctly aligned and ends with
+	// FF_INPUT_BUFFER_PADDING_SIZE extra zero-bytes
 	AVPacket avpkt;
     if (av_new_packet(&avpkt, dwSrcSize) < 0)
         return FALSE;
