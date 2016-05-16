@@ -31,8 +31,12 @@ protected:
 	int m_nTopMargin;
 	CRect m_rcLinkComputer;
 	CRect m_rcLinkLocalhost;
+	CTime m_TopLeftCornerClickTime;
+	CTime m_TopRightCornerClickTime;
+	CTime m_BottomRightCornerClickTime;
 	void DrawT(CMyMemDC& memDC, CString s, CRect rcDraw);
 	CRect DrawTAndCalcRect(CMyMemDC& memDC, CString s, CRect rcDraw);
+	static void Crashme();
 	//{{AFX_MSG(CMDIClientWnd)
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnPaint();

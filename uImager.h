@@ -504,9 +504,6 @@ public:
 	// Paste clipboard to given file
 	static BOOL PasteToFile(LPCTSTR lpszFileName, COLORREF crBackgroundColor = RGB(255,255,255));
 
-	// Cras this app for test
-	static void Crashme();
-
 	// Use Tray Icon
 	volatile BOOL m_bTrayIcon;
 
