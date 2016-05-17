@@ -216,6 +216,7 @@ protected:
 	void CleanupFileMenu(CMenu* pPopupMenu);
 	void PopulateCaptureMenu(CMenu* pPopupMenu);
 	static CString GetDiskStats(LPCTSTR lpszPath, int nMinDiskFreePermillion = 0);
+	static CString GetPageFileStats();
 #endif
 
 // Generated message map functions

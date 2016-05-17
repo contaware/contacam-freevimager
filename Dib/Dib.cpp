@@ -338,7 +338,25 @@ BOOL CDib::BitsToSharedMemory()
 	DWORD dwSharedMemorySize = CalcSharedMemorySize();
 
 	// Create mapping
-	HANDLE mapping = ::CreateFileMapping(	INVALID_HANDLE_VALUE,	// use paging file
+	//
+	// Windows limits the sum of all types of handles to 16x1024x1024 per-process, that
+	// consumes 128 MB on 32 bit systems or 256 MB on 64 bit system of Paged Pool memory.
+	//
+	// By default, page files are system-managed. This means that the page files increase /
+	// decrease based on the amount of physical memory installed and when the system
+	// commit charge is more / less than 90% of the current commit limit.
+	// This continues to occur until the page file reaches three times the size of physical
+	// memory or 4 GB, whichever is larger.
+	//
+	// On manually-managed systems the page files increase / decrease between the set limits
+	// depending from the current commit charge.
+	//
+	// The maximum of physical memory + paging files is 16TB on 32 bit systems with PAE
+	// enabled (usually all systems that have DEP enabled) and 16TB on all 64 bit systems.
+	//
+	// https://blogs.technet.microsoft.com/markrussinovich/2009/09/29/pushing-the-limits-of-windows-handles/
+	// https://support.microsoft.com/en-us/kb/2860880
+	HANDLE mapping = ::CreateFileMapping(	INVALID_HANDLE_VALUE,	// in shared memory
 											NULL,					// default security
 											PAGE_READWRITE,			// read/write access
 											0,						// maximum object size (high-order DWORD)

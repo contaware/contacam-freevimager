@@ -95,7 +95,7 @@ END_MESSAGE_MAP()
 #ifdef VIDEODEVICEDOC
 static TCHAR sba_HDHelp[MAX_PATH];
 static TCHAR sba_CPUHelp[MAX_PATH];
-static TCHAR sba_RAMHelp[MAX_PATH];
+static TCHAR sba_MEMHelp[MAX_PATH];
 #endif
 static TCHAR sba_CoordinateHelp[MAX_PATH];
 static SBACTPANEINFO sba_indicators[] = 
@@ -105,7 +105,7 @@ static SBACTPANEINFO sba_indicators[] =
 #ifdef VIDEODEVICEDOC
 	{ ID_INDICATOR_HD_USAGE, sba_HDHelp, SBACTF_AUTOFIT },
 	{ ID_INDICATOR_CPU_USAGE, sba_CPUHelp, SBACTF_AUTOFIT },
-	{ ID_INDICATOR_RAM_USAGE, sba_RAMHelp, SBACTF_AUTOFIT },
+	{ ID_INDICATOR_MEM_USAGE, sba_MEMHelp, SBACTF_AUTOFIT },
 #endif
 	{ ID_INDICATOR_XCOORDINATE, sba_CoordinateHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_HANDCURSOR },
 	{ ID_INDICATOR_YCOORDINATE, sba_CoordinateHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_HANDCURSOR },
@@ -185,8 +185,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	sba_HDHelp[MAX_PATH - 1] = _T('\0');
 	_tcsncpy(sba_CPUHelp, CString(APPNAME_NOEXT) + _T(": ") + ML_STRING(1762, "CPU usage"), MAX_PATH);
 	sba_CPUHelp[MAX_PATH - 1] = _T('\0');
-	_tcsncpy(sba_RAMHelp, CString(APPNAME_NOEXT) + _T(": ") + ML_STRING(1763, "memory usage"), MAX_PATH);
-	sba_RAMHelp[MAX_PATH - 1] = _T('\0');
+	_tcsncpy(sba_MEMHelp, ML_STRING(1763, "MEM free space"), MAX_PATH);
+	sba_MEMHelp[MAX_PATH - 1] = _T('\0');
 #endif
 	_tcsncpy(sba_CoordinateHelp, ML_STRING(1768, "Double-click to change unit"), MAX_PATH);
 	sba_CoordinateHelp[MAX_PATH - 1] = _T('\0');
@@ -2192,7 +2192,7 @@ CString CMainFrame::GetDiskStats(LPCTSTR lpszPath, int nMinDiskFreePermillion/*=
 								&FreeBytesAvailableToCaller,
 								&TotalNumberOfBytesAvailableToCaller,
 								NULL))
-		return _T("HD:              ");
+		return _T("");
 	else
 	{
 		CString sUsage;
@@ -2213,6 +2213,23 @@ CString CMainFrame::GetDiskStats(LPCTSTR lpszPath, int nMinDiskFreePermillion/*=
 		return sUsage;
 	}
 }
+
+CString CMainFrame::GetPageFileStats()
+{
+	MEMORYSTATUSEX MemoryStatusEx;
+	MemoryStatusEx.dwLength = sizeof(MemoryStatusEx);
+	if (!::GlobalMemoryStatusEx(&MemoryStatusEx))
+		return _T("");
+	else
+	{
+		// ullTotalPageFile: is physical memory plus the size of the page file
+		CString sUsage;
+		sUsage.Format(	_T("MEM: %0.1f") + ML_STRING(1826, "GB") + _T("(%0.1f%%)"),
+						(double)MemoryStatusEx.ullAvailPageFile / 1073741824.0,
+						(1000 * MemoryStatusEx.ullAvailPageFile / MemoryStatusEx.ullTotalPageFile) / 10.0);
+		return sUsage;
+	}
+}
 #endif
 
 void CMainFrame::OnTimer(UINT nIDEvent) 
@@ -2225,9 +2242,34 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 	}
 	else if (nIDEvent == ID_TIMER_1SEC)
 	{
-		// Get CPU Usage
-		double dCPUUsage = ::GetCPUUsage();
+		// Show HD Usage
+#ifdef VIDEODEVICEDOC
+		CString sSaveDir = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
+		int nMinDiskFreePermillion = 0;
+		CMDIChildWnd* pChild = MDIGetActive();
+		if (pChild)
+		{
+			CVideoDeviceDoc* pDoc = (CVideoDeviceDoc*)pChild->GetActiveDocument();
+			if (pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CVideoDeviceDoc)))
+			{
+				sSaveDir = pDoc->m_sRecordAutoSaveDir;
+				nMinDiskFreePermillion = pDoc->m_nMinDiskFreePermillion;
+			}
+		}
+		// Note: GetDiskStats() calcs the stats for directory symbolic link targets
+		CString sDiskStats = GetDiskStats(sSaveDir, nMinDiskFreePermillion);
+#endif
 
+		// Get CPU Usage
+		CString sCPUUsage;
+		sCPUUsage.Format(_T("CPU: %0.1f%%"), ::GetCPUUsage());
+
+		// Get Page File Usage
+#ifdef VIDEODEVICEDOC
+		CString sPageFileStats = GetPageFileStats();
+#endif
+
+		// Log
 		if (g_nLogLevel > 1)
 		{
 			// Get virtual memory stats
@@ -2248,52 +2290,44 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 				case 2 :	sCRTHeapType = _T("LFH"); break;
 				default :	sCRTHeapType = _T("unknown"); break;
 			}
-			int heapstatus = _heapchk();
-			CString sCRTHeapStatus;
-			switch (heapstatus)
-			{
-				case _HEAPOK :		sCRTHeapStatus = _T("ok" ); break;
-				case _HEAPEMPTY :	sCRTHeapStatus = _T("empty" ); break;
-				case _HEAPBADBEGIN :sCRTHeapStatus = _T("ERROR bad start of heap" ); break;
-				case _HEAPBADNODE :	sCRTHeapStatus = _T("ERROR bad node in heap" ); break;
-			}
 
-			// Print debug message
-			::LogLine(	_T("CPU %0.1f%% | ")
-						_T("MEM vmused=%uMB(max %uKB) vmres=%uMB(max %uKB) vmfree=%uMB(max %uKB) frag=%0.1f%% regions=%u | ")
-						_T("HEAP crt(%s %s)=%dMB"),
-						dCPUUsage,
-						dwCommittedMB, dwMaxCommitted>>10, dwReservedMB, dwMaxReserved>>10, dwFreeMB, dwMaxFree>>10, dFragmentation, dwRegions,
-						sCRTHeapType, sCRTHeapStatus, (int)(CRTHeapSize>>20));
+			// Message
+			::LogLine(	
+#ifdef VIDEODEVICEDOC
+						_T("%s | ")
+#endif
+						_T("%s | ")
+#ifdef VIDEODEVICEDOC
+						_T("%s | ")
+#endif						
+						_T("HEAP(%s): %d") + ML_STRING(1825, "MB") + _T(" | ")
+						_T("ADDR: vmused=%u") + ML_STRING(1825, "MB") + _T("(max %u") + ML_STRING(1243, "KB") + _T(") ")
+						_T("vmres=%u") + ML_STRING(1825, "MB") + _T("(max %u") + ML_STRING(1243, "KB") + _T(") ")
+						_T("vmfree=%u") + ML_STRING(1825, "MB") + _T("(max %u") + ML_STRING(1243, "KB") + _T(") ")
+						_T("frag=%0.1f%% regions=%u"),
+#ifdef VIDEODEVICEDOC
+						sDiskStats,
+#endif
+						sCPUUsage,
+#ifdef VIDEODEVICEDOC
+						sPageFileStats,
+#endif
+						sCRTHeapType, (int)(CRTHeapSize>>20),
+						dwCommittedMB, dwMaxCommitted>>10,
+						dwReservedMB, dwMaxReserved>>10,
+						dwFreeMB, dwMaxFree>>10,
+						dFragmentation, dwRegions);
 		}
 
 #ifdef VIDEODEVICEDOC
 		// Show HD Usage
-		// Note: GetDiskStats() calcs the stats for directory symbolic link targets
-		CString sSaveDir = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
-		int nMinDiskFreePermillion = 0;
-		CMDIChildWnd* pChild = MDIGetActive();
-		if (pChild)
-		{
-			CVideoDeviceDoc* pDoc = (CVideoDeviceDoc*)pChild->GetActiveDocument();
-			if (pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CVideoDeviceDoc)))
-			{
-				sSaveDir = pDoc->m_sRecordAutoSaveDir;
-				nMinDiskFreePermillion = pDoc->m_nMinDiskFreePermillion;
-			}
-		}
-		GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_HD_USAGE),
-									GetDiskStats(sSaveDir, nMinDiskFreePermillion));
+		GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_HD_USAGE), sDiskStats);
 
 		// Show CPU Usage
-		CString sCPUUsage;
-		sCPUUsage.Format(_T("CPU: %0.1f%%"), dCPUUsage);
 		GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_CPU_USAGE), sCPUUsage);
 
-		// Show RAM Usage
-		CString sRAMUsage;
-		sRAMUsage.Format(_T("RAM: %dMB"), ::GetVirtualMemUsedMB());
-		GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_RAM_USAGE), sRAMUsage);
+		// Show Page File Usage
+		GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_MEM_USAGE), sPageFileStats);
 
 		// Update the count of open video device docs with detection enabled
 		CUImagerMultiDocTemplate* pVideoDeviceDocTemplate = ((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate();

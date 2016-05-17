@@ -3662,7 +3662,7 @@ BEGIN
     ID_INDICATOR_PROGRESS   "                                   "
     ID_INDICATOR_HD_USAGE   "HD:              "
     ID_INDICATOR_CPU_USAGE  "CPU:             "
-    ID_INDICATOR_RAM_USAGE  "RAM:             "
+    ID_INDICATOR_MEM_USAGE  "MEM:             "
     ID_INDICATOR_XCOORDINATE "X:               "
     ID_INDICATOR_YCOORDINATE "Y:               "
     ID_SETTINGS_LOG_ALL_MESSAGES 
@@ -4257,7 +4257,7 @@ BEGIN
     IDS_STRING1760          "Application Log File has not yet been created"
     IDS_STRING1761          "HD free space"
     IDS_STRING1762          "CPU usage"
-    IDS_STRING1763          "memory usage"
+    IDS_STRING1763          "MEM free space"
     IDS_STRING1764          "Starting"
     IDS_STRING1765          "%s already exists.\nDo you want to proceed and merge the files?"
     IDS_STRING1766          "Only ASCII characters allowed in path"
