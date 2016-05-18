@@ -100,7 +100,6 @@ CUImagerApp::CUImagerApp()
 #ifdef VIDEODEVICEDOC
 	m_pVideoDeviceDocTemplate = NULL;
 	m_bAutostartsExecuted = FALSE;
-	m_nTotalVideoDeviceDocsMovementDetecting = 0;
 	m_bBrowserAutostart = FALSE;
 	m_bIPv6 = FALSE;
 	m_dwAutostartDelayMs = DEFAULT_AUTOSTART_DELAY_MS;

@@ -123,10 +123,6 @@ class CMovementDetectionPage;
 #define MOVDET_MAX_FRAMES_IN_LIST			15000		// Default maximum frames per list
 #define MOVDET_SAVE_MIN_FRAMERATE_RATIO		0.3			// Min ratio between calculated (last - first) and m_dEffectiveFrameRate
 #define MOVDET_TIMEOUT						1000U		// Timeout in ms for detection zones
-#define MOVDET_MEM_LOAD_PRE_BUF				25.0		// Above this load the oldest pre-buffer frames are dropped
-#define MOVDET_MEM_LOAD_SAVE				35.0		// Above this load the detected frames are saved and freed
-#define MOVDET_MEM_LOAD_CRITICAL			75.0		// Above this load the detected frames are dropped
-#define MOVDET_MEM_MAX_MB					512			// Maximum allocable memory in MB (margin for fragmentation, stack and heap)
 #define MOVDET_ANIMGIF_MAX_FRAMES			60			// Maximum number of frames per animated gif
 #define MOVDET_ANIMGIF_MAX_LENGTH			6000.0		// ms, MOVDET_ANIMGIF_MAX_LENGTH / MOVDET_ANIMGIF_MAX_FRAMES must be >= 100
 #define MOVDET_ANIMGIF_DELAY				500.0		// ms (frame time)
@@ -456,9 +452,6 @@ public:
 			__forceinline BOOL IsWorking() const {return m_bWorking;};
 
 		protected:
-			// CalcMovementDetectionListsSize() must be called from this thread because
-			// this thread changes/deletes the list's dibs not inside the lists critical section!
-			void CalcMovementDetectionListsSize();
 			void LoadAndDecodeFrame(CDib* pDib);
 			int Work();
 			BOOL SaveSingleGif(		CDib* pDib,
@@ -640,24 +633,13 @@ public:
 	__forceinline void ClearMovementDetectionsList();				// Free and remove all lists
 	__forceinline void RemoveOldestMovementDetectionList();			// Free and remove oldest list
 	__forceinline void SaveFrameList(BOOL bDetectionSequenceDone);	// Add new empty list to tail
-	__forceinline DWORD GetTotalMovementDetectionListSize()  {	::EnterCriticalSection(&m_csMovementDetectionsList);
-																DWORD dwTotalMovementDetectionListSize = m_dwTotalMovementDetectionListSize;
-																::LeaveCriticalSection(&m_csMovementDetectionsList);
-																return dwTotalMovementDetectionListSize;};
-	__forceinline DWORD GetNewestMovementDetectionListSize()  {	::EnterCriticalSection(&m_csMovementDetectionsList);
-																DWORD dwNewestMovementDetectionListSize = m_dwNewestMovementDetectionListSize;
-																::LeaveCriticalSection(&m_csMovementDetectionsList);
-																return dwNewestMovementDetectionListSize;};
 
 	// Detection list handling
 	__forceinline void ClearFrameList(CDib::LIST* pFrameList);		// Free all frames in list
 	__forceinline void ClearNewestFrameList();						// Free all frames in newest list
 	__forceinline void ShrinkNewestFrameList();						// Free oldest frames from newest frame list
 																	// making the list m_nMilliSecondsRecBeforeMovementBegin long
-	__forceinline void ShrinkNewestFrameListBy(	int nSize,			// Free oldest nSize frames from newest frame list
-												DWORD& dwFirstUpTime,
-												DWORD& dwLastUpTime);
-	__forceinline int  GetNewestMovementDetectionsListCount();		// Get the newest list's count
+	__forceinline int GetNewestMovementDetectionsListCount();		// Get the newest list's count
 	__forceinline CDib* AllocMJPGFrame(CDib* pDib,					// Allocate new MJPG frame compressing pDib or copying pMJPGData if available
 								LPBYTE pMJPGData, DWORD dwMJPGSize);// (copies also audio samples)
 	__forceinline void AddNewFrameToNewestList(CDib* pDib,			// Add new frame to newest list
@@ -665,7 +647,6 @@ public:
 	__forceinline void AddNewFrameToNewestListAndShrink(CDib* pDib,	// Add new frame to newest list leaving in the list
 								LPBYTE pMJPGData, DWORD dwMJPGSize);// m_nMilliSecondsRecBeforeMovementBegin of frames
 																	
-
 	// Main Decode & Process Functions
 	void ProcessOtherFrame(LPBYTE pData, DWORD dwSize);
 	void ProcessNV12Frame(LPBYTE pData, DWORD dwSize, BOOL bFlipUV);
@@ -818,11 +799,6 @@ protected:
 	CString SaveJpegMail(CDib* pDib, const CTime& RefTime, DWORD dwRefUpTime);
 	CString MakeJpegManualSnapshotFileName(const CTime& Time);
 	CString MakeJpegMailSnapshotFileName(const CTime& Time);
-	BOOL ThumbMessage(	const CString& sMessage1,
-						const CString& sMessage2,
-						const CString& sMessage3,
-						DWORD dwFirstUpTime,
-						DWORD dwLastUpTime);
 	__forceinline int SummRectArea(	CDib* pDib,
 									int width,
 									int posX,
@@ -983,8 +959,6 @@ public:
 	HANDLE volatile m_hExecCommandMovementDetection;	// Exec command handle
 	CRITICAL_SECTION m_csExecCommandMovementDetection;	// Command Exec critical section
 	CDib* volatile m_pMovementDetectorBackgndDib;		// Moving Background Dib
-	volatile DWORD m_dwTotalMovementDetectionListSize;	// The total size in bytes of all movement detection lists
-	volatile DWORD m_dwNewestMovementDetectionListSize;	// The size in bytes of the newest movement detection list
 	DIBLISTLIST m_MovementDetectionsList;				// The List of Movement Detection Frame Grabbing Lists
 	CRITICAL_SECTION m_csMovementDetectionsList;		// Critical Section of the Movement Detections List
 	volatile DWORD m_dwAnimatedGifWidth;				// Width of Detection Animated Gif 

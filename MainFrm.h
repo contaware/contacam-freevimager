@@ -77,6 +77,8 @@ public:
 	void Progress(int nPercent);
 
 	// Toaster window
+	// dwWaitTimeMs == 0 : Only close on user action
+	// dwWaitTimeMs > 0  : Auto-close after the given amount of milliseconds
 	void PopupToaster(const CString& sTitle, const CString& sText, DWORD dwWaitTimeMs = 10000);	// call from any thread
 	void CloseToaster(BOOL bLastToasterDone = FALSE);											// call only from UI thread
 

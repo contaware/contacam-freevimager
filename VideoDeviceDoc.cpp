@@ -134,39 +134,6 @@ BOOL CVideoDeviceDoc::CreateCheckYearMonthDayDir(CTime Time, CString sBaseDir, C
 	return TRUE;
 }
 
-void CVideoDeviceDoc::CSaveFrameListThread::CalcMovementDetectionListsSize()
-{
-	m_pDoc->m_dwTotalMovementDetectionListSize = 0U;
-	m_pDoc->m_dwNewestMovementDetectionListSize = 0U;
-	if (!m_pDoc->m_MovementDetectionsList.IsEmpty())
-	{
-		POSITION pos = m_pDoc->m_MovementDetectionsList.GetHeadPosition();
-		while (pos)
-		{
-			CDib::LIST* pList = m_pDoc->m_MovementDetectionsList.GetNext(pos);
-			if (pList)
-			{
-				m_pDoc->m_dwNewestMovementDetectionListSize = 0U;
-				POSITION posDibs = pList->GetHeadPosition();
-				while (posDibs)
-				{
-					CDib* pDib = pList->GetNext(posDibs);
-					if (pDib)
-					{
-						DWORD dwVideoUsedSize = sizeof(CDib) + pDib->GetBMISize();	// approximate size used by the CDib object
-						DWORD dwAudioUsedSize = 0U;									// size used by the audio list logic
-						POSITION posAudioBuf = pDib->m_UserList.GetHeadPosition();
-						while (posAudioBuf)
-							dwAudioUsedSize += sizeof(CUserBuf);
-						m_pDoc->m_dwNewestMovementDetectionListSize += dwVideoUsedSize + dwAudioUsedSize;
-					}
-				}
-				m_pDoc->m_dwTotalMovementDetectionListSize += m_pDoc->m_dwNewestMovementDetectionListSize;
-			}
-		}
-	}
-}
-
 void CVideoDeviceDoc::CSaveFrameListThread::LoadAndDecodeFrame(CDib* pDib)
 {
 	// Move back the bits from shared memory
@@ -293,7 +260,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			{
 				// Continue to the empty lists remover?
 				::EnterCriticalSection(&m_pDoc->m_csMovementDetectionsList);
-				CalcMovementDetectionListsSize();
 				if (m_pDoc->m_MovementDetectionsList.GetCount() >= 2 &&
 					((CUImagerApp*)::AfxGetApp())->MovDetSaveReservation(dwCurrentThreadId))
 					break;
@@ -462,14 +428,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			pDib = m_pFrameList->GetNext(nextpos);
 			LoadAndDecodeFrame(pDib);
 
-			// Calc. detection lists size
-			if ((nFrames % MOVDET_MIN_FRAMES_IN_LIST) == 0)
-			{
-				::EnterCriticalSection(&m_pDoc->m_csMovementDetectionsList);
-				CalcMovementDetectionListsSize();
-				::LeaveCriticalSection(&m_pDoc->m_csMovementDetectionsList);
-			}
-
 			// Video
 			if (bMakeVideo)
 			{
@@ -609,11 +567,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		::MoveFile(sVideoTempFileName, sVideoFileName);
 		::MoveFile(sGIFTempFileName, sGIFFileName);
 
-		// Free and update lists size
+		// Free
 		m_pDoc->RemoveOldestMovementDetectionList();
-		::EnterCriticalSection(&m_pDoc->m_csMovementDetectionsList);
-		CalcMovementDetectionListsSize();
-		::LeaveCriticalSection(&m_pDoc->m_csMovementDetectionsList);
 
 		// Send By E-Mail
 		if (m_pDoc->m_bSendMailMovementDetection)
@@ -2289,45 +2244,6 @@ end_of_software_detection:
 		}
 	}
 
-	// Check memory load if having MOVDET_MIN_FRAMES_IN_LIST
-	// frames and MOVDET_MIN_FRAMES_IN_LIST passed since last check
-	double dDocLoad = 0.0;
-	double dNewestListLoad = 0.0;
-	double dTotalDocsMovementDetecting = 0.0;
-	int nFramesCount = GetNewestMovementDetectionsListCount();
-	if (nFramesCount >= MOVDET_MIN_FRAMES_IN_LIST &&
-		((m_dwFrameCountUp % MOVDET_MIN_FRAMES_IN_LIST) == 0))
-	{
-		// This document load in %
-		dDocLoad = ((double)(GetTotalMovementDetectionListSize() >> 10) / 10.24) / (double)MOVDET_MEM_MAX_MB;
-
-		// Newest list load in %
-		dNewestListLoad = ((double)(GetNewestMovementDetectionListSize() >> 10) / 10.24) / (double)MOVDET_MEM_MAX_MB;
-
-		// Get the total amount of devices which are movement detecting
-		dTotalDocsMovementDetecting = (double)((CUImagerApp*)::AfxGetApp())->m_nTotalVideoDeviceDocsMovementDetecting;
-
-		// High threshold reached, frames saving is too slow:
-		// -> drop oldest 3 * MOVDET_MIN_FRAMES_IN_LIST / 2 frames
-		// -> notify user with a gif thumb and in log file 
-		if (dTotalDocsMovementDetecting * dDocLoad >= MOVDET_MEM_LOAD_CRITICAL)
-		{
-			DWORD dwFirstUpTime, dwLastUpTime;
-			ShrinkNewestFrameListBy(3 * MOVDET_MIN_FRAMES_IN_LIST / 2, dwFirstUpTime, dwLastUpTime);
-			ThumbMessage(	ML_STRING(1817, "Dropping det frames:"),
-							ML_STRING(1818, "set lower framerate"),
-							ML_STRING(1819, "or resolution!"),
-							dwFirstUpTime, dwLastUpTime);
-			CString sMsg(	GetAssignedDeviceName() + _T(", ") +
-							ML_STRING(1817, "Dropping det frames:") + _T(" ") +
-							ML_STRING(1818, "set lower framerate") + _T(" ") +
-							ML_STRING(1819, "or resolution!"));
-			if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
-				::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, sMsg, 0);
-			::LogLine(_T("%s"), sMsg);
-		}
-	}
-
 	// If in detection state
 	if (m_bDetectingMovement)
 	{
@@ -2348,24 +2264,16 @@ end_of_software_detection:
 			else
 				ShrinkNewestFrameList(); // shrink to a size of m_nMilliSecondsRecBeforeMovementBegin
 		}
-		// Low load threshold or maximum number of frames reached
-		else if (m_SaveFrameListThread.IsAlive() && !m_SaveFrameListThread.IsWorking()	&&
-				(dTotalDocsMovementDetecting * dDocLoad >= MOVDET_MEM_LOAD_SAVE	||
-				(nFramesCount + 1) >= m_nDetectionMaxFrames)) // + 1 because we added another frame after the counting
+		// Maximum number of frames reached?
+		else if (m_SaveFrameListThread.IsAlive()	&&
+				!m_SaveFrameListThread.IsWorking()	&&
+				GetNewestMovementDetectionsListCount() >= m_nDetectionMaxFrames)
 			SaveFrameList(FALSE);
 	}
 	else if (bStoreFrames)
 	{
 		// Add new frame and shrink to a size of m_nMilliSecondsRecBeforeMovementBegin
 		AddNewFrameToNewestListAndShrink(pDib, pMJPGData, dwMJPGSize);
-		
-		// If pre-buffer is set to big:
-		// -> drop oldest 3 * MOVDET_MIN_FRAMES_IN_LIST / 2 frames
-		if (dTotalDocsMovementDetecting * dNewestListLoad >= MOVDET_MEM_LOAD_PRE_BUF)
-		{
-			DWORD dwFirstUpTime, dwLastUpTime;
-			ShrinkNewestFrameListBy(3 * MOVDET_MIN_FRAMES_IN_LIST / 2, dwFirstUpTime, dwLastUpTime);
-		}
 	}
 	else
 		ClearNewestFrameList();
@@ -2633,157 +2541,6 @@ exit:
 		pJ420Buf = NULL;
 	}
 	return res;
-}
-
-BOOL CVideoDeviceDoc::ThumbMessage(	const CString& sMessage1,
-									const CString& sMessage2,
-									const CString& sMessage3,
-									DWORD dwFirstUpTime,
-									DWORD dwLastUpTime)
-{
-	if (m_bSaveAnimGIFMovementDetection)
-	{
-		// Allocate Thumb Dib
-		CDib ThumbDib;
-		if (!ThumbDib.AllocateBits(32, BI_RGB, m_dwAnimatedGifWidth, m_dwAnimatedGifHeight, RGB(80,70,70)))
-			return FALSE;
-
-		// Current Reference Time and Current Reference Up-Time
-		CTime RefTime = CTime::GetCurrentTime();
-		DWORD dwRefUpTime = ::timeGetTime();
-
-		// First Frame Time
-		CTime FirstTime = CalcTime(dwFirstUpTime, RefTime, dwRefUpTime);
-		
-		// Last Frame Time
-		CTime LastTime = CalcTime(dwLastUpTime, RefTime, dwRefUpTime);
-
-		// Check Whether Dir Exists
-		CString sDetectionAutoSaveDir = m_sRecordAutoSaveDir;
-		DWORD dwAttrib = ::GetFileAttributes(sDetectionAutoSaveDir);
-		if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
-			return FALSE;
-		else
-			sDetectionAutoSaveDir.TrimRight(_T('\\'));
-
-		// Thumb name
-		CString sGIFFileName;
-		CString sGIFTempFileName;
-		CString sTime(FirstTime.Format(_T("%Y_%m_%d_%H_%M_%S")));
-		if (!CVideoDeviceDoc::CreateCheckYearMonthDayDir(FirstTime, sDetectionAutoSaveDir, sGIFFileName))
-			return FALSE;
-		if (sGIFFileName == _T(""))
-			sGIFFileName = _T("det_") + sTime + _T(".gif");
-		else
-			sGIFFileName = sGIFFileName + _T("\\") + _T("det_") + sTime + _T(".gif");
-		sGIFTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), sGIFFileName);
-
-		// Draw rect
-		CRect rcRect;
-
-		// Font
-		CFont Font;
-		Font.CreatePointFont(THUMBMESSAGE_FONTSIZE * 10, DEFAULT_FONTFACE);
-
-		// Time
-		rcRect.left = 1;
-		rcRect.top = 0;
-		rcRect.right = ThumbDib.GetWidth() - 1;
-		rcRect.bottom = ThumbDib.GetHeight();
-		sTime = ::MakeTimeLocalFormat(FirstTime, TRUE);
-		if (!ThumbDib.AddSingleLineText(sTime,
-										rcRect,
-										&Font,
-										(DT_LEFT | DT_TOP),
-										FRAMETIME_COLOR,
-										TRANSPARENT,
-										DRAW_BKG_COLOR))
-			return FALSE;
-		if (!ThumbDib.AddSingleLineText(_T("->"),
-										rcRect,
-										&Font,
-										(DT_CENTER | DT_TOP),
-										FRAMETIME_COLOR,
-										TRANSPARENT,
-										DRAW_BKG_COLOR))
-			return FALSE;
-		sTime = ::MakeTimeLocalFormat(LastTime, TRUE);
-		if (!ThumbDib.AddSingleLineText(sTime,
-										rcRect,
-										&Font,
-										(DT_RIGHT | DT_TOP),
-										FRAMETIME_COLOR,
-										TRANSPARENT,
-										DRAW_BKG_COLOR))
-			return FALSE;
-
-		// Date
-		rcRect.left = 1;
-		rcRect.top = 0;
-		rcRect.right = ThumbDib.GetWidth() - 1;
-		rcRect.bottom = ThumbDib.GetHeight();
-		sTime = ::MakeDateLocalFormat(FirstTime);
-		if (!ThumbDib.AddSingleLineText(sTime,
-										rcRect,
-										&Font,
-										(DT_LEFT | DT_BOTTOM),
-										FRAMEDATE_COLOR,
-										TRANSPARENT,
-										DRAW_BKG_COLOR))
-			return FALSE;
-
-		// Message1
-		rcRect.left = 0;
-		rcRect.top = ThumbDib.GetHeight() / 4;
-		rcRect.right = ThumbDib.GetWidth();
-		rcRect.bottom = ThumbDib.GetHeight();
-		if (!ThumbDib.AddSingleLineText(sMessage1,
-										rcRect,
-										&Font,
-										(DT_CENTER | DT_TOP),
-										RGB(0xff,0,0),
-										TRANSPARENT,
-										DRAW_BKG_COLOR))
-			return FALSE;
-
-		// Message2
-		rcRect.left = 0;
-		rcRect.top = 0;
-		rcRect.right = ThumbDib.GetWidth();
-		rcRect.bottom = ThumbDib.GetHeight();
-		if (!ThumbDib.AddSingleLineText(sMessage2,
-										rcRect,
-										&Font,
-										(DT_CENTER | DT_VCENTER),
-										RGB(0xff,0,0),
-										TRANSPARENT,
-										DRAW_BKG_COLOR))
-			return FALSE;
-
-		// Message3
-		rcRect.left = 0;
-		rcRect.top = 0;
-		rcRect.right = ThumbDib.GetWidth();
-		rcRect.bottom = 3 * ThumbDib.GetHeight() / 4;
-		if (!ThumbDib.AddSingleLineText(sMessage3,
-										rcRect,
-										&Font,
-										(DT_CENTER | DT_BOTTOM),
-										RGB(0xff,0,0),
-										TRANSPARENT,
-										DRAW_BKG_COLOR))
-			return FALSE;
-
-		// Save
-		if (!ThumbDib.SaveGIF(sGIFTempFileName))
-			return FALSE;
-
-		// Rename Saved Gif File
-		::DeleteFile(sGIFFileName);
-		::MoveFile(sGIFTempFileName, sGIFFileName);
-	}
-	
-	return TRUE;
 }
 
 BOOL CVideoDeviceDoc::CHttpThread::PollAndClean(BOOL bDoNewPoll)
@@ -3221,9 +2978,9 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 				if (m_pDoc->m_bWatchDogVideoAlarm						&&
 					m_pDoc->m_dwVideoProcessorMode						&&
 					m_pDoc->m_bDetectingMovement						&&
-					m_pDoc->GetTotalMovementDetectionListSize() > 0		&&
 					m_pDoc->m_SaveFrameListThread.IsAlive()				&&
 					!m_pDoc->m_SaveFrameListThread.IsWorking()			&&
+					m_pDoc->GetNewestMovementDetectionsListCount() > 0	&&
 					(m_pDoc->m_bSaveVideoMovementDetection				||
 					m_pDoc->m_bSaveAnimGIFMovementDetection))
 					m_pDoc->SaveFrameList(FALSE);
@@ -3723,8 +3480,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bHideExecCommandMovementDetection = FALSE;
 	m_bWaitExecCommandMovementDetection = FALSE;
 	m_hExecCommandMovementDetection = NULL;
-	m_dwTotalMovementDetectionListSize = 0U;
-	m_dwNewestMovementDetectionListSize = 0U;
 	m_nDetectionLevel = DEFAULT_MOVDET_LEVEL;
 	m_nCurrentDetectionZoneSize = m_nDetectionZoneSize = 0;
 	m_nMovementDetectorIntensityLimit = DEFAULT_MOVDET_INTENSITY_LIMIT;
@@ -8456,7 +8211,14 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestList(CDib* pDib, LPBYTE p
 				CDib* pNewDib = AllocMJPGFrame(pDib, pMJPGData, dwMJPGSize);
 				if (pNewDib)
 				{
-					pNewDib->BitsToSharedMemory();
+					if (!pNewDib->BitsToSharedMemory())
+					{
+						CString sMsg(ML_STRING(1817, "LOW MEMORY: increase the Page File size, add more RAM, lower the \"Split detection files longer than\" value for all cameras"));
+						if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
+							::AfxGetMainFrame()->PopupToaster(CString(APPNAME_NOEXT), sMsg, 0);
+						::LogLine(_T("%s"), sMsg);
+						CloseDocument();
+					}
 					pTail->AddTail(pNewDib);
 				}
 			}
@@ -8490,7 +8252,14 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestListAndShrink(CDib* pDib,
 				if (pNewDib)
 				{
 					// Add the new frame
-					pNewDib->BitsToSharedMemory();
+					if (!pNewDib->BitsToSharedMemory())
+					{
+						CString sMsg(ML_STRING(1817, "LOW MEMORY: increase the Page File size, add more RAM, lower the \"Split detection files longer than\" value for all cameras"));
+						if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
+							::AfxGetMainFrame()->PopupToaster(CString(APPNAME_NOEXT), sMsg, 0);
+						::LogLine(_T("%s"), sMsg);
+						CloseDocument();
+					}
 					pTail->AddTail(pNewDib);
 
 					// Shrink to a size of m_nMilliSecondsRecBeforeMovementBegin
@@ -8536,38 +8305,6 @@ __forceinline void CVideoDeviceDoc::ShrinkNewestFrameList()
 					}
 					pTail->RemoveHead();
 				}
-			}
-		}
-	}
-	::LeaveCriticalSection(&m_csMovementDetectionsList);
-}
-
-__forceinline void CVideoDeviceDoc::ShrinkNewestFrameListBy(int nSize, DWORD& dwFirstUpTime, DWORD& dwLastUpTime)
-{
-	dwFirstUpTime = dwLastUpTime = 0U;
-	::EnterCriticalSection(&m_csMovementDetectionsList);
-	if (!m_MovementDetectionsList.IsEmpty())
-	{
-		CDib::LIST* pTail = m_MovementDetectionsList.GetTail();
-		if (pTail)
-		{
-			CDib* pHeadDib;
-			if (!pTail->IsEmpty())
-			{
-				pHeadDib = pTail->GetHead();
-				if (pHeadDib)
-					dwFirstUpTime = pHeadDib->GetUpTime();
-			}
-			while (!pTail->IsEmpty() && nSize > 0)
-			{
-				pHeadDib = pTail->GetHead();
-				if (pHeadDib)
-				{
-					dwLastUpTime = pHeadDib->GetUpTime();
-					delete pHeadDib;
-				}
-				pTail->RemoveHead();
-				--nSize;
 			}
 		}
 	}

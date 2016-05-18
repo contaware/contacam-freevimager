@@ -2329,18 +2329,6 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		// Show Page File Usage
 		GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_MEM_USAGE), sPageFileStats);
 
-		// Update the count of open video device docs with detection enabled
-		CUImagerMultiDocTemplate* pVideoDeviceDocTemplate = ((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate();
-		POSITION posVideoDeviceDoc = pVideoDeviceDocTemplate->GetFirstDocPosition();
-		int nCountVideoDeviceDocsMovementDetecting = 0;
-		while (posVideoDeviceDoc)
-		{
-			CVideoDeviceDoc* pVideoDeviceDoc = (CVideoDeviceDoc*)(pVideoDeviceDocTemplate->GetNextDoc(posVideoDeviceDoc));
-			if (pVideoDeviceDoc && pVideoDeviceDoc->m_dwVideoProcessorMode)
-				++nCountVideoDeviceDocsMovementDetecting;
-		}
-		((CUImagerApp*)::AfxGetApp())->m_nTotalVideoDeviceDocsMovementDetecting = nCountVideoDeviceDocsMovementDetecting;
-
 		// Current Time
 		CTime timedate = CTime::GetCurrentTime();
 		CTime timeonly(2000, 1, 1, timedate.GetHour(), timedate.GetMinute(), timedate.GetSecond());
