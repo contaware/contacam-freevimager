@@ -28,6 +28,7 @@
 #include "YuvToYuv.h"
 #include "sinstance.h"
 #include <atlbase.h>
+#include <signal.h>
 #ifdef VIDEODEVICEDOC
 #include "DeleteCamFoldersDlg.h"
 #include "SettingsDlgVideoDeviceDoc.h"
@@ -460,6 +461,23 @@ static void my_av_log_trace(void* ptr, int level, const char* fmt, va_list vl)
 
 #endif
 
+// Handle the abort() calls
+// Note: when returning from this function
+// the program terminates with an exit code of 3
+extern "C" void my_handle_aborts(int signal)
+{
+	if (signal == SIGABRT)
+	{
+		::LogLine(_T("%s"), ML_STRING(1818, "Aborting") + _T(" ") + APPNAME_NOEXT);
+#ifdef VIDEODEVICEDOC
+		if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
+#endif
+		{
+			::ShellExecute(NULL, _T("open"), g_sLogFileName, NULL, NULL, SW_SHOWNORMAL);
+		}
+	}
+}
+
 BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 {
 	CInstanceChecker* pInstanceChecker = NULL;
@@ -554,6 +572,12 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// (containing folder is only created when the Log File is written)
 		::InitTraceLogFile(	sConfigFilesDir + _T("\\") + LOGNAME_EXT,
 							MAX_LOG_FILE_SIZE);
+
+		// Handle the abort() calls
+		signal(SIGABRT, &my_handle_aborts);
+
+		// Don't print the abort message and don't call Dr. Watson to make a crash dump
+		_set_abort_behavior(0, _WRITE_ABORT_MSG | _CALL_REPORTFAULT);
 
 		// Use registry?
 		BOOL bUseRegistry = TRUE;

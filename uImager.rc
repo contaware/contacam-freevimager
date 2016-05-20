@@ -4257,7 +4257,7 @@ BEGIN
     IDS_STRING1760          "Application Log File has not yet been created"
     IDS_STRING1761          "HD free space"
     IDS_STRING1762          "CPU usage"
-    IDS_STRING1763          "MEM free space"
+    IDS_STRING1763          "MEM usage"
     IDS_STRING1764          "Starting"
     IDS_STRING1765          "%s already exists.\nDo you want to proceed and merge the files?"
     IDS_STRING1766          "Only ASCII characters allowed in path"
@@ -4294,7 +4294,8 @@ STRINGTABLE
 BEGIN
     IDS_STRING1810          "VERBOSE DIAGNOSTIC LOGGING"
     IDS_STRING1816          "Create a text file where each line represents a Paste\ncommand at the given position:\n  1. Origin: top left, top right, bottom left, bottom right\n  2. horizontal and vertical positions with sign and unit\n      (px, in, cm, mm)\n\nExample:\n\ntop left 1.57cm -1.32cm\nbottom right 12.1mm 5.5mm"
-    IDS_STRING1817          "LOW MEMORY: increase the Page File size, add more RAM, lower the ""Split detection files longer than"" value for all cameras"
+    IDS_STRING1817          "OUT OF MEMORY: increase the Page File size, add more RAM, lower the ""Split detection files longer than"" value for all cameras"
+    IDS_STRING1818          "Aborting"
     IDS_STRING1820          "usable"
     IDS_STRING1822          "Fit"
     IDS_STRING1823          "Fit Big"

@@ -185,7 +185,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	sba_HDHelp[MAX_PATH - 1] = _T('\0');
 	_tcsncpy(sba_CPUHelp, CString(APPNAME_NOEXT) + _T(": ") + ML_STRING(1762, "CPU usage"), MAX_PATH);
 	sba_CPUHelp[MAX_PATH - 1] = _T('\0');
-	_tcsncpy(sba_MEMHelp, ML_STRING(1763, "MEM free space"), MAX_PATH);
+	_tcsncpy(sba_MEMHelp, ML_STRING(1763, "MEM usage"), MAX_PATH);
 	sba_MEMHelp[MAX_PATH - 1] = _T('\0');
 #endif
 	_tcsncpy(sba_CoordinateHelp, ML_STRING(1768, "Double-click to change unit"), MAX_PATH);
@@ -2224,9 +2224,9 @@ CString CMainFrame::GetPageFileStats()
 	{
 		// ullTotalPageFile: is physical memory plus the size of the page file
 		CString sUsage;
-		sUsage.Format(	_T("MEM: %0.1f") + ML_STRING(1826, "GB") + _T("(%0.1f%%)"),
-						(double)MemoryStatusEx.ullAvailPageFile / 1073741824.0,
-						(1000 * MemoryStatusEx.ullAvailPageFile / MemoryStatusEx.ullTotalPageFile) / 10.0);
+		sUsage.Format(	_T("MEM: %0.1f/%0.1f") + ML_STRING(1826, "GB"),
+						(double)(MemoryStatusEx.ullTotalPageFile - MemoryStatusEx.ullAvailPageFile) / 1073741824.0,
+						(double)MemoryStatusEx.ullTotalPageFile / 1073741824.0);
 		return sUsage;
 	}
 }

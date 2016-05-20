@@ -8213,11 +8213,8 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestList(CDib* pDib, LPBYTE p
 				{
 					if (!pNewDib->BitsToSharedMemory())
 					{
-						CString sMsg(ML_STRING(1817, "LOW MEMORY: increase the Page File size, add more RAM, lower the \"Split detection files longer than\" value for all cameras"));
-						if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
-							::AfxGetMainFrame()->PopupToaster(CString(APPNAME_NOEXT), sMsg, 0);
-						::LogLine(_T("%s"), sMsg);
-						CloseDocument();
+						::LogLine(_T("%s"), ML_STRING(1817, "OUT OF MEMORY: increase the Page File size, add more RAM, lower the \"Split detection files longer than\" value for all cameras"));
+						abort();
 					}
 					pTail->AddTail(pNewDib);
 				}
@@ -8254,11 +8251,8 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestListAndShrink(CDib* pDib,
 					// Add the new frame
 					if (!pNewDib->BitsToSharedMemory())
 					{
-						CString sMsg(ML_STRING(1817, "LOW MEMORY: increase the Page File size, add more RAM, lower the \"Split detection files longer than\" value for all cameras"));
-						if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
-							::AfxGetMainFrame()->PopupToaster(CString(APPNAME_NOEXT), sMsg, 0);
-						::LogLine(_T("%s"), sMsg);
-						CloseDocument();
+						::LogLine(_T("%s"), ML_STRING(1817, "OUT OF MEMORY: increase the Page File size, add more RAM, lower the \"Split detection files longer than\" value for all cameras"));
+						abort();
 					}
 					pTail->AddTail(pNewDib);
 
