@@ -3,6 +3,9 @@ CONTACAM HISTORY
 5.0.9 (Month Xth 2016)
 
 - Always buffering frames in memory
+- Corrected FTP to first upload the full video/jpeg version and then
+  the corresponding thumb. That's necessary because the thumbs link
+  to the full versions in web interface 
 
 5.0.7 (May 9th 2016)
 

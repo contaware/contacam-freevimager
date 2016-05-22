@@ -1574,44 +1574,35 @@ HANDLE CVideoDeviceDoc::FTPUpload(	const FTPUploadConfigurationStruct& Config,
 		sProto = _T("ftp://");
 	}
 
-	// Upload to temp (create directory if not existing),
-	// on success remove target and rename
+	// Upload to temp file creating directory if not existing, remove target and rename
 	CString sPut;
-
 	if (!sLocalFileName1.IsEmpty() && !sLocalFileName2.IsEmpty())
 	{
-		sPut.Format(_T("(put '%s' -o '%s' || (mkdir -p '%s'; put '%s' -o '%s') && (rm '%s'; mv '%s' '%s'))& ")
-					_T("(put '%s' -o '%s' || (mkdir -p '%s'; put '%s' -o '%s') && (rm '%s'; mv '%s' '%s'))& ")
-					_T("wait all; "),
+		sPut.Format(_T("(put '%s' -o '%s' || (mkdir -p '%s'; put '%s' -o '%s'))& ")
+					_T("(put '%s' -o '%s' || (mkdir -p '%s'; put '%s' -o '%s'))& ")
+					_T("wait all; ")
+					_T("rm '%s'; mv '%s' '%s'; ")
+					_T("rm '%s'; mv '%s' '%s'; "),
 					sLocalFileName1, sRemoteTempFileName1,
-					sRemoteDir1,
-					sLocalFileName1, sRemoteTempFileName1,
-					sRemoteFileName1,
-					sRemoteTempFileName1, sRemoteFileName1,
+					sRemoteDir1, sLocalFileName1, sRemoteTempFileName1,
 					sLocalFileName2, sRemoteTempFileName2,
-					sRemoteDir2,
-					sLocalFileName2, sRemoteTempFileName2,
-					sRemoteFileName2,
-					sRemoteTempFileName2, sRemoteFileName2);
-
+					sRemoteDir2, sLocalFileName2, sRemoteTempFileName2,
+					sRemoteFileName1, sRemoteTempFileName1, sRemoteFileName1,
+					sRemoteFileName2, sRemoteTempFileName2, sRemoteFileName2);
 	}
 	else if (!sLocalFileName1.IsEmpty())
 	{
-		sPut.Format(_T("put '%s' -o '%s' || (mkdir -p '%s'; put '%s' -o '%s') && (rm '%s'; mv '%s' '%s'); "),
+		sPut.Format(_T("put '%s' -o '%s' || (mkdir -p '%s'; put '%s' -o '%s'); rm '%s'; mv '%s' '%s'; "),
 					sLocalFileName1, sRemoteTempFileName1,
-					sRemoteDir1,
-					sLocalFileName1, sRemoteTempFileName1,
-					sRemoteFileName1,
-					sRemoteTempFileName1, sRemoteFileName1);
+					sRemoteDir1, sLocalFileName1, sRemoteTempFileName1,
+					sRemoteFileName1, sRemoteTempFileName1, sRemoteFileName1);
 	}
 	else if (!sLocalFileName2.IsEmpty())
 	{
-		sPut.Format(_T("put '%s' -o '%s' || (mkdir -p '%s'; put '%s' -o '%s') && (rm '%s'; mv '%s' '%s'); "),
+		sPut.Format(_T("put '%s' -o '%s' || (mkdir -p '%s'; put '%s' -o '%s'); rm '%s'; mv '%s' '%s'; "),
 					sLocalFileName2, sRemoteTempFileName2,
-					sRemoteDir2,
-					sLocalFileName2, sRemoteTempFileName2,
-					sRemoteFileName2,
-					sRemoteTempFileName2, sRemoteFileName2);
+					sRemoteDir2, sLocalFileName2, sRemoteTempFileName2,
+					sRemoteFileName2, sRemoteTempFileName2, sRemoteFileName2);
 	}
 
 	// Port
