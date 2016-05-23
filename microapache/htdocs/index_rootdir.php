@@ -14,12 +14,12 @@
 }
 body {
 	font-family: Helvetica,Arial,sans-serif;
-	font-size: 12px;
+	font-size: 16px;
 	background-color: #333333;
 	color: #bbbbbb;
 }
 a {
-	font-size: 14px;
+	font-size: 16px;
 	text-decoration: none;
 }
 a:link {

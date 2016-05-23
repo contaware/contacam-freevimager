@@ -5,7 +5,7 @@
 }
 body {
 	font-family: Helvetica,Arial,sans-serif;
-	font-size: 12px;
+	font-size: 16px;
 	background-color: #ffffff;
 	color: #666666;
 }
@@ -40,7 +40,7 @@ div.wrap {
 
 /* Links */
 a {
-	font-size: 14px;
+	font-size: 16px;
 	text-decoration: none;
 }
 a:link {
@@ -119,7 +119,7 @@ span.globalbuttons {
 	white-space: nowrap;
 }
 span.globalbuttons a {
-	font-size: 11px;
+	font-size: 12px;
 	font-style: normal;
 	font-weight: bold;
 	font-family: sans-serif,Arial,Helvetica;
@@ -170,25 +170,6 @@ a.trashbuttons {
 }
 a.trashbuttons:hover {
 	background: transparent url('trashhover.png') no-repeat left top;
-}
-table#navcontrols {
-	margin: 0 auto;
-	text-align: center;
-	vertical-align: middle;
-	font-size: 12px;
-	font-weight: normal;
-	color: #666666;
-}
-div#navcontrols {
-	margin: 0 auto 6px auto;
-	text-align: center;
-	vertical-align: middle;
-	font-size: 12px;
-	font-weight: normal;
-	color: #666666;
-}
-.inlinenowrap {
-	display: inline-block;
 }
 div#imagereloading {
 	margin: 6px 0 0 0;
