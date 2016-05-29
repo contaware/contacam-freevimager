@@ -52,6 +52,7 @@ if (!is_file("$full_path")) {
 
 <div class="wrap" id="playercontainer">
 <?php
+$enlarge = !isset($_GET['width']) && !isset($_GET['height']);
 if (!isset($_GET['width']))
 	$width = WIDTH;
 else
@@ -104,6 +105,7 @@ echo "</div>\n";
 <script type="text/javascript">
 //<![CDATA[
 function resizeMp4() {
+	var enlarge = parseInt("<?php echo $enlarge;?>");
 	var width = parseInt("<?php echo $width;?>");
 	var height = parseInt("<?php echo $height;?>");
 	if (width <= 0)
@@ -119,27 +121,20 @@ function resizeMp4() {
 	// Left and right margin
 	windowWidth -= 50; // this must be less than 60, see snapshothistory.php!
 	// Buttons
-	windowHeight -= 50;
+	windowHeight -= 60;
 	// Set a min. size
 	if (windowWidth < 32)
 		windowWidth = 32;
 	if (windowHeight < 32)
 		windowHeight = 32;
-	var fittedWidth;
-	var fittedHeight;
-	var fittedSlider;
-	if (width > windowWidth) {
-		fittedWidth = windowWidth;
-		fittedSlider = windowWidth;
+	var fittedWidth = windowWidth;
+	var fittedHeight = windowHeight;
+	if (!enlarge) {
+		if (width <= windowWidth)
+			fittedWidth = width;
+		if (height <= windowHeight)
+			fittedHeight = height;
 	}
-	else {
-		fittedWidth = width;
-		fittedSlider = width;
-	}
-	if (height > windowHeight)
-		fittedHeight = windowHeight;
-	else
-		fittedHeight = height;
 	if (fittedWidth / fittedHeight > width / height)
 		fittedWidth = parseInt((fittedHeight * width) / height);
 	else
