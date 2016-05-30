@@ -293,7 +293,11 @@ echo "</div>\n";
 //<![CDATA[
 var mySlider = new Control.Slider('handle1','track1',{axis:'horizontal'});
 function resizeSwf() {
-	var enlarge = parseInt("<?php echo $enlarge;?>");
+<?php if ($enlarge): ?>
+	var enlarge = true;
+<?php else: ?>
+	var enlarge = false;
+<?php endif; ?>
 	var width = parseInt("<?php echo $width;?>");
 	var height = parseInt("<?php echo $height;?>");
 	if (width <= 0)
