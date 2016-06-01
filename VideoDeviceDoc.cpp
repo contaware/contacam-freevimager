@@ -5271,6 +5271,11 @@ void CVideoDeviceDoc::OnChangeDxVideoFormat()
 				m_DocRect.right = m_ProcessFrameBMI.bmiHeader.biWidth;
 				m_DocRect.bottom = m_ProcessFrameBMI.bmiHeader.biHeight;
 			}
+			else
+			{
+				::LogLine(_T("%s"), GetAssignedDeviceName() + _T(", error getting DV video size!"));
+				return;
+			}
 		}
 		else
 		{

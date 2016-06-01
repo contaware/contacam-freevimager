@@ -5,7 +5,8 @@ CONTACAM HISTORY
 - Always buffering frames in memory
 - Corrected FTP to first upload the full video/jpeg version and then
   the corresponding thumb. That's necessary because the thumbs link
-  to the full versions in web interface 
+  to the full versions in web interface
+- Do not fail when no DV media present
 
 5.0.7 (May 9th 2016)
 

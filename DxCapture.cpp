@@ -2367,62 +2367,41 @@ BOOL CDxCapture::GetDVFormat(_DVENCODERVIDEOFORMAT* pVideoFormat)
 	if (!pVideoFormat || !m_pSrcFilter)
 		return FALSE;
 
-    LONG lMediaType = 0;
-    LONG lInSignalMode = 0;
-
-    // Query Media Type of the transport
+    // Query the signal mode
+	LONG lInSignalMode = 0;
 	IAMExtTransport* pIAMExtTransport = NULL;
-	HRESULT hr = m_pSrcFilter->QueryInterface(	IID_IAMExtTransport, 
-												(void**)&pIAMExtTransport);
+	HRESULT hr = m_pSrcFilter->QueryInterface(IID_IAMExtTransport, (void**)&pIAMExtTransport);
 	if (FAILED(hr))
 		return FALSE;
-    hr = pIAMExtTransport->GetStatus(ED_MEDIA_TYPE, &lMediaType);
+    hr = pIAMExtTransport->GetTransportBasicParameters(ED_TRANSBASIC_INPUT_SIGNAL, &lInSignalMode, NULL);
     if (FAILED(hr))
 	{
 		SAFE_RELEASE(pIAMExtTransport);
 		return FALSE;
 	}
 
-	// Check
-    if (ED_MEDIA_DVC != lMediaType)
+    // pal or ntsc?
+    switch (lInSignalMode)
     {
-        SAFE_RELEASE(pIAMExtTransport);
-        return FALSE;
-    } 
-    else
-    {
-        // Now lets query for the signal mode of the tape.
-        hr = pIAMExtTransport->GetTransportBasicParameters(	ED_TRANSBASIC_INPUT_SIGNAL, 
-															&lInSignalMode, NULL);
-        if (FAILED(hr))
-		{
-			SAFE_RELEASE(pIAMExtTransport);
-			return FALSE;
-		}
+        case ED_TRANSBASIC_SIGNAL_525_60_SD :
+            *pVideoFormat = DVENCODERVIDEOFORMAT_NTSC;
+            break;
 
-        // determine whether the camcorder supports ntsc or pal
-        switch (lInSignalMode)
-        {
-            case ED_TRANSBASIC_SIGNAL_525_60_SD :
-                *pVideoFormat = DVENCODERVIDEOFORMAT_NTSC;
-                break;
+        case ED_TRANSBASIC_SIGNAL_525_60_SDL :
+            *pVideoFormat = DVENCODERVIDEOFORMAT_NTSC;
+            break;
 
-            case ED_TRANSBASIC_SIGNAL_525_60_SDL :
-                *pVideoFormat = DVENCODERVIDEOFORMAT_NTSC;
-                break;
+        case ED_TRANSBASIC_SIGNAL_625_50_SD :
+            *pVideoFormat = DVENCODERVIDEOFORMAT_PAL;
+            break;
 
-            case ED_TRANSBASIC_SIGNAL_625_50_SD :
-                *pVideoFormat = DVENCODERVIDEOFORMAT_PAL;
-                break;
+        case ED_TRANSBASIC_SIGNAL_625_50_SDL :
+            *pVideoFormat = DVENCODERVIDEOFORMAT_PAL;
+            break;
 
-            case ED_TRANSBASIC_SIGNAL_625_50_SDL :
-                *pVideoFormat = DVENCODERVIDEOFORMAT_PAL;
-                break;
-
-            default : 
-                *pVideoFormat = DVENCODERVIDEOFORMAT_NTSC;
-                break;
-        }
+        default : 
+            *pVideoFormat = DVENCODERVIDEOFORMAT_NTSC;
+            break;
     }
 
 	SAFE_RELEASE(pIAMExtTransport);
