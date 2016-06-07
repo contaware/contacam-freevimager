@@ -24,7 +24,6 @@ public:
 		// NOTE: the ClassWizard will add data members here
 	//}}AFX_DATA
 
-
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CSharpenDlg)
@@ -36,10 +35,19 @@ public:
 
 // Implementation
 protected:
+	// Unsharp mask algorithm
+	//		diff = orig_pix - blurred_pix
+	//		sharp_pix = orig_pix + (amount * diff)
+	//
+	// nAmount (increasing sharpness)
+	//		1: amount = 1/10 (0.1)
+	//		2: amount = 2/10 (0.2)
+	//		..
+	BOOL UnsharpMask(int nAmount, CDib* pOrigDib, CDib* pDib);
+	void Sharpen(int nAmount);
 	void DoIt();
-	BOOL Sharpen(CDib* pDib, CDib* pSrcDib, int nSharpness);
-	void Undo();
-	CDib m_PreviewUndoDib;
+	CDib m_OrigDib;
+	CDib m_BlurredDib;
 
 	// Generated message map functions
 	//{{AFX_MSG(CSharpenDlg)

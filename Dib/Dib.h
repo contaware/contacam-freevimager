@@ -547,6 +547,9 @@ public:
 										CWnd* pProgressWnd = NULL,
 										BOOL bProgressSend = TRUE);
 
+	// Closest color matching
+	void InitGetClosestColorIndex();
+	void FreeGetClosestColorIndex();
 	__forceinline int GetClosestColorIndex(COLORREF crColor);
 
 	__forceinline WORD GetPaletteSize() const;
@@ -1805,12 +1808,6 @@ protected:
 	void AdjustGamma(	double gamma,
 						CWnd* pProgressWnd = NULL,
 						BOOL bProgressSend = TRUE);
-
-	// Init Lookup Table for closest color matching
-	void InitGetClosestColorIndex();
-
-	// Free Lookup Table for closest color matching
-	void FreeGetClosestColorIndex();
 
 	// Bicubic Resample Helpers
 	BOOL BicubicResample24_SSE(	int nNewWidth,

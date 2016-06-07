@@ -16,11 +16,10 @@ static char THIS_FILE[] = __FILE__;
 
 #define MIN_SHARPNESS		0
 #define MAX_SHARPNESS		10
-#define DEFAULT_SHARPNESS	4
+#define DEFAULT_SHARPNESS	5
 
 /////////////////////////////////////////////////////////////////////////////
 // CSharpenDlg dialog
-
 
 CSharpenDlg::CSharpenDlg(CWnd* pParent)
 	: CDialog(CSharpenDlg::IDD, pParent)
@@ -33,7 +32,6 @@ CSharpenDlg::CSharpenDlg(CWnd* pParent)
 	pView->ForceCursor();
 	CDialog::Create(CSharpenDlg::IDD, pParent);
 }
-
 
 void CSharpenDlg::DoDataExchange(CDataExchange* pDX)
 {
@@ -57,7 +55,6 @@ BOOL CSharpenDlg::OnInitDialog()
 {
 	CPictureView* pView = (CPictureView*)m_pParentWnd;
 	CPictureDoc* pDoc = (CPictureDoc*)pView->GetDocument();
-	CDib* pDib = pDoc->m_pDib;
 
 	CDialog::OnInitDialog();
 	
@@ -68,15 +65,54 @@ BOOL CSharpenDlg::OnInitDialog()
 	pSlider->SetLineSize(1);
 	pSlider->SetPageSize(1);
 	int nSharpen = ::AfxGetApp()->GetProfileInt(_T("PictureDoc"), _T("Sharpen"), DEFAULT_SHARPNESS);
+	nSharpen = MIN(MAX_SHARPNESS, MAX(MIN_SHARPNESS, nSharpen));
 	pSlider->SetPos(nSharpen);
 
-	// Init Preview Undo Dib
-	if (pDib)
-		m_PreviewUndoDib = *pDib;
-
-	// Sharpen
+	// Create blurred dib and sharpen
 	BeginWaitCursor();
-	Sharpen(pDib, NULL, nSharpen);
+	if (pDoc->m_pDib)
+	{
+		m_OrigDib = *pDoc->m_pDib;
+#ifdef GAUSSIAN_BLUR_3x3
+		int Kernel[] = {1, 2, 1,
+						2, 4, 2,
+						1, 2, 1};
+		m_BlurredDib.FilterFast(Kernel,
+								16,
+								&m_OrigDib,
+								pView,
+								TRUE);
+#elif defined(GAUSSIAN_BLUR_5x5)
+		int Kernel[] = {1, 1, 2, 1, 1, 
+						1, 2, 4, 2, 1, 
+						2, 4, 8, 4, 2,
+						1, 2, 4, 2, 1, 
+						1, 1, 2, 1, 1};
+		m_BlurredDib.Filter(Kernel,
+							5,
+							52,
+							0,
+							&m_OrigDib,
+							pView,
+							TRUE);
+#else // Gaussian blur 7X7
+		int Kernel[] = {1, 1, 2, 2, 2, 1, 1,
+						1, 2, 2, 4, 2, 2, 1,
+						2, 2, 4, 8, 4, 2, 2,
+						2, 4, 8, 16,8, 4, 2,
+						2, 2, 4, 8, 4, 2, 2,
+						1, 2, 2, 4, 2, 2, 1,
+						1, 1, 2, 2, 2, 1, 1};
+		m_BlurredDib.Filter(Kernel,
+							7,
+							140,
+							0,
+							&m_OrigDib,
+							pView,
+							TRUE);
+#endif
+		Sharpen(nSharpen);
+	}
 	pDoc->UpdateAlphaRenderedDib();
 	EndWaitCursor();
 	pDoc->InvalidateAllViews(FALSE);
@@ -85,42 +121,148 @@ BOOL CSharpenDlg::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-BOOL CSharpenDlg::Sharpen(CDib* pDib, CDib* pSrcDib, int nSharpness)
+BOOL CSharpenDlg::UnsharpMask(int nAmount, CDib* pOrigDib, CDib* pDib)
+{	
+	// Check
+	if (!pOrigDib || !pOrigDib->IsValid() || !pDib || !pDib->IsValid())
+		return FALSE;
+
+	// Sharpen
+	int nDiff;
+	int nOrigRed, nOrigGreen, nOrigBlue, nOrigAlpha, r, g, b, a;
+	COLORREF crOrigColor, crColor;
+	if (pOrigDib->GetBitCount() <= 8)
+	{
+		pDib->InitGetClosestColorIndex();
+
+		for (unsigned int y = 0 ; y < pOrigDib->GetHeight() ; y++)
+		{
+			for (unsigned int x = 0 ; x < pOrigDib->GetWidth() ; x++)
+			{
+				// Get pixels
+				crOrigColor = pOrigDib->GetPixelColor(x, y);
+				crColor = pDib->GetPixelColor(x, y);
+
+				// Red
+				nOrigRed = GetRValue(crOrigColor);
+				nDiff = nOrigRed - GetRValue(crColor);
+				r = nOrigRed + nAmount * nDiff / 10;
+				r = MIN(255, MAX(0, r));
+
+				// Green
+				nOrigGreen = GetGValue(crOrigColor);
+				nDiff = nOrigGreen - GetGValue(crColor);
+				g = nOrigGreen + nAmount * nDiff / 10;
+				g = MIN(255, MAX(0, g));
+
+				// Blue
+				nOrigBlue = GetBValue(crOrigColor);
+				nDiff = nOrigBlue - GetBValue(crColor);
+				b = nOrigBlue + nAmount * nDiff / 10;
+				b = MIN(255, MAX(0, b));
+
+				// Set pixel
+				pDib->SetPixelIndex(x, y, pDib->GetClosestColorIndex(RGB(r, g, b)));
+			}
+		}
+	}
+	else if (pOrigDib->HasAlpha() && pOrigDib->GetBitCount() == 32)
+	{
+		for (unsigned int y = 0 ; y < pOrigDib->GetHeight() ; y++)
+		{
+			for (unsigned int x = 0 ; x < pOrigDib->GetWidth() ; x++)
+			{
+				// Get pixels
+				crOrigColor = pOrigDib->GetPixelColor32Alpha(x, y);
+				crColor = pDib->GetPixelColor32Alpha(x, y);
+
+				// Red
+				nOrigRed = GetRValue(crOrigColor);
+				nDiff = nOrigRed - GetRValue(crColor);
+				r = nOrigRed + nAmount * nDiff / 10;
+				r = MIN(255, MAX(0, r));
+
+				// Green
+				nOrigGreen = GetGValue(crOrigColor);
+				nDiff = nOrigGreen - GetGValue(crColor);
+				g = nOrigGreen + nAmount * nDiff / 10;
+				g = MIN(255, MAX(0, g));
+
+				// Blue
+				nOrigBlue = GetBValue(crOrigColor);
+				nDiff = nOrigBlue - GetBValue(crColor);
+				b = nOrigBlue + nAmount * nDiff / 10;
+				b = MIN(255, MAX(0, b));
+
+				// Alpha
+				nOrigAlpha = GetAValue(crOrigColor);
+				nDiff = nOrigAlpha - GetAValue(crColor);
+				a = nOrigAlpha + nAmount * nDiff / 10;
+				a = MIN(255, MAX(0, a));
+
+				// Set pixel
+				pDib->SetPixelColor32Alpha(x, y, RGBA(r, g, b, a));
+			}
+		}
+	}
+	else
+	{
+		for (unsigned int y = 0 ; y < pOrigDib->GetHeight() ; y++)
+		{
+			for (unsigned int x = 0 ; x < pOrigDib->GetWidth() ; x++)
+			{
+				// Get pixels
+				crOrigColor = pOrigDib->GetPixelColor(x, y);
+				crColor = pDib->GetPixelColor(x, y);
+
+				// Red
+				nOrigRed = GetRValue(crOrigColor);
+				nDiff = nOrigRed - GetRValue(crColor);
+				r = nOrigRed + nAmount * nDiff / 10;
+				r = MIN(255, MAX(0, r));
+
+				// Green
+				nOrigGreen = GetGValue(crOrigColor);
+				nDiff = nOrigGreen - GetGValue(crColor);
+				g = nOrigGreen + nAmount * nDiff / 10;
+				g = MIN(255, MAX(0, g));
+
+				// Blue
+				nOrigBlue = GetBValue(crOrigColor);
+				nDiff = nOrigBlue - GetBValue(crColor);
+				b = nOrigBlue + nAmount * nDiff / 10;
+				b = MIN(255, MAX(0, b));
+					
+				// Set pixel
+				pDib->SetPixelColor(x, y, RGB(r, g, b));
+			}
+		}
+	}
+
+	return TRUE;
+}
+
+void CSharpenDlg::Sharpen(int nAmount)
 {
 	CPictureView* pView = (CPictureView*)m_pParentWnd;
 	CPictureDoc* pDoc = (CPictureDoc*)pView->GetDocument();
-
-	switch (nSharpness)
+	
+	if (pDoc->m_pDib)
 	{
-		case 1 : nSharpness = 52; break;
-		case 2 : nSharpness = 36; break;
-		case 3 : nSharpness = 27; break;
-		case 4 : nSharpness = 21; break;
-		case 5 : nSharpness = 17; break;
-		case 6 : nSharpness = 14; break;
-		case 7 : nSharpness = 12; break;
-		case 8 : nSharpness = 11; break;
-		case 9 : nSharpness = 10; break;
-		case 10: nSharpness = 9;  break;
-		default: return FALSE;
+		if (nAmount > 0)
+		{
+			*pDoc->m_pDib = m_BlurredDib;
+			UnsharpMask(nAmount, &m_OrigDib, pDoc->m_pDib);
+		}
+		else
+			*pDoc->m_pDib = m_OrigDib;
 	}
-
-	int Kernel[] = {-1,-1,-1,
-					-1,nSharpness,-1,
-					-1,-1,-1};
-
-	return pDib->FilterFast(Kernel,
-							nSharpness - 8,
-							pSrcDib,
-							pView,
-							TRUE);
 }
 
 void CSharpenDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) 
 {
 	CPictureView* pView = (CPictureView*)m_pParentWnd;
 	CPictureDoc* pDoc = (CPictureDoc*)pView->GetDocument();
-	CDib* pDib = pDoc->m_pDib;
 
 	// Better to use Slider Pos Directly than the nPos parameter,
 	// this because with the Line and Page Message nPos is always 0...
@@ -135,17 +277,13 @@ void CSharpenDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 			(SB_LEFT == nSBCode)	||		// Home Button
 			(SB_RIGHT == nSBCode))			// End Button  
 		{
-			if (pDib)
-			{
-				BeginWaitCursor();
-				Undo();
-				int nSharpen = pSlider->GetPos();
-				Sharpen(pDib, NULL, nSharpen);
-				::AfxGetApp()->WriteProfileInt(_T("PictureDoc"), _T("Sharpen"), nSharpen);
-				pDoc->UpdateAlphaRenderedDib();
-				EndWaitCursor();
-				pDoc->InvalidateAllViews(FALSE);
-			}
+			BeginWaitCursor();
+			int nSharpen = pSlider->GetPos();
+			Sharpen(nSharpen);
+			::AfxGetApp()->WriteProfileInt(_T("PictureDoc"), _T("Sharpen"), nSharpen);
+			pDoc->UpdateAlphaRenderedDib();
+			EndWaitCursor();
+			pDoc->InvalidateAllViews(FALSE);
 		}
 	}
 	
@@ -162,7 +300,7 @@ void CSharpenDlg::OnClose()
 	CPictureView* pView = (CPictureView*)m_pParentWnd;
 	CPictureDoc* pDoc = (CPictureDoc*)pView->GetDocument();
 
-	Undo();
+	Sharpen(0);
 	pDoc->UpdateAlphaRenderedDib();
 	pDoc->InvalidateAllViews(FALSE);
 
@@ -199,16 +337,6 @@ void CSharpenDlg::PostNcDestroy()
 	CDialog::PostNcDestroy();
 }
 
-void CSharpenDlg::Undo() 
-{
-	CPictureView* pView = (CPictureView*)m_pParentWnd;
-	CPictureDoc* pDoc = (CPictureDoc*)pView->GetDocument();
-	CDib* pDib = pDoc->m_pDib;
-
-	if (pDib && m_PreviewUndoDib.IsValid())
-		*pDib = m_PreviewUndoDib;
-}
-
 void CSharpenDlg::DoIt()
 {
 	CPictureView* pView = (CPictureView*)m_pParentWnd;
@@ -219,7 +347,7 @@ void CSharpenDlg::DoIt()
 		Close();
 	else
 	{
-		pDoc->AddUndo(&m_PreviewUndoDib);
+		pDoc->AddUndo(&m_OrigDib);
 		pDoc->SetModifiedFlag();
 		pDoc->SetDocumentTitle();
 		pDoc->UpdateImageInfo();

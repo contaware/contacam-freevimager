@@ -2,7 +2,7 @@ FREEVIMAGER HISTORY
 
 5.0.9 (Month Xth 2016)
 
-- ...
+- Enhanced the Sharpen dialog by using the unsharp mask method
 
 5.0.7 (May 9th 2016)
 
