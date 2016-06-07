@@ -89,7 +89,7 @@ BOOL CDib::RenderAlphaWithSrcBackground(CDib* pSrcDib/*=NULL*/)
 		// Allocate memory
 		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * pSrcDib->GetHeight());
 	}
-	// Need to ReAllocate Bits because they are of differente size
+	// Need to ReAllocate Bits because they are of different size
 	else if (m_dwImageSize != uiDIBScanLineSize * pSrcDib->GetHeight())
 	{
 		BIGFREE(m_pBits);
@@ -227,7 +227,7 @@ BOOL CDib::GrayToAlphaChannel(COLORREF crColor, CDib* pSrcDib/*=NULL*/, CWnd* pP
 		// Allocate memory
 		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * pSrcDib->GetHeight());
 	}
-	// Need to ReAllocate Bits because they are of differente size
+	// Need to ReAllocate Bits because they are of different size
 	else if (m_dwImageSize != uiDIBScanLineSize * pSrcDib->GetHeight())
 	{
 		BIGFREE(m_pBits);
@@ -369,7 +369,7 @@ BOOL CDib::AlphaOffset(int nAlphaOffset, CDib* pSrcDib/*=NULL*/, CWnd* pProgress
 		// Allocate memory
 		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * pSrcDib->GetHeight());
 	}
-	// Need to ReAllocate Bits because they are of differente size
+	// Need to ReAllocate Bits because they are of different size
 	else if (m_dwImageSize != uiDIBScanLineSize * pSrcDib->GetHeight())
 	{
 		BIGFREE(m_pBits);

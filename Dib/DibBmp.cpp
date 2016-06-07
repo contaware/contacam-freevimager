@@ -237,7 +237,7 @@ BOOL CDib::LoadBMPNoFileHeader(CFile& file, BOOL bDecompress/*=TRUE*/)
 			if (m_pBits == NULL)
 				throw (int)BMP_E_NOMEM;
 		}
-		// Need to ReAllocate Bits because they are of differente size
+		// Need to ReAllocate Bits because they are of different size
 		else if (m_dwImageSize != m_pBMI->bmiHeader.biSizeImage)
 		{
 			BIGFREE(m_pBits);

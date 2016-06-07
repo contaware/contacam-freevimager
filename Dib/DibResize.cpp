@@ -344,7 +344,7 @@ BOOL CDib::ShrinkBits(	DWORD dwNewWidth,
 		// Allocate memory
 		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight);
 	}
-	// Need to ReAllocate Bits because they are of differente size
+	// Need to ReAllocate Bits because they are of different size
 	else if (m_dwImageSize != uiDIBTargetScanLineSize * dwNewHeight)
 	{
 		BIGFREE(m_pBits);
@@ -1526,7 +1526,7 @@ BOOL CDib::NearestNeighborResizeBits(	DWORD dwNewWidth,
 		// Allocate memory
 		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight);
 	}
-	// Need to ReAllocate Bits because they are of differente size
+	// Need to ReAllocate Bits because they are of different size
 	else if (m_dwImageSize != uiDIBTargetScanLineSize * dwNewHeight)
 	{
 		BIGFREE(m_pBits);
@@ -1807,7 +1807,7 @@ BOOL CDib::BilinearResampleBits(DWORD dwNewWidth,
 		// Allocate memory
 		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight);
 	}
-	// Need to ReAllocate Bits because they are of differente size
+	// Need to ReAllocate Bits because they are of different size
 	else if (m_dwImageSize != uiDIBTargetScanLineSize * dwNewHeight)
 	{
 		BIGFREE(m_pBits);
@@ -2432,7 +2432,7 @@ BOOL CDib::BicubicResampleBits(	DWORD dwNewWidth,
 		// Allocate memory
 		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight);
 	}
-	// Need to ReAllocate Bits because they are of differente size
+	// Need to ReAllocate Bits because they are of different size
 	else if (m_dwImageSize != uiDIBTargetScanLineSize * dwNewHeight)
 	{
 		BIGFREE(m_pBits);
@@ -4532,7 +4532,7 @@ BOOL CDib::LanczosResampleBits(	DWORD dwNewWidth,
 		// Allocate memory
 		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight);
 	}
-	// Need to ReAllocate Bits because they are of differente size
+	// Need to ReAllocate Bits because they are of different size
 	else if (m_dwImageSize != uiDIBTargetScanLineSize * dwNewHeight)
 	{
 		BIGFREE(m_pBits);

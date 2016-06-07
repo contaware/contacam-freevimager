@@ -1739,7 +1739,7 @@ BOOL CDib::CropBits(DWORD dwOrigX,
 		// Allocate memory
 		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwCropHeight);
 	}
-	// Need to ReAllocate Bits because they are of differente size
+	// Need to ReAllocate Bits because they are of different size
 	else if (m_dwImageSize != uiDIBTargetScanLineSize * dwCropHeight)
 	{
 		BIGFREE(m_pBits);
@@ -2003,7 +2003,7 @@ BOOL CDib::AddBorders(	DWORD dwLeft,
 		// Allocate memory
 		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwDstHeight);
 	}
-	// Need to ReAllocate Bits because they are of differente size
+	// Need to ReAllocate Bits because they are of different size
 	else if (m_dwImageSize != uiDIBTargetScanLineSize * dwDstHeight)
 	{
 		BIGFREE(m_pBits);

@@ -82,7 +82,7 @@ BOOL CDib::FlipTopDown(CDib* pSrcDib/*=NULL*/)
 		// Allocate memory
 		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetHeight());
 	}
-	// Need to ReAllocate Bits because they are of differente size
+	// Need to ReAllocate Bits because they are of different size
 	else if (m_dwImageSize != uiDIBScanLineSize * GetHeight())
 	{
 		BIGFREE(m_pBits);
@@ -203,7 +203,7 @@ BOOL CDib::FlipLeftRight(CDib* pSrcDib/*=NULL*/)
 		// Allocate memory
 		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetHeight());
 	}
-	// Need to ReAllocate Bits because they are of differente size
+	// Need to ReAllocate Bits because they are of different size
 	else if (m_dwImageSize != uiDIBScanLineSize * GetHeight())
 	{
 		BIGFREE(m_pBits);
@@ -442,7 +442,7 @@ BOOL CDib::Rotate180(CDib* pSrcDib/*=NULL*/)
 		// Allocate memory
 		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetHeight());
 	}
-	// Need to ReAllocate Bits because they are of differente size
+	// Need to ReAllocate Bits because they are of different size
 	else if (m_dwImageSize != uiDIBScanLineSize * GetHeight())
 	{
 		BIGFREE(m_pBits);
@@ -709,7 +709,7 @@ BOOL CDib::Rotate90CW(CDib* pSrcDib/*=NULL*/)
 		// Allocate memory
 		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * nSrcWidth);
 	}
-	// Need to ReAllocate Bits because they are of differente size
+	// Need to ReAllocate Bits because they are of different size
 	else if (m_dwImageSize != uiDIBTargetScanLineSize * nSrcWidth)
 	{
 		BIGFREE(m_pBits);
@@ -964,7 +964,7 @@ BOOL CDib::Rotate90CCW(CDib* pSrcDib/*=NULL*/)
 		// Allocate memory
 		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * nSrcWidth);
 	}
-	// Need to ReAllocate Bits because they are of differente size
+	// Need to ReAllocate Bits because they are of different size
 	else if (m_dwImageSize != uiDIBTargetScanLineSize * nSrcWidth)
 	{
 		BIGFREE(m_pBits);
@@ -1317,7 +1317,7 @@ BOOL CDib::RotateCCW(	double angle,
 		// Allocate memory
 		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * nDstHeight);
 	}
-	// Need to ReAllocate Bits because they are of differente size
+	// Need to ReAllocate Bits because they are of different size
 	else if (m_dwImageSize != uiDIBTargetScanLineSize * nDstHeight)
 	{
 		BIGFREE(m_pBits);

@@ -94,7 +94,7 @@ BOOL CDib::Filter(	int* pKernel,
 		// Allocate memory
 		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * pSrcDib->GetHeight());
 	}
-	// Need to ReAllocate Bits because they are of differente size
+	// Need to ReAllocate Bits because they are of different size
 	else if (m_dwImageSize != uiDIBScanLineSize * pSrcDib->GetHeight())
 	{
 		BIGFREE(m_pBits);
@@ -485,7 +485,7 @@ BOOL CDib::FilterFast(	int* pKernel,
 		// Allocate memory
 		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * pSrcDib->GetHeight());
 	}
-	// Need to ReAllocate Bits because they are of differente size
+	// Need to ReAllocate Bits because they are of different size
 	else if (m_dwImageSize != uiDIBScanLineSize * pSrcDib->GetHeight())
 	{
 		BIGFREE(m_pBits);
@@ -1148,7 +1148,7 @@ BOOL CDib::FilterAlpha(	CRect rc,
 		// Allocate memory
 		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * pSrcDib->GetHeight());
 	}
-	// Need to ReAllocate Bits because they are of differente size
+	// Need to ReAllocate Bits because they are of different size
 	else if (m_dwImageSize != uiDIBScanLineSize * pSrcDib->GetHeight())
 	{
 		BIGFREE(m_pBits);
@@ -1408,7 +1408,7 @@ BOOL CDib::FilterFastAlpha(	int* pKernel,
 		// Allocate memory
 		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * pSrcDib->GetHeight());
 	}
-	// Need to ReAllocate Bits because they are of differente size
+	// Need to ReAllocate Bits because they are of different size
 	else if (m_dwImageSize != uiDIBScanLineSize * pSrcDib->GetHeight())
 	{
 		BIGFREE(m_pBits);
