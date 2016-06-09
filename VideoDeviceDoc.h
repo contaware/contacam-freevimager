@@ -64,6 +64,7 @@ class CMovementDetectionPage;
 #define MIN_DISK_FREE_PERMILLION			50000		// 5%
 #define DEFAULT_VIDEO_FILEEXT				_T(".mp4")	// default file extension
 #define DEFAULT_EMAIL_SUBJECT				_T("%name%: %date% %time% %note%")
+#define PLACEMENT_THRESHOLD_PIXELS			50			// to make sure that the saved placement is visible
 
 // Frame tag, thumb message and draw message
 #define FRAMETAG_REFWIDTH					640

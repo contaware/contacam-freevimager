@@ -2,7 +2,8 @@ CONTACAM HISTORY
 
 5.0.9 (Month Xth 2016)
 
-- Always buffering frames in memory
+- All detection frames are buffered to memory (or page file)
+- Full stretch the videos in web interface
 - Corrected FTP to first upload the full video/jpeg version and then
   the corresponding thumb. That's necessary because the thumbs link
   to the full versions in web interface

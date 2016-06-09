@@ -4259,7 +4259,25 @@ void CVideoDeviceDoc::SavePlacement()
 		memset(&wndpl, 0, sizeof(wndpl));
 		wndpl.length = sizeof(wndpl);
 		if (GetFrame()->GetWindowPlacement(&wndpl))
+		{
+			// Make sure that the saved placement is visible
+			if (::AfxGetMainFrame())
+			{
+				CRect rc(0, 0, 0, 0);
+				::AfxGetMainFrame()->GetMDIClientRect(&rc);
+				if (rc.Width() > 0 && rc.Height() > 0)
+				{
+					if (wndpl.rcNormalPosition.right < PLACEMENT_THRESHOLD_PIXELS				||
+						wndpl.rcNormalPosition.bottom < PLACEMENT_THRESHOLD_PIXELS				||
+						wndpl.rcNormalPosition.left > rc.Width() - PLACEMENT_THRESHOLD_PIXELS	||
+						wndpl.rcNormalPosition.top > rc.Height() - PLACEMENT_THRESHOLD_PIXELS)
+						::AfxGetMainFrame()->ClipToMDIRect(&wndpl.rcNormalPosition);
+				}
+			}
+
+			// Store placement
 			::AfxGetApp()->WriteProfileBinary(GetDevicePathName(), _T("WindowPlacement"), (BYTE*)&wndpl, sizeof(wndpl));
+		}
 	}
 }
 
