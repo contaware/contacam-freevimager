@@ -1412,9 +1412,9 @@ BOOL CVideoDeviceDoc::SendMailMovementDetection(const CTime& Time, const CString
 			case 1 : sConnectionTypeOption = _T("-ssl"); break;			// SSL and TLS
 			default: sConnectionTypeOption = _T("-starttls"); break;	// STARTTLS
 		}
-		sOptions.Format(_T("-t \"%s\" -f %s %s %s -port %d %s -smtp %s -cs \"iso-8859-1\" -sub \"%s\" +cc +bc -user \"%s\" -pass \"%s\""),
+		sOptions.Format(_T("-t \"%s\" -f %s %s %s -port %d %s -smtp %s -cs \"iso-8859-1\" -sub \"%s\" +cc +bc -user \"%s\" -pass \"%s\" -M \"%s\""),
 						m_SendMailConfiguration.m_sTo,
-						m_SendMailConfiguration.m_sFrom, // must be comma separated, but can have white spaces in between
+						m_SendMailConfiguration.m_sFrom,
 						m_SendMailConfiguration.m_sFromName.IsEmpty() ? _T("") : _T("-name \"") + m_SendMailConfiguration.m_sFromName + _T("\""),
 						sConnectionTypeOption,
 						m_SendMailConfiguration.m_nPort,
@@ -1422,17 +1422,10 @@ BOOL CVideoDeviceDoc::SendMailMovementDetection(const CTime& Time, const CString
 						m_SendMailConfiguration.m_sHost,
 						sSubject,
 						m_SendMailConfiguration.m_sUsername,
-						m_SendMailConfiguration.m_sPassword);
+						m_SendMailConfiguration.m_sPassword,
+						sSubject);
 		if (::GetFileSize64(sFileName).QuadPart > 0)
-		{
-			CString sExt(::GetFileExt(sFileName));
-			if (sExt == _T(".jpg") || sExt == _T(".gif"))
-				sOptions += _T(" -embed-image \"") + sFileName + _T("\"");
-			else
-				sOptions += _T(" -M \"") + sSubject + _T("\" -attach \"") + sFileName + _T("\"");
-		}
-		else
-			sOptions += _T(" -M \"") + sSubject + _T("\"");
+			sOptions += _T(" -attach \"") + sFileName + _T("\"");
 		HANDLE h = Mailer(sOptions);
 		if (h)
 		{
