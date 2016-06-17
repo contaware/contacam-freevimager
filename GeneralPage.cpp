@@ -804,7 +804,7 @@ void CGeneralPage::OnAudioMixer()
 	else
 	{
 		CString params;
-		params.Format(_T("/r /d%u"), m_pDoc->m_dwCaptureAudioDeviceID);
+		params.Format(_T("/r /d%u"), m_pDoc->EffectiveCaptureAudioDeviceID());
 		::ShellExecute(	NULL, NULL,
 						_T("sndvol32.exe"), params, NULL, SW_SHOWNORMAL);
 	}

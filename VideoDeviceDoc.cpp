@@ -1615,6 +1615,54 @@ HANDLE CVideoDeviceDoc::FTPUpload(	const FTPUploadConfigurationStruct& Config,
 	return FTPCall(sOptions);
 }
 
+UINT CVideoDeviceDoc::EffectiveCaptureAudioDeviceID()
+{
+	// Prefer the device name over the id because the id can change when devices are added/removed.
+	// Exception: in case of multiple devices with the same name give higher priority to the id.
+	if (!m_sCaptureAudioDeviceName.IsEmpty() &&
+		CaptureAudioDeviceIDToName(m_dwCaptureAudioDeviceID) != m_sCaptureAudioDeviceName)
+		return CaptureAudioNameToDeviceID(m_sCaptureAudioDeviceName);
+	else
+		return m_dwCaptureAudioDeviceID;
+}
+
+CString CVideoDeviceDoc::CaptureAudioDeviceIDToName(UINT uiID)
+{
+	// Check
+	if (uiID >= ::waveInGetNumDevs())
+		return _T("Unknown Device");
+
+	// Get device name
+	WAVEINCAPS2 DevCaps;
+	memset(&DevCaps, 0, sizeof(WAVEINCAPS2));
+	MMRESULT res = ::waveInGetDevCaps(uiID, (LPWAVEINCAPS)(&DevCaps), sizeof(WAVEINCAPS2));
+	if (res != MMSYSERR_NOERROR)
+		return _T("Unknown Device");
+	else
+	{
+		CString sDevName(DevCaps.szPname);
+		CString sRegistryDevName = ::GetRegistryStringValue(HKEY_LOCAL_MACHINE,
+									_T("System\\CurrentControlSet\\Control\\MediaCategories\\{") +
+									::UuidToString(&DevCaps.NameGuid) + _T("}"),
+									_T("Name"));
+		if (sDevName.GetLength() > sRegistryDevName.GetLength())
+			return (sRegistryDevName.GetLength() > 5 ? sRegistryDevName : sDevName); // priority to registry device name if it has a reasonable length
+		else
+			return sRegistryDevName;
+	}
+}
+
+UINT CVideoDeviceDoc::CaptureAudioNameToDeviceID(const CString& sName)
+{
+	UINT uiNumDev = ::waveInGetNumDevs();
+	for (UINT i = 0 ; i < uiNumDev ; i++)
+	{
+		if (sName == CaptureAudioDeviceIDToName(i))
+			return i;
+	}
+	return 0;
+}
+
 CVideoDeviceDoc::CCaptureAudioThread::CCaptureAudioThread() 
 {
 	// Set pointers to NULL
@@ -1654,8 +1702,8 @@ CVideoDeviceDoc::CCaptureAudioThread::~CCaptureAudioThread()
 
 void CVideoDeviceDoc::CCaptureAudioThread::AudioInSourceDialog()
 {
-	CAudioInSourceDlg dlg(m_pDoc->m_dwCaptureAudioDeviceID);
-	if (dlg.DoModal() == IDOK && dlg.m_uiDeviceID != m_pDoc->m_dwCaptureAudioDeviceID)
+	CAudioInSourceDlg dlg(m_pDoc->EffectiveCaptureAudioDeviceID());
+	if (dlg.DoModal() == IDOK)
 	{
 		// Stop Save Frame List Thread
 		m_pDoc->m_SaveFrameListThread.Kill();
@@ -1668,6 +1716,7 @@ void CVideoDeviceDoc::CCaptureAudioThread::AudioInSourceDialog()
 		if (m_pDoc->m_bCaptureAudio)
 			Kill();
 		m_pDoc->m_dwCaptureAudioDeviceID = dlg.m_uiDeviceID;
+		m_pDoc->m_sCaptureAudioDeviceName = CaptureAudioDeviceIDToName(m_pDoc->m_dwCaptureAudioDeviceID);
 		if (m_pDoc->m_bCaptureAudio)
 			Start();
 
@@ -1879,16 +1928,16 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::OpenInAudio()
 			m_dwUncompressedBufSize += nFrameSize - nRemainder;
 	}
 
-	// Open Input 
+	// Open Input
 	if (::waveInOpen(	&m_hWaveIn,
-						m_pDoc->m_dwCaptureAudioDeviceID,
+						m_pDoc->EffectiveCaptureAudioDeviceID(),
 						m_pDoc->m_pSrcWaveFormat,
 						(DWORD)m_hWaveInEvent,
 						NULL,
 						CALLBACK_EVENT) != MMSYSERR_NOERROR)
 	{
 		::ResetEvent(m_hWaveInEvent); // Reset The Open Event
-		::LogLine(_T("%s, sound input cannot open device ID %u"), m_pDoc->GetAssignedDeviceName(), m_pDoc->m_dwCaptureAudioDeviceID);
+		::LogLine(_T("%s, sound input cannot open device"), m_pDoc->GetAssignedDeviceName());
 	    return FALSE;
 	}
 	else
@@ -4165,6 +4214,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_bCaptureAudio = (BOOL) pApp->GetProfileInt(sSection, _T("CaptureAudio"), FALSE);
 	m_bAudioListen = (BOOL) pApp->GetProfileInt(sSection, _T("AudioListen"), FALSE);
 	m_dwCaptureAudioDeviceID = (DWORD) pApp->GetProfileInt(sSection, _T("AudioCaptureDeviceID"), 0);
+	m_sCaptureAudioDeviceName = pApp->GetProfileString(sSection, _T("AudioCaptureDeviceName"), CaptureAudioDeviceIDToName(m_dwCaptureAudioDeviceID));
 	m_nDeviceInputId = (int) pApp->GetProfileInt(sSection, _T("VideoCaptureDeviceInputID"), -1);
 	m_nDeviceFormatId = (int) pApp->GetProfileInt(sSection, _T("VideoCaptureDeviceFormatID"), -1);
 	m_nDeviceFormatWidth = (int) pApp->GetProfileInt(sSection, _T("VideoCaptureDeviceFormatWidth"), 0);
@@ -4349,6 +4399,7 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("CaptureAudio"), m_bCaptureAudio);
 	pApp->WriteProfileInt(sSection, _T("AudioListen"), (int)m_bAudioListen);
 	pApp->WriteProfileInt(sSection, _T("AudioCaptureDeviceID"), m_dwCaptureAudioDeviceID);
+	pApp->WriteProfileString(sSection, _T("AudioCaptureDeviceName"), m_sCaptureAudioDeviceName);
 	pApp->WriteProfileInt(sSection, _T("VideoCaptureDeviceInputID"), m_nDeviceInputId);
 	pApp->WriteProfileInt(sSection, _T("VideoCaptureDeviceFormatID"), m_nDeviceFormatId);
 	pApp->WriteProfileInt(sSection, _T("VideoCaptureDeviceFormatWidth"), m_nDeviceFormatWidth);

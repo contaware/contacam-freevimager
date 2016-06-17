@@ -682,6 +682,9 @@ public:
 	void FreeVideoFile();
 	static void WaveInitFormat(WORD wCh, DWORD dwSampleRate, WORD wBitsPerSample, LPWAVEFORMATEX pWaveFormat);
 	void UpdateDstWaveFormat();
+	UINT EffectiveCaptureAudioDeviceID();
+	static CString CaptureAudioDeviceIDToName(UINT uiID);
+	static UINT CaptureAudioNameToDeviceID(const CString& sName);
 
 	// Fast bicubic resize
 	// Source and destination Dibs must already have the bits allocated! 
@@ -865,6 +868,7 @@ public:
 	
 	// Audio Vars
 	volatile DWORD m_dwCaptureAudioDeviceID;			// Audio Capture Device ID
+	CString m_sCaptureAudioDeviceName;					// Audio Capture Device Name
 	volatile BOOL m_bCaptureAudio;						// Do Capture Audio Flag
 	volatile BOOL m_bAudioListen;						// Listen audio source
 	LPWAVEFORMATEX m_pSrcWaveFormat;					// Uncompressed audio source format

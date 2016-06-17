@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "uimager.h"
 #include "AudioInSourceDlg.h"
+#include "VideoDeviceDoc.h"
 #include "mmsystem.h"
 
 #ifdef _DEBUG
@@ -11,6 +12,8 @@
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+#ifdef VIDEODEVICEDOC
 
 /////////////////////////////////////////////////////////////////////////////
 // CAudioInSourceDlg dialog
@@ -43,27 +46,6 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CAudioInSourceDlg message handlers
 
-CString CAudioInSourceDlg::DevIDToName(UINT uiID)
-{
-	WAVEINCAPS2 DevCaps;
-	memset(&DevCaps, 0, sizeof(WAVEINCAPS2));
-	MMRESULT res = ::waveInGetDevCaps(uiID, (LPWAVEINCAPS)(&DevCaps), sizeof(WAVEINCAPS2));
-	if (res != MMSYSERR_NOERROR)
-		return _T("Unknown Device");
-	else
-	{
-		CString sDevName(DevCaps.szPname);
-		CString sRegistryDevName = ::GetRegistryStringValue(HKEY_LOCAL_MACHINE,
-									_T("System\\CurrentControlSet\\Control\\MediaCategories\\{") +
-									::UuidToString(&DevCaps.NameGuid) + _T("}"),
-									_T("Name"));
-		if (sDevName.GetLength() > sRegistryDevName.GetLength())
-			return (sRegistryDevName.GetLength() > 5 ? sRegistryDevName : sDevName); // priority to registry device name if it has a reasonable length
-		else
-			return sRegistryDevName;
-	}
-}
-
 BOOL CAudioInSourceDlg::OnInitDialog() 
 {
 	CDialog::OnInitDialog();
@@ -79,7 +61,7 @@ BOOL CAudioInSourceDlg::OnInitDialog()
 
 	// Enumerate the devices
 	for (UINT i = 0 ; i < uiNumDev ; i++)
-		m_AudioInSource.AddString(DevIDToName(i));
+		m_AudioInSource.AddString(CVideoDeviceDoc::CaptureAudioDeviceIDToName(i));
 
 	// Init selection
 	if (m_uiDeviceID > (uiNumDev - 1))
@@ -98,3 +80,5 @@ void CAudioInSourceDlg::OnOK()
 		m_uiDeviceID = nSel;
 	CDialog::OnOK();
 }
+
+#endif
