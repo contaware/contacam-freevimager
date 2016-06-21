@@ -901,66 +901,45 @@ void CPictureView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
 			return;
 		}
 
-		// "Abuse" the thread class to pump messages,
-		// this avoids locking the UI. MFC printing dialog with
-		// a Cancel button is showing at this point.
-		// The FakeThread pump-loop drops ESC or ENTER keys,
-		// only left-button clicks on the Cancel button work.
-		::AfxGetMainFrame()->EnableWindow(FALSE);
-		CWorkerThread FakeThread;
-		FakeThread.SetProcMsg(true);
-
 		// Resize the Dib, that may fail if we do not have enough memory
 		// (for example in case of huge prints)
 		if (!Dib.StretchBits(	(DWORD)(m_rcDibPrint.Width()),
 								(DWORD)(m_rcDibPrint.Height()),
 								NULL,
-								pDoc->GetView(), TRUE, &FakeThread))
+								pDoc->GetView(), TRUE))
 		{
-			// Re-enable
-			::AfxGetMainFrame()->EnableWindow(TRUE);
-
-			// Abort printing?
-			if (FakeThread.DoExit())
+			// Re-copy and re-crop because if StretchBits
+			// failed the Dib's bits may have been freed,
+			// but could not be allocated!
+			Dib = *pDib;
+			if (!Dib.CropBits(	DibRect.left,
+								DibRect.top,
+								DibRect.Width(),
+								DibRect.Height(),
+								NULL,
+								pDoc->GetView(),
+								TRUE))
 			{
-				pDC->AbortDoc();	// That avoids the call of the message-loop
-									// in _AfxAbortProc() when exiting this function
+				// Restore Pixel Scaling
+				m_dXFontPixelScale = 1.0;
+				m_dYFontPixelScale = 1.0;
+				EndWaitCursor();
+				return;
 			}
-			else
-			{
-				// Re-copy and re-crop because if StretchBits
-				// failed the Dib's bits may have been freed,
-				// but could not be allocated!
-				Dib = *pDib;
-				if (!Dib.CropBits(	DibRect.left,
-									DibRect.top,
-									DibRect.Width(),
-									DibRect.Height(),
-									NULL,
-									pDoc->GetView(),
-									TRUE))
-				{
-					// Restore Pixel Scaling
-					m_dXFontPixelScale = 1.0;
-					m_dYFontPixelScale = 1.0;
-					EndWaitCursor();
-					return;
-				}
 
-				// Print with halftone stretch
-				Dib.SetStretchMode(HALFTONE);
-				if (!Dib.Paint(	pDC->m_hDC,
-								m_rcDibPrint,
-								CRect(0, 0, Dib.GetWidth(), Dib.GetHeight()),
-								FALSE))
-				{
-					// Try with color on color stretch
-					Dib.SetStretchMode(COLORONCOLOR);
-					Dib.Paint(	pDC->m_hDC,
-								m_rcDibPrint,
-								CRect(0, 0, Dib.GetWidth(), Dib.GetHeight()),
-								FALSE);
-				}
+			// Print with halftone stretch
+			Dib.SetStretchMode(HALFTONE);
+			if (!Dib.Paint(	pDC->m_hDC,
+							m_rcDibPrint,
+							CRect(0, 0, Dib.GetWidth(), Dib.GetHeight()),
+							FALSE))
+			{
+				// Try with color on color stretch
+				Dib.SetStretchMode(COLORONCOLOR);
+				Dib.Paint(	pDC->m_hDC,
+							m_rcDibPrint,
+							CRect(0, 0, Dib.GetWidth(), Dib.GetHeight()),
+							FALSE);
 			}
 
 			// Restore Pixel Scaling
@@ -969,9 +948,6 @@ void CPictureView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
 			EndWaitCursor();
 			return;
 		}
-
-		// Re-enable
-		::AfxGetMainFrame()->EnableWindow(TRUE);
 
 		// Print (No Stretch)
 		Dib.Paint(	pDC->m_hDC,

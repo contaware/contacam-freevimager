@@ -17,7 +17,7 @@ class CResizingDpiDlg : public CDialog
 {
 // Construction
 public:
-	enum {AVG = 0, NEARESTNEIGHBOR, BILINEAR, BICUBIC, LANCZOS};
+	enum {AVG = 0, NEARESTNEIGHBOR, BILINEAR, BICUBIC};
 	double m_dRatio;
 	CResizingDpiDlg(int nWidth, int nHeight,
 					int nXDpi, int nYDpi,

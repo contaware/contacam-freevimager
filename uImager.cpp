@@ -478,6 +478,16 @@ extern "C" void my_handle_aborts(int signal)
 	}
 }
 
+void CUImagerApp::Pump()
+{
+    MSG msg;
+    while (::PeekMessage(&msg, NULL,   // pump message until none
+           NULL, NULL, PM_NOREMOVE))   // are left in the queue
+    {
+        ::AfxGetThread()->PumpMessage();
+    }
+}
+
 BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 {
 	CInstanceChecker* pInstanceChecker = NULL;
@@ -870,12 +880,12 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			ServiceControlEndProcThread.Start();
 			do 
 			{
-				ServiceControlEndProcThread.ProcMsg();	// pump messages to show toaster
+				Pump();	// pump messages to show toaster
 				::Sleep(10);
 			}
 			while (ServiceControlEndProcThread.IsAlive());
 			::AfxGetMainFrame()->CloseToaster();
-			ServiceControlEndProcThread.ProcMsg();		// pump messages to hide toaster
+			Pump();		// pump messages to hide toaster
 			m_bDoStartFromService = TRUE;
 		}
 #endif

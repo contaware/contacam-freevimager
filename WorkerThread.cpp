@@ -14,7 +14,6 @@ CWorkerThread::CWorkerThread()
 
 	m_bRunning =		false;
 	m_bAlive =			false;
-	m_bProcMsg =		false;
 	m_bAutoDelete =		FALSE;
 
 	m_hStartupEvent =	::CreateEvent(NULL, TRUE, FALSE, NULL);

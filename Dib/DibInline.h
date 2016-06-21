@@ -487,25 +487,6 @@ __forceinline float CDib::KernelGeneralizedCubic(const float t, const float a)
 	return 0.0f;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/**
- * Lanczos windowed sinc interpolation kernel with radius r.
-          /
-  h(t) = | sinc(t)*sinc(t/r)       , if |t|<r
-         | 0                       , otherwise
-          \
- */
-__forceinline double CDib::KernelLanczosSinc(const double t, const double r)
-{
-	if (fabs(t) > r)
-		return 0.0;
-	if (t == 0.0)
-		return 1.0;
-	double pit = PI * t;
-	double pitd = pit / r;
-	return (sin(pit) / pit) * (sin(pitd) / pitd);
-}
-
 // Helper functions for the RotateCW and RotateCCW functions
 __forceinline double CDib::min4(double a, double b, double c, double d)
 {

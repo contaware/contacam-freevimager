@@ -3541,7 +3541,6 @@ BEGIN
     IDS_STRING1499          "Nearest Neighbor"
     IDS_STRING1500          "Bilinear"
     IDS_STRING1501          "Bicubic"
-    IDS_STRING1502          "Lanczos (slowest)"
 END
 
 STRINGTABLE

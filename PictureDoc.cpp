@@ -5628,11 +5628,6 @@ BOOL CPictureDoc::EditResize(BOOL bShowMessageBoxOnError)
 			m_pDib->SetXDpi(dlg.m_nXDpi);
 			m_pDib->SetYDpi(dlg.m_nYDpi);
 
-			// "Abuse" the thread class to pump messages,
-			// this avoids locking the UI
-			::AfxGetMainFrame()->EnableWindow(FALSE);
-			CWorkerThread FakeThread;
-			FakeThread.SetProcMsg(true);
 			CDib Dib(*m_pDib);
 
 			// Do Resize
@@ -5646,11 +5641,10 @@ BOOL CPictureDoc::EditResize(BOOL bShowMessageBoxOnError)
 						if (!Dib.ShrinkBits((DWORD)(dlg.m_nPixelsWidth),
 											(DWORD)(dlg.m_nPixelsHeight),
 											m_pDib,
-											GetView(), TRUE, &FakeThread))
+											GetView(), TRUE))
 						{
 							Undo();
 							EndWaitCursor();
-							::AfxGetMainFrame()->EnableWindow(TRUE);
 							GetView()->ForceCursor(FALSE);
 							return FALSE;
 						}
@@ -5660,11 +5654,10 @@ BOOL CPictureDoc::EditResize(BOOL bShowMessageBoxOnError)
 						if (!Dib.BicubicResampleBits((DWORD)(dlg.m_nPixelsWidth),
 													(DWORD)(dlg.m_nPixelsHeight),
 													m_pDib,
-													GetView(), TRUE, &FakeThread))
+													GetView(), TRUE))
 						{
 							Undo();
 							EndWaitCursor();
-							::AfxGetMainFrame()->EnableWindow(TRUE);
 							GetView()->ForceCursor(FALSE);
 							return FALSE;
 						}
@@ -5677,11 +5670,10 @@ BOOL CPictureDoc::EditResize(BOOL bShowMessageBoxOnError)
 					if (!Dib.NearestNeighborResizeBits(	(DWORD)(dlg.m_nPixelsWidth),
 														(DWORD)(dlg.m_nPixelsHeight),
 														m_pDib,
-														GetView(), TRUE, &FakeThread))
+														GetView(), TRUE))
 					{
 						Undo();
 						EndWaitCursor();
-						::AfxGetMainFrame()->EnableWindow(TRUE);
 						GetView()->ForceCursor(FALSE);
 						return FALSE;
 					}
@@ -5693,11 +5685,10 @@ BOOL CPictureDoc::EditResize(BOOL bShowMessageBoxOnError)
 					if (!Dib.BilinearResampleBits((DWORD)(dlg.m_nPixelsWidth),
 												(DWORD)(dlg.m_nPixelsHeight),
 												m_pDib,
-												GetView(), TRUE, &FakeThread))
+												GetView(), TRUE))
 					{
 						Undo();
 						EndWaitCursor();
-						::AfxGetMainFrame()->EnableWindow(TRUE);
 						GetView()->ForceCursor(FALSE);
 						return FALSE;
 					}
@@ -5709,27 +5700,10 @@ BOOL CPictureDoc::EditResize(BOOL bShowMessageBoxOnError)
 					if (!Dib.BicubicResampleBits((DWORD)(dlg.m_nPixelsWidth),
 												(DWORD)(dlg.m_nPixelsHeight),
 												m_pDib,
-												GetView(), TRUE, &FakeThread))
+												GetView(), TRUE))
 					{
 						Undo();
 						EndWaitCursor();
-						::AfxGetMainFrame()->EnableWindow(TRUE);
-						GetView()->ForceCursor(FALSE);
-						return FALSE;
-					}
-					break;
-				}
-
-				case 4 :
-				{
-					if (!Dib.LanczosResampleBits((DWORD)(dlg.m_nPixelsWidth),
-												(DWORD)(dlg.m_nPixelsHeight),
-												m_pDib,
-												GetView(), TRUE, &FakeThread))
-					{
-						Undo();
-						EndWaitCursor();
-						::AfxGetMainFrame()->EnableWindow(TRUE);
 						GetView()->ForceCursor(FALSE);
 						return FALSE;
 					}
@@ -5739,14 +5713,12 @@ BOOL CPictureDoc::EditResize(BOOL bShowMessageBoxOnError)
 				default :
 					Undo();
 					EndWaitCursor();
-					::AfxGetMainFrame()->EnableWindow(TRUE);
 					GetView()->ForceCursor(FALSE);
 					return FALSE;
 			}
 
 			*m_pDib = Dib;
 			EndWaitCursor();
-			::AfxGetMainFrame()->EnableWindow(TRUE);
 		}
 		else
 		{

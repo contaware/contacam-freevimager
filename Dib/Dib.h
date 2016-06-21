@@ -509,7 +509,6 @@ public:
 	__forceinline float  KernelCubic_0_5(const float t);
 	__forceinline double KernelGeneralizedCubic(const double t, const double a);
 	__forceinline float  KernelGeneralizedCubic(const float t, const float a);
-	__forceinline double KernelLanczosSinc(const double t, const double r);
 
 	// Helper functions for the RotateCW and RotateCCW functions
 	__forceinline double min4(double a, double b, double c, double d);
@@ -876,14 +875,6 @@ public:
 	// SSE Optimized Bicubic Interpolation (Works on Bitmap Bits)
 	// (Bicubic is best for increasing image size)
 	BOOL BicubicResampleBits(	DWORD dwNewWidth,
-								DWORD dwNewHeight,
-								CDib* pSrcDib = NULL,
-								CWnd* pProgressWnd = NULL,
-								BOOL bProgressSend = TRUE,
-								CWorkerThread* pThread = NULL);	// Optional Worker Thread pointer from which we call DoExit()
-																// to check whether interruption of the load is wanted
-	// Lanczos Interpolation
-	BOOL LanczosResampleBits(	DWORD dwNewWidth,
 								DWORD dwNewHeight,
 								CDib* pSrcDib = NULL,
 								CWnd* pProgressWnd = NULL,

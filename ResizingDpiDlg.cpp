@@ -395,7 +395,6 @@ BOOL CResizingDpiDlg::OnInitDialog()
 		pComboBox->AddString(ML_STRING(1499, "Nearest Neighbor"));
 		pComboBox->AddString(ML_STRING(1500, "Bilinear"));
 		pComboBox->AddString(ML_STRING(1501, "Bicubic"));
-		pComboBox->AddString(ML_STRING(1502, "Lanczos (slowest)"));
 	}
 
 	// Init m_dMaxResizeFactor
