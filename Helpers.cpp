@@ -500,7 +500,11 @@ BOOL CreateDir(LPCTSTR szNewDir)
 if (pInfo) delete pInfo;\
 if (srcname) delete [] srcname;\
 if (dstname) delete [] dstname;
-BOOL CopyDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists/*=TRUE*/, BOOL bContinueOnCopyError/*=TRUE*/)
+BOOL CopyDirContent(LPCTSTR szFromDir,
+					LPCTSTR szToDir,
+					BOOL bOverwriteIfExists/*=TRUE*/,
+					BOOL bContinueOnCopyError/*=TRUE*/,
+					int* pFilesCount/*=NULL*/)
 {
 	// Check
 	if (szFromDir == NULL || _tcslen(szFromDir) == 0 ||
@@ -594,7 +598,7 @@ BOOL CopyDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists/
 		dstname[MAX_PATH - 1] = _T('\0');
 		if (pInfo->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 		{
-			if (!CopyDirContent(srcname, dstname, bOverwriteIfExists, bContinueOnCopyError))
+			if (!CopyDirContent(srcname, dstname, bOverwriteIfExists, bContinueOnCopyError, pFilesCount))
 			{
 				FindClose(hp);
 				COPYDIRCONTENT_FREE;
@@ -609,6 +613,8 @@ BOOL CopyDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists/
 				COPYDIRCONTENT_FREE;
 				return FALSE;
 			}
+			if (pFilesCount)
+				(*pFilesCount)++;
 		}
     }
     while (FindNextFile(hp, pInfo));
@@ -626,7 +632,11 @@ BOOL CopyDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists/
 if (pInfo) delete pInfo;\
 if (srcname) delete [] srcname;\
 if (dstname) delete [] dstname;
-BOOL MergeDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists/*=TRUE*/, BOOL bContinueOnCopyError/*=TRUE*/)
+BOOL MergeDirContent(	LPCTSTR szFromDir,
+						LPCTSTR szToDir,
+						BOOL bOverwriteIfExists/*=TRUE*/,
+						BOOL bContinueOnCopyError/*=TRUE*/,
+						int* pFilesCount/*=NULL*/)
 {
 	// Check
 	if (szFromDir == NULL || _tcslen(szFromDir) == 0 ||
@@ -720,7 +730,7 @@ BOOL MergeDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists
 		dstname[MAX_PATH - 1] = _T('\0');
 		if (pInfo->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 		{
-			if (!MergeDirContent(srcname, dstname, bOverwriteIfExists, bContinueOnCopyError))
+			if (!MergeDirContent(srcname, dstname, bOverwriteIfExists, bContinueOnCopyError, pFilesCount))
 			{
 				FindClose(hp);
 				MERGEDIRCONTENT_FREE;
@@ -747,6 +757,8 @@ BOOL MergeDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists
 					else
 						DeleteFile(srcname);
 				}
+				if (pFilesCount)
+					(*pFilesCount)++;
 			}
 		}
     }
@@ -999,53 +1011,6 @@ ULARGE_INTEGER GetDirContentSize(LPCTSTR szDirName,
 	GETDIRCONTENTSIZE_FREE;
 	
 	return Size;
-}
-
-// Is given directory empty?
-BOOL IsDirEmpty(LPCTSTR szDirName)
-{
-	// Check
-	if (szDirName == NULL || _tcslen(szDirName) == 0)
-		return TRUE;
-
-	TCHAR name[MAX_PATH];
-	if (_tcslen(szDirName) > MAX_PATH - 5) // Make sure we have some chars left to add '\\' and '*'
-		return FALSE;
-	if (szDirName[_tcslen(szDirName) - 1] == _T('\\'))
-	{
-		_sntprintf(name, MAX_PATH - 1, _T("%s*"), szDirName);
-		name[MAX_PATH - 1] = _T('\0');
-	}
-	else
-	{
-		_sntprintf(name, MAX_PATH - 1, _T("%s\\*"), szDirName);
-		name[MAX_PATH - 1] = _T('\0');
-	}
-	BOOL bEmpty = TRUE;
-	WIN32_FIND_DATA Info;
-    HANDLE hp = FindFirstFile(name, &Info);
-    if (!hp || hp == INVALID_HANDLE_VALUE)
-        return TRUE;
-    do
-    {
-        if (Info.cFileName[1] == _T('\0') && Info.cFileName[0] == _T('.'))
-            continue;
-        else if (Info.cFileName[2] == _T('\0') && Info.cFileName[1] == _T('.') && Info.cFileName[0] == _T('.'))
-            continue;
-		else if (_tcsicmp(Info.cFileName, THUMBS_DB) == 0)
-			continue;
-		else
-		{
-			bEmpty = FALSE;
-			break;
-		}
-    }
-    while (FindNextFile(hp, &Info));
-
-	// Clean-up
-	FindClose(hp);
-	
-	return bEmpty;
 }
 
 // Shell deletion

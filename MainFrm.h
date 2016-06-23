@@ -43,7 +43,8 @@ extern "C"
 #ifdef VIDEODEVICEDOC
 #define ID_TIMER_GENERALDLG  						10
 #define ID_TIMER_CAMERABASICSETTINGSDLG				11
-#define ID_TIMER_RELOAD_SETTINGS					12
+#define ID_TIMER_SETTINGSDLG						12
+#define ID_TIMER_RELOAD_SETTINGS					13
 #endif
 
 #define FULLSCREEN_TIMER_MS							1000U	// ms
@@ -53,6 +54,7 @@ extern "C"
 #ifdef VIDEODEVICEDOC
 #define GENERALDLG_TIMER_MS							300U	// ms
 #define CAMERABASICSETTINGSDLG_TIMER_MS				500U	// ms
+#define SETTINGSDLG_TIMER_MS						500U	// ms
 #define RELOAD_SETTINGS_TIMER_MS					1000U	// ms
 #endif
 

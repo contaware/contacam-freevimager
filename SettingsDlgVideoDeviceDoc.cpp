@@ -19,13 +19,9 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CSettingsDlgVideoDeviceDoc dialog
 
-
 CSettingsDlgVideoDeviceDoc::CSettingsDlgVideoDeviceDoc(CWnd* pParent /*=NULL*/)
 	: CDialog(CSettingsDlgVideoDeviceDoc::IDD, pParent)
 {
-	//{{AFX_DATA_INIT(CSettingsDlgVideoDeviceDoc)
-	//}}AFX_DATA_INIT
-
 	// Global Settings
 	m_bTopMost =		((CUImagerApp*)::AfxGetApp())->m_bTopMost;
 	m_bTrayIcon =		((CUImagerApp*)::AfxGetApp())->m_bTrayIcon;
@@ -49,6 +45,12 @@ CSettingsDlgVideoDeviceDoc::CSettingsDlgVideoDeviceDoc(CWnd* pParent /*=NULL*/)
 	// For validating apache user name
 	m_bRejectingApacheUsernameChange = FALSE;
 	m_sLastValidApacheUsername = m_sMicroApacheUsername;
+
+	// Micro Apache directory old files count
+	m_nMicroApacheDocRootOldFilesCount = 0;
+
+	// Applying the settings
+	m_bDoApplySettings = FALSE;
 }
 
 void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
@@ -80,21 +82,18 @@ BEGIN_MESSAGE_MAP(CSettingsDlgVideoDeviceDoc, CDialog)
 	//{{AFX_MSG_MAP(CSettingsDlgVideoDeviceDoc)
 	ON_EN_UPDATE(IDC_AUTH_USERNAME, OnUpdateAuthUsername)
 	ON_BN_CLICKED(IDC_BUTTON_DOCROOT, OnButtonDocRoot)
+	ON_WM_SETCURSOR()
+	ON_WM_TIMER()
+	ON_WM_DESTROY()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CSettingsDlgVideoDeviceDoc message handlers
 
-void CSettingsDlgVideoDeviceDoc::OnOK() 
+void CSettingsDlgVideoDeviceDoc::ApplySettingsInit()
 {
-	// Validate
-	if (!UpdateData(TRUE))
-		return;
-
 	CUImagerApp* pApp = (CUImagerApp*)::AfxGetApp();
-
-	BeginWaitCursor();
 
 	// Unassociate Graphics Files (remove associations from older program versions)
 	pApp->UnassociateFileType(_T("bmp"));
@@ -180,34 +179,6 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	// Wait time before autostarting first device
 	pApp->m_dwFirstStartDelayMs = 1000 * m_nFirstStartDelay;
 
-	// Document root changed?
-	if (m_sMicroApacheDocRoot.CompareNoCase(m_sMicroApacheDocRootOld) != 0)
-	{
-		// Update all RecordAutoSaveDir configuration entries
-		CStringArray DevicePathNames;
-		pApp->EnumConfiguredDevicePathNames(DevicePathNames);
-		for (int i = 0 ; i < DevicePathNames.GetSize() ; i++)
-		{
-			CString sRecordAutoSaveDir = pApp->GetProfileString(DevicePathNames[i], _T("RecordAutoSaveDir"), _T(""));
-			sRecordAutoSaveDir.TrimRight(_T('\\'));
-			int index;
-			if ((index = sRecordAutoSaveDir.ReverseFind(_T('\\'))) >= 0)
-				sRecordAutoSaveDir = sRecordAutoSaveDir.Right(sRecordAutoSaveDir.GetLength() - index - 1);
-			pApp->WriteProfileString(DevicePathNames[i], _T("RecordAutoSaveDir"), m_sMicroApacheDocRoot + _T("\\") + sRecordAutoSaveDir);
-		}
-
-		// Merge
-		if (!::MergeDirContent(m_sMicroApacheDocRootOld, m_sMicroApacheDocRoot)) // overwrite existing
-		{
-			DWORD dwLastError = ::GetLastError();
-			EndWaitCursor();
-			::ShowErrorMsg(dwLastError, TRUE);
-			BeginWaitCursor();
-		}
-		else
-			::DeleteDir(m_sMicroApacheDocRootOld); // no error message on failure
-	}
-
 	// Micro Apache
 	if (m_sMicroApacheAreaname.IsEmpty())
 		m_sMicroApacheAreaname = MICROAPACHE_DEFAULT_AUTH_AREANAME;
@@ -226,6 +197,55 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 			::AfxMessageBox(ML_STRING(1474, "Failed to stop the web server"),
 							MB_ICONSTOP);
 			BeginWaitCursor();
+		}
+
+		// Document root changed?
+		if (m_sMicroApacheDocRoot.CompareNoCase(m_sMicroApacheDocRootOld) != 0)
+		{
+			// Update all RecordAutoSaveDir configuration entries
+			CStringArray DevicePathNames;
+			pApp->EnumConfiguredDevicePathNames(DevicePathNames);
+			for (int i = 0 ; i < DevicePathNames.GetSize() ; i++)
+			{
+				CString sRecordAutoSaveDir = pApp->GetProfileString(DevicePathNames[i], _T("RecordAutoSaveDir"), _T(""));
+				sRecordAutoSaveDir.TrimRight(_T('\\'));
+				int index;
+				if ((index = sRecordAutoSaveDir.ReverseFind(_T('\\'))) >= 0)
+					sRecordAutoSaveDir = sRecordAutoSaveDir.Right(sRecordAutoSaveDir.GetLength() - index - 1);
+				pApp->WriteProfileString(DevicePathNames[i], _T("RecordAutoSaveDir"), m_sMicroApacheDocRoot + _T("\\") + sRecordAutoSaveDir);
+			}
+
+			// Start Merge Thread
+			m_MergeDirThread.m_sFromDir = m_sMicroApacheDocRootOld;
+			m_MergeDirThread.m_sToDir = m_sMicroApacheDocRoot;
+			m_MergeDirThread.Start();
+		}
+	}
+}
+
+void CSettingsDlgVideoDeviceDoc::ApplySettingsEnd()
+{
+	CUImagerApp* pApp = (CUImagerApp*)::AfxGetApp();
+
+	// Micro Apache
+	if (pApp->m_bStartMicroApache != m_bStartMicroApache			||
+		pApp->m_nMicroApachePort != m_nMicroApachePort				||
+		pApp->m_bMicroApacheDigestAuth != m_bMicroApacheDigestAuth	||
+		pApp->m_sMicroApacheAreaname != m_sMicroApacheAreaname		||
+		pApp->m_sMicroApacheUsername != m_sMicroApacheUsername		||
+		pApp->m_sMicroApachePassword != m_sMicroApachePassword		||
+		m_sMicroApacheDocRoot.CompareNoCase(m_sMicroApacheDocRootOld) != 0)
+	{
+		// Document root changed?
+		if (m_sMicroApacheDocRoot.CompareNoCase(m_sMicroApacheDocRootOld) != 0)
+		{
+			// Merge error?
+			if (m_MergeDirThread.GetMergeDirLastError() != 0)
+			{
+				EndWaitCursor();
+				::ShowErrorMsg(m_MergeDirThread.GetMergeDirLastError(), TRUE);
+				BeginWaitCursor();
+			}
 		}
 
 		// Update vars
@@ -294,13 +314,95 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	pApp->WriteProfileString(		_T("GeneralApp"),
 									_T("MicroApacheDocRoot"),
 									m_sMicroApacheDocRoot);
+}
 
-	// Redraw web server port
-	::AfxGetMainFrame()->m_MDIClientWnd.Invalidate();
+void CSettingsDlgVideoDeviceDoc::OnTimer(UINT nIDEvent) 
+{
+	if (m_bDoApplySettings)
+	{
+		if (m_MergeDirThread.IsAlive())
+		{
+			CString sProgress;
+			sProgress.Format(_T("%d / %d"), m_MergeDirThread.GetMergeDirFilesCount(), m_nMicroApacheDocRootOldFilesCount);
+			SetWindowText(sProgress);
+		}
+		else
+		{
+			m_bDoApplySettings = FALSE;
+			ApplySettingsEnd();
+			::AfxGetMainFrame()->m_MDIClientWnd.Invalidate(); // redraw web server port
+			EndWaitCursor();
+			EndDialog(IDOK);
+		}
+	}
+	CDialog::OnTimer(nIDEvent);
+}
 
-	EndWaitCursor();
+BOOL CSettingsDlgVideoDeviceDoc::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message) 
+{
+	// If Wait Cursor leave it!
+	if (((CUImagerApp*)::AfxGetApp())->IsWaitCursor())
+	{
+		RestoreWaitCursor();
+		return TRUE;
+	}
+	else
+		return CDialog::OnSetCursor(pWnd, nHitTest, message);
+}
 
-	EndDialog(IDOK);
+void CSettingsDlgVideoDeviceDoc::OnOK() 
+{
+	// Validate
+	if (!UpdateData(TRUE))
+		return;
+
+	// Begin wait cursor
+	BeginWaitCursor();
+
+	// Start to apply the settings
+	ApplySettingsInit();
+	m_bDoApplySettings = TRUE; // must be set after the ApplySettingsInit() call!
+
+	// Disable all
+	EnableDisableAllCtrls(FALSE);
+}
+
+void CSettingsDlgVideoDeviceDoc::EnableDisableAllCtrls(BOOL bEnable)
+{
+	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_STARTWITH_WINDOWS);
+	pCheck->EnableWindow(bEnable);
+	pCheck = (CButton*)GetDlgItem(IDC_CHECK_TRAYICON);
+	pCheck->EnableWindow(bEnable);
+	pCheck = (CButton*)GetDlgItem(IDC_CHECK_STARTFROM_SERVICE);
+	pCheck->EnableWindow(bEnable);
+	pCheck = (CButton*)GetDlgItem(IDC_CHECK_BROWSER_AUTOSTART);
+	pCheck->EnableWindow(bEnable);
+	pCheck = (CButton*)GetDlgItem(IDC_CHECK_TOPMOST);
+	pCheck->EnableWindow(bEnable);
+	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_FIRSTSTART_DELAY);
+	pEdit->EnableWindow(bEnable);
+	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_AUTOSTART_DELAY);
+	pEdit->EnableWindow(bEnable);
+	pCheck = (CButton*)GetDlgItem(IDC_CHECK_IPV6);
+	pCheck->EnableWindow(bEnable);
+	CButton* pButton = (CButton*)GetDlgItem(IDC_BUTTON_DOCROOT);
+	pButton->EnableWindow(bEnable);
+	pCheck = (CButton*)GetDlgItem(IDC_CHECK_WEBSERVER);
+	pCheck->EnableWindow(bEnable);
+	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PORT);
+	pEdit->EnableWindow(bEnable);
+	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_AREANAME);
+	pEdit->EnableWindow(bEnable);
+	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_USERNAME);
+	pEdit->EnableWindow(bEnable);
+	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
+	pEdit->EnableWindow(bEnable);
+	pCheck = (CButton*)GetDlgItem(IDC_CHECK_DIGESTAUTH);
+	pCheck->EnableWindow(bEnable);
+	pButton = (CButton*)GetDlgItem(IDOK);
+	pButton->EnableWindow(bEnable);
+	pButton = (CButton*)GetDlgItem(IDCANCEL);
+	pButton->EnableWindow(bEnable);
 }
 
 void CSettingsDlgVideoDeviceDoc::OnButtonDocRoot() 
@@ -318,7 +420,8 @@ void CSettingsDlgVideoDeviceDoc::OnButtonDocRoot()
 
 	// Calculate currently used size for all cameras
 	BeginWaitCursor();
-	ULONGLONG ullDirContentSize = ::GetDirContentSize(m_sMicroApacheDocRootOld).QuadPart;
+	m_nMicroApacheDocRootOldFilesCount = 0;
+	ULONGLONG ullDirContentSize = ::GetDirContentSize(m_sMicroApacheDocRootOld, &m_nMicroApacheDocRootOldFilesCount).QuadPart;
 	CString sMsg;
 	if (ullDirContentSize >= (1024*1024*1024))
 		sMsg.Format(CString(_T("(")) + ML_STRING(1873, "usage of all cameras") + _T(" %I64u ") + ML_STRING(1826, "GB") + CString(_T(")")), ullDirContentSize >> 30);
@@ -386,8 +489,20 @@ BOOL CSettingsDlgVideoDeviceDoc::OnInitDialog()
 			pOK->SendMessage(BCM_SETSHIELD, 0, TRUE);
 	}
 
+	// Init timer
+	SetTimer(ID_TIMER_SETTINGSDLG, SETTINGSDLG_TIMER_MS, NULL);
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+void CSettingsDlgVideoDeviceDoc::OnDestroy() 
+{
+	// Kill timer
+	KillTimer(ID_TIMER_SETTINGSDLG);
+
+	// Base class
+	CDialog::OnDestroy();
 }
 
 void CSettingsDlgVideoDeviceDoc::OnUpdateAuthUsername() 

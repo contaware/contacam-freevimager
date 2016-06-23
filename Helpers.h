@@ -117,14 +117,21 @@ extern BOOL TakeOwnership(LPCTSTR lpszFile);
 extern BOOL SetPrivilege(HANDLE hToken, LPCTSTR lpszPrivilege, BOOL bChange);
 extern BOOL SetPermission(LPCTSTR lpszFile, LPCTSTR lpszAccess, DWORD dwAccessMask);
 extern BOOL CreateDir(LPCTSTR szNewDir);
-extern BOOL CopyDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists = TRUE, BOOL bContinueOnCopyError = TRUE);
-extern BOOL MergeDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists = TRUE, BOOL bContinueOnCopyError = TRUE);
+extern BOOL CopyDirContent(	LPCTSTR szFromDir,
+							LPCTSTR szToDir,
+							BOOL bOverwriteIfExists = TRUE,
+							BOOL bContinueOnCopyError = TRUE,
+							int* pFilesCount = NULL);			// optional files count
+extern BOOL MergeDirContent(LPCTSTR szFromDir,
+							LPCTSTR szToDir,
+							BOOL bOverwriteIfExists = TRUE,
+							BOOL bContinueOnCopyError = TRUE,
+							int* pFilesCount = NULL);			// optional files count
 extern BOOL DeleteDir(LPCTSTR szDirName);
 extern BOOL DeleteDirContent(LPCTSTR szDirName);
 extern ULARGE_INTEGER GetDirContentSize(LPCTSTR szDirName, 
-										int* pFilesCount = NULL, // optional Files Count
+										int* pFilesCount = NULL, // optional files count
 										CWorkerThread* pThread = NULL);
-extern BOOL IsDirEmpty(LPCTSTR szDirName);
 extern BOOL DeleteToRecycleBin(LPCTSTR szName); // delete file or directory
 
 // Format Integer Number

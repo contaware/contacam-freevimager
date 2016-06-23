@@ -3,10 +3,38 @@
 
 #pragma once
 
+#include "WorkerThread.h"
+
 // SettingsDlgVideoDeviceDoc.h : header file
 //
 
 #ifdef VIDEODEVICEDOC
+
+//  Merge Directory Thread
+class CMergeDirThread : public CWorkerThread
+{
+	public:
+		CMergeDirThread(){;};
+		virtual ~CMergeDirThread(){Kill();};
+		__forceinline int GetMergeDirFilesCount() const {return m_nMergedFilesCount;};
+		__forceinline DWORD GetMergeDirLastError() const {return m_dwMergeDirLastError;};
+		CString m_sFromDir;
+		CString m_sToDir;
+
+	protected:
+		volatile int m_nMergedFilesCount;
+		volatile DWORD m_dwMergeDirLastError;
+		int Work()
+		{
+			m_nMergedFilesCount = 0;
+			m_dwMergeDirLastError = 0;
+			if (!::MergeDirContent(m_sFromDir, m_sToDir, TRUE, TRUE, (int*)&m_nMergedFilesCount)) // overwrite existing
+				m_dwMergeDirLastError = ::GetLastError();
+			else
+				::DeleteDir(m_sFromDir); // no error message on failure
+			return 0;
+		};
+};
 
 /////////////////////////////////////////////////////////////////////////////
 // CSettingsDlgVideoDeviceDoc dialog
@@ -49,10 +77,19 @@ protected:
 	CString m_sMicroApacheDocRootOld;
 	CString m_sLastValidApacheUsername;
 	BOOL m_bRejectingApacheUsernameChange;
+	int m_nMicroApacheDocRootOldFilesCount;
+	BOOL m_bDoApplySettings;
+	CMergeDirThread m_MergeDirThread;
+	void ApplySettingsInit();
+	void ApplySettingsEnd();
+	void EnableDisableAllCtrls(BOOL bEnable);
 	// Generated message map functions
 	//{{AFX_MSG(CSettingsDlgVideoDeviceDoc)
 	virtual void OnOK();
 	virtual BOOL OnInitDialog();
+	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
+	afx_msg void OnTimer(UINT nIDEvent);
+	afx_msg void OnDestroy();
 	afx_msg void OnUpdateAuthUsername();
 	afx_msg void OnButtonDocRoot();
 	//}}AFX_MSG
