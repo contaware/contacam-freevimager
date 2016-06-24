@@ -135,6 +135,7 @@ class CMovementDetectionPage;
 #define MOVDET_ANIMGIF_DEFAULT_HEIGHT		96			// Default animated gif height
 #define MOVDET_DETECTING_ZONES_COLOR		RGB(0xFF,0x00,0x00)
 #define MOVDET_SELECTED_ZONES_COLOR			RGB(0x00,0x00,0xFF)
+#define MOVDET_SENSITIVITY_BKGCOLOR			RGB(0xEE,0xEE,0xEE)
 #define MOVDET_MIX_THRESHOLD				4.0			// Above this engine frequency switch from 3To1 to the 7To1 mixer
 #define MOVDET_WANTED_FREQ					5.0			// Wanted motion detection engine frequency (calculations / sec)
 														// Half of DEFAULT_FRAMERATE

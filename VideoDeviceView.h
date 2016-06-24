@@ -26,7 +26,7 @@ public:
 protected:
 	DECLARE_DYNCREATE(CVideoDeviceView)
 	void DrawTextMsg(HDC hDC);
-	__forceinline void DrawZoneSensitivity(int i, HDC hDC, const RECT& rcDetZone, int n);
+	__forceinline void DrawZoneSensitivity(int i, HDC hDC, const RECT& rcDetZone, int n, HBRUSH hBkgndBrush);
 	void DrawZones(HDC hDC);
 	BOOL ReOpenDxDevice();
 	BYTE m_MovDetSingleZoneSensitivity;
