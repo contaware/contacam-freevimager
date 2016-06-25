@@ -48,7 +48,7 @@ ContaCam Program
   server (jeanbaptiste.guyot@orange.fr)
 - Change the color and position of the date and time on the camera frame
   (toan.nguyenk@gmail.com)
-- Snapshot scheduler like detection scheduler
+- Snapshot and continuous recording schedulers like detection scheduler
 
 
 ContaCam Web Interface
