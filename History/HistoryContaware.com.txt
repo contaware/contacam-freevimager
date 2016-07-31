@@ -1,0 +1,17 @@
+CONTAWARE.COM HISTORY 
+
+Contaware is only me, Oliver Pfister. Conta was my nickname at the time 
+of high school so that Contaware is like the stuff/things of Conta and 
+also remembers the word software. 
+
+At university I developed a graphics simulation app to verify the 
+algorithm programmed for an ASIC (application specific integrated 
+circuit) used together with an endoscopy camera to perform scan 
+conversion and color space adaptation. In 2000 I got a Master of Science 
+in Electrical Engineering from the ETH Zürich, Switzerland. In 2001 I 
+was working for a GPS modules company where I developed a simple 
+graphics library + application for Windows (it was running also on 
+Windows CE). From 2004 on I work as an independent IT consultant and 
+around this date I also began the development of FreeVimager and 
+ContaCam. As I'm very meticulous the first public release of FreeVimager 
+was only in 2007 and that of ContaCam in 2010!

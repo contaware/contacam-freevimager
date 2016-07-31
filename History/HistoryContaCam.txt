@@ -1,5 +1,10 @@
 CONTACAM HISTORY
 
+5.1.0 (Month xxth 2016)
+
+- Increased the mailer timeout from 5 to 15 seconds (thanks to Joe
+  Hannigan for reporting a problem with some slow smtp servers)
+
 5.0.9 (June 25th 2016)
 
 - All detection frames are buffered to memory (or page file)
