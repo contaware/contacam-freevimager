@@ -1372,7 +1372,7 @@ HANDLE CVideoDeviceDoc::SendMailText(	const SendMailConfigurationStruct& Config,
 			case 1 : sConnectionTypeOption = _T("-ssl"); break;			// SSL and TLS
 			default: sConnectionTypeOption = _T("-starttls"); break;	// STARTTLS
 		}
-		sOptions.Format(_T("-t \"%s\" -f %s %s %s -port %d %s -smtp %s -cs \"iso-8859-1\" -sub \"%s\" +cc +bc -user \"%s\" -pass \"%s\" -M \"%s\""),
+		sOptions.Format(_T("-t \"%s\" -f %s %s %s -port %d %s -smtp %s -cs \"iso-8859-1\" -ct %d -read-timeout %d -sub \"%s\" +cc +bc -user \"%s\" -pass \"%s\" -M \"%s\""),
 						Config.m_sTo,
 						Config.m_sFrom,
 						Config.m_sFromName.IsEmpty() ? _T("") : _T("-name \"") + Config.m_sFromName + _T("\""),
@@ -1380,6 +1380,8 @@ HANDLE CVideoDeviceDoc::SendMailText(	const SendMailConfigurationStruct& Config,
 						Config.m_nPort,
 						(Config.m_sUsername.IsEmpty() && Config.m_sPassword.IsEmpty()) ? _T("") : _T("-auth"),
 						Config.m_sHost,
+						MAILPROG_TIMEOUT_SEC, // connect timeout
+						MAILPROG_TIMEOUT_SEC, // read timeout
 						sSubject,
 						Config.m_sUsername,
 						Config.m_sPassword,
@@ -1412,7 +1414,7 @@ BOOL CVideoDeviceDoc::SendMailMovementDetection(const CTime& Time, const CString
 			case 1 : sConnectionTypeOption = _T("-ssl"); break;			// SSL and TLS
 			default: sConnectionTypeOption = _T("-starttls"); break;	// STARTTLS
 		}
-		sOptions.Format(_T("-t \"%s\" -f %s %s %s -port %d %s -smtp %s -cs \"iso-8859-1\" -sub \"%s\" +cc +bc -user \"%s\" -pass \"%s\" -M \"%s\""),
+		sOptions.Format(_T("-t \"%s\" -f %s %s %s -port %d %s -smtp %s -cs \"iso-8859-1\" -ct %d -read-timeout %d -sub \"%s\" +cc +bc -user \"%s\" -pass \"%s\" -M \"%s\""),
 						m_SendMailConfiguration.m_sTo,
 						m_SendMailConfiguration.m_sFrom,
 						m_SendMailConfiguration.m_sFromName.IsEmpty() ? _T("") : _T("-name \"") + m_SendMailConfiguration.m_sFromName + _T("\""),
@@ -1420,6 +1422,8 @@ BOOL CVideoDeviceDoc::SendMailMovementDetection(const CTime& Time, const CString
 						m_SendMailConfiguration.m_nPort,
 						(m_SendMailConfiguration.m_sUsername.IsEmpty() && m_SendMailConfiguration.m_sPassword.IsEmpty()) ? _T("") : _T("-auth"),
 						m_SendMailConfiguration.m_sHost,
+						MAILPROG_TIMEOUT_SEC, // connect timeout
+						MAILPROG_TIMEOUT_SEC, // read timeout
 						sSubject,
 						m_SendMailConfiguration.m_sUsername,
 						m_SendMailConfiguration.m_sPassword,
@@ -1539,10 +1543,11 @@ HANDLE CVideoDeviceDoc::FTPUpload(	const FTPUploadConfigurationStruct& Config,
 	//       logic here but with a rm if the mv fails
 	CString sRemoteTempFileName2(sRemoteFileName2 + _T(".in"));
 
-	// Set timeout to 10 sec, attempt 2 reconnection and abort the transfer if write target has a full disk
+	// Set timeout, attempt 2 reconnection and abort the transfer if write target has a full disk
 	// Attention: do not enable net:persist-retries (setting it != 0) because of the below used
 	//            mkdir, mv and rm which can issue a 5xx message
-	CString sSets(_T("set net:timeout 10; set net:max-retries 3; set xfer:disk-full-fatal yes; "));
+	CString sSets;
+	sSets.Format(_T("set net:timeout %d; set net:max-retries 3; set xfer:disk-full-fatal yes; "), FTPPROG_TIMEOUT_SEC);
 
 	// Implicit FTPS
 	CString sProto;

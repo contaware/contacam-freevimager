@@ -128,10 +128,11 @@ void CFTPUploadConfigurationDlg::OnButtonTest()
 		::AfxMessageBox(ML_STRING(1770, "Please Enter A Host Name"));
 	else 
 	{
-		// Set timeout to 10 sec and do not reconnect
+		// Set timeout and do not reconnect
 		// Note: we set net:reconnect-interval-base to 1 sec because even if
 		//       net:max-retries is configured to not retry in some circumstances one retry attempt is made
-		CString sSets(_T("set net:timeout 10; set net:max-retries 1; set net:reconnect-interval-base 1; "));
+		CString sSets;
+		sSets.Format(_T("set net:timeout %d; set net:max-retries 1; set net:reconnect-interval-base 1; "), FTPPROG_TIMEOUT_SEC);
 
 		// Implicit FTPS
 		CString sProto;
