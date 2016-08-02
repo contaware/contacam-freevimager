@@ -32,14 +32,22 @@ SwsContext *sws_getCachedContextHelper(	struct SwsContext *context,
 #ifdef FFMPEG_TOOLCHAIN_MSVC
 #pragma comment(lib, "ffmpeg\\msvc\\mp3lame.lib")
 #else
-// libcmt.lib(_pow_.obj) : error LNK2005: _pow already defined in libmingwex.a(pow.o)
-// -> to correctly link we have to remove pow.o from libmingwex.a,
-// perform the following in visual studio command prompt:
-// 1. cd uimager\ffmpeg\lib
-// 2. lib -remove:pow.o libmingwex.a
-// 3. rename libmingwex.lib libmingwex.a
 #pragma comment(lib, "ffmpeg\\mingw\\libgcc.a")
+#if _MSC_VER < 1700 // Before Visual Studio 2012
+// To correctly link we have to remove pow.o from libmingwex.a,
+// perform the following in visual studio command prompt:
+// 1. cd uimager\ffmpeg\mingw
+// 2. lib -remove:pow.o libmingwex.a
+// 3. rename libmingwex.lib libmingwex_vs2010.a
+#pragma comment(lib, "ffmpeg\\mingw\\libmingwex_vs2010.a")
+#else
+// To correctly link we have to remove pow.o, strtoimax.o, strtof.o, sinf.o and exp2f.o from libmingwex.a,
+// perform the following in visual studio command prompt:
+// 1. cd uimager\ffmpeg\mingw
+// 2. lib -remove:pow.o -remove:strtoimax.o -remove:strtof.o -remove:sinf.o -remove:exp2f.o libmingwex.a
+// 3. rename libmingwex.lib libmingwex.a
 #pragma comment(lib, "ffmpeg\\mingw\\libmingwex.a")
+#endif
 #pragma comment(lib, "ffmpeg\\mingw\\libmp3lame.a")
 #pragma comment(lib, "ffmpeg\\mingw\\libx264.a")
 #endif

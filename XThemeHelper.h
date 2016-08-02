@@ -16,10 +16,10 @@
 #define  XTHEMEHELPER_H
 
 #include "uxtheme.h"
-#if defined(NTDDI_VERSION) && defined(NTDDI_LONGHORN) && (NTDDI_VERSION >= NTDDI_LONGHORN)
-#include "vssym32.h"
-#else
+#if _MSC_VER < 1700 // Before Visual Studio 2012
 #include "tmschema.h"
+#else
+#include "vssym32.h"
 #endif
 
 
