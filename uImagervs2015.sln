@@ -1,0 +1,97 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Dib", "Dib\Dibvs2015.vcxproj", "{3510B7CE-0804-4D79-95CD-CAA0983D2313}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Zip", "zip\zipvs2015.vcxproj", "{28C8334F-E02A-44A8-B1B5-D81E1E11F5CA}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "directx_base", "directx_base\directx_basevs2015.vcxproj", "{41D79391-4BB7-450C-89EA-5A9AB5D166E6}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "giflib", "giflib\giflibvs2015.vcxproj", "{5FAAFB31-C3FD-404D-9272-0A17157E8304}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "icclib", "icclib\icclibvs2015.vcxproj", "{9FEF590D-A2C2-4219-8DD5-F0CD9E4E274B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libjpeg", "libjpeg\libjpegvs2015.vcxproj", "{047EB7F2-222E-47EE-A83B-F68E3C0FC0E3}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libpng", "libpng\libpngvs2015.vcxproj", "{BBB92A7C-22CB-449A-BFD6-691B254F9803}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libtiff", "libtiff\libtiffvs2015.vcxproj", "{68927A2E-9628-49FF-A825-45810DC6EDD1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "uImager", "uImagervs2015.vcxproj", "{E605E7C7-B801-4234-AFF6-35DF6B233F76}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "zlib\zlibvs2015.vcxproj", "{968949F9-B4F2-4EBC-98CC-3C47E7909C19}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		ContaCam|Win32 = ContaCam|Win32
+		Debug|Win32 = Debug|Win32
+		FreeVimager|Win32 = FreeVimager|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3510B7CE-0804-4D79-95CD-CAA0983D2313}.ContaCam|Win32.ActiveCfg = ContaCam|Win32
+		{3510B7CE-0804-4D79-95CD-CAA0983D2313}.ContaCam|Win32.Build.0 = ContaCam|Win32
+		{3510B7CE-0804-4D79-95CD-CAA0983D2313}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3510B7CE-0804-4D79-95CD-CAA0983D2313}.Debug|Win32.Build.0 = Debug|Win32
+		{3510B7CE-0804-4D79-95CD-CAA0983D2313}.FreeVimager|Win32.ActiveCfg = FreeVimager|Win32
+		{3510B7CE-0804-4D79-95CD-CAA0983D2313}.FreeVimager|Win32.Build.0 = FreeVimager|Win32
+		{28C8334F-E02A-44A8-B1B5-D81E1E11F5CA}.ContaCam|Win32.ActiveCfg = ContaCam|Win32
+		{28C8334F-E02A-44A8-B1B5-D81E1E11F5CA}.ContaCam|Win32.Build.0 = ContaCam|Win32
+		{28C8334F-E02A-44A8-B1B5-D81E1E11F5CA}.Debug|Win32.ActiveCfg = Debug|Win32
+		{28C8334F-E02A-44A8-B1B5-D81E1E11F5CA}.Debug|Win32.Build.0 = Debug|Win32
+		{28C8334F-E02A-44A8-B1B5-D81E1E11F5CA}.FreeVimager|Win32.ActiveCfg = FreeVimager|Win32
+		{28C8334F-E02A-44A8-B1B5-D81E1E11F5CA}.FreeVimager|Win32.Build.0 = FreeVimager|Win32
+		{41D79391-4BB7-450C-89EA-5A9AB5D166E6}.ContaCam|Win32.ActiveCfg = ContaCam|Win32
+		{41D79391-4BB7-450C-89EA-5A9AB5D166E6}.ContaCam|Win32.Build.0 = ContaCam|Win32
+		{41D79391-4BB7-450C-89EA-5A9AB5D166E6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{41D79391-4BB7-450C-89EA-5A9AB5D166E6}.Debug|Win32.Build.0 = Debug|Win32
+		{41D79391-4BB7-450C-89EA-5A9AB5D166E6}.FreeVimager|Win32.ActiveCfg = FreeVimager|Win32
+		{41D79391-4BB7-450C-89EA-5A9AB5D166E6}.FreeVimager|Win32.Build.0 = FreeVimager|Win32
+		{5FAAFB31-C3FD-404D-9272-0A17157E8304}.ContaCam|Win32.ActiveCfg = ContaCam|Win32
+		{5FAAFB31-C3FD-404D-9272-0A17157E8304}.ContaCam|Win32.Build.0 = ContaCam|Win32
+		{5FAAFB31-C3FD-404D-9272-0A17157E8304}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5FAAFB31-C3FD-404D-9272-0A17157E8304}.Debug|Win32.Build.0 = Debug|Win32
+		{5FAAFB31-C3FD-404D-9272-0A17157E8304}.FreeVimager|Win32.ActiveCfg = FreeVimager|Win32
+		{5FAAFB31-C3FD-404D-9272-0A17157E8304}.FreeVimager|Win32.Build.0 = FreeVimager|Win32
+		{9FEF590D-A2C2-4219-8DD5-F0CD9E4E274B}.ContaCam|Win32.ActiveCfg = ContaCam|Win32
+		{9FEF590D-A2C2-4219-8DD5-F0CD9E4E274B}.ContaCam|Win32.Build.0 = ContaCam|Win32
+		{9FEF590D-A2C2-4219-8DD5-F0CD9E4E274B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9FEF590D-A2C2-4219-8DD5-F0CD9E4E274B}.Debug|Win32.Build.0 = Debug|Win32
+		{9FEF590D-A2C2-4219-8DD5-F0CD9E4E274B}.FreeVimager|Win32.ActiveCfg = FreeVimager|Win32
+		{9FEF590D-A2C2-4219-8DD5-F0CD9E4E274B}.FreeVimager|Win32.Build.0 = FreeVimager|Win32
+		{047EB7F2-222E-47EE-A83B-F68E3C0FC0E3}.ContaCam|Win32.ActiveCfg = ContaCam|Win32
+		{047EB7F2-222E-47EE-A83B-F68E3C0FC0E3}.ContaCam|Win32.Build.0 = ContaCam|Win32
+		{047EB7F2-222E-47EE-A83B-F68E3C0FC0E3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{047EB7F2-222E-47EE-A83B-F68E3C0FC0E3}.Debug|Win32.Build.0 = Debug|Win32
+		{047EB7F2-222E-47EE-A83B-F68E3C0FC0E3}.FreeVimager|Win32.ActiveCfg = FreeVimager|Win32
+		{047EB7F2-222E-47EE-A83B-F68E3C0FC0E3}.FreeVimager|Win32.Build.0 = FreeVimager|Win32
+		{BBB92A7C-22CB-449A-BFD6-691B254F9803}.ContaCam|Win32.ActiveCfg = ContaCam|Win32
+		{BBB92A7C-22CB-449A-BFD6-691B254F9803}.ContaCam|Win32.Build.0 = ContaCam|Win32
+		{BBB92A7C-22CB-449A-BFD6-691B254F9803}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BBB92A7C-22CB-449A-BFD6-691B254F9803}.Debug|Win32.Build.0 = Debug|Win32
+		{BBB92A7C-22CB-449A-BFD6-691B254F9803}.FreeVimager|Win32.ActiveCfg = FreeVimager|Win32
+		{BBB92A7C-22CB-449A-BFD6-691B254F9803}.FreeVimager|Win32.Build.0 = FreeVimager|Win32
+		{68927A2E-9628-49FF-A825-45810DC6EDD1}.ContaCam|Win32.ActiveCfg = ContaCam|Win32
+		{68927A2E-9628-49FF-A825-45810DC6EDD1}.ContaCam|Win32.Build.0 = ContaCam|Win32
+		{68927A2E-9628-49FF-A825-45810DC6EDD1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{68927A2E-9628-49FF-A825-45810DC6EDD1}.Debug|Win32.Build.0 = Debug|Win32
+		{68927A2E-9628-49FF-A825-45810DC6EDD1}.FreeVimager|Win32.ActiveCfg = FreeVimager|Win32
+		{68927A2E-9628-49FF-A825-45810DC6EDD1}.FreeVimager|Win32.Build.0 = FreeVimager|Win32
+		{E605E7C7-B801-4234-AFF6-35DF6B233F76}.ContaCam|Win32.ActiveCfg = ContaCam|Win32
+		{E605E7C7-B801-4234-AFF6-35DF6B233F76}.ContaCam|Win32.Build.0 = ContaCam|Win32
+		{E605E7C7-B801-4234-AFF6-35DF6B233F76}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E605E7C7-B801-4234-AFF6-35DF6B233F76}.Debug|Win32.Build.0 = Debug|Win32
+		{E605E7C7-B801-4234-AFF6-35DF6B233F76}.FreeVimager|Win32.ActiveCfg = FreeVimager|Win32
+		{E605E7C7-B801-4234-AFF6-35DF6B233F76}.FreeVimager|Win32.Build.0 = FreeVimager|Win32
+		{968949F9-B4F2-4EBC-98CC-3C47E7909C19}.ContaCam|Win32.ActiveCfg = ContaCam|Win32
+		{968949F9-B4F2-4EBC-98CC-3C47E7909C19}.ContaCam|Win32.Build.0 = ContaCam|Win32
+		{968949F9-B4F2-4EBC-98CC-3C47E7909C19}.Debug|Win32.ActiveCfg = Debug|Win32
+		{968949F9-B4F2-4EBC-98CC-3C47E7909C19}.Debug|Win32.Build.0 = Debug|Win32
+		{968949F9-B4F2-4EBC-98CC-3C47E7909C19}.FreeVimager|Win32.ActiveCfg = FreeVimager|Win32
+		{968949F9-B4F2-4EBC-98CC-3C47E7909C19}.FreeVimager|Win32.Build.0 = FreeVimager|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

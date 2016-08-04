@@ -409,6 +409,7 @@ SwsContext *sws_getCachedContextHelper(	struct SwsContext *context,
 
 // Necessary hack to correctly link to ffmpeg which needs hypot,
 // the following two functions are declared in wrapperheaders\math.h
+#if _MSC_VER == 1600
 extern "C" double __cdecl hypot(double x, double y)
 {
 	return _hypot(x, y);
@@ -417,6 +418,7 @@ extern "C" float __cdecl hypotf(float x, float y)
 {
 	return _hypotf(x, y);
 }
+#endif
 
 /* level can be one of the following increasing values:
 AV_LOG_PANIC
