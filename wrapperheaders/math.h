@@ -1,8 +1,8 @@
 /*
-Necessary hack to correctly link to ffmpeg which needs hypot:
+Necessary VS2010 hack to correctly link to ffmpeg which needs hypot:
 the problem is that hypot and hypotf are declared inline in math.h,
 but fortunately we can turn the declaration off by defining RC_INVOKED.
-Note: MATH_H_PATH is defined in uImager project settings
+Note: MATH_H_PATH is defined in uImagervs2010 project settings
 */
 
 #ifndef _INC_MATH_WRAPPER

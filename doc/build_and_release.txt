@@ -1,10 +1,11 @@
 Build system
 ------------
 
-uImagervs2010.sln is the main solution file for Visual Studio 2010 which 
-builds exes for XP and higher. MFC is necessary, the express editions 
-are not supporting MFC natively but the library can be obtained from 
-alternative sources such as the free-to-download Windows Driver Kit. 
+uImagervs2010.sln and uImagervs2015.sln are the main solution files for 
+Visual Studio 2010 and 2015 which build exes for XP and higher. MFC is 
+necessary, the express editions are not supporting MFC natively but the 
+library can be obtained from alternative sources such as the 
+free-to-download Windows Driver Kit. 
 
 Additional requirements for Visual Studio 2010:
 - install sp1 or higher
@@ -33,7 +34,7 @@ Release procedure
    - CurrentVersion.nsh
    - HistoryFreeVimager.txt, HistoryContaCam.txt and translation History.txt
 
-2. Build release target of FreeVimager and ContaCam with vs2010
+2. Build release target of FreeVimager and ContaCam with Visual Studio
 
 3. Copy FreeVimager.exe and ContaCam.exe to Translation directory,
    call Update Source in appTranslator and Build all Target Files

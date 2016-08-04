@@ -47,6 +47,8 @@ Internet Explorer 3.0, 3.01, 3.02   _WIN32_IE>=0x0300
 
 Product         _MSC_VER       _MFC_VER
 -------         --------       --------
+VS2015          1900           0x0E00 (mfc140.dll)
+VS2013          1800           0x0C00 (mfc120.dll)
 VS2012          1700           0x0B00 (mfc110.dll)
 VS2010          1600           0x0A00 (mfc100.dll)
 VS2008          1500           0x0900 (mfc90.dll)
