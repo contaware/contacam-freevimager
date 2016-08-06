@@ -48,20 +48,25 @@ int GetTotPhysMemMB(BOOL bInstalled);
 void InitHelpers()
 {
 	// Windows version
-	OSVERSIONINFO ovi = {0};
-    ovi.dwOSVersionInfoSize = sizeof(ovi);
-	GetVersionEx(&ovi);
-	g_bWin2003 =			(ovi.dwPlatformId == 2)		&&
-							(ovi.dwMajorVersion == 5)	&&
-							(ovi.dwMinorVersion == 2);
-	g_bWin2003OrHigher =	(ovi.dwPlatformId == 2)		&&
-							((ovi.dwMajorVersion == 5 && ovi.dwMinorVersion >= 2) ||
-							(ovi.dwMajorVersion > 5));
-	g_bWinVista =			(ovi.dwPlatformId == 2)		&&
-							(ovi.dwMajorVersion == 6)	&&
-							(ovi.dwMinorVersion == 0);
-	g_bWinVistaOrHigher =	(ovi.dwPlatformId == 2)		&&
-							(ovi.dwMajorVersion >= 6);
+	RTL_OSVERSIONINFOEXW ovi = {0};
+	ovi.dwOSVersionInfoSize = sizeof(RTL_OSVERSIONINFOEXW);
+	HMODULE hNtDll = GetModuleHandleW(L"ntdll.dll");
+	typedef LONG(WINAPI* FPRTLGETVERSION)(RTL_OSVERSIONINFOEXW*);
+	FPRTLGETVERSION fpRtlGetVersion = (FPRTLGETVERSION)GetProcAddress(hNtDll, "RtlGetVersion");
+	if (fpRtlGetVersion && fpRtlGetVersion(&ovi) == 0) // STATUS_SUCCESS
+	{
+		g_bWin2003 = (ovi.dwPlatformId == 2) &&
+			(ovi.dwMajorVersion == 5) &&
+			(ovi.dwMinorVersion == 2);
+		g_bWin2003OrHigher = (ovi.dwPlatformId == 2) &&
+			((ovi.dwMajorVersion == 5 && ovi.dwMinorVersion >= 2) ||
+			(ovi.dwMajorVersion > 5));
+		g_bWinVista = (ovi.dwPlatformId == 2) &&
+			(ovi.dwMajorVersion == 6) &&
+			(ovi.dwMinorVersion == 0);
+		g_bWinVistaOrHigher = (ovi.dwPlatformId == 2) &&
+			(ovi.dwMajorVersion >= 6);
+	}
 
 	// Supported Instruction Sets
 	int nInstructionSets = GetCpuInstr();

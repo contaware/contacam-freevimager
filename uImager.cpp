@@ -3666,7 +3666,7 @@ BOOL CUImagerApp::SendMail(LPCTSTR szAttachment)
 			sAdjPath.TrimRight(_T('\\'));
 
 			// Start with File Search
-			_stprintf(name, _T("%s\\*"), sAdjPath);
+			_stprintf(name, _T("%s\\*"), (LPCTSTR)sAdjPath);
 			HANDLE hFileSearch = ::FindFirstFile(name, &info);
 			if (!hFileSearch || hFileSearch == INVALID_HANDLE_VALUE)
 			{
@@ -3675,7 +3675,7 @@ BOOL CUImagerApp::SendMail(LPCTSTR szAttachment)
 			}
 			do
 			{
-				_stprintf(name, _T("%s\\%s"), sAdjPath, info.cFileName);
+				_stprintf(name, _T("%s\\%s"), (LPCTSTR)sAdjPath, info.cFileName);
 				if (info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 					continue;
 				else

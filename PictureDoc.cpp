@@ -1083,7 +1083,7 @@ BOOL CPictureDoc::CLayeredDlgThread::DoIt(CWorkerThread* pThread/*=NULL*/)
 	szWindow.cy = m_Dib.GetHeight();
 
 	// Setup the blend function
-	BLENDFUNCTION blendPixelFunction= {AC_SRC_OVER, 0, m_pDoc->m_nLayeredDlgOpacity, AC_SRC_ALPHA};
+	BLENDFUNCTION blendPixelFunction= {AC_SRC_OVER, 0, (BYTE)m_pDoc->m_nLayeredDlgOpacity, AC_SRC_ALPHA};
 	POINT ptSrc;
 	ptSrc.x = 0;
 	ptSrc.y = 0;
@@ -10803,7 +10803,7 @@ BOOL CPictureDoc::UpdateLayeredDlg(CDib* pDib)
 			m_pLayeredDlg->ModifyStyleEx(0, WS_EX_LAYERED);
 
 			// Setup the blend function
-			BLENDFUNCTION blendPixelFunction= {AC_SRC_OVER, 0, m_nLayeredDlgOpacity, AC_SRC_ALPHA};
+			BLENDFUNCTION blendPixelFunction= {AC_SRC_OVER, 0, (BYTE)m_nLayeredDlgOpacity, AC_SRC_ALPHA};
 			POINT ptSrc;
 			ptSrc.x = 0;
 			ptSrc.y = 0;

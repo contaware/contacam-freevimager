@@ -89,6 +89,7 @@ int CNumEdit::IsValid(const CString &str, BOOL bVerbose/*=TRUE*/) const
 	int res = VALID;
 	double d;
 	CString sRemaining;
+	LPTSTR lpzsRemaining = sRemaining.GetBuffer(str.GetLength());
 	if (str.GetLength() == 0)
 		res = EMPTY;
 	else if ((str.GetLength() == 1) 
@@ -128,7 +129,7 @@ int CNumEdit::IsValid(const CString &str, BOOL bVerbose/*=TRUE*/) const
 			(
 			(str[2] == _T('.')))))
 					res = MINUS_PLUS_POINT_ZERO;
-	else if (_stscanf(str, _T("%lf%s"), &d, (LPCTSTR)sRemaining) != 1)
+	else if (_stscanf(str, _T("%lf%s"), &d, lpzsRemaining) != 1)
 		res = INVALID_CHAR;
 	else if (d > m_dMaxValue || d < m_dMinValue)
 		res = OUT_OF_RANGE;
@@ -146,6 +147,7 @@ int CNumEdit::IsValid(const CString &str, BOOL bVerbose/*=TRUE*/) const
 			::AfxMessageBox(msg, MB_OK);
 		}
 	}
+	sRemaining.ReleaseBuffer();
 	return res;
 }
 

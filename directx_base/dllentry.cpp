@@ -281,11 +281,14 @@ DllEntryPoint(HINSTANCE hInstance, ULONG ulReason, LPVOID pv)
                 g_amPlatform = VER_PLATFORM_WIN32_WINDOWS; // win95 assumed in case GetVersionEx fails
     
                 g_osInfo.dwOSVersionInfoSize = sizeof(g_osInfo);
+#pragma warning(push)
+#pragma warning(disable : 4996)
                 if (GetVersionEx(&g_osInfo)) {
             	g_amPlatform = g_osInfo.dwPlatformId;
     	    } else {
     		DbgLog((LOG_ERROR, 1, TEXT("Failed to get the OS platform, assuming Win95")));
     	    }
+#pragma warning(pop)
     	}
 
         g_hInst = hInstance;
