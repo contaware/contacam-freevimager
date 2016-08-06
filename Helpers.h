@@ -17,9 +17,6 @@
 // Windows thumbnail cache file
 #define THUMBS_DB				_T("Thumbs.db")
 
-extern BOOL g_bWin2003;
-extern BOOL g_bWin2003OrHigher;
-extern BOOL g_bWinVista;
 extern BOOL g_bWinVistaOrHigher;
 extern BOOL g_bMMX;
 extern BOOL g_bSSE;

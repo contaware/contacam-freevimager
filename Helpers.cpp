@@ -20,12 +20,8 @@ static char THIS_FILE[] = __FILE__;
 #pragma comment(lib, "Wininet.lib")	// to support InternetGetLastResponseInfo()
 
 // If InitHelpers() is not called vars default to:
-// WinXP
 // no multimedia instructions,
 // 64K allocation granularity, 4096 page size and 2GB RAM
-BOOL g_bWin2003 = FALSE;
-BOOL g_bWin2003OrHigher = FALSE;
-BOOL g_bWinVista = FALSE;
 BOOL g_bWinVistaOrHigher = FALSE;
 BOOL g_bMMX = FALSE;
 BOOL g_bSSE = FALSE;
@@ -47,26 +43,14 @@ int GetCpuInstr();
 int GetTotPhysMemMB(BOOL bInstalled);
 void InitHelpers()
 {
-	// Windows version
+	// Windows Version
 	RTL_OSVERSIONINFOEXW ovi = {0};
 	ovi.dwOSVersionInfoSize = sizeof(RTL_OSVERSIONINFOEXW);
 	HMODULE hNtDll = GetModuleHandleW(L"ntdll.dll");
 	typedef LONG(WINAPI* FPRTLGETVERSION)(RTL_OSVERSIONINFOEXW*);
 	FPRTLGETVERSION fpRtlGetVersion = (FPRTLGETVERSION)GetProcAddress(hNtDll, "RtlGetVersion");
 	if (fpRtlGetVersion && fpRtlGetVersion(&ovi) == 0) // STATUS_SUCCESS
-	{
-		g_bWin2003 = (ovi.dwPlatformId == 2) &&
-			(ovi.dwMajorVersion == 5) &&
-			(ovi.dwMinorVersion == 2);
-		g_bWin2003OrHigher = (ovi.dwPlatformId == 2) &&
-			((ovi.dwMajorVersion == 5 && ovi.dwMinorVersion >= 2) ||
-			(ovi.dwMajorVersion > 5));
-		g_bWinVista = (ovi.dwPlatformId == 2) &&
-			(ovi.dwMajorVersion == 6) &&
-			(ovi.dwMinorVersion == 0);
-		g_bWinVistaOrHigher = (ovi.dwPlatformId == 2) &&
-			(ovi.dwMajorVersion >= 6);
-	}
+		g_bWinVistaOrHigher = (ovi.dwPlatformId == 2) && (ovi.dwMajorVersion >= 6);
 
 	// Supported Instruction Sets
 	int nInstructionSets = GetCpuInstr();
