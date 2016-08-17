@@ -1077,6 +1077,7 @@
     <ClInclude Include="cdxCDynamicWnd.h" />
     <ClInclude Include="cdxCDynamicWndEx.h" />
     <ClInclude Include="cdxCSizeIconCtrl.h" />
+    <ClInclude Include="CEncryptDecrypt.h" />
     <ClInclude Include="ChildFrm.h" />
     <ClInclude Include="ColorButton.h" />
     <ClInclude Include="ColorButtonPicker.h" />

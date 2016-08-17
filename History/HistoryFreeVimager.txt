@@ -2,7 +2,7 @@ FREEVIMAGER HISTORY
 
 5.1.0 (Month xxth 2016)
 
-- ...
+- Compiling with Visual Studio 2015
 
 5.0.9 (June 25th 2016)
 

@@ -4,6 +4,9 @@ CONTACAM HISTORY
 
 - Increased the mailer timeout from 5 to 15 seconds (thanks to Joe
   Hannigan for reporting a problem with some slow smtp servers)
+- Encrypted settings (like passwords) are now exportable and work
+  well if used on another computer or by another logon user
+- Compiling with Visual Studio 2015
 
 5.0.9 (June 25th 2016)
 
