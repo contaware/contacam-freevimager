@@ -358,8 +358,8 @@ void CHostPortDlg::LoadCredentialsAndTitle()
 	// Load and display credentials
 	if (bSectionExists)
 	{
-		CString	sUsername = ((CUImagerApp*)::AfxGetApp())->GetSecureProfileString(sDevicePathName, _T("HTTPGetFrameUsername"), _T(""));
-		CString	sPassword = ((CUImagerApp*)::AfxGetApp())->GetSecureProfileString(sDevicePathName, _T("HTTPGetFramePassword"), _T(""));
+		CString	sUsername = ((CUImagerApp*)::AfxGetApp())->GetSecureProfileString(sDevicePathName, _T("HTTPGetFrameUsername"));
+		CString	sPassword = ((CUImagerApp*)::AfxGetApp())->GetSecureProfileString(sDevicePathName, _T("HTTPGetFramePassword"));
 		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_AUTH_USERNAME);
 		pEdit->SetWindowText(sUsername);
 		pEdit = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);

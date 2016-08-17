@@ -493,8 +493,8 @@ public:
 	BOOL IsExistingSection(const CString& sSection);
 
 	// Encrypted Write / Read
-	BOOL WriteSecureProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszValue);
-	CString GetSecureProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszDefault = NULL);
+	void WriteSecureProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszValue);
+	CString GetSecureProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry);
 	
 	// Printer
 	void InitPrinter();

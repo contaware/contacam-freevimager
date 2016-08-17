@@ -27,6 +27,7 @@
 #include "RgbToYuv.h"
 #include "YuvToYuv.h"
 #include "sinstance.h"
+#include "CEncryptDecrypt.h"
 #include <atlbase.h>
 #include <signal.h>
 #ifdef VIDEODEVICEDOC
@@ -43,6 +44,9 @@
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+// TODO: remove when removing the code using CryptUnprotectData!!
+#pragma comment(lib, "Crypt32.lib")
 
 /////////////////////////////////////////////////////////////////////////////
 // CUImagerApp
@@ -3432,8 +3436,8 @@ void CUImagerApp::LoadSettings(UINT showCmd/*=SW_SHOWNORMAL*/)
 	// Micro Apache Authentication
 	m_bMicroApacheDigestAuth = (BOOL)GetProfileInt(sSection, _T("MicroApacheDigestAuth"), TRUE);
 	m_sMicroApacheAreaname = GetProfileString(sSection, _T("MicroApacheAreaname"), MICROAPACHE_DEFAULT_AUTH_AREANAME);
-	m_sMicroApacheUsername = GetSecureProfileString(sSection, _T("MicroApacheUsername"), _T(""));
-	m_sMicroApachePassword = GetSecureProfileString(sSection, _T("MicroApachePassword"), _T(""));
+	m_sMicroApacheUsername = GetSecureProfileString(sSection, _T("MicroApacheUsername"));
+	m_sMicroApachePassword = GetSecureProfileString(sSection, _T("MicroApachePassword"));
 
 	// Load Schedulers
 	int nCount = GetProfileInt(sSection, _T("SchedulerCount"), 0);
@@ -5013,115 +5017,80 @@ BOOL CUImagerApp::IsExistingSection(const CString& sSection)
 	}
 }
 
-typedef BOOL (WINAPI * FPCRYPTPROTECTDATA)(DATA_BLOB*, LPCWSTR, DATA_BLOB*, PVOID, CRYPTPROTECT_PROMPTSTRUCT*, DWORD, DATA_BLOB*);
-BOOL CUImagerApp::WriteSecureProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszValue)
+void CUImagerApp::WriteSecureProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszValue)
 {
-	HINSTANCE h = ::LoadLibrary(_T("crypt32.dll"));
-	if (!h)
-		return WriteProfileString(lpszSection, lpszEntry, lpszValue);
-	FPCRYPTPROTECTDATA fpCryptProtectData = (FPCRYPTPROTECTDATA)::GetProcAddress(h, "CryptProtectData");
-	if (fpCryptProtectData)
-	{
-		DATA_BLOB blobIn, blobOut, blobEntropy;
-		blobIn.pbData = (BYTE*)lpszValue;
-		blobIn.cbData = sizeof(TCHAR) * (_tcslen(lpszValue) + 1);
-		blobOut.cbData = 0;
-		blobOut.pbData = NULL;
-		BYTE Entropy[] = {
-			0x6B, 0x31, 0x20, 0x85, 0x08, 0x79, 0xA3, 0x1B, 0x53, 0xAB, 0x3D, 0x08, 0x67, 0xFD, 0x55, 0x66, 
-			0x26, 0x7B, 0x46, 0x28, 0x91, 0xBB, 0x11, 0x8D, 0x8E, 0xB0, 0x2C, 0x99, 0x1E, 0x5B, 0x4A, 0x68};
-		blobEntropy.pbData = Entropy;
-		blobEntropy.cbData = sizeof(Entropy);
+	// Remove old entry
+	// TODO: remove this code when removing CryptUnprotectData in GetSecureProfileString
+	if (m_pszRegistryKey)
+		::DeleteRegistryValue(HKEY_CURRENT_USER, CString(_T("Software\\")) + MYCOMPANY + _T("\\") + APPNAME_NOEXT + _T("\\") + lpszSection, lpszEntry);
+	else
+		::WritePrivateProfileString(lpszSection, lpszEntry, NULL, m_pszProfileName);
 
-		if (fpCryptProtectData(	&blobIn,
-								L"UNICODE",	// Windows 2000:  This parameter is required and cannot be set to NULL
+	// Exportable (depends only on the MAGIC_KEY defined in CEncryptDecrypt.h)
+	CEncryptDecrypt Encrypt;
+	Encrypt.Encrypt(CString(lpszValue)); // note: encrypting _T("") returns _T("")
+	WriteProfileString(lpszSection, CString(lpszEntry) + _T("Exportable"), Encrypt.GetEncryptedValues());
+}
+
+CString CUImagerApp::GetSecureProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry)
+{
+	CString sDecrypted;
+
+	// TODO: remove CryptUnprotectData code in future releases and add
+	//       to all calls "Exportable" so that we can remove it here
+	//       and in WriteSecureProfileString
+	DATA_BLOB blobIn, blobOut, blobEntropy;
+	blobIn.cbData = 0;
+	blobIn.pbData = NULL;
+	blobOut.cbData = 0;
+	blobOut.pbData = NULL;
+	BYTE Entropy[] = {
+		0x6B, 0x31, 0x20, 0x85, 0x08, 0x79, 0xA3, 0x1B, 0x53, 0xAB, 0x3D, 0x08, 0x67, 0xFD, 0x55, 0x66, 
+		0x26, 0x7B, 0x46, 0x28, 0x91, 0xBB, 0x11, 0x8D, 0x8E, 0xB0, 0x2C, 0x99, 0x1E, 0x5B, 0x4A, 0x68};
+	blobEntropy.pbData = Entropy;
+	blobEntropy.cbData = sizeof(Entropy);
+	LPWSTR pDescrOut = (LPWSTR)0xbaadf00d ; // Not NULL!
+	GetProfileBinary(lpszSection, lpszEntry, &blobIn.pbData, (UINT*)&blobIn.cbData);
+	if (blobIn.pbData && (blobIn.cbData > 0))
+	{
+		if (CryptUnprotectData(	&blobIn,
+								&pDescrOut,
 								&blobEntropy,
 								NULL,
 								NULL,
 								0,
 								&blobOut))
 		{
-			BOOL res = WriteProfileBinary(lpszSection, lpszEntry, (LPBYTE)blobOut.pbData, (UINT)blobOut.cbData);
+			CString sType(pDescrOut);
+			if (sType == L"UNICODE")
+				sDecrypted = CString((LPCWSTR)blobOut.pbData);
+			else if (sType == L"ASCII") // ascii backwards compatibility
+				sDecrypted = CString((LPCSTR)blobOut.pbData);
+			delete [] blobIn.pbData;
+			::LocalFree(pDescrOut);
 			::LocalFree(blobOut.pbData);
-			::FreeLibrary(h);
-			return res;
+			WriteSecureProfileString(lpszSection, lpszEntry, sDecrypted); // upgrade
+			return sDecrypted;
 		}
 		else
 		{
+			delete [] blobIn.pbData;
+			::LocalFree(pDescrOut);
 			::LocalFree(blobOut.pbData);
-			::FreeLibrary(h);
-			return FALSE;
 		}
 	}
 	else
 	{
-		::FreeLibrary(h);
-		return WriteProfileString(lpszSection, lpszEntry, lpszValue);
+		if (blobIn.pbData)
+			delete [] blobIn.pbData;
 	}
-}
 
-typedef BOOL (WINAPI * FPCRYPTUNPROTECTDATA)(DATA_BLOB*, LPWSTR*, DATA_BLOB*, PVOID*, CRYPTPROTECT_PROMPTSTRUCT*, DWORD, DATA_BLOB*);
-CString CUImagerApp::GetSecureProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszDefault/*=NULL*/)
-{
-	HINSTANCE h = ::LoadLibrary(_T("crypt32.dll"));
-	if (!h)
-		return GetProfileString(lpszSection, lpszEntry, lpszDefault);
-	FPCRYPTUNPROTECTDATA fpCryptUnprotectData = (FPCRYPTUNPROTECTDATA)::GetProcAddress(h, "CryptUnprotectData");
-	if (fpCryptUnprotectData)
-	{
-		DATA_BLOB blobIn, blobOut, blobEntropy;
-		blobIn.cbData = 0;
-		blobIn.pbData = NULL;
-		blobOut.cbData = 0;
-		blobOut.pbData = NULL;
-		BYTE Entropy[] = {
-			0x6B, 0x31, 0x20, 0x85, 0x08, 0x79, 0xA3, 0x1B, 0x53, 0xAB, 0x3D, 0x08, 0x67, 0xFD, 0x55, 0x66, 
-			0x26, 0x7B, 0x46, 0x28, 0x91, 0xBB, 0x11, 0x8D, 0x8E, 0xB0, 0x2C, 0x99, 0x1E, 0x5B, 0x4A, 0x68};
-		blobEntropy.pbData = Entropy;
-		blobEntropy.cbData = sizeof(Entropy);
-		LPWSTR pDescrOut = (LPWSTR)0xbaadf00d ; // Not NULL!
-
-		GetProfileBinary(lpszSection, lpszEntry, &blobIn.pbData, (UINT*)&blobIn.cbData);
-		if (blobIn.pbData && (blobIn.cbData > 0))
-		{
-			if (fpCryptUnprotectData(	&blobIn,
-										&pDescrOut,
-										&blobEntropy,
-										NULL,
-										NULL,
-										0,
-										&blobOut))
-			{
-				CString s;
-				CString sType(pDescrOut);
-				if (sType == L"UNICODE")
-					s = CString((LPCWSTR)blobOut.pbData);
-				else if (sType == L"ASCII")
-					s = CString((LPCSTR)blobOut.pbData);
-				delete [] blobIn.pbData;
-				::LocalFree(pDescrOut);
-				::LocalFree(blobOut.pbData);
-				::FreeLibrary(h);
-				return s;
-			}
-			else
-			{
-				delete [] blobIn.pbData;
-				::LocalFree(pDescrOut);
-				::LocalFree(blobOut.pbData);
-			}
-		}
-		else
-		{
-			if (blobIn.pbData)
-				delete [] blobIn.pbData;
-		}
-		::FreeLibrary(h);
-		return _T("");
-	}
-	else
-	{
-		::FreeLibrary(h);
-		return GetProfileString(lpszSection, lpszEntry, lpszDefault);
-	}
+	// CryptUnprotectData fails when:
+	// - the blob was encrypted by a different user than the one now trying to decrypt it
+	// - the user password has changed and the automatic reprocessing of keys based on user password failed
+	// - changing machine
+	CEncryptDecrypt Decrypt;
+	Decrypt.SetEncryptedValues(GetProfileString(lpszSection, CString(lpszEntry) + _T("Exportable")));
+	Decrypt.Decrypt(sDecrypted); // note: decrypting _T("") returns _T("")
+	return sDecrypted;
 }

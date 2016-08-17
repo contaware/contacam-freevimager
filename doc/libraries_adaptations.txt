@@ -288,6 +288,3 @@ Web interface
 - Using Prototype 1.7 with Scriptaculous 1.9.0
   (compressed prototype.js file with YUI Compressor 2.4.6)
   Adapted slider.js to work also when clicking on the track
-
-- Using the original Matt Kruse calendar popup library
-  in the Combined & Compact format (http://www.mattkruse.com)

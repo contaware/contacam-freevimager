@@ -756,6 +756,9 @@
     <ClInclude Include="PJNMD5.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CEncryptDecrypt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\audiomcidoc.ico">
