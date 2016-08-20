@@ -126,6 +126,10 @@ IDR_LICENSE             TEXT    MOVEABLE PURE   "License\\License.txt"
 
 IDR_MAINFRAME           BITMAP                  "res\\toolbars\\freevimager\\freevimager.bmp"
 IDR_PICTURE_TOOLBAR     BITMAP                  "res\\toolbars\\picturedoc\\picturedoc.bmp"
+IDR_MAINFRAME2X         BITMAP                  "res\\toolbars\\freevimager\\freevimager2x.bmp"
+IDR_PICTURE_TOOLBAR2X   BITMAP                  "res\\toolbars\\picturedoc\\picturedoc2x.bmp"
+IDR_MAINFRAME3X         BITMAP                  "res\\toolbars\\freevimager\\freevimager3x.bmp"
+IDR_PICTURE_TOOLBAR3X   BITMAP                  "res\\toolbars\\picturedoc\\picturedoc3x.bmp"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -169,6 +173,142 @@ BEGIN
 END
 
 IDR_PICTURE_TOOLBAR TOOLBAR 22, 21
+BEGIN
+    BUTTON      ID_FILE_INFO
+    SEPARATOR
+    BUTTON      ID_VIEW_PREVIOUS_PICTURE
+    SEPARATOR
+    BUTTON      ID_VIEW_NEXT_PICTURE
+    SEPARATOR
+    BUTTON      ID_VIEW_PREVIOUS_PAGE_FRAME
+    SEPARATOR
+    BUTTON      ID_VIEW_NEXT_PAGE_FRAME
+    SEPARATOR
+    BUTTON      ID_EDIT_ROTATE_90CCW
+    SEPARATOR
+    BUTTON      ID_EDIT_ROTATE_90CW
+    SEPARATOR
+    BUTTON      ID_EDIT_ROTATE_FLIP
+    SEPARATOR
+    BUTTON      ID_EDIT_RESIZE
+    SEPARATOR
+    BUTTON      ID_EDIT_CROP
+    SEPARATOR
+    BUTTON      ID_EDIT_HLS
+    SEPARATOR
+    BUTTON      ID_ZOOM_COMBOX
+    SEPARATOR
+    BUTTON      ID_VIEW_ZOOM_TOOL
+    SEPARATOR
+    BUTTON      ID_BACKGROUND_COLOR
+    SEPARATOR
+    BUTTON      ID_VIEW_STRETCH_HALFTONE
+END
+
+IDR_MAINFRAME2X TOOLBAR 44, 42
+BEGIN
+    BUTTON      ID_EDIT_SCREENSHOT
+    SEPARATOR
+    BUTTON      ID_FILE_NEW
+    SEPARATOR
+    BUTTON      ID_FILE_OPEN
+    SEPARATOR
+    BUTTON      ID_FILE_SAVE
+    SEPARATOR
+    BUTTON      ID_FILE_SAVE_AS
+    SEPARATOR
+    BUTTON      ID_FILE_SAVE_AS_PDF
+    SEPARATOR
+    BUTTON      ID_EDIT_DELETE
+    SEPARATOR
+    BUTTON      ID_EDIT_COPY
+    SEPARATOR
+    BUTTON      ID_EDIT_PASTE
+    SEPARATOR
+    BUTTON      ID_EDIT_UNDO
+    SEPARATOR
+    BUTTON      ID_EDIT_REDO
+    SEPARATOR
+    BUTTON      ID_FILE_PRINT_PREVIEW
+    SEPARATOR
+    BUTTON      ID_FILE_ACQUIRE
+    SEPARATOR
+    BUTTON      ID_FILE_ACQUIRE_TO_PDF
+    SEPARATOR
+    BUTTON      ID_FILE_SENDMAIL_OPEN_DOCS
+    SEPARATOR
+    BUTTON      ID_APP_ABOUT
+END
+
+IDR_PICTURE_TOOLBAR2X TOOLBAR 44, 42
+BEGIN
+    BUTTON      ID_FILE_INFO
+    SEPARATOR
+    BUTTON      ID_VIEW_PREVIOUS_PICTURE
+    SEPARATOR
+    BUTTON      ID_VIEW_NEXT_PICTURE
+    SEPARATOR
+    BUTTON      ID_VIEW_PREVIOUS_PAGE_FRAME
+    SEPARATOR
+    BUTTON      ID_VIEW_NEXT_PAGE_FRAME
+    SEPARATOR
+    BUTTON      ID_EDIT_ROTATE_90CCW
+    SEPARATOR
+    BUTTON      ID_EDIT_ROTATE_90CW
+    SEPARATOR
+    BUTTON      ID_EDIT_ROTATE_FLIP
+    SEPARATOR
+    BUTTON      ID_EDIT_RESIZE
+    SEPARATOR
+    BUTTON      ID_EDIT_CROP
+    SEPARATOR
+    BUTTON      ID_EDIT_HLS
+    SEPARATOR
+    BUTTON      ID_ZOOM_COMBOX
+    SEPARATOR
+    BUTTON      ID_VIEW_ZOOM_TOOL
+    SEPARATOR
+    BUTTON      ID_BACKGROUND_COLOR
+    SEPARATOR
+    BUTTON      ID_VIEW_STRETCH_HALFTONE
+END
+
+IDR_MAINFRAME3X TOOLBAR 66, 63
+BEGIN
+    BUTTON      ID_EDIT_SCREENSHOT
+    SEPARATOR
+    BUTTON      ID_FILE_NEW
+    SEPARATOR
+    BUTTON      ID_FILE_OPEN
+    SEPARATOR
+    BUTTON      ID_FILE_SAVE
+    SEPARATOR
+    BUTTON      ID_FILE_SAVE_AS
+    SEPARATOR
+    BUTTON      ID_FILE_SAVE_AS_PDF
+    SEPARATOR
+    BUTTON      ID_EDIT_DELETE
+    SEPARATOR
+    BUTTON      ID_EDIT_COPY
+    SEPARATOR
+    BUTTON      ID_EDIT_PASTE
+    SEPARATOR
+    BUTTON      ID_EDIT_UNDO
+    SEPARATOR
+    BUTTON      ID_EDIT_REDO
+    SEPARATOR
+    BUTTON      ID_FILE_PRINT_PREVIEW
+    SEPARATOR
+    BUTTON      ID_FILE_ACQUIRE
+    SEPARATOR
+    BUTTON      ID_FILE_ACQUIRE_TO_PDF
+    SEPARATOR
+    BUTTON      ID_FILE_SENDMAIL_OPEN_DOCS
+    SEPARATOR
+    BUTTON      ID_APP_ABOUT
+END
+
+IDR_PICTURE_TOOLBAR3X TOOLBAR 66, 63
 BEGIN
     BUTTON      ID_FILE_INFO
     SEPARATOR
@@ -298,7 +438,7 @@ END
 // License
 //
 
-IDR_LICENSE             TEXT    MOVEABLE PURE   "License\\License.txt"
+IDR_LICENSE                TEXT  MOVEABLE PURE  "License\\License.txt"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -306,7 +446,7 @@ IDR_LICENSE             TEXT    MOVEABLE PURE   "License\\License.txt"
 // Manifest
 //
 
-1                       24      MOVEABLE PURE   "res\\manifestcontacam.bin"
+1                          24    MOVEABLE PURE  "res\\manifestcontacam.bin"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -314,9 +454,15 @@ IDR_LICENSE             TEXT    MOVEABLE PURE   "License\\License.txt"
 // Bitmap
 //
 
-IDR_MAINFRAME           BITMAP                  "res\\toolbars\\contacam\\contacam.bmp"
-IDR_PICTURE_TOOLBAR     BITMAP                  "res\\toolbars\\picturedoc\\picturedoc.bmp"
-IDR_VIDEO_DEVICE_TOOLBAR BITMAP                 "res\\toolbars\\videodevicedoc\\videodevicedoc.bmp"
+IDR_MAINFRAME              BITMAP               "res\\toolbars\\contacam\\contacam.bmp"
+IDR_PICTURE_TOOLBAR        BITMAP               "res\\toolbars\\picturedoc\\picturedoc.bmp"
+IDR_VIDEO_DEVICE_TOOLBAR   BITMAP               "res\\toolbars\\videodevicedoc\\videodevicedoc.bmp"
+IDR_MAINFRAME2X            BITMAP               "res\\toolbars\\contacam\\contacam2x.bmp"
+IDR_PICTURE_TOOLBAR2X      BITMAP               "res\\toolbars\\picturedoc\\picturedoc2x.bmp"
+IDR_VIDEO_DEVICE_TOOLBAR2X BITMAP               "res\\toolbars\\videodevicedoc\\videodevicedoc2x.bmp"
+IDR_MAINFRAME3X            BITMAP               "res\\toolbars\\contacam\\contacam3x.bmp"
+IDR_PICTURE_TOOLBAR3X      BITMAP               "res\\toolbars\\picturedoc\\picturedoc3x.bmp"
+IDR_VIDEO_DEVICE_TOOLBAR3X BITMAP               "res\\toolbars\\videodevicedoc\\videodevicedoc3x.bmp"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -393,5 +539,142 @@ BEGIN
     BUTTON      ID_CAPTURE_MOVDET
 END
 
+IDR_MAINFRAME2X TOOLBAR 44, 42
+BEGIN
+    BUTTON      ID_EDIT_DELETE
+    SEPARATOR
+    BUTTON      ID_VIEW_WEB
+    SEPARATOR
+    BUTTON      ID_VIEW_FILES
+    SEPARATOR
+    BUTTON      ID_FILE_SETTINGS
+    SEPARATOR
+    BUTTON      ID_APP_ABOUT
+END
+
+IDR_PICTURE_TOOLBAR2X TOOLBAR 44, 42
+BEGIN
+    BUTTON      ID_FILE_INFO
+    SEPARATOR
+    BUTTON      ID_VIEW_PREVIOUS_PICTURE
+    SEPARATOR
+    BUTTON      ID_VIEW_NEXT_PICTURE
+    SEPARATOR
+    BUTTON      ID_VIEW_PREVIOUS_PAGE_FRAME
+    SEPARATOR
+    BUTTON      ID_VIEW_NEXT_PAGE_FRAME
+    SEPARATOR
+    BUTTON      ID_EDIT_ROTATE_90CCW
+    SEPARATOR
+    BUTTON      ID_EDIT_ROTATE_90CW
+    SEPARATOR
+    BUTTON      ID_EDIT_ROTATE_FLIP
+    SEPARATOR
+    BUTTON      ID_EDIT_RESIZE
+    SEPARATOR
+    BUTTON      ID_EDIT_CROP
+    SEPARATOR
+    BUTTON      ID_EDIT_HLS
+    SEPARATOR
+    BUTTON      ID_ZOOM_COMBOX
+    SEPARATOR
+    BUTTON      ID_VIEW_ZOOM_TOOL
+    SEPARATOR
+    BUTTON      ID_BACKGROUND_COLOR
+    SEPARATOR
+    BUTTON      ID_VIEW_STRETCH_HALFTONE
+END
+
+IDR_VIDEO_DEVICE_TOOLBAR2X TOOLBAR 44, 42
+BEGIN
+    BUTTON      ID_CAPTURE_CAMERABASICSETTINGS
+    SEPARATOR
+    BUTTON      ID_CAPTURE_CAMERAADVANCEDSETTINGS
+    SEPARATOR
+    BUTTON      ID_EDIT_SNAPSHOT
+    SEPARATOR
+    BUTTON      ID_CAPTURE_RECORD
+    SEPARATOR
+    BUTTON      ID_VIEW_FRAMETIME
+    SEPARATOR
+    BUTTON      ID_VIEW_FIT
+    SEPARATOR
+    BUTTON      ID_VIEW_DETECTIONS
+    SEPARATOR
+    BUTTON      ID_VIEW_DETECTION_ZONES_ADD
+	SEPARATOR
+    BUTTON      ID_VIEW_DETECTION_ZONES_REMOVE
+    SEPARATOR
+    BUTTON      ID_CAPTURE_MOVDET
+END
+
+IDR_MAINFRAME3X TOOLBAR 66, 63
+BEGIN
+    BUTTON      ID_EDIT_DELETE
+    SEPARATOR
+    BUTTON      ID_VIEW_WEB
+    SEPARATOR
+    BUTTON      ID_VIEW_FILES
+    SEPARATOR
+    BUTTON      ID_FILE_SETTINGS
+    SEPARATOR
+    BUTTON      ID_APP_ABOUT
+END
+
+IDR_PICTURE_TOOLBAR3X TOOLBAR 66, 63
+BEGIN
+    BUTTON      ID_FILE_INFO
+    SEPARATOR
+    BUTTON      ID_VIEW_PREVIOUS_PICTURE
+    SEPARATOR
+    BUTTON      ID_VIEW_NEXT_PICTURE
+    SEPARATOR
+    BUTTON      ID_VIEW_PREVIOUS_PAGE_FRAME
+    SEPARATOR
+    BUTTON      ID_VIEW_NEXT_PAGE_FRAME
+    SEPARATOR
+    BUTTON      ID_EDIT_ROTATE_90CCW
+    SEPARATOR
+    BUTTON      ID_EDIT_ROTATE_90CW
+    SEPARATOR
+    BUTTON      ID_EDIT_ROTATE_FLIP
+    SEPARATOR
+    BUTTON      ID_EDIT_RESIZE
+    SEPARATOR
+    BUTTON      ID_EDIT_CROP
+    SEPARATOR
+    BUTTON      ID_EDIT_HLS
+    SEPARATOR
+    BUTTON      ID_ZOOM_COMBOX
+    SEPARATOR
+    BUTTON      ID_VIEW_ZOOM_TOOL
+    SEPARATOR
+    BUTTON      ID_BACKGROUND_COLOR
+    SEPARATOR
+    BUTTON      ID_VIEW_STRETCH_HALFTONE
+END
+
+IDR_VIDEO_DEVICE_TOOLBAR3X TOOLBAR 66, 63
+BEGIN
+    BUTTON      ID_CAPTURE_CAMERABASICSETTINGS
+    SEPARATOR
+    BUTTON      ID_CAPTURE_CAMERAADVANCEDSETTINGS
+    SEPARATOR
+    BUTTON      ID_EDIT_SNAPSHOT
+    SEPARATOR
+    BUTTON      ID_CAPTURE_RECORD
+    SEPARATOR
+    BUTTON      ID_VIEW_FRAMETIME
+    SEPARATOR
+    BUTTON      ID_VIEW_FIT
+    SEPARATOR
+    BUTTON      ID_VIEW_DETECTIONS
+    SEPARATOR
+    BUTTON      ID_VIEW_DETECTION_ZONES_ADD
+	SEPARATOR
+    BUTTON      ID_VIEW_DETECTION_ZONES_REMOVE
+    SEPARATOR
+    BUTTON      ID_CAPTURE_MOVDET
+END
 
 #endif

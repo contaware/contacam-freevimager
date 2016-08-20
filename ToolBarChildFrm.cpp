@@ -163,17 +163,50 @@ BEGIN_MESSAGE_MAP(CVideoDeviceToolBar, CChildToolBar)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
+BOOL CVideoDeviceToolBar::SwitchToolBar(int nDPI, BOOL bCallShowControlBar/*=TRUE*/)
+{
+	// NOTE
+	// In the past there was a bug in MFC when switching toolbar,
+	// but in new versions it seems to be solved:
+	// http://www.verycomputer.com/418_a17ba2bef12732f0_1.htm
+
+	// Load and set sizes
+	if (nDPI > 192)
+	{
+		if (!LoadToolBar(IDR_VIDEO_DEVICE_TOOLBAR3X))
+			return FALSE;
+		SetSizes(	CSize(TOOLBAR_BUTTON_SIZE_3X, TOOLBAR_BUTTON_SIZE_3Y),
+					CSize(TOOLBAR_IMAGE_SIZE_3X, TOOLBAR_IMAGE_SIZE_3Y));
+	}
+	else if (nDPI > 96)
+	{
+		if (!LoadToolBar(IDR_VIDEO_DEVICE_TOOLBAR2X))
+			return FALSE;
+		SetSizes(	CSize(TOOLBAR_BUTTON_SIZE_2X, TOOLBAR_BUTTON_SIZE_2Y),
+					CSize(TOOLBAR_IMAGE_SIZE_2X, TOOLBAR_IMAGE_SIZE_2Y));
+	}
+	else
+	{
+		if (!LoadToolBar(IDR_VIDEO_DEVICE_TOOLBAR))
+			return FALSE;
+		SetSizes(	CSize(TOOLBAR_BUTTON_SIZE_X, TOOLBAR_BUTTON_SIZE_Y),
+					CSize(TOOLBAR_IMAGE_SIZE_X, TOOLBAR_IMAGE_SIZE_Y));
+	}
+
+	// When a toolbar is already loaded then the ShowControlBar() call is necessary to correctly update it
+	if (bCallShowControlBar)
+		::AfxGetMainFrame()->ShowControlBar(this, IsWindowVisible(), TRUE);
+
+	return TRUE;
+}
+
 BOOL CVideoDeviceToolBar::Create(CWnd* pParentWnd)
 {
+	// Create Toolbar
 	if (!CChildToolBar::Create(pParentWnd))
 		return FALSE;
-	
-	if (!LoadToolBar(IDR_VIDEO_DEVICE_TOOLBAR))
+	if (!SwitchToolBar(((CUImagerApp*)::AfxGetApp())->m_nSystemDPI, FALSE))
 		return FALSE;
-
-	// Size the toolbar
-	SetSizes(	CSize(TOOLBAR_BUTTON_SIZE_X, TOOLBAR_BUTTON_SIZE_Y),
-				CSize(TOOLBAR_IMAGE_SIZE_X, TOOLBAR_IMAGE_SIZE_Y));
 
 	return TRUE;
 }
@@ -245,17 +278,50 @@ BEGIN_MESSAGE_MAP(CPictureToolBar, CChildToolBar)
 	ON_MESSAGE(CPN_SELENDOK, OnSelEndOK)
 END_MESSAGE_MAP()
 
+BOOL CPictureToolBar::SwitchToolBar(int nDPI, BOOL bCallShowControlBar/*=TRUE*/)
+{
+	// NOTE
+	// In the past there was a bug in MFC when switching toolbar,
+	// but in new versions it seems to be solved:
+	// http://www.verycomputer.com/418_a17ba2bef12732f0_1.htm
+
+	// Load and set sizes
+	if (nDPI > 192)
+	{
+		if (!LoadToolBar(IDR_PICTURE_TOOLBAR3X))
+			return FALSE;
+		SetSizes(	CSize(TOOLBAR_BUTTON_SIZE_3X, TOOLBAR_BUTTON_SIZE_3Y),
+					CSize(TOOLBAR_IMAGE_SIZE_3X, TOOLBAR_IMAGE_SIZE_3Y));
+	}
+	else if (nDPI > 96)
+	{
+		if (!LoadToolBar(IDR_PICTURE_TOOLBAR2X))
+			return FALSE;
+		SetSizes(	CSize(TOOLBAR_BUTTON_SIZE_2X, TOOLBAR_BUTTON_SIZE_2Y),
+					CSize(TOOLBAR_IMAGE_SIZE_2X, TOOLBAR_IMAGE_SIZE_2Y));
+	}
+	else
+	{
+		if (!LoadToolBar(IDR_PICTURE_TOOLBAR))
+			return FALSE;
+		SetSizes(	CSize(TOOLBAR_BUTTON_SIZE_X, TOOLBAR_BUTTON_SIZE_Y),
+					CSize(TOOLBAR_IMAGE_SIZE_X, TOOLBAR_IMAGE_SIZE_Y));
+	}
+
+	// When a toolbar is already loaded then the ShowControlBar() call is necessary to correctly update it
+	if (bCallShowControlBar)
+		::AfxGetMainFrame()->ShowControlBar(this, IsWindowVisible(), TRUE);
+
+	return TRUE;
+}
+
 BOOL CPictureToolBar::Create(CWnd* pParentWnd)
 {
+	// Create Toolbar
 	if (!CChildToolBar::Create(pParentWnd))
 		return FALSE;
-	
-	if (!LoadToolBar(IDR_PICTURE_TOOLBAR))
+	if (!SwitchToolBar(((CUImagerApp*)::AfxGetApp())->m_nSystemDPI, FALSE))
 		return FALSE;
-
-	// Size the toolbar
-	SetSizes(	CSize(TOOLBAR_BUTTON_SIZE_X, TOOLBAR_BUTTON_SIZE_Y),
-				CSize(TOOLBAR_IMAGE_SIZE_X, TOOLBAR_IMAGE_SIZE_Y));
 
 	// Zoom Combo Box
 	LOGFONT lf;

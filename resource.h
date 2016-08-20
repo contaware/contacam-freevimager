@@ -31,6 +31,12 @@
 #define IDR_CONTEXT_VIDEO_DEVICE_ZONES  151
 #define IDR_EMPTY_TOOLBAR               154
 #define IDC_HAND_CURSOR                 157
+#define IDR_MAINFRAME2X                 158
+#define IDR_PICTURE_TOOLBAR2X           159
+#define IDR_VIDEO_DEVICE_TOOLBAR2X      160
+#define IDR_MAINFRAME3X                 161
+#define IDR_PICTURE_TOOLBAR3X           162
+#define IDR_VIDEO_DEVICE_TOOLBAR3X      163
 #define IDD_IMAGEINFO                   170
 #define IDD_RESIZING                    171
 #define IDD_MONOCHROME                  173

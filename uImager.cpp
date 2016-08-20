@@ -125,6 +125,7 @@ CUImagerApp::CUImagerApp()
 	m_bSingleInstance = FALSE;
 #endif
 	m_bTopMost = FALSE;
+	m_nSystemDPI = 96;
 	m_bShowStatusbar = TRUE;
 	m_bShowToolbar = TRUE;
 	m_pPictureDocTemplate = NULL;
@@ -535,6 +536,14 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 
 		// Init RichEdit2
 		AfxInitRichEdit2();
+
+		// Get System DPI
+		HDC hDC = ::GetDC(NULL);
+		if (hDC)
+		{
+			m_nSystemDPI = ::GetDeviceCaps(hDC, LOGPIXELSY);
+			::ReleaseDC(NULL, hDC);
+		}
 
 		// Get Module Name and Split it
 		TCHAR szDrive[_MAX_DRIVE];

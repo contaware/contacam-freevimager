@@ -130,6 +130,7 @@ public:
 
 	// Toolbar
 	CToolBar* GetToolBar() {return &m_wndToolBar;};
+	BOOL SwitchToolBar(int nDPI, BOOL bCallShowControlBar = TRUE);
 	void ToggleToolbars();
 
 	// Statusbar

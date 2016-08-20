@@ -59,6 +59,7 @@ public:
 	CVideoDeviceToolBar();
 	virtual ~CVideoDeviceToolBar();
 	virtual void UpdateControls(void);
+	BOOL SwitchToolBar(int nDPI, BOOL bCallShowControlBar = TRUE);
 	BOOL Create(CWnd* pParentWnd);
 
 	// Overrides
@@ -111,6 +112,7 @@ public:
 	CPictureToolBar();
 	virtual ~CPictureToolBar();
 	virtual void UpdateControls(void);
+	BOOL SwitchToolBar(int nDPI, BOOL bCallShowControlBar = TRUE);
 	BOOL Create(CWnd* pParentWnd);
 	CZoomComboBox m_ZoomComboBox;
 	CColorButtonPicker m_BkgColorButtonPicker;

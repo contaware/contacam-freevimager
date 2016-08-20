@@ -32,6 +32,14 @@
 #define TOOLBAR_IMAGE_SIZE_Y							21
 #define TOOLBAR_BUTTON_SIZE_X							(TOOLBAR_IMAGE_SIZE_X+7)
 #define TOOLBAR_BUTTON_SIZE_Y							(TOOLBAR_IMAGE_SIZE_Y+6)
+#define TOOLBAR_IMAGE_SIZE_2X							44
+#define TOOLBAR_IMAGE_SIZE_2Y							42
+#define TOOLBAR_BUTTON_SIZE_2X							(TOOLBAR_IMAGE_SIZE_2X+7)
+#define TOOLBAR_BUTTON_SIZE_2Y							(TOOLBAR_IMAGE_SIZE_2Y+6)
+#define TOOLBAR_IMAGE_SIZE_3X							66
+#define TOOLBAR_IMAGE_SIZE_3Y							63
+#define TOOLBAR_BUTTON_SIZE_3X							(TOOLBAR_IMAGE_SIZE_3X+7)
+#define TOOLBAR_BUTTON_SIZE_3Y							(TOOLBAR_IMAGE_SIZE_3Y+6)
 #define TOOLBAR_COMBOBOX_FONTFACENAME					_T("MS Shell Dlg 2")
 #define TOOLBAR_COMBOBOX_FONTHEIGHT						-14
 #define TOOLBAR_ZOOMCOMBOBOX_WIDTH						116
@@ -529,6 +537,9 @@ public:
 
 	// Top Most
 	BOOL m_bTopMost;
+
+	// System DPI
+	volatile int m_nSystemDPI;
 
 	// Statusbar and Toolbar visibility
 	BOOL m_bShowStatusbar;

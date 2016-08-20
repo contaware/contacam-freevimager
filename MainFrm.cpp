@@ -168,15 +168,11 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// Create Toolbar
 	((CUImagerApp*)::AfxGetApp())->m_bShowToolbar = (BOOL)((CUImagerApp*)::AfxGetApp())->GetProfileInt(_T("GeneralApp"), _T("ShowToolbar"), TRUE);
 	if (!m_wndToolBar.CreateEx(this, TBSTYLE_FLAT, (((CUImagerApp*)::AfxGetApp())->m_bShowToolbar ? WS_VISIBLE : 0) | WS_CHILD | CBRS_TOP | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_FIXED) ||
-		!m_wndToolBar.LoadToolBar(IDR_MAINFRAME))
+		!SwitchToolBar(((CUImagerApp*)::AfxGetApp())->m_nSystemDPI, FALSE))
 	{
 		TRACE(_T("Failed to create toolbar\n"));
 		return -1;      // fail to create
 	}
-	
-	// Size the toolbar
-	m_wndToolBar.SetSizes(	CSize(TOOLBAR_BUTTON_SIZE_X, TOOLBAR_BUTTON_SIZE_Y),
-							CSize(TOOLBAR_IMAGE_SIZE_X, TOOLBAR_IMAGE_SIZE_Y));
 
 	// Create Statusbar
 	((CUImagerApp*)::AfxGetApp())->m_bShowStatusbar = (BOOL)((CUImagerApp*)::AfxGetApp())->GetProfileInt(_T("GeneralApp"), _T("ShowStatusbar"), TRUE);
@@ -2057,6 +2053,43 @@ void CMainFrame::OnViewStatusbar()
 void CMainFrame::OnUpdateViewStatusbar(CCmdUI* pCmdUI)
 {
 	pCmdUI->SetCheck(((CUImagerApp*)::AfxGetApp())->m_bShowStatusbar ? 1 : 0);
+}
+
+BOOL CMainFrame::SwitchToolBar(int nDPI, BOOL bCallShowControlBar/*=TRUE*/)
+{
+	// NOTE
+	// In the past there was a bug in MFC when switching toolbar,
+	// but in new versions it seems to be solved:
+	// http://www.verycomputer.com/418_a17ba2bef12732f0_1.htm
+
+	// Load and set sizes
+	if (nDPI > 192)
+	{
+		if (!m_wndToolBar.LoadToolBar(IDR_MAINFRAME3X))
+			return FALSE;
+		m_wndToolBar.SetSizes(	CSize(TOOLBAR_BUTTON_SIZE_3X, TOOLBAR_BUTTON_SIZE_3Y),
+								CSize(TOOLBAR_IMAGE_SIZE_3X, TOOLBAR_IMAGE_SIZE_3Y));
+	}
+	else if (nDPI > 96)
+	{
+		if (!m_wndToolBar.LoadToolBar(IDR_MAINFRAME2X))
+			return FALSE;
+		m_wndToolBar.SetSizes(	CSize(TOOLBAR_BUTTON_SIZE_2X, TOOLBAR_BUTTON_SIZE_2Y),
+								CSize(TOOLBAR_IMAGE_SIZE_2X, TOOLBAR_IMAGE_SIZE_2Y));
+	}
+	else
+	{
+		if (!m_wndToolBar.LoadToolBar(IDR_MAINFRAME))
+			return FALSE;
+		m_wndToolBar.SetSizes(	CSize(TOOLBAR_BUTTON_SIZE_X, TOOLBAR_BUTTON_SIZE_Y),
+								CSize(TOOLBAR_IMAGE_SIZE_X, TOOLBAR_IMAGE_SIZE_Y));
+	}
+
+	// When a toolbar is already loaded then the ShowControlBar() call is necessary to correctly update it
+	if (bCallShowControlBar)
+		ShowControlBar(&m_wndToolBar, m_wndToolBar.IsWindowVisible(), TRUE);
+
+	return TRUE;
 }
 
 void CMainFrame::ToggleToolbars()
