@@ -16,8 +16,8 @@ CONTACAM HISTORY
   the corresponding thumb. That's necessary because in web interface
   the thumbs point through a link to the full versions
 - Emailing files as plain attachments and not embedded in html as
-  before because some email clients are not display embedded images
-  properly
+  before because some email clients are not displaying embedded
+  images properly
 - Do not fail when no DV media present
 
 5.0.7 (May 9th 2016)
