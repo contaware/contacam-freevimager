@@ -8,15 +8,6 @@ and initializes it with a value:
 __declspec( thread ) int tls_i = 1;
 
 
-CXButtonXP 1.2
---------------
-
-- Better Mouse Hover
-- Added DrawThemeParentBackground & IsThemeBackgroundPartiallyTransparent
-- Better Themes Support, see the IsThemed() Function
-- Centering multiline text
-
-
 CToasterWnd 1.18
 ----------------
 

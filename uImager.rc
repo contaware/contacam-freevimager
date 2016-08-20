@@ -64,8 +64,11 @@ END
 //
 
 IDB_BITMAP_DRAGDROP_SINGLE BITMAP                  "res\\DragDropSingle.bmp"
+
 IDB_BITMAP_DRAGDROP_MULTI BITMAP                  "res\\DragDropMulti.bmp"
+
 IDB_HEADER_CTRL         BITMAP                  "res\\HeaderArrows.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -885,7 +888,7 @@ EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "About"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    ICON            120,IDC_STATIC,15,10,20,20
+    ICON            IDR_MAINFRAME,IDC_STATIC,15,10,20,20
     LTEXT           "Unknown",IDC_VERSION,154,49,136,8,SS_NOPREFIX
     LTEXT           "Copyright © 2003 - 2016 Contaware.com, Switzerland",IDC_STATIC2141,62,213,181,8
     DEFPUSHBUTTON   "OK",IDOK,125,196,50,14,WS_GROUP
@@ -2242,14 +2245,14 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,122,5,36,14
 END
 
-IDD_PICTUREPRINTPREVIEW DIALOG 0, 0, 418, 20
+IDD_PICTUREPRINTPREVIEW DIALOGEX 0, 0, 418, 20
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     PUSHBUTTON      "Print...",AFX_ID_PREVIEW_PRINT,5,3,32,14
     PUSHBUTTON      "Setup...",ID_BUTTON_PRINT_SETUP,43,3,32,14
-    PUSHBUTTON      "",AFX_ID_PREVIEW_ZOOMIN,82,3,20,14
-    PUSHBUTTON      "",AFX_ID_PREVIEW_ZOOMOUT,106,3,20,14
+    PUSHBUTTON      "+",AFX_ID_PREVIEW_ZOOMIN,82,3,20,14
+    PUSHBUTTON      "-",AFX_ID_PREVIEW_ZOOMOUT,106,3,20,14
     PUSHBUTTON      "Close",AFX_ID_PREVIEW_CLOSE,132,3,36,14
     CONTROL         "Portrait",IDC_RADIO_ORIENTATION_PORTRAIT,"Button",BS_AUTORADIOBUTTON | WS_GROUP,176,2,37,8
     CONTROL         "Landscape",IDC_RADIO_ORIENTATION_LANDSCAPE,"Button",BS_AUTORADIOBUTTON,176,11,49,8
@@ -3191,13 +3194,32 @@ END
 //
 
 IDC_HAND_CURSOR         CURSOR                  "res\\hand.cur"
+
 IDC_SELECTCOLOR_CURSOR  CURSOR                  "res\\selectcolor.cur"
+
 IDC_ZONEPLUS_CURSOR     CURSOR                  "res\\ZonePlus.cur"
+
 IDC_ZONEMINUS_CURSOR    CURSOR                  "res\\ZoneMinus.cur"
+
 IDC_ZOOMMINUS           CURSOR                  "res\\ZoomMinus.cur"
+
 IDC_ZOOMPLUS            CURSOR                  "res\\ZoomPlus.cur"
+
 IDC_GRAB_NORMAL         CURSOR                  "res\\grab_normal.cur"
+
 IDC_GRAB_CLOSED         CURSOR                  "res\\grab_closed.cur"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_PICTUREPRINTPREVIEW AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

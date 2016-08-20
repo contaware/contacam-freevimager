@@ -513,12 +513,6 @@ int CPicturePrintPreviewView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (m_pScaleEdit)
 		m_pScaleEdit->SetPrintScale(GetDocument()->m_dPrintScale);
 
-	// Subclass the zoom in & out buttons
-	m_ZoomInButton.SubclassDlgItem(AFX_ID_PREVIEW_ZOOMIN, m_pToolBar);
-	m_ZoomOutButton.SubclassDlgItem(AFX_ID_PREVIEW_ZOOMOUT, m_pToolBar);
-	m_ZoomInButton.SetIcon(IDI_MAGNIFYPLUS, CXButtonXP::LEFT);
-	m_ZoomOutButton.SetIcon(IDI_MAGNIFYMINUS, CXButtonXP::LEFT);
-
 	// Draw Margin Check Box
 	CButton* pCheckPrintMargin = (CButton*)m_pToolBar->GetDlgItem(IDC_CHECK_PRINTMARGIN);
 	pCheckPrintMargin->SetCheck(GetDocument()->m_bPrintMargin);

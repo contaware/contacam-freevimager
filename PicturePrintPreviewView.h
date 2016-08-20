@@ -6,7 +6,6 @@
 #include <afxpriv.h>
 #include "PictureDoc.h"
 #include <..\src\mfc\afximpl.h>
-#include "XButtonXP.h"
 
 /*
 #define ID_PAGES_1PAGE                  32771
@@ -59,8 +58,6 @@ private:
 	HCURSOR		m_hGrabNormalCursor;	// Normal Picture Move Cursor
 	CBitmap		m_MemDCBitmap;			// Offscreen bitmap
 	CRect		m_rcPrevMemDC;			// Previous MemDC Rectangle
-	CXButtonXP	m_ZoomInButton;			// Zoom In Button
-	CXButtonXP	m_ZoomOutButton;		// Zoom Out Button
 	CPoint		m_ptMouseMoveLastPoint;	// Last Point Of Movement
 	ULONGLONG	m_ullGestureZoomStart;	// Zoom gesture initial distance between the two points
 	double		m_dGestureZoomStartPrintScale;	// Zoom gesture start print scale value

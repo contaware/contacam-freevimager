@@ -327,9 +327,6 @@
     <ClCompile Include="WorkerThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="XButtonXP.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="XMLite.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -715,9 +712,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="WorkerThread.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="XButtonXP.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="XMLite.h">
