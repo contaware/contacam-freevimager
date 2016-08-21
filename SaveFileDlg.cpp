@@ -51,22 +51,22 @@ void CSaveFileDlg::OnInitDone()
 		CRect rcDialog;
 		GetParent()->GetWindowRect(&rcDialog);
 		GetParent()->SetWindowPos(	NULL, 0, 0, rcDialog.Width(),
-									rcDialog.Height() + SAVEFILEDLG_SLIDER_HEIGHT + SAVEFILEDLG_BOTTOM_OFFSET,
+									rcDialog.Height() + ((CUImagerApp*)::AfxGetApp())->SystemDPIScale(SAVEFILEDLG_SLIDER_HEIGHT + SAVEFILEDLG_BOTTOM_OFFSET),
 									SWP_NOMOVE | SWP_NOZORDER);
 		ScreenToClient(rcDialog);
 
 		// Slider Label
-		CRect rcSliderLabel(SAVEFILEDLG_LEFT_OFFSET,
+		CRect rcSliderLabel(((CUImagerApp*)::AfxGetApp())->SystemDPIScale(SAVEFILEDLG_LEFT_OFFSET),
 							rcDialog.bottom,
-							SAVEFILEDLG_LEFT_OFFSET + SAVEFILEDLG_SLIDERLABEL_WIDTH,
-							rcDialog.bottom + SAVEFILEDLG_SLIDER_HEIGHT);
+							((CUImagerApp*)::AfxGetApp())->SystemDPIScale(SAVEFILEDLG_LEFT_OFFSET + SAVEFILEDLG_SLIDERLABEL_WIDTH),
+							rcDialog.bottom + ((CUImagerApp*)::AfxGetApp())->SystemDPIScale(SAVEFILEDLG_SLIDER_HEIGHT));
 		m_SliderLabel.Create(ML_STRING(1864, "JPEG Quality\n(0: worst, 100: best)"), WS_CHILD | WS_VISIBLE, rcSliderLabel, GetParent(), ctl1+16);
 		m_SliderLabel.SetFont(GetParent()->GetFont(), FALSE);
 
 		// Slider Ctrl
 		CRect rcSlider(		rcSliderLabel.right,
 							rcSliderLabel.top,
-							rcDialog.Width() - SAVEFILEDLG_SLIDERTEXT_WIDTH - SAVEFILEDLG_RIGHT_OFFSET,
+							rcDialog.Width() - ((CUImagerApp*)::AfxGetApp())->SystemDPIScale(SAVEFILEDLG_SLIDERTEXT_WIDTH + SAVEFILEDLG_RIGHT_OFFSET),
 							rcSliderLabel.bottom);
 		m_SliderCtrl.Create(WS_CHILD | WS_VISIBLE | TBS_NOTICKS | WS_TABSTOP | TBS_HORZ, rcSlider, GetParent(), ctl1+17);
 		m_SliderCtrl.SetRange(0, 100);
@@ -79,7 +79,7 @@ void CSaveFileDlg::OnInitDone()
 		// Slider JPEG Quality Text
 		CRect rcSliderText(	rcSlider.right,
 							rcSlider.top,
-							rcSlider.right + SAVEFILEDLG_SLIDERTEXT_WIDTH,
+							rcSlider.right + ((CUImagerApp*)::AfxGetApp())->SystemDPIScale(SAVEFILEDLG_SLIDERTEXT_WIDTH),
 							rcSlider.bottom);
 		CString sSliderText;
 		sSliderText.Format(_T("%d"), m_nJpegCompressionQuality);
