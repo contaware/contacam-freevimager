@@ -221,9 +221,7 @@ void CBrowseDlg::OnInitDialog()
 
 	if (m_bCheckbox)
 	{
-		static const UINT BUTTON_STYLE =	BS_CHECKBOX | WS_CHILD |
-											WS_VISIBLE | WS_TABSTOP;
-
+		// Get checkbox's text extent
 		CSize sz;
 		CFont* pFont = GetFont();
 		CDC* pDC = GetDC();
@@ -235,9 +233,17 @@ void CBrowseDlg::OnInitDialog()
 		pDC->SelectObject(pOldFont);
 		ReleaseDC(pDC);
 
-		// 20 is for the check width
-		m_nCheckboxWidth = sz.cx + 20;
+		// From MSDN Layout Specifications the dimensions of a checkbox is 12 dialog units
+		// from the left edge of the control to the start of the text and 10 dialog units height
+		// (http://msdn.microsoft.com/en-us/library/windows/desktop/bb226818%28v=vs.85%29.aspx)
+		CRect rcCheckbox(0, 0, 12, 10);
+		::MapDialogRect(GetSafeHwnd(), &rcCheckbox); // DLUs to pixels
 
+		// Checkbox's total width
+		m_nCheckboxWidth = sz.cx + rcCheckbox.Width();
+
+		// Create it
+		static const UINT BUTTON_STYLE = BS_CHECKBOX | WS_CHILD | WS_VISIBLE | WS_TABSTOP;
 		CRect rc;
 		CalcCheckRect(rc);
 		if (!m_Checkbox.Create(	m_sCheckboxCaption,
@@ -247,11 +253,10 @@ void CBrowseDlg::OnInitDialog()
 								IDC_CHECK_BROWSEDLG))
 			AfxThrowOleException(HRESULT_FROM_WIN32(::GetLastError()));
 
-		// Ok  - we've  finally got the  new Checkbox created.
-		// For reasons unclear to me, it uses a horrible font. Let's change that:
+		// Let's change the font
 		m_Checkbox.SetFont(pFont, TRUE);
 
-		// Set Check?
+		// Checked?
 		m_Checkbox.SetCheck(m_bChecked ? 1 : 0);
 	}
 }
@@ -363,10 +368,10 @@ void CBrowseDlg::CalcCheckRect(CRect& rc)
 
 	// rc will be the rectangle, relative to rcDlg,
 	// occupied by the Checkbox button.
-	rc.left = rcDlg.left + 15;
+	rc.left = rcDlg.left + ::SystemDPIScale(BROWSEFILEDLG_CHECKBOX_LEFT_OFFSET);
 	rc.right = rc.left + m_nCheckboxWidth;
 	rc.bottom = rcDlg.bottom - nYBottomAlign;
-	rc.top = rc.bottom - rcOk.Height() + 4;
+	rc.top = rc.bottom - rcOk.Height();
 }
 
 void CBrowseDlg::OnSize(UINT nType, int cx, int cy) 

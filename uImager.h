@@ -490,9 +490,6 @@ public:
 	// Get Application Temporary Directory (the returned string ends with a _T('\\'))
 	__forceinline CString GetAppTempDir() const {return m_sAppTempDir;};
 
-	// System DPI Scale
-	__forceinline int SystemDPIScale(int n) const {return ::MulDiv(n, m_nSystemDPI, 96);};
-
 	// Show color dialog with custom
 	// colors store in registry.
 	// Inits the dialog with crColor and
@@ -540,9 +537,6 @@ public:
 
 	// Top Most
 	BOOL m_bTopMost;
-
-	// System DPI
-	volatile int m_nSystemDPI;
 
 	// Statusbar and Toolbar visibility
 	BOOL m_bShowStatusbar;

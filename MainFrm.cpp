@@ -168,7 +168,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// Create Toolbar
 	((CUImagerApp*)::AfxGetApp())->m_bShowToolbar = (BOOL)((CUImagerApp*)::AfxGetApp())->GetProfileInt(_T("GeneralApp"), _T("ShowToolbar"), TRUE);
 	if (!m_wndToolBar.CreateEx(this, TBSTYLE_FLAT, (((CUImagerApp*)::AfxGetApp())->m_bShowToolbar ? WS_VISIBLE : 0) | WS_CHILD | CBRS_TOP | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_FIXED) ||
-		!SwitchToolBar(((CUImagerApp*)::AfxGetApp())->m_nSystemDPI, FALSE))
+		!SwitchToolBar(g_nSystemDPI, FALSE))
 	{
 		TRACE(_T("Failed to create toolbar\n"));
 		return -1;      // fail to create

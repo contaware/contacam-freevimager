@@ -20,8 +20,9 @@ static char THIS_FILE[] = __FILE__;
 #pragma comment(lib, "Wininet.lib")	// to support InternetGetLastResponseInfo()
 
 // If InitHelpers() is not called vars default to:
-// no multimedia instructions,
+// default DPI, no multimedia instructions,
 // 64K allocation granularity, 4096 page size and 2GB RAM
+int g_nSystemDPI = 96;
 BOOL g_bWinVistaOrHigher = FALSE;
 BOOL g_bMMX = FALSE;
 BOOL g_bSSE = FALSE;
@@ -43,6 +44,14 @@ int GetCpuInstr();
 int GetTotPhysMemMB(BOOL bInstalled);
 void InitHelpers()
 {
+	// Get System DPI
+	HDC hDC = GetDC(NULL);
+	if (hDC)
+	{
+		g_nSystemDPI = GetDeviceCaps(hDC, LOGPIXELSY);
+		ReleaseDC(NULL, hDC);
+	}
+
 	// Windows Version
 	RTL_OSVERSIONINFOEXW ovi = {0};
 	ovi.dwOSVersionInfoSize = sizeof(RTL_OSVERSIONINFOEXW);

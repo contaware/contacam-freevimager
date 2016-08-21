@@ -16,6 +16,8 @@
 #define BIF_UAHINT				0x0100
 #endif
 
+#define BROWSEFILEDLG_CHECKBOX_LEFT_OFFSET			15
+
 class CBrowseDlg : public CWnd
 {
 	DECLARE_DYNAMIC(CBrowseDlg)

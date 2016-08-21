@@ -205,7 +205,7 @@ BOOL CVideoDeviceToolBar::Create(CWnd* pParentWnd)
 	// Create Toolbar
 	if (!CChildToolBar::Create(pParentWnd))
 		return FALSE;
-	if (!SwitchToolBar(((CUImagerApp*)::AfxGetApp())->m_nSystemDPI, FALSE))
+	if (!SwitchToolBar(g_nSystemDPI, FALSE))
 		return FALSE;
 
 	return TRUE;
@@ -320,7 +320,7 @@ BOOL CPictureToolBar::Create(CWnd* pParentWnd)
 	// Create Toolbar
 	if (!CChildToolBar::Create(pParentWnd))
 		return FALSE;
-	if (!SwitchToolBar(((CUImagerApp*)::AfxGetApp())->m_nSystemDPI, FALSE))
+	if (!SwitchToolBar(g_nSystemDPI, FALSE))
 		return FALSE;
 
 	// Zoom Combo Box

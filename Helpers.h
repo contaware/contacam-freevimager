@@ -17,6 +17,7 @@
 // Windows thumbnail cache file
 #define THUMBS_DB				_T("Thumbs.db")
 
+extern int g_nSystemDPI;
 extern BOOL g_bWinVistaOrHigher;
 extern BOOL g_bMMX;
 extern BOOL g_bSSE;
@@ -29,6 +30,9 @@ extern int g_nAvailablePhysRamMB;
 
 // Call This Before Using the following Functions!
 extern void InitHelpers();
+
+// System DPI Scale
+__forceinline int SystemDPIScale(int n) { return MulDiv(n, g_nSystemDPI, 96); };
 
 /*
 c:\mydir1\mydir2\hello.jpeg

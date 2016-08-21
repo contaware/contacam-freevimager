@@ -125,7 +125,6 @@ CUImagerApp::CUImagerApp()
 	m_bSingleInstance = FALSE;
 #endif
 	m_bTopMost = FALSE;
-	m_nSystemDPI = 96;
 	m_bShowStatusbar = TRUE;
 	m_bShowToolbar = TRUE;
 	m_pPictureDocTemplate = NULL;
@@ -537,14 +536,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// Init RichEdit2
 		AfxInitRichEdit2();
 
-		// Get System DPI
-		HDC hDC = ::GetDC(NULL);
-		if (hDC)
-		{
-			m_nSystemDPI = ::GetDeviceCaps(hDC, LOGPIXELSY);
-			::ReleaseDC(NULL, hDC);
-		}
-
 		// Get Module Name and Split it
 		TCHAR szDrive[_MAX_DRIVE];
 		TCHAR szDir[_MAX_DIR];
@@ -737,7 +728,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		}
 
 		// Init Global Helper Functions
-		// (inits OSs flags and processor instruction sets flags)
 		::InitHelpers();
 
 		// Enable the low-fragmenation heap (LFH) for XP and Windows 2003
