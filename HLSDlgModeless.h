@@ -8,7 +8,7 @@
 
 #include "resource.h"
 #include "Dib.h"
-#include "MacProgressCtrl.h"
+#include "ColorProgressCtrl.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CHLSDlgModeless dialog

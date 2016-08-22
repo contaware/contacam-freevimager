@@ -153,9 +153,6 @@
     <ClCompile Include="ListCtrlEx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MacProgressCtrl.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="MainFrm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -360,6 +357,9 @@
     <ClCompile Include="HelpersAudio.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ColorProgressCtrl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <MASM Include="MotionDetHelpers.asm">
@@ -517,9 +517,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ListCtrlEx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MacProgressCtrl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MainFrm.h">
@@ -751,6 +748,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CEncryptDecrypt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ColorProgressCtrl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

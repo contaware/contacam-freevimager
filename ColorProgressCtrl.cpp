@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "MacProgressCtrl.h"
+#include "ColorProgressCtrl.h"
 #include "XThemeHelper.h"
 
 #ifdef _DEBUG
