@@ -160,7 +160,7 @@ void CColourPopup::Initialise()
 	// Init Vars
     m_nNumColumns       = 0;
     m_nNumRows          = 0;
-    m_nBoxSize          = 18;
+    m_nBoxSize          = ::SystemDPIScale(18);
     m_nMargin           = ::GetSystemMetrics(SM_CXEDGE);
     m_nCurrentSel       = INVALID_COLOUR;
     m_nChosenColourSel  = INVALID_COLOUR;

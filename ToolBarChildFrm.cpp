@@ -398,7 +398,7 @@ void CPictureToolBar::UpdateControls(void)
 	if (::IsWindow(m_BkgColorButtonPicker))
 	{
 		GetItemRect(m_BkgColorButtonPickerIndex, rect);
-		rect.right = rect.left + TOOLBAR_COLORBUTTONPICKER_WIDTH;
+		rect.right = rect.left + ScaleToolBar(g_nSystemDPI, TOOLBAR_COLORBUTTONPICKER_WIDTH);
 		SetButtonInfo(	m_BkgColorButtonPickerIndex,
 						ID_BACKGROUND_COLOR,
 						TBBS_SEPARATOR,
