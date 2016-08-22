@@ -1,33 +1,16 @@
-#if !defined(AFX_MACPROGRESSCTRL_H__603BBF44_B19C_11D3_90FA_0020AFBC499D__INCLUDED_)
-#define AFX_MACPROGRESSCTRL_H__603BBF44_B19C_11D3_90FA_0020AFBC499D__INCLUDED_
+#if !defined(AFX_COLORPROGRESSCTRL_H__603BBF44_B19C_11D3_90FA_0020AFBC499D__INCLUDED_)
+#define AFX_COLORPROGRESSCTRL_H__603BBF44_B19C_11D3_90FA_0020AFBC499D__INCLUDED_
 
 #pragma once
 
-// MacProgressCtrl.h : header file
-//
-//	CMacProgressCtrl class, version 1.0
-//
-//	Copyright (c) 1999 Paul M. Meidinger (pmmeidinger@yahoo.com)
-//
-// Feel free to modifiy and/or distribute this file, but
-// do not remove this header.
-//
-// I would appreciate a notification of any bugs discovered or 
-// improvements that could be made.
-//
-// This file is provided "as is" with no expressed or implied warranty.
-//
-//	History:
-//		PMM	12/21/1999		Initial implementation.		
-
 /////////////////////////////////////////////////////////////////////////////
-// CMacProgressCtrl window
+// CColorProgressCtrl window
 
-class CMacProgressCtrl : public CProgressCtrl
+class CColorProgressCtrl : public CProgressCtrl
 {
 // Construction
 public:
-	CMacProgressCtrl();
+	CColorProgressCtrl();
 
 // Attributes
 public:
@@ -37,54 +20,31 @@ public:
 
 // Overrides
 	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CMacProgressCtrl)
+	//{{AFX_VIRTUAL(CColorProgressCtrl)
 	//}}AFX_VIRTUAL
 
 // Implementation
 public:
-	BOOL GetIndeterminate();
-	void SetIndeterminate(BOOL bIndeterminate = TRUE);
-	COLORREF GetColor();
+	COLORREF GetColor() const;
 	void SetColor(COLORREF crColor);
-	virtual ~CMacProgressCtrl();
+	virtual ~CColorProgressCtrl();
 
 	// Generated message map functions
 protected:
-	//{{AFX_MSG(CMacProgressCtrl)
+	//{{AFX_MSG(CColorProgressCtrl)
 	afx_msg void OnPaint();
-	afx_msg void OnTimer(UINT nIDEvent);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()
 private:
-	int m_nIndOffset;
-	BOOL m_bIndeterminate;
 	BOOL IsThemed();
-	void DrawVerticalBar(CDC *pDC, const CRect rect);
-	void DrawHorizontalBar(CDC *pDC, const CRect rect);
-	void DeletePens();
-	void CreatePens();
-	CPen m_penColor;
-	CPen m_penColorLight;
-	CPen m_penColorLighter;
-	CPen m_penColorDark;
-	CPen m_penColorDarker;
-	CPen m_penDkShadow;
-	CPen m_penShadow;
-	CPen m_penLiteShadow;
-	COLORREF LightenColor(const COLORREF crColor, BYTE byIncreaseVal);
-	COLORREF DarkenColor(const COLORREF crColor, BYTE byReduceVal);
-	void GetColors();
+	void DeletePenBorder();
+	void CreatePenBorder();
+	CPen m_PenBorder;
+	void CalcColorBorder();
 	COLORREF m_crColor;
-	COLORREF m_crColorLight;
-	COLORREF m_crColorLighter;
-	COLORREF m_crColorLightest;
-	COLORREF m_crColorDark;
-	COLORREF m_crColorDarker;
-	COLORREF m_crDkShadow;
-	COLORREF m_crShadow;
-	COLORREF m_crLiteShadow;
+	COLORREF m_crColorBorder;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -92,4 +52,4 @@ private:
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_MACPROGRESSCTRL_H__603BBF44_B19C_11D3_90FA_0020AFBC499D__INCLUDED_)
+#endif // !defined(AFX_COLORPROGRESSCTRL_H__603BBF44_B19C_11D3_90FA_0020AFBC499D__INCLUDED_)

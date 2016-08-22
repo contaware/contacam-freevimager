@@ -23,17 +23,17 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CHLSDlgModeless)
 	enum { IDD = IDD_HLS };
-	CMacProgressCtrl	m_BandMax;
-	CMacProgressCtrl	m_Band7;
-	CMacProgressCtrl	m_Band6;
-	CMacProgressCtrl	m_Band5;
-	CMacProgressCtrl	m_Band4;
-	CMacProgressCtrl	m_Band3;
-	CMacProgressCtrl	m_Band2;
-	CMacProgressCtrl	m_Band1;
-	CMacProgressCtrl	m_Band0;
-	CMacProgressCtrl	m_BandMin;
-	BOOL	m_bShowOriginal;
+	CColorProgressCtrl m_BandMax;
+	CColorProgressCtrl m_Band7;
+	CColorProgressCtrl m_Band6;
+	CColorProgressCtrl m_Band5;
+	CColorProgressCtrl m_Band4;
+	CColorProgressCtrl m_Band3;
+	CColorProgressCtrl m_Band2;
+	CColorProgressCtrl m_Band1;
+	CColorProgressCtrl m_Band0;
+	CColorProgressCtrl m_BandMin;
+	BOOL m_bShowOriginal;
 	//}}AFX_DATA
 
 
