@@ -750,8 +750,8 @@ LONG CMainFrame::OnThreadSafePopupToaster(WPARAM wparam, LPARAM lparam)
 			lf.lfUnderline = TRUE;
 		}
 		m_pToaster->m_fontText.CreateFontIndirect(&lf);
-		m_pToaster->m_nWidth = 360;
-		m_pToaster->m_nHeight = 80;
+		m_pToaster->m_nWidth = ::SystemDPIScale(360);
+		m_pToaster->m_nHeight = ::SystemDPIScale(80);
 		m_pToaster->m_colorBackground = RGB(0xD4, 0xD0, 0xC8);
 		m_pToaster->m_colorGradient = RGB(0xF5, 0xF5, 0xF5);
 		if (!m_pToaster->Show())
