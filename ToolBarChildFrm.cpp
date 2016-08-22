@@ -315,6 +315,16 @@ BOOL CPictureToolBar::SwitchToolBar(int nDPI, BOOL bCallShowControlBar/*=TRUE*/)
 	return TRUE;
 }
 
+int CPictureToolBar::ScaleToolBar(int nDPI, int n)
+{
+	if (nDPI > 192)
+		return 3*n;
+	else if (nDPI > 96)
+		return 2*n;
+	else
+		return n;
+}
+
 BOOL CPictureToolBar::Create(CWnd* pParentWnd)
 {
 	// Create Toolbar
@@ -328,7 +338,7 @@ BOOL CPictureToolBar::Create(CWnd* pParentWnd)
 	memset(&lf, 0, sizeof(LOGFONT));
 	_tcscpy(lf.lfFaceName, TOOLBAR_COMBOBOX_FONTFACENAME);
 	HDC hDC = ::GetDC(GetSafeHwnd());
-	lf.lfHeight = TOOLBAR_COMBOBOX_FONTHEIGHT;
+	lf.lfHeight = ScaleToolBar(g_nSystemDPI, TOOLBAR_COMBOBOX_FONTHEIGHT);
 	::ReleaseDC(GetSafeHwnd(), hDC);
 	lf.lfWeight = FW_NORMAL;
 	m_ZoomComboBoxFont.CreateFontIndirect(&lf);
@@ -366,7 +376,7 @@ void CPictureToolBar::UpdateControls(void)
 	if (::IsWindow(m_ZoomComboBox))
 	{
 		GetItemRect(m_ZoomComboBoxIndex, rect);
-		rect.right = rect.left + TOOLBAR_ZOOMCOMBOBOX_WIDTH;
+		rect.right = rect.left + ScaleToolBar(g_nSystemDPI, TOOLBAR_ZOOMCOMBOBOX_WIDTH);
 		SetButtonInfo(	m_ZoomComboBoxIndex,
 						ID_ZOOM_COMBOX,
 						TBBS_SEPARATOR,
