@@ -760,9 +760,9 @@ __if_exists(CWnd::SetLayeredWindowAttributes)
     GetClientRect(&rectClient);
 
     if (m_actualAnimationStyle == PopLeft || m_actualAnimationStyle == PopRight)
-      m_rectClose = CRect(rectClient.left + m_nWidth - 26, 5, rectClient.left + m_nWidth - 13, 18);
+      m_rectClose = CRect(rectClient.left + m_nWidth - ::SystemDPIScale(26), ::SystemDPIScale(5), rectClient.left + m_nWidth - ::SystemDPIScale(13), ::SystemDPIScale(18));
     else
-      m_rectClose = CRect(rectClient.right - 26, 5, rectClient.right - 13, 18);
+      m_rectClose = CRect(rectClient.right - ::SystemDPIScale(26), ::SystemDPIScale(5), rectClient.right - ::SystemDPIScale(13), ::SystemDPIScale(18));
 
     //Calculate the position of the icon
     if (m_TitleIcon)

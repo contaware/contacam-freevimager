@@ -11,7 +11,20 @@ __declspec( thread ) int tls_i = 1;
 CToasterWnd 1.18
 ----------------
 
-- Used files: ToasterWnd.h, ToasterWnd.cpp
+- Adapted close button in CToasterWnd::Create() to reflect System DPI:
+  if (m_actualAnimationStyle == PopLeft || m_actualAnimationStyle == PopRight)
+      m_rectClose = CRect(rectClient.left + m_nWidth - ::SystemDPIScale(26), ::SystemDPIScale(5), rectClient.left + m_nWidth - ::SystemDPIScale(13), ::SystemDPIScale(18));
+  else
+      m_rectClose = CRect(rectClient.right - ::SystemDPIScale(26), ::SystemDPIScale(5), rectClient.right - ::SystemDPIScale(13), ::SystemDPIScale(18));
+
+
+CColourPopup
+------------
+
+- Fixed CColourPopup::Initialise() to reflect System DPI:
+  m_nNumColumns       = 0;
+  m_nNumRows          = 0;
+  m_nBoxSize          = ::SystemDPIScale(18);
 
 
 ffmpeg
