@@ -3,6 +3,9 @@ FREEVIMAGER HISTORY
 5.1.0 (Month xxth 2016)
 
 - Made the application High DPI Aware (displays well on 4K monitors)
+- File association is now Windows 10 compliant: that means the user
+  must confirm the associations in an OS dialog that can be opened
+  from the FreeVimager Global Settings dialog
 - Compiling with Visual Studio 2015
 
 5.0.9 (June 25th 2016)

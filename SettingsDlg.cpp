@@ -14,6 +14,41 @@ static char THIS_FILE[] = __FILE__;
 
 #ifndef VIDEODEVICEDOC
 
+// From ShObjIdl.h (IApplicationActivationManager not available in SDK 7.1)
+#ifndef __IApplicationActivationManager_INTERFACE_DEFINED__
+#define __IApplicationActivationManager_INTERFACE_DEFINED__
+const IID IID_IApplicationActivationManager = { 0x2e941141,0x7f97,0x4756,{ 0xba,0x1d,0x9d,0xec,0xde,0x89,0x4a,0x3d } };
+const CLSID CLSID_ApplicationActivationManager = { 0x45BA127D,0x10A8,0x46EA,{ 0x8A,0xB7,0x56,0xEA,0x90,0x78,0x94,0x3C } };
+typedef enum ACTIVATEOPTIONS
+{
+	AO_NONE = 0,
+	AO_DESIGNMODE = 0x1,
+	AO_NOERRORUI = 0x2,
+	AO_NOSPLASHSCREEN = 0x4
+} 	ACTIVATEOPTIONS;
+MIDL_INTERFACE("2e941141-7f97-4756-ba1d-9decde894a3d")
+IApplicationActivationManager : public IUnknown
+{
+public:
+	virtual HRESULT STDMETHODCALLTYPE ActivateApplication(
+		/* [in] */ __RPC__in LPCWSTR appUserModelId,
+		/* [unique][in] */ __RPC__in_opt LPCWSTR arguments,
+		/* [in] */ ACTIVATEOPTIONS options,
+		/* [out] */ __RPC__out DWORD *processId) = 0;
+
+	virtual HRESULT STDMETHODCALLTYPE ActivateForFile(
+		/* [in] */ __RPC__in LPCWSTR appUserModelId,
+		/* [in] */ __RPC__in_opt IShellItemArray *itemArray,
+		/* [unique][in] */ __RPC__in_opt LPCWSTR verb,
+		/* [out] */ __RPC__out DWORD *processId) = 0;
+
+	virtual HRESULT STDMETHODCALLTYPE ActivateForProtocol(
+		/* [in] */ __RPC__in LPCWSTR appUserModelId,
+		/* [in] */ __RPC__in_opt IShellItemArray *itemArray,
+		/* [out] */ __RPC__out DWORD *processId) = 0;
+};
+#endif
+
 /////////////////////////////////////////////////////////////////////////////
 // CSettingsDlg dialog
 
@@ -39,9 +74,29 @@ CSettingsDlg::CSettingsDlg(CWnd* pParent /*=NULL*/)
 	m_bCheckGif =	((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("gif"));
 
 	// Global Settings
-	m_bSingleInstance =			((CUImagerApp*)::AfxGetApp())->m_bSingleInstance;
-	m_bTrayIcon =				((CUImagerApp*)::AfxGetApp())->m_bTrayIcon;
-	m_bAutostart =				((CUImagerApp*)::AfxGetApp())->IsAutostart();
+	m_bSingleInstance =	((CUImagerApp*)::AfxGetApp())->m_bSingleInstance;
+	m_bTrayIcon =		((CUImagerApp*)::AfxGetApp())->m_bTrayIcon;
+	m_bAutostart =		((CUImagerApp*)::AfxGetApp())->IsAutostart();
+
+	// Init COM: COM may fail if its already been inited with a different 
+	// concurrency model. And if it fails you shouldn't release it!
+	// Typically, the COM library is initialized on an apartment only once.
+	// Subsequent calls will succeed, as long as they do not attempt to change
+	// the concurrency model, but will return S_FALSE. To close the COM
+	// library gracefully, each successful call to CoInitialize or CoInitializeEx,
+	// including those that return S_FALSE, must be balanced by a corresponding
+	// call to CoUninitialize.
+	// Once the concurrency model for an apartment is set, it cannot be changed.
+	// A call to CoInitialize on an apartment that was previously initialized as
+	// multithreaded will fail and return RPC_E_CHANGED_MODE.
+	HRESULT hr = ::CoInitialize(NULL);
+	m_bCleanupCOM = ((hr == S_OK) || (hr == S_FALSE));
+}
+
+CSettingsDlg::~CSettingsDlg()
+{
+	if (m_bCleanupCOM)
+		::CoUninitialize();
 }
 
 void CSettingsDlg::DoDataExchange(CDataExchange* pDX)
@@ -65,6 +120,7 @@ BEGIN_MESSAGE_MAP(CSettingsDlg, CDialog)
 	//{{AFX_MSG_MAP(CSettingsDlg)
 	ON_BN_CLICKED(IDC_BUTTON_CLEARALL, OnButtonClearall)
 	ON_BN_CLICKED(IDC_BUTTON_SETALL, OnButtonSetall)
+	ON_BN_CLICKED(IDC_BUTTON_APPS_DEFAULTS, OnButtonAppsDefaults)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -101,7 +157,66 @@ void CSettingsDlg::OnButtonSetall()
 	UpdateData(FALSE);
 }
 
-void CSettingsDlg::OnOK() 
+// sTarget (case sensitive):
+// ""
+// "SystemSettings_DefaultApps_Email"
+// "SystemSettings_DefaultApps_Map"
+// "SystemSettings_DefaultApps_Audio"
+// "SystemSettings_DefaultApps_Photos"
+// "SystemSettings_DefaultApps_Video"
+// "SystemSettings_DefaultApps_Browser"
+// "SettingsPageAppsDefaultsFileExtensionView"
+// "SettingsPageAppsDefaultsProtocolView"
+void CSettingsDlg::SettingsPageAppsDefaults(const CString& sTarget/*=_T("")*/)
+{
+	// Format target string
+	CString sFullTarget;
+	if (!sTarget.IsEmpty())
+		sFullTarget.Format(_T("&target=%s"), sTarget);
+
+	// Open chosen Settings Page
+	IApplicationActivationManager* pActivator;
+	if (SUCCEEDED(::CoCreateInstance(CLSID_ApplicationActivationManager,
+									nullptr,
+									CLSCTX_INPROC,
+									IID_IApplicationActivationManager,
+									(void**)&pActivator)))
+	{
+		DWORD pid;
+		pActivator->ActivateApplication(L"Windows.ImmersiveControlPanel_cw5n1h2txyewy!microsoft.windows.immersivecontrolpanel",
+										L"page=SettingsPageAppsDefaults" + sFullTarget,
+										AO_NONE,
+										&pid);
+		pActivator->Release();
+	}
+	else
+	{
+		if (g_bWinVistaOrHigher)
+		{
+			if (sTarget == _T("SettingsPageAppsDefaultsFileExtensionView") ||
+				sTarget == _T("SettingsPageAppsDefaultsProtocolView"))
+			{
+				::ShellExecute(	NULL, NULL,
+								_T("control.exe"), _T("/name Microsoft.DefaultPrograms /page pageFileAssoc"),
+								NULL, SW_SHOWNORMAL);
+			}
+			else
+			{
+				::ShellExecute(	NULL, NULL,
+								_T("control.exe"), _T("/name Microsoft.DefaultPrograms /page pageDefaultProgram"),
+								NULL, SW_SHOWNORMAL);
+			}
+		}
+		else
+		{
+			::ShellExecute(	NULL, NULL,
+							_T("control.exe"), _T("folders"),
+							NULL, SW_SHOWNORMAL);
+		}
+	}
+}
+
+void CSettingsDlg::Apply()
 {
 	// Validate
 	if (!UpdateData(TRUE))
@@ -111,23 +226,17 @@ void CSettingsDlg::OnOK()
 
 	BeginWaitCursor();
 
-	// File type association
-	BOOL bBmpHasUserChoice = FALSE;  BOOL bJpgHasUserChoice = FALSE;  BOOL bJpegHasUserChoice = FALSE;
-	BOOL bJpeHasUserChoice = FALSE;  BOOL bThmHasUserChoice = FALSE;  BOOL bPcxHasUserChoice = FALSE;
-	BOOL bEmfHasUserChoice = FALSE;  BOOL bPngHasUserChoice = FALSE;  BOOL bTifHasUserChoice = FALSE;
-	BOOL bTiffHasUserChoice = FALSE; BOOL bJfxHasUserChoice = FALSE;  BOOL bGifHasUserChoice = FALSE;
-
 	if (m_bCheckBmp)
-		pApp->AssociateFileType(_T("bmp"), &bBmpHasUserChoice);
+		pApp->AssociateFileType(_T("bmp"));
 	else
 		pApp->UnassociateFileType(_T("bmp"));
 
 	if (m_bCheckJpeg)
 	{
-		pApp->AssociateFileType(_T("jpg"), &bJpgHasUserChoice);
-		pApp->AssociateFileType(_T("jpeg"), &bJpegHasUserChoice);
-		pApp->AssociateFileType(_T("jpe"), &bJpeHasUserChoice);
-		pApp->AssociateFileType(_T("thm"), &bThmHasUserChoice);
+		pApp->AssociateFileType(_T("jpg"));
+		pApp->AssociateFileType(_T("jpeg"));
+		pApp->AssociateFileType(_T("jpe"));
+		pApp->AssociateFileType(_T("thm"));
 	}
 	else
 	{
@@ -138,25 +247,25 @@ void CSettingsDlg::OnOK()
 	}
 
 	if (m_bCheckPcx)
-		pApp->AssociateFileType(_T("pcx"), &bPcxHasUserChoice);
+		pApp->AssociateFileType(_T("pcx"));
 	else
 		pApp->UnassociateFileType(_T("pcx"));
 
 	if (m_bCheckEmf)
-		pApp->AssociateFileType(_T("emf"), &bEmfHasUserChoice);
+		pApp->AssociateFileType(_T("emf"));
 	else
 		pApp->UnassociateFileType(_T("emf"));
 
 	if (m_bCheckPng)
-		pApp->AssociateFileType(_T("png"), &bPngHasUserChoice);
+		pApp->AssociateFileType(_T("png"));
 	else
 		pApp->UnassociateFileType(_T("png"));
 
 	if (m_bCheckTiff)
 	{
-		pApp->AssociateFileType(_T("tif"), &bTifHasUserChoice);
-		pApp->AssociateFileType(_T("tiff"), &bTiffHasUserChoice);
-		pApp->AssociateFileType(_T("jfx"), &bJfxHasUserChoice);
+		pApp->AssociateFileType(_T("tif"));
+		pApp->AssociateFileType(_T("tiff"));
+		pApp->AssociateFileType(_T("jfx"));
 	}
 	else
 	{
@@ -166,7 +275,7 @@ void CSettingsDlg::OnOK()
 	}
 
 	if (m_bCheckGif)
-		pApp->AssociateFileType(_T("gif"), &bGifHasUserChoice);
+		pApp->AssociateFileType(_T("gif"));
 	else
 		pApp->UnassociateFileType(_T("gif"));
 
@@ -180,57 +289,6 @@ void CSettingsDlg::OnOK()
 	pApp->UnassociateFileType(_T("cda"));
 	pApp->UnassociateFileType(_T("avi")); pApp->UnassociateFileType(_T("divx"));
 	pApp->UnassociateFileType(_T("zip"));
-
-	// For Vista or higher there is also a key under
-	// HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.ext
-	// called UserChoice that can have a ProgID value: this has the highest priority and can
-	// prevent from being associated. Vista or higher do not let you delete it, even as
-	// administrator ... we can delete it with regedit.exe:
-	if (g_bWinVistaOrHigher &&
-		(bBmpHasUserChoice || bJpgHasUserChoice	|| bJpegHasUserChoice	|| bJpeHasUserChoice ||
-		bThmHasUserChoice || bPcxHasUserChoice	|| bEmfHasUserChoice	|| bPngHasUserChoice ||
-		bTifHasUserChoice || bTiffHasUserChoice	|| bJfxHasUserChoice	|| bGifHasUserChoice))
-	{
-		try
-		{
-			CString sTempRegFileName = ::MakeTempFileName(pApp->GetAppTempDir(), _T("extfix.reg"));
-			CStdioFile RegFile(sTempRegFileName, CFile::modeCreate | CFile::modeWrite | CFile::typeText);
-			RegFile.WriteString(_T("REGEDIT4\n\n"));
-			if (bBmpHasUserChoice)
-				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.bmp\\UserChoice]\n"));
-			if (bJpgHasUserChoice)
-				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.jpg\\UserChoice]\n"));
-			if (bJpegHasUserChoice)
-				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.jpeg\\UserChoice]\n"));
-			if (bJpeHasUserChoice)
-				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.jpe\\UserChoice]\n"));
-			if (bThmHasUserChoice)
-				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.thm\\UserChoice]\n"));
-			if (bPcxHasUserChoice)
-				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.pcx\\UserChoice]\n"));
-			if (bEmfHasUserChoice)
-				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.emf\\UserChoice]\n"));
-			if (bPngHasUserChoice)
-				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.png\\UserChoice]\n"));
-			if (bTifHasUserChoice)
-				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.tif\\UserChoice]\n"));
-			if (bTiffHasUserChoice)
-				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.tiff\\UserChoice]\n"));
-			if (bJfxHasUserChoice)
-				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.jfx\\UserChoice]\n"));
-			if (bGifHasUserChoice)
-				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.gif\\UserChoice]\n"));
-			RegFile.Close();
-			CString sParams;
-			sParams.Format(_T("/S \"%s\""), sTempRegFileName);
-			::ExecHiddenApp(_T("regedit.exe"), sParams, TRUE);
-			::DeleteFile(sTempRegFileName);
-		}
-		catch (CFileException* e)
-		{
-			e->Delete();
-		}
-	}
 
 	// Notify Changes
 	::SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
@@ -248,7 +306,7 @@ void CSettingsDlg::OnOK()
 		// else the constructor above closed the handle of the mm file
 	}
 	pApp->m_bSingleInstance = m_bSingleInstance;
-	
+
 	// Tray Icon
 	pApp->m_bTrayIcon = m_bTrayIcon;
 	::AfxGetMainFrame()->TrayIcon(m_bTrayIcon);
@@ -265,24 +323,19 @@ void CSettingsDlg::OnOK()
 							m_bTrayIcon);
 
 	EndWaitCursor();
+}
 
+void CSettingsDlg::OnOK()
+{
+	Apply();
 	EndDialog(IDOK);
 }
 
-BOOL CSettingsDlg::OnInitDialog() 
+void CSettingsDlg::OnButtonAppsDefaults()
 {
-	CDialog::OnInitDialog();
-	
-	// Shield Icon on OK Button
-	if (g_bWinVistaOrHigher)
-	{
-		CButton* pOK = (CButton*)GetDlgItem(IDOK);
-		if (pOK)
-			pOK->SendMessage(BCM_SETSHIELD, 0, TRUE);
-	}
-
-	return TRUE;  // return TRUE unless you set the focus to a control
-	              // EXCEPTION: OCX Property Pages should return FALSE
+	Apply();
+	EndDialog(IDOK);
+	SettingsPageAppsDefaults(_T("SettingsPageAppsDefaultsFileExtensionView"));
 }
 
 #endif

@@ -1190,6 +1190,7 @@
 #define IDC_BUTTON_CLEARALL             1204
 #define IDS_MULTILANG_1205              1205
 #define IDC_AUDIO_MIXER                 1205
+#define IDC_BUTTON_APPS_DEFAULTS        1205
 #define IDS_MULTILANG_1206              1206
 #define IDS_MULTILANG_1207              1207
 #define IDC_COMBO_VIDEOFORMAT           1207

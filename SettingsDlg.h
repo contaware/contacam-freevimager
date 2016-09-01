@@ -16,6 +16,7 @@ class CSettingsDlg : public CDialog
 // Construction
 public:
 	CSettingsDlg(CWnd* pParent = NULL);   // standard constructor
+	virtual ~CSettingsDlg();
 
 // Dialog Data
 	//{{AFX_DATA(CSettingsDlg)
@@ -32,7 +33,6 @@ public:
 	BOOL	m_bAutostart;
 	//}}AFX_DATA
 
-
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CSettingsDlg)
@@ -42,13 +42,15 @@ public:
 
 // Implementation
 protected:
-
+	BOOL m_bCleanupCOM;
+	void SettingsPageAppsDefaults(const CString& sTarget = _T(""));
+	void Apply();
 	// Generated message map functions
 	//{{AFX_MSG(CSettingsDlg)
 	afx_msg void OnButtonClearall();
 	afx_msg void OnButtonSetall();
+	afx_msg void OnButtonAppsDefaults();
 	virtual void OnOK();
-	virtual BOOL OnInitDialog();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

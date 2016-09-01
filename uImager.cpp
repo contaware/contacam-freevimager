@@ -4149,12 +4149,8 @@ BOOL CUImagerApp::IsFileTypeAssociated(CString sExt)
 	return (sCurrentFileClassName.CompareNoCase(sMyFileClassName) == 0);	
 }
 
-BOOL CUImagerApp::AssociateFileType(CString sExt, BOOL* pbHasUserChoice/*=NULL*/)
+BOOL CUImagerApp::AssociateFileType(CString sExt)
 {
-	// Reset value
-	if (pbHasUserChoice)
-		*pbHasUserChoice = FALSE;
-
 	// Program Name & Path
 	TCHAR szProgName[_MAX_FNAME];
 	TCHAR szProgExt[_MAX_EXT];
@@ -4258,13 +4254,8 @@ BOOL CUImagerApp::AssociateFileType(CString sExt, BOOL* pbHasUserChoice/*=NULL*/
 		// NOTE:
 		// For Vista or higher there is also a key under sCurrentUserFileExtsPath
 		// called UserChoice that can have a ProgID value: this has the highest priority
-		// and can prevent from being associated. Vista or higher do not let you delete
-		// it, even as administrator ... we can delete it with regedit.exe
-		if (pbHasUserChoice)
-		{
-			if (::IsRegistryKey(HKEY_CURRENT_USER, sCurrentUserFileExtsPath + _T("\\UserChoice")))
-				*pbHasUserChoice = TRUE;
-		}
+		// and can prevent from being associated. The OS is responsible for it, we should
+		// not touch it!
 	}
 
 	// Create My Class Name or ProgID

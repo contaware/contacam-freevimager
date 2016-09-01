@@ -484,7 +484,7 @@ public:
 	// File Association Functions
 	void UpdateFileAssociations();
 	BOOL IsFileTypeAssociated(CString sExt);
-	BOOL AssociateFileType(CString sExt, BOOL* pbHasUserChoice = NULL);
+	BOOL AssociateFileType(CString sExt);
 	BOOL UnassociateFileType(CString sExt);
 
 	// Get Application Temporary Directory (the returned string ends with a _T('\\'))
