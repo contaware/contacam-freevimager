@@ -1172,25 +1172,16 @@
 #define IDS_MULTILANG_1194              1194
 #define IDS_MULTILANG_1195              1195
 #define IDS_MULTILANG_1196              1196
-#define IDC_CHECK_BMP                   1196
 #define IDS_MULTILANG_1197              1197
-#define IDC_CHECK_GIF                   1197
 #define IDS_MULTILANG_1198              1198
-#define IDC_CHECK_JPEG                  1198
 #define IDS_MULTILANG_1199              1199
-#define IDC_CHECK_PNG                   1199
 #define IDS_MULTILANG_1200              1200
-#define IDC_CHECK_PCX                   1200
 #define IDS_MULTILANG_1201              1201
 #define IDS_MULTILANG_1202              1202
-#define IDC_CHECK_TIFF                  1202
 #define IDS_MULTILANG_1203              1203
-#define IDC_BUTTON_SETALL               1203
 #define IDS_MULTILANG_1204              1204
-#define IDC_BUTTON_CLEARALL             1204
 #define IDS_MULTILANG_1205              1205
 #define IDC_AUDIO_MIXER                 1205
-#define IDC_BUTTON_APPS_DEFAULTS        1205
 #define IDS_MULTILANG_1206              1206
 #define IDS_MULTILANG_1207              1207
 #define IDC_COMBO_VIDEOFORMAT           1207
@@ -1203,7 +1194,6 @@
 #define IDC_CHECK_SHRINKINGPICTURES     1211
 #define IDS_MULTILANG_1212              1212
 #define IDC_CHECK_WORKONALLPAGES        1212
-#define IDC_CHECK_EMF                   1212
 #define IDS_MULTILANG_1213              1213
 #define IDS_MULTILANG_1214              1214
 #define IDC_ANIMATEDGIF_SIZE            1214
@@ -3081,6 +3071,8 @@
 #define IDC_BUTTON_DOCROOT              2566
 #define IDC_EDIT_SENDMAIL_SEC_BETWEEN_MSG 2568
 #define IDC_SPIN_SENDMAIL_SEC_BETWEEN_MSG 2569
+#define IDC_BUTTON_ASSOCIATE            2570
+#define IDC_BUTTON_UNASSOCIATE          2571
 #define ID_EDIT_ROTATE_FLIP             32778
 #define ID_FILE_SELECTTWAINSOURCE       32779
 #define ID_FILE_ACQUIRE                 32780
@@ -3307,7 +3299,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1498
 #define _APS_NEXT_COMMAND_VALUE         33511
-#define _APS_NEXT_CONTROL_VALUE         2570
+#define _APS_NEXT_CONTROL_VALUE         2572
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

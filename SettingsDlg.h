@@ -21,13 +21,6 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CSettingsDlg)
 	enum { IDD = IDD_SETTINGS };
-	BOOL	m_bCheckBmp;
-	BOOL	m_bCheckJpeg;
-	BOOL	m_bCheckPcx;
-	BOOL	m_bCheckEmf;
-	BOOL	m_bCheckPng;
-	BOOL	m_bCheckTiff;
-	BOOL	m_bCheckGif;
 	BOOL	m_bSingleInstance;
 	BOOL	m_bTrayIcon;
 	BOOL	m_bAutostart;
@@ -43,14 +36,15 @@ public:
 // Implementation
 protected:
 	BOOL m_bCleanupCOM;
-	void SettingsPageAppsDefaults(const CString& sTarget = _T(""));
-	void Apply();
+	BOOL SettingsPageAppsDefaults(const CString& sTarget = _T(""));
+	void FileAssociation(BOOL bDoAssociation);
 	// Generated message map functions
 	//{{AFX_MSG(CSettingsDlg)
-	afx_msg void OnButtonClearall();
-	afx_msg void OnButtonSetall();
-	afx_msg void OnButtonAppsDefaults();
-	virtual void OnOK();
+	afx_msg void OnBnClickedCheckStartwithWindows();
+	afx_msg void OnBnClickedCheckTrayicon();
+	afx_msg void OnBnClickedCheckSingleinstance();
+	afx_msg void OnBnClickedButtonAssociate();
+	afx_msg void OnBnClickedButtonUnassociate();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

@@ -52,27 +52,9 @@ public:
 /////////////////////////////////////////////////////////////////////////////
 // CSettingsDlg dialog
 
-
 CSettingsDlg::CSettingsDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CSettingsDlg::IDD, pParent)
 {
-	//{{AFX_DATA_INIT(CSettingsDlg)
-	//}}AFX_DATA_INIT
-
-	// File Associations
-	m_bCheckBmp =	((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("bmp"));
-	m_bCheckJpeg =	((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("jpg"))	&&
-					((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("jpeg"))	&&
-					((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("jpe"))	&&
-					((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("thm"));
-	m_bCheckPcx =	((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("pcx"));
-	m_bCheckEmf =	((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("emf"));
-	m_bCheckPng =	((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("png"));
-	m_bCheckTiff =	((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("tif"))	&&
-					((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("tiff"))	&&
-					((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("jfx"));
-	m_bCheckGif =	((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("gif"));
-
 	// Global Settings
 	m_bSingleInstance =	((CUImagerApp*)::AfxGetApp())->m_bSingleInstance;
 	m_bTrayIcon =		((CUImagerApp*)::AfxGetApp())->m_bTrayIcon;
@@ -103,13 +85,6 @@ void CSettingsDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CSettingsDlg)
-	DDX_Check(pDX, IDC_CHECK_BMP, m_bCheckBmp);
-	DDX_Check(pDX, IDC_CHECK_JPEG, m_bCheckJpeg);
-	DDX_Check(pDX, IDC_CHECK_PCX, m_bCheckPcx);
-	DDX_Check(pDX, IDC_CHECK_EMF, m_bCheckEmf);
-	DDX_Check(pDX, IDC_CHECK_PNG, m_bCheckPng);
-	DDX_Check(pDX, IDC_CHECK_TIFF, m_bCheckTiff);
-	DDX_Check(pDX, IDC_CHECK_GIF, m_bCheckGif);
 	DDX_Check(pDX, IDC_CHECK_SINGLEINSTANCE, m_bSingleInstance);
 	DDX_Check(pDX, IDC_CHECK_TRAYICON, m_bTrayIcon);
 	DDX_Check(pDX, IDC_CHECK_STARTWITH_WINDOWS, m_bAutostart);
@@ -118,182 +93,46 @@ void CSettingsDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CSettingsDlg, CDialog)
 	//{{AFX_MSG_MAP(CSettingsDlg)
-	ON_BN_CLICKED(IDC_BUTTON_CLEARALL, OnButtonClearall)
-	ON_BN_CLICKED(IDC_BUTTON_SETALL, OnButtonSetall)
-	ON_BN_CLICKED(IDC_BUTTON_APPS_DEFAULTS, OnButtonAppsDefaults)
+	ON_BN_CLICKED(IDC_CHECK_STARTWITH_WINDOWS, &CSettingsDlg::OnBnClickedCheckStartwithWindows)
+	ON_BN_CLICKED(IDC_CHECK_TRAYICON, &CSettingsDlg::OnBnClickedCheckTrayicon)
+	ON_BN_CLICKED(IDC_CHECK_SINGLEINSTANCE, &CSettingsDlg::OnBnClickedCheckSingleinstance)
+	ON_BN_CLICKED(IDC_BUTTON_ASSOCIATE, &CSettingsDlg::OnBnClickedButtonAssociate)
+	ON_BN_CLICKED(IDC_BUTTON_UNASSOCIATE, &CSettingsDlg::OnBnClickedButtonUnassociate)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CSettingsDlg message handlers
 
-void CSettingsDlg::OnButtonClearall() 
-{
-	UpdateData(TRUE);
-
-	m_bCheckBmp = FALSE;
-	m_bCheckJpeg = FALSE;
-	m_bCheckPcx = FALSE;
-	m_bCheckEmf = FALSE;
-	m_bCheckPng = FALSE;
-	m_bCheckTiff = FALSE;
-	m_bCheckGif = FALSE;
-
-	UpdateData(FALSE);
-}
-
-void CSettingsDlg::OnButtonSetall() 
-{
-	UpdateData(TRUE);
-
-	m_bCheckBmp = TRUE;
-	m_bCheckJpeg = TRUE;
-	m_bCheckPcx = TRUE;
-	m_bCheckEmf = TRUE;
-	m_bCheckPng = TRUE;
-	m_bCheckTiff = TRUE;
-	m_bCheckGif = TRUE;
-
-	UpdateData(FALSE);
-}
-
-// sTarget (case sensitive):
-// ""
-// "SystemSettings_DefaultApps_Email"
-// "SystemSettings_DefaultApps_Map"
-// "SystemSettings_DefaultApps_Audio"
-// "SystemSettings_DefaultApps_Photos"
-// "SystemSettings_DefaultApps_Video"
-// "SystemSettings_DefaultApps_Browser"
-// "SettingsPageAppsDefaultsFileExtensionView"
-// "SettingsPageAppsDefaultsProtocolView"
-void CSettingsDlg::SettingsPageAppsDefaults(const CString& sTarget/*=_T("")*/)
-{
-	// Format target string
-	CString sFullTarget;
-	if (!sTarget.IsEmpty())
-		sFullTarget.Format(_T("&target=%s"), sTarget);
-
-	// Open chosen Settings Page
-	IApplicationActivationManager* pActivator;
-	if (SUCCEEDED(::CoCreateInstance(CLSID_ApplicationActivationManager,
-									nullptr,
-									CLSCTX_INPROC,
-									IID_IApplicationActivationManager,
-									(void**)&pActivator)))
-	{
-		DWORD pid;
-		pActivator->ActivateApplication(L"Windows.ImmersiveControlPanel_cw5n1h2txyewy!microsoft.windows.immersivecontrolpanel",
-										L"page=SettingsPageAppsDefaults" + sFullTarget,
-										AO_NONE,
-										&pid);
-		pActivator->Release();
-	}
-	else
-	{
-		if (g_bWinVistaOrHigher)
-		{
-			if (sTarget == _T("SettingsPageAppsDefaultsFileExtensionView") ||
-				sTarget == _T("SettingsPageAppsDefaultsProtocolView"))
-			{
-				::ShellExecute(	NULL, NULL,
-								_T("control.exe"), _T("/name Microsoft.DefaultPrograms /page pageFileAssoc"),
-								NULL, SW_SHOWNORMAL);
-			}
-			else
-			{
-				::ShellExecute(	NULL, NULL,
-								_T("control.exe"), _T("/name Microsoft.DefaultPrograms /page pageDefaultProgram"),
-								NULL, SW_SHOWNORMAL);
-			}
-		}
-		else
-		{
-			::ShellExecute(	NULL, NULL,
-							_T("control.exe"), _T("folders"),
-							NULL, SW_SHOWNORMAL);
-		}
-	}
-}
-
-void CSettingsDlg::Apply()
+void CSettingsDlg::OnBnClickedCheckStartwithWindows()
 {
 	// Validate
 	if (!UpdateData(TRUE))
 		return;
 
 	CUImagerApp* pApp = (CUImagerApp*)::AfxGetApp();
+	pApp->Autostart(m_bAutostart);
+}
 
-	BeginWaitCursor();
+void CSettingsDlg::OnBnClickedCheckTrayicon()
+{
+	// Validate
+	if (!UpdateData(TRUE))
+		return;
 
-	if (m_bCheckBmp)
-		pApp->AssociateFileType(_T("bmp"));
-	else
-		pApp->UnassociateFileType(_T("bmp"));
+	CUImagerApp* pApp = (CUImagerApp*)::AfxGetApp();
+	pApp->m_bTrayIcon = m_bTrayIcon;
+	::AfxGetMainFrame()->TrayIcon(m_bTrayIcon);
+	pApp->WriteProfileInt(_T("GeneralApp"), _T("TrayIcon"), m_bTrayIcon);
+}
 
-	if (m_bCheckJpeg)
-	{
-		pApp->AssociateFileType(_T("jpg"));
-		pApp->AssociateFileType(_T("jpeg"));
-		pApp->AssociateFileType(_T("jpe"));
-		pApp->AssociateFileType(_T("thm"));
-	}
-	else
-	{
-		pApp->UnassociateFileType(_T("jpg"));
-		pApp->UnassociateFileType(_T("jpeg"));
-		pApp->UnassociateFileType(_T("jpe"));
-		pApp->UnassociateFileType(_T("thm"));
-	}
+void CSettingsDlg::OnBnClickedCheckSingleinstance()
+{
+	// Validate
+	if (!UpdateData(TRUE))
+		return;
 
-	if (m_bCheckPcx)
-		pApp->AssociateFileType(_T("pcx"));
-	else
-		pApp->UnassociateFileType(_T("pcx"));
-
-	if (m_bCheckEmf)
-		pApp->AssociateFileType(_T("emf"));
-	else
-		pApp->UnassociateFileType(_T("emf"));
-
-	if (m_bCheckPng)
-		pApp->AssociateFileType(_T("png"));
-	else
-		pApp->UnassociateFileType(_T("png"));
-
-	if (m_bCheckTiff)
-	{
-		pApp->AssociateFileType(_T("tif"));
-		pApp->AssociateFileType(_T("tiff"));
-		pApp->AssociateFileType(_T("jfx"));
-	}
-	else
-	{
-		pApp->UnassociateFileType(_T("tif"));
-		pApp->UnassociateFileType(_T("tiff"));
-		pApp->UnassociateFileType(_T("jfx"));
-	}
-
-	if (m_bCheckGif)
-		pApp->AssociateFileType(_T("gif"));
-	else
-		pApp->UnassociateFileType(_T("gif"));
-
-	// Remove associations from older program versions
-	pApp->UnassociateFileType(_T("aif")); pApp->UnassociateFileType(_T("aiff"));
-	pApp->UnassociateFileType(_T("au"));
-	pApp->UnassociateFileType(_T("mid")); pApp->UnassociateFileType(_T("rmi"));
-	pApp->UnassociateFileType(_T("mp3"));
-	pApp->UnassociateFileType(_T("wav"));
-	pApp->UnassociateFileType(_T("wma"));
-	pApp->UnassociateFileType(_T("cda"));
-	pApp->UnassociateFileType(_T("avi")); pApp->UnassociateFileType(_T("divx"));
-	pApp->UnassociateFileType(_T("zip"));
-
-	// Notify Changes
-	::SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
-
-	// Single Instance
+	CUImagerApp* pApp = (CUImagerApp*)::AfxGetApp();
 	if (m_bSingleInstance != pApp->m_bSingleInstance)
 	{
 		CInstanceChecker instanceChecker(CString(APPNAME_NOEXT) + CString(_T("_Unicode")));
@@ -306,36 +145,142 @@ void CSettingsDlg::Apply()
 		// else the constructor above closed the handle of the mm file
 	}
 	pApp->m_bSingleInstance = m_bSingleInstance;
-
-	// Tray Icon
-	pApp->m_bTrayIcon = m_bTrayIcon;
-	::AfxGetMainFrame()->TrayIcon(m_bTrayIcon);
-
-	// Autostart
-	pApp->Autostart(m_bAutostart);
-
-	// Store settings
-	pApp->WriteProfileInt(	_T("GeneralApp"),
-							_T("SingleInstance"),
-							m_bSingleInstance);
-	pApp->WriteProfileInt(	_T("GeneralApp"),
-							_T("TrayIcon"),
-							m_bTrayIcon);
-
-	EndWaitCursor();
+	pApp->WriteProfileInt(_T("GeneralApp"), _T("SingleInstance"), m_bSingleInstance);
 }
 
-void CSettingsDlg::OnOK()
+void CSettingsDlg::OnBnClickedButtonAssociate()
 {
-	Apply();
+	// Associate all supported file types
+	FileAssociation(TRUE);
+
+	// Confirm the association in the OS dialog
+	if (!SettingsPageAppsDefaults(_T("SystemSettings_DefaultApps_Photos")))
+	{
+		if (g_bWinVistaOrHigher)
+			::ShellExecute(NULL, NULL, _T("control.exe"), _T("/name Microsoft.DefaultPrograms /page pageFileAssoc"), NULL, SW_SHOWNORMAL);
+	}
+
+	// Close dialog
 	EndDialog(IDOK);
 }
 
-void CSettingsDlg::OnButtonAppsDefaults()
+void CSettingsDlg::OnBnClickedButtonUnassociate()
 {
-	Apply();
+	// Unassociate all supported file types
+	FileAssociation(FALSE);
+
+	// Confirm the unassociation in the OS dialog
+	if (!SettingsPageAppsDefaults(_T("SystemSettings_DefaultApps_Photos")))
+	{
+		if (g_bWinVistaOrHigher)
+			::ShellExecute(NULL, NULL, _T("control.exe"), _T("/name Microsoft.DefaultPrograms /page pageFileAssoc"), NULL, SW_SHOWNORMAL);
+	}
+
+	// Close dialog
 	EndDialog(IDOK);
-	SettingsPageAppsDefaults(_T("SettingsPageAppsDefaultsFileExtensionView"));
+}
+
+// sTarget (case sensitive):
+// ""
+// "SystemSettings_DefaultApps_Email"
+// "SystemSettings_DefaultApps_Map"
+// "SystemSettings_DefaultApps_Audio"
+// "SystemSettings_DefaultApps_Photos"
+// "SystemSettings_DefaultApps_Video"
+// "SystemSettings_DefaultApps_Browser"
+// "SettingsPageAppsDefaultsFileExtensionView"
+// "SettingsPageAppsDefaultsProtocolView"
+BOOL CSettingsDlg::SettingsPageAppsDefaults(const CString& sTarget/*=_T("")*/)
+{
+	// Format target string
+	CString sFullTarget;
+	if (!sTarget.IsEmpty())
+		sFullTarget.Format(_T("&target=%s"), sTarget);
+
+	// Open chosen Settings Page
+	IApplicationActivationManager* pActivator;
+	HRESULT hr = ::CoCreateInstance(CLSID_ApplicationActivationManager,
+									nullptr,
+									CLSCTX_INPROC,
+									IID_IApplicationActivationManager,
+									(void**)&pActivator);
+	if (SUCCEEDED(hr))
+	{
+		DWORD pid;
+		hr = pActivator->ActivateApplication(	L"Windows.ImmersiveControlPanel_cw5n1h2txyewy!microsoft.windows.immersivecontrolpanel",
+												L"page=SettingsPageAppsDefaults" + sFullTarget,
+												AO_NONE,
+												&pid);
+		pActivator->Release();
+		return SUCCEEDED(hr);
+	}
+	else
+		return FALSE;
+}
+
+void CSettingsDlg::FileAssociation(BOOL bDoAssociation)
+{
+	CUImagerApp* pApp = (CUImagerApp*)::AfxGetApp();
+
+	if (bDoAssociation)
+	{
+		// Bmp
+		pApp->AssociateFileType(_T("bmp"));
+
+		// Jpeg
+		pApp->AssociateFileType(_T("jpg"));
+		pApp->AssociateFileType(_T("jpeg"));
+		pApp->AssociateFileType(_T("jpe"));
+		pApp->AssociateFileType(_T("thm"));
+
+		// Pcx
+		pApp->AssociateFileType(_T("pcx"));
+
+		// Emf
+		pApp->AssociateFileType(_T("emf"));
+
+		// Png
+		pApp->AssociateFileType(_T("png"));
+
+		// Tiff
+		pApp->AssociateFileType(_T("tif"));
+		pApp->AssociateFileType(_T("tiff"));
+		pApp->AssociateFileType(_T("jfx"));
+
+		// Gif
+		pApp->AssociateFileType(_T("gif"));
+	}
+	else
+	{
+		// Bmp
+		pApp->UnassociateFileType(_T("bmp"));
+
+		// Jpeg
+		pApp->UnassociateFileType(_T("jpg"));
+		pApp->UnassociateFileType(_T("jpeg"));
+		pApp->UnassociateFileType(_T("jpe"));
+		pApp->UnassociateFileType(_T("thm"));
+
+		// Pcx
+		pApp->UnassociateFileType(_T("pcx"));
+
+		// Emf
+		pApp->UnassociateFileType(_T("emf"));
+
+		// Png
+		pApp->UnassociateFileType(_T("png"));
+
+		// Tiff
+		pApp->UnassociateFileType(_T("tif"));
+		pApp->UnassociateFileType(_T("tiff"));
+		pApp->UnassociateFileType(_T("jfx"));
+
+		// Gif
+		pApp->UnassociateFileType(_T("gif"));
+	}
+
+	// Notify Changes
+	::SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
 }
 
 #endif

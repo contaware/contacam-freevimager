@@ -94,29 +94,6 @@ END_MESSAGE_MAP()
 void CSettingsDlgVideoDeviceDoc::ApplySettingsInit()
 {
 	CUImagerApp* pApp = (CUImagerApp*)::AfxGetApp();
-
-	// Unassociate Graphics Files (remove associations from older program versions)
-	pApp->UnassociateFileType(_T("bmp"));
-	pApp->UnassociateFileType(_T("jpg")); pApp->UnassociateFileType(_T("jpeg")); pApp->UnassociateFileType(_T("jpe")); pApp->UnassociateFileType(_T("thm"));
-	pApp->UnassociateFileType(_T("pcx"));
-	pApp->UnassociateFileType(_T("emf"));
-	pApp->UnassociateFileType(_T("png"));
-	pApp->UnassociateFileType(_T("tif")); pApp->UnassociateFileType(_T("tiff")); pApp->UnassociateFileType(_T("jfx"));
-	pApp->UnassociateFileType(_T("gif"));
-
-	// Remove associations from older program versions
-	pApp->UnassociateFileType(_T("aif")); pApp->UnassociateFileType(_T("aiff"));
-	pApp->UnassociateFileType(_T("au"));
-	pApp->UnassociateFileType(_T("mid")); pApp->UnassociateFileType(_T("rmi"));
-	pApp->UnassociateFileType(_T("mp3"));
-	pApp->UnassociateFileType(_T("wav"));
-	pApp->UnassociateFileType(_T("wma"));
-	pApp->UnassociateFileType(_T("cda"));
-	pApp->UnassociateFileType(_T("avi")); pApp->UnassociateFileType(_T("divx"));
-	pApp->UnassociateFileType(_T("zip"));
-
-	// Notify Changes
-	::SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
 	
 	// Tray Icon
 	pApp->m_bTrayIcon = m_bTrayIcon;

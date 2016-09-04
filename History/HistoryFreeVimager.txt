@@ -4,9 +4,10 @@ FREEVIMAGER HISTORY
 
 - Made the application High DPI Aware (displays well on 4K monitors)
 - File association is now Windows 10 compliant: that means the user
-  must confirm the associations in an OS dialog that can be opened
-  from the FreeVimager Global Settings dialog
-- Compiling with Visual Studio 2015
+  must confirm the associations in an OS dialog opened from the
+  FreeVimager Global Settings dialog
+- Compiling with Visual Studio 2015 (FreeVimager runs on
+  Windows XP SP3 / Windows Server 2003 SP2 or higher)
 
 5.0.9 (June 25th 2016)
 

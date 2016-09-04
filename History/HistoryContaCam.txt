@@ -7,7 +7,8 @@ CONTACAM HISTORY
   Hannigan for reporting a problem with some slow smtp servers)
 - Encrypted settings (like passwords) are now exportable and work
   well if used on another computer or by another logon user
-- Compiling with Visual Studio 2015
+- Compiling with Visual Studio 2015 (ContaCam runs on
+  Windows XP SP3 / Windows Server 2003 SP2 or higher)
 
 5.0.9 (June 25th 2016)
 
