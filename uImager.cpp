@@ -48,6 +48,42 @@ static char THIS_FILE[] = __FILE__;
 // TODO: remove when removing the code using CryptUnprotectData!!
 #pragma comment(lib, "Crypt32.lib")
 
+// TODO: remove when dropping Windows XP support!
+// From ShObjIdl.h (IApplicationActivationManager not available in SDK 7.1)
+#ifndef __IApplicationActivationManager_INTERFACE_DEFINED__
+#define __IApplicationActivationManager_INTERFACE_DEFINED__
+const IID IID_IApplicationActivationManager = { 0x2e941141,0x7f97,0x4756,{ 0xba,0x1d,0x9d,0xec,0xde,0x89,0x4a,0x3d } };
+const CLSID CLSID_ApplicationActivationManager = { 0x45BA127D,0x10A8,0x46EA,{ 0x8A,0xB7,0x56,0xEA,0x90,0x78,0x94,0x3C } };
+typedef enum ACTIVATEOPTIONS
+{
+	AO_NONE = 0,
+	AO_DESIGNMODE = 0x1,
+	AO_NOERRORUI = 0x2,
+	AO_NOSPLASHSCREEN = 0x4
+} 	ACTIVATEOPTIONS;
+MIDL_INTERFACE("2e941141-7f97-4756-ba1d-9decde894a3d")
+IApplicationActivationManager : public IUnknown
+{
+public:
+	virtual HRESULT STDMETHODCALLTYPE ActivateApplication(
+		/* [in] */ __RPC__in LPCWSTR appUserModelId,
+		/* [unique][in] */ __RPC__in_opt LPCWSTR arguments,
+		/* [in] */ ACTIVATEOPTIONS options,
+		/* [out] */ __RPC__out DWORD *processId) = 0;
+
+	virtual HRESULT STDMETHODCALLTYPE ActivateForFile(
+		/* [in] */ __RPC__in LPCWSTR appUserModelId,
+		/* [in] */ __RPC__in_opt IShellItemArray *itemArray,
+		/* [unique][in] */ __RPC__in_opt LPCWSTR verb,
+		/* [out] */ __RPC__out DWORD *processId) = 0;
+
+	virtual HRESULT STDMETHODCALLTYPE ActivateForProtocol(
+		/* [in] */ __RPC__in LPCWSTR appUserModelId,
+		/* [in] */ __RPC__in_opt IShellItemArray *itemArray,
+		/* [out] */ __RPC__out DWORD *processId) = 0;
+};
+#endif
+
 /////////////////////////////////////////////////////////////////////////////
 // CUImagerApp
 
@@ -1218,10 +1254,20 @@ void CUImagerApp::OnFileSettings()
 {
 #ifdef VIDEODEVICEDOC
 	CSettingsDlgVideoDeviceDoc dlg;
+	dlg.DoModal();
 #else
 	CSettingsDlg dlg;
+	if (dlg.DoModal() == IDOK)
+	{
+		// Confirm the association in the OS dialog
+		if (!SettingsPageAppsDefaults(_T("SystemSettings_DefaultApps_Photos")))
+		{
+			// For older OS, but not for Windows XP
+			if (g_bWinVistaOrHigher)
+				::ShellExecute(NULL, NULL, _T("control.exe"), _T("/name Microsoft.DefaultPrograms /page pageFileAssoc"), NULL, SW_SHOWNORMAL);
+		}
+	}
 #endif
-	dlg.DoModal();
 }
 
 void CUImagerApp::OnFileOpen()
@@ -3988,6 +4034,44 @@ void CUImagerApp::OnEditScreenshot()
 void CUImagerApp::OnUpdateEditScreenshot(CCmdUI* pCmdUI) 
 {
 	pCmdUI->Enable(::AfxGetMainFrame() && !::AfxGetMainFrame()->m_bFullScreenMode);
+}
+
+// sTarget (case sensitive):
+// ""
+// "SystemSettings_DefaultApps_Email"
+// "SystemSettings_DefaultApps_Map"
+// "SystemSettings_DefaultApps_Audio"
+// "SystemSettings_DefaultApps_Photos"
+// "SystemSettings_DefaultApps_Video"
+// "SystemSettings_DefaultApps_Browser"
+// "SettingsPageAppsDefaultsFileExtensionView"
+// "SettingsPageAppsDefaultsProtocolView"
+BOOL CUImagerApp::SettingsPageAppsDefaults(const CString& sTarget/*=_T("")*/)
+{
+	// Format target string
+	CString sFullTarget;
+	if (!sTarget.IsEmpty())
+		sFullTarget.Format(_T("&target=%s"), sTarget);
+
+	// Open chosen Settings Page
+	IApplicationActivationManager* pActivator;
+	HRESULT hr = ::CoCreateInstance(CLSID_ApplicationActivationManager,
+									nullptr,
+									CLSCTX_INPROC,
+									IID_IApplicationActivationManager,
+									(void**)&pActivator);
+	if (SUCCEEDED(hr))
+	{
+		DWORD pid;
+		hr = pActivator->ActivateApplication(	L"Windows.ImmersiveControlPanel_cw5n1h2txyewy!microsoft.windows.immersivecontrolpanel",
+												L"page=SettingsPageAppsDefaults" + sFullTarget,
+												AO_NONE,
+												&pid);
+		pActivator->Release();
+		return SUCCEEDED(hr);
+	}
+	else
+		return FALSE;
 }
 
 void CUImagerApp::UpdateFileAssociations()

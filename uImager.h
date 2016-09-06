@@ -482,6 +482,7 @@ public:
 	BOOL IsDoc(CDocument* pDoc);
 
 	// File Association Functions
+	BOOL SettingsPageAppsDefaults(const CString& sTarget = _T(""));
 	void UpdateFileAssociations();
 	BOOL IsFileTypeAssociated(CString sExt);
 	BOOL AssociateFileType(CString sExt);

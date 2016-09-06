@@ -16,7 +16,6 @@ class CSettingsDlg : public CDialog
 // Construction
 public:
 	CSettingsDlg(CWnd* pParent = NULL);   // standard constructor
-	virtual ~CSettingsDlg();
 
 // Dialog Data
 	//{{AFX_DATA(CSettingsDlg)
@@ -35,8 +34,6 @@ public:
 
 // Implementation
 protected:
-	BOOL m_bCleanupCOM;
-	BOOL SettingsPageAppsDefaults(const CString& sTarget = _T(""));
 	void FileAssociation(BOOL bDoAssociation);
 	// Generated message map functions
 	//{{AFX_MSG(CSettingsDlg)
