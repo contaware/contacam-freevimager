@@ -3633,14 +3633,14 @@ void CUImagerApp::SendOpenDocsAsMail()
 
 			// Compress & Send
 			if (CompressToZip(sTempEmailDir, sTempEmailZipDir + _T("\\") + sZipFileName))
-				SendMail(sTempEmailZipDir + _T("\\") + sZipFileName);
+				SendMailMAPI(sTempEmailZipDir + _T("\\") + sZipFileName);
 
 			// Delete Email Zip Temp Directory
 			::DeleteDir(sTempEmailZipDir);
 		}
 		// Send Email Directory Content
 		else
-			SendMail(sTempEmailDir);
+			SendMailMAPI(sTempEmailDir);
 		
 		// Delete Email Temp Directory
 		::DeleteDir(sTempEmailDir);
@@ -3661,7 +3661,7 @@ CMailState::~CMailState()
 }
 
 EXTERN_PROCESS_LOCAL(CMailState, MailState)
-BOOL CUImagerApp::SendMail(LPCTSTR szAttachment)
+BOOL CUImagerApp::SendMailMAPI(LPCTSTR szAttachment)
 {
 	// Begin Wait Cursor
 	BeginWaitCursor();
@@ -5089,6 +5089,27 @@ BOOL CUImagerApp::IsExistingSection(const CString& sSection)
 		delete [] pSectionNames;
 		return res;
 	}
+}
+
+BOOL CUImagerApp::WriteProfileInt64(LPCTSTR lpszSection, LPCTSTR lpszEntry, __int64 nValue)
+{
+	return WriteProfileBinary(lpszSection, lpszEntry, (LPBYTE)&nValue, sizeof(nValue));
+}
+
+__int64 CUImagerApp::GetProfileInt64(LPCTSTR lpszSection, LPCTSTR lpszEntry, __int64 nDefault)
+{
+	__int64 nValue = nDefault;
+
+	LPBYTE pData = NULL;
+	UINT nBytes = 0;
+	if (GetProfileBinary(lpszSection, lpszEntry, &pData, &nBytes) && pData)
+	{
+		if (sizeof(__int64) == nBytes)
+			nValue = *((__int64*)pData);
+		delete [] pData;
+	}
+
+	return nValue;
 }
 
 void CUImagerApp::WriteSecureProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszValue)

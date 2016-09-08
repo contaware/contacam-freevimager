@@ -362,7 +362,7 @@ public:
 	// directory or a single file. If a
 	// directory is specified its content
 	// is used as attachment.
-	BOOL SendMail(LPCTSTR szAttachment);
+	BOOL SendMailMAPI(LPCTSTR szAttachment);
 
 	// Send Document(s) by e-mail
 	void SendOpenDocsAsMail();
@@ -498,10 +498,10 @@ public:
 	BOOL ShowColorDlg(	COLORREF& crColor,
 						CWnd* pParentWnd = NULL);
 
-	// Check whether section exists
+	// INI file / registry additional functions
 	BOOL IsExistingSection(const CString& sSection);
-
-	// Encrypted Write / Read
+	BOOL WriteProfileInt64(LPCTSTR lpszSection, LPCTSTR lpszEntry, __int64 nValue);
+	__int64 GetProfileInt64(LPCTSTR lpszSection, LPCTSTR lpszEntry, __int64 nDefault);
 	void WriteSecureProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszValue);
 	CString GetSecureProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry);
 	

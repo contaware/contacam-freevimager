@@ -235,13 +235,8 @@ void CSendMailConfigurationDlg::OnButtonTest()
 		m_SendMailConfiguration.m_sFrom.IsEmpty()	||
 		m_SendMailConfiguration.m_sTo.IsEmpty()) 
 		::AfxMessageBox(ML_STRING(1406, "Please Enter A Host Name, a From and a To Address"));
-	else 
-	{
-		// Mail
-		HANDLE hMailer = CVideoDeviceDoc::SendMailText(m_SendMailConfiguration, m_sName, CTime::GetCurrentTime(), _T("TEST"), _T(""), TRUE);
-		if (hMailer)
-			CloseHandle(hMailer);
-	}
+	else
+		CVideoDeviceDoc::SendMailText(m_SendMailConfiguration, m_sName, CTime::GetCurrentTime(), _T("TEST"), _T(""), TRUE);
 }
 
 #endif
