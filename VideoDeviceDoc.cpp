@@ -5682,8 +5682,9 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	sConfig += _T("php_value session.gc_divisor 10\r\n");		// every session init has 1 / 10 or 10% probability to clean-up old session files
 	sConfig += _T("php_value session.gc_maxlifetime 1440\r\n"); // default value
 
-	// Rewrite engine
+	// Do not allow .htaccess files and setup the rewrite engine
 	sConfig += _T("<Directory />\r\n");
+	sConfig += _T("AllowOverride None\r\n");
 	sConfig += _T("RewriteEngine on\r\n");
 	sConfig += _T("RewriteBase /\r\n");
 	sConfig += _T("RewriteCond %{REQUEST_FILENAME} -d\r\n");
