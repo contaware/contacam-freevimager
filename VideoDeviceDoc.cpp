@@ -6763,7 +6763,8 @@ void CVideoDeviceDoc::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime,
 
 	CFont Font;
 	int nFontSize = ::ScaleFont(rcRect.right, rcRect.bottom, nRefFontSize, FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
-	Font.CreatePointFont(nFontSize * 10, DEFAULT_FONTFACE);
+	Font.CreatePointFont(	nFontSize * 10,		// font height in tenths of a point
+							DEFAULT_FONTFACE);	// typeface name of the font
 
 	CString sTime = ::MakeTimeLocalFormat(RefTime, TRUE);
 	pDib->AddSingleLineText(sTime,

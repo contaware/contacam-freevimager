@@ -275,12 +275,22 @@ BOOL CGeneralPage::OnInitDialog()
 	CComboBox* pComboBoxRefFontSize = (CComboBox*)GetDlgItem(IDC_REF_FONTSIZE);
 	if (pComboBoxRefFontSize)
 	{
+		pComboBoxRefFontSize->AddString(_T("1"));
+		pComboBoxRefFontSize->AddString(_T("2"));
+		pComboBoxRefFontSize->AddString(_T("3"));
+		pComboBoxRefFontSize->AddString(_T("4"));
+		pComboBoxRefFontSize->AddString(_T("5"));
+		pComboBoxRefFontSize->AddString(_T("6"));
+		pComboBoxRefFontSize->AddString(_T("7"));
 		pComboBoxRefFontSize->AddString(_T("8"));
 		pComboBoxRefFontSize->AddString(_T("9"));
 		pComboBoxRefFontSize->AddString(_T("10"));
 		pComboBoxRefFontSize->AddString(_T("11"));
 		pComboBoxRefFontSize->AddString(_T("12"));
+		pComboBoxRefFontSize->AddString(_T("13"));
 		pComboBoxRefFontSize->AddString(_T("14"));
+		pComboBoxRefFontSize->AddString(_T("15"));
+		pComboBoxRefFontSize->AddString(_T("16"));
 	}
 
 	// Init Codec's Supports
@@ -366,18 +376,7 @@ BOOL CGeneralPage::OnInitDialog()
 		pCheck->ShowWindow(SW_HIDE);
 
 	// Set reference font size
-	if (m_pDoc->m_nRefFontSize == 8)
-		pComboBoxRefFontSize->SetCurSel(0);
-	else if (m_pDoc->m_nRefFontSize == 9)
-		pComboBoxRefFontSize->SetCurSel(1);
-	else if (m_pDoc->m_nRefFontSize == 10)
-		pComboBoxRefFontSize->SetCurSel(2);
-	else if (m_pDoc->m_nRefFontSize == 11)
-		pComboBoxRefFontSize->SetCurSel(3);
-	else if (m_pDoc->m_nRefFontSize == 12)
-		pComboBoxRefFontSize->SetCurSel(4);
-	else
-		pComboBoxRefFontSize->SetCurSel(5);
+	pComboBoxRefFontSize->SetCurSel(m_pDoc->m_nRefFontSize - 1);
 
 	// Video Compressor Quality
 	m_VideoRecQuality.SetRange((int)VIDEO_QUALITY_BEST, (int)VIDEO_QUALITY_LOW);
@@ -762,15 +761,7 @@ void CGeneralPage::OnAudioInput()
 void CGeneralPage::OnSelchangeRefFontsize()
 {
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_REF_FONTSIZE);
-	switch (pComboBox->GetCurSel())
-	{
-		case 0 :	m_pDoc->m_nRefFontSize = 8;		break;
-		case 1 :	m_pDoc->m_nRefFontSize = 9;		break;
-		case 2 :	m_pDoc->m_nRefFontSize = 10;	break;
-		case 3 :	m_pDoc->m_nRefFontSize = 11;	break;
-		case 4 :	m_pDoc->m_nRefFontSize = 12;	break;
-		default :	m_pDoc->m_nRefFontSize = 14;	break;
-	}
+	m_pDoc->m_nRefFontSize = pComboBox->GetCurSel() + 1;
 }
 
 /*
