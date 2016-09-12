@@ -46,6 +46,13 @@ void CCameraBasicSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_CBIndex(pDX, IDC_COMBO_SNAPSHOTHISTORY_SIZE, m_nComboSnapshotHistorySize);
 	DDX_Check(pDX, IDC_CHECK_FULLSTRETCH, m_bCheckFullStretch);
 	DDX_Check(pDX, IDC_CHECK_TRASHCOMMAND, m_bCheckTrashCommand);
+	DDX_Check(pDX, IDC_CHECK_SENDMAIL_DEVICE_OK, m_bCheckSendMailDeviceOK);
+	DDX_Check(pDX, IDC_CHECK_SENDMAIL_MALFUNCTION, m_bCheckSendMailMalfunction);
+	DDX_Check(pDX, IDC_CHECK_SENDMAIL_MOVEMENT_DETECTION, m_bCheckSendMailMovementDetection);
+	DDX_CBIndex(pDX, IDC_ATTACHMENT, m_nComboSendMailMovementDetectionAttachment);
+	DDX_Text(pDX, IDC_EDIT_SENDMAIL_SEC_BETWEEN_MSG, m_nSendMailSecBetweenMsg);
+	DDV_MinMaxInt(pDX, m_nSendMailSecBetweenMsg, 0, INT_MAX);
+	DDX_Control(pDX, IDC_SPIN_SENDMAIL_SEC_BETWEEN_MSG, m_SpinSendMailSecBetweenMsg);
 	DDX_Text(pDX, IDC_EDIT_MAX_CAMERA_FOLDER_SIZE, m_sMaxCameraFolderSizeGB);
 	DDX_Text(pDX, IDC_EDIT_MIN_DISK_FREE_PERCENT, m_sMinDiskFreePercent);
 	//}}AFX_DATA_MAP
@@ -174,6 +181,16 @@ BOOL CCameraBasicSettingsDlg::OnInitDialog()
 					pComboBox->AddString(::GetShortFileNameNoExt(FileFind.GetFileName(pos)));
 			}
 		}
+	}
+	pComboBox = (CComboBox*)GetDlgItem(IDC_ATTACHMENT);
+	if (pComboBox)
+	{
+		pComboBox->AddString(ML_STRING(1880, "No Attachment"));
+		pComboBox->AddString(ML_STRING(1883, "Saved Full Video"));
+		pComboBox->AddString(ML_STRING(1882, "Saved Small Video"));
+		pComboBox->AddString(ML_STRING(1881, "Snapshot"));
+		pComboBox->AddString(ML_STRING(1881, "Snapshot") + _T(" + ") + ML_STRING(1883, "Saved Full Video"));
+		pComboBox->AddString(ML_STRING(1881, "Snapshot") + _T(" + ") + ML_STRING(1882, "Saved Small Video"));
 	}
 
 	// Init vars
@@ -306,10 +323,18 @@ BOOL CCameraBasicSettingsDlg::OnInitDialog()
 		if (pComboBox->SelectString(-1, ::GetShortFileNameNoExt(sStyleFilePath)) == CB_ERR)
 			pComboBox->SetCurSel(0);
 	}
+	m_bCheckSendMailDeviceOK = m_pDoc->m_bSendMailDeviceOK;
+	m_bCheckSendMailMalfunction = m_pDoc->m_bSendMailMalfunction;
+	m_bCheckSendMailMovementDetection = m_pDoc->m_bSendMailMovementDetection;
+	m_nComboSendMailMovementDetectionAttachment = m_pDoc->m_MovDetAttachmentType;
+	m_nSendMailSecBetweenMsg = m_pDoc->m_nMovDetSendMailSecBetweenMsg;
 	m_CurrentSendMailConfiguration = m_pDoc->m_SendMailConfiguration;
 
 	// This calls UpdateData(FALSE) -> vars to view
 	CDialog::OnInitDialog();
+
+	// Minimum seconds between Motion Emails Spin Control
+	m_SpinSendMailSecBetweenMsg.SetRange32(0, INT_MAX);
 
 	// Enable / Disable Controls
 	EnableDisableCtrls();
@@ -452,6 +477,18 @@ void CCameraBasicSettingsDlg::EnableDisableAllCtrls(BOOL bEnable)
 	pEdit->EnableWindow(bEnable);
 	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_MIN_DISK_FREE_PERCENT);
 	pEdit->EnableWindow(bEnable);
+	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SENDMAIL_DEVICE_OK);
+	pCheck->EnableWindow(bEnable);
+	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SENDMAIL_MALFUNCTION);
+	pCheck->EnableWindow(bEnable);
+	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SENDMAIL_MOVEMENT_DETECTION);
+	pCheck->EnableWindow(bEnable);
+	pComboBox = (CComboBox*)GetDlgItem(IDC_ATTACHMENT);
+	pComboBox->EnableWindow(bEnable);
+	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_SENDMAIL_SEC_BETWEEN_MSG);
+	pEdit->EnableWindow(bEnable);
+	CSpinButtonCtrl* pSpin = (CSpinButtonCtrl*)GetDlgItem(IDC_SPIN_SENDMAIL_SEC_BETWEEN_MSG);
+	pSpin->EnableWindow(bEnable);
 	CButton* pButton = (CButton*)GetDlgItem(IDC_SENDMAIL_CONFIGURE);
 	pButton->EnableWindow(bEnable);
 	pButton = (CButton*)GetDlgItem(IDOK);
@@ -1115,7 +1152,12 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	else if (m_pDoc->m_nMinDiskFreePermillion > 1000000)
 		m_pDoc->m_nMinDiskFreePermillion = 1000000;
 
-	// Update send mail configuration
+	// Update send mail variables
+	m_pDoc->m_bSendMailDeviceOK = m_bCheckSendMailDeviceOK;
+	m_pDoc->m_bSendMailMalfunction = m_bCheckSendMailMalfunction;
+	m_pDoc->m_bSendMailMovementDetection = m_bCheckSendMailMovementDetection;
+	m_pDoc->m_MovDetAttachmentType = (CVideoDeviceDoc::AttachmentType)m_nComboSendMailMovementDetectionAttachment;
+	m_pDoc->m_nMovDetSendMailSecBetweenMsg = m_nSendMailSecBetweenMsg;
 	m_pDoc->m_SendMailConfiguration = m_CurrentSendMailConfiguration;
 
 	// Restart audio

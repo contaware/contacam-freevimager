@@ -62,9 +62,6 @@ void CMovementDetectionPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_SPIN_DETECTION_MIN_LENGTH, m_SpinDetectionMinLengthSeconds);
 	DDX_Text(pDX, IDC_EDIT_DETECTION_MAX_FRAMES, m_nDetectionMaxFrames);
 	DDV_MinMaxInt(pDX, m_nDetectionMaxFrames, 1, 1000000);
-	DDX_Text(pDX, IDC_EDIT_SENDMAIL_SEC_BETWEEN_MSG, m_nSendMailSecBetweenMsg);
-	DDV_MinMaxInt(pDX, m_nSendMailSecBetweenMsg, 0, INT_MAX);
-	DDX_Control(pDX, IDC_SPIN_SENDMAIL_SEC_BETWEEN_MSG, m_SpinSendMailSecBetweenMsg);
 	//}}AFX_DATA_MAP
 }
 
@@ -78,7 +75,6 @@ BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	ON_NOTIFY(NM_RELEASEDCAPTURE, IDC_DETECTION_LEVEL, OnReleasedcaptureDetectionLevel)
 	ON_BN_CLICKED(IDC_ANIMATEDGIF_SIZE, OnAnimatedgifSize)
 	ON_BN_CLICKED(IDC_SAVE_ANIMATEDGIF_MOVEMENT_DETECTION, OnSaveAnimGifMovementDetection)
-	ON_BN_CLICKED(IDC_SENDMAIL_MOVEMENT_DETECTION, OnSendmailMovementDetection)
 	ON_BN_CLICKED(IDC_FTP_MOVEMENT_DETECTION, OnFtpMovementDetection)
 	ON_BN_CLICKED(IDC_FTP_CONFIGURE, OnFtpConfigure)
 	ON_CBN_SELCHANGE(IDC_COMBOBOX_DETECTION_SCHEDULER, OnCbnSelchangeComboboxDetectionScheduler)
@@ -92,8 +88,6 @@ BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_WAIT_EXEC_COMMAND, OnCheckWaitExecCommand)
 	ON_WM_CTLCOLOR()
 	ON_CBN_SELCHANGE(IDC_DETECTION_ZONE_SIZE, OnSelchangeDetectionZoneSize)
-	ON_CBN_SELCHANGE(IDC_ATTACHMENT, OnSelchangeMovDetAttachmentType)
-	ON_EN_CHANGE(IDC_EDIT_SENDMAIL_SEC_BETWEEN_MSG, OnChangeEditSendMailSecBetweenMsg)
 	ON_CBN_SELCHANGE(IDC_EXECMODE_MOVEMENT_DETECTION, OnSelchangeExecmodeMovementDetection)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_SUNDAY, OnCheckSchedulerSunday)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_MONDAY, OnCheckSchedulerMonday)
@@ -119,7 +113,6 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	m_nDetectionMaxFrames = m_pDoc->m_nDetectionMaxFrames;
 	m_DetectionStartTime = m_pDoc->m_DetectionStartTime;
 	m_DetectionStopTime = m_pDoc->m_DetectionStopTime;
-	m_nSendMailSecBetweenMsg = m_pDoc->m_nMovDetSendMailSecBetweenMsg;
 
 	// Init Combo Boxes
 	CComboBox* pComboBoxZoneSize = (CComboBox*)GetDlgItem(IDC_DETECTION_ZONE_SIZE);
@@ -130,16 +123,9 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	pComboBoxDetectionScheduler->AddString(ML_STRING(1874, "Detection always enabled (scheduler is off)"));
 	pComboBoxDetectionScheduler->AddString(ML_STRING(1875, "Detection enabled:"));
 	pComboBoxDetectionScheduler->AddString(ML_STRING(1876, "Detection disabled:"));
-	CComboBox* pComboBoxAttachment = (CComboBox*)GetDlgItem(IDC_ATTACHMENT);
-    pComboBoxAttachment->AddString(ML_STRING(1880, "No Attachment"));
-    pComboBoxAttachment->AddString(ML_STRING(1883, "Saved Full Video"));
-    pComboBoxAttachment->AddString(ML_STRING(1882, "Saved Small Video"));
-	pComboBoxAttachment->AddString(ML_STRING(1881, "Snapshot"));
-	pComboBoxAttachment->AddString(ML_STRING(1881, "Snapshot") + _T(" + ") + ML_STRING(1883, "Saved Full Video"));
-	pComboBoxAttachment->AddString(ML_STRING(1881, "Snapshot") + _T(" + ") + ML_STRING(1882, "Saved Small Video"));
 	CComboBox* pComboBoxExexMode = (CComboBox*)GetDlgItem(IDC_EXECMODE_MOVEMENT_DETECTION);
 	pComboBoxExexMode->AddString(ML_STRING(1842, "After Detection Filter OK"));
-	pComboBoxExexMode->AddString(ML_STRING(1843, "After Save,Email,Ftp"));
+	pComboBoxExexMode->AddString(ML_STRING(1843, "After Saving Done"));
 
 	// This calls UpdateData(FALSE)
 	CPropertyPage::OnInitDialog();
@@ -150,9 +136,6 @@ BOOL CMovementDetectionPage::OnInitDialog()
 
 	// Movement Detection minimum detection length in seconds, below this value SaveFrameList() is not called
 	m_SpinDetectionMinLengthSeconds.SetRange(0, 99);
-
-	// Minimum seconds between Motion Emails Spin Control
-	m_SpinSendMailSecBetweenMsg.SetRange32(0, INT_MAX);
 
 	// Detection Level Slider & Edit Controls
 	m_DetectionLevel.SetRange(0, 100, TRUE);
@@ -202,14 +185,6 @@ BOOL CMovementDetectionPage::OnInitDialog()
 															m_pDoc->m_dwAnimatedGifHeight);
 	CButton* pButtonAnimGIFSize = (CButton*)GetDlgItem(IDC_ANIMATEDGIF_SIZE);
 	pButtonAnimGIFSize->SetWindowText(sSize);
-
-	// Send Email on Detection
-	CButton* pCheckSendMailMovementDetection = (CButton*)GetDlgItem(IDC_SENDMAIL_MOVEMENT_DETECTION);
-	if (m_pDoc->m_bSendMailMovementDetection)
-		pCheckSendMailMovementDetection->SetCheck(1);
-	else
-		pCheckSendMailMovementDetection->SetCheck(0);
-	pComboBoxAttachment->SetCurSel((int)m_pDoc->m_MovDetAttachmentType);
 
 	// FTP Upload Movement Detection Check Box
 	CButton* pCheckFTPUploadMovementDetection = (CButton*)GetDlgItem(IDC_FTP_MOVEMENT_DETECTION);
@@ -399,21 +374,6 @@ void CMovementDetectionPage::OnSelchangeDetectionZoneSize()
 	m_pDoc->m_nDetectionZoneSize = pComboBox->GetCurSel();
 }
 
-void CMovementDetectionPage::OnSelchangeMovDetAttachmentType() 
-{
-	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_ATTACHMENT);
-	m_pDoc->m_MovDetAttachmentType = (CVideoDeviceDoc::AttachmentType)pComboBox->GetCurSel();
-}
-
-void CMovementDetectionPage::OnChangeEditSendMailSecBetweenMsg() 
-{
-	if (::IsWindow(m_SpinSendMailSecBetweenMsg.GetSafeHwnd()))
-	{
-		if (UpdateData(TRUE))
-			m_pDoc->m_nMovDetSendMailSecBetweenMsg = m_nSendMailSecBetweenMsg;
-	}
-}
-
 void CMovementDetectionPage::UpdateExecHelp() 
 {
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_EXEC_HELP);
@@ -471,12 +431,6 @@ void CMovementDetectionPage::OnAnimatedgifSize()
 
 	// Restart Save Frame List Thread
 	m_pDoc->m_SaveFrameListThread.Start();
-}
-
-void CMovementDetectionPage::OnSendmailMovementDetection() 
-{
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_SENDMAIL_MOVEMENT_DETECTION);
-	m_pDoc->m_bSendMailMovementDetection = pCheck->GetCheck() > 0;
 }
 
 void CMovementDetectionPage::OnFtpMovementDetection()

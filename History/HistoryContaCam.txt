@@ -3,8 +3,8 @@ CONTACAM HISTORY
 5.1.0 (Month xxth 2016)
 
 - Made the application High DPI Aware (displays well on 4K monitors)
-- Added the sending of a daily email notification to make sure the
-  device works properly
+- Added the possibility to send a daily email notification to make
+  sure the device works properly
 - Increased the mailer timeout from 5 to 15 seconds (thanks to Joe
   Hannigan for reporting a problem with some slow smtp servers)
 - Encrypted settings (like passwords) are now exportable and work

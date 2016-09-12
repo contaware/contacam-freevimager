@@ -956,6 +956,8 @@ public:
 	volatile int m_nDetectionMaxFrames;					// Maximum number of frames for a detection sequence
 	volatile BOOL m_bSaveVideoMovementDetection;		// Save Movement Detections as Video File
 	volatile BOOL m_bSaveAnimGIFMovementDetection;		// Save Movement Detections as Animated GIF
+	volatile BOOL m_bSendMailDeviceOK;					// Send Email when device Works Properly
+	volatile BOOL m_bSendMailMalfunction;				// Send Email on device Malfunction
 	volatile BOOL m_bSendMailMovementDetection;			// Send Email on Movement Detections
 	volatile BOOL m_bFTPUploadMovementDetection;		// FTP Upload Movement Detections
 	volatile BOOL m_bExecCommandMovementDetection;		// Execute Command on Movement Detection

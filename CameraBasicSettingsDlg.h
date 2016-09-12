@@ -38,6 +38,12 @@ public:
 	int		m_nComboSnapshotHistorySize;
 	BOOL	m_bCheckFullStretch;
 	BOOL	m_bCheckTrashCommand;
+	BOOL	m_bCheckSendMailDeviceOK;
+	BOOL	m_bCheckSendMailMalfunction;
+	BOOL	m_bCheckSendMailMovementDetection;
+	int		m_nComboSendMailMovementDetectionAttachment;
+	int		m_nSendMailSecBetweenMsg;
+	CSpinButtonCtrl	m_SpinSendMailSecBetweenMsg;
 	//}}AFX_DATA
 
 
