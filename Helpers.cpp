@@ -1437,7 +1437,7 @@ HANDLE ExecApp(	const CString& sFileName,
 	sei.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
 	sei.nShow = bShow ? SW_SHOW : SW_HIDE;
 	sei.lpFile = sFileName;
-	CString sDir = GetDriveAndDirName(sFileName);
+	CString sDir(GetDriveAndDirName(sFileName));
 	if (sStartDirectory.IsEmpty())
 		sei.lpDirectory = sDir;
 	else
@@ -1447,6 +1447,41 @@ HANDLE ExecApp(	const CString& sFileName,
 		return sei.hProcess;
 	else
 		return NULL;
+}
+
+HANDLE ExecAppUtf8(	const CString& sFileName,
+					const CString& sParams/*=_T("")*/,
+					const CString& sStartDirectory/*=_T("")*/,
+					BOOL bShow/*=TRUE*/)
+{
+	CStringA sAnsiFileName(sFileName);
+	CStringA sAnsiStartDirectory(sStartDirectory);
+	SHELLEXECUTEINFOA sei;
+	memset(&sei, 0, sizeof(sei));
+	sei.cbSize = sizeof(sei);
+	sei.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
+	sei.nShow = bShow ? SW_SHOW : SW_HIDE;
+	sei.lpFile = sAnsiFileName;
+	CStringA sAnsiDir(GetDriveAndDirName(sFileName));
+	if (sAnsiStartDirectory.IsEmpty())
+		sei.lpDirectory = sAnsiDir;
+	else
+		sei.lpDirectory = sAnsiStartDirectory;
+	LPBYTE pUTF8Params = NULL;
+	ToUTF8(sParams, &pUTF8Params);
+	sei.lpParameters = (LPCSTR)pUTF8Params;
+	if (ShellExecuteExA(&sei))
+	{
+		if (pUTF8Params)
+			delete [] pUTF8Params;
+		return sei.hProcess;
+	}
+	else
+	{
+		if (pUTF8Params)
+			delete [] pUTF8Params;
+		return NULL;
+	}
 }
 
 void KillApp(HANDLE& hProcess)

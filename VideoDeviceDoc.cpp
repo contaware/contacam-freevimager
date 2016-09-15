@@ -1373,7 +1373,7 @@ BOOL CVideoDeviceDoc::SendMailText(	const SendMailConfigurationStruct& Config,
 			case 1 : sConnectionTypeOption = _T("-ssl"); break;			// SSL and TLS
 			default: sConnectionTypeOption = _T("-starttls"); break;	// STARTTLS
 		}
-		sOptions.Format(_T("-t \"%s\" -f %s %s %s -port %d %s -smtp %s -cs \"iso-8859-1\" -ct %d -read-timeout %d -sub \"%s\" +cc +bc -user \"%s\" -pass \"%s\" -M \"%s\""),
+		sOptions.Format(_T("-t \"%s\" -f %s %s %s -port %d %s -smtp %s -ct %d -read-timeout %d -sub \"%s\" +cc +bc -user \"%s\" -pass \"%s\" -cs \"utf-8\" -mime-type \"text/plain\" -enc-type \"base64\" -M \"%s\""),
 						Config.m_sTo,
 						Config.m_sFrom,
 						Config.m_sFromName.IsEmpty() ? _T("") : _T("-name \"") + Config.m_sFromName + _T("\""),
@@ -1408,7 +1408,7 @@ BOOL CVideoDeviceDoc::SendMailMovementDetection(const CTime& Time, const CString
 		CString sSubject = m_SendMailConfiguration.m_sSubject;
 		CString sNote(::GetFileExt(sFileName));
 		if (sNote.IsEmpty())
-			sNote = _T("((o))"); // movement symbol
+			sNote = ML_STRING(1844, "Detection");
 		else
 		{
 			sNote.MakeUpper();
@@ -1425,7 +1425,7 @@ BOOL CVideoDeviceDoc::SendMailMovementDetection(const CTime& Time, const CString
 			case 1 : sConnectionTypeOption = _T("-ssl"); break;			// SSL and TLS
 			default: sConnectionTypeOption = _T("-starttls"); break;	// STARTTLS
 		}
-		sOptions.Format(_T("-t \"%s\" -f %s %s %s -port %d %s -smtp %s -cs \"iso-8859-1\" -ct %d -read-timeout %d -sub \"%s\" +cc +bc -user \"%s\" -pass \"%s\" -M \"%s\""),
+		sOptions.Format(_T("-t \"%s\" -f %s %s %s -port %d %s -smtp %s -ct %d -read-timeout %d -sub \"%s\" +cc +bc -user \"%s\" -pass \"%s\" -cs \"utf-8\" -mime-type \"text/plain\" -enc-type \"base64\" -M \"%s\""),
 						m_SendMailConfiguration.m_sTo,
 						m_SendMailConfiguration.m_sFrom,
 						m_SendMailConfiguration.m_sFromName.IsEmpty() ? _T("") : _T("-name \"") + m_SendMailConfiguration.m_sFromName + _T("\""),
@@ -6264,10 +6264,10 @@ HANDLE CVideoDeviceDoc::SendMailCall(CString sParams, BOOL bShow/*=FALSE*/)
 		{
 			if (bShow)
 				sParams = _T("-w ") + sParams; // wait for a CR after sending the mail
-			h =  ::ExecApp(	sMailerStartFile,
-							sParams,
-							_T(""),
-							bShow);
+			h =  ::ExecAppUtf8(	sMailerStartFile,
+								sParams,
+								_T(""),
+								bShow);
 		}
 	}
 	return h;

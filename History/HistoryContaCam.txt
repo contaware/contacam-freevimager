@@ -7,6 +7,7 @@ CONTACAM HISTORY
   sure the device works properly
 - Increased the mailer timeout from 5 to 15 seconds (thanks to Joe
   Hannigan for reporting a problem with some slow smtp servers)
+- Fixed email sending on Windows XP
 - Encrypted settings (like passwords) are now exportable and work
   well if used on another computer or by another logon user
 - Compiling with Visual Studio 2015 (ContaCam runs on
