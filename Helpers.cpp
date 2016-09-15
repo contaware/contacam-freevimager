@@ -1454,19 +1454,19 @@ HANDLE ExecAppUtf8(	const CString& sFileName,
 					const CString& sStartDirectory/*=_T("")*/,
 					BOOL bShow/*=TRUE*/)
 {
-	CStringA sAnsiFileName(sFileName);
-	CStringA sAnsiStartDirectory(sStartDirectory);
+	CStringA sAsciiFileName(GetASCIICompatiblePath(sFileName));
+	CStringA sAsciiStartDirectory(GetASCIICompatiblePath(sStartDirectory));
 	SHELLEXECUTEINFOA sei;
 	memset(&sei, 0, sizeof(sei));
 	sei.cbSize = sizeof(sei);
 	sei.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
 	sei.nShow = bShow ? SW_SHOW : SW_HIDE;
-	sei.lpFile = sAnsiFileName;
-	CStringA sAnsiDir(GetDriveAndDirName(sFileName));
-	if (sAnsiStartDirectory.IsEmpty())
-		sei.lpDirectory = sAnsiDir;
+	sei.lpFile = sAsciiFileName;
+	CStringA sAsciiDir(GetASCIICompatiblePath(GetDriveAndDirName(sFileName)));
+	if (sAsciiStartDirectory.IsEmpty())
+		sei.lpDirectory = sAsciiDir;
 	else
-		sei.lpDirectory = sAnsiStartDirectory;
+		sei.lpDirectory = sAsciiStartDirectory;
 	LPBYTE pUTF8Params = NULL;
 	ToUTF8(sParams, &pUTF8Params);
 	sei.lpParameters = (LPCSTR)pUTF8Params;
