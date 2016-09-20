@@ -1,13 +1,14 @@
 CONTACAM HISTORY
 
-5.1.0 (Month xxth 2016)
+5.1.0 (September 20th 2016)
 
 - Made the application High DPI Aware (displays well on 4K monitors)
+- Generates smaller mp4 files with the same quality
 - Added the possibility to send a daily email notification to make
   sure the device works properly
 - Increased the mailer timeout from 5 to 15 seconds (thanks to Joe
   Hannigan for reporting a problem with some slow smtp servers)
-- Fixed email sending on Windows XP
+- Fixed email sending on Windows XP (thanks David Greig)
 - Encrypted settings (like passwords) are now exportable and work
   well if used on another computer or by another logon user
 - Compiling with Visual Studio 2015 (ContaCam runs on
