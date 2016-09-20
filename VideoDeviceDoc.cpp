@@ -453,8 +453,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 					AVRecVideo.AddVideoStream(VideoSaveDib.GetBMI(),			// Source Video Format
 											(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
 											CalcFrameRate.num,					// Rate
-											CalcFrameRate.den,					// Scale
-											m_pDoc->m_nVideoRecKeyframesRate,	// Keyframes Rate				
+											CalcFrameRate.den,					// Scale			
 											m_pDoc->m_fVideoRecQuality,
 											((CUImagerApp*)::AfxGetApp())->m_nCoresCount);
 					if (m_pDoc->m_bCaptureAudio)
@@ -1084,8 +1083,7 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 								pAVRecVideo->AddVideoStream(Dib.GetBMI(),						// Source Video Format
 															(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
 															FrameRate.num,						// Rate
-															FrameRate.den,						// Scale
-															m_nSnapshotVideoKeyframesRate,		// Keyframes Rate				
+															FrameRate.den,						// Scale				
 															m_fSnapshotVideoCompressorQuality,
 															((CUImagerApp*)::AfxGetApp())->m_nCoresCount);
 								pAVRecVideo->Open();
@@ -1121,8 +1119,7 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 								pAVRecThumbVideo->AddVideoStream(Dib.GetBMI(),						// Source Video Format
 																(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
 																FrameRate.num,						// Rate
-																FrameRate.den,						// Scale
-																m_nSnapshotVideoKeyframesRate,		// Keyframes Rate				
+																FrameRate.den,						// Scale				
 																m_fSnapshotVideoCompressorQuality,
 																((CUImagerApp*)::AfxGetApp())->m_nCoresCount);
 								pAVRecThumbVideo->Open();
@@ -3508,7 +3505,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bRecFirstFrame = FALSE;
 	m_sAVRecFileExt = DEFAULT_VIDEO_FILEEXT;
 	m_fVideoRecQuality = DEFAULT_VIDEO_QUALITY;
-	m_nVideoRecKeyframesRate = DEFAULT_KEYFRAMESRATE;
 	m_nDeleteRecordingsOlderThanDays = DEFAULT_DEL_RECS_OLDER_THAN_DAYS;
 	m_nMaxCameraFolderSizeMB = 0;
 	m_nMinDiskFreePermillion = MIN_DISK_FREE_PERMILLION;
@@ -4275,7 +4271,6 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_sAVRecFileExt = pApp->GetProfileString(sSection, _T("VideoFileExt"), DEFAULT_VIDEO_FILEEXT);
 	UpdateDstWaveFormat(); // this updates m_pDstWaveFormat from m_sAVRecFileExt
 	m_fVideoRecQuality = (float) CAVRec::ClipVideoQuality((float)pApp->GetProfileInt(sSection, _T("VideoRecQuality"), (int)DEFAULT_VIDEO_QUALITY));
-	m_nVideoRecKeyframesRate = (int) pApp->GetProfileInt(sSection, _T("VideoRecKeyframesRate"), DEFAULT_KEYFRAMESRATE);
 	m_nDetectionStartStop = (int) pApp->GetProfileInt(sSection, _T("DetectionStartStop"), 0);
 	m_bDetectionSunday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionSunday"), TRUE);
 	m_bDetectionMonday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionMonday"), TRUE);
@@ -4465,7 +4460,6 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("WaitExecCommandMovementDetection"), m_bWaitExecCommandMovementDetection);
 	pApp->WriteProfileString(sSection, _T("VideoFileExt"), m_sAVRecFileExt);
 	pApp->WriteProfileInt(sSection, _T("VideoRecQuality"), (int)m_fVideoRecQuality);
-	pApp->WriteProfileInt(sSection, _T("VideoRecKeyframesRate"), m_nVideoRecKeyframesRate);
 	pApp->WriteProfileInt(sSection, _T("DetectionStartStop"), m_nDetectionStartStop);
 	pApp->WriteProfileInt(sSection, _T("DetectionSunday"), (int)m_bDetectionSunday);
 	pApp->WriteProfileInt(sSection, _T("DetectionMonday"), (int)m_bDetectionMonday);
@@ -5157,7 +5151,6 @@ BOOL CVideoDeviceDoc::MakeAVRec(CAVRec** ppAVRec)
 									(LPBITMAPINFO)(&DstBmi),		// Destination Video Format
 									FrameRate.num,					// Rate
 									FrameRate.den,					// Scale
-									m_nVideoRecKeyframesRate,		// Keyframes Rate	
 									m_fVideoRecQuality,
 									((CUImagerApp*)::AfxGetApp())->m_nCoresCount) < 0)	
 		return FALSE;
@@ -7722,7 +7715,6 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 			m_SaveSnapshotVideoThread.m_bSnapshotHistoryVideoFtp = m_bSnapshotHistoryVideoFtp;
 			m_SaveSnapshotVideoThread.m_fSnapshotVideoCompressorQuality = m_fVideoRecQuality;
 			m_SaveSnapshotVideoThread.m_sSnapshotVideoFileExt = m_sAVRecFileExt;
-			m_SaveSnapshotVideoThread.m_nSnapshotVideoKeyframesRate = m_nVideoRecKeyframesRate;
 			m_SaveSnapshotVideoThread.m_dSnapshotHistoryFrameRate = (double)m_nSnapshotHistoryFrameRate;
 			m_SaveSnapshotVideoThread.m_Time = Yesterday;
 			m_SaveSnapshotVideoThread.m_sSnapshotAutoSaveDir = m_sRecordAutoSaveDir;

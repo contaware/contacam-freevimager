@@ -58,7 +58,6 @@ void CGeneralPage::DoDataExchange(CDataExchange* pDX)
 	DDX_DateTimeCtrl(pDX, IDC_DATE_ONCE_STOP, m_SchedulerOnceDateStop);
 	DDX_DateTimeCtrl(pDX, IDC_TIME_DAILY_START, m_SchedulerDailyTimeStart);
 	DDX_DateTimeCtrl(pDX, IDC_TIME_DAILY_STOP, m_SchedulerDailyTimeStop);
-	DDX_Text(pDX, IDC_EDIT_KEYFRAMES_RATE, m_nVideoRecKeyframesRate);
 	DDX_Check(pDX, IDC_CHECK_TIME_SEGMENTATION, m_bRecTimeSegmentation);
 	DDX_Check(pDX, IDC_CHECK_AUTORUN, m_bAutorun);
 	DDX_CBIndex(pDX, IDC_TIME_SEGMENTATION, m_nTimeSegmentationIndex);
@@ -85,7 +84,6 @@ BEGIN_MESSAGE_MAP(CGeneralPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_VIDEO_TUNER, OnVideoTuner)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_ONCE, OnCheckSchedulerOnce)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_DAILY, OnCheckSchedulerDaily)
-	ON_EN_CHANGE(IDC_EDIT_KEYFRAMES_RATE, OnChangeEditKeyframesRate)
 	ON_BN_CLICKED(IDC_CHECK_TIME_SEGMENTATION, OnCheckTimeSegmentation)
 	ON_BN_CLICKED(IDC_CHECK_AUTORUN, OnCheckAutorun)
 	ON_CBN_SELCHANGE(IDC_TIME_SEGMENTATION, OnSelchangeTimeSegmentation)
@@ -196,8 +194,7 @@ BOOL CGeneralPage::OnInitDialog()
 	m_bRecTimeSegmentation = m_pDoc->m_bRecTimeSegmentation;
 	m_nTimeSegmentationIndex = m_pDoc->m_nTimeSegmentationIndex;
 
-	// Init Rec Vars
-	m_nVideoRecKeyframesRate = m_pDoc->m_nVideoRecKeyframesRate;
+	// Init Audio Listen Var
 	m_bAudioListen = m_pDoc->m_bAudioListen;
 
 	// Init Scheduler Values
@@ -700,12 +697,6 @@ void CGeneralPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 	}
 	
 	CPropertyPage::OnHScroll(nSBCode, nPos, (CScrollBar*)pScrollBar);
-}
-
-void CGeneralPage::OnChangeEditKeyframesRate() 
-{
-	UpdateData(TRUE);
-	m_pDoc->m_nVideoRecKeyframesRate = m_nVideoRecKeyframesRate;
 }
 
 void CGeneralPage::OnCheckLiveDeinterlace() 

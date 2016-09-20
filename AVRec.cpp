@@ -207,7 +207,6 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 							const LPBITMAPINFO pDstFormat,
 							DWORD dwDstTimeBaseDenominator,
 							DWORD dwDstTimeBaseNumerator,
-							int keyframes_rate,
 							float qscale,	// 2.0f best quality, 31.0f worst quality, for H.264 clamped to [VIDEO_QUALITY_BEST, VIDEO_QUALITY_LOW]
 							int nThreadCount)
 {
@@ -330,12 +329,20 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 		CStringA sAsmOption;
 		sAsmOption.Format("asm=%u", cpu);
 		av_opt_set(pCodecCtx->priv_data, "x264-params", sAsmOption, 0); // accepts both numbers and names: "asm=15" is equivalent to "asm=SSE"
+
+		// For H.264 gop_size defaults to - 1 which means there is no upper limit,
+		// codec will still insert a keyframe with each scene change
+		// Note: gop_size is NOT influencing the heap usage
 	}
 	else
 	{
 		// Quality: 2.0f best quality, 31.0f worst quality
         pCodecCtx->flags |= CODEC_FLAG_QSCALE;
 		pCodecCtx->global_quality = (int)(FF_QP2LAMBDA * qscale);
+
+		// Emit one I-frame every given frames at most
+		// Note: gop_size is NOT influencing the heap usage
+		pCodecCtx->gop_size = DEFAULT_KEYFRAMESRATE; // (if not set it defaults to 12)
 	}
 
 	// Resolution must be a multiple of two
@@ -372,11 +379,6 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 	// not be related to the user-provided one, depending on the format)
 	pVideoStream->time_base.num = pCodecCtx->time_base.num;
 	pVideoStream->time_base.den = pCodecCtx->time_base.den;
-
-	// Emit one intra frame every given frames at most
-	pCodecCtx->gop_size = keyframes_rate;	// keyframe interval(=GOP length) determines the maximum distance between I-frames.
-											// Normally it defaults to 12, for H.264 it defaults to -1 which means there is
-											// no upper limit, codec will still insert a keyframe with each scene change
 
 	// Pixel Format
 	pCodecCtx->pix_fmt = pix_fmt;

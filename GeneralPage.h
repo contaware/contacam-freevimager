@@ -43,7 +43,6 @@ public:
 	CTime	m_SchedulerOnceDateStop;
 	CTime	m_SchedulerDailyTimeStart;
 	CTime	m_SchedulerDailyTimeStop;
-	int		m_nVideoRecKeyframesRate;
 	BOOL	m_bRecTimeSegmentation;
 	BOOL	m_bAutorun;
 	int		m_nTimeSegmentationIndex;
@@ -85,7 +84,6 @@ protected:
 	afx_msg void OnVideoTuner();
 	afx_msg void OnCheckSchedulerOnce();
 	afx_msg void OnCheckSchedulerDaily();
-	afx_msg void OnChangeEditKeyframesRate();
 	afx_msg void OnCheckTimeSegmentation();
 	afx_msg void OnCheckAutorun();
 	afx_msg void OnSelchangeTimeSegmentation();

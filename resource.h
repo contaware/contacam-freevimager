@@ -1498,7 +1498,6 @@
 #define IDS_MULTILANG_1380              1380
 #define IDC_CHECK_REMOVE_XMP            1380
 #define IDS_MULTILANG_1381              1381
-#define IDC_EDIT_KEYFRAMES_RATE         1381
 #define IDC_CHECK_REMOVE_ICC            1381
 #define IDS_MULTILANG_1382              1382
 #define IDS_MULTILANG_1383              1383
@@ -3299,7 +3298,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        1499
+#define _APS_NEXT_RESOURCE_VALUE        1500
 #define _APS_NEXT_COMMAND_VALUE         33511
 #define _APS_NEXT_CONTROL_VALUE         2572
 #define _APS_NEXT_SYMED_VALUE           101
