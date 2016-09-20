@@ -2432,7 +2432,12 @@ void GetHeapStats(	SIZE_T* pDefaultHeapSize/*=NULL*/,
 		if (HeapQueryInformation(heaps[i], HeapCompatibilityInformation,
 								&heap_info, sizeof(heap_info), &ret_size))
 		{
-			if (heaps[i] == default_heap)
+			if (heaps[i] == default_heap && heaps[i] == crt_heap) // the default heap can also be the crt heap!
+			{
+				nCRTHeapType = nDefaultHeapType = heap_info;
+				CRTHeapSize = DefaultHeapSize = HeapAllocatedSize(heaps[i]);
+			}
+			else if (heaps[i] == default_heap)
 			{
 				nDefaultHeapType = heap_info;
 				DefaultHeapSize = HeapAllocatedSize(heaps[i]);
