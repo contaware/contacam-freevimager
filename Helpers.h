@@ -276,6 +276,9 @@ extern CString ShowErrorMsg(DWORD dwErrorCode,
 							CString sHeader = _T(""),
 							CString sFooter = _T(""));
 
+// Get the current user name
+extern CString GetUserName();
+
 // Get the local NetBIOS computer name
 extern CString GetComputerName();
 

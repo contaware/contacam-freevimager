@@ -2243,6 +2243,16 @@ notamd:
     return feature;
 }
 
+CString GetUserName()
+{
+	TCHAR szUserName[UNLEN + 1];
+	DWORD dwSize = UNLEN + 1;
+	if (GetUserName(szUserName, &dwSize))
+		return CString(szUserName);
+	else
+		return _T("");
+}
+
 CString GetComputerName()
 {
 	TCHAR szComputerName[MAX_COMPUTERNAME_LENGTH + 1];
@@ -2925,7 +2935,7 @@ int ToUTF8(const CString& s, LPBYTE* ppUtf8)
 	// Convert UTF16 to UTF8
 	int nBytesWritten = WideCharToMultiByte(CP_UTF8,
 											0,
-											s,					// wide-character string
+											(LPCTSTR)s,			// wide-character string
 											nUtf16Len,			// number of chars in string
 											(LPSTR)(*ppUtf8),	// buffer for new string
 											4*nUtf16Len,		// size of allocated buffer minus null termination
