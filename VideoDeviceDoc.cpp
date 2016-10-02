@@ -578,7 +578,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			{
 				CTimeSpan TimeDiff = FirstTime - m_pDoc->m_MovDetLastVideoMailTime;
 				if (TimeDiff.GetTotalSeconds() >= (LONGLONG)m_pDoc->m_nMovDetSendMailSecBetweenMsg &&
-					m_pDoc->SendMailMovementDetection(FirstTime, sVideoFileName))
+					CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), FirstTime, ML_STRING(1844, "Detection"), _T(""), sVideoFileName))
 					m_pDoc->m_MovDetLastVideoMailTime = FirstTime;
 			}
 			else if (	::GetFileSize64(sGIFFileName).QuadPart > 0							&&
@@ -587,7 +587,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			{
 				CTimeSpan TimeDiff = FirstTime - m_pDoc->m_MovDetLastGIFMailTime;
 				if (TimeDiff.GetTotalSeconds() >= (LONGLONG)m_pDoc->m_nMovDetSendMailSecBetweenMsg &&
-					m_pDoc->SendMailMovementDetection(FirstTime, sGIFFileName))
+					CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), FirstTime, ML_STRING(1844, "Detection"), _T(""), sGIFFileName))
 					m_pDoc->m_MovDetLastGIFMailTime = FirstTime;
 			}
 		}
@@ -1344,15 +1344,16 @@ __forceinline CString CVideoDeviceDoc::CSaveSnapshotVideoThread::MakeVideoHistor
 		return sYearMonthDayDir + _T("\\") + _T("shot_") + sTime + m_sSnapshotVideoFileExt;
 }
 
-BOOL CVideoDeviceDoc::SendMailText(	const SendMailConfigurationStruct& Config,
-									const CString& sName,
-									const CTime& Time,
-									const CString& sNote,
-									CString sBody/*=_T("")*/,
-									BOOL bShow/*=FALSE*/)
+BOOL CVideoDeviceDoc::SendMail(	const SendMailConfigurationStruct& Config,
+								const CString& sName,
+								const CTime& Time,
+								const CString& sNote,
+								CString sBody/*=_T("")*/,
+								const CString& sFileName/*=_T("")*/,
+								BOOL bShow/*=FALSE*/)
 {
-	if (!Config.m_sHost.IsEmpty()	&&
-		!Config.m_sFrom.IsEmpty()	&&
+	if (!Config.m_sHost.IsEmpty() &&
+		!Config.m_sFrom.IsEmpty() &&
 		!Config.m_sTo.IsEmpty())
 	{
 		CString sOptions;
@@ -1384,61 +1385,9 @@ BOOL CVideoDeviceDoc::SendMailText(	const SendMailConfigurationStruct& Config,
 						Config.m_sUsername,
 						Config.m_sPassword,
 						sBody);
-		HANDLE h = SendMailCall(sOptions, bShow);
-		if (h)
-		{
-			::CloseHandle(h);
-			return TRUE;
-		}
-	}
-	return FALSE;
-}
-
-BOOL CVideoDeviceDoc::SendMailMovementDetection(const CTime& Time, const CString& sFileName/*=_T("")*/)
-{
-	if (!m_SendMailConfiguration.m_sHost.IsEmpty() &&
-		!m_SendMailConfiguration.m_sFrom.IsEmpty() &&
-		!m_SendMailConfiguration.m_sTo.IsEmpty())
-	{
-		CString sOptions;
-		CString sConnectionTypeOption;
-		CString sSubject = m_SendMailConfiguration.m_sSubject;
-		CString sNote(::GetFileExt(sFileName));
-		if (sNote.IsEmpty())
-			sNote = ML_STRING(1844, "Detection");
-		else
-		{
-			sNote.MakeUpper();
-			sNote.TrimLeft(_T('.'));
-		}
-		sSubject.Replace(_T("%name%"), GetAssignedDeviceName());
-		sSubject.Replace(_T("%date%"), ::MakeDateLocalFormat(Time));
-		sSubject.Replace(_T("%time%"), ::MakeTimeLocalFormat(Time, TRUE));
-		sSubject.Replace(_T("%note%"), sNote);
-		CString sBody(GetAssignedDeviceName() + _T(": ") + ::MakeDateLocalFormat(Time) + _T(" ") + ::MakeTimeLocalFormat(Time, TRUE) + _T(" ") + sNote);
-		switch (m_SendMailConfiguration.m_ConnectionType)
-		{
-			case 0 : sConnectionTypeOption = _T(""); break;				// Plain Text
-			case 1 : sConnectionTypeOption = _T("-ssl"); break;			// SSL and TLS
-			default: sConnectionTypeOption = _T("-starttls"); break;	// STARTTLS
-		}
-		sOptions.Format(_T("-t \"%s\" -f %s %s %s -port %d %s -smtp %s -ct %d -read-timeout %d -sub \"%s\" +cc +bc -user \"%s\" -pass \"%s\" -cs \"utf-8\" -mime-type \"text/plain\" -enc-type \"base64\" -M \"%s\""),
-						m_SendMailConfiguration.m_sTo,
-						m_SendMailConfiguration.m_sFrom,
-						m_SendMailConfiguration.m_sFromName.IsEmpty() ? _T("") : _T("-name \"") + m_SendMailConfiguration.m_sFromName + _T("\""),
-						sConnectionTypeOption,
-						m_SendMailConfiguration.m_nPort,
-						(m_SendMailConfiguration.m_sUsername.IsEmpty() && m_SendMailConfiguration.m_sPassword.IsEmpty()) ? _T("") : _T("-auth"),
-						m_SendMailConfiguration.m_sHost,
-						MAILPROG_TIMEOUT_SEC, // connect timeout
-						MAILPROG_TIMEOUT_SEC, // read timeout
-						sSubject,
-						m_SendMailConfiguration.m_sUsername,
-						m_SendMailConfiguration.m_sPassword,
-						sBody);
 		if (::GetFileSize64(sFileName).QuadPart > 0)
 			sOptions += _T(" -attach \"") + sFileName + _T("\"");
-		HANDLE h = SendMailCall(sOptions);
+		HANDLE h = SendMailCall(sOptions, bShow);
 		if (h)
 		{
 			::CloseHandle(h);
@@ -2267,7 +2216,7 @@ end_of_software_detection:
 					CTime Time = CalcTime(pDib->GetUpTime(), RefTime, dwRefUpTime);
 					CTimeSpan TimeDiff = Time - m_MovDetLastMailTime;
 					if (TimeDiff.GetTotalSeconds() >= (LONGLONG)m_nMovDetSendMailSecBetweenMsg &&
-						SendMailMovementDetection(Time))
+						CVideoDeviceDoc::SendMail(m_SendMailConfiguration, GetAssignedDeviceName(), Time, ML_STRING(1844, "Detection")))
 						m_MovDetLastMailTime = Time;
 				}
 				else if (	m_MovDetAttachmentType == ATTACHMENT_JPG		||
@@ -2279,7 +2228,7 @@ end_of_software_detection:
 					CTime Time = CalcTime(pDib->GetUpTime(), RefTime, dwRefUpTime);
 					CTimeSpan TimeDiff = Time - m_MovDetLastJPGMailTime;
 					if (TimeDiff.GetTotalSeconds() >= (LONGLONG)m_nMovDetSendMailSecBetweenMsg &&
-						SendMailMovementDetection(Time, SaveJpegMail(pDib, RefTime, dwRefUpTime)))
+						CVideoDeviceDoc::SendMail(m_SendMailConfiguration, GetAssignedDeviceName(), Time, ML_STRING(1844, "Detection"), _T(""), SaveJpegMail(pDib, RefTime, dwRefUpTime)))
 						m_MovDetLastJPGMailTime = Time;
 				}
 			}
@@ -3071,7 +3020,7 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 						if (!bDeviceAlert)
 						{
 							if (m_pDoc->m_bSendMailMalfunction)
-								CVideoDeviceDoc::SendMailText(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), CurrentTime, _T("OFF"));
+								CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), CurrentTime, _T("OFF"));
 							bDeviceAlert = TRUE;
 							::AfxGetApp()->WriteProfileInt(m_pDoc->GetDevicePathName(), _T("DeviceAlert"), bDeviceAlert);
 						}
@@ -3084,7 +3033,7 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 					if (bDeviceAlert)
 					{
 						if (m_pDoc->m_bSendMailMalfunction)
-							CVideoDeviceDoc::SendMailText(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), CurrentTime, _T("ON"));
+							CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), CurrentTime, _T("ON"));
 						bDeviceAlert = FALSE;
 						::AfxGetApp()->WriteProfileInt(m_pDoc->GetDevicePathName(), _T("DeviceAlert"), bDeviceAlert);
 					}
@@ -3098,7 +3047,7 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 						CurrentTime.GetYear() != LastDeviceNotifyTime.GetYear())
 					{
 						if (m_pDoc->m_bSendMailDeviceOK)
-							CVideoDeviceDoc::SendMailText(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), CurrentTime, _T("OK"));
+							CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), CurrentTime, _T("OK"));
 						LastDeviceNotifyTime = CurrentTime;
 						((CUImagerApp*)::AfxGetApp())->WriteProfileInt64(m_pDoc->GetDevicePathName(), _T("DeviceNotifyTime"), LastDeviceNotifyTime.GetTime());
 					}

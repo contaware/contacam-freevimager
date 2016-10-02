@@ -769,19 +769,17 @@ public:
 	// Mailer
 	// returns the handle of the started mailsend process
 	// (remember to call CloseHandle() for the returned handle if != NULL)
-	static HANDLE SendMailCall(	CString sParams,				// command line params for mailsend.exe
-								BOOL bShow = FALSE);			// show / hide the console window
+	static HANDLE SendMailCall(	CString sParams,			// command line params for mailsend.exe
+								BOOL bShow = FALSE);		// show / hide the console window
 
-	// Send text mail
-	static BOOL SendMailText(	const SendMailConfigurationStruct& Config,	
-								const CString& sName,			// sName is replaced in subject if %name% present					
-								const CTime& Time,				// Time is replaced in subject if %date% and/or %time% present
-								const CString& sNote,			// sNote is replaced in subject if %note% present					
-								CString sBody = _T(""),			// if no body given use the format "name: date time note"
-								BOOL bShow = FALSE);			// show / hide the console window
-
-	// Send movement detection mail with optional attachment
-	BOOL SendMailMovementDetection(const CTime& Time, const CString& sFileName = _T(""));
+	// Send Mail
+	static BOOL SendMail(const SendMailConfigurationStruct& Config,
+						const CString& sName,				// sName is replaced in subject if %name% present
+						const CTime& Time,					// Time is replaced in subject if %date% and/or %time% present
+						const CString& sNote,				// sNote is replaced in subject if %note% present
+						CString sBody = _T(""),				// if no body given use the format "name: date time note"
+						const CString& sFileName = _T(""),	// attachment
+						BOOL bShow = FALSE);				// show / hide the console window
 	
 	// Vlm
 	static CString VlmGetConfigFileName();
