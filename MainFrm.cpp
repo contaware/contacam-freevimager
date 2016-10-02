@@ -379,7 +379,7 @@ void CMainFrame::Dump(CDumpContext& dc) const
 LONG CMainFrame::OnScanAndEmail(WPARAM wparam, LPARAM lparam)
 {
 	// Send
-	((CUImagerApp*)::AfxGetApp())->SendMailMAPI(((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName);
+	((CUImagerApp*)::AfxGetApp())->SendMail(((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName);
 
 	// Delete temporary directory containing tiff file and pdf file
 	::DeleteDir(::GetDirName(((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName));

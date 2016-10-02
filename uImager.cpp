@@ -3633,14 +3633,14 @@ void CUImagerApp::SendOpenDocsAsMail()
 
 			// Compress & Send
 			if (CompressToZip(sTempEmailDir, sTempEmailZipDir + _T("\\") + sZipFileName))
-				SendMailMAPI(sTempEmailZipDir + _T("\\") + sZipFileName);
+				SendMail(sTempEmailZipDir + _T("\\") + sZipFileName);
 
 			// Delete Email Zip Temp Directory
 			::DeleteDir(sTempEmailZipDir);
 		}
 		// Send Email Directory Content
 		else
-			SendMailMAPI(sTempEmailDir);
+			SendMail(sTempEmailDir);
 		
 		// Delete Email Temp Directory
 		::DeleteDir(sTempEmailDir);
@@ -3661,7 +3661,7 @@ CMailState::~CMailState()
 }
 
 EXTERN_PROCESS_LOCAL(CMailState, MailState)
-BOOL CUImagerApp::SendMailMAPI(LPCTSTR szAttachment)
+BOOL CUImagerApp::SendMail(LPCTSTR szAttachment)
 {
 	// Begin Wait Cursor
 	BeginWaitCursor();

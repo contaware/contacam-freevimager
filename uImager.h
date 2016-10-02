@@ -361,7 +361,7 @@ public:
 	// directory or a single file. If a
 	// directory is specified its content
 	// is used as attachment.
-	BOOL SendMailMAPI(LPCTSTR szAttachment);
+	BOOL SendMail(LPCTSTR szAttachment);
 
 	// Send Document(s) by e-mail
 	void SendOpenDocsAsMail();
