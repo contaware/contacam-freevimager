@@ -1,5 +1,9 @@
 CONTACAM HISTORY
 
+5.3.0 (Month xxth 2016)
+
+- Attach a snapshot to the daily email notification
+
 5.1.0 (September 20th 2016)
 
 - Made the application High DPI Aware (displays well on 4K monitors)
