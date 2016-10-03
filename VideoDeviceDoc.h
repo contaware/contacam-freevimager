@@ -799,7 +799,7 @@ protected:
 	BOOL InitOpenDxCapture(int nId);
 	void Snapshot(CDib* pDib, const CTime& Time);
 	BOOL EditCopy(CDib* pDib, const CTime& Time);
-	BOOL EditSnapshot(CDib* pDib, const CTime& Time);
+	void EditSnapshot(CDib* pDib, const CTime& Time);
 	CString SaveJpegMail(CDib* pDib, const CTime& RefTime, DWORD dwRefUpTime);
 	CString MakeJpegManualSnapshotFileName(const CTime& Time);
 	CString MakeJpegMailSnapshotFileName(const CTime& Time);
@@ -1007,8 +1007,9 @@ public:
 	CTime m_MovDetLastGIFMailTime;						// Time of last sent detection email with GIF attachment
 	FTPUploadConfigurationStruct m_MovDetFTPUploadConfiguration;
 
-	// Send mail configuration
+	// Send Mail
 	SendMailConfigurationStruct m_SendMailConfiguration;
+	CTime m_LastDeviceNotifyTime;
 
 	// Property Sheet Pointer
 	CCameraAdvancedSettingsPropertySheet* volatile m_pCameraAdvancedSettingsPropertySheet;

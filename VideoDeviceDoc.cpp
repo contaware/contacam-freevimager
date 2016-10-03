@@ -2935,7 +2935,6 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 	CTime AlertBeginTime = CTime(0);		// set time far in the past
 	int bAlertLevel = 0; 
 	BOOL bDeviceAlert = (BOOL)::AfxGetApp()->GetProfileInt(m_pDoc->GetDevicePathName(), _T("DeviceAlert"), FALSE);
-	CTime LastDeviceNotifyTime(((CUImagerApp*)::AfxGetApp())->GetProfileInt64(m_pDoc->GetDevicePathName(), _T("DeviceNotifyTime"), 0)); // default time far in the past
 
 	// Watch
 	for (;;)
@@ -3036,20 +3035,6 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 							CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), CurrentTime, _T("ON"));
 						bDeviceAlert = FALSE;
 						::AfxGetApp()->WriteProfileInt(m_pDoc->GetDevicePathName(), _T("DeviceAlert"), bDeviceAlert);
-					}
-				}
-
-				// Device OK heartbeat
-				if (!bDeviceAlert)
-				{
-					if (CurrentTime.GetDay() != LastDeviceNotifyTime.GetDay()		||
-						CurrentTime.GetMonth() != LastDeviceNotifyTime.GetMonth()	||
-						CurrentTime.GetYear() != LastDeviceNotifyTime.GetYear())
-					{
-						if (m_pDoc->m_bSendMailDeviceOK)
-							CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), CurrentTime, _T("OK"));
-						LastDeviceNotifyTime = CurrentTime;
-						((CUImagerApp*)::AfxGetApp())->WriteProfileInt64(m_pDoc->GetDevicePathName(), _T("DeviceNotifyTime"), LastDeviceNotifyTime.GetTime());
 					}
 				}
 
@@ -3542,6 +3527,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_SendMailConfiguration.m_sUsername = _T("");
 	m_SendMailConfiguration.m_sPassword = _T("");
 	m_SendMailConfiguration.m_ConnectionType = STARTTLS;
+	m_LastDeviceNotifyTime = 0;
 
 	// FTP Settings
 	m_MovDetFTPUploadConfiguration.m_sHost = _T("");
@@ -4102,6 +4088,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_SendMailConfiguration.m_sUsername = pApp->GetSecureProfileString(sSection, _T("SendMailUsername"));
 	m_SendMailConfiguration.m_sPassword = pApp->GetSecureProfileString(sSection, _T("SendMailPassword"));
 	m_SendMailConfiguration.m_ConnectionType = (ConnectionType) pApp->GetProfileInt(sSection, _T("SendMailConnectionType"), STARTTLS);
+	m_LastDeviceNotifyTime = pApp->GetProfileInt64(sSection, _T("DeviceNotifyTime"), 0);
 
 	// FTP Settings
 	m_MovDetFTPUploadConfiguration.m_sHost = pApp->GetProfileString(sSection, _T("MovDetFTPHost"), _T(""));
@@ -4321,6 +4308,7 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteSecureProfileString(sSection, _T("SendMailUsername"), m_SendMailConfiguration.m_sUsername);
 	pApp->WriteSecureProfileString(sSection, _T("SendMailPassword"), m_SendMailConfiguration.m_sPassword);
 	pApp->WriteProfileInt(sSection, _T("SendMailConnectionType"), (int)m_SendMailConfiguration.m_ConnectionType);
+	pApp->WriteProfileInt64(sSection, _T("DeviceNotifyTime"), m_LastDeviceNotifyTime.GetTime());
 
 	// FTP Settings
 	pApp->WriteProfileString(sSection, _T("MovDetFTPHost"), m_MovDetFTPUploadConfiguration.m_sHost);
@@ -7307,6 +7295,16 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize, LPBYTE pMJPGD
 		// Timed Snapshot
 		Snapshot(pDib, CurrentTime);
 
+		// Device OK heartbeat
+		if (CurrentTime.GetDay() != m_LastDeviceNotifyTime.GetDay()		||
+			CurrentTime.GetMonth() != m_LastDeviceNotifyTime.GetMonth()	||
+			CurrentTime.GetYear() != m_LastDeviceNotifyTime.GetYear())
+		{
+			if (m_bSendMailDeviceOK)
+				CVideoDeviceDoc::SendMail(m_SendMailConfiguration, GetAssignedDeviceName(), CurrentTime, _T("OK"), _T(""), SaveJpegMail(pDib, CurrentTime, dwCurrentInitUpTime));
+			m_LastDeviceNotifyTime = CurrentTime;
+		}
+
 		// Add Frame Time if User Wants it
 		if (m_bShowFrameTime)
 			AddFrameTime(pDib, CurrentTime, dwCurrentInitUpTime, m_nRefFontSize);
@@ -7700,7 +7698,7 @@ BOOL CVideoDeviceDoc::EditCopy(CDib* pDib, const CTime& Time)
 	return TRUE;
 }
 
-BOOL CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
+void CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 {
 	// Make FileName
 	CString sFileName = MakeJpegManualSnapshotFileName(Time);
@@ -7710,7 +7708,7 @@ BOOL CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 	if (::IsExistingFile(sFileName))
 	{
 		m_bDoEditSnapshot = FALSE;
-		return FALSE;
+		return;
 	}
 
 	// Get uptime
@@ -7768,8 +7766,6 @@ BOOL CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 	}
 	else
 		::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, ML_STRING(1850, "Save Failed!"), 0);
-
-	return res;
 }
 
 CString CVideoDeviceDoc::SaveJpegMail(CDib* pDib, const CTime& RefTime, DWORD dwRefUpTime)
@@ -7784,9 +7780,11 @@ CString CVideoDeviceDoc::SaveJpegMail(CDib* pDib, const CTime& RefTime, DWORD dw
 	// Make FileName
 	CString sFileName = MakeJpegMailSnapshotFileName(Time);
 
-	// Do not overwrite previous jpeg save
+	// Do not overwrite previous save, use it.
+	// Attention: it's ok to call this function several times per second,
+	//            but only from the same thread!
 	if (::IsExistingFile(sFileName))
-		return _T("");
+		return sFileName;
 
 	// Shrink?
 	CDib Dib;
