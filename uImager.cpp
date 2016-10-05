@@ -4338,8 +4338,11 @@ BOOL CUImagerApp::AssociateFileType(CString sExt)
 		// NOTE:
 		// For Vista or higher there is also a key under sCurrentUserFileExtsPath
 		// called UserChoice that can have a ProgID value: this has the highest priority
-		// and can prevent from being associated. The OS is responsible for it, we should
-		// not touch it!
+		// and can prevent from being associated. Only the OS through an user action is
+		// meant to change the UserChoice, we should not touch it. Latest Windows versions
+		// enforce that by using hashed values impossible to generate programmatically.
+		// The current user is prevented from setting values under the UserChoice key by
+		// a Deny permission entry.	
 	}
 
 	// Create My Class Name or ProgID
