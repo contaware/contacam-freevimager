@@ -4,6 +4,7 @@
 #include "Helpers.h"
 #include "Round.h"
 #include "Rpc.h"
+#include <lmcons.h>
 #include <math.h>
 #include <tlhelp32.h>
 #include <psapi.h>
