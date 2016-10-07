@@ -11,3 +11,6 @@ define("NOFILESFOR","Kein File für");
 define("PAGES","Seiten");
 define("IMAGERELOADIN","Bild lädt in");
 define("SECONDS","Sekunden");
+define("PASSWORD_LABEL","Passwort");
+define("LOGIN","Anmelden");
+define("INVALID","Ungültig");

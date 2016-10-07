@@ -1,4 +1,5 @@
 <?php
+require_once( 'configuration.php' );
 $filename = $_GET['file'];
 $doc_root = $_SERVER['DOCUMENT_ROOT'];
 if ($doc_root == "")

@@ -192,6 +192,9 @@ input[type='date'] {
 	vertical-align: middle;
 	font-size: 12px;
 }
+input[type='password'] {
+	text-align: left;
+}
 input.playerbutton, input.playerinfotext {
 	padding: 4px;
 }

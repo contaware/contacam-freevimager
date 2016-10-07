@@ -40,6 +40,7 @@ void CCameraBasicSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_CBIndex(pDX, IDC_COMBO_KEEPFOR, m_nComboKeepFor);
 	DDX_CBIndex(pDX, IDC_COMBO_FILEEXT, m_nComboFileExt);
 	DDX_Text(pDX, IDC_EDIT_NAME, m_sName);
+	DDX_Text(pDX, IDC_EDIT_PASSWORD, m_sPassword);
 	DDX_Radio(pDX, IDC_RADIO_MOVDET, m_nUsage);
 	DDX_CBIndex(pDX, IDC_COMBO_SNAPSHOT_RATE, m_nComboSnapshotRate);
 	DDX_CBIndex(pDX, IDC_COMBO_SNAPSHOTHISTORY_RATE, m_nComboSnapshotHistoryRate);
@@ -199,6 +200,7 @@ BOOL CCameraBasicSettingsDlg::OnInitDialog()
 	m_bCheck24hRec = Is24hRec();
 	m_bCheckFullStretch = FALSE;
 	m_sName = m_pDoc->GetAssignedDeviceName();
+	m_sPassword = m_pDoc->PhpConfigFileGetParam(PHPCONFIG_PASSWORD);
 	m_bCheckTrashCommand = (m_pDoc->PhpConfigFileGetParam(PHPCONFIG_SHOW_TRASH_COMMAND) == _T("1"));
 	CString sInitDefaultPage = m_pDoc->PhpConfigFileGetParam(PHPCONFIG_DEFAULTPAGE);
 	if (sInitDefaultPage.CompareNoCase(PHPCONFIG_SUMMARYSNAPSHOT_PHP) == 0)
@@ -465,6 +467,8 @@ void CCameraBasicSettingsDlg::EnableDisableAllCtrls(BOOL bEnable)
 	pComboBox->EnableWindow(bEnable);
 	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_STYLE);
 	pComboBox->EnableWindow(bEnable);
+	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PASSWORD);
+	pEdit->EnableWindow(bEnable);
 	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_THUMBSPERPAGE);
 	pComboBox->EnableWindow(bEnable);
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_TRASHCOMMAND);
@@ -869,6 +873,9 @@ void CCameraBasicSettingsDlg::ApplySettings()
 		pComboBox->GetLBText(pComboBox->GetCurSel(), sStyleName);
 	if (sStyleName != _T(""))
 		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_STYLEFILEPATH, CString(MICROAPACHE_STYLE_DIR) + _T("/") + sStyleName + _T(".css"));
+
+	// Password
+	m_pDoc->PhpConfigFileSetParam(PHPCONFIG_PASSWORD, m_sPassword);
 
 	// Thumbnails per page
 	CString sMaxPerPage;

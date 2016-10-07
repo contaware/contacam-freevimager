@@ -11,3 +11,6 @@ define("NOFILESFOR","No files for");
 define("PAGES","pages");
 define("IMAGERELOADIN","Image will reload in");
 define("SECONDS","seconds");
+define("PASSWORD_LABEL","Password");
+define("LOGIN","Login");
+define("INVALID","Invalid");

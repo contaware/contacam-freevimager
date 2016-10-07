@@ -11,3 +11,6 @@ define("NOFILESFOR","Aucun fichier pour");
 define("PAGES","pages");
 define("IMAGERELOADIN","L'image est ajournée dans");
 define("SECONDS","secondes");
+define("PASSWORD_LABEL","Mot de passe");
+define("LOGIN","Se identifier");
+define("INVALID","Invalide");
