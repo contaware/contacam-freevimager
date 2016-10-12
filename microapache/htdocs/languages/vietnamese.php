@@ -11,6 +11,3 @@ define("NOFILESFOR","Không có tệp trong");
 define("PAGES","trang");
 define("IMAGERELOADIN","Ảnh sẽ nạp lại sau");
 define("SECONDS","giây");
-define("PASSWORD_LABEL","mật khẩu");
-define("LOGIN","đăng nhập");
-define("INVALID","không hợp lệ");

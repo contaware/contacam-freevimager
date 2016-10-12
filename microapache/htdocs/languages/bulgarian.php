@@ -11,6 +11,3 @@ define("NOFILESFOR","Липсват файлове за");
 define("PAGES","страници");
 define("IMAGERELOADIN","Презареждане на снимката след");
 define("SECONDS","секунди");
-define("PASSWORD_LABEL","парола");
-define("LOGIN","вход");
-define("INVALID","невалиден");

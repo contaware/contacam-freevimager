@@ -53,13 +53,11 @@ public:
 	BOOL	m_bTopMost;
 	BOOL	m_bStartMicroApache;
 	int		m_nMicroApachePort;
-	CString	m_sMicroApacheAreaname;
 	CString	m_sMicroApacheUsername;
 	CString	m_sMicroApachePassword;
 	CString m_sMicroApacheDocRoot;
 	BOOL	m_bBrowserAutostart;
 	BOOL	m_bStartFromService;
-	BOOL	m_bMicroApacheDigestAuth;
 	BOOL	m_bIPv6;
 	int		m_nAutostartDelay;
 	int		m_nFirstStartDelay;
@@ -75,8 +73,6 @@ public:
 // Implementation
 protected:
 	CString m_sMicroApacheDocRootOld;
-	CString m_sLastValidApacheUsername;
-	BOOL m_bRejectingApacheUsernameChange;
 	int m_nMicroApacheDocRootOldFilesCount;
 	BOOL m_bDoApplySettings;
 	CMergeDirThread m_MergeDirThread;
@@ -90,7 +86,6 @@ protected:
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 	afx_msg void OnTimer(UINT nIDEvent);
 	afx_msg void OnDestroy();
-	afx_msg void OnUpdateAuthUsername();
 	afx_msg void OnButtonDocRoot();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()

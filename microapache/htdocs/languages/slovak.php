@@ -11,6 +11,3 @@ define("NOFILESFOR","Žiadne súbory z");
 define("PAGES","strany");
 define("IMAGERELOADIN","Obraz bude obnovený za");
 define("SECONDS","sekúnd");
-define("PASSWORD_LABEL","Heslo");
-define("LOGIN","Prihlásiť sa");
-define("INVALID","Neplatný");

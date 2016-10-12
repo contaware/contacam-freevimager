@@ -49,11 +49,14 @@ ContaCam Program
 - Change the color and position of the date and time on the camera frame
   (toan.nguyenk@gmail.com)
 - Snapshot and continuous recording schedulers like detection scheduler
+  so that we have a single registry entry to enable/disable continuous 
+  recording. Like for the detection it would be easy to add the possibility
+  to change that registry/ini file value from another program 
+  (sambul7165@gmail.com)  
 
 
 ContaCam Web Interface
 ----------------------
-- Password protect cameras with PHP session and not with apache
 - Number of detections in index.php at the bottom of each preview for
   quick reference on which cameras have had detections in last 24 hours
   (pauls583@yahoo.com.au)

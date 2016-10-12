@@ -33,18 +33,12 @@ CSettingsDlgVideoDeviceDoc::CSettingsDlgVideoDeviceDoc(CWnd* pParent /*=NULL*/)
 	m_nFirstStartDelay = ((CUImagerApp*)::AfxGetApp())->m_dwFirstStartDelayMs / 1000;
 	m_bStartMicroApache = ((CUImagerApp*)::AfxGetApp())->m_bStartMicroApache;
 	m_nMicroApachePort = ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort;
-	m_bMicroApacheDigestAuth = ((CUImagerApp*)::AfxGetApp())->m_bMicroApacheDigestAuth;
-	m_sMicroApacheAreaname = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheAreaname;;
 	m_sMicroApacheUsername = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheUsername;
 	m_sMicroApachePassword = ((CUImagerApp*)::AfxGetApp())->m_sMicroApachePassword;
 	m_sMicroApacheDocRootOld = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
 	m_sMicroApacheDocRootOld = ::UNCPath(m_sMicroApacheDocRootOld);
 	m_sMicroApacheDocRootOld.TrimRight(_T('\\'));
 	m_sMicroApacheDocRoot = m_sMicroApacheDocRootOld;
-
-	// For validating apache user name
-	m_bRejectingApacheUsernameChange = FALSE;
-	m_sLastValidApacheUsername = m_sMicroApacheUsername;
 
 	// Micro Apache directory old files count
 	m_nMicroApacheDocRootOldFilesCount = 0;
@@ -63,13 +57,11 @@ void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_WEBSERVER, m_bStartMicroApache);
 	DDX_Text(pDX, IDC_EDIT_PORT, m_nMicroApachePort);
 	DDV_MinMaxInt(pDX, m_nMicroApachePort, 0, 65535);
-	DDX_Text(pDX, IDC_AUTH_AREANAME, m_sMicroApacheAreaname);
 	DDX_Text(pDX, IDC_AUTH_USERNAME, m_sMicroApacheUsername);
 	DDX_Text(pDX, IDC_AUTH_PASSWORD, m_sMicroApachePassword);
 	DDX_Text(pDX, IDC_EDIT_DOCROOT, m_sMicroApacheDocRoot);
 	DDX_Check(pDX, IDC_CHECK_BROWSER_AUTOSTART, m_bBrowserAutostart);
 	DDX_Check(pDX, IDC_CHECK_STARTFROM_SERVICE, m_bStartFromService);
-	DDX_Check(pDX, IDC_CHECK_DIGESTAUTH, m_bMicroApacheDigestAuth);
 	DDX_Check(pDX, IDC_CHECK_IPV6, m_bIPv6);
 	DDX_Text(pDX, IDC_EDIT_AUTOSTART_DELAY, m_nAutostartDelay);
 	DDV_MinMaxInt(pDX, m_nAutostartDelay, 0, 600);
@@ -80,7 +72,6 @@ void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CSettingsDlgVideoDeviceDoc, CDialog)
 	//{{AFX_MSG_MAP(CSettingsDlgVideoDeviceDoc)
-	ON_EN_UPDATE(IDC_AUTH_USERNAME, OnUpdateAuthUsername)
 	ON_BN_CLICKED(IDC_BUTTON_DOCROOT, OnButtonDocRoot)
 	ON_WM_SETCURSOR()
 	ON_WM_TIMER()
@@ -157,12 +148,8 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsInit()
 	pApp->m_dwFirstStartDelayMs = 1000 * m_nFirstStartDelay;
 
 	// Micro Apache
-	if (m_sMicroApacheAreaname.IsEmpty())
-		m_sMicroApacheAreaname = MICROAPACHE_DEFAULT_AUTH_AREANAME;
 	if (pApp->m_bStartMicroApache != m_bStartMicroApache			||
 		pApp->m_nMicroApachePort != m_nMicroApachePort				||
-		pApp->m_bMicroApacheDigestAuth != m_bMicroApacheDigestAuth	||
-		pApp->m_sMicroApacheAreaname != m_sMicroApacheAreaname		||
 		pApp->m_sMicroApacheUsername != m_sMicroApacheUsername		||
 		pApp->m_sMicroApachePassword != m_sMicroApachePassword		||
 		m_sMicroApacheDocRoot.CompareNoCase(m_sMicroApacheDocRootOld) != 0)
@@ -207,8 +194,6 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsEnd()
 	// Micro Apache
 	if (pApp->m_bStartMicroApache != m_bStartMicroApache			||
 		pApp->m_nMicroApachePort != m_nMicroApachePort				||
-		pApp->m_bMicroApacheDigestAuth != m_bMicroApacheDigestAuth	||
-		pApp->m_sMicroApacheAreaname != m_sMicroApacheAreaname		||
 		pApp->m_sMicroApacheUsername != m_sMicroApacheUsername		||
 		pApp->m_sMicroApachePassword != m_sMicroApachePassword		||
 		m_sMicroApacheDocRoot.CompareNoCase(m_sMicroApacheDocRootOld) != 0)
@@ -228,8 +213,6 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsEnd()
 		// Update vars
 		pApp->m_bStartMicroApache = m_bStartMicroApache;
 		pApp->m_nMicroApachePort = m_nMicroApachePort;
-		pApp->m_bMicroApacheDigestAuth = m_bMicroApacheDigestAuth;
-		pApp->m_sMicroApacheAreaname = m_sMicroApacheAreaname;
 		pApp->m_sMicroApacheUsername = m_sMicroApacheUsername;
 		pApp->m_sMicroApachePassword = m_sMicroApachePassword;
 		pApp->m_sMicroApacheDocRoot = m_sMicroApacheDocRoot;
@@ -276,12 +259,6 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsEnd()
 	pApp->WriteProfileInt(			_T("GeneralApp"),
 									_T("MicroApachePort"),
 									m_nMicroApachePort);
-	pApp->WriteProfileInt(			_T("GeneralApp"),
-									_T("MicroApacheDigestAuth"),
-									m_bMicroApacheDigestAuth);
-	pApp->WriteProfileString(		_T("GeneralApp"),
-									_T("MicroApacheAreaname"),
-									m_sMicroApacheAreaname);
 	pApp->WriteSecureProfileString(	_T("GeneralApp"),
 									_T("MicroApacheUsername"),
 									m_sMicroApacheUsername);
@@ -368,14 +345,10 @@ void CSettingsDlgVideoDeviceDoc::EnableDisableAllCtrls(BOOL bEnable)
 	pCheck->EnableWindow(bEnable);
 	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PORT);
 	pEdit->EnableWindow(bEnable);
-	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_AREANAME);
-	pEdit->EnableWindow(bEnable);
 	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_USERNAME);
 	pEdit->EnableWindow(bEnable);
 	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
 	pEdit->EnableWindow(bEnable);
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_DIGESTAUTH);
-	pCheck->EnableWindow(bEnable);
 	pButton = (CButton*)GetDlgItem(IDOK);
 	pButton->EnableWindow(bEnable);
 	pButton = (CButton*)GetDlgItem(IDCANCEL);
@@ -480,41 +453,6 @@ void CSettingsDlgVideoDeviceDoc::OnDestroy()
 
 	// Base class
 	CDialog::OnDestroy();
-}
-
-void CSettingsDlgVideoDeviceDoc::OnUpdateAuthUsername() 
-{
-	if (!m_bRejectingApacheUsernameChange)
-	{
-		// Get new text which is not yet shown
-		CString s;
-		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_AUTH_USERNAME);
-		pEdit->GetWindowText(s);
-		
-		// New text has invalid char?
-		// Note: user cannot contain the ':' separator char
-		// (password is the last field and thus it can contain ':')
-		if (s.Find(_T(':')) >= 0)
-		{
-			// Get new caret position and calc. offset to restore old position
-			int nStart, nEnd;
-			pEdit->GetSel(nStart, nEnd);
-			int nOffset = s.GetLength() - m_sLastValidApacheUsername.GetLength();
-			
-			// Restore previous text
-			m_bRejectingApacheUsernameChange = TRUE;
-			pEdit->SetWindowText(m_sLastValidApacheUsername); // this calls OnUpdateAuthUsername()
-			m_bRejectingApacheUsernameChange = FALSE;
-			
-			// Restore previous caret position
-			pEdit->SetSel(nStart - nOffset, nEnd - nOffset);
-
-			// Alert sound
-			::MessageBeep((DWORD)-1);
-		}
-		else
-			m_sLastValidApacheUsername = s;
-	}
 }
 
 #endif

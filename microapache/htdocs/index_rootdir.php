@@ -1,3 +1,9 @@
+<?php
+if (file_exists(dirname(__FILE__).'/authenticate.php')) {
+	session_start();
+	require_once(dirname(__FILE__).'/authenticate.php');
+}
+?>
 <!DOCTYPE html>
 <html>
 <head>

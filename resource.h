@@ -1215,7 +1215,6 @@
 #define IDC_AUTH_PASSWORD               1220
 #define IDS_MULTILANG_1221              1221
 #define IDC_HOST_NAME                   1221
-#define IDC_AUTH_AREANAME               1221
 #define IDS_MULTILANG_1222              1222
 #define IDC_HOST_PORT                   1222
 #define IDC_EDIT_DOCROOT                1222
@@ -3018,7 +3017,6 @@
 #define IDC_STATIC2499                  2499
 #define IDC_STATIC2500                  2500
 #define IDC_CHECK_WEBSERVER             2501
-#define IDC_CHECK_DIGESTAUTH            2502
 #define IDC_RADIO_MOVDET                2519
 #define IDC_RADIO_SNAPSHOT              2520
 #define IDC_RADIO_MANUAL                2521
@@ -3027,7 +3025,6 @@
 #define IDC_EDIT_NAME                   2524
 #define IDC_RADIO_SNAPSHOTHISTORY       2525
 #define IDC_COMBO_SNAPSHOT_RATE         2526
-#define IDC_EDIT_PASSWORD               2527
 #define IDC_COMBO_SNAPSHOTHISTORY_RATE  2528
 #define IDC_COMBO_THUMBSPERPAGE         2529
 #define IDC_CHECK_FULLSTRETCH           2530

@@ -71,9 +71,6 @@ define ("MAX_PER_PAGE","27");
 // Sort order of summary thumbnails
 define ("SORT_OLDEST_FIRST","1"); // 0 = newest first , 1 = oldest first
 
-// Password
-define ("PASSWORD","");
-
 
 /**************************************
 * Initialization, do not remove that! *

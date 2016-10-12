@@ -160,7 +160,6 @@ class CMovementDetectionPage;
 #define PHPCONFIG_WIDTH						_T("WIDTH")
 #define PHPCONFIG_HEIGHT					_T("HEIGHT")
 #define PHPCONFIG_MAX_PER_PAGE				_T("MAX_PER_PAGE")
-#define PHPCONFIG_PASSWORD					_T("PASSWORD")
 #define PHPCONFIG_SHOW_TRASH_COMMAND		_T("SHOW_TRASH_COMMAND")
 #define PHPCONFIG_LANGUAGEFILEPATH			_T("LANGUAGEFILEPATH")
 #define PHPCONFIG_STYLEFILEPATH				_T("STYLEFILEPATH")
@@ -757,10 +756,8 @@ public:
 	static CString MicroApacheGetEditableConfigFileName();
 	static CString MicroApacheGetLogFileName();
 	static CString MicroApacheGetPidFileName();
-	static CString MicroApacheGetPwFileName();
 	static void MicroApacheUpdateMainFiles();
 	static BOOL MicroApacheUpdateWebFiles(CString sAutoSaveDir);
-	static BOOL MicroApacheMakePasswordFile(BOOL bDigest, const CString& sAreaname, const CString& sUsername, const CString& sPassword);
 	static BOOL MicroApacheIsPortUsed(int nPort, DWORD dwTimeout);
 	static BOOL MicroApacheInitStart();
 	static BOOL MicroApacheWaitStartDone(DWORD dwTimeout);

@@ -33,12 +33,6 @@ if (defined('SHOW_TRASH_COMMAND'))
 else
 	$show_trash_command = 0;
 
-// Password
-if (defined('PASSWORD'))
-	$password = PASSWORD;
-else
-	$password = '';
-
 // Get Internet Explorer version
 function getIEVersion() {
 	$match = preg_match('/MSIE ([0-9]+\.[0-9]+)/', $_SERVER['HTTP_USER_AGENT'], $reg);
@@ -63,13 +57,6 @@ function getParentUrl() {
 	return "$scheme://$host$parent_path/";
 }
 
-// Get directory base name
-function getDirBasename() {
-	$parent_dir = dirname($_SERVER['PHP_SELF']);
-	$parent_dir = str_replace("\\", "/", $parent_dir);
-	$parent_dir = rtrim($parent_dir, "/"); // it should not end with a slash, but you never know
-	return basename($parent_dir);
-}
-
 // Do authentication
-require_once( 'authenticate.php' );
+if (file_exists(dirname(dirname(__FILE__)).'/authenticate.php'))
+	require_once(dirname(dirname(__FILE__)).'/authenticate.php');

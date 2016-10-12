@@ -30,7 +30,6 @@ public:
 	int		m_nComboKeepFor;
 	int		m_nComboFileExt;
 	CString	m_sName;
-	CString m_sPassword;
 	CString m_sMaxCameraFolderSizeGB;
 	CString m_sMinDiskFreePercent;
 	int		m_nUsage;

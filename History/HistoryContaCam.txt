@@ -2,6 +2,8 @@ CONTACAM HISTORY
 
 5.3.0 (Month xxth 2016)
 
+- Password protect all cameras with form based authentication
+  (this authentication type works well on all browsers) 
 - Attach a snapshot to the daily email notification
 
 5.1.0 (September 20th 2016)

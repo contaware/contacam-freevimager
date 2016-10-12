@@ -5551,7 +5551,7 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	{
 		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
 		CString sMicroapacheHtDocs = CString(szDrive) + CString(szDir) + MICROAPACHE_HTDOCS + _T("\\");
-		::CopyFile(sMicroapacheHtDocs + MICROAPACHE_INDEX_ROOTDIR_FILENAME, sDocRoot + _T("\\") + _T("index.php"), FALSE);
+		::CopyFile(sMicroapacheHtDocs + PHP_INDEXROOTDIRNAME_EXT, sDocRoot + _T("\\") + PHP_INDEXNAME_EXT, FALSE);
 	}
 
 	// Warning
@@ -5629,31 +5629,6 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	sConfig += _T("RewriteCond %{REQUEST_FILENAME} -d\r\n");
 	sConfig += _T("RewriteRule [^/]$ http://%{HTTP_HOST}%{REQUEST_URI}/ [L,R=301]\r\n");
 	sConfig += _T("</Directory>\r\n");
-
-	// Make password file and set authentication type
-	if (((CUImagerApp*)::AfxGetApp())->m_sMicroApacheUsername != _T("") ||
-		((CUImagerApp*)::AfxGetApp())->m_sMicroApachePassword != _T(""))
-	{
-		MicroApacheMakePasswordFile(((CUImagerApp*)::AfxGetApp())->m_bMicroApacheDigestAuth,
-									((CUImagerApp*)::AfxGetApp())->m_sMicroApacheAreaname,						
-									((CUImagerApp*)::AfxGetApp())->m_sMicroApacheUsername,
-									((CUImagerApp*)::AfxGetApp())->m_sMicroApachePassword);
-		sConfig += _T("<Location />\r\n");
-		if (((CUImagerApp*)::AfxGetApp())->m_bMicroApacheDigestAuth)
-		{
-			sConfig += _T("AuthType Digest\r\n");
-			sConfig += _T("AuthDigestDomain /\r\n");
-			sConfig += _T("AuthDigestFile \"") + sConfigDir + MICROAPACHE_PWNAME_EXT + _T("\"\r\n");
-		}
-		else
-		{
-			sConfig += _T("AuthType Basic\r\n");
-			sConfig += _T("AuthUserFile \"") + sConfigDir + MICROAPACHE_PWNAME_EXT + _T("\"\r\n");
-		}
-		sConfig += _T("AuthName \"") + ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheAreaname + _T("\"\r\n");
-		sConfig += _T("Require valid-user\r\n");
-		sConfig += _T("</Location>\r\n");
-	}
 	
 	// Include custom configurations file (create an empty one if not existing)
 	sConfig += _T("Include \"") + sConfigDir + MICROAPACHE_EDITABLE_CONFIGNAME_EXT + _T("\"");
@@ -5681,7 +5656,7 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 			delete [] pData;
 	}
 
-	// Finally save config file (overwrite if existing)
+	// Save config file (overwrite if existing)
 	LPSTR pData = NULL;
 	int nLen = ::ToANSI(sConfig, &pData);
 	if (nLen > 0 && pData)
@@ -5701,6 +5676,98 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	}
 	if (pData)
 		delete [] pData;
+
+	// Make or delete authentication php file?
+	CString sAuthenticateFilePath(sDocRoot + _T("\\") + PHP_AUTHENTICATENAME_EXT);
+	if (((CUImagerApp*)::AfxGetApp())->m_sMicroApacheUsername != _T("") ||
+		((CUImagerApp*)::AfxGetApp())->m_sMicroApachePassword != _T(""))
+	{
+		CPJNMD5 hmacUsername;
+		CPJNMD5Hash hashUsername;
+		LPBYTE pUsername = NULL;
+		CPJNMD5 hmacPassword;
+		CPJNMD5Hash hashPassword;
+		LPBYTE pPassword = NULL;
+		int nUsernameSize = ::ToUTF8(((CUImagerApp*)::AfxGetApp())->m_sMicroApacheUsername, &pUsername);
+		int nPasswordSize = ::ToUTF8(((CUImagerApp*)::AfxGetApp())->m_sMicroApachePassword, &pPassword);
+		if (hmacUsername.Hash(pUsername, nUsernameSize, hashUsername) &&	// pointers and/or sizes can be zero
+			hmacPassword.Hash(pPassword, nPasswordSize, hashPassword))		// (for that case the empty-string-hash is returned)
+		{
+			// Prepare php file
+			CString sAuthenticate;
+			sAuthenticate.Format(
+								_T("<?php\r\n")
+								_T("if (count(get_included_files()) == 1) die('Direct access not permitted');\r\n")
+								_T("$username_md5 = '%s';\r\n")
+								_T("$password_md5 = '%s';\r\n"), hashUsername.Format(FALSE), hashPassword.Format(FALSE));
+			sAuthenticate +=	_T("$invalid_login = 0;\r\n");
+			sAuthenticate +=	_T("if (isset($_POST['username']) && isset($_POST['password'])) {\r\n");
+			sAuthenticate +=	_T("	if (md5($_POST['username']) == \"$username_md5\" && md5($_POST['password']) == \"$password_md5\") {\r\n");
+			sAuthenticate +=	_T("		$_SESSION['username'] = \"$username_md5\";\r\n");
+			sAuthenticate +=	_T("		return;\r\n");
+			sAuthenticate +=	_T("	} else {\r\n");
+			sAuthenticate +=	_T("		unset($_SESSION['username']);\r\n");
+			sAuthenticate +=	_T("		$invalid_login = 1;\r\n");
+			sAuthenticate +=	_T("		sleep(1);\r\n");
+			sAuthenticate +=	_T("	}\r\n");
+			sAuthenticate +=	_T("}\r\n");
+			sAuthenticate +=	_T("else if (isset($_SESSION['username']) && $_SESSION['username'] == \"$username_md5\")\r\n");
+			sAuthenticate +=	_T("	return;\r\n");
+			sAuthenticate +=	_T("?>\r\n");
+			sAuthenticate +=	_T("<!DOCTYPE html>\r\n");
+			sAuthenticate +=	_T("<html>\r\n");
+			sAuthenticate +=	_T("	<head>\r\n");
+			sAuthenticate +=	_T("		<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\r\n");
+			sAuthenticate +=	_T("		<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\r\n");
+			sAuthenticate +=	_T("		<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\r\n");
+			sAuthenticate +=	_T("		<meta name=\"author\" content=\"Oliver Pfister\" />\r\n");
+			sAuthenticate +=	_T("		<title>Login</title>\r\n");
+			sAuthenticate +=	_T("	</head>\r\n");
+			sAuthenticate +=	_T("	<body>\r\n");
+			sAuthenticate +=	_T("		<div style=\"text-align: center\">\r\n");
+			sAuthenticate +=	_T("			<form name=\"login\" action=\"\" method=\"post\">\r\n");
+			sAuthenticate +=	_T("				&#x1F464;<input type=\"text\" name=\"username\" autocapitalize=\"none\" /><br />\r\n");
+			sAuthenticate +=	_T("				<?php if ($invalid_login): ?>\r\n");
+			sAuthenticate +=	_T("				&#x1f512;<input style=\"border:1px solid #f00;\" type=\"password\" name=\"password\" /><br />\r\n");
+			sAuthenticate +=	_T("				<?php else: ?>\r\n");
+			sAuthenticate +=	_T("				&#x1f512;<input type=\"password\" name=\"password\" /><br />\r\n");
+			sAuthenticate +=	_T("				<?php endif; ?>\r\n");
+			sAuthenticate +=	_T("				<input type=\"submit\" name=\"submit\" value=\"Login\" />\r\n");
+			sAuthenticate +=	_T("			</form>\r\n");
+			sAuthenticate +=	_T("		</div>\r\n");
+			sAuthenticate +=	_T("	</body>\r\n");
+			sAuthenticate +=	_T("</html>\r\n");
+			sAuthenticate +=	_T("<?php\r\n");
+			sAuthenticate +=	_T("exit;\r\n");
+
+			// Save php file (overwrite if existing)
+			LPBYTE pAuthenticateFileContent = NULL;
+			int nAuthenticateFileContentSize = ::ToUTF8(sAuthenticate, &pAuthenticateFileContent);
+			if (nAuthenticateFileContentSize > 0 && pAuthenticateFileContent)
+			{
+				try
+				{
+					CFile f(sAuthenticateFilePath,
+							CFile::modeCreate	|
+							CFile::modeWrite	|
+							CFile::shareDenyWrite);
+					f.Write(pAuthenticateFileContent, nAuthenticateFileContentSize);
+				}
+				catch (CFileException* e)
+				{
+					e->Delete();
+				}
+			}
+			if (pAuthenticateFileContent)
+				delete[] pAuthenticateFileContent;
+		}
+		if (pUsername)
+			delete[] pUsername;
+		if (pPassword)
+			delete[] pPassword;
+	}
+	else
+		::DeleteFile(sAuthenticateFilePath);
 }
 
 BOOL CVideoDeviceDoc::MicroApacheUpdateWebFiles(CString sAutoSaveDir)
@@ -5743,7 +5810,7 @@ BOOL CVideoDeviceDoc::MicroApacheUpdateWebFiles(CString sAutoSaveDir)
 		CString sName = FileFind.GetFileName(pos);
 		CString sShortName = ::GetShortFileName(sName);
 		CString sRelName = sName.Mid(nRootDirNameSize);
-		if (sShortName.CompareNoCase(MICROAPACHE_INDEX_ROOTDIR_FILENAME) != 0 &&
+		if (sShortName.CompareNoCase(PHP_INDEXROOTDIRNAME_EXT) != 0 &&
 			sShortName.CompareNoCase(THUMBS_DB) != 0)
 		{
 			if (sShortName.CompareNoCase(PHP_CONFIGNAME_EXT) == 0)
@@ -5861,93 +5928,6 @@ CString CVideoDeviceDoc::MicroApacheGetPidFileName()
 	CString sMicroapachePidFile = CUImagerApp::GetConfigFilesDir();
 	sMicroapachePidFile += CString(_T("\\")) + MICROAPACHE_PIDNAME_EXT;
 	return sMicroapachePidFile;
-}
-
-CString CVideoDeviceDoc::MicroApacheGetPwFileName()
-{
-	CString sMicroapachePwFile = CUImagerApp::GetConfigFilesDir();
-	sMicroapachePwFile += CString(_T("\\")) + MICROAPACHE_PWNAME_EXT;
-	return sMicroapachePwFile;
-}
-
-BOOL CVideoDeviceDoc::MicroApacheMakePasswordFile(BOOL bDigest, const CString& sAreaname, const CString& sUsername, const CString& sPassword)
-{
-	// Delete password file if existing
-	CString sMicroapachePwFile = MicroApacheGetPwFileName();
-	if (::IsExistingFile(sMicroapachePwFile))
-		::DeleteFile(sMicroapachePwFile);
-
-	// Make password file
-	if (bDigest)
-	{
-		USES_CONVERSION;
-		CPJNMD5 hmac;
-		CPJNMD5Hash hash;
-		CString sToHash = sUsername + _T(":") + sAreaname + _T(":") + sPassword;
-		char* pszA1 = T2A(const_cast<LPTSTR>(sToHash.operator LPCTSTR()));
-		if (hmac.Hash((const BYTE*)pszA1, (DWORD)strlen(pszA1), hash))
-		{
-			CString sHA1 = hash.Format(FALSE);
-			CString sPasswordFileData = sUsername + _T(":") + sAreaname + _T(":") + sHA1 + _T("\n");
-			LPSTR pData = NULL;
-			int nLen = ::ToANSI(sPasswordFileData, &pData);
-			if (nLen <= 0 || !pData)
-			{
-				if (pData)
-					delete [] pData;
-				return FALSE;
-			}
-			try
-			{
-				CFile f(sMicroapachePwFile,
-						CFile::modeCreate		|
-						CFile::modeWrite		|
-						CFile::shareDenyWrite);
-				f.Write(pData, nLen);
-				delete [] pData;
-				return TRUE;
-			}
-			catch (CFileException* e)
-			{
-				delete [] pData;
-				e->Delete();
-				return FALSE;
-			}
-		}
-		else
-			return FALSE;
-	}
-	else
-	{
-		// Apache's basic auth password file format is quite complicated
-		// (see apr_md5_encode() in apr_md5.c)
-		// -> we use the htpasswd.exe tool:
-		TCHAR szDrive[_MAX_DRIVE];
-		TCHAR szDir[_MAX_DIR];
-		TCHAR szProgramName[MAX_PATH];
-		if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
-			return FALSE;
-		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-		CString sMicroapachePwToolFile = CString(szDrive) + CString(szDir);
-		sMicroapachePwToolFile += MICROAPACHE_PWTOOL_RELPATH;
-		if (!::IsExistingFile(sMicroapachePwToolFile))
-			return FALSE;
-		const char Init[] = "    ";
-		DWORD NumberOfBytesWritten;
-		HANDLE hFile = ::CreateFile(sMicroapachePwFile,
-									GENERIC_WRITE, 0, NULL,
-									CREATE_NEW,
-									FILE_ATTRIBUTE_NORMAL, NULL);
-		if (hFile != INVALID_HANDLE_VALUE)
-		{
-			::WriteFile(hFile, Init, strlen(Init), &NumberOfBytesWritten, NULL);
-			::CloseHandle(hFile);
-		}
-		sMicroapachePwFile = ::GetASCIICompatiblePath(sMicroapachePwFile); // file must exist!
-		sMicroapachePwFile.Replace(_T('\\'), _T('/')); // change path from \ to / (otherwise pw tool is not happy)
-		CString sParams = _T("-bc \"") + sMicroapachePwFile + _T("\" \"") + sUsername + _T("\" \"") + sPassword + _T("\"");
-		return ::ExecHiddenApp(sMicroapachePwToolFile, sParams);
-	}
 }
 
 BOOL CVideoDeviceDoc::MicroApacheIsPortUsed(int nPort, DWORD dwTimeout)

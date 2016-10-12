@@ -11,6 +11,3 @@ define("NOFILESFOR","No hay archivos por");
 define("PAGES","Páginas");
 define("IMAGERELOADIN","La imagen se actualizará en");
 define("SECONDS","Segundos");
-define("PASSWORD_LABEL","Clave");
-define("LOGIN","Iniciar sesión");
-define("INVALID","Inválido");

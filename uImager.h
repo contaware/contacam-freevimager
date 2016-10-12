@@ -63,12 +63,6 @@
 #define MICROAPACHE_PIDNAME_EXT							_T("httpd_pid.txt")
 #define MICROAPACHE_CONFIGNAME_EXT						_T("httpd_conf.txt")
 #define MICROAPACHE_EDITABLE_CONFIGNAME_EXT				_T("httpd_conf_editable.txt")
-#define MICROAPACHE_PWNAME_EXT							_T("httpd_pw.txt")
-#define MICROAPACHE_INDEX_ROOTDIR_FILENAME				_T("index_rootdir.php")
-#define MICROAPACHE_LANGUAGES_DIR						_T("languages")
-#define MICROAPACHE_STYLE_DIR							_T("styles")
-#define MICROAPACHE_JS_DIR								_T("js")
-#define MICROAPACHE_DEFAULT_AUTH_AREANAME				_T("Secure Area")
 
 // Mailer
 #define MAILPROG_DIR									_T("mail")
@@ -86,8 +80,13 @@
 // Vlm
 #define VLM_CONFIGNAME_EXT								_T("vlm_conf.txt")
 
-// Php
+// Php and Css
 #define	PHP_CONFIGNAME_EXT								_T("configuration.php")
+#define PHP_INDEXROOTDIRNAME_EXT						_T("index_rootdir.php")
+#define PHP_INDEXNAME_EXT								_T("index.php")
+#define	PHP_AUTHENTICATENAME_EXT						_T("authenticate.php")
+#define PHP_LANGUAGES_DIR								_T("languages")
+#define CSS_STYLE_DIR									_T("styles")
 
 // Default wait time between network devices start
 #define DEFAULT_AUTOSTART_DELAY_MS						1000U
@@ -632,9 +631,7 @@ public:
 	// Micro Apache Server Port
 	int m_nMicroApachePort;
 
-	// Micro Apache Authentication
-	BOOL m_bMicroApacheDigestAuth;
-	CString m_sMicroApacheAreaname;
+	// Authentication
 	CString m_sMicroApacheUsername;
 	CString m_sMicroApachePassword;
 

@@ -148,8 +148,6 @@ CUImagerApp::CUImagerApp()
 	m_bMovFragmented = FALSE;
 	m_bStartMicroApache = FALSE;
 	m_nMicroApachePort = MICROAPACHE_DEFAULT_PORT;
-	m_bMicroApacheDigestAuth = TRUE;
-	m_sMicroApacheAreaname = MICROAPACHE_DEFAULT_AUTH_AREANAME;
 	m_hVlcProcess = NULL;
 	m_VlcStartTime = CTime(0);
 	::InitializeCriticalSection(&m_csVlc);
@@ -3478,9 +3476,7 @@ void CUImagerApp::LoadSettings(UINT showCmd/*=SW_SHOWNORMAL*/)
 	// Micro Apache Server Port
 	m_nMicroApachePort = GetProfileInt(sSection, _T("MicroApachePort"), MICROAPACHE_DEFAULT_PORT);
 
-	// Micro Apache Authentication
-	m_bMicroApacheDigestAuth = (BOOL)GetProfileInt(sSection, _T("MicroApacheDigestAuth"), TRUE);
-	m_sMicroApacheAreaname = GetProfileString(sSection, _T("MicroApacheAreaname"), MICROAPACHE_DEFAULT_AUTH_AREANAME);
+	// Authentication
 	m_sMicroApacheUsername = GetSecureProfileString(sSection, _T("MicroApacheUsername"));
 	m_sMicroApachePassword = GetSecureProfileString(sSection, _T("MicroApachePassword"));
 

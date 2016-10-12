@@ -11,6 +11,3 @@ define("NOFILESFOR","Geen bestanden voor");
 define("PAGES","pagina's");
 define("IMAGERELOADIN","Afbeelding word geladen in");
 define("SECONDS","seconden");
-define("PASSWORD_LABEL","Wachtwoord");
-define("LOGIN","Log in");
-define("INVALID","Ongeldig");
