@@ -4829,14 +4829,11 @@ BOOL CDib::CreatePreviewDibFromJPEG(	LPCTSTR lpszPathName,
 	if (!::IsJPEG(lpszPathName))
 		return FALSE;
 
-	// Load Header to Get the Picture Sizes
+	// Load header to get the picture size and orientation
 	if (!LoadJPEG(	lpszPathName,
 					1,
 					TRUE,
-					TRUE,
-					pProgressWnd,
-					bProgressSend,
-					pThread))
+					TRUE))
 		return FALSE;
 
 	// Invert Width & Height if image is rotated
@@ -4855,20 +4852,23 @@ BOOL CDib::CreatePreviewDibFromJPEG(	LPCTSTR lpszPathName,
 	}
 	
 	// The Scale Factors
-	int nScaleFactor = 0;
-	int nScaleFactorX = 0;
-	int nScaleFactorY = 0;
+	double dScaleFactorX = 0.0;
+	double dScaleFactorY = 0.0;
+	double dScaleFactor = 0.0;
 	if (nMaxSizeX >= 1)
-		nScaleFactorX = Round((double)nWidth / (double)nMaxSizeX);
+		dScaleFactorX = (double)nWidth / (double)nMaxSizeX;
 	if (nMaxSizeY >= 1)
-		nScaleFactorY = Round((double)nHeight / (double)nMaxSizeY);
+		dScaleFactorY = (double)nHeight / (double)nMaxSizeY;
 	if (nMaxSizeX >= 1 && nMaxSizeY >= 1)
-		nScaleFactor = MAX(nScaleFactorX, nScaleFactorY);
+		dScaleFactor = max(dScaleFactorX, dScaleFactorY);
 	else if (nMaxSizeX >= 1)
-		nScaleFactor = nScaleFactorX;
+		dScaleFactor = dScaleFactorX;
 	else if (nMaxSizeY >= 1)
-		nScaleFactor = nScaleFactorY;
-	if (nScaleFactor <= 1)
+		dScaleFactor = dScaleFactorY;
+
+	// Do nothing and return FALSE if preview dib
+	// would be the same size as main dib
+	if (dScaleFactor <= 1.5)
 		return FALSE;
 
 	// Free
@@ -4880,43 +4880,39 @@ BOOL CDib::CreatePreviewDibFromJPEG(	LPCTSTR lpszPathName,
 		return FALSE;
 
 	// Load Scaled JPEG
-	switch (nScaleFactor)
+	int nScaleFactor;
+	if (dScaleFactor <= 3.0)
 	{
-		case 2 :
-		case 3 :
-			res = m_pPreviewDib->LoadJPEG(	lpszPathName,
-											nScaleFactor = 2,
-											TRUE,
-											FALSE,
-											pProgressWnd,
-											bProgressSend,
-											pThread);
-			break;
-
-		case 4 :
-		case 5 :
-		case 6 :
-		case 7 :
-			res = m_pPreviewDib->LoadJPEG(	lpszPathName,
-											nScaleFactor = 4,
-											TRUE,
-											FALSE,
-											pProgressWnd,
-											bProgressSend,
-											pThread);
-			break;
-
-		default : // 8 or More
-			res = m_pPreviewDib->LoadJPEG(	lpszPathName,
-											nScaleFactor = 8,
-											TRUE,
-											FALSE,
-											pProgressWnd,
-											bProgressSend,
-											pThread);
-			break;
+		res = m_pPreviewDib->LoadJPEG(	lpszPathName,
+										nScaleFactor = 2,
+										TRUE,
+										FALSE,
+										pProgressWnd,
+										bProgressSend,
+										pThread);
+	}
+	else if (dScaleFactor <= 6.0)
+	{
+		res = m_pPreviewDib->LoadJPEG(	lpszPathName,
+										nScaleFactor = 4,
+										TRUE,
+										FALSE,
+										pProgressWnd,
+										bProgressSend,
+										pThread);
+	}	
+	else
+	{
+		res = m_pPreviewDib->LoadJPEG(	lpszPathName,
+										nScaleFactor = 8,
+										TRUE,
+										FALSE,
+										pProgressWnd,
+										bProgressSend,
+										pThread);
 	}
 
+	// Update ratio
 	if (res)
 		m_dPreviewDibRatio = (double)nScaleFactor;
 
@@ -4932,6 +4928,7 @@ BOOL CDib::CreateThumbnailDibFromJPEG(	LPCTSTR lpszPathName,
 {
 	BOOL res = FALSE;
 
+	// Check Sizes
 	if (nMaxSizeX < 1 && nMaxSizeY < 1)
 		return FALSE;
 
@@ -4939,14 +4936,11 @@ BOOL CDib::CreateThumbnailDibFromJPEG(	LPCTSTR lpszPathName,
 	if (!::IsJPEG(lpszPathName))
 		return FALSE;
 
-	// Load Header to Get the Sizes
+	// Load header to get the picture size and orientation
 	if (!LoadJPEG(	lpszPathName,
 					1,
 					TRUE,
-					TRUE,
-					pProgressWnd,
-					bProgressSend,
-					pThread))
+					TRUE))
 		return FALSE;
 
 	// Invert Width & Height if image is rotated
@@ -4965,21 +4959,19 @@ BOOL CDib::CreateThumbnailDibFromJPEG(	LPCTSTR lpszPathName,
 	}
 
 	// The Scale Factors
-	int nScaleFactorX = 0;
-	int nScaleFactorY = 0;
-	int nScaleFactor = 0;
+	double dScaleFactorX = 0.0;
+	double dScaleFactorY = 0.0;
+	double dScaleFactor = 0.0;
 	if (nMaxSizeX >= 1)
-		nScaleFactorX = Round((double)nWidth / (double)nMaxSizeX);
+		dScaleFactorX = (double)nWidth / (double)nMaxSizeX;
 	if (nMaxSizeY >= 1)
-		nScaleFactorY = Round((double)nHeight / (double)nMaxSizeY);
+		dScaleFactorY = (double)nHeight / (double)nMaxSizeY;
 	if (nMaxSizeX >= 1 && nMaxSizeY >= 1)
-		nScaleFactor = MAX(nScaleFactorX, nScaleFactorY);
+		dScaleFactor = max(dScaleFactorX, dScaleFactorY);
 	else if (nMaxSizeX >= 1)
-		nScaleFactor = nScaleFactorX;
+		dScaleFactor = dScaleFactorX;
 	else if (nMaxSizeY >= 1)
-		nScaleFactor = nScaleFactorY;
-	if (nScaleFactor < 1)
-		nScaleFactor = 1;
+		dScaleFactor = dScaleFactorY;
 
 	// Free
 	DeleteThumbnailDib();
@@ -4990,53 +4982,49 @@ BOOL CDib::CreateThumbnailDibFromJPEG(	LPCTSTR lpszPathName,
 		return FALSE;
 
 	// Load Scaled JPEG
-	switch (nScaleFactor)
+	int nScaleFactor;
+	if (dScaleFactor <= 1.5)
 	{
-		case 1 :
-			res = m_pThumbnailDib->LoadJPEG(lpszPathName,
-											nScaleFactor = 1,
-											TRUE,
-											FALSE,
-											pProgressWnd,
-											bProgressSend,
-											pThread);
-			break;
-
-		case 2 :
-		case 3 :
-			res = m_pThumbnailDib->LoadJPEG(lpszPathName,
-											nScaleFactor = 2,
-											TRUE,
-											FALSE,
-											pProgressWnd,
-											bProgressSend,
-											pThread);
-			break;
-
-		case 4 :
-		case 5 :
-		case 6 :
-		case 7 :
-			res = m_pThumbnailDib->LoadJPEG(lpszPathName,
-											nScaleFactor = 4,
-											TRUE,
-											FALSE,
-											pProgressWnd,
-											bProgressSend,
-											pThread);
-			break;
-
-		default : // 8 or More
-			res = m_pThumbnailDib->LoadJPEG(lpszPathName,
-											nScaleFactor = 8,
-											TRUE,
-											FALSE,
-											pProgressWnd,
-											bProgressSend,
-											pThread);
-			break;
+		res = m_pThumbnailDib->LoadJPEG(lpszPathName,
+										nScaleFactor = 1,
+										TRUE,
+										FALSE,
+										pProgressWnd,
+										bProgressSend,
+										pThread);
+	}
+	else if (dScaleFactor <= 3.0)
+	{
+		res = m_pThumbnailDib->LoadJPEG(lpszPathName,
+										nScaleFactor = 2,
+										TRUE,
+										FALSE,
+										pProgressWnd,
+										bProgressSend,
+										pThread);
+	}
+	else if (dScaleFactor <= 6.0)
+	{
+		res = m_pThumbnailDib->LoadJPEG(lpszPathName,
+										nScaleFactor = 4,
+										TRUE,
+										FALSE,
+										pProgressWnd,
+										bProgressSend,
+										pThread);
+	}
+	else
+	{
+		res = m_pThumbnailDib->LoadJPEG(lpszPathName,
+										nScaleFactor = 8,
+										TRUE,
+										FALSE,
+										pProgressWnd,
+										bProgressSend,
+										pThread);
 	}
 
+	// Update ratio
 	if (res)
 		m_dThumbnailDibRatio = (double)nScaleFactor;
 

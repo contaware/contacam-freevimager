@@ -2322,6 +2322,12 @@ void CPictureDoc::SetDocumentTitle()
 			strInfo += _T(" , Preview DibSection");
 		else if (m_pDib->GetPreviewDib()->HasBits())
 			strInfo += _T(" , Preview Bits");
+		if (m_pDib->GetPreviewDibRatio() > 0.0)
+		{
+			CString sRatio;
+			sRatio.Format(_T(" %0.3fX"), 1.0 / m_pDib->GetPreviewDibRatio());
+			strInfo += sRatio;
+		}
 	}
 
 	if (m_pDib && m_pDib->IsCompressed())
