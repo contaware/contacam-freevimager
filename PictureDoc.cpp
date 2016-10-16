@@ -1303,9 +1303,9 @@ int CPictureDoc::CJpegThread::Work()
 			return 0;
 		}
 
-		// Set Timer	
-		UINT uiTimerId = ::timeSetEvent(JPEG_LOADFULL_TRANSITIONDELAY,
-										TRANSITION_TIMER_RESOLUTION,
+		// Set Timer
+		UINT uiTimerId = ::timeSetEvent(JPEG_LOADFULL_TRANSITION_DELAY,
+										JPEG_LOADFULL_TRANSITION_TIMER_RESOLUTION,
 										(LPTIMECALLBACK)m_hTimerEvent, 0,
 										TIME_PERIODIC | TIME_CALLBACK_EVENT_SET | TIME_KILL_SYNCHRONOUS);
 
@@ -1313,12 +1313,12 @@ int CPictureDoc::CJpegThread::Work()
 		m_hEventArray[0] = GetKillEvent();
 		m_hEventArray[1] = m_hTimerEvent;
 
-		// Send the Draw Messages each JPEG_LOADFULL_TRANSITIONDELAY Milliseconds
+		// Send the Draw Messages each JPEG_LOADFULL_TRANSITION_DELAY Milliseconds
 		while (	m_pDoc->m_bLoadFullJpegTransitionUI &&
 				m_pDoc->m_bLoadFullJpegTransitionWorker)
 		{
 			Event = ::WaitForMultipleObjects(2, m_hEventArray, FALSE, (uiTimerId == 0) ?
-											JPEG_LOADFULL_TRANSITIONDELAY : INFINITE);
+											JPEG_LOADFULL_TRANSITION_DELAY : INFINITE);
 			switch (Event)
 			{
 				// Shutdown Event
@@ -1414,7 +1414,7 @@ int CPictureDoc::CJpegThread::Work()
 	}
 
 	// Init Value
-	int nJpegCompressionQuality = INIT_JPEGCOMPRESSION_CALCULATION;
+	int nJpegCompressionQuality = INIT_JPEG_COMPRESSION_CALCULATION;
 	DWORD dwTargetSize = Dib.GetFileSize();
 	int nSaveJpegSize = 0;
 	int nMaxLoops = 14;
@@ -1753,17 +1753,17 @@ int CPictureDoc::CTransitionThread::Work()
 							m_pDoc->m_nTransitionType;
 
 	// Set Timer				
-	UINT uiTimerId = ::timeSetEvent(m_pDoc->m_nTransitionDelay,
+	UINT uiTimerId = ::timeSetEvent(TRANSITION_DELAY,
 									TRANSITION_TIMER_RESOLUTION,
 									(LPTIMECALLBACK)m_hTimerEvent, 0,
 									TIME_PERIODIC | TIME_CALLBACK_EVENT_SET | TIME_KILL_SYNCHRONOUS);
 
-	// Send the Draw Messages each m_nTransitionDelay Milliseconds
+	// Send the Draw Messages each TRANSITION_DELAY Milliseconds
 	while (	m_pDoc->m_bTransitionUI &&
 			m_pDoc->m_bTransitionWorker)
 	{
 		DWORD Event = ::WaitForMultipleObjects(2, m_hEventArray, FALSE,
-							(uiTimerId == 0) ? m_pDoc->m_nTransitionDelay : INFINITE);
+							(uiTimerId == 0) ? TRANSITION_DELAY : INFINITE);
 		switch (Event)
 		{
 			// Shutdown Event
@@ -1956,7 +1956,6 @@ CPictureDoc::CPictureDoc()
 	// Transition
 	m_bTransitionUI = FALSE;
 	m_bTransitionWorker = FALSE;
-	m_nTransitionDelay = SLIDESHOW_TRANSITION_DELAY;
 	m_csTransition.EnableTimeout();
 
 	// Load Full Jpeg Transition
