@@ -391,7 +391,7 @@ void CPictureDoc::CSlideShowThread::RestartRunningTimer()
 
 		// Setup Timer
 		m_uiSlideshowTimerId = ::timeSetEvent(	m_nMilliSecondsDelay,
-												SLIDESHOW_TIMER_RESOLUTION,
+												DEFAULT_TIMER_RESOLUTION,
 												(LPTIMECALLBACK)m_hSlideshowTimerEvent,
 												0,
 												TIME_PERIODIC | TIME_CALLBACK_EVENT_SET | TIME_KILL_SYNCHRONOUS);
@@ -422,7 +422,7 @@ void CPictureDoc::CSlideShowThread::RunSlideshow()
 
 		// Setup Timer
 		m_uiSlideshowTimerId = ::timeSetEvent(	m_nMilliSecondsDelay,
-												SLIDESHOW_TIMER_RESOLUTION,
+												DEFAULT_TIMER_RESOLUTION,
 												(LPTIMECALLBACK)m_hSlideshowTimerEvent,
 												0,
 												TIME_PERIODIC | TIME_CALLBACK_EVENT_SET | TIME_KILL_SYNCHRONOUS);
@@ -1305,7 +1305,7 @@ int CPictureDoc::CJpegThread::Work()
 
 		// Set Timer
 		UINT uiTimerId = ::timeSetEvent(JPEG_LOADFULL_TRANSITION_DELAY,
-										JPEG_LOADFULL_TRANSITION_TIMER_RESOLUTION,
+										DEFAULT_TIMER_RESOLUTION,
 										(LPTIMECALLBACK)m_hTimerEvent, 0,
 										TIME_PERIODIC | TIME_CALLBACK_EVENT_SET | TIME_KILL_SYNCHRONOUS);
 
@@ -1754,7 +1754,7 @@ int CPictureDoc::CTransitionThread::Work()
 
 	// Set Timer				
 	UINT uiTimerId = ::timeSetEvent(TRANSITION_DELAY,
-									TRANSITION_TIMER_RESOLUTION,
+									DEFAULT_TIMER_RESOLUTION,
 									(LPTIMECALLBACK)m_hTimerEvent, 0,
 									TIME_PERIODIC | TIME_CALLBACK_EVENT_SET | TIME_KILL_SYNCHRONOUS);
 

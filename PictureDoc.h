@@ -42,17 +42,11 @@ class CPictureChildFrame;
 // Thread finishes, with a maximum wait time specified here in ms
 #define JPEG_COMPRESSION_CALCULATION_THREADWAIT_TIMEOUT			5000U
 
-// Resolution in ms of the Load Full Jpeg Transition Timer
-#define JPEG_LOADFULL_TRANSITION_TIMER_RESOLUTION				40
-
 // Load Full Jpeg Transition Delay in ms
 #define JPEG_LOADFULL_TRANSITION_DELAY							200
 
 // Full Jpeg Transition Critical Section Timeout in ms
 #define CS_LOADFULLJPEGDIB_TIMEOUT								30
-
-// Resolution in ms of the Slideshow Timer
-#define SLIDESHOW_TIMER_RESOLUTION								100
 
 // Default Slideshow Delay in ms
 #define DEFAULT_SLIDESHOW_DELAY									4000
@@ -61,14 +55,20 @@ class CPictureChildFrame;
 // to see whether the Picture has been loaded
 #define SLIDESHOW_LOADPICTURE_WAIT								20
 
-// Resolution in ms of the Transition Timer
+// System-wide Resolution of the Multimedia Timer
 // A lower value increases the responsiveness of the system to periodic events.
 // This increased responsiveness means the system scheduler must run more often,
 // so that the system spends more time scheduling tasks, context switching, etc.
 // This can ultimately reduce overall system performance, since every clock
 // cycle the system is processing "system stuff" is a clock cycle that isn't
-// being spent running this application
-#define TRANSITION_TIMER_RESOLUTION								20
+// being spent running this application.
+// APIs:    timeBeginPeriod to set in ms units and NtSetTimerResolution / 
+//          NtQueryTimerResolution to set / get in 100 ns units
+//          (timeSetEvent calls timeBeginPeriod with the passed resolution)
+// Default: 15.625 (1/64) ms
+// Range:   0.5 .. 15.625 ms
+// Tool:    Use Clockres.exe from sysinternals to read the current value
+#define DEFAULT_TIMER_RESOLUTION								16
 
 // Transition Delay in ms
 #define TRANSITION_DELAY										60
