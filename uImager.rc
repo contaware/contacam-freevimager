@@ -4323,7 +4323,7 @@ END
 STRINGTABLE
 BEGIN
     IDS_STRING1760          "Application Log File has not yet been created"
-    IDS_STRING1761          "HD free space"
+    IDS_STRING1761          "HD usage"
     IDS_STRING1762          "CPU usage"
     IDS_STRING1763          "MEM usage"
     IDS_STRING1764          "Starting"

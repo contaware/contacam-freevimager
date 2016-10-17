@@ -3285,7 +3285,7 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 							sDaysAgo.Format(_T("%I64d day%s ago"), llStartDiskFreeSpaceDaysAgo, llStartDiskFreeSpaceDaysAgo == 1 ? _T("") : _T("s"));
 						else
 							sDaysAgo.Format(_T("%I64d->%I64d days ago"), llStartDiskFreeSpaceDaysAgo, llDaysAgo + 1);
-						::LogLine(	_T("%s, deleted %s: ") + ML_STRING(1761, "HD free space") + _T(" %s->%s ") + ML_STRING(1825, "MB") +
+						::LogLine(	_T("%s, deleted %s: HD space %s->%s ") + ML_STRING(1825, "MB") +
 									_T(" (set min %s ") + ML_STRING(1825, "MB") + _T(")"),
 									m_pDoc->GetAssignedDeviceName(), sDaysAgo,
 									::FormatIntegerNumber(sStartDiskFreeSpaceMB), ::FormatIntegerNumber(sDiskFreeSpaceMB),

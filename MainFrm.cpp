@@ -177,7 +177,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// Create Statusbar
 	((CUImagerApp*)::AfxGetApp())->m_bShowStatusbar = (BOOL)((CUImagerApp*)::AfxGetApp())->GetProfileInt(_T("GeneralApp"), _T("ShowStatusbar"), TRUE);
 #ifdef VIDEODEVICEDOC
-	_tcsncpy(sba_HDHelp, ML_STRING(1761, "HD free space"), MAX_PATH);
+	_tcsncpy(sba_HDHelp, ML_STRING(1761, "HD usage"), MAX_PATH);
 	sba_HDHelp[MAX_PATH - 1] = _T('\0');
 	_tcsncpy(sba_CPUHelp, CString(APPNAME_NOEXT) + _T(": ") + ML_STRING(1762, "CPU usage"), MAX_PATH);
 	sba_CPUHelp[MAX_PATH - 1] = _T('\0');
@@ -2229,18 +2229,9 @@ CString CMainFrame::GetDiskStats(LPCTSTR lpszPath, int nMinDiskFreePermillion/*=
 	else
 	{
 		CString sUsage;
-		if (FreeBytesAvailableToCaller.QuadPart >= (1024*1024*1024))
-		{
-			sUsage.Format(	_T("HD: %I64u") + ML_STRING(1826, "GB") + _T("(%0.1f%%)"),
-							FreeBytesAvailableToCaller.QuadPart >> 30,
-							(1000 * FreeBytesAvailableToCaller.QuadPart / TotalNumberOfBytesAvailableToCaller.QuadPart) / 10.0);
-		}
-		else
-		{
-			sUsage.Format(	_T("HD: %I64u") + ML_STRING(1825, "MB") + _T("(%0.1f%%)"),
-							FreeBytesAvailableToCaller.QuadPart >> 20,
-							(1000 * FreeBytesAvailableToCaller.QuadPart / TotalNumberOfBytesAvailableToCaller.QuadPart) / 10.0);
-		}
+		sUsage.Format(	_T("HD: %I64u/%I64u") + ML_STRING(1826, "GB"),
+						(TotalNumberOfBytesAvailableToCaller.QuadPart - FreeBytesAvailableToCaller.QuadPart) >> 30,
+						TotalNumberOfBytesAvailableToCaller.QuadPart >> 30);
 		if (FreeBytesAvailableToCaller.QuadPart < TotalNumberOfBytesAvailableToCaller.QuadPart / 1000000 * nMinDiskFreePermillion)
 			sUsage += _T(" !!");
 		return sUsage;
