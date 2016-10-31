@@ -775,10 +775,18 @@ void CDibStatic::PaintDib(BOOL bUseCS/*=TRUE*/)
 		ClearView(&MemDC);
 		COLORREF crOldTextColor = MemDC.SetTextColor(m_crBusyTextColor);
 		int nOldBkMode = MemDC.SetBkMode(TRANSPARENT);
-		HFONT hFont = (HFONT)::GetStockObject(ANSI_VAR_FONT);
+		LOGFONT lf;
+		memset(&lf, 0, sizeof(lf));
+		_tcscpy(lf.lfFaceName, DEFAULT_FONTFACE);
+		lf.lfHeight = -MulDiv(10, GetDeviceCaps(MemDC.GetSafeHdc(), LOGPIXELSY), 72);
+		lf.lfWeight = FW_NORMAL;
+		lf.lfItalic = 0;
+		lf.lfUnderline = 0;
+		HFONT hFont = ::CreateFontIndirect(&lf);
 		HFONT hOldFont = (HFONT)::SelectObject(MemDC.GetSafeHdc(), hFont);
 		MemDC.DrawText(m_sBusyText, rcPaint, (DT_CENTER | DT_VCENTER | DT_NOCLIP | DT_NOPREFIX | DT_SINGLELINE));
 		::SelectObject(MemDC.GetSafeHdc(), hOldFont);
+		::DeleteObject(hFont);
 		MemDC.SetBkMode(nOldBkMode);
 		MemDC.SetTextColor(crOldTextColor);
 	}
