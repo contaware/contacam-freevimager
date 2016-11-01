@@ -278,6 +278,13 @@ libpng 1.2.56
 - Preprocessor defines for debug:   WIN32, DEBUG, _DEBUG, PNG_DEBUG=1,
                                     PNG_LIBPNG_SPECIALBUILD
 
+									
+AVIR image resizing algorithm designed by Aleksey Vaneev
+--------------------------------------------------------
+
+Using avir.h from avir-master.zip
+https://github.com/avaneev/avir
+
 
 UAC NSIS installer plugin
 -------------------------
@@ -292,3 +299,6 @@ Web interface
 - Using Prototype 1.7 with Scriptaculous 1.9.0
   (compressed prototype.js file with YUI Compressor 2.4.6)
   Adapted slider.js to work also when clicking on the track
+  
+- Automatic Timezone Detection Using JavaScript ver 1.0.6
+  http://pellepim.bitbucket.org/jstz/
