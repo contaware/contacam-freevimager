@@ -68,9 +68,8 @@
 // function but the above mentioned limit remains
 #define MAX_FILEDLG_PATH							1048576		// 1M
 
-// Default Font Face Families
+// Default Font Face
 #define DEFAULT_FONTFACE							_T("Arial")
-#define DEFAULT_FONTFACE_NARROW						_T("Arial Narrow")
 
 // Vista and higher Shield Icon
 #ifndef BCM_SETSHIELD
