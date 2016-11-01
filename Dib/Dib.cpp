@@ -5780,6 +5780,8 @@ void CDib::Free(BOOL bLeavePalette/*=FALSE*/,
 BOOL CDib::CreatePreviewDib(int nMaxSizeX,
 							int nMaxSizeY,
 							CDib* pSrcDib/*=NULL*/,
+							CWnd* pProgressWnd/*=NULL*/,
+							BOOL bProgressSend/*=TRUE*/,
 							CWorkerThread* pThread/*=NULL*/)
 {
 	if (nMaxSizeX < 1 && nMaxSizeY < 1)
@@ -5808,8 +5810,8 @@ BOOL CDib::CreatePreviewDib(int nMaxSizeX,
 	return m_pPreviewDib->StretchBits(	Round(pSrcDib->GetWidth() / m_dPreviewDibRatio),
 										Round(pSrcDib->GetHeight() / m_dPreviewDibRatio),
 										pSrcDib,
-										NULL,
-										TRUE,
+										pProgressWnd,
+										bProgressSend,
 										pThread);
 }
 
@@ -5851,55 +5853,13 @@ BOOL CDib::CreateThumbnailDib(	int nMaxSizeX,
 	double dThumbnailDibRatioY = (double)pSrcDib->GetHeight() / (double)nMaxSizeY;
 	m_dThumbnailDibRatio = max(dThumbnailDibRatioX, dThumbnailDibRatioY);
 
-	// Destination Size
-	DWORD dwDstWidth = Round(pSrcDib->GetWidth() / m_dThumbnailDibRatio);
-	DWORD dwDstHeight = Round(pSrcDib->GetHeight() / m_dThumbnailDibRatio);
-
-	// Shrink
-	if (m_dThumbnailDibRatio > 1.0)
-	{
-		BOOL res = FALSE;
-
-		// Two Pass Shrinking to Speed-Up
-		if (m_dThumbnailDibRatio >= 7.0)
-		{
-			if (m_pThumbnailDib->NearestNeighborResizeBits(	5 * dwDstWidth,
-															5 * dwDstHeight,
-															pSrcDib,
-															pProgressWnd,
-															bProgressSend,
-															pThread))
-			{
-				res = m_pThumbnailDib->ShrinkBits(	dwDstWidth,
-													dwDstHeight,
-													NULL,
-													pProgressWnd,
-													bProgressSend,
-													pThread);
-			}
-		}
-		else
-		{
-			res = m_pThumbnailDib->ShrinkBits(	dwDstWidth,
-												dwDstHeight,
-												pSrcDib,
-												pProgressWnd,
-												bProgressSend,
-												pThread);
-		}
-
-		return res;
-	}
-	// Enlarge
-	else
-	{
-		return m_pThumbnailDib->NearestNeighborResizeBits(	dwDstWidth,
-															dwDstHeight,
-															pSrcDib,
-															pProgressWnd,
-															bProgressSend,
-															pThread);
-	}
+	// Stretch Bits
+	return m_pThumbnailDib->StretchBits(Round(pSrcDib->GetWidth() / m_dThumbnailDibRatio),
+										Round(pSrcDib->GetHeight() / m_dThumbnailDibRatio),
+										pSrcDib,
+										pProgressWnd,
+										bProgressSend,
+										pThread);
 }
 
 void CDib::DeleteThumbnailDib()

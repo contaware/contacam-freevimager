@@ -75,6 +75,10 @@ BOOL CCreditsDlg::OnInitDialog()
 	CString stoaster(_T("CToasterWnd v1.18"));
 	stoaster += CString(_T('\n')) + _T("http://www.naughter.com");
 
+	// AVIR
+	CString savir(_T("AVIR image resizing algorithm designed by\nAleksey Vaneev version 1.9"));
+	savir += CString(_T('\n')) + _T("http://github.com/avaneev/avir");
+
 	// libjpeg
 	CString slibjpeg = _T("libjpeg ") + CString(JVERSION);
 	slibjpeg += CString(_T('\n')) + _T("http://www.ijg.org");
@@ -118,6 +122,7 @@ BOOL CCreditsDlg::OnInitDialog()
 						sftp		+ _T("\n\n") +
 #endif
 						stoaster	+ _T("\n\n") +
+						savir		+ _T("\n\n") +
 						slibjpeg	+ _T("\n\n") +
 						slibtiff	+ _T("\n\n") +
 						slibpng		+ _T("\n\n") +

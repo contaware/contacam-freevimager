@@ -3606,10 +3606,8 @@ BEGIN
     IDS_STRING1493          "Audio not supported for this camera"
     IDS_STRING1496          "cm"
     IDS_STRING1497          "inch"
-    IDS_STRING1498          "Avg (shrink, thumb)"
     IDS_STRING1499          "Nearest Neighbor"
-    IDS_STRING1500          "Bilinear"
-    IDS_STRING1501          "Bicubic"
+    IDS_STRING1500          "Best Quality"
 END
 
 STRINGTABLE

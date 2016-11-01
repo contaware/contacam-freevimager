@@ -2,7 +2,7 @@ FREEVIMAGER HISTORY
 
 5.3.0 (Month xxth 2016)
 
-- ...
+- Using the AVIR image resizing algorithm designed by Aleksey Vaneev
   
 5.1.0 (September 20th 2016)
 

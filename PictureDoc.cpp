@@ -1030,26 +1030,14 @@ BOOL CPictureDoc::CLayeredDlgThread::DoIt(CWorkerThread* pThread/*=NULL*/)
 		// Stretch if necessary
 		if (m_nSizePerthousand != 1000)
 		{
-			if (m_pDoc->m_bStretchModeHalftone)
-			{
-				if (!m_Dib.StretchBits(	m_Dib.GetWidth() * m_nSizePerthousand / 1000,
-										m_Dib.GetHeight() * m_nSizePerthousand / 1000,
-										NULL,
-										NULL,
-										TRUE,
-										pThread))
-					return FALSE;
-			}
-			else
-			{
-				if (!m_Dib.NearestNeighborResizeBits(m_Dib.GetWidth() * m_nSizePerthousand / 1000,
-													m_Dib.GetHeight() * m_nSizePerthousand / 1000,
-													NULL,
-													NULL,
-													TRUE,
-													pThread))
-					return FALSE;
-			}
+			if (!m_Dib.StretchBits(	m_Dib.GetWidth() * m_nSizePerthousand / 1000,
+									m_Dib.GetHeight() * m_nSizePerthousand / 1000,
+									NULL,
+									NULL,
+									TRUE,
+									pThread,
+									!m_pDoc->m_bStretchModeHalftone))
+				return FALSE;
 		}
 	}
 
@@ -5612,7 +5600,7 @@ BOOL CPictureDoc::EditResize(BOOL bShowMessageBoxOnError)
 							nXDpi, nYDpi,
 							m_pDib->GetBitCount() <= 8 ?
 							CResizingDpiDlg::NEARESTNEIGHBOR :
-							CResizingDpiDlg::BICUBIC,
+							CResizingDpiDlg::BESTQUALITY,
 							GetView());
 		if (dlg.DoModal() == IDOK)
 		{
@@ -5628,101 +5616,26 @@ BOOL CPictureDoc::EditResize(BOOL bShowMessageBoxOnError)
 
 			BeginWaitCursor();
 			
-			AddUndo();
+			CDib* pSrcDib = AddUndo();
+
+			// Do Resize
+			if (!m_pDib->StretchBits(	(DWORD)(dlg.m_nPixelsWidth),
+										(DWORD)(dlg.m_nPixelsHeight),
+										pSrcDib,
+										GetView(),
+										TRUE,
+										NULL,
+										dlg.m_ResizingMethod == CResizingDpiDlg::NEARESTNEIGHBOR))
+			{
+				Undo();
+				EndWaitCursor();
+				GetView()->ForceCursor(FALSE);
+				return FALSE;
+			}
 
 			m_pDib->SetXDpi(dlg.m_nXDpi);
 			m_pDib->SetYDpi(dlg.m_nYDpi);
 
-			CDib Dib(*m_pDib);
-
-			// Do Resize
-			switch (dlg.m_ResizingMethod)
-			{
-				case 0 :
-				{
-					if (dlg.m_nPixelsWidth < (int)m_pDib->GetWidth() &&
-						dlg.m_nPixelsHeight < (int)m_pDib->GetHeight())
-					{
-						if (!Dib.ShrinkBits((DWORD)(dlg.m_nPixelsWidth),
-											(DWORD)(dlg.m_nPixelsHeight),
-											m_pDib,
-											GetView(), TRUE))
-						{
-							Undo();
-							EndWaitCursor();
-							GetView()->ForceCursor(FALSE);
-							return FALSE;
-						}
-					}
-					else
-					{
-						if (!Dib.BicubicResampleBits((DWORD)(dlg.m_nPixelsWidth),
-													(DWORD)(dlg.m_nPixelsHeight),
-													m_pDib,
-													GetView(), TRUE))
-						{
-							Undo();
-							EndWaitCursor();
-							GetView()->ForceCursor(FALSE);
-							return FALSE;
-						}
-					}
-					break;
-				}
-
-				case 1 :
-				{
-					if (!Dib.NearestNeighborResizeBits(	(DWORD)(dlg.m_nPixelsWidth),
-														(DWORD)(dlg.m_nPixelsHeight),
-														m_pDib,
-														GetView(), TRUE))
-					{
-						Undo();
-						EndWaitCursor();
-						GetView()->ForceCursor(FALSE);
-						return FALSE;
-					}
-					break;
-				}
-
-				case 2 :
-				{
-					if (!Dib.BilinearResampleBits((DWORD)(dlg.m_nPixelsWidth),
-												(DWORD)(dlg.m_nPixelsHeight),
-												m_pDib,
-												GetView(), TRUE))
-					{
-						Undo();
-						EndWaitCursor();
-						GetView()->ForceCursor(FALSE);
-						return FALSE;
-					}
-					break;
-				}
-
-				case 3 :
-				{
-					if (!Dib.BicubicResampleBits((DWORD)(dlg.m_nPixelsWidth),
-												(DWORD)(dlg.m_nPixelsHeight),
-												m_pDib,
-												GetView(), TRUE))
-					{
-						Undo();
-						EndWaitCursor();
-						GetView()->ForceCursor(FALSE);
-						return FALSE;
-					}
-					break;
-				}
-
-				default :
-					Undo();
-					EndWaitCursor();
-					GetView()->ForceCursor(FALSE);
-					return FALSE;
-			}
-
-			*m_pDib = Dib;
 			EndWaitCursor();
 		}
 		else

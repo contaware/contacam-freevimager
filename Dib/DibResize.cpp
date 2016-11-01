@@ -1,11 +1,98 @@
 #include "stdafx.h"
 #include "dib.h"
+#include "avir.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+BOOL CDib::StretchBits(	DWORD dwNewWidth,
+						DWORD dwNewHeight,
+						CDib* pSrcDib/*=NULL*/,
+						CWnd* pProgressWnd/*=NULL*/,
+						BOOL bProgressSend/*=TRUE*/,
+						CWorkerThread* pThread/*=NULL*/,
+						BOOL bForceNearestNeighbor/*=FALSE*/)
+{
+	if (pSrcDib == NULL)
+		pSrcDib = this;
+
+	if (!bForceNearestNeighbor)
+	{
+		// Calc. Ratio
+		double dRatioX = (double)pSrcDib->GetWidth() / (double)dwNewWidth;
+		double dRatioY = (double)pSrcDib->GetHeight() / (double)dwNewHeight;
+		double dRatioMin = min(dRatioX, dRatioY);
+
+		// Shrink
+		if (dRatioMin > 1.0)
+		{
+			// Two Pass?
+			if (dRatioMin >= 7.0)
+			{
+				// First shrink with nearest neighbor
+				if (NearestNeighborResizeBits(	5 * dwNewWidth,
+												5 * dwNewHeight,
+												pSrcDib,
+												pProgressWnd,
+												bProgressSend,
+												pThread))
+					pSrcDib = this; // update source dib pointer
+				else
+					return FALSE;
+			}
+				
+			// Try AVIR
+			if (AvirResizeBits(	dwNewWidth,
+								dwNewHeight,
+								pSrcDib,
+								pProgressWnd,
+								bProgressSend,
+								pThread))
+				return TRUE;
+
+			// Next try averaging
+			if (ShrinkBits(	dwNewWidth,
+							dwNewHeight,
+							pSrcDib,
+							pProgressWnd,
+							bProgressSend,
+							pThread))
+				return TRUE;
+		}
+		// Enlarge
+		else
+		{
+			// Try AVIR
+			if (AvirResizeBits(	dwNewWidth,
+								dwNewHeight,
+								pSrcDib,
+								pProgressWnd,
+								bProgressSend,
+								pThread))
+				return TRUE;
+
+			// Next try bicubic resample
+			if (BicubicResampleBits(dwNewWidth,
+									dwNewHeight,
+									pSrcDib,
+									pProgressWnd,
+									bProgressSend,
+									pThread))
+				return TRUE;
+		}
+	}
+
+	// Last do nearest neighbor
+	return NearestNeighborResizeBits(	dwNewWidth,
+										dwNewHeight,
+										pSrcDib,
+										pProgressWnd,
+										bProgressSend,
+										pThread);
+}
 
 BOOL CDib::StretchBitsFitRect(	DWORD dwMaxWidth,
 								DWORD dwMaxHeight,
@@ -24,24 +111,13 @@ BOOL CDib::StretchBitsFitRect(	DWORD dwMaxWidth,
 	double dRatioMax = max(dRatioX, dRatioY);
 
 	// Stretch
-	if (bForceNearestNeighbor)
-	{
-		return NearestNeighborResizeBits(	Round(pSrcDib->GetWidth() / dRatioMax),
-											Round(pSrcDib->GetHeight() / dRatioMax),
-											pSrcDib,
-											pProgressWnd,
-											bProgressSend,
-											pThread);
-	}
-	else
-	{
-		return StretchBits(	Round(pSrcDib->GetWidth() / dRatioMax),
-							Round(pSrcDib->GetHeight() / dRatioMax),
-							pSrcDib,
-							pProgressWnd,
-							bProgressSend,
-							pThread);
-	}
+	return StretchBits(	Round(pSrcDib->GetWidth() / dRatioMax),
+						Round(pSrcDib->GetHeight() / dRatioMax),
+						pSrcDib,
+						pProgressWnd,
+						bProgressSend,
+						pThread,
+						bForceNearestNeighbor);
 }
 
 BOOL CDib::StretchBitsMaintainAspectRatio(	DWORD dwNewWidth,
@@ -62,26 +138,14 @@ BOOL CDib::StretchBitsMaintainAspectRatio(	DWORD dwNewWidth,
 	double dRatioMax = max(dRatioX, dRatioY);
 
 	// Stretch
-	if (bForceNearestNeighbor)
-	{
-		if (!NearestNeighborResizeBits(	Round(pSrcDib->GetWidth() / dRatioMax),
-										Round(pSrcDib->GetHeight() / dRatioMax),
-										pSrcDib,
-										pProgressWnd,
-										bProgressSend,
-										pThread))
-			return FALSE;
-	}
-	else
-	{
-		if (!StretchBits(	Round(pSrcDib->GetWidth() / dRatioMax),
-							Round(pSrcDib->GetHeight() / dRatioMax),
-							pSrcDib,
-							pProgressWnd,
-							bProgressSend,
-							pThread))
-			return FALSE;
-	}
+	if (!StretchBits(	Round(pSrcDib->GetWidth() / dRatioMax),
+						Round(pSrcDib->GetHeight() / dRatioMax),
+						pSrcDib,
+						pProgressWnd,
+						bProgressSend,
+						pThread,
+						bForceNearestNeighbor))
+		return FALSE;
 
 	// Add Borders
 	DWORD dwLeft = (dwNewWidth - GetWidth()) / 2;
@@ -96,66 +160,204 @@ BOOL CDib::StretchBitsMaintainAspectRatio(	DWORD dwNewWidth,
 						pThread);
 }
 
-BOOL CDib::StretchBits(	DWORD dwNewWidth,
-						DWORD dwNewHeight,
-						CDib* pSrcDib/*=NULL*/,
-						CWnd* pProgressWnd/*=NULL*/,
-						BOOL bProgressSend/*=TRUE*/,
-						CWorkerThread* pThread/*=NULL*/)
+// AVIR image resizing algorithm designed by Aleksey Vaneev
+BOOL CDib::AvirResizeBits(	DWORD dwNewWidth,
+							DWORD dwNewHeight,
+							CDib* pSrcDib/*=NULL*/,
+							CWnd* pProgressWnd/*=NULL*/,
+							BOOL bProgressSend/*=TRUE*/,
+							CWorkerThread* pThread/*=NULL*/)
 {
 	if (pSrcDib == NULL)
 		pSrcDib = this;
 
-	// Calc. Ratio
-	double dRatioX = (double)pSrcDib->GetWidth() / (double)dwNewWidth;
-	double dRatioY = (double)pSrcDib->GetHeight() / (double)dwNewHeight;
-	double dRatioMin = min(dRatioX, dRatioY);
+	// Check
+	if (dwNewWidth == 0 || dwNewHeight == 0							||
+		pSrcDib->GetBitCount() <= 16								||
+		(pSrcDib->GetBitCount() == 32 && !pSrcDib->HasAlpha() && !pSrcDib->IsFast32bpp())
+		// Safe the heap for 32 bit compilations
+#ifndef _WIN64
+																	||
+		pSrcDib->GetWidth() * pSrcDib->GetHeight() > 5000 * 5000	||
+		dwNewWidth * dwNewHeight > 5000 * 5000
+#endif
+		)
+		return FALSE;
 
-	// Shrink
-	if (dRatioMin > 1.0)
+	// Make a Copy of this?
+	CDib SrcDib;
+	BOOL bCopySrcToDst = FALSE;
+	if (pSrcDib == NULL || this == pSrcDib)
 	{
-		BOOL res = FALSE;
+		// If Same Size Return
+		if ((dwNewWidth == GetWidth()) && (dwNewHeight == GetHeight()))
+			return TRUE;
 
-		// Two Pass Shrinking to Speed-Up
-		if (dRatioMin >= 7.0)
+		if (IsCompressed())
 		{
-			if (NearestNeighborResizeBits(	5 * dwNewWidth,
-											5 * dwNewHeight,
-											pSrcDib,
-											pProgressWnd,
-											bProgressSend,
-											pThread))
-			{
-				res = ShrinkBits(	dwNewWidth,
-									dwNewHeight,
-									NULL,
-									pProgressWnd,
-									bProgressSend,
-									pThread);
-			}
-		}
-		else
-		{
-			res = ShrinkBits(	dwNewWidth,
-								dwNewHeight,
-								pSrcDib,
-								pProgressWnd,
-								bProgressSend,
-								pThread);
+			if (!Decompress(GetBitCount())) // Decompress
+				return FALSE;
 		}
 
-		return res;
+		SrcDib = *this;
+		pSrcDib = &SrcDib;
+
+		if (!pSrcDib->m_pBits)
+		{
+			if (!pSrcDib->DibSectionToBits())
+				return FALSE;
+		}
+
+		// Pointers Check
+		if (!pSrcDib->m_pBits || !pSrcDib->m_pBMI)
+			return FALSE;
 	}
-	// Enlarge
 	else
 	{
-		return BicubicResampleBits(	dwNewWidth,
-									dwNewHeight,
-									pSrcDib,
-									pProgressWnd,
-									bProgressSend,
-									pThread);
+		// Pointers Check
+		if (!pSrcDib->m_pBits || !pSrcDib->m_pBMI)
+			return FALSE;
+
+		// No Compression Supported!
+		if (pSrcDib->IsCompressed())
+			return FALSE;
+
+		// Allocate BMI
+		if (m_pBMI == NULL)
+		{
+			// Allocate & Copy BMI
+			m_pBMI = (LPBITMAPINFO)new BYTE[pSrcDib->GetBMISize()];
+			if (m_pBMI == NULL)
+				return FALSE;
+			memcpy((void*)m_pBMI, (void*)pSrcDib->m_pBMI, pSrcDib->GetBMISize());
+		}
+		// Need to ReAllocate BMI because they are of differente size
+		else if (pSrcDib->GetBMISize() != GetBMISize())
+		{
+			delete[] m_pBMI;
+
+			// Allocate & Copy BMI
+			m_pBMI = (LPBITMAPINFO)new BYTE[pSrcDib->GetBMISize()];
+			if (m_pBMI == NULL)
+				return FALSE;
+			memcpy((void*)m_pBMI, (void*)pSrcDib->m_pBMI, pSrcDib->GetBMISize());
+		}
+
+		// Make Sure m_pColors Points to the Right Place
+		if (m_pBMI->bmiHeader.biBitCount <= 8)
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
+		else
+			m_pColors = NULL;
+
+		// Copy Src To Dst
+		bCopySrcToDst = TRUE;
 	}
+
+	// Src Width & Height
+	DWORD dwSrcWidth = pSrcDib->GetWidth();
+	DWORD dwSrcHeight = pSrcDib->GetHeight();
+
+	// Scan Line Alignments
+	DWORD uiDIBSourceScanLineSize = DWALIGNEDWIDTHBYTES(dwSrcWidth * pSrcDib->GetBitCount());
+	DWORD uiDIBTargetScanLineSize = DWALIGNEDWIDTHBYTES(dwNewWidth * GetBitCount());
+
+	// Allocate Bits
+	if (m_pBits == NULL)
+	{
+		// Allocate memory
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight);
+	}
+	// Need to ReAllocate Bits because they are of different size
+	else if (m_dwImageSize != uiDIBTargetScanLineSize * dwNewHeight)
+	{
+		BIGFREE(m_pBits);
+
+		// Allocate memory
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight);
+	}
+	if (m_pBits == NULL)
+		return FALSE;
+
+	// Copy Vars
+	if (bCopySrcToDst)
+		CopyVars(*pSrcDib);
+
+	// Change BMI
+	m_pBMI->bmiHeader.biWidth = dwNewWidth;
+	m_pBMI->bmiHeader.biHeight = dwNewHeight;
+	m_dwImageSize = m_pBMI->bmiHeader.biSizeImage = uiDIBTargetScanLineSize * GetHeight();
+
+	// Init Masks For 16 and 32 bits Pictures
+	InitMasks();
+
+	// Free
+	ResetColorUndo();
+	if (m_hDibSection)
+	{
+		::DeleteObject(m_hDibSection);
+		m_hDibSection = NULL;
+		m_pDibSectionBits = NULL;
+	}
+
+	// If Same Size Copy
+	if (bCopySrcToDst && (dwNewWidth == pSrcDib->GetWidth()) && (dwNewHeight == pSrcDib->GetHeight()))
+	{
+		memcpy((void*)m_pBits, (void*)pSrcDib->m_pBits, m_dwImageSize);
+		return TRUE;
+	}
+
+	DIB_INIT_PROGRESS;
+
+	// Progress Guess of 30%
+	DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, 30, 100);
+
+	// Do Exit?
+	if (pThread && pThread->DoExit())
+	{
+		DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
+		return FALSE;
+	}
+
+	// AVIR Resize (no progress functionality in AVIR library...)
+	avir::CImageResizer<> ImageResizer(8);
+	ImageResizer.resizeImage(	pSrcDib->GetBits(),
+								pSrcDib->GetWidth(),
+								pSrcDib->GetHeight(),
+								uiDIBSourceScanLineSize,
+								m_pBits,
+								GetWidth(),
+								GetHeight(),
+								GetBitCount() == 32 ? 4 : 3,
+								0.0);
+
+	// Progress Guess of 80%
+	DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, 80, 100);
+
+	// Do Exit?
+	if (pThread && pThread->DoExit())
+	{
+		DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
+		return FALSE;
+	}
+
+	// Adjust the DWORD alignment for 24 bpp images
+	if (GetBitCount() == 24)
+	{
+		DWORD uiAvirScanLineSize = 3 * GetWidth();
+		for (int line = (int)GetHeight() - 1; line > 0; line--)
+		{
+			memmove(m_pBits + line * uiDIBTargetScanLineSize,
+					m_pBits + line * uiAvirScanLineSize,
+					uiAvirScanLineSize);
+		}
+	}
+
+	// Create Palette
+	CreatePaletteFromBMI();
+
+	DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
+
+	return TRUE;
 }
 
 // Good for extreme shrinking because it avoids anti-aliasing
@@ -244,16 +446,8 @@ BOOL CDib::ShrinkBits(	DWORD dwNewWidth,
 
 	// Allocate Temp Floating-Point Image
 	double* f = (double*)BIGALLOC(dwContainerSize * sizeof(double));
-	// If Not Enough Memory Use Bilinear 2x2 Averaging
 	if (f == NULL)
-	{
-		return BilinearResampleBits(dwNewWidth,
-									dwNewHeight,
-									pSrcDib,
-									pProgressWnd,
-									bProgressSend,
-									pThread);
-	}
+		return FALSE;
 
 	// Init Floating-Point Pixel Channels (R, G, B and Alpha if available)
 	for (j = 0 ; j < dwContainerSize ; j++)

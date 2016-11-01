@@ -53,7 +53,6 @@ CResizingDpiDlg::CResizingDpiDlg(int nWidth, int nHeight,
 		m_PhysUnit = 1;	// inch
 	else
 		m_PhysUnit = 0;	// cm
-	m_nInitResizingMethod = nResizingMethod;
 	m_nInitWidth = nWidth;
 	m_nInitHeight = nHeight;
 	m_nInitXDpi = nXDpi;
@@ -94,32 +93,6 @@ void CResizingDpiDlg::DoDataExchange(CDataExchange* pDX)
 		pEdit->GetWindowText(sText);
 		if (sText == _T(""))
 			return;
-	}
-
-	// Update resizing method depending from
-	// the new width and height
-	if (pDX->m_bSaveAndValidate == FALSE)
-	{
-		// Calc. Ratio
-		double dRatioX = 1000.0;
-		if (m_nPixelsWidth > 0)
-			dRatioX = (double)m_nInitWidth / (double)m_nPixelsWidth;
-		double dRatioY = 1000.0;
-		if (m_nPixelsHeight > 0)
-			dRatioY = (double)m_nInitHeight / (double)m_nPixelsHeight;
-		double dRatioMin = MIN(dRatioX, dRatioY);
-
-		// Shrink
-		if (dRatioMin > 1.0)
-		{
-			m_ResizingMethod = AVG;
-		}
-		// Enlarge
-		else
-		{
-			if (m_ResizingMethod == AVG)
-				m_ResizingMethod = m_nInitResizingMethod;
-		}
 	}
 
 	CDialog::DoDataExchange(pDX);
@@ -391,10 +364,8 @@ BOOL CResizingDpiDlg::OnInitDialog()
 	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_METHOD);
 	if (pComboBox)
 	{
-		pComboBox->AddString(ML_STRING(1498, "Avg (shrink, thumb)"));
 		pComboBox->AddString(ML_STRING(1499, "Nearest Neighbor"));
-		pComboBox->AddString(ML_STRING(1500, "Bilinear"));
-		pComboBox->AddString(ML_STRING(1501, "Bicubic"));
+		pComboBox->AddString(ML_STRING(1500, "Best Quality"));
 	}
 
 	// Init m_dMaxResizeFactor

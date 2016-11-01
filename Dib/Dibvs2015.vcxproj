@@ -368,6 +368,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AnimGifSave.h" />
+    <ClInclude Include="avir.h" />
     <ClInclude Include="ColorSpace.h" />
     <ClInclude Include="Dib.h" />
     <ClInclude Include="DibGif.h" />

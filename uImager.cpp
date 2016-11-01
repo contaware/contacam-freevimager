@@ -2886,12 +2886,12 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 			// Shrink
 			if (res)
 			{
-				if (!DstDib1.ShrinkBits(dwShrinkWidth,
-										dwShrinkHeight,
-										&SrcDib,
-										pProgressWnd,
-										bProgressSend,
-										pThread))
+				if (!DstDib1.StretchBits(	dwShrinkWidth,
+											dwShrinkHeight,
+											&SrcDib,
+											pProgressWnd,
+											bProgressSend,
+											pThread))
 					return 0;
 				else
 				{						
@@ -3228,7 +3228,7 @@ int CUImagerApp::ShrinkPictureMultiPage(LPCTSTR szSrcFileName,
 			// Shrink
 			if (bDoShrink)
 			{
-				if (!a[a.GetUpperBound()]->ShrinkBits(	dwShrinkWidth,
+				if (!a[a.GetUpperBound()]->StretchBits(	dwShrinkWidth,
 														dwShrinkHeight,
 														NULL,
 														pProgressWnd,

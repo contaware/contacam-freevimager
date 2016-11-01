@@ -121,5 +121,8 @@
     <ClInclude Include="YuvToYuv.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="avir.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

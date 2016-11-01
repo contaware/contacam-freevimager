@@ -666,6 +666,8 @@ public:
 	BOOL CreatePreviewDib(	int nMaxSizeX,
 							int nMaxSizeY,
 							CDib* pSrcDib = NULL,
+							CWnd* pProgressWnd = NULL,
+							BOOL bProgressSend = TRUE,
 							CWorkerThread* pThread = NULL);	// Optional Worker Thread pointer from which we call DoExit()
 															// to check whether interruption of the load is wanted);
 	
@@ -803,18 +805,18 @@ public:
 							DWORD dwNewHeight,
 							int nStretchMode = COLORONCOLOR);
 
-	// Selects the Best Method for You (Works on Bitmap Bits)
+	// If bForceNearestNeighbor not set, it selects the best method.
 	BOOL StretchBits(	DWORD dwNewWidth,
 						DWORD dwNewHeight,
 						CDib* pSrcDib = NULL,
 						CWnd* pProgressWnd = NULL,
 						BOOL bProgressSend = TRUE,
-						CWorkerThread* pThread = NULL);	// Optional Worker Thread pointer from which we call DoExit()
+						CWorkerThread* pThread = NULL,	// Optional Worker Thread pointer from which we call DoExit()
 														// to check whether interruption of the load is wanted
+						BOOL bForceNearestNeighbor = FALSE);
 
 
-	// If bForceNearestNeighbor not set,
-	// selects the Best Method for You (Works on Bitmap Bits)
+	// If bForceNearestNeighbor not set, it selects the best method.
 	// Maintains the aspect ratio and stretches to a size
 	// that fits inside the given Max Width and Max Height.
 	BOOL StretchBitsFitRect(	DWORD dwMaxWidth,
@@ -826,8 +828,7 @@ public:
 																// to check whether interruption of the load is wanted
 								BOOL bForceNearestNeighbor = FALSE);
 
-	// If bForceNearestNeighbor not set,
-	// selects the Best Method for You (Works on Bitmap Bits).
+	// If bForceNearestNeighbor not set, it selects the best method.
 	// Maintains the aspect ratio by centering the image and
 	// by adding a border of the given color (or index for 1,4 and 8 bpp).
 	BOOL StretchBitsMaintainAspectRatio(	DWORD dwNewWidth,
@@ -839,48 +840,6 @@ public:
 											CWorkerThread* pThread = NULL,	// Optional Worker Thread pointer from which we call DoExit()
 																			// to check whether interruption of the load is wanted
 											BOOL bForceNearestNeighbor = FALSE);
-
-	// Area Averaging Shrinking (Works on Bitmap Bits)
-	// Good for extreme shrinking (thumbnail creation)
-	// because it avoids anti-aliasing
-	BOOL ShrinkBits(DWORD dwNewWidth,
-					DWORD dwNewHeight,
-					CDib* pSrcDib = NULL,
-					CWnd* pProgressWnd = NULL,
-					BOOL bProgressSend = TRUE,
-					CWorkerThread* pThread = NULL);	// Optional Worker Thread pointer from which we call DoExit()
-													// to check whether interruption of the load is wanted
-
-	// Nearest Neighbor Resize (Works on Bitmap Bits)
-	// Fastest!
-	BOOL NearestNeighborResizeBits(	DWORD dwNewWidth,
-									DWORD dwNewHeight,
-									CDib* pSrcDib = NULL,
-									CWnd* pProgressWnd = NULL,
-									BOOL bProgressSend = TRUE,
-									CWorkerThread* pThread = NULL);	// Optional Worker Thread pointer from which we call DoExit()
-																	// to check whether interruption of the load is wanted
-
-	// Bilinear Interpolation (Works on Bitmap Bits)
-	// Bilinear is good for decreasing and increasing image size,
-	// but not too much decreasing or increasing amount!
-	BOOL BilinearResampleBits(	DWORD dwNewWidth,
-								DWORD dwNewHeight,
-								CDib* pSrcDib = NULL,
-								CWnd* pProgressWnd = NULL,
-								BOOL bProgressSend = TRUE,
-								CWorkerThread* pThread = NULL);	// Optional Worker Thread pointer from which we call DoExit()
-																// to check whether interruption of the load is wanted
-
-	// SSE Optimized Bicubic Interpolation (Works on Bitmap Bits)
-	// (Bicubic is best for increasing image size)
-	BOOL BicubicResampleBits(	DWORD dwNewWidth,
-								DWORD dwNewHeight,
-								CDib* pSrcDib = NULL,
-								CWnd* pProgressWnd = NULL,
-								BOOL bProgressSend = TRUE,
-								CWorkerThread* pThread = NULL);	// Optional Worker Thread pointer from which we call DoExit()
-																// to check whether interruption of the load is wanted
 
 	// Convolution Filter
 	BOOL Filter(	int* pKernel,
@@ -1800,47 +1759,77 @@ protected:
 						CWnd* pProgressWnd = NULL,
 						BOOL bProgressSend = TRUE);
 
-	// Bicubic Resample Helpers
-	BOOL BicubicResample24_SSE(	int nNewWidth,
-								int nNewHeight,
-								float xScale,
-								float yScale,
-								int nFloatSrcScanLineSize,
-								float* f,
-								LPBYTE pOutBits,
-								CWnd* pProgressWnd = NULL,
-								BOOL bProgressSend = TRUE,
-								CWorkerThread* pThread = NULL);
-	BOOL BicubicResample32_SSE(	int nNewWidth,
-								int nNewHeight,
-								float xScale,
-								float yScale,
-								int nFloatSrcScanLineSize,
-								float* f,
-								LPDWORD pOutBits,
-								CWnd* pProgressWnd = NULL,
-								BOOL bProgressSend = TRUE,
-								CWorkerThread* pThread = NULL);
-	BOOL BicubicResample24_C(	int nNewWidth,
-								int nNewHeight,
-								float xScale,
-								float yScale,
-								int nFloatSrcScanLineSize,
-								float* f,
-								LPBYTE pOutBits,
-								CWnd* pProgressWnd = NULL,
-								BOOL bProgressSend = TRUE,
-								CWorkerThread* pThread = NULL);
-	BOOL BicubicResample32_C(	int nNewWidth,
-								int nNewHeight,
-								float xScale,
-								float yScale,
-								int nFloatSrcScanLineSize,
-								float* f,
-								LPDWORD pOutBits,
-								CWnd* pProgressWnd = NULL,
-								BOOL bProgressSend = TRUE,
-								CWorkerThread* pThread = NULL);
+	// Resample
+	BOOL AvirResizeBits(			DWORD dwNewWidth,
+									DWORD dwNewHeight,
+									CDib* pSrcDib = NULL,
+									CWnd* pProgressWnd = NULL,
+									BOOL bProgressSend = TRUE,
+									CWorkerThread* pThread = NULL);
+	BOOL ShrinkBits(				DWORD dwNewWidth,
+									DWORD dwNewHeight,
+									CDib* pSrcDib = NULL,
+									CWnd* pProgressWnd = NULL,
+									BOOL bProgressSend = TRUE,
+									CWorkerThread* pThread = NULL);
+	BOOL NearestNeighborResizeBits(	DWORD dwNewWidth,
+									DWORD dwNewHeight,
+									CDib* pSrcDib = NULL,
+									CWnd* pProgressWnd = NULL,
+									BOOL bProgressSend = TRUE,
+									CWorkerThread* pThread = NULL);
+	BOOL BilinearResampleBits(		DWORD dwNewWidth,
+									DWORD dwNewHeight,
+									CDib* pSrcDib = NULL,
+									CWnd* pProgressWnd = NULL,
+									BOOL bProgressSend = TRUE,
+									CWorkerThread* pThread = NULL);
+	BOOL BicubicResampleBits(		DWORD dwNewWidth,
+									DWORD dwNewHeight,
+									CDib* pSrcDib = NULL,
+									CWnd* pProgressWnd = NULL,
+									BOOL bProgressSend = TRUE,
+									CWorkerThread* pThread = NULL);
+	BOOL BicubicResample24_SSE(		int nNewWidth,
+									int nNewHeight,
+									float xScale,
+									float yScale,
+									int nFloatSrcScanLineSize,
+									float* f,
+									LPBYTE pOutBits,
+									CWnd* pProgressWnd = NULL,
+									BOOL bProgressSend = TRUE,
+									CWorkerThread* pThread = NULL);
+	BOOL BicubicResample32_SSE(		int nNewWidth,
+									int nNewHeight,
+									float xScale,
+									float yScale,
+									int nFloatSrcScanLineSize,
+									float* f,
+									LPDWORD pOutBits,
+									CWnd* pProgressWnd = NULL,
+									BOOL bProgressSend = TRUE,
+									CWorkerThread* pThread = NULL);
+	BOOL BicubicResample24_C(		int nNewWidth,
+									int nNewHeight,
+									float xScale,
+									float yScale,
+									int nFloatSrcScanLineSize,
+									float* f,
+									LPBYTE pOutBits,
+									CWnd* pProgressWnd = NULL,
+									BOOL bProgressSend = TRUE,
+									CWorkerThread* pThread = NULL);
+	BOOL BicubicResample32_C(		int nNewWidth,
+									int nNewHeight,
+									float xScale,
+									float yScale,
+									int nFloatSrcScanLineSize,
+									float* f,
+									LPDWORD pOutBits,
+									CWnd* pProgressWnd = NULL,
+									BOOL bProgressSend = TRUE,
+									CWorkerThread* pThread = NULL);
 
 	// Show GetLastError() Message
 	// In Debug mode display passed function name
