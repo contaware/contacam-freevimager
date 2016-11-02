@@ -744,13 +744,16 @@
     <ClInclude Include="HelpersAudio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PJNMD5.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="CEncryptDecrypt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ColorProgressCtrl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CMD5.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CSHA256.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

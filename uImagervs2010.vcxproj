@@ -1057,6 +1057,7 @@
     <ClInclude Include="cdxCSizeIconCtrl.h" />
     <ClInclude Include="CEncryptDecrypt.h" />
     <ClInclude Include="ChildFrm.h" />
+    <ClInclude Include="CMD5.h" />
     <ClInclude Include="ColorButton.h" />
     <ClInclude Include="ColorButtonPicker.h" />
     <ClInclude Include="ColorProgressCtrl.h" />
@@ -1065,6 +1066,7 @@
     <ClInclude Include="CPUCount.h" />
     <ClInclude Include="CPUSpeed.h" />
     <ClInclude Include="CreditsDlg.h" />
+    <ClInclude Include="CSHA256.h" />
     <ClInclude Include="DecreaseBppDlg.h" />
     <ClInclude Include="DeleteCamFoldersDlg.h" />
     <ClInclude Include="DeletePageDlg.h" />
@@ -1111,7 +1113,6 @@
     <ClInclude Include="PictureDoc.h" />
     <ClInclude Include="PicturePrintPreviewView.h" />
     <ClInclude Include="PictureView.h" />
-    <ClInclude Include="PJNMD5.h" />
     <ClInclude Include="PostDelayedMessage.h" />
     <ClInclude Include="PreviewFileDlg.h" />
     <ClInclude Include="PrintPreviewScaleEdit.h" />

@@ -16,7 +16,8 @@
 #include "PostDelayedMessage.h"
 #include "MotionDetHelpers.h"
 #include "Base64.h"
-#include "PJNMD5.h"
+#include "CMD5.h"
+#include "CSHA256.h"
 #include "Psapi.h"
 #include "NoVistaFileDlg.h"
 #include "YuvToYuv.h"
@@ -5682,89 +5683,105 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	if (((CUImagerApp*)::AfxGetApp())->m_sMicroApacheUsername != _T("") ||
 		((CUImagerApp*)::AfxGetApp())->m_sMicroApachePassword != _T(""))
 	{
-		CPJNMD5 hmacUsername;
-		CPJNMD5Hash hashUsername;
-		LPBYTE pUsername = NULL;
-		CPJNMD5 hmacPassword;
-		CPJNMD5Hash hashPassword;
-		LPBYTE pPassword = NULL;
-		int nUsernameSize = ::ToUTF8(((CUImagerApp*)::AfxGetApp())->m_sMicroApacheUsername, &pUsername);
-		int nPasswordSize = ::ToUTF8(((CUImagerApp*)::AfxGetApp())->m_sMicroApachePassword, &pPassword);
-		if (hmacUsername.Hash(pUsername, nUsernameSize, hashUsername) &&	// pointers and/or sizes can be zero
-			hmacPassword.Hash(pPassword, nPasswordSize, hashPassword))		// (for that case the empty-string-hash is returned)
+		CSHA256 SHA256Username;
+		CSHA256Hash SHA256SaltUsername;
+		CSHA256Hash SHA256HashUsername;
+		CSHA256 SHA256Password;
+		CSHA256Hash SHA256SaltPassword;
+		CSHA256Hash SHA256HashPassword;
+	
+		if (SHA256Username.Random(SHA256SaltUsername) &&
+			SHA256Password.Random(SHA256SaltPassword))
 		{
-			// Prepare php file
-			CString sAuthenticate;
-			sAuthenticate.Format(
-								_T("<?php\r\n")
-								_T("if (count(get_included_files()) == 1) die('Direct access not permitted');\r\n")
-								_T("$username_md5 = '%s';\r\n")
-								_T("$password_md5 = '%s';\r\n"), hashUsername.Format(FALSE), hashPassword.Format(FALSE));
-			sAuthenticate +=	_T("$invalid_login = 0;\r\n");
-			sAuthenticate +=	_T("if (isset($_POST['username']) && isset($_POST['password'])) {\r\n");
-			sAuthenticate +=	_T("	if (md5($_POST['username']) == \"$username_md5\" && md5($_POST['password']) == \"$password_md5\") {\r\n");
-			sAuthenticate +=	_T("		$_SESSION['username'] = \"$username_md5\";\r\n");
-			sAuthenticate +=	_T("		return;\r\n");
-			sAuthenticate +=	_T("	} else {\r\n");
-			sAuthenticate +=	_T("		unset($_SESSION['username']);\r\n");
-			sAuthenticate +=	_T("		$invalid_login = 1;\r\n");
-			sAuthenticate +=	_T("		sleep(1);\r\n");
-			sAuthenticate +=	_T("	}\r\n");
-			sAuthenticate +=	_T("}\r\n");
-			sAuthenticate +=	_T("else if (isset($_SESSION['username']) && $_SESSION['username'] == \"$username_md5\")\r\n");
-			sAuthenticate +=	_T("	return;\r\n");
-			sAuthenticate +=	_T("?>\r\n");
-			sAuthenticate +=	_T("<!DOCTYPE html>\r\n");
-			sAuthenticate +=	_T("<html>\r\n");
-			sAuthenticate +=	_T("	<head>\r\n");
-			sAuthenticate +=	_T("		<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\r\n");
-			sAuthenticate +=	_T("		<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\r\n");
-			sAuthenticate +=	_T("		<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\r\n");
-			sAuthenticate +=	_T("		<meta name=\"author\" content=\"Oliver Pfister\" />\r\n");
-			sAuthenticate +=	_T("		<title>Login</title>\r\n");
-			sAuthenticate +=	_T("	</head>\r\n");
-			sAuthenticate +=	_T("	<body>\r\n");
-			sAuthenticate +=	_T("		<div style=\"text-align: center\">\r\n");
-			sAuthenticate +=	_T("			<form name=\"login\" action=\"\" method=\"post\">\r\n");
-			sAuthenticate +=	_T("				&#x1F464;<input type=\"text\" name=\"username\" autocapitalize=\"none\" /><br />\r\n");
-			sAuthenticate +=	_T("				<?php if ($invalid_login): ?>\r\n");
-			sAuthenticate +=	_T("				&#x1f512;<input style=\"border:1px solid #f00;\" type=\"password\" name=\"password\" /><br />\r\n");
-			sAuthenticate +=	_T("				<?php else: ?>\r\n");
-			sAuthenticate +=	_T("				&#x1f512;<input type=\"password\" name=\"password\" /><br />\r\n");
-			sAuthenticate +=	_T("				<?php endif; ?>\r\n");
-			sAuthenticate +=	_T("				<input type=\"submit\" name=\"submit\" value=\"Login\" />\r\n");
-			sAuthenticate +=	_T("			</form>\r\n");
-			sAuthenticate +=	_T("		</div>\r\n");
-			sAuthenticate +=	_T("	</body>\r\n");
-			sAuthenticate +=	_T("</html>\r\n");
-			sAuthenticate +=	_T("<?php\r\n");
-			sAuthenticate +=	_T("exit;\r\n");
-
-			// Save php file (overwrite if existing)
-			LPBYTE pAuthenticateFileContent = NULL;
-			int nAuthenticateFileContentSize = ::ToUTF8(sAuthenticate, &pAuthenticateFileContent);
-			if (nAuthenticateFileContentSize > 0 && pAuthenticateFileContent)
+			LPBYTE pUsername = NULL;
+			LPBYTE pPassword = NULL;
+			int nUsernameSize = ::ToUTF8(SHA256SaltUsername.Format(FALSE) + ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheUsername, &pUsername);
+			int nPasswordSize = ::ToUTF8(SHA256SaltPassword.Format(FALSE) + ((CUImagerApp*)::AfxGetApp())->m_sMicroApachePassword, &pPassword);
+			if (SHA256Username.Hash(pUsername, nUsernameSize, SHA256HashUsername) &&	// pointers and/or sizes can be zero
+				SHA256Password.Hash(pPassword, nPasswordSize, SHA256HashPassword))		// (for that case the empty-string-hash is returned)
 			{
-				try
+				// Prepare php file
+				CString sAuthenticate;
+				sAuthenticate.Format(
+					_T("<?php\r\n")
+					_T("if (count(get_included_files()) == 1) die('Direct access not permitted');\r\n")
+					_T("$username_salt = '%s';\r\n")
+					_T("$username_hash = '%s';\r\n")
+					_T("$password_salt = '%s';\r\n")
+					_T("$password_hash = '%s';\r\n"),
+					SHA256SaltUsername.Format(FALSE),
+					SHA256HashUsername.Format(FALSE),
+					SHA256SaltPassword.Format(FALSE),
+					SHA256HashPassword.Format(FALSE));
+				sAuthenticate += _T("$invalid_login = 0;\r\n");
+				sAuthenticate += _T("if (isset($_POST['username']) && isset($_POST['password'])) {\r\n");
+				sAuthenticate += _T("	if (hash('sha256', $username_salt . $_POST['username']) == \"$username_hash\" &&\r\n");
+				sAuthenticate += _T("		hash('sha256', $password_salt . $_POST['password']) == \"$password_hash\") {\r\n");
+				sAuthenticate += _T("		$_SESSION['username'] = \"$username_hash\";\r\n");
+				sAuthenticate += _T("		return;\r\n");
+				sAuthenticate += _T("	} else {\r\n");
+				sAuthenticate += _T("		unset($_SESSION['username']);\r\n");
+				sAuthenticate += _T("		$invalid_login = 1;\r\n");
+				sAuthenticate += _T("		sleep(1);\r\n");
+				sAuthenticate += _T("	}\r\n");
+				sAuthenticate += _T("}\r\n");
+				sAuthenticate += _T("else if (isset($_SESSION['username']) && $_SESSION['username'] == \"$username_hash\")\r\n");
+				sAuthenticate += _T("	return;\r\n");
+				sAuthenticate += _T("?>\r\n");
+				sAuthenticate += _T("<!DOCTYPE html>\r\n");
+				sAuthenticate += _T("<html>\r\n");
+				sAuthenticate += _T("	<head>\r\n");
+				sAuthenticate += _T("		<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\r\n");
+				sAuthenticate += _T("		<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\r\n");
+				sAuthenticate += _T("		<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\r\n");
+				sAuthenticate += _T("		<meta name=\"author\" content=\"Oliver Pfister\" />\r\n");
+				sAuthenticate += _T("		<title>Login</title>\r\n");
+				sAuthenticate += _T("	</head>\r\n");
+				sAuthenticate += _T("	<body>\r\n");
+				sAuthenticate += _T("		<div style=\"text-align: center\">\r\n");
+				sAuthenticate += _T("			<form name=\"login\" action=\"\" method=\"post\">\r\n");
+				sAuthenticate += _T("				&#x1F464;<input type=\"text\" name=\"username\" autocapitalize=\"none\" /><br />\r\n");
+				sAuthenticate += _T("				<?php if ($invalid_login): ?>\r\n");
+				sAuthenticate += _T("				&#x1f512;<input style=\"border:1px solid #f00;\" type=\"password\" name=\"password\" /><br />\r\n");
+				sAuthenticate += _T("				<?php else: ?>\r\n");
+				sAuthenticate += _T("				&#x1f512;<input type=\"password\" name=\"password\" /><br />\r\n");
+				sAuthenticate += _T("				<?php endif; ?>\r\n");
+				sAuthenticate += _T("				<input type=\"submit\" name=\"submit\" value=\"Login\" />\r\n");
+				sAuthenticate += _T("			</form>\r\n");
+				sAuthenticate += _T("		</div>\r\n");
+				sAuthenticate += _T("	</body>\r\n");
+				sAuthenticate += _T("</html>\r\n");
+				sAuthenticate += _T("<?php\r\n");
+				sAuthenticate += _T("exit;\r\n");
+
+				// Save php file (overwrite if existing)
+				LPBYTE pAuthenticateFileContent = NULL;
+				int nAuthenticateFileContentSize = ::ToUTF8(sAuthenticate, &pAuthenticateFileContent);
+				if (nAuthenticateFileContentSize > 0 && pAuthenticateFileContent)
 				{
-					CFile f(sAuthenticateFilePath,
-							CFile::modeCreate	|
-							CFile::modeWrite	|
+					try
+					{
+						CFile f(sAuthenticateFilePath,
+							CFile::modeCreate |
+							CFile::modeWrite |
 							CFile::shareDenyWrite);
-					f.Write(pAuthenticateFileContent, nAuthenticateFileContentSize);
+						f.Write(pAuthenticateFileContent, nAuthenticateFileContentSize);
+					}
+					catch (CFileException* e)
+					{
+						e->Delete();
+					}
 				}
-				catch (CFileException* e)
-				{
-					e->Delete();
-				}
+				if (pAuthenticateFileContent)
+					delete[] pAuthenticateFileContent;
 			}
-			if (pAuthenticateFileContent)
-				delete[] pAuthenticateFileContent;
+
+			// Free
+			if (pUsername)
+				delete[] pUsername;
+			if (pPassword)
+				delete[] pPassword;
 		}
-		if (pUsername)
-			delete[] pUsername;
-		if (pPassword)
-			delete[] pPassword;
 	}
 	else
 		::DeleteFile(sAuthenticateFilePath);
@@ -8870,8 +8887,8 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRawRequest(CString sRequest)
 		CString sHA2;
 		CString sHResponse;
 		CString sToHash;
-		CPJNMD5 hmac;
-		CPJNMD5Hash hash;
+		CMD5 hmac;
+		CMD5Hash hash;
 
 		// HA1
 		sToHash =	m_pDoc->m_sHttpGetFrameUsername + _T(":")	+
