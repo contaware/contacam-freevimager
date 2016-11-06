@@ -5618,9 +5618,9 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	sTempDir = ::GetASCIICompatiblePath(sTempDir); // directory must exist!
 	sTempDir.Replace(_T('\\'), _T('/')); // change path from \ to / (otherwise apache is not happy)
 	sConfig += _T("php_value session.save_path \"") + sTempDir + _T("\"\r\n");
-	sConfig += _T("php_value session.gc_probability 1\r\n");	// default value
-	sConfig += _T("php_value session.gc_divisor 10\r\n");		// every session init has 1 / 10 or 10% probability to clean-up old session files
-	sConfig += _T("php_value session.gc_maxlifetime 1440\r\n"); // default value
+	sConfig += _T("php_value session.gc_probability 1\r\n");	// session_start() has 1 / 10 or 10% probability
+	sConfig += _T("php_value session.gc_divisor 10\r\n");		// to clean-up old session files
+	sConfig += _T("php_value session.gc_maxlifetime 1440\r\n");	// session maximum lifetime is 1440 seconds
 
 	// Do not allow .htaccess files and setup the rewrite engine
 	sConfig += _T("<Directory />\r\n");
@@ -5845,6 +5845,7 @@ BOOL CVideoDeviceDoc::MicroApacheUpdateWebFiles(CString sAutoSaveDir)
 	::DeleteFile(sAutoSaveDir + _T("summarynav.php"));
 	::DeleteFile(sAutoSaveDir + _T("separator.php"));
 	::DeleteFile(sAutoSaveDir + _T("js\\calendarpopup.js"));
+	::DeleteFile(sAutoSaveDir + _T("js\\detect_timezone.js"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\show_black.gif"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\hide_black.gif"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\show_white.gif"));
