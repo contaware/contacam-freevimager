@@ -183,7 +183,8 @@ echo "<iframe style=\"display: block; float: right; border: 0; overflow: hidden;
 echo "<div>\n";
 echo "<span class=\"globalbuttons\">";
 echo "<a class=\"homebuttons\" href=\"" . getParentUrl() . "\" target=\"_top\">&nbsp;</a>&nbsp;";
-echo "<a class=\"reloadbuttons\" href=\"#\" onclick=\"window.location.reload(); return false;\">&nbsp;</a>\n";
+echo "<a class=\"reloadbuttons\" href=\"#\" onclick=\"window.location.reload(); return false;\">&nbsp;</a>&nbsp;";
+echo strftime('%X') . "\n";
 echo "</span>\n";
 echo "</div>\n";
 
