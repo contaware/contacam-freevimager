@@ -28,6 +28,7 @@ extern "C"
 #include "..\Helpers.h"
 #include "ColorSpace.h"
 #include "..\TraceLogFile.h"
+#include "..\Performance.h"
 
 // Bitmap info for BI_BITFIELDS
 typedef struct {
@@ -1766,12 +1767,6 @@ protected:
 									CWnd* pProgressWnd = NULL,
 									BOOL bProgressSend = TRUE,
 									CWorkerThread* pThread = NULL);
-	BOOL ShrinkBits(				DWORD dwNewWidth,
-									DWORD dwNewHeight,
-									CDib* pSrcDib = NULL,
-									CWnd* pProgressWnd = NULL,
-									BOOL bProgressSend = TRUE,
-									CWorkerThread* pThread = NULL);
 	BOOL NearestNeighborResizeBits(	DWORD dwNewWidth,
 									DWORD dwNewHeight,
 									CDib* pSrcDib = NULL,
@@ -1790,7 +1785,7 @@ protected:
 									CWnd* pProgressWnd = NULL,
 									BOOL bProgressSend = TRUE,
 									CWorkerThread* pThread = NULL);
-	BOOL BicubicResample24_SSE(		int nNewWidth,
+	BOOL BicubicResample24(			int nNewWidth,
 									int nNewHeight,
 									float xScale,
 									float yScale,
@@ -1800,27 +1795,7 @@ protected:
 									CWnd* pProgressWnd = NULL,
 									BOOL bProgressSend = TRUE,
 									CWorkerThread* pThread = NULL);
-	BOOL BicubicResample32_SSE(		int nNewWidth,
-									int nNewHeight,
-									float xScale,
-									float yScale,
-									int nFloatSrcScanLineSize,
-									float* f,
-									LPDWORD pOutBits,
-									CWnd* pProgressWnd = NULL,
-									BOOL bProgressSend = TRUE,
-									CWorkerThread* pThread = NULL);
-	BOOL BicubicResample24_C(		int nNewWidth,
-									int nNewHeight,
-									float xScale,
-									float yScale,
-									int nFloatSrcScanLineSize,
-									float* f,
-									LPBYTE pOutBits,
-									CWnd* pProgressWnd = NULL,
-									BOOL bProgressSend = TRUE,
-									CWorkerThread* pThread = NULL);
-	BOOL BicubicResample32_C(		int nNewWidth,
+	BOOL BicubicResample32(			int nNewWidth,
 									int nNewHeight,
 									float xScale,
 									float yScale,

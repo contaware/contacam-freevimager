@@ -7,8 +7,6 @@
 
 #pragma once
 
-#include "TraceLogFile.h"
-
 /*
 QueryPerformanceCounter (QPC) functions
 ---------------------------------------

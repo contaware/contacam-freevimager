@@ -43,8 +43,8 @@
 #include "MlString.h"
 #include "MMSystem.h"
 #include "Helpers.h"
-#include "Performance.h"
 #include "TraceLogFile.h"
+#include "Performance.h"
 #include "appconst.h"
 #include "bigalloc.h"
 #include <atlfile.h>
