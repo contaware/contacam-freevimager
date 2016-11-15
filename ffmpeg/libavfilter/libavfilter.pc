@@ -9,6 +9,6 @@ Version: 5.7.101
 Requires: libswresample >= 1.1.100, libavutil >= 54.16.100
 Requires.private: 
 Conflicts:
-Libs: -L${libdir}  -lavfilter -Ld:/mingw/lib -lx264 -lmp3lame -lm -lpsapi -ladvapi32 -lshell32
+Libs: -L${libdir}  -lavfilter -lws2_32 -Ld:/mingw/lib -lx264 -lmp3lame -lm -lpsapi -ladvapi32 -lshell32
 Libs.private: 
 Cflags: -I${includedir}

@@ -859,9 +859,10 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 										AV_CPU_FLAG_FMA4     |
 										AV_CPU_FLAG_AVX2     ));
 		
-		// AVCODEC register all
+		// AV format register all and init network
 		av_register_all();
-		
+		avformat_network_init();
+
 		// Init WinSock 2.2
 		WSADATA wsadata;
 		if (::WSAStartup(MAKEWORD(2, 2), &wsadata) == 0)
@@ -2058,6 +2059,9 @@ int CUImagerApp::ExitInstance()
 		// Log the stopping of the application
 		::LogLine(_T("%s"), ML_STRING(1566, "Closing") + _T(" ") + APPNAME_NOEXT);
 	}
+
+	// Clean-up AV format network
+	avformat_network_deinit();
 #endif
 
 	// Close The Application Mutex

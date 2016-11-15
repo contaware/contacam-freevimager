@@ -191,7 +191,7 @@
 @c @set have-udplite-h no
 @set have-unistd-h yes
 @set have-windows-h yes
-@c @set have-winsock2-h no
+@set have-winsock2-h yes
 @c @set have-intrinsics-neon no
 @set have-atanf yes
 @set have-atan2f yes
@@ -221,7 +221,7 @@
 @set have-access yes
 @set have-aligned-malloc yes
 @c @set have-clock-gettime no
-@c @set have-closesocket no
+@set have-closesocket yes
 @set have-commandlinetoargvw yes
 @set have-cotaskmemfree yes
 @set have-cryptgenrandom yes
@@ -293,17 +293,17 @@
 @c @set have-xform-asm no
 @c @set have-xmm-clobbers no
 @c @set have-condition-variable-ptr no
-@c @set have-socklen-t no
-@c @set have-struct-addrinfo no
+@set have-socklen-t yes
+@set have-struct-addrinfo yes
 @c @set have-struct-group-source-req no
-@c @set have-struct-ip-mreq-source no
-@c @set have-struct-ipv6-mreq no
+@set have-struct-ip-mreq-source yes
+@set have-struct-ipv6-mreq yes
 @c @set have-struct-pollfd no
 @c @set have-struct-rusage-ru-maxrss no
 @c @set have-struct-sctp-event-subscribe no
-@c @set have-struct-sockaddr-in6 no
+@set have-struct-sockaddr-in6 yes
 @c @set have-struct-sockaddr-sa-len no
-@c @set have-struct-sockaddr-storage no
+@set have-struct-sockaddr-storage yes
 @c @set have-struct-stat-st-mtim-tv-nsec no
 @c @set have-struct-v4l2-frmivalenum-discrete no
 @set have-atomics-native yes
@@ -469,7 +469,7 @@
 @c @set config-lzo no
 @set config-mdct yes
 @c @set config-pixelutils no
-@c @set config-network no
+@set config-network yes
 @set config-rdft yes
 @c @set config-fontconfig no
 @c @set config-incompatible-libav-abi no
@@ -525,7 +525,7 @@
 @c @set config-rangecoder no
 @set config-riffdec yes
 @set config-riffenc yes
-@c @set config-rtpdec no
+@set config-rtpdec yes
 @set config-rtpenc-chain yes
 @set config-sinewin yes
 @set config-startcode yes
@@ -964,7 +964,7 @@
 @c @set config-ape-demuxer no
 @c @set config-apng-demuxer no
 @c @set config-aqtitle-demuxer no
-@c @set config-asf-demuxer no
+@set config-asf-demuxer yes
 @c @set config-ass-demuxer no
 @c @set config-ast-demuxer no
 @c @set config-au-demuxer no
@@ -1061,7 +1061,7 @@
 @c @set config-mpc-demuxer no
 @c @set config-mpc8-demuxer no
 @c @set config-mpegps-demuxer no
-@c @set config-mpegts-demuxer no
+@set config-mpegts-demuxer yes
 @c @set config-mpegtsraw-demuxer no
 @c @set config-mpegvideo-demuxer no
 @c @set config-mpl2-demuxer no
@@ -1110,13 +1110,13 @@
 @c @set config-realtext-demuxer no
 @c @set config-redspark-demuxer no
 @c @set config-rl2-demuxer no
-@c @set config-rm-demuxer no
+@set config-rm-demuxer yes
 @c @set config-roq-demuxer no
 @c @set config-rpl-demuxer no
 @c @set config-rsd-demuxer no
 @c @set config-rso-demuxer no
 @c @set config-rtp-demuxer no
-@c @set config-rtsp-demuxer no
+@set config-rtsp-demuxer yes
 @c @set config-sami-demuxer no
 @c @set config-sap-demuxer no
 @c @set config-sbg-demuxer no
@@ -1742,7 +1742,7 @@
 @c @set config-sndio-outdev no
 @c @set config-v4l2-outdev no
 @c @set config-xv-outdev no
-@c @set config-aac-parser no
+@set config-aac-parser yes
 @c @set config-aac-latm-parser no
 @c @set config-ac3-parser no
 @c @set config-adx-parser no
@@ -1760,13 +1760,13 @@
 @c @set config-gsm-parser no
 @c @set config-h261-parser no
 @set config-h263-parser yes
-@c @set config-h264-parser no
+@set config-h264-parser yes
 @c @set config-hevc-parser no
-@c @set config-mjpeg-parser no
+@set config-mjpeg-parser yes
 @c @set config-mlp-parser no
 @set config-mpeg4video-parser yes
-@c @set config-mpegaudio-parser no
-@c @set config-mpegvideo-parser no
+@set config-mpegaudio-parser yes
+@set config-mpegvideo-parser yes
 @c @set config-opus-parser no
 @c @set config-png-parser no
 @c @set config-pnm-parser no
@@ -1789,7 +1789,7 @@
 @c @set config-ftp-protocol no
 @c @set config-gopher-protocol no
 @c @set config-hls-protocol no
-@c @set config-http-protocol no
+@set config-http-protocol yes
 @c @set config-httpproxy-protocol no
 @c @set config-https-protocol no
 @c @set config-icecast-protocol no
@@ -1803,13 +1803,13 @@
 @c @set config-rtmpt-protocol no
 @c @set config-rtmpte-protocol no
 @c @set config-rtmpts-protocol no
-@c @set config-rtp-protocol no
+@set config-rtp-protocol yes
 @c @set config-sctp-protocol no
 @c @set config-srtp-protocol no
 @c @set config-subfile-protocol no
-@c @set config-tcp-protocol no
+@set config-tcp-protocol yes
 @c @set config-tls-protocol no
-@c @set config-udp-protocol no
+@set config-udp-protocol yes
 @c @set config-udplite-protocol no
 @c @set config-unix-protocol no
 @c @set config-librtmp-protocol no
