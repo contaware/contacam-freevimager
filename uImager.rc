@@ -897,7 +897,7 @@ BEGIN
     LTEXT           "Homepage:",IDC_STATIC2143,15,80,42,8
     LTEXT           "www.contaware.com",IDC_WEB_LINK,74,80,70,8,SS_NOTIFY
     LTEXT           "Developed By:",IDC_STATIC2144,15,110,48,8
-    LTEXT           "Oliver Pfister",IDC_STATIC2145,74,110,216,8
+    LTEXT           "M.Sc. ETH Oliver Pfister",IDC_STATIC2145,74,110,216,8
     GROUPBOX        "",IDC_STATIC2146,7,38,285,26
     LTEXT           "",IDC_APPVER,74,49,67,8
     GROUPBOX        "",IDC_STATIC2148,7,100,285,39
