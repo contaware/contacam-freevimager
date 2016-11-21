@@ -221,6 +221,8 @@ void CDxCapture::ReadDeviceNameAndPath(IPropertyBag* pBag, CString& sDeviceName,
 			sDevicePath = CString(var.bstrVal);
 			SysFreeString(var.bstrVal);
 		}
+		else
+			sDevicePath = sDeviceName;
 	}
 }
 

@@ -2072,7 +2072,7 @@ int CUImagerApp::ExitInstance()
 	m_PrinterControl.SavePrinterSelection(m_hDevMode, m_hDevNames);
 
 	// Note
-	TRACE(_T("*** FFMPEG LEAKS 47 or 63 BYTES, IT'S NORMAL ***\n"));
+	TRACE(_T("*** FFMPEG LEAKS 2 x 47 BYTES, IT'S NORMAL ***\n"));
 
 	// Clean-Up Trace Log File
 	::EndTraceLogFile();
