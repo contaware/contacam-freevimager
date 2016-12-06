@@ -246,7 +246,7 @@ extern void KillApp(HANDLE& hProcess);							// this closes the process handle a
 
 // Enumerate or eventually kill process(es) by name
 // returns the number of found processes
-extern int EnumKillProcByName(CString sProcessName, BOOL bKill = FALSE);
+extern int EnumKillProcByName(const CString& sProcessName, BOOL bKill = FALSE);
 
 // Execute an app with hidden window (working for both console and windowed apps)
 extern BOOL ExecHiddenApp(	const CString& sFileName,

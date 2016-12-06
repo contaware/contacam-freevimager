@@ -1495,7 +1495,7 @@ void KillApp(HANDLE& hProcess)
 	}
 }
 
-int EnumKillProcByName(CString sProcessName, BOOL bKill/*=FALSE*/)
+int EnumKillProcByName(const CString& sProcessName, BOOL bKill/*=FALSE*/)
 {	
 	// Vars
 	int iCount = 0;
@@ -1534,11 +1534,14 @@ int EnumKillProcByName(CString sProcessName, BOOL bKill/*=FALSE*/)
 			{
 				// Get the process name
 				DWORD dwStrLength = 0;
-				HMODULE hMod;
 				hProc = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, aiPID[i]);
-				if (hProc && lpfEnumProcessModules(hProc, &hMod, sizeof(hMod), &iCbneeded))
-					dwStrLength = lpfGetModuleBaseName(hProc, hMod, szName, MAX_PATH);
-				CloseHandle(hProc);
+				if (hProc)
+				{
+					HMODULE hMod;
+					if (lpfEnumProcessModules(hProc, &hMod, sizeof(hMod), &iCbneeded))
+						dwStrLength = lpfGetModuleBaseName(hProc, hMod, szName, MAX_PATH);
+					CloseHandle(hProc);
+				}
 
 				// We will match regardless of character case
 				if (dwStrLength > 0 && sProcessName.CompareNoCase(szName) == 0)
