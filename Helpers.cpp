@@ -6,7 +6,6 @@
 #include "Rpc.h"
 #include <lmcons.h>
 #include <math.h>
-#include <tlhelp32.h>
 #include <psapi.h>
 
 #ifdef _DEBUG
@@ -15,7 +14,26 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#pragma comment(lib, "psapi.lib")	// to support GetProcessMemoryInfo()
+// PSAPI
+// In Windows 7 and Windows Server 2008 R2 the PSAPI functions (e.g.EnumProcesses) have been renamed
+// and moved from PSAPI.dll to KERNEL32.dll (e.g.K32EnumProcesses).
+// However PSAPI.dll still exports the "old" functions, but now they are just simple wrappers over
+// the "new" ones, located in KERNEL32.dll.	So, if your target system is Windows 7, Windows Server 2008 R2
+// or newer you can directly call K32EnumProcesses or indirectly, via EnumProcesses.
+// But, if your target system may be an older one, then obviously you have to call EnumProcesses.
+// See newer versions of PSAPI.h SDK header:
+// #if (PSAPI_VERSION > 1)
+//     #define EnumProcesses               K32EnumProcesses
+//     #define EnumProcessModules          K32EnumProcessModules
+// #endif
+// Depending on the minimum target system of your application, you have two choices:
+// 1. define PSAPI_VERSION to a value greater than 1 (in preprocessor directives or before including PSAPI.h)
+//    In this case K32EnumProcesses will be directly called, the link to PSAPI.lib is not necessary,
+//    but the target system must obviously be Windows 7, Windows Server 2008 R2, or newer.
+// 2. otherwise, make sure PSAPI_VERSION is 1 and link your project to PSAPI.lib.
+#if (PSAPI_VERSION <= 1)
+#pragma comment(lib, "psapi.lib")	// to support EnumProcesses(), EnumProcessModules(), GetModuleBaseName(), GetProcessMemoryInfo()
+#endif
 #pragma comment(lib, "mpr.lib")		// to support WNetGetConnection()
 #pragma comment(lib, "Rpcrt4.lib")	// to support UuidCreate(), UuidToString(), RpcStringFree(), 
 #pragma comment(lib, "Wininet.lib")	// to support InternetGetLastResponseInfo()
@@ -1496,159 +1514,74 @@ void KillApp(HANDLE& hProcess)
 }
 
 int EnumKillProcByName(const CString& sProcessName, BOOL bKill/*=FALSE*/)
-{	
+{
 	// Vars
 	int iCount = 0;
-	HANDLE hProc;
-	HINSTANCE hInstLib;
+	TCHAR szName[MAX_PATH];
+	DWORD dwNumProc = 1024;
+	DWORD* pProcIDs;
 
-	// PSAPI
-	hInstLib = LoadLibrary(_T("PSAPI.DLL"));
-	if (hInstLib)
+	// How many processes are there?
+	for (;;)
 	{
-		TCHAR szName[MAX_PATH];
-
-		// Get procedure addresses
-		BOOL (WINAPI *lpfEnumProcesses)(DWORD *, DWORD cb, DWORD *);
-		BOOL (WINAPI *lpfEnumProcessModules)(HANDLE, HMODULE *, DWORD, LPDWORD);
-		DWORD (WINAPI *lpfGetModuleBaseName)(HANDLE, HMODULE, LPTSTR, DWORD);
-		lpfEnumProcesses = (BOOL(WINAPI*)(DWORD *, DWORD, DWORD*))GetProcAddress(hInstLib, "EnumProcesses");
-		lpfEnumProcessModules = (BOOL(WINAPI*)(HANDLE, HMODULE *, DWORD, LPDWORD))GetProcAddress(hInstLib, "EnumProcessModules");
-		lpfGetModuleBaseName = (DWORD(WINAPI*)(HANDLE, HMODULE, LPTSTR, DWORD))GetProcAddress(hInstLib, "GetModuleBaseNameW");	
-		if (lpfEnumProcesses		&&
-			lpfEnumProcessModules	&&
-			lpfGetModuleBaseName)
+		pProcIDs = new DWORD[dwNumProc];
+		if (!pProcIDs)
+			return 0;
+		DWORD dwBytesUsed;
+		if (!EnumProcesses(pProcIDs, dwNumProc * sizeof(DWORD), &dwBytesUsed))
 		{
-			// How many processes are there?
-			DWORD aiPID[1024];
-			DWORD iCbneeded;
-			if (!lpfEnumProcesses(aiPID, sizeof(aiPID), &iCbneeded))
-			{
-				FreeLibrary(hInstLib);
-				return 0;
-			}
-			DWORD iNumProc = iCbneeded / sizeof(DWORD);
-
-			// Get and match the name of each process
-			for (DWORD i = 0 ; i < iNumProc ; i++)
-			{
-				// Get the process name
-				DWORD dwStrLength = 0;
-				hProc = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, aiPID[i]);
-				if (hProc)
-				{
-					HMODULE hMod;
-					if (lpfEnumProcessModules(hProc, &hMod, sizeof(hMod), &iCbneeded))
-						dwStrLength = lpfGetModuleBaseName(hProc, hMod, szName, MAX_PATH);
-					CloseHandle(hProc);
-				}
-
-				// We will match regardless of character case
-				if (dwStrLength > 0 && sProcessName.CompareNoCase(szName) == 0)
-				{
-					iCount++;
-					if (bKill)
-					{
-						hProc = OpenProcess(PROCESS_TERMINATE, FALSE, aiPID[i]);
-						if (hProc)
-						{
-							TerminateProcess(hProc, 0);
-							CloseHandle(hProc); // close handle to avoid ERROR_NO_SYSTEM_RESOURCES
-						}
-					}
-				}
-			}
-
-			// Free
-			FreeLibrary(hInstLib);
-
-			// Return
-			return iCount;
+			delete[] pProcIDs;
+			return 0;
+		}
+		DWORD dwNumProcUsed = dwBytesUsed / sizeof(DWORD);
+		if (dwNumProcUsed < dwNumProc)
+		{
+			dwNumProc = dwNumProcUsed;
+			break;
 		}
 		else
-			FreeLibrary(hInstLib);
-	}
-
-	// Try ToolHelp
-	hInstLib = LoadLibrary(_T("Kernel32.DLL"));
-	if (hInstLib == NULL)
-		return 0;
-
-	// Get procedure addresses
-	HANDLE (WINAPI *lpfCreateToolhelp32Snapshot)(DWORD, DWORD);
-	BOOL (WINAPI *lpfProcess32First)(HANDLE, LPPROCESSENTRY32);
-	BOOL (WINAPI *lpfProcess32Next)(HANDLE, LPPROCESSENTRY32);
-	BOOL (WINAPI *lpfModule32First)(HANDLE, LPMODULEENTRY32);
-	BOOL (WINAPI *lpfModule32Next)(HANDLE, LPMODULEENTRY32);
-	lpfCreateToolhelp32Snapshot= (HANDLE(WINAPI*)(DWORD,DWORD))GetProcAddress(hInstLib, "CreateToolhelp32Snapshot");
-	lpfProcess32First = (BOOL(WINAPI*)(HANDLE,LPPROCESSENTRY32))GetProcAddress(hInstLib, "Process32FirstW") ;
-	lpfProcess32Next = (BOOL(WINAPI*)(HANDLE,LPPROCESSENTRY32))GetProcAddress(hInstLib, "Process32NextW");
-	lpfModule32First = (BOOL(WINAPI*)(HANDLE,LPMODULEENTRY32))GetProcAddress(hInstLib, "Module32FirstW");
-	lpfModule32Next = (BOOL(WINAPI*)(HANDLE,LPMODULEENTRY32))GetProcAddress(hInstLib, "Module32NextW");
-	if (lpfProcess32Next == NULL	||
-		lpfProcess32First == NULL	||
-		lpfModule32Next == NULL		||
-		lpfModule32First == NULL	||
-		lpfCreateToolhelp32Snapshot == NULL)
-	{
-		FreeLibrary(hInstLib);
-		return 0;
-	}
-	
-	// Get a handle to a Toolhelp snapshot of all the systems processes
-	HANDLE hSnapShot = lpfCreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-	if (hSnapShot == INVALID_HANDLE_VALUE)
-	{
-		FreeLibrary(hInstLib);
-		return 0;
-	}
-	
-    // While there are processes, keep looping and checking
-	PROCESSENTRY32 procentry;
-    procentry.dwSize = sizeof(PROCESSENTRY32);
-    BOOL bResult = lpfProcess32First(hSnapShot, &procentry);
-    while (bResult)
-    {
-		// Get a handle to a Toolhelp snapshot of this process
-		HANDLE hSnapShotm = lpfCreateToolhelp32Snapshot(TH32CS_SNAPMODULE, procentry.th32ProcessID);
-		if (hSnapShotm != INVALID_HANDLE_VALUE)
 		{
-			// While there are modules, keep looping and checking
-			MODULEENTRY32 modentry;
-			modentry.dwSize = sizeof(MODULEENTRY32);
-			BOOL bResultm = lpfModule32First(hSnapShotm, &modentry);
-			while (bResultm)
-			{
-				// We will match regardless of character case
-				if (sProcessName.CompareNoCase(modentry.szModule) == 0)
-				{
-					iCount++;
-					if (bKill)
-					{
-						hProc = OpenProcess(PROCESS_TERMINATE, FALSE, procentry.th32ProcessID);
-						if (hProc)
-						{
-							TerminateProcess(hProc, 0);
-							CloseHandle(hProc); // close handle to avoid ERROR_NO_SYSTEM_RESOURCES
-						}
-					}
-				}
-			
-				// Keep looking
-				modentry.dwSize = sizeof(MODULEENTRY32);
-				bResultm = lpfModule32Next(hSnapShotm, &modentry);
-			}
-			CloseHandle(hSnapShotm);
+			// Allocate more memory in the next iteration
+			delete[] pProcIDs;
+			dwNumProc *= 2;
+		}
+	}
+
+	// Get and match the name of each process
+	for (DWORD i = 0 ; i < dwNumProc ; i++)
+	{
+		// Get the process name
+		DWORD dwStrLength = 0;
+		HANDLE hProc = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pProcIDs[i]);
+		if (hProc)
+		{
+			HMODULE hMod;
+			DWORD dwBytesNeeded;
+			if (EnumProcessModules(hProc, &hMod, sizeof(hMod), &dwBytesNeeded))
+				dwStrLength = GetModuleBaseName(hProc, hMod, szName, MAX_PATH);
+			CloseHandle(hProc);
 		}
 
-		// Keep looking
-        procentry.dwSize = sizeof(PROCESSENTRY32);
-        bResult = lpfProcess32Next(hSnapShot, &procentry);
-    }
+		// We will match regardless of character case
+		if (dwStrLength > 0 && sProcessName.CompareNoCase(szName) == 0)
+		{
+			iCount++;
+			if (bKill)
+			{
+				hProc = OpenProcess(PROCESS_TERMINATE, FALSE, pProcIDs[i]);
+				if (hProc)
+				{
+					TerminateProcess(hProc, 0);
+					CloseHandle(hProc); // close handle to avoid ERROR_NO_SYSTEM_RESOURCES
+				}
+			}
+		}
+	}
 
 	// Free
-	CloseHandle(hSnapShot);
-	FreeLibrary(hInstLib);
+	delete[] pProcIDs;
+
+	// Return
 	return iCount;
 }
 
