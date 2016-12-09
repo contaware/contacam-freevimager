@@ -233,10 +233,10 @@ public:
 			CString m_sNonce;
 			CString m_sAlgorithm;
 			CString m_sOpaque;
+			DWORD m_dwCNonceCount;
 			volatile enum {FORMATVIDEO_UNKNOWN = 0, FORMATVIDEO_JPEG, FORMATVIDEO_MJPEG, FORMATAUDIO_UNKNOWN, FORMATAUDIO_MULAW, FORMATAUDIO_G726_24, FORMATAUDIO_G726_32} m_FormatType;
 			typedef enum {AUTHNONE = 0, AUTHBASIC, AUTHDIGEST} AUTHTYPE;
-			volatile AUTHTYPE m_AnswerAuthorizationType;		// authorization type chosen by parsing WWW-Authenticate header
-			volatile AUTHTYPE m_LastRequestAuthorizationType;	// last sent authorization type
+			volatile AUTHTYPE m_AnswerAuthorizationType; // authorization type chosen by parsing WWW-Authenticate header
 			volatile BOOL m_bQueryVideoProperties;
 			volatile BOOL m_bSetVideoResolution;
 			volatile BOOL m_bSetVideoCompression;
@@ -259,7 +259,6 @@ public:
 							m_bPollNextJpeg = FALSE;
 							m_FormatType = FORMATVIDEO_UNKNOWN;
 							m_AnswerAuthorizationType = AUTHNONE;
-							m_LastRequestAuthorizationType = AUTHNONE;
 							m_bOldVersion = FALSE;
 							m_bConnectionKeepAlive = FALSE;
 							m_pCodec = NULL;
@@ -298,7 +297,6 @@ public:
 			CAudioTools* m_pAudioTools;
 			CAudioPlay* m_pAudioPlay;
 			BOOL m_bMultipartNoLength;
-			DWORD m_dwCNonceCount;
 			CString m_sLastRequest;
 			CString m_sMultipartBoundary;
 			char m_szMultipartBoundary[HTTP_MAX_MULTIPART_BOUNDARY];

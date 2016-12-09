@@ -2548,6 +2548,7 @@ BOOL CVideoDeviceDoc::CHttpThread::PollAndClean(BOOL bDoNewPoll)
 	// New Poll Connection
 	if (bDoNewPoll)
 	{
+		// Allocate
 		pNetCom = new CNetCom;
 		if (!pNetCom)
 			return FALSE;
@@ -2557,12 +2558,24 @@ BOOL CVideoDeviceDoc::CHttpThread::PollAndClean(BOOL bDoNewPoll)
 			delete pNetCom;
 			return FALSE;
 		}
-		if (m_pDoc->m_pHttpVideoParseProcess->m_AnswerAuthorizationType == CVideoDeviceDoc::CHttpParseProcess::AUTHBASIC)
-			pHttpVideoParseProcess->m_AnswerAuthorizationType = CVideoDeviceDoc::CHttpParseProcess::AUTHBASIC;
+		
+		// Copy the authorization variables and increment the client nonce count
+		pHttpVideoParseProcess->m_AnswerAuthorizationType = m_pDoc->m_pHttpVideoParseProcess->m_AnswerAuthorizationType;
+		pHttpVideoParseProcess->m_sRealm = m_pDoc->m_pHttpVideoParseProcess->m_sRealm;
+		pHttpVideoParseProcess->m_sQop = m_pDoc->m_pHttpVideoParseProcess->m_sQop;
+		pHttpVideoParseProcess->m_sNonce = m_pDoc->m_pHttpVideoParseProcess->m_sNonce;
+		pHttpVideoParseProcess->m_sAlgorithm = m_pDoc->m_pHttpVideoParseProcess->m_sAlgorithm;
+		pHttpVideoParseProcess->m_sOpaque = m_pDoc->m_pHttpVideoParseProcess->m_sOpaque;
+		pHttpVideoParseProcess->m_dwCNonceCount = m_pDoc->m_pHttpVideoParseProcess->m_dwCNonceCount;
+		m_pDoc->m_pHttpVideoParseProcess->m_dwCNonceCount++;
+
+		// Init http version, format type and sizes
 		pHttpVideoParseProcess->m_bOldVersion = m_pDoc->m_pHttpVideoParseProcess->m_bOldVersion;
 		pHttpVideoParseProcess->m_FormatType = m_pDoc->m_pHttpVideoParseProcess->m_FormatType;
 		for (int i = 0 ; i < m_pDoc->m_pHttpVideoParseProcess->m_Sizes.GetSize() ; i++)
 			pHttpVideoParseProcess->m_Sizes.Add(m_pDoc->m_pHttpVideoParseProcess->m_Sizes[i]);
+
+		// Connect
 		if (Connect(pNetCom,
 					pHttpVideoParseProcess,
 					m_pDoc->m_pVideoNetCom->GetSocketFamily()))
@@ -8854,7 +8867,6 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRawRequest(CString sRequest)
 	CString sMsg;
 	if (m_AnswerAuthorizationType == AUTHBASIC) // http://tools.ietf.org/html/rfc2617
 	{
-		m_LastRequestAuthorizationType = AUTHBASIC;
 		USES_CONVERSION;
 		CBase64 base64;
 		CString sUserNamePassword;
@@ -8878,8 +8890,6 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRawRequest(CString sRequest)
 	}
 	else if (m_AnswerAuthorizationType == AUTHDIGEST) // http://tools.ietf.org/html/rfc2617
 	{
-		m_AnswerAuthorizationType = AUTHNONE; // reset it!
-		m_LastRequestAuthorizationType = AUTHDIGEST;
 		BOOL bQop = FALSE;
 		CString sQopLowerCase = m_sQop;
 		sQopLowerCase.MakeLower();
@@ -8906,6 +8916,11 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRawRequest(CString sRequest)
 		char* pszA2 = T2A(const_cast<LPTSTR>(sToHash.operator LPCTSTR()));
 		if (hmac.Hash((const BYTE*)pszA2, (DWORD)strlen(pszA2), hash))
 			sHA2 = hash.Format(FALSE);
+
+		// We can reuse the server nonce value (the server only issues a new nonce for each "401" response),
+		// but for each request we must provide a new cnonce and increment the request counter (nc).
+		// The server may remember when each nonce value was issued, expiring them after a certain amount of
+		// time by sending a "401" status code, when that happens we must responde with the new nonce.
 
 		// With Qop, nc and cnonce
 		if (bQop)
@@ -8980,7 +8995,6 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRawRequest(CString sRequest)
 	}
 	else
 	{
-		m_LastRequestAuthorizationType = AUTHNONE;
 		// Keep it short because some stupid ip cams (like Planet)
 		// run out of buffer or do not parse well if we send too much!
 		sMsg.Format(_T("User-Agent: %s/%s\r\n")
@@ -10224,29 +10238,38 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 				return FALSE; // Do not call Processor
 			}
 
-			// Parse www-authenticate line(s)
-			CString sAuthLine1LowerCase;
-			CString sAuthLine1;
-			CString sAuthLine2LowerCase;
-			CString sAuthLine2;
-			if ((nPos = sMsgLowerCase.Find(_T("www-authenticate:"), 0)) >= 0 &&
-				(nPosEnd = FindEndOfLine(sMsgLowerCase, nPos)) >= 0)
-			{
-				sAuthLine1LowerCase = sMsgLowerCase.Mid(nPos, nPosEnd - nPos);
-				sAuthLine1 = sMsg.Mid(nPos, nPosEnd - nPos);
-
-				// There may be a second www-authenticate line if an additional authentication type is supported
-				if ((nPos = sMsgLowerCase.Find(_T("www-authenticate:"), nPosEnd)) >= 0 &&
+			// Choose the first supported authentication type
+			// (there may be multiple www-authenticate lines)
+			CString sChosenAuthLineLowerCase;
+			CString sChosenAuthLine;
+			AUTHTYPE ChosenAuthorizationType = AUTHBASIC; // in case of missing www-authenticate line
+			nPosEnd = 0;
+			while ((nPos = sMsgLowerCase.Find(_T("www-authenticate:"), nPosEnd)) >= 0 &&
 					(nPosEnd = FindEndOfLine(sMsgLowerCase, nPos)) >= 0)
+			{
+				sChosenAuthLineLowerCase = sMsgLowerCase.Mid(nPos, nPosEnd - nPos);
+				sChosenAuthLine = sMsg.Mid(nPos, nPosEnd - nPos);
+				if ((nPos = sChosenAuthLineLowerCase.Find(_T("basic"), 0)) >= 0)
 				{
-					sAuthLine2LowerCase = sMsgLowerCase.Mid(nPos, nPosEnd - nPos);
-					sAuthLine2 = sMsg.Mid(nPos, nPosEnd - nPos);
+					sChosenAuthLineLowerCase = sChosenAuthLineLowerCase.Mid(nPos);
+					sChosenAuthLine = sChosenAuthLine.Mid(nPos);
+					ChosenAuthorizationType = AUTHBASIC;
+					break;
+				}
+				else if ((nPos = sChosenAuthLineLowerCase.Find(_T("digest"), 0)) >= 0)
+				{
+					sChosenAuthLineLowerCase = sChosenAuthLineLowerCase.Mid(nPos);
+					sChosenAuthLine = sChosenAuthLine.Mid(nPos);
+					ChosenAuthorizationType = AUTHDIGEST;
+					break;
 				}
 			}
 			pNetCom->Read(); // Empty the buffers, so that parser stops calling us!
 
 			// Authentication failed?
-			if (m_LastRequestAuthorizationType != AUTHNONE)
+			// Note: an ip cam may decide to issue a new nonce by replying with a 401,
+			//       for this reason it's important to check the m_bTryConnecting flag
+			if (m_bTryConnecting && m_AnswerAuthorizationType != AUTHNONE)
 			{
 				// Reset flag
 				m_bTryConnecting = FALSE;
@@ -10262,60 +10285,8 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 				return FALSE; // Do not call Processor
 			}
 
-			// Choose best authentication type depending from the format type
-			AUTHTYPE AnswerAuthorizationType1 = AUTHNONE;
-			if (sAuthLine1LowerCase.Find(_T("basic"), 0) >= 0)
-				AnswerAuthorizationType1 = AUTHBASIC;
-			else if (sAuthLine1LowerCase.Find(_T("digest"), 0) >= 0)
-				AnswerAuthorizationType1 = AUTHDIGEST;
-			CString sChosenAuthLine;
-			CString sChosenAuthLineLowerCase;
-			if (sAuthLine2LowerCase == _T(""))
-			{
-				m_AnswerAuthorizationType = AnswerAuthorizationType1;
-				sChosenAuthLine = sAuthLine1;
-				sChosenAuthLineLowerCase = sAuthLine1LowerCase;
-			}
-			else
-			{
-				AUTHTYPE AnswerAuthorizationType2 = AUTHNONE;
-				if (sAuthLine2LowerCase.Find(_T("basic"), 0) >= 0)
-					AnswerAuthorizationType2 = AUTHBASIC;
-				else if (sAuthLine2LowerCase.Find(_T("digest"), 0) >= 0)
-					AnswerAuthorizationType2 = AUTHDIGEST;
-				if (m_FormatType == FORMATVIDEO_JPEG)
-				{
-					// Choose fastest
-					if (AnswerAuthorizationType1 < AnswerAuthorizationType2)
-					{
-						m_AnswerAuthorizationType = AnswerAuthorizationType1;
-						sChosenAuthLine = sAuthLine1;
-						sChosenAuthLineLowerCase = sAuthLine1LowerCase;
-					}
-					else
-					{
-						m_AnswerAuthorizationType = AnswerAuthorizationType2;
-						sChosenAuthLine = sAuthLine2;
-						sChosenAuthLineLowerCase = sAuthLine2LowerCase;
-					}
-				}
-				else
-				{
-					// Choose most secure
-					if (AnswerAuthorizationType1 < AnswerAuthorizationType2)
-					{
-						m_AnswerAuthorizationType = AnswerAuthorizationType2;
-						sChosenAuthLine = sAuthLine2;
-						sChosenAuthLineLowerCase = sAuthLine2LowerCase;
-					}
-					else
-					{
-						m_AnswerAuthorizationType = AnswerAuthorizationType1;
-						sChosenAuthLine = sAuthLine1;
-						sChosenAuthLineLowerCase = sAuthLine1LowerCase;
-					}
-				}
-			}
+			// Set the Authorization Type
+			m_AnswerAuthorizationType = ChosenAuthorizationType;
 
 			// Realm (m_sRealm will not contain the double quotes)
 			if ((nPos = sChosenAuthLineLowerCase.Find(_T("realm=\""), 0)) >= 0)
@@ -10325,40 +10296,47 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 					m_sRealm = sChosenAuthLine.Mid(nPos, nPosEnd - nPos);
 			}
 
-			// Qop (m_sQop will not contain the double quotes)
-			if ((nPos = sChosenAuthLineLowerCase.Find(_T("qop=\""), 0)) >= 0)
+			// Additional parameters for digest auth
+			if (m_AnswerAuthorizationType == AUTHDIGEST)
 			{
-				nPos += 5;
-				if ((nPosEnd = sChosenAuthLineLowerCase.Find(_T('\"'), nPos)) >= 0)
-					m_sQop = sChosenAuthLine.Mid(nPos, nPosEnd - nPos); 
+				// Qop (m_sQop will not contain the double quotes)
+				if ((nPos = sChosenAuthLineLowerCase.Find(_T("qop=\""), 0)) >= 0)
+				{
+					nPos += 5;
+					if ((nPosEnd = sChosenAuthLineLowerCase.Find(_T('\"'), nPos)) >= 0)
+						m_sQop = sChosenAuthLine.Mid(nPos, nPosEnd - nPos);
+				}
+
+				// Nonce (m_sNonce will not contain the double quotes)
+				if ((nPos = sChosenAuthLineLowerCase.Find(_T("nonce=\""), 0)) >= 0)
+				{
+					nPos += 7;
+					if ((nPosEnd = sChosenAuthLineLowerCase.Find(_T('\"'), nPos)) >= 0)
+						m_sNonce = sChosenAuthLine.Mid(nPos, nPosEnd - nPos);
+				}
+
+				// Algorithm
+				if ((nPos = sChosenAuthLineLowerCase.Find(_T("algorithm="), 0)) >= 0)
+				{
+					nPos += 10;
+					m_sAlgorithm = sChosenAuthLine.Mid(nPos);
+					m_sAlgorithm.TrimLeft();
+					if ((nPosEnd = m_sAlgorithm.Find(_T(','))) >= 0)
+						m_sAlgorithm = m_sAlgorithm.Left(nPosEnd);
+					m_sAlgorithm.TrimRight();
+				}
+
+				// Opaque (m_sOpaque will not contain the double quotes)
+				if ((nPos = sChosenAuthLineLowerCase.Find(_T("opaque=\""), 0)) >= 0)
+				{
+					nPos += 8;
+					if ((nPosEnd = sChosenAuthLineLowerCase.Find(_T('\"'), nPos)) >= 0)
+						m_sOpaque = sChosenAuthLine.Mid(nPos, nPosEnd - nPos);
+				}
 			}
 
-			// Nonce (m_sNonce will not contain the double quotes)
-			if ((nPos = sChosenAuthLineLowerCase.Find(_T("nonce=\""), 0)) >= 0)
-			{
-				nPos += 7;
-				if ((nPosEnd = sChosenAuthLineLowerCase.Find(_T('\"'), nPos)) >= 0)
-					m_sNonce = sChosenAuthLine.Mid(nPos, nPosEnd - nPos); 
-			}
-
-			// Algorithm
-			if ((nPos = sChosenAuthLineLowerCase.Find(_T("algorithm="), 0)) >= 0)
-			{
-				nPos += 10;
-				m_sAlgorithm = sChosenAuthLine.Mid(nPos);
-				m_sAlgorithm.TrimLeft();
-				if ((nPosEnd = m_sAlgorithm.Find(_T(','))) >= 0)
-					m_sAlgorithm = m_sAlgorithm.Left(nPosEnd); 
-				m_sAlgorithm.TrimRight();
-			}
-
-			// Opaque (m_sOpaque will not contain the double quotes)
-			if ((nPos = sChosenAuthLineLowerCase.Find(_T("opaque=\""), 0)) >= 0)
-			{
-				nPos += 8;
-				if ((nPosEnd = sChosenAuthLineLowerCase.Find(_T('\"'), nPos)) >= 0)
-					m_sOpaque = sChosenAuthLine.Mid(nPos, nPosEnd - nPos); 
-			}
+			// Reset Client Nonce Count
+			m_dwCNonceCount = 0U;
 
 			// Start Connection with Last Request
 			if (m_FormatType < FORMATAUDIO_UNKNOWN)
