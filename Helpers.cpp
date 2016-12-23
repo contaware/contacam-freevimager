@@ -1054,14 +1054,14 @@ BOOL DeleteToRecycleBin(LPCTSTR szName)
 CString FormatIntegerNumber(const CString& sNumber)
 {
 	// Format
-	int nSize = ::GetNumberFormat(LOCALE_USER_DEFAULT,
+	int nSize = GetNumberFormat(LOCALE_USER_DEFAULT,
 								0,
 								sNumber,
 								NULL,
 								NULL,
 								0);
 	CString sOutNumber;
-	::GetNumberFormat(LOCALE_USER_DEFAULT,
+	GetNumberFormat(LOCALE_USER_DEFAULT,
 					0,
 					sNumber,
 					NULL,
@@ -1071,11 +1071,11 @@ CString FormatIntegerNumber(const CString& sNumber)
 
 	// Remove Decimals
 	CString sDecSeparator;
-	nSize = ::GetLocaleInfo(LOCALE_USER_DEFAULT,
+	nSize = GetLocaleInfo(	LOCALE_USER_DEFAULT,
 							LOCALE_SDECIMAL,
 							NULL,
 							0);
-	::GetLocaleInfo(LOCALE_USER_DEFAULT,
+	GetLocaleInfo(	LOCALE_USER_DEFAULT,
 					LOCALE_SDECIMAL,
 					sDecSeparator.GetBuffer(nSize),
 					nSize);
@@ -2337,18 +2337,20 @@ void GetMemoryStats(DWORD* pRegions/*=NULL*/,
 SIZE_T HeapAllocatedSize(HANDLE heap)
 {
 	SIZE_T Size = 0;
-	HeapLock(heap);
-	PROCESS_HEAP_ENTRY entry;
-	memset(&entry, 0, sizeof(entry));
-	while (HeapWalk(heap, &entry))
+	PROCESS_HEAP_ENTRY HeapEntry;
+	memset(&HeapEntry, 0, sizeof(HeapEntry));
+	if (HeapLock(heap))
 	{
-		if (entry.wFlags & PROCESS_HEAP_ENTRY_BUSY)
+		while (HeapWalk(heap, &HeapEntry))
 		{
-			Size += entry.cbData;
-			Size += entry.cbOverhead;
+			if (HeapEntry.wFlags & PROCESS_HEAP_ENTRY_BUSY)
+			{
+				Size += HeapEntry.cbData;
+				Size += HeapEntry.cbOverhead;
+			}
 		}
+		HeapUnlock(heap);
 	}
-	HeapUnlock(heap);
 	return Size;
 }
 
@@ -2405,6 +2407,183 @@ void GetHeapStats(	SIZE_T* pDefaultHeapSize/*=NULL*/,
 	if (pOtherHeapsSize) *pOtherHeapsSize = OtherHeapsSize;
 	if (pDefaultHeapType) *pDefaultHeapType = nDefaultHeapType;
 	if (pCRTHeapType) *pCRTHeapType = nCRTHeapType;
+}
+
+void PrintBlocks(FILE* pf, WORD wFlags, __int64 Data, __int64 Overhead, __int64 Count)
+{
+	if (pf)
+	{
+		CString sCount;
+		while (Count-- > 0)
+			sCount += _T(".");
+
+		if (wFlags & PROCESS_HEAP_UNCOMMITTED_RANGE)
+		{
+			_ftprintf(pf, _T("  FREE %s %I64d+%I64d bytes uncommitted\n"), (LPCTSTR)sCount, Data, Overhead);
+		}
+		// Allocated heap block
+		// Note: big heap blocks which are not directly managed by the heap (allocated with VirtualAlloc)
+		// are also marked with PROCESS_HEAP_ENTRY_BUSY, but have a region index not used
+		// by normal/small size heap blocks (big blocks do not have an associated PROCESS_HEAP_REGION).
+		else if (wFlags & PROCESS_HEAP_ENTRY_BUSY)
+		{
+			// Block can be moved because it has been allocated with
+			// LMEM_MOVEABLE (LocalAlloc) or GMEM_MOVEABLE (GlocalAlloc).
+			// Block.hMem is the handle of the movable memory block.
+			if (wFlags & PROCESS_HEAP_ENTRY_MOVEABLE)
+				_ftprintf(pf, _T("  USED %s %I64d+%I64d bytes (moveable)\n"), (LPCTSTR)sCount, Data, Overhead);
+			else if (wFlags & PROCESS_HEAP_ENTRY_DDESHARE)
+				_ftprintf(pf, _T("  USED %s %I64d+%I64d bytes (DDE share)\n"), (LPCTSTR)sCount, Data, Overhead);
+			else
+				_ftprintf(pf, _T("  USED %s %I64d+%I64d bytes\n"), (LPCTSTR)sCount, Data, Overhead);
+		}
+		else if (wFlags == 0)
+		{
+			_ftprintf(pf, _T("  FREE %s %I64d+%I64d bytes committed\n"), (LPCTSTR)sCount, Data, Overhead);
+		}
+	}
+}
+
+void HeapDump(HANDLE heap, CString sConfigFilesDir)
+{
+	const __int64 AlignTolerance = 16;
+
+	// Adapt given config files path
+	sConfigFilesDir.TrimRight(_T('\\'));
+
+	// Heap walk to temp binary file
+	CString sHeapBinLogFileName(sConfigFilesDir + _T("\\") + HEAP_BIN_LOGNAME_EXT);
+	HANDLE hFile = CreateFile(	sHeapBinLogFileName, GENERIC_WRITE,
+								FILE_SHARE_READ, NULL, CREATE_ALWAYS, // overwrite existing file
+								FILE_ATTRIBUTE_NORMAL, NULL);
+	if (hFile == INVALID_HANDLE_VALUE)
+		return;
+	PROCESS_HEAP_ENTRY HeapEntry;
+	memset(&HeapEntry, 0, sizeof(HeapEntry));
+	if (HeapLock(heap))
+	{
+		while (HeapWalk(heap, &HeapEntry))
+		{
+			DWORD NumberOfBytesWritten;
+			WriteFile(hFile, &HeapEntry, sizeof(HeapEntry), &NumberOfBytesWritten, NULL);
+		}
+		HeapUnlock(heap);
+	}
+	CloseHandle(hFile);
+	hFile = CreateFile(	sHeapBinLogFileName, GENERIC_READ,
+						FILE_SHARE_READ, NULL, OPEN_EXISTING,
+						FILE_ATTRIBUTE_NORMAL, NULL);
+	if (hFile == INVALID_HANDLE_VALUE)
+	{
+		DeleteFile(sHeapBinLogFileName);
+		return;
+	}
+
+	// Make a human readable log file
+	CString sHeapLogFileName(sConfigFilesDir + _T("\\") + HEAP_LOGNAME_EXT);
+	CString sOldHeapLogFileName = GetFileNameNoExt(sHeapLogFileName) + _T(".old");
+	DeleteFile(sOldHeapLogFileName);
+	MoveFile(sHeapLogFileName, sOldHeapLogFileName);
+	FILE* pf = _tfopen(sHeapLogFileName, _T("a+"));
+	if (!pf)
+	{
+		CloseHandle(hFile);
+		DeleteFile(sHeapBinLogFileName);
+		return;
+	}
+	if (HeapValidate(heap, 0, NULL))
+		_ftprintf(pf, _T("HEAP IS VALID.\n"));
+	else
+		_ftprintf(pf, _T("HEAP IS NOT VALID!\n"));
+	DWORD NumberOfBytesRead;
+	WORD wLastFlags = 0x8000; // unused flag value
+	__int64 LastData = 0;
+	__int64 LastOverhead = 0;
+	__int64 LastCount = 0;
+	__int64 NextAddr = 0;
+	__int64 UncommittedFreeData = 0;
+	__int64 UncommittedFreeOverhead = 0;
+	__int64 AllocatedData = 0;
+	__int64 AllocatedOverhead = 0;
+	__int64 CommittedFreeData = 0;
+	__int64 CommittedFreeOverhead = 0;
+	while (ReadFile(hFile, (LPVOID)&HeapEntry, sizeof(HeapEntry), &NumberOfBytesRead, NULL) && NumberOfBytesRead == sizeof(HeapEntry))
+	{
+		if ((HeapEntry.wFlags & PROCESS_HEAP_REGION) != PROCESS_HEAP_REGION)
+		{
+			// Address jump?
+			if ((__int64)HeapEntry.lpData > NextAddr + AlignTolerance)
+			{
+				PrintBlocks(pf, wLastFlags, LastData, LastOverhead, LastCount);
+				_ftprintf(pf, _T("\n* JUMP 0x%08X -> 0x%08X (%I64d bytes):\n"), (DWORD)NextAddr, (DWORD)HeapEntry.lpData, (__int64)HeapEntry.lpData - NextAddr);
+				wLastFlags = 0x8000;
+				LastData = 0;
+				LastOverhead = 0;
+				LastCount = 0;
+			}
+			else if ((__int64)HeapEntry.lpData < NextAddr - AlignTolerance)
+			{
+				PrintBlocks(pf, wLastFlags, LastData, LastOverhead, LastCount);
+				_ftprintf(pf, _T("\n* BACKJUMP 0x%08X -> 0x%08X:\n"), (DWORD)NextAddr, (DWORD)HeapEntry.lpData);
+				wLastFlags = 0x8000;
+				LastData = 0;
+				LastOverhead = 0;
+				LastCount = 0;
+			}
+			NextAddr = (__int64)HeapEntry.lpData + (__int64)HeapEntry.cbData + (__int64)HeapEntry.cbOverhead;
+
+			// Block type change?
+			if (HeapEntry.wFlags != wLastFlags)
+			{
+				PrintBlocks(pf, wLastFlags, LastData, LastOverhead, LastCount);
+				wLastFlags = HeapEntry.wFlags;
+				LastData = HeapEntry.cbData;
+				LastOverhead = HeapEntry.cbOverhead;
+				LastCount = 1;
+			}
+			else
+			{
+				LastData += HeapEntry.cbData;
+				LastOverhead += HeapEntry.cbOverhead;
+				LastCount++;
+			}
+
+			// Overall statistics
+			if (HeapEntry.wFlags & PROCESS_HEAP_UNCOMMITTED_RANGE)
+			{
+				UncommittedFreeData += HeapEntry.cbData;
+				UncommittedFreeOverhead += HeapEntry.cbOverhead;
+			}
+			else if (HeapEntry.wFlags & PROCESS_HEAP_ENTRY_BUSY)
+			{
+				AllocatedData += HeapEntry.cbData;
+				AllocatedOverhead += HeapEntry.cbOverhead;
+			}
+			else // if wFlags is 0
+			{
+				CommittedFreeData += HeapEntry.cbData;
+				CommittedFreeOverhead += HeapEntry.cbOverhead;
+			}
+		}
+		else
+		{
+			PrintBlocks(pf, wLastFlags, LastData, LastOverhead, LastCount);
+			wLastFlags = 0x8000;
+			LastData = 0;
+			LastOverhead = 0;
+			LastCount = 0;
+		}
+	}
+	PrintBlocks(pf, wLastFlags, LastData, LastOverhead, LastCount);
+	_ftprintf(pf, _T("\nOverall Data+Overhead:\n"));
+	_ftprintf(pf, _T("USED %I64d+%I64d bytes\n"), AllocatedData, AllocatedOverhead);
+	_ftprintf(pf, _T("FREE %I64d+%I64d bytes committed\n"), CommittedFreeData, CommittedFreeOverhead);
+	_ftprintf(pf, _T("FREE %I64d+%I64d bytes uncommitted\n"), UncommittedFreeData, UncommittedFreeOverhead);
+
+	// Free
+	fclose(pf);
+	CloseHandle(hFile);
+	DeleteFile(sHeapBinLogFileName);
 }
 
 BOOL EnableLFHeap()

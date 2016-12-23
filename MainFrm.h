@@ -38,13 +38,14 @@ extern "C"
 #define ID_TIMER_CLOSING_PICTUREDOC					5
 #define ID_TIMER_CLOSING_VIDEODEVICEDOC				6
 #define ID_TIMER_PROGRESS							7
-#define ID_TIMER_1SEC								8
-#define ID_TIMER_SAVEFILEDLG						9
+#define ID_TIMER_SAVEFILEDLG						8
+#define ID_TIMER_15SEC								9
 #ifdef VIDEODEVICEDOC
-#define ID_TIMER_GENERALDLG  						10
-#define ID_TIMER_CAMERABASICSETTINGSDLG				11
-#define ID_TIMER_SETTINGSDLG						12
-#define ID_TIMER_RELOAD_SETTINGS					13
+#define ID_TIMER_1SEC								10
+#define ID_TIMER_GENERALDLG  						11
+#define ID_TIMER_CAMERABASICSETTINGSDLG				12
+#define ID_TIMER_SETTINGSDLG						13
+#define ID_TIMER_RELOAD_SETTINGS					14
 #endif
 
 #define FULLSCREEN_TIMER_MS							1000U	// ms
@@ -217,11 +218,11 @@ protected:
 	void FullScreenModeOn();
 	void FullScreenModeOff();
 	void ChangeCoordinatesUnit();
+	static CString GetDiskStats(LPCTSTR lpszPath, int nMinDiskFreePermillion = 0);
+	static CString GetPageFileStats();
 #ifdef VIDEODEVICEDOC
 	void CleanupFileMenu(CMenu* pPopupMenu);
 	void PopulateCaptureMenu(CMenu* pPopupMenu);
-	static CString GetDiskStats(LPCTSTR lpszPath, int nMinDiskFreePermillion = 0);
-	static CString GetPageFileStats();
 #endif
 
 // Generated message map functions

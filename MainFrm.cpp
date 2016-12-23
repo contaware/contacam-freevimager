@@ -202,8 +202,11 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// Enable Drag'n'Drop
 	DragAcceptFiles(TRUE);
 
-	// Init timer
+	// Init timers
+#ifdef VIDEODEVICEDOC
 	SetTimer(ID_TIMER_1SEC, 1000U, NULL);
+#endif
+	SetTimer(ID_TIMER_15SEC, 15000U, NULL);
 
 	// Init Menu Positions
 	InitMenuPositions();
@@ -288,7 +291,10 @@ void CMainFrame::TrayIcon(BOOL bEnable)
 void CMainFrame::OnDestroy() 
 {
 	// Kill timer
+#ifdef VIDEODEVICEDOC
 	KillTimer(ID_TIMER_1SEC);
+#endif
+	KillTimer(ID_TIMER_15SEC);
 
 	// Close toaster
 	CloseToaster(TRUE); // TRUE: do not allow further toaster windows
@@ -2210,7 +2216,6 @@ void CMainFrame::OnViewAllNextPicture()
 	}
 }
 
-#ifdef VIDEODEVICEDOC
 CString CMainFrame::GetDiskStats(LPCTSTR lpszPath, int nMinDiskFreePermillion/*=0*/)
 {
 	// Must include trailing backslash and does not have to specify the root dir
@@ -2254,7 +2259,6 @@ CString CMainFrame::GetPageFileStats()
 		return sUsage;
 	}
 }
-#endif
 
 void CMainFrame::OnTimer(UINT nIDEvent) 
 {
@@ -2264,10 +2268,10 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 	{
 		((CUImagerApp*)::AfxGetApp())->CloseAll();
 	}
+#ifdef VIDEODEVICEDOC
 	else if (nIDEvent == ID_TIMER_1SEC)
 	{
 		// Show HD Usage
-#ifdef VIDEODEVICEDOC
 		CString sSaveDir = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
 		int nMinDiskFreePermillion = 0;
 		CMDIChildWnd* pChild = MDIGetActive();
@@ -2282,68 +2286,14 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		}
 		// Note: GetDiskStats() calcs the stats for directory symbolic link targets
 		CString sDiskStats = GetDiskStats(sSaveDir, nMinDiskFreePermillion);
-#endif
 
 		// Get CPU Usage
 		CString sCPUUsage;
 		sCPUUsage.Format(_T("CPU: %0.1f%%"), ::GetCPUUsage());
 
 		// Get Page File Usage
-#ifdef VIDEODEVICEDOC
 		CString sPageFileStats = GetPageFileStats();
-#endif
 
-		// Log
-		if (g_nLogLevel > 1)
-		{
-			// Get virtual memory stats
-			DWORD dwRegions; DWORD dwFreeMB; DWORD dwReservedMB; DWORD dwCommittedMB;
-			DWORD dwMaxFree; DWORD dwMaxReserved; DWORD dwMaxCommitted; double dFragmentation;
-			::GetMemoryStats(	&dwRegions, &dwFreeMB, &dwReservedMB, &dwCommittedMB,
-								&dwMaxFree, &dwMaxReserved, &dwMaxCommitted, &dFragmentation);
-
-			// Get crt heap stats
-			SIZE_T CRTHeapSize = 0;
-			int nCRTHeapType = 0;
-			::GetHeapStats(NULL, &CRTHeapSize, NULL, NULL, &nCRTHeapType);
-			CString sCRTHeapType;
-			switch (nCRTHeapType)
-			{
-				case 0 :	sCRTHeapType = _T("regular"); break;
-				case 1 :	sCRTHeapType = _T("look-asides"); break;
-				case 2 :	sCRTHeapType = _T("LFH"); break;
-				default :	sCRTHeapType = _T("unknown"); break;
-			}
-
-			// Message
-			::LogLine(	
-#ifdef VIDEODEVICEDOC
-						_T("%s | ")
-#endif
-						_T("%s | ")
-#ifdef VIDEODEVICEDOC
-						_T("%s | ")
-#endif						
-						_T("HEAP(%s): %d") + ML_STRING(1825, "MB") + _T(" | ")
-						_T("ADDR: vmused=%u") + ML_STRING(1825, "MB") + _T("(max %u") + ML_STRING(1243, "KB") + _T(") ")
-						_T("vmres=%u") + ML_STRING(1825, "MB") + _T("(max %u") + ML_STRING(1243, "KB") + _T(") ")
-						_T("vmfree=%u") + ML_STRING(1825, "MB") + _T("(max %u") + ML_STRING(1243, "KB") + _T(") ")
-						_T("frag=%0.1f%% regions=%u"),
-#ifdef VIDEODEVICEDOC
-						sDiskStats,
-#endif
-						sCPUUsage,
-#ifdef VIDEODEVICEDOC
-						sPageFileStats,
-#endif
-						sCRTHeapType, (int)(CRTHeapSize>>20),
-						dwCommittedMB, dwMaxCommitted>>10,
-						dwReservedMB, dwMaxReserved>>10,
-						dwFreeMB, dwMaxFree>>10,
-						dFragmentation, dwRegions);
-		}
-
-#ifdef VIDEODEVICEDOC
 		// Show HD Usage
 		GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_HD_USAGE), sDiskStats);
 
@@ -2418,7 +2368,76 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 				}
 			}
 		}
+	}
 #endif
+	else if (nIDEvent == ID_TIMER_15SEC)
+	{
+		// Verbose logging
+		if (g_nLogLevel > 1)
+		{
+			// Show HD Usage
+			int nMinDiskFreePermillion = 0;
+#ifdef VIDEODEVICEDOC
+			CString sSaveDir = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
+			CMDIChildWnd* pChild = MDIGetActive();
+			if (pChild)
+			{
+				CVideoDeviceDoc* pDoc = (CVideoDeviceDoc*)pChild->GetActiveDocument();
+				if (pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CVideoDeviceDoc)))
+				{
+					sSaveDir = pDoc->m_sRecordAutoSaveDir;
+					nMinDiskFreePermillion = pDoc->m_nMinDiskFreePermillion;
+				}
+			}
+			// Note: GetDiskStats() calcs the stats for directory symbolic link targets
+			CString sDiskStats = GetDiskStats(sSaveDir, nMinDiskFreePermillion);
+#else
+			CString sDiskStats = GetDiskStats(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), nMinDiskFreePermillion);
+#endif
+
+			// Get CPU Usage
+			CString sCPUUsage;
+			sCPUUsage.Format(_T("CPU: %0.1f%%"), ::GetCPUUsage());
+
+			// Get Page File Usage
+			CString sPageFileStats = GetPageFileStats();
+
+			// Get virtual memory stats
+			DWORD dwRegions; DWORD dwFreeMB; DWORD dwReservedMB; DWORD dwCommittedMB;
+			DWORD dwMaxFree; DWORD dwMaxReserved; DWORD dwMaxCommitted; double dFragmentation;
+			::GetMemoryStats(	&dwRegions, &dwFreeMB, &dwReservedMB, &dwCommittedMB,
+								&dwMaxFree, &dwMaxReserved, &dwMaxCommitted, &dFragmentation);
+
+			// Get crt heap stats
+			SIZE_T CRTHeapSize = 0;
+			int nCRTHeapType = 0;
+			::GetHeapStats(NULL, &CRTHeapSize, NULL, NULL, &nCRTHeapType);
+			CString sCRTHeapType;
+			switch (nCRTHeapType)
+			{
+				case 0:	sCRTHeapType = _T("regular"); break;
+				case 1:	sCRTHeapType = _T("look-asides"); break;
+				case 2:	sCRTHeapType = _T("LFH"); break;
+				default:	sCRTHeapType = _T("unknown"); break;
+			}
+
+			// Message
+			::LogLine(_T("%s | %s | %s | ")
+					_T("HEAP(%s): %d") + ML_STRING(1825, "MB") + _T(" | ")
+					_T("ADDR: vmused=%u") + ML_STRING(1825, "MB") + _T("(max %u") + ML_STRING(1243, "KB") + _T(") ")
+					_T("vmres=%u") + ML_STRING(1825, "MB") + _T("(max %u") + ML_STRING(1243, "KB") + _T(") ")
+					_T("vmfree=%u") + ML_STRING(1825, "MB") + _T("(max %u") + ML_STRING(1243, "KB") + _T(") ")
+					_T("frag=%0.1f%% regions=%u"),
+					sDiskStats, sCPUUsage, sPageFileStats,
+					sCRTHeapType, (int)(CRTHeapSize >> 20),
+					dwCommittedMB, dwMaxCommitted >> 10,
+					dwReservedMB, dwMaxReserved >> 10,
+					dwFreeMB, dwMaxFree >> 10,
+					dFragmentation, dwRegions);
+
+			// CRT Heap Check and Dump
+			::HeapDump((HANDLE)_get_heap_handle(), CUImagerApp::GetConfigFilesDir());
+		}
 	}
 }
 

@@ -50,8 +50,6 @@
 #define MICROAPACHE_HTDOCS								(CString(MICROAPACHE_DIR) + CString(_T("\\htdocs")))
 #define MICROAPACHE_FILENAME							_T("mapache.exe")
 #define MICROAPACHE_RELPATH								(CString(MICROAPACHE_DIR) + CString(_T("\\")) + CString(MICROAPACHE_FILENAME))
-#define MICROAPACHE_PWTOOL_FILENAME						_T("htpasswd.exe")
-#define MICROAPACHE_PWTOOL_RELPATH						(CString(MICROAPACHE_DIR) + CString(_T("\\")) + CString(MICROAPACHE_PWTOOL_FILENAME))
 #define MICROAPACHE_NUM_PROCESS							2
 #define MICROAPACHE_TIMEOUT_MS							15000U
 #define MICROAPACHE_STARTUP_TIMEOUT_MS					30000U

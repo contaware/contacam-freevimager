@@ -311,6 +311,9 @@ extern void GetHeapStats(SIZE_T* pDefaultHeapSize = NULL,
 						int* pDefaultHeapType = NULL,
 						int* pCRTHeapType = NULL);
 
+// Heap Check and Dump
+extern void HeapDump(HANDLE heap, CString sConfigFilesDir);
+
 // Enable the LFH heap for both the default heap and the CRT heap
 extern BOOL EnableLFHeap();
 

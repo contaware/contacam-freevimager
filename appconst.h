@@ -31,7 +31,7 @@
 #define FAQ_ONLINE_PAGE									_T("http://www.contaware.com/freevimagerfaq/")
 #define MANUAL_ONLINE_PAGE								_T("http://www.contaware.com/freevimagermanual/")
 #endif
-#define APPVERSION										_T("5.5.0beta3")
+#define APPVERSION										_T("5.5.0beta4")
 
 // Company
 #define MYCOMPANY										_T("Contaware")
@@ -41,9 +41,11 @@
 // and tells the program whether to use the registry or an ini file 
 #define MASTERCONFIG_INI_NAME_EXT						_T("MasterConfig.ini")
 
-// Log file
+// Log files
 #define LOGNAME_EXT										_T("log.txt")
 #define MAX_LOG_FILE_SIZE								268435456 /* 256MB */
+#define HEAP_LOGNAME_EXT								_T("heap_log.txt")
+#define HEAP_BIN_LOGNAME_EXT							_T("heap_log.bin")
 
 /////////////////////////////////////////////////////////////////////////////
 
