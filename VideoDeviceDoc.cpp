@@ -5258,8 +5258,6 @@ void CVideoDeviceDoc::OnCaptureMovDet()
 {
 	m_dwVideoProcessorMode = !m_dwVideoProcessorMode;
 	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("VideoProcessorMode"), m_dwVideoProcessorMode);
-	if (m_pMovementDetectionPage)
-		m_pMovementDetectionPage->UpdateDetectionState();
 }
 
 void CVideoDeviceDoc::OnUpdateCaptureMovDet(CCmdUI* pCmdUI) 
@@ -6859,6 +6857,38 @@ BOOL CVideoDeviceDoc::Deinterlace(CDib* pDib)
 									pDib->GetHeight()) >= 0);
 }
 
+BOOL CVideoDeviceDoc::IsInMovDetSchedule(const CTime& Time)
+{
+	BOOL bInSchedule = TRUE;
+	switch (Time.GetDayOfWeek())
+	{
+		case 1: if (!m_bDetectionSunday)	bInSchedule = FALSE; break;
+		case 2: if (!m_bDetectionMonday)	bInSchedule = FALSE; break;
+		case 3: if (!m_bDetectionTuesday)	bInSchedule = FALSE; break;
+		case 4: if (!m_bDetectionWednesday)	bInSchedule = FALSE; break;
+		case 5: if (!m_bDetectionThursday)	bInSchedule = FALSE; break;
+		case 6: if (!m_bDetectionFriday)	bInSchedule = FALSE; break;
+		case 7: if (!m_bDetectionSaturday)	bInSchedule = FALSE; break;
+		default: break;
+	}
+	CTime timeonly(	2000,
+					1,
+					1,
+					Time.GetHour(),
+					Time.GetMinute(),
+					Time.GetSecond());
+	if (m_DetectionStartTime <= m_DetectionStopTime)
+	{
+		if (timeonly < m_DetectionStartTime || timeonly > m_DetectionStopTime)
+			bInSchedule = FALSE;
+	}
+	else
+	{
+		if (timeonly < m_DetectionStartTime && timeonly > m_DetectionStopTime)
+			bInSchedule = FALSE;
+	}
+	return bInSchedule;
+}
 void CVideoDeviceDoc::ProcessOtherFrame(LPBYTE pData, DWORD dwSize)
 {	
 	// Decode ffmpeg supported formats
@@ -7259,36 +7289,10 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize, LPBYTE pMJPGD
 		{
 			// Detection Scheduler
 			DWORD dwVideoProcessorMode = m_dwVideoProcessorMode;
-			if (dwVideoProcessorMode > 0 && m_nDetectionStartStop > 0)
+			if (dwVideoProcessorMode > 0 && m_nDetectionStartStop > 0) // (m_nDetectionStartStop == 0 -> no scheduler)
 			{
-				BOOL bInSchedule = TRUE;
-				switch (CurrentTime.GetDayOfWeek())
-				{
-					case 1 : if (!m_bDetectionSunday)	bInSchedule = FALSE; break;
-					case 2 : if (!m_bDetectionMonday)	bInSchedule = FALSE; break;
-					case 3 : if (!m_bDetectionTuesday)	bInSchedule = FALSE; break;
-					case 4 : if (!m_bDetectionWednesday)bInSchedule = FALSE; break;
-					case 5 : if (!m_bDetectionThursday)	bInSchedule = FALSE; break;
-					case 6 : if (!m_bDetectionFriday)	bInSchedule = FALSE; break;
-					case 7 : if (!m_bDetectionSaturday)	bInSchedule = FALSE; break;
-					default: break;
-				}
-				CTime timeonly(	2000,
-								1,
-								1,
-								CurrentTime.GetHour(),
-								CurrentTime.GetMinute(),
-								CurrentTime.GetSecond());
-				if (m_DetectionStartTime <= m_DetectionStopTime)
-				{
-					if (timeonly < m_DetectionStartTime || timeonly > m_DetectionStopTime)
-						bInSchedule = FALSE;
-				}
-				else
-				{
-					if (timeonly < m_DetectionStartTime && timeonly > m_DetectionStopTime)
-						bInSchedule = FALSE;
-				}
+				// Is current time in schedule?
+				BOOL bInSchedule = IsInMovDetSchedule(CurrentTime);
 
 				// 1 -> Enable detection on specified schedule
 				if (m_nDetectionStartStop == 1) 

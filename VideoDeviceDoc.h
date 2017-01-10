@@ -653,6 +653,7 @@ public:
 	void ProcessI420Frame(LPBYTE pData, DWORD dwSize, LPBYTE pMJPGData, DWORD dwMJPGSize);
 	static BOOL Rotate180(CDib* pDib);
 	static BOOL Deinterlace(CDib* pDib);
+	BOOL IsInMovDetSchedule(const CTime& Time);
 
 	// To Start / Stop Frame Processing and Avoid Dead-Locks!
 	__forceinline void StopProcessFrame(DWORD dwMask) {		::EnterCriticalSection(&m_csProcessFrameStop);

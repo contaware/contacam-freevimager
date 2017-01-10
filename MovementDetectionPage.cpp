@@ -235,12 +235,33 @@ void CMovementDetectionPage::UpdateDetectionState()
 		CString sDetectionMode(ML_STRING(1845, "OFF"));
 		if (m_pDoc->m_dwVideoProcessorMode)
 		{
+			// Show current set detection mode(s)
 			if (!m_pDoc->m_sDetectionTriggerFileName.IsEmpty() && m_pDoc->m_nDetectionLevel > 0)
 				sDetectionMode = ML_STRING(1848, "Software + Trigger File");
 			else if (!m_pDoc->m_sDetectionTriggerFileName.IsEmpty())
 				sDetectionMode = ML_STRING(1846, "Trigger File");
 			else if (m_pDoc->m_nDetectionLevel > 0)
 				sDetectionMode = ML_STRING(1847, "Software");
+
+			// If scheduler set
+			if (m_pDoc->m_nDetectionStartStop > 0)
+			{
+				// Is current time in schedule?
+				BOOL bInSchedule = m_pDoc->IsInMovDetSchedule(CTime::GetCurrentTime());
+
+				// 1 -> Enable detection on specified schedule
+				if (m_pDoc->m_nDetectionStartStop == 1)
+				{
+					if (!bInSchedule)
+						sDetectionMode = ML_STRING(1845, "OFF");
+				}
+				// 2 -> Disable detection on specified schedule
+				else
+				{
+					if (bInSchedule)
+						sDetectionMode = ML_STRING(1845, "OFF");
+				}
+			}
 		}
 		pEdit->SetWindowText(sDetectionMode);
 	}
@@ -360,7 +381,6 @@ void CMovementDetectionPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScr
 				CString sLevel;
 				sLevel.Format(_T("%i"), m_DetectionLevel.GetPos());
 				pEdit->SetWindowText(sLevel);
-				UpdateDetectionState();
 			}
 		}
 	}

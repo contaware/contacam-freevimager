@@ -263,22 +263,14 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 	if (lMovDetTotalZones == 0 || lMovDetTotalZones > MOVDET_MAX_ZONES)
 	{
 		if (!pDoc->m_bUnsupportedVideoSizeForMovDet)
-		{
 			pDoc->m_bUnsupportedVideoSizeForMovDet = TRUE;
-			if (pDoc->m_pMovementDetectionPage)
-				pDoc->m_pMovementDetectionPage->UpdateDetectionState();
-		}
 		::InterlockedExchange(&pDoc->m_lMovDetTotalZones, 0);
 		return 0;
 	}
 	else
 	{
 		if (pDoc->m_bUnsupportedVideoSizeForMovDet)
-		{
 			pDoc->m_bUnsupportedVideoSizeForMovDet = FALSE;
-			if (pDoc->m_pMovementDetectionPage)
-				pDoc->m_pMovementDetectionPage->UpdateDetectionState();
-		}
 		::InterlockedExchange(&pDoc->m_lMovDetXZonesCount, lMovDetXZonesCount);
 		::InterlockedExchange(&pDoc->m_lMovDetYZonesCount, lMovDetYZonesCount);
 		::InterlockedExchange(&pDoc->m_lMovDetTotalZones, lMovDetTotalZones);
@@ -822,13 +814,9 @@ void CVideoDeviceView::OnTimer(UINT nIDEvent)
 	{
 		case ID_TIMER_RELOAD_SETTINGS :
 		{
-			DWORD dwVideoProcessorMode = (DWORD) MIN(1, MAX(0, ::AfxGetApp()->GetProfileInt(pDoc->GetDevicePathName(), _T("VideoProcessorMode"), 0)));
-			if (dwVideoProcessorMode != pDoc->m_dwVideoProcessorMode)
-			{
-				pDoc->m_dwVideoProcessorMode = dwVideoProcessorMode;
-				if (pDoc->m_pMovementDetectionPage)
-					pDoc->m_pMovementDetectionPage->UpdateDetectionState();
-			}
+			pDoc->m_dwVideoProcessorMode = (DWORD) MIN(1, MAX(0, ::AfxGetApp()->GetProfileInt(pDoc->GetDevicePathName(), _T("VideoProcessorMode"), 0)));
+			if (pDoc->m_pMovementDetectionPage)
+				pDoc->m_pMovementDetectionPage->UpdateDetectionState();
 			break;
 		}
 		default:
