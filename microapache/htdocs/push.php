@@ -1,4 +1,5 @@
 <?php
+$httpbasicauth = 1;
 require_once( 'configuration.php' );
 session_write_close(); // end the current session and store session data otherwise other frames are not loading!
 function doServerPush($file,$type,$poll) {
