@@ -2,7 +2,7 @@ FREEVIMAGER HISTORY
 
 5.5.0 (Month xxth 2017)
 
-- ...
+- libpng updated to 1.2.57
 
 5.3.0 (November 18th 2016)
 
