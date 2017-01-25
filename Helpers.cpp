@@ -55,6 +55,7 @@ static int g_nNumProcessors = 1;
 static ULONGLONG g_ullLastCPUUsageMeasureTime = 0;
 static ULONGLONG g_ullLastProcKernelTime = 0;
 static ULONGLONG g_ullLastProcUserTime = 0;
+static LONG g_lTempFilesCount = 0;
 #define CPU_FEATURE_MMX		0x0001
 #define CPU_FEATURE_SSE		0x0002
 #define CPU_FEATURE_SSE2	0x0004
@@ -1251,7 +1252,11 @@ CString MakeTempFileName(CString sTempPath, LPCTSTR lpszFileName)
 		if (sTempPath[sTempPath.GetLength() - 1] != _T('\\'))
 			sTempPath += _T('\\');
 	}
-	return sTempPath + GetShortFileNameNoExt(lpszFileName) + _T("_") + GetUuidString() + GetFileExt(lpszFileName);
+
+	// Create a unique file name using the process id, time and a counter 
+	CString sSeq;
+	sSeq.Format(_T("%X_%I64X_%X"), GetCurrentProcessId(), (ULONGLONG)time(NULL), (DWORD)InterlockedIncrement(&g_lTempFilesCount));
+	return sTempPath + GetShortFileNameNoExt(lpszFileName) + _T("_") + sSeq + GetFileExt(lpszFileName);
 }
 
 BOOL IsExistingFile(LPCTSTR lpszFileName)
@@ -3070,12 +3075,12 @@ int ToUTF8(const CString& s, LPBYTE* ppUtf8)
 	}
 }
 
-CString UuidToString(const UUID* pUuid)
+CString UuidToCString(const UUID* pUuid)
 {
 	CString sUuid;
 	if (pUuid)
 	{
-		unsigned short* sTemp;
+		unsigned short* sTemp = NULL;
 		if (UuidToString(pUuid, &sTemp) == RPC_S_OK)
 		{
 			sUuid = CString((LPCTSTR)sTemp);
@@ -3085,12 +3090,12 @@ CString UuidToString(const UUID* pUuid)
 	return sUuid;
 }
 
-CString GetUuidString()
+CString GetUuidCString()
 {
 	UUID Uuid;
 	HRESULT hr = UuidCreate(&Uuid);
 	if (hr == (HRESULT)RPC_S_OK || hr == (HRESULT)RPC_S_UUID_LOCAL_ONLY)
-		return UuidToString(&Uuid);
+		return UuidToCString(&Uuid);
 	else
 		return _T("");
 }

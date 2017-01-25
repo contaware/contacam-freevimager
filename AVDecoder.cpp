@@ -12,8 +12,6 @@ static char THIS_FILE[] = __FILE__;
 #ifdef VIDEODEVICEDOC
 
 // Defined in uImager.cpp
-int avcodec_open_thread_safe(AVCodecContext *avctx, AVCodec *codec);
-int avcodec_close_thread_safe(AVCodecContext *avctx);
 SwsContext *sws_getCachedContextHelper(	struct SwsContext *context,
 										int srcW, int srcH, enum AVPixelFormat srcFormat,
                                         int dstW, int dstH, enum AVPixelFormat dstFormat,
@@ -63,7 +61,7 @@ BOOL CAVDecoder::Open(LPBITMAPINFO pSrcBMI)
 	// Open codec
 	if (id != AV_CODEC_ID_NONE)
 	{
-		if (avcodec_open_thread_safe(m_pCodecCtx, m_pCodec) < 0)
+		if (avcodec_open2(m_pCodecCtx, m_pCodec, 0) < 0)
 			goto error;
 	}
 	// Codec not necessary but use the codec context to store
@@ -104,7 +102,7 @@ void CAVDecoder::Close()
 		avcodec_get_context_defaults3() with a non-NULL codec. Subsequent calls will
 		do nothing.
 		*/
-		avcodec_close_thread_safe(m_pCodecCtx);
+		avcodec_close(m_pCodecCtx);
 		av_freep(&m_pCodecCtx);
 	}
 	m_pCodec = NULL;

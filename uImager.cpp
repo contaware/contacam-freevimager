@@ -263,28 +263,6 @@ CString CUImagerApp::GetConfiguredTempDir()
 
 #ifdef VIDEODEVICEDOC
 
-// Note: the following ffmpeg functions are not thread safe:
-// avcodec_open2, avdevice_register_all, av_get_cpu_flags, av_force_cpu_flags
-
-CRITICAL_SECTION g_csAVCodec;
-BOOL g_bAVCodecCSInited = FALSE;
-
-int avcodec_open_thread_safe(AVCodecContext *avctx, AVCodec *codec)
-{
-	::EnterCriticalSection(&g_csAVCodec);
-	int ret = avcodec_open2(avctx, codec, 0);
-	::LeaveCriticalSection(&g_csAVCodec);
-	return ret;
-}
-
-int avcodec_close_thread_safe(AVCodecContext *avctx)
-{
-	::EnterCriticalSection(&g_csAVCodec);
-	int ret = avcodec_close(avctx);
-	::LeaveCriticalSection(&g_csAVCodec);
-	return ret;
-}
-
 static int handle_jpeg_helper(enum AVPixelFormat *format)
 {
     switch (*format) {
@@ -312,6 +290,12 @@ static int handle_jpeg_helper(enum AVPixelFormat *format)
     }
 }
 
+// av_lockmgr_register is not creating a mutex for the sws scaler,
+// sws_setColorspaceDetails and sws_init_context are not thread safe,
+// protect them with a critical section
+CRITICAL_SECTION g_csSWScaler;
+BOOL g_bSWScalerCSInited = FALSE;
+
 // To avoid the "deprecated pixel format used, make sure you did set range correctly"
 // warning in sws_init_context() use this instead of sws_getContext()
 SwsContext *sws_getContextHelper(	int srcW, int srcH, enum AVPixelFormat srcFormat,
@@ -320,8 +304,13 @@ SwsContext *sws_getContextHelper(	int srcW, int srcH, enum AVPixelFormat srcForm
 {
 	SwsContext *c;
 
-    if (!(c = sws_alloc_context()))
-        return NULL;
+	EnterCriticalSection(&g_csSWScaler);
+
+	if (!(c = sws_alloc_context()))
+	{
+		LeaveCriticalSection(&g_csSWScaler);
+		return NULL;
+	}
 
 	// YUV range
 	// 0 = limited MPEG YUV range
@@ -347,9 +336,11 @@ SwsContext *sws_getContextHelper(	int srcW, int srcH, enum AVPixelFormat srcForm
 	if (sws_init_context(c, NULL, NULL) < 0)
 	{
 		sws_freeContext(c);
+		LeaveCriticalSection(&g_csSWScaler);
 		return NULL;
 	}
-
+	
+	LeaveCriticalSection(&g_csSWScaler);
 	return c;
 }
 
@@ -362,6 +353,8 @@ SwsContext *sws_getCachedContextHelper(	struct SwsContext *context,
 {
     int64_t src_h_chr_pos = -513, dst_h_chr_pos = -513,
             src_v_chr_pos = -513, dst_v_chr_pos = -513;
+
+	EnterCriticalSection(&g_csSWScaler);
 
 	// YUV range
 	// 0 = limited MPEG YUV range
@@ -412,8 +405,11 @@ SwsContext *sws_getCachedContextHelper(	struct SwsContext *context,
 	// Allocate and init context if not yet done
     if (!context)
 	{
-        if (!(context = sws_alloc_context()))
-            return NULL;
+		if (!(context = sws_alloc_context()))
+		{
+			LeaveCriticalSection(&g_csSWScaler);
+			return NULL;
+		}
 
 		av_opt_set_int(context, "srcw",       srcW, 0);
 		av_opt_set_int(context, "srch",       srcH, 0);
@@ -438,10 +434,12 @@ SwsContext *sws_getCachedContextHelper(	struct SwsContext *context,
         if (sws_init_context(context, NULL, NULL) < 0)
 		{
 			sws_freeContext(context);
+			LeaveCriticalSection(&g_csSWScaler);
 			return NULL;
 		}
     }
 
+	LeaveCriticalSection(&g_csSWScaler);
     return context;
 }
 
@@ -467,7 +465,7 @@ AV_LOG_INFO
 AV_LOG_VERBOSE
 AV_LOG_DEBUG
 */
-static void my_av_log_trace(void* ptr, int level, const char* fmt, va_list vl)
+extern "C" void my_av_log_trace(void* ptr, int level, const char* fmt, va_list vl)
 {
 	// for g_nLogLevel <= 0: log panic and fatal levels
 	// for g_nLogLevel == 1: log panic, fatal and error levels
@@ -497,6 +495,53 @@ static void my_av_log_trace(void* ptr, int level, const char* fmt, va_list vl)
 
 	// Output message string
 	::LogLine(_T("%s"), CString(s));
+}
+
+extern "C" int my_av_lock_callback(void **mutex, enum AVLockOp op)
+{
+	// Check
+	if (!mutex)
+		return 1;  // Error
+
+	LPCRITICAL_SECTION pCS;
+
+	switch (op)
+	{
+		case AV_LOCK_CREATE :
+			pCS = new CRITICAL_SECTION;
+			if (pCS)
+			{
+				InitializeCriticalSection(pCS);
+				*mutex = (void*)pCS;
+				return 0; // OK
+			}
+			else
+			{
+				*mutex = NULL;
+				return 1; // Error
+			}
+		case AV_LOCK_OBTAIN :
+			pCS = (LPCRITICAL_SECTION)(*mutex);
+			if (pCS)
+				EnterCriticalSection(pCS);
+			return 0; // OK
+		case AV_LOCK_RELEASE :
+			pCS = (LPCRITICAL_SECTION)(*mutex);
+			if (pCS)
+				LeaveCriticalSection(pCS);
+			return 0; // OK
+		case AV_LOCK_DESTROY :
+			pCS = (LPCRITICAL_SECTION)(*mutex);
+			if (pCS)
+			{
+				DeleteCriticalSection(pCS);
+				delete pCS;
+				*mutex = NULL;
+			}
+			return 0; // OK
+		default :
+			return 1; // Error
+	}
 }
 
 #endif
@@ -833,18 +878,25 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// Init YUV <-> YUV LUT
 		::InitYUVToYUVTable();
 
-		// AVCODEC init Critical Section
-		::InitializeCriticalSection(&g_csAVCodec);
-		g_bAVCodecCSInited = TRUE;
+		// The lock manager creates a avcodec mutex for avcodec_open2
+		// and a avformat mutex for avisynth_read_header, avisynth_read_close,
+		// ff_tls_init, ff_tls_deinit
+		av_lockmgr_register(my_av_lock_callback);
 
-		// AVCODEC register log messages callback
+		// av_lockmgr_register is not creating a mutex for the sws scaler,
+		// sws_setColorspaceDetails and sws_init_context are not thread safe,
+		// protect them with a critical section
+		::InitializeCriticalSection(&g_csSWScaler);
+		g_bSWScalerCSInited = TRUE;
+
+		// ffmpeg register log messages callback
 		av_log_set_callback(my_av_log_trace);
 
 		// ffmpeg is still crashing with the -mstackrealign option, I suppose there
 		// is another alignment problem or just buggy SIMD routines, limit the SIMD
 		// instructions to: AV_CPU_FLAG_MMX, AV_CPU_FLAG_MMXEXT, AV_CPU_FLAG_3DNOW, AV_CPU_FLAG_SSE
 		// (see also ffmpeg_compile_mingw.txt under doc folder)
-		unsigned int uiFlags = av_get_cpu_flags();
+		unsigned int uiFlags = av_get_cpu_flags(); // av_get_cpu_flags and av_force_cpu_flags are not thread safe
 		av_force_cpu_flags(uiFlags & ~(	AV_CPU_FLAG_3DNOWEXT |
 										AV_CPU_FLAG_SSE2     |
 										AV_CPU_FLAG_SSE2SLOW |
@@ -2071,19 +2123,17 @@ int CUImagerApp::ExitInstance()
 	// Store last selected printer
 	m_PrinterControl.SavePrinterSelection(m_hDevMode, m_hDevNames);
 
-	// Note
-	TRACE(_T("*** FFMPEG LEAKS 2 x 47 BYTES, IT'S NORMAL ***\n"));
-
 	// Clean-Up Trace Log File
 	::EndTraceLogFile();
 
-	// Delete Critical Section
+	// ffmpeg delete Critical Section
 #ifdef VIDEODEVICEDOC
-	if (g_bAVCodecCSInited)
+	if (g_bSWScalerCSInited)
 	{
-		g_bAVCodecCSInited = FALSE;
-		::DeleteCriticalSection(&g_csAVCodec);
+		g_bSWScalerCSInited = FALSE;
+		::DeleteCriticalSection(&g_csSWScaler);
 	}
+	av_lockmgr_register(NULL);
 #endif
 
 	// From CWinApp::ExitInstance(), I modified it:

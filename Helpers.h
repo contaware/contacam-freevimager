@@ -147,7 +147,7 @@ extern CString MakeDateLocalFormat(	const CTime& Time,
 extern CString GetDateLocalFormat(BOOL bLongDate = FALSE);
 extern CTime ParseShortDateLocalFormat(CString sDate);
 
-// Create a Unique Temp File Name
+// Make a Unique Temp File Name (file is not created)
 extern CString MakeTempFileName(CString sTempPath, LPCTSTR lpszFileName);
 
 // File / Dir Existence Check
@@ -446,8 +446,8 @@ Bytes Name   Endianness  Endianness
 
 Note: 'Native' is Little Endian on Microsoft platforms
 */
-extern CString UuidToString(const UUID* pUuid); // uuid/guid struct to string
-extern CString GetUuidString(); // generate a uuid/guid string
+extern CString UuidToCString(const UUID* pUuid); // uuid/guid struct to CString
+extern CString GetUuidCString(); // generate a uuid/guid CString
 
 // Natural order string comparision function
 extern int __cdecl CompareNatural(CString * pstr1, CString * pstr2);

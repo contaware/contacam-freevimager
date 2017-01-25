@@ -27,14 +27,6 @@ CColourPopup
   m_nBoxSize          = ::SystemDPIScale(18);
 
 
-ffmpeg
-------
-
-- Use thread safe open/close implemented in uImager.cpp:
-  avcodec_open_thread_safe(AVCodecContext *avctx, AVCodec *codec)
-  avcodec_close_thread_safe(AVCodecContext *avctx)
-
-
 icclib 2.14
 -----------
 

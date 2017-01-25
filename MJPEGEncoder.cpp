@@ -10,10 +10,6 @@ static char THIS_FILE[] = __FILE__;
 
 #ifdef VIDEODEVICEDOC
 
-// Defined in uImager.cpp
-int avcodec_open_thread_safe(AVCodecContext *avctx, AVCodec *codec);
-int avcodec_close_thread_safe(AVCodecContext *avctx);
-
 BOOL CMJPEGEncoder::Open(LPBITMAPINFO pSrcBMI, int nThreadCount)
 {
 	// Already open?
@@ -55,7 +51,7 @@ BOOL CMJPEGEncoder::Open(LPBITMAPINFO pSrcBMI, int nThreadCount)
 		m_pCodecCtx->thread_type = FF_THREAD_SLICE;
 
 	// Open codec
-	if (avcodec_open_thread_safe(m_pCodecCtx, m_pCodec) < 0)
+	if (avcodec_open2(m_pCodecCtx, m_pCodec, 0) < 0)
 		goto error;
 
     // Allocate video frame
@@ -90,7 +86,7 @@ void CMJPEGEncoder::Close()
 		avcodec_get_context_defaults3() with a non-NULL codec. Subsequent calls will
 		do nothing.
 		*/
-		avcodec_close_thread_safe(m_pCodecCtx);
+		avcodec_close(m_pCodecCtx);
 		av_freep(&m_pCodecCtx);
 	}
 	m_pCodec = NULL;

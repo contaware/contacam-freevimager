@@ -4663,7 +4663,7 @@ BOOL CMetadata::UpdateXmpData(const CString& sMime)
 		else
 		{
 			// Generate uuid
-			uuid = ::GetUuidString();
+			uuid = ::GetUuidCString();
 			if (uuid != _T(""))
 				uuid = _T("uuid:") + uuid;
 		}
@@ -4673,7 +4673,7 @@ BOOL CMetadata::UpdateXmpData(const CString& sMime)
 	else
 	{
 		// Generate uuid
-		uuid = ::GetUuidString();
+		uuid = ::GetUuidCString();
 		if (uuid != _T(""))
 			uuid = _T("uuid:") + uuid;
 

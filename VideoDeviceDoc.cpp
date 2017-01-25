@@ -31,8 +31,6 @@ static char THIS_FILE[] = __FILE__;
 #ifdef VIDEODEVICEDOC
 
 // Defined in uImager.cpp
-int avcodec_open_thread_safe(AVCodecContext *avctx, AVCodec *codec);
-int avcodec_close_thread_safe(AVCodecContext *avctx);
 SwsContext *sws_getContextHelper(	int srcW, int srcH, enum AVPixelFormat srcFormat,
 									int dstW, int dstH, enum AVPixelFormat dstFormat,
 									int flags);
@@ -1606,7 +1604,7 @@ CString CVideoDeviceDoc::CaptureAudioDeviceIDToName(UINT uiID)
 		CString sDevName(DevCaps.szPname);
 		CString sRegistryDevName = ::GetRegistryStringValue(HKEY_LOCAL_MACHINE,
 									_T("System\\CurrentControlSet\\Control\\MediaCategories\\{") +
-									::UuidToString(&DevCaps.NameGuid) + _T("}"),
+									::UuidToCString(&DevCaps.NameGuid) + _T("}"),
 									_T("Name"));
 		if (sDevName.GetLength() > sRegistryDevName.GetLength())
 			return (sRegistryDevName.GetLength() > 5 ? sRegistryDevName : sDevName); // priority to registry device name if it has a reasonable length
@@ -6493,7 +6491,8 @@ BOOL CVideoDeviceDoc::PhpSaveConfigFile(const CString& sConfig)
 	}
 
 	// Make a unique temp file on the same volume so that we are sure MoveFileEx() is atomic
-	CString sTmpPhpConfigFile(::GetFileNameNoExt(sPhpConfigFile) + _T("-") + ::GetUuidString() + _T(".tmp"));
+	CString sTmpPhpConfigFile(::MakeTempFileName(::GetDriveAndDirName(sPhpConfigFile),
+												::GetFileNameNoExt(sPhpConfigFile) + _T(".tmp")));
 	
 	// Write to temp file and free data
 	try
@@ -7808,7 +7807,8 @@ void CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 	BOOL res = CVideoDeviceDoc::SaveJpegFast(&Dib, &MJPEGEncoder, sFileName, m_nSnapshotCompressionQuality);
 	if (DibThumb.IsValid())
 	{
-		CVideoDeviceDoc::SaveJpegFast(	&DibThumb, &MJPEGEncoder,
+		CMJPEGEncoder MJPEGThumbEncoder;
+		CVideoDeviceDoc::SaveJpegFast(	&DibThumb, &MJPEGThumbEncoder,
 										::GetFileNameNoExt(sFileName) + _T("_thumb.jpg"),
 										m_nSnapshotCompressionQuality);
 	}
@@ -10791,7 +10791,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::OpenAVCodec()
 		m_pCodecCtx->codec_tag = FCC('MJPG');
 
 		// Open codec
-		if (avcodec_open_thread_safe(m_pCodecCtx, m_pCodec) < 0)
+		if (avcodec_open2(m_pCodecCtx, m_pCodec, 0) < 0)
 			goto error;
 
 		// Allocate I420 frame
@@ -10851,7 +10851,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::OpenAVCodec()
 		}
 
 		// Open codec
-		if (avcodec_open_thread_safe(m_pCodecCtx, m_pCodec) < 0)
+		if (avcodec_open2(m_pCodecCtx, m_pCodec, 0) < 0)
 			goto error;
 	}
 
@@ -10879,7 +10879,7 @@ void CVideoDeviceDoc::CHttpParseProcess::FreeAVCodec()
 		avcodec_get_context_defaults3() with a non-NULL codec. Subsequent calls will
 		do nothing.
 		*/
-		avcodec_close_thread_safe(m_pCodecCtx);
+		avcodec_close(m_pCodecCtx);
 		av_freep(&m_pCodecCtx);
 	}
 	m_pCodec = NULL;

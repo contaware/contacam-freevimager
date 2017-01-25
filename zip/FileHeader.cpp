@@ -17,7 +17,7 @@ extern "C"
 }
 
 // Get uuid, implemented in Helpers.cpp
-extern CString GetUuidString();
+extern CString GetUuidCString();
 
 #define FILEHEADERSIZE	46
 #define LOCALFILEHEADERSIZE	30
@@ -106,7 +106,7 @@ DWORD CFileHeader::Write(CZipStorage *pStorage)
 		size_t size = ::wcstombs(filename, (LPCTSTR)m_szFileName, 2*m_szFileName.GetLength() + 1);
 		if (size == -1)
 		{
-			m_szFileName = ::GetUuidString() + CZipArchive::GetFileExt(m_szFileName);
+			m_szFileName = ::GetUuidCString() + CZipArchive::GetFileExt(m_szFileName);
 			delete [] filename;
 			filename = new char[2*m_szFileName.GetLength() + 1];
 			if (filename)
@@ -239,7 +239,7 @@ void CFileHeader::WriteLocal(CZipStorage& storage)
 		size_t size = ::wcstombs(filename, (LPCTSTR)m_szFileName, 2*m_szFileName.GetLength() + 1);
 		if (size == -1)
 		{
-			m_szFileName = ::GetUuidString() + CZipArchive::GetFileExt(m_szFileName);
+			m_szFileName = ::GetUuidCString() + CZipArchive::GetFileExt(m_szFileName);
 			delete [] filename;
 			filename = new char[2*m_szFileName.GetLength() + 1];
 			if (filename)
