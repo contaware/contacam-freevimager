@@ -4,6 +4,7 @@
 class CWorkerThread : public CWinThread
 {
 public:
+	friend UINT WorkerThreadProc(LPVOID pParam);
 	CWorkerThread();
 	virtual ~CWorkerThread();
 	virtual bool Start(int nPriority = THREAD_PRIORITY_NORMAL);
@@ -15,18 +16,11 @@ public:
 	__forceinline HANDLE GetHandle() const {return m_hThread;};
 	__forceinline DWORD GetId() const {return m_nThreadID;};
 	__forceinline HANDLE GetKillEvent() const {return m_hKillEvent;};
-	__forceinline HANDLE GetStartupEvent() const {return m_hStartupEvent;};
 	__forceinline bool IsRunning() {return m_bRunning;};
 	__forceinline bool IsAlive() {return m_bAlive;};
-
+	
 protected:
-	virtual BOOL InitInstance(){return TRUE;};
-	virtual BOOL OnInitThread(){return TRUE;};
-	virtual void OnExitThread(int nExitCode){nExitCode;};
-	virtual int Run();
 	virtual int Work();
-
-	HANDLE volatile m_hStartupEvent;
 	HANDLE volatile m_hKillEvent;
 	volatile bool m_bRunning;
 	volatile bool m_bAlive;
