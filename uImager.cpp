@@ -303,14 +303,8 @@ SwsContext *sws_getContextHelper(	int srcW, int srcH, enum AVPixelFormat srcForm
 									int flags)
 {
 	SwsContext *c;
-
-	EnterCriticalSection(&g_csSWScaler);
-
 	if (!(c = sws_alloc_context()))
-	{
-		LeaveCriticalSection(&g_csSWScaler);
 		return NULL;
-	}
 
 	// YUV range
 	// 0 = limited MPEG YUV range
@@ -328,6 +322,8 @@ SwsContext *sws_getContextHelper(	int srcW, int srcH, enum AVPixelFormat srcForm
 	av_opt_set_int(c, "dst_range",  dstRange, 0);
 	av_opt_set_int(c, "sws_flags",  flags, 0);
 
+	EnterCriticalSection(&g_csSWScaler);
+
 	sws_setColorspaceDetails(c,
 							sws_getCoefficients(SWS_CS_DEFAULT), srcRange,
 							sws_getCoefficients(SWS_CS_DEFAULT), dstRange,
@@ -339,9 +335,11 @@ SwsContext *sws_getContextHelper(	int srcW, int srcH, enum AVPixelFormat srcForm
 		LeaveCriticalSection(&g_csSWScaler);
 		return NULL;
 	}
-	
-	LeaveCriticalSection(&g_csSWScaler);
-	return c;
+	else
+	{
+		LeaveCriticalSection(&g_csSWScaler);
+		return c;
+	}
 }
 
 // To avoid the "deprecated pixel format used, make sure you did set range correctly"
@@ -353,8 +351,6 @@ SwsContext *sws_getCachedContextHelper(	struct SwsContext *context,
 {
     int64_t src_h_chr_pos = -513, dst_h_chr_pos = -513,
             src_v_chr_pos = -513, dst_v_chr_pos = -513;
-
-	EnterCriticalSection(&g_csSWScaler);
 
 	// YUV range
 	// 0 = limited MPEG YUV range
@@ -406,10 +402,7 @@ SwsContext *sws_getCachedContextHelper(	struct SwsContext *context,
     if (!context)
 	{
 		if (!(context = sws_alloc_context()))
-		{
-			LeaveCriticalSection(&g_csSWScaler);
 			return NULL;
-		}
 
 		av_opt_set_int(context, "srcw",       srcW, 0);
 		av_opt_set_int(context, "srch",       srcH, 0);
@@ -426,6 +419,8 @@ SwsContext *sws_getCachedContextHelper(	struct SwsContext *context,
         av_opt_set_int(context, "dst_h_chr_pos", dst_h_chr_pos, 0);
         av_opt_set_int(context, "dst_v_chr_pos", dst_v_chr_pos, 0);
 
+		EnterCriticalSection(&g_csSWScaler);
+
 		sws_setColorspaceDetails(context,
 								sws_getCoefficients(SWS_CS_DEFAULT), srcRange,
 								sws_getCoefficients(SWS_CS_DEFAULT), dstRange,
@@ -437,9 +432,10 @@ SwsContext *sws_getCachedContextHelper(	struct SwsContext *context,
 			LeaveCriticalSection(&g_csSWScaler);
 			return NULL;
 		}
+		else
+			LeaveCriticalSection(&g_csSWScaler);
     }
 
-	LeaveCriticalSection(&g_csSWScaler);
     return context;
 }
 
