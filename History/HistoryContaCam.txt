@@ -1,6 +1,6 @@
 CONTACAM HISTORY
 
-5.5.0 (Month xxth 2017)
+5.5.0 (February 18th 2017)
 
 - If a DirectShow device path is not defined use the device name
   as device path (thanks to Shaun Daigle for reporting the problem)
