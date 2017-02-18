@@ -7640,7 +7640,10 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 			nFrameTime = Round(1000.0 / m_dEffectiveFrameRate);
 		int nSnapshotRateMs = 1000 * m_nSnapshotRate + m_nSnapshotRateMs;
 		if (nFrameTime >= nSnapshotRateMs)
+		{
+			m_dwNextSnapshotUpTime = dwUpTime;
 			bDoSnapshot = TRUE;
+		}
 		else
 		{
 			DWORD dwMaxUpTimeDiff = (DWORD)(3 * nSnapshotRateMs);
@@ -7653,7 +7656,7 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 			}
 			else
 			{
-				if (dwCurrentUpTimeDiff >= dwMaxUpTimeDiff)		// m_dwNextSnapshotUpTime is to old
+				if (dwCurrentUpTimeDiff >= dwMaxUpTimeDiff)		// m_dwNextSnapshotUpTime is too old
 					m_dwNextSnapshotUpTime = dwUpTime;			// reset it!
 				else
 				{
