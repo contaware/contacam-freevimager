@@ -1,5 +1,9 @@
 CONTACAM HISTORY
 
+5.5.5 (Month xxth 2017)
+
+- ...
+
 5.5.0 (February 18th 2017)
 
 - If a DirectShow device path is not defined use the device name

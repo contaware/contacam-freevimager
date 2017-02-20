@@ -1,5 +1,9 @@
 TRANSLATIONS HISTORY
 
+5.5.5 (Month xxth 2017)
+
+- ...
+
 5.5.0 (February 18th 2017)
 
 - Minor changes
