@@ -148,9 +148,6 @@ CUImagerApp::CUImagerApp()
 	m_bMovFragmented = FALSE;
 	m_bStartMicroApache = FALSE;
 	m_nMicroApachePort = MICROAPACHE_DEFAULT_PORT;
-	m_hVlcProcess = NULL;
-	m_VlcStartTime = CTime(0);
-	::InitializeCriticalSection(&m_csVlc);
 	::InitializeCriticalSection(&m_csMovDetSaveReservation);
 	m_bSingleInstance = TRUE;
 	m_bServiceProcess = FALSE;
@@ -192,7 +189,6 @@ CUImagerApp::CUImagerApp()
 CUImagerApp::~CUImagerApp()
 {
 #ifdef VIDEODEVICEDOC
-	::DeleteCriticalSection(&m_csVlc);
 	::DeleteCriticalSection(&m_csMovDetSaveReservation);
 #endif
 }
@@ -1910,7 +1906,6 @@ void CUImagerApp::SaveOnEndSession()
 	}
 	if (m_bAutostartsExecuted)
 	{
-		CVideoDeviceDoc::VlmShutdown();
 		if (m_bStartMicroApache)
 			CVideoDeviceDoc::MicroApacheShutdown(MICROAPACHE_TIMEOUT_MS);
 		if (!m_bServiceProcess)
@@ -2093,9 +2088,6 @@ int CUImagerApp::ExitInstance()
 	// Clean-up auto-starts
 	if (m_bAutostartsExecuted)
 	{
-		// Vlm shutdown
-		CVideoDeviceDoc::VlmShutdown();
-
 		// Micro Apache shutdown
 		if (m_bStartMicroApache)
 			CVideoDeviceDoc::MicroApacheShutdown(MICROAPACHE_TIMEOUT_MS);
@@ -2216,9 +2208,6 @@ void CUImagerApp::AutorunVideoDevices(BOOL bStartDelay/*=TRUE*/)
 	}
 	else
 	{
-		// Start Vlc process with given vlm configuration file
-		CVideoDeviceDoc::VlmReStart();
-
 		// Start devices
 		DWORD dwInitTickCount = ::GetTickCount();
 		DWORD dwOpenNetworkDeviceCount = 0U;

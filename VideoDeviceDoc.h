@@ -755,7 +755,7 @@ public:
 	static void AutorunRemoveDevice(const CString& sDevicePathName);
 
 	// NOTE for console applications started by a service
-	// (this holds for microapache which is a console app and not for the windowed VLC)
+	// (this holds for microapache which is a console app)
 	//
 	// Up to Windows XP and Windows Server 2003 the first logged on user and the services
 	// both run in session 0. When logging off, the system sends a logoff event to all
@@ -795,12 +795,6 @@ public:
 						CString sBody = _T(""),				// if no body given use the format "name: date time note"
 						const CString& sFileName = _T(""),	// attachment
 						BOOL bShow = FALSE);				// show / hide the console window
-	
-	// Vlm
-	static CString VlmGetConfigFileName();
-	static BOOL VlmConfigFileFilled();
-	static void VlmReStart();
-	static void VlmShutdown();
 
 	// Php config file manipulation
 	CString PhpGetConfigFileName();

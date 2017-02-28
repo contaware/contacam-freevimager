@@ -75,9 +75,6 @@
 #define FTPPROG_TIMEOUT_SEC								10
 #define FTPPROG_JPEGUPLOAD_WAIT_TIMEOUT_MS				10000 /* FTPPROG_JPEGUPLOAD_WAIT_TIMEOUT_MS < NETCOM_BLOCKING_TIMEOUT, see CVideoDeviceChildFrame::OnClose() */
 
-// Vlm
-#define VLM_CONFIGNAME_EXT								_T("vlm_conf.txt")
-
 // Php and Css
 #define	PHP_CONFIGNAME_EXT								_T("configuration.php")
 #define PHP_INDEXROOTDIRNAME_EXT						_T("index_rootdir.php")
@@ -632,11 +629,6 @@ public:
 	// Authentication
 	CString m_sMicroApacheUsername;
 	CString m_sMicroApachePassword;
-
-	// Vlc
-	HANDLE m_hVlcProcess;
-	CTime m_VlcStartTime;
-	CRITICAL_SECTION m_csVlc;
 
 	// Movement detection save reservation queue
 	typedef CList<DWORD,DWORD> MOVDETSAVERESERVATIONQUEUE;
