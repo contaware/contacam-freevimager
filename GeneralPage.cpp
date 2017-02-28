@@ -385,9 +385,9 @@ BOOL CGeneralPage::OnInitDialog()
 
 	// Enable Format Button?
 	CButton* pButton = (CButton*)GetDlgItem(IDC_VIDEO_FORMAT);
-	if ((m_pDoc->m_pDxCapture && m_pDoc->m_pDxCapture->HasFormats())	||
-		(m_pDoc->m_pDxCapture && m_pDoc->m_pDxCapture->IsDV() && m_pDoc->m_pDxCapture->HasDVFormatDlg()) ||
-		(m_pDoc->m_pVideoNetCom))
+	if ((m_pDoc->m_pDxCapture && m_pDoc->m_pDxCapture->HasFormats())										||
+		(m_pDoc->m_pDxCapture && m_pDoc->m_pDxCapture->IsDV() && m_pDoc->m_pDxCapture->HasDVFormatDlg())	||
+		!m_pDoc->m_pDxCapture)
 		pButton->EnableWindow(TRUE);
 	else
 		pButton->EnableWindow(FALSE);

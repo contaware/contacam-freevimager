@@ -5809,12 +5809,23 @@ void CVideoDeviceDoc::VideoFormatDialog()
 			dlg.DoModal();
 		}
 	}
-	else if (m_pVideoNetCom)
+	else
 	{
-		if (m_nNetworkDeviceTypeMode == OTHERONE_SP	||
-			m_nNetworkDeviceTypeMode == OTHERONE_CP	||
-			m_nNetworkDeviceTypeMode == TPLINK_SP	||
-			m_nNetworkDeviceTypeMode == TPLINK_CP)
+		if (m_nNetworkDeviceTypeMode >= URL_RTSP)
+		{
+			BeginWaitCursor();
+			::ShellExecute(	NULL,
+							_T("open"),
+							::UrlEncode(_T("http://") + m_sGetFrameVideoHost, FALSE),
+							NULL,
+							NULL,
+							SW_SHOWNORMAL);
+			EndWaitCursor();
+		}
+		else if (	m_nNetworkDeviceTypeMode == OTHERONE_SP	||
+					m_nNetworkDeviceTypeMode == OTHERONE_CP	||
+					m_nNetworkDeviceTypeMode == TPLINK_SP	||
+					m_nNetworkDeviceTypeMode == TPLINK_CP)
 		{
 			CString sUrl;
 			if (m_nGetFrameVideoPort != 80)
