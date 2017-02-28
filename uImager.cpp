@@ -1703,7 +1703,7 @@ void CUImagerApp::OnCaptureNetwork()
 		CVideoDeviceDoc* pDoc = (CVideoDeviceDoc*)GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
 		if (pDoc)
 		{
-			if (!pDoc->OpenGetVideo(&dlg))
+			if (!pDoc->OpenNetVideoDevice(&dlg))
 				pDoc->CloseDocument();
 		}
 	}
@@ -1714,7 +1714,7 @@ void CUImagerApp::OnFileDxVideoDevice(UINT nID)
 	CVideoDeviceDoc* pDoc = (CVideoDeviceDoc*)GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
 	if (pDoc)
 	{
-		if (!pDoc->OpenVideoDevice(nID - ID_DIRECTSHOW_VIDEODEV_FIRST))
+		if (!pDoc->OpenDxVideoDevice(nID - ID_DIRECTSHOW_VIDEODEV_FIRST))
 			pDoc->CloseDocument();
 	}
 }
@@ -2241,7 +2241,7 @@ void CUImagerApp::AutorunVideoDevices(BOOL bStartDelay/*=TRUE*/)
 							dwConnectDelayMs = dwWantedNetworkDeviceStartupDelayMs - dwCurrentStartupDelayMs;
 						else
 							dwConnectDelayMs = 0U;
-						if (!pDoc->OpenGetVideo(sDevRegistry, dwConnectDelayMs))
+						if (!pDoc->OpenNetVideoDevice(sDevRegistry, dwConnectDelayMs))
 							pDoc->CloseDocument();
 						else
 							dwOpenNetworkDeviceCount++;
@@ -2253,7 +2253,7 @@ void CUImagerApp::AutorunVideoDevices(BOOL bStartDelay/*=TRUE*/)
 						int nID = CDxCapture::GetDeviceID(sDev);
 						if (nID >= 0)
 						{
-							if (!pDoc->OpenVideoDevice(nID))
+							if (!pDoc->OpenDxVideoDevice(nID))
 								pDoc->CloseDocument();
 						}
 						else

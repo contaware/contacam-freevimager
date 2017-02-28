@@ -407,6 +407,21 @@ public:
 			NETCOMPARSEPROCESSLIST m_HttpVideoParseProcessList;
 	};
 
+	// Http Thread
+	class CRtspThread : public CWorkerThread
+	{
+		public:
+			CRtspThread() { m_pDoc = NULL; m_dwConnectDelayMs = 0U; };
+			virtual ~CRtspThread() {Kill();};
+			void SetDoc(CVideoDeviceDoc* pDoc) { m_pDoc = pDoc; };
+			CString m_sURL;
+			DWORD m_dwConnectDelayMs;
+
+		protected:
+			int Work();
+			CVideoDeviceDoc* m_pDoc;
+	};
+
 	// Watch Dog Thread
 	class CWatchdogThread : public CWorkerThread
 	{
@@ -566,7 +581,7 @@ public:
 	CString GetDevicePathName();												// Used For Settings, Scheduler and Autorun
 	static CString GetNetworkDevicePathName(const CString& sGetFrameVideoHost,	// GetDevicePathName() calls this for network devices
 											int nGetFrameVideoPort,
-											const CString& sHttpGetFrameLocation,
+											const CString& sGetFrameLocation,
 											int nNetworkDeviceTypeMode);
 	void SetDocumentTitle();
 	CVideoDeviceView* GetView() const {return m_pView;};
@@ -575,12 +590,12 @@ public:
 	void SetFrame(CVideoDeviceChildFrame* pFrame) {m_pFrame = pFrame;};
 	static BOOL CreateCheckYearMonthDayDir(CTime Time, CString sBaseDir, CString& sYearMonthDayDir);
 
-	// Open Video Device
-	BOOL OpenVideoDevice(int nId);
+	// Open Dx Video Device
+	BOOL OpenDxVideoDevice(int nId);
 
-	// Open Video From Network
-	BOOL OpenGetVideo(CHostPortDlg* pDlg);
-	BOOL OpenGetVideo(CString sAddress, DWORD dwConnectDelayMs = 0U);
+	// Open Network Video Device
+	BOOL OpenNetVideoDevice(CHostPortDlg* pDlg);
+	BOOL OpenNetVideoDevice(CString sAddress, DWORD dwConnectDelayMs = 0U);
 
 	// Connect to the chosen Networking Type and Mode
 	typedef enum {
@@ -598,7 +613,10 @@ public:
 		TPLINK_CP,			// TP-Link Client Poll (jpegs)
 		FOSCAM_SP,			// Foscam Server Push (mjpeg)
 		FOSCAM_CP,			// Foscam Client Poll (jpegs)
-		// Add more devices here...	
+		// Add more http devices here...
+		URL_RTSP = 1000,	// URL RTSP
+		AXIS_RTSP,			// Axis RTSP
+		// Add more rtsp devices here...
 		LAST_DEVICE			// Placeholder for range check
 	} NetworkDeviceTypeMode;
 	BOOL ConnectHttp(DWORD dwConnectDelayMs = 0U);
@@ -838,6 +856,7 @@ public:
 
 	// Threads
 	CHttpThread m_HttpThread;							// Http Networking Helper Thread
+	CRtspThread m_RtspThread;							// Rtsp Networking Thread
 	CWatchdogThread m_WatchdogThread;					// Video/Audio Watchdog Thread
 	CDeleteThread m_DeleteThread;						// Delete old files Thread
 	CCaptureAudioThread m_CaptureAudioThread;			// Audio Capture Thread

@@ -42,20 +42,20 @@ BOOL CHostPortDlg::OnInitDialog()
 
 	// Init Device Type Mode Combo Box
 	CComboBox* pComboBoxDevTypeMode = (CComboBox*)GetDlgItem(IDC_COMBO_DEVICETYPEMODE);
-	pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Other HTTP Camera") + _T(" (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
-	pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Other HTTP Camera") + _T(" (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
-	pComboBoxDevTypeMode->AddString(_T("Axis (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
-	pComboBoxDevTypeMode->AddString(_T("Axis (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
-	pComboBoxDevTypeMode->AddString(_T("Panasonic (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
-	pComboBoxDevTypeMode->AddString(_T("Panasonic (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
-	pComboBoxDevTypeMode->AddString(_T("Pixord/NetComm (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
-	pComboBoxDevTypeMode->AddString(_T("Pixord/NetComm (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
-	pComboBoxDevTypeMode->AddString(_T("Edimax (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
-	pComboBoxDevTypeMode->AddString(_T("Edimax (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
-	pComboBoxDevTypeMode->AddString(_T("TP-Link (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
-	pComboBoxDevTypeMode->AddString(_T("TP-Link (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
-	pComboBoxDevTypeMode->AddString(_T("Foscam/Tenvis/Clones (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
-	pComboBoxDevTypeMode->AddString(_T("Foscam/Tenvis/Clones (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Other HTTP Camera") + _T(" (") + ML_STRING(1865, "Server Push Mode") + _T(")")), (DWORD)CVideoDeviceDoc::OTHERONE_SP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Other HTTP Camera") + _T(" (") + ML_STRING(1866, "Client Poll Mode") + _T(")")), (DWORD)CVideoDeviceDoc::OTHERONE_CP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Axis (") + ML_STRING(1865, "Server Push Mode") + _T(")")), (DWORD)CVideoDeviceDoc::AXIS_SP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Axis (") + ML_STRING(1866, "Client Poll Mode") + _T(")")), (DWORD)CVideoDeviceDoc::AXIS_CP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Panasonic (") + ML_STRING(1865, "Server Push Mode") + _T(")")), (DWORD)CVideoDeviceDoc::PANASONIC_SP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Panasonic (") + ML_STRING(1866, "Client Poll Mode") + _T(")")), (DWORD)CVideoDeviceDoc::PANASONIC_CP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Pixord/NetComm (") + ML_STRING(1865, "Server Push Mode") + _T(")")), (DWORD)CVideoDeviceDoc::PIXORD_SP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Pixord/NetComm (") + ML_STRING(1866, "Client Poll Mode") + _T(")")), (DWORD)CVideoDeviceDoc::PIXORD_CP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Edimax (") + ML_STRING(1865, "Server Push Mode") + _T(")")), (DWORD)CVideoDeviceDoc::EDIMAX_SP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Edimax (") + ML_STRING(1866, "Client Poll Mode") + _T(")")), (DWORD)CVideoDeviceDoc::EDIMAX_CP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("TP-Link (") + ML_STRING(1865, "Server Push Mode") + _T(")")), (DWORD)CVideoDeviceDoc::TPLINK_SP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("TP-Link (") + ML_STRING(1866, "Client Poll Mode") + _T(")")), (DWORD)CVideoDeviceDoc::TPLINK_CP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Foscam/Tenvis/Clones (") + ML_STRING(1865, "Server Push Mode") + _T(")")), (DWORD)CVideoDeviceDoc::FOSCAM_SP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Foscam/Tenvis/Clones (") + ML_STRING(1866, "Client Poll Mode") + _T(")")), (DWORD)CVideoDeviceDoc::FOSCAM_CP);
 
 	CDialog::OnInitDialog();
 
@@ -89,9 +89,8 @@ BOOL CHostPortDlg::OnInitDialog()
 			pEdit->SetWindowText(sPort);
 
 			// Device Type Mode
-			if (m_DeviceTypeModesHistory[0] >= 0 && (int)m_DeviceTypeModesHistory[0] < pComboBoxDevTypeMode->GetCount())
-				m_nDeviceTypeMode = m_DeviceTypeModesHistory[0];
-			pComboBoxDevTypeMode->SetCurSel(m_nDeviceTypeMode);
+			m_nDeviceTypeMode = m_DeviceTypeModesHistory[0];
+			SetCurDeviceTypeMode(m_nDeviceTypeMode);
 		}
 	}
 	pComboBoxHost->SetCurSel(0); // pComboBoxHost is never empty!
@@ -109,13 +108,14 @@ void CHostPortDlg::ParseUrl(const CString& sInHost,
 							int nInDeviceTypeMode,
 							CString& sOutGetFrameVideoHost,
 							int& nOutGetFrameVideoPort,
-							CString& sOutHttpGetFrameLocation,
+							CString& sOutGetFrameLocation,
 							int& nOutDeviceTypeMode)
 {
 	// Init Vars
 	int nPos, nPosEnd;
-	BOOL bUrl = FALSE;
-	int nUrlPort = 80; // default url port is always 80
+	BOOL bUrlHttp = FALSE;
+	BOOL bUrlRtsp = FALSE;
+	int nUrlPort;
 	sOutGetFrameVideoHost = sInHost;
 	CString sGetFrameVideoHostLowerCase(sOutGetFrameVideoHost);
 	sGetFrameVideoHostLowerCase.MakeLower();
@@ -124,7 +124,8 @@ void CHostPortDlg::ParseUrl(const CString& sInHost,
 	if ((nPos = sGetFrameVideoHostLowerCase.Find(_T("http://["))) >= 0)
 	{
 		// Set flag
-		bUrl = TRUE;
+		bUrlHttp = TRUE;
+		nUrlPort = 80; // default http port is always 80
 
 		// Remove leading http://[ from url
 		sOutGetFrameVideoHost = sOutGetFrameVideoHost.Right(sOutGetFrameVideoHost.GetLength() - 8 - nPos);
@@ -163,18 +164,19 @@ void CHostPortDlg::ParseUrl(const CString& sInHost,
 		nPos = sLocation.Find(_T('/'));
 		if (nPos >= 0)
 		{	
-			sOutHttpGetFrameLocation = sLocation.Right(sLocation.GetLength() - nPos);
-			sOutHttpGetFrameLocation.TrimLeft();
-			sOutHttpGetFrameLocation.TrimRight();
+			sOutGetFrameLocation = sLocation.Right(sLocation.GetLength() - nPos);
+			sOutGetFrameLocation.TrimLeft();
+			sOutGetFrameLocation.TrimRight();
 		}
 		else
-			sOutHttpGetFrameLocation = _T("/");
+			sOutGetFrameLocation = _T("/");
 	}
 	// Numeric IP4 or hostname with format http://host:port/framelocation
 	else if ((nPos = sGetFrameVideoHostLowerCase.Find(_T("http://"))) >= 0)
 	{
 		// Set flag
-		bUrl = TRUE;
+		bUrlHttp = TRUE;
+		nUrlPort = 80; // default http port is always 80
 
 		// Remove leading http:// from url
 		sOutGetFrameVideoHost = sOutGetFrameVideoHost.Right(sOutGetFrameVideoHost.GetLength() - 7 - nPos);
@@ -205,22 +207,89 @@ void CHostPortDlg::ParseUrl(const CString& sInHost,
 		nPos = sOutGetFrameVideoHost.Find(_T('/'));
 		if (nPos >= 0)
 		{	
-			sOutHttpGetFrameLocation = sOutGetFrameVideoHost.Right(sOutGetFrameVideoHost.GetLength() - nPos);
+			sOutGetFrameLocation = sOutGetFrameVideoHost.Right(sOutGetFrameVideoHost.GetLength() - nPos);
 			sOutGetFrameVideoHost = sOutGetFrameVideoHost.Left(nPos);
-			sOutHttpGetFrameLocation.TrimLeft();
-			sOutHttpGetFrameLocation.TrimRight();
+			sOutGetFrameLocation.TrimLeft();
+			sOutGetFrameLocation.TrimRight();
 		}
 		else
-			sOutHttpGetFrameLocation = _T("/");
+			sOutGetFrameLocation = _T("/");
+	}
+	else if ((nPos = sGetFrameVideoHostLowerCase.Find(_T("rtsp://"))) >= 0)
+	{
+		// Set flags
+		bUrlRtsp = TRUE;
+		nUrlPort = 554; // default rtsp port is always 554
+
+		// Remove leading rtsp:// from url
+		sOutGetFrameVideoHost = sOutGetFrameVideoHost.Right(sOutGetFrameVideoHost.GetLength() - 7 - nPos);
+
+		// Has Port?
+		if ((nPos = sOutGetFrameVideoHost.Find(_T(":"))) >= 0)
+		{
+			CString sPort;
+			if ((nPosEnd = sOutGetFrameVideoHost.Find(_T('/'), nPos)) >= 0)
+			{
+				sPort = sOutGetFrameVideoHost.Mid(nPos + 1, nPosEnd - nPos - 1);
+				sOutGetFrameVideoHost.Delete(nPos, nPosEnd - nPos);
+			}
+			else
+			{
+				sPort = sOutGetFrameVideoHost.Mid(nPos + 1, sOutGetFrameVideoHost.GetLength() - nPos - 1);
+				sOutGetFrameVideoHost.Delete(nPos, sOutGetFrameVideoHost.GetLength() - nPos);
+			}
+			sPort.TrimLeft();
+			sPort.TrimRight();
+			int nPort = _tcstol(sPort.GetBuffer(0), NULL, 10);
+			sPort.ReleaseBuffer();
+			if (nPort > 0 && nPort <= 65535) // Port 0 is Reserved
+				nUrlPort = nPort;
+		}
+
+		// Get Location which is set as first automatic camera type detection query string
+		nPos = sOutGetFrameVideoHost.Find(_T('/'));
+		if (nPos >= 0)
+		{
+			sOutGetFrameLocation = sOutGetFrameVideoHost.Right(sOutGetFrameVideoHost.GetLength() - nPos);
+			sOutGetFrameVideoHost = sOutGetFrameVideoHost.Left(nPos);
+			sOutGetFrameLocation.TrimLeft();
+			sOutGetFrameLocation.TrimRight();
+		}
+		else
+			sOutGetFrameLocation = _T("/");
 	}
 	else
-		sOutHttpGetFrameLocation = _T("/");
+		sOutGetFrameLocation = _T("/");
 
 	// Set vars
 	sOutGetFrameVideoHost.TrimLeft();
 	sOutGetFrameVideoHost.TrimRight();
-	nOutGetFrameVideoPort = bUrl ? nUrlPort : nInPort;
-	nOutDeviceTypeMode = bUrl ? CVideoDeviceDoc::OTHERONE_CP : nInDeviceTypeMode;
+	nOutGetFrameVideoPort = (bUrlHttp || bUrlRtsp) ? nUrlPort : nInPort;
+	if (bUrlHttp)
+		nOutDeviceTypeMode = CVideoDeviceDoc::OTHERONE_CP;
+	else if (bUrlRtsp)
+		nOutDeviceTypeMode = CVideoDeviceDoc::URL_RTSP;
+	else
+		nOutDeviceTypeMode = nInDeviceTypeMode;
+}
+
+int CHostPortDlg::GetCurDeviceTypeMode()
+{
+	CComboBox* pComboBoxDevTypeMode = (CComboBox*)GetDlgItem(IDC_COMBO_DEVICETYPEMODE);
+	return pComboBoxDevTypeMode->GetItemData(pComboBoxDevTypeMode->GetCurSel());
+}
+
+void CHostPortDlg::SetCurDeviceTypeMode(int nDeviceTypeMode)
+{
+	CComboBox* pComboBoxDevTypeMode = (CComboBox*)GetDlgItem(IDC_COMBO_DEVICETYPEMODE);
+	for (int i = 0; i < pComboBoxDevTypeMode->GetCount(); i++)
+	{
+		if (nDeviceTypeMode == pComboBoxDevTypeMode->GetItemData(i))
+		{
+			pComboBoxDevTypeMode->SetCurSel(i);
+			break;
+		}
+	}
 }
 
 /*
@@ -239,7 +308,7 @@ void CHostPortDlg::EnableDisableCtrls()
 	CComboBox* pComboBoxDevTypeMode = (CComboBox*)GetDlgItem(IDC_COMBO_DEVICETYPEMODE);
 	CStatic* pStaticServerPush = (CStatic*)GetDlgItem(IDC_STATIC_SERVERPUSH);
 	CStatic* pStaticClientPoll = (CStatic*)GetDlgItem(IDC_STATIC_CLIENTPOLL);
-	if (sHostLowerCase.Find(_T("http://")) >= 0)
+	if (sHostLowerCase.Find(_T("http://")) >= 0 || sHostLowerCase.Find(_T("rtsp://")) >= 0)
 	{
 		pEditPort->EnableWindow(FALSE);
 		pComboBoxDevTypeMode->EnableWindow(FALSE);
@@ -289,14 +358,10 @@ void CHostPortDlg::OnSelchangeComboHost()
 	}
 
 	// Device Type Mode
-	CComboBox* pComboBoxDevTypeMode = (CComboBox*)GetDlgItem(IDC_COMBO_DEVICETYPEMODE);
 	if (nSel >= 0 && nSel < m_DeviceTypeModesHistory.GetSize())
 	{
-		if (m_DeviceTypeModesHistory[nSel] >= 0 && (int)m_DeviceTypeModesHistory[nSel] < pComboBoxDevTypeMode->GetCount())
-		{
-			m_nDeviceTypeMode = m_DeviceTypeModesHistory[nSel];
-			pComboBoxDevTypeMode->SetCurSel(m_nDeviceTypeMode);
-		}
+		m_nDeviceTypeMode = m_DeviceTypeModesHistory[nSel];
+		SetCurDeviceTypeMode(m_nDeviceTypeMode);
 	}
 
 	// Update Controls
@@ -320,8 +385,7 @@ void CHostPortDlg::OnChangeEditPort()
 
 void CHostPortDlg::OnSelchangeComboDeviceTypeMode()
 {
-	CComboBox* pComboBoxDevTypeMode = (CComboBox*)GetDlgItem(IDC_COMBO_DEVICETYPEMODE);
-	m_nDeviceTypeMode = pComboBoxDevTypeMode->GetCurSel();
+	m_nDeviceTypeMode = GetCurDeviceTypeMode();
 	LoadCredentialsAndTitle();
 }
 
@@ -337,13 +401,13 @@ CString CHostPortDlg::MakeDevicePathName(const CString& sInHost, int nInPort, in
 {
 	CString sOutGetFrameVideoHost;
 	int nOutGetFrameVideoPort;
-	CString sOutHttpGetFrameLocation;
+	CString sOutGetFrameLocation;
 	int nOutDeviceTypeMode;
 	ParseUrl(sInHost, nInPort, nInDeviceTypeMode,
 			sOutGetFrameVideoHost, nOutGetFrameVideoPort,
-			sOutHttpGetFrameLocation, nOutDeviceTypeMode);
+			sOutGetFrameLocation, nOutDeviceTypeMode);
 	return CVideoDeviceDoc::GetNetworkDevicePathName(	sOutGetFrameVideoHost, nOutGetFrameVideoPort,
-														sOutHttpGetFrameLocation, nOutDeviceTypeMode);
+														sOutGetFrameLocation, nOutDeviceTypeMode);
 }
 
 void CHostPortDlg::LoadCredentialsAndTitle()

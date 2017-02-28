@@ -2899,6 +2899,252 @@ int CVideoDeviceDoc::CHttpThread::Work()
 	return 0;
 }
 
+// Get latest ffmpeg as some av_dict_set() params are new!!!
+int CVideoDeviceDoc::CRtspThread::Work()
+{
+	ASSERT(m_pDoc);
+
+	// Wait before connecting or Exit if wished so
+	if (::WaitForSingleObject(m_hKillEvent, m_dwConnectDelayMs) == WAIT_OBJECT_0)
+		return 0;
+
+	for (;;)
+	{
+		int ret = 0;
+		AVCodec* pCodec = NULL;
+		AVCodecContext* pCodecCtx = NULL;
+		SwsContext* pImgConvertCtx = NULL;
+		AVFrame* pFrame = NULL;
+		AVFrame* pFrameI420 = NULL;
+		LPBYTE pI420Buf = NULL;
+		AVFormatContext* pFormatCtx = avformat_alloc_context();
+
+		// Set options
+		AVDictionary* opts = NULL;
+		//av_dict_set(&opts, "rtsp_transport", "tcp", 0);			// udp or tcp (default udp)
+		//av_dict_set(&opts, "rtsp_flags", "prefer_tcp", 0);		// try RTP via TCP first, if available
+		av_dict_set_int(&opts, "stimeout", 10000000, 0);			// set timeout (in microseconds) of socket TCP I/O operations
+		//av_dict_set(&opts, "reorder_queue_size", "128", 0);		// set number of packets to buffer for handling of reordered packets
+		//
+		// SO_RCVBUF is the size of the buffer the system allocates to hold the data arriving
+		// into the given socket during the time between it arrives over the network and when it
+		// is read by the program that owns this socket. With TCP, if data arrives and you aren't
+		// reading it, the buffer will fill up, and the sender will be told to slow down (using TCP
+		// window adjustment mechanism). For UDP, once the buffer is full, new packets will just be
+		// discarded.
+		// SO_RCVBUF is set by the OS to 8K for Win7 or older and to 64K for newer. ffmpeg inits it
+		// to UDP_MAX_PKT_SIZE. The user can change it with the "buffer_size" option.
+		//
+		// Note: for my current ffmpeg version that option is not yet supported, I changed
+		//       UDP_MAX_PKT_SIZE define from 65536 to 1048576 in uimager\ffmpeg\libavformat\udp.c
+		av_dict_set_int(&opts, "buffer_size", 1048576, 0); // 1MB
+
+		// Open rtsp
+		CStringA sAnsiURL(m_sURL);
+		if ((ret = avformat_open_input(&pFormatCtx, sAnsiURL, NULL, &opts)) < 0)
+			goto free;
+
+		// Search video stream for which we have a decoder
+		if ((ret = avformat_find_stream_info(pFormatCtx, NULL)) < 0)
+			goto free;
+		int nVideoStreamIndex = av_find_best_stream(pFormatCtx, AVMEDIA_TYPE_VIDEO, -1, -1, &pCodec, 0);
+		if (nVideoStreamIndex < 0)
+		{
+			ret = nVideoStreamIndex;
+			goto free;
+		}
+
+		// Set capture FourCC from codec id
+		const struct AVCodecTag *table[] = {avformat_get_riff_video_tags(), 0};
+		m_pDoc->m_CaptureBMI.bmiHeader.biCompression = av_codec_get_tag(table, pCodec->id);
+
+		// Open codec context
+		pCodecCtx = pFormatCtx->streams[nVideoStreamIndex]->codec;
+		if ((ret = avcodec_open2(pCodecCtx, pCodec, 0)) < 0)
+			goto free;
+
+		// Init
+		pImgConvertCtx = sws_getContextHelper(	pCodecCtx->width, pCodecCtx->height,
+												pCodecCtx->pix_fmt,
+												pCodecCtx->width, pCodecCtx->height,
+												AV_PIX_FMT_YUV420P,
+												SWS_BICUBIC);
+		if (!pImgConvertCtx)
+			goto free;
+		pFrame = av_frame_alloc();
+		if (!pFrame)
+			goto free;
+		pFrameI420 = av_frame_alloc();
+		if (!pFrameI420)
+			goto free;
+		int nI420ImageSize = avpicture_get_size(AV_PIX_FMT_YUV420P, pCodecCtx->width, pCodecCtx->height);
+		if (nI420ImageSize <= 0)
+			goto free;
+		pI420Buf = (LPBYTE)av_malloc(2 * (nI420ImageSize + FF_INPUT_BUFFER_PADDING_SIZE));
+		if (!pI420Buf)
+			goto free;
+		avpicture_fill((AVPicture *)pFrameI420, pI420Buf, AV_PIX_FMT_YUV420P, pCodecCtx->width, pCodecCtx->height);
+		
+		// Exit?
+		if (DoExit())
+			goto free;
+
+		// Get frames
+		AVPacket avpkt;
+		av_init_packet(&avpkt);
+		avpkt.data = NULL; // set data to NULL, let the demuxer fill it
+		avpkt.size = 0;
+		while ((ret = av_read_frame(pFormatCtx, &avpkt)) >= 0)
+		{
+			AVPacket orig_pkt = avpkt;
+
+			do
+			{
+				int decoded = avpkt.size;
+
+				// Video packet
+				if (avpkt.stream_index == nVideoStreamIndex)
+				{
+					// Decode
+					int got_picture = 0;
+					ret = avcodec_decode_video2(pCodecCtx, pFrame, &got_picture, &avpkt);
+					if (ret < 0)
+					{
+						av_free_packet(&orig_pkt);
+						goto free;
+					}
+					decoded = MIN(ret, avpkt.size);
+
+					// Init if size changed
+					if (m_pDoc->m_DocRect.right != pCodecCtx->width ||
+						m_pDoc->m_DocRect.bottom != pCodecCtx->height)
+					{
+						m_pDoc->m_ProcessFrameBMI.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+						m_pDoc->m_ProcessFrameBMI.bmiHeader.biWidth = (DWORD)pCodecCtx->width;
+						m_pDoc->m_ProcessFrameBMI.bmiHeader.biHeight = (DWORD)pCodecCtx->height;
+						m_pDoc->m_ProcessFrameBMI.bmiHeader.biPlanes = 1; // must be 1
+						m_pDoc->m_ProcessFrameBMI.bmiHeader.biBitCount = 12;
+						m_pDoc->m_ProcessFrameBMI.bmiHeader.biCompression = FCC('I420');
+						m_pDoc->m_ProcessFrameBMI.bmiHeader.biSizeImage = nI420ImageSize;
+						m_pDoc->m_DocRect.right = m_pDoc->m_ProcessFrameBMI.bmiHeader.biWidth;
+						m_pDoc->m_DocRect.bottom = m_pDoc->m_ProcessFrameBMI.bmiHeader.biHeight;
+
+						// Free Movement Detector because we changed size and/or format!
+						m_pDoc->FreeMovementDetector();
+
+						// Update
+						if (m_pDoc->m_bSizeToDoc)
+						{
+							// This sizes the view to m_DocRect in normal screen mode,
+							// in full-screen mode it updates m_ZoomRect from m_DocRect
+							::PostMessage(m_pDoc->GetView()->GetSafeHwnd(),
+								WM_THREADSAFE_UPDATEWINDOWSIZES,
+								(WPARAM)UPDATEWINDOWSIZES_SIZETODOC,
+								(LPARAM)0);
+							m_pDoc->m_bSizeToDoc = FALSE;
+						}
+						else
+						{
+							// In full-screen mode it updates m_ZoomRect from m_DocRect
+							::PostMessage(m_pDoc->GetView()->GetSafeHwnd(),
+								WM_THREADSAFE_UPDATEWINDOWSIZES,
+								(WPARAM)0,
+								(LPARAM)0);
+						}
+						::PostMessage(m_pDoc->GetView()->GetSafeHwnd(),
+							WM_THREADSAFE_SETDOCUMENTTITLE,
+							0, 0);
+						::PostMessage(m_pDoc->GetView()->GetSafeHwnd(),
+							WM_THREADSAFE_UPDATE_PHPPARAMS,
+							0, 0);
+					}
+
+					// Convert
+					if (got_picture)
+					{
+						if ((ret = sws_scale(pImgConvertCtx, pFrame->data, pFrame->linesize, 0, pCodecCtx->height, pFrameI420->data, pFrameI420->linesize)) <= 0)
+						{
+							av_free_packet(&orig_pkt);
+							goto free;
+						}
+						m_pDoc->m_lCompressedDataRateSum += avpkt.size;
+						if (pCodecCtx->codec_id == AV_CODEC_ID_MJPEG)
+							m_pDoc->ProcessI420Frame(pI420Buf, nI420ImageSize, avpkt.data, avpkt.size);
+						else
+							m_pDoc->ProcessI420Frame(pI420Buf, nI420ImageSize, NULL, 0U);
+					}
+				}
+
+				avpkt.data += decoded;
+				avpkt.size -= decoded;
+			}
+			while (avpkt.size > 0);
+
+			// Free
+			av_free_packet(&orig_pkt);
+
+			// Exit?
+			if (DoExit())
+				goto free;
+		}
+
+		// Free
+	free:
+		/*
+		Close a given AVCodecContext and free all the data associated with it
+		(but not the AVCodecContext itself).
+		Calling this function on an AVCodecContext that hasn't been opened will free
+		the codec-specific data allocated in avcodec_alloc_context3() /
+		avcodec_get_context_defaults3() with a non-NULL codec. Subsequent calls will
+		do nothing.
+		*/
+		if (pCodecCtx)
+			avcodec_close(pCodecCtx);
+		if (pFrame)
+			av_frame_free(&pFrame);
+		if (pFrameI420)
+			av_frame_free(&pFrameI420);
+		if (pI420Buf)
+			av_free(pI420Buf);
+		if (pImgConvertCtx)
+			sws_freeContext(pImgConvertCtx);
+		if (pFormatCtx)
+			avformat_close_input(&pFormatCtx);
+		av_dict_free(&opts);
+
+		// Exit?
+		if (DoExit())
+			return 0;
+		else if (!m_pDoc->m_bCaptureStarted)
+		{
+			CString sErrorMsg;
+			switch (ret)
+			{
+				case AVERROR_HTTP_BAD_REQUEST:	sErrorMsg = _T("Server returned 400 Bad Request"); break;
+				case AVERROR_HTTP_UNAUTHORIZED:	sErrorMsg = _T("Server returned 401 Unauthorized (authorization failed)"); break;
+				case AVERROR_HTTP_FORBIDDEN:	sErrorMsg = _T("Server returned 403 Forbidden (access denied)"); break;
+				case AVERROR_HTTP_NOT_FOUND:	sErrorMsg = _T("Server returned 404 Not Found"); break;
+				case AVERROR_HTTP_OTHER_4XX:	sErrorMsg = _T("Server returned 4XX Client Error, but not one of 40{0,1,3,4}"); break;
+				case AVERROR_HTTP_SERVER_ERROR:	sErrorMsg = _T("Server returned 5XX Server Error reply"); break;
+				default:						sErrorMsg = ML_STRING(1465, "Cannot connect to the specified network device or server"); break;
+			}
+			CVideoDeviceDoc::ConnectErr(sErrorMsg, m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
+			m_pDoc->CloseDocument();
+			return 0;
+		}
+		else
+		{
+			// Wait before reconnecting or Exit if wished so
+			if (::WaitForSingleObject(m_hKillEvent, HTTP_RECONNECTION_DELAY) == WAIT_OBJECT_0)
+				return 0;
+			else
+				::LogLine(_T("%s try reconnecting"), m_pDoc->GetAssignedDeviceName());
+		}
+	}
+
+	return 0;
+}
+
 int CVideoDeviceDoc::CWatchdogThread::Work()
 {
 	ASSERT(m_pDoc);
@@ -3410,7 +3656,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nHttpVideoSizeX = HTTP_DEFAULT_VIDEO_SIZE_CX;
 	m_nHttpVideoSizeY = HTTP_DEFAULT_VIDEO_SIZE_CY;
 	m_nHttpGetFrameLocationPos = 0;
-	m_HttpGetFrameLocations.Add(_T("/")); // start trying home to see whether cam is reachable
+	m_HttpGetFrameLocations.Add(_T("/")); // first element must be valid ("/" => try home to see whether cam is reachable)
 
 	// Snapshot
 	m_bSnapshotHistoryJpeg = FALSE;
@@ -3435,6 +3681,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	// Threads Init
 	m_CaptureAudioThread.SetDoc(this);
 	m_HttpThread.SetDoc(this);
+	m_RtspThread.SetDoc(this);
 	m_WatchdogThread.SetDoc(this);
 	m_DeleteThread.SetDoc(this);
 	m_SaveFrameListThread.SetDoc(this);
@@ -3745,11 +3992,11 @@ CString CVideoDeviceDoc::GetHostFromDevicePathName(const CString& sDevicePathNam
 
 CString CVideoDeviceDoc::GetNetworkDevicePathName(	const CString& sGetFrameVideoHost,
 													int nGetFrameVideoPort,
-													const CString& sHttpGetFrameLocation,
+													const CString& sGetFrameLocation,
 													int nNetworkDeviceTypeMode)
 {
 	CString sDevicePathName;
-	sDevicePathName.Format(_T("%s:%d:%s:%d"), sGetFrameVideoHost, nGetFrameVideoPort, sHttpGetFrameLocation, nNetworkDeviceTypeMode);
+	sDevicePathName.Format(_T("%s:%d:%s:%d"), sGetFrameVideoHost, nGetFrameVideoPort, sGetFrameLocation, nNetworkDeviceTypeMode);
 
 	// Registry keys cannot begin with a backslash and should
 	// not contain backslashes otherwise subkeys are created!
@@ -3769,7 +4016,7 @@ CString CVideoDeviceDoc::GetDevicePathName()
 		// not contain backslashes otherwise subkeys are created!
 		sDevicePathName.Replace(_T('\\'), _T('/'));
 	}
-	else if (m_pVideoNetCom)
+	else
 		sDevicePathName = GetNetworkDevicePathName(m_sGetFrameVideoHost, m_nGetFrameVideoPort, m_HttpGetFrameLocations[0], m_nNetworkDeviceTypeMode);
 
 	return sDevicePathName;
@@ -3793,7 +4040,7 @@ CString CVideoDeviceDoc::GetDeviceName()
 
 	if (m_pDxCapture)
 		sDevice = m_pDxCapture->GetDeviceName();
-	else if (m_pVideoNetCom)
+	else
 	{
 		sDevice.Format(_T("%s:%d"), m_sGetFrameVideoHost, m_nGetFrameVideoPort);
 		sDevice.Replace(_T("%"), _T(":interface")); // for IP6 link-local addresses
@@ -4584,7 +4831,7 @@ BOOL CVideoDeviceDoc::InitOpenDxCapture(int nId)
 	return FALSE;
 }
 
-BOOL CVideoDeviceDoc::OpenVideoDevice(int nId)
+BOOL CVideoDeviceDoc::OpenDxVideoDevice(int nId)
 {
 	// Already open?
 	if (m_pDxCapture)
@@ -4820,14 +5067,14 @@ double CVideoDeviceDoc::GetDefaultNetworkFrameRate(NetworkDeviceTypeMode nNetwor
 		case TPLINK_CP :	return HTTPCLIENTPOLL_DEFAULT_FRAMERATE;
 		case FOSCAM_SP :	return HTTPSERVERPUSH_DEFAULT_FRAMERATE;
 		case FOSCAM_CP :	return HTTPCLIENTPOLL_DEFAULT_FRAMERATE;
-		default :			return HTTPCLIENTPOLL_DEFAULT_FRAMERATE;
+		default :			return DEFAULT_FRAMERATE;
 	}
 }
 
 // sAddress: Must have the IP:Port:FrameLocation:NetworkDeviceTypeMode or
 //           HostName:Port:FrameLocation:NetworkDeviceTypeMode Format
 // Note: FrameLocation is m_HttpGetFrameLocations[0]
-BOOL CVideoDeviceDoc::OpenGetVideo(CString sAddress, DWORD dwConnectDelayMs/*=0U*/) 
+BOOL CVideoDeviceDoc::OpenNetVideoDevice(CString sAddress, DWORD dwConnectDelayMs/*=0U*/)
 {
 	ASSERT(!m_pVideoNetCom);
 	ASSERT(!m_pAudioNetCom);
@@ -4884,22 +5131,25 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CString sAddress, DWORD dwConnectDelayMs/*=0U
 		m_nNetworkDeviceTypeMode = OTHERONE_SP;
 	}
 
-	// Init http get frame locations array
-	InitHttpGetFrameLocations();
+	if (m_nNetworkDeviceTypeMode < CVideoDeviceDoc::URL_RTSP)
+	{
+		// Init http get frame locations array
+		InitHttpGetFrameLocations();
 
-	// Allocate
-	m_pVideoNetCom = new CNetCom;
-	if (!m_pVideoNetCom)
-		return FALSE;
-	m_pAudioNetCom = new CNetCom;
-	if (!m_pAudioNetCom)
-		return FALSE;
-	m_pHttpVideoParseProcess = new CHttpParseProcess(this);
-	if (!m_pHttpVideoParseProcess)
-		return FALSE;
-	m_pHttpAudioParseProcess = new CHttpParseProcess(this);
-	if (!m_pHttpAudioParseProcess)
-		return FALSE;
+		// Allocate
+		m_pVideoNetCom = new CNetCom;
+		if (!m_pVideoNetCom)
+			return FALSE;
+		m_pAudioNetCom = new CNetCom;
+		if (!m_pAudioNetCom)
+			return FALSE;
+		m_pHttpVideoParseProcess = new CHttpParseProcess(this);
+		if (!m_pHttpVideoParseProcess)
+			return FALSE;
+		m_pHttpAudioParseProcess = new CHttpParseProcess(this);
+		if (!m_pHttpAudioParseProcess)
+			return FALSE;
+	}
 
 	// Load Settings
 	LoadSettings(GetDefaultNetworkFrameRate(m_nNetworkDeviceTypeMode), GetDevicePathName(), GetDeviceName());
@@ -4915,16 +5165,42 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CString sAddress, DWORD dwConnectDelayMs/*=0U
 	::InterlockedExchange(&m_lLastAudioFramesUpTime, (LONG)m_dwNextSnapshotUpTime);
 
 	// Connect
-	if (!ConnectHttp(dwConnectDelayMs))
+	if (m_nNetworkDeviceTypeMode < CVideoDeviceDoc::URL_RTSP)
 	{
-		ConnectErr(ML_STRING(1465, "Cannot connect to the specified network device or server"), GetDevicePathName(), GetDeviceName());
-		return FALSE;
+		if (!ConnectHttp(dwConnectDelayMs))
+		{
+			ConnectErr(ML_STRING(1465, "Cannot connect to the specified network device or server"), GetDevicePathName(), GetDeviceName());
+			return FALSE;
+		}
+		else
+			return TRUE;
 	}
-
-	return TRUE;
+	else
+	{
+		if (m_sHttpGetFrameUsername.IsEmpty() && m_sHttpGetFramePassword.IsEmpty())
+		{
+			m_RtspThread.m_sURL.Format(_T("rtsp://%s:%d%s"),	m_sGetFrameVideoHost,
+																m_nGetFrameVideoPort,
+																m_HttpGetFrameLocations[0]);
+		}
+		else
+		{
+			m_RtspThread.m_sURL.Format(_T("rtsp://%s:%s@%s:%d%s"),	::UrlEncode(m_sHttpGetFrameUsername, TRUE),
+																	::UrlEncode(m_sHttpGetFramePassword, TRUE),
+																	m_sGetFrameVideoHost, m_nGetFrameVideoPort, m_HttpGetFrameLocations[0]);
+		}
+		m_RtspThread.m_dwConnectDelayMs = dwConnectDelayMs;
+		if (!m_RtspThread.Start())
+		{
+			ConnectErr(ML_STRING(1465, "Cannot connect to the specified network device or server"), GetDevicePathName(), GetDeviceName());
+			return FALSE;
+		}
+		else
+			return TRUE;
+	}
 }
 
-BOOL CVideoDeviceDoc::OpenGetVideo(CHostPortDlg* pDlg) 
+BOOL CVideoDeviceDoc::OpenNetVideoDevice(CHostPortDlg* pDlg)
 {
 	ASSERT(!m_pVideoNetCom);
 	ASSERT(!m_pAudioNetCom);
@@ -4935,22 +5211,25 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CHostPortDlg* pDlg)
 							m_sGetFrameVideoHost, (int&)m_nGetFrameVideoPort,
 							m_HttpGetFrameLocations[0], (int&)m_nNetworkDeviceTypeMode);
 
-	// Init http get frame locations array
-	InitHttpGetFrameLocations();
+	if (m_nNetworkDeviceTypeMode < CVideoDeviceDoc::URL_RTSP)
+	{
+		// Init http get frame locations array
+		InitHttpGetFrameLocations();
 
-	// Allocate
-	m_pVideoNetCom = new CNetCom;
-	if (!m_pVideoNetCom)
-		return FALSE;
-	m_pAudioNetCom = new CNetCom;
-	if (!m_pAudioNetCom)
-		return FALSE;
-	m_pHttpVideoParseProcess = new CHttpParseProcess(this);
-	if (!m_pHttpVideoParseProcess)
-		return FALSE;
-	m_pHttpAudioParseProcess = new CHttpParseProcess(this);
-	if (!m_pHttpAudioParseProcess)
-		return FALSE;
+		// Allocate
+		m_pVideoNetCom = new CNetCom;
+		if (!m_pVideoNetCom)
+			return FALSE;
+		m_pAudioNetCom = new CNetCom;
+		if (!m_pAudioNetCom)
+			return FALSE;
+		m_pHttpVideoParseProcess = new CHttpParseProcess(this);
+		if (!m_pHttpVideoParseProcess)
+			return FALSE;
+		m_pHttpAudioParseProcess = new CHttpParseProcess(this);
+		if (!m_pHttpAudioParseProcess)
+			return FALSE;
+	}
 
 	// Load Settings
 	LoadSettings(GetDefaultNetworkFrameRate(m_nNetworkDeviceTypeMode), GetDevicePathName(), GetDeviceName());
@@ -4966,13 +5245,39 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CHostPortDlg* pDlg)
 	::InterlockedExchange(&m_lLastAudioFramesUpTime, (LONG)m_dwNextSnapshotUpTime);
 
 	// Connect
-	if (!ConnectHttp())
+	if (m_nNetworkDeviceTypeMode < CVideoDeviceDoc::URL_RTSP)
 	{
-		ConnectErr(ML_STRING(1465, "Cannot connect to the specified network device or server"), GetDevicePathName(), GetDeviceName());
-		return FALSE;
+		if (!ConnectHttp())
+		{
+			ConnectErr(ML_STRING(1465, "Cannot connect to the specified network device or server"), GetDevicePathName(), GetDeviceName());
+			return FALSE;
+		}
+		else
+			return TRUE;
 	}
-
-	return TRUE;
+	else
+	{
+		if (m_sHttpGetFrameUsername.IsEmpty() && m_sHttpGetFramePassword.IsEmpty())
+		{
+			m_RtspThread.m_sURL.Format(_T("rtsp://%s:%d%s"),	m_sGetFrameVideoHost,
+																m_nGetFrameVideoPort,
+																m_HttpGetFrameLocations[0]);
+		}
+		else
+		{
+			m_RtspThread.m_sURL.Format(_T("rtsp://%s:%s@%s:%d%s"),	::UrlEncode(m_sHttpGetFrameUsername, TRUE),
+																	::UrlEncode(m_sHttpGetFramePassword, TRUE),
+																	m_sGetFrameVideoHost, m_nGetFrameVideoPort, m_HttpGetFrameLocations[0]);
+		}
+		m_RtspThread.m_dwConnectDelayMs = 0U;
+		if (!m_RtspThread.Start())
+		{
+			ConnectErr(ML_STRING(1465, "Cannot connect to the specified network device or server"), GetDevicePathName(), GetDeviceName());
+			return FALSE;
+		}
+		else
+			return TRUE;
+	}
 }
 
 CString CVideoDeviceDoc::MakeJpegManualSnapshotFileName(const CTime& Time)
@@ -5465,7 +5770,6 @@ void CVideoDeviceDoc::OnCaptureCameraAdvancedSettings()
 
 void CVideoDeviceDoc::OnUpdateCaptureCameraAdvancedSettings(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(m_pDxCapture || m_pVideoNetCom);
 	if (m_pCameraAdvancedSettingsPropertySheet)
 		pCmdUI->SetCheck(m_pCameraAdvancedSettingsPropertySheet->IsWindowVisible() ? 1 : 0);
 	else

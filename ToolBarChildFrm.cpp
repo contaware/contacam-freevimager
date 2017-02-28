@@ -1052,6 +1052,8 @@ void CVideoDeviceChildFrame::OnClose()
 			sMsg.Format(_T("%s forced stopping"), pDoc->GetAssignedDeviceName());
 			if (pDoc->m_HttpThread.IsAlive())
 				t += _T(", http thread still alive");
+			if (pDoc->m_RtspThread.IsAlive())
+				t += _T(", rtsp thread still alive");
 			if (pDoc->m_pVideoNetCom && !pDoc->m_pVideoNetCom->IsShutdown())
 				t += _T(", netcom video threads still alive");
 			if (pDoc->m_pAudioNetCom && !pDoc->m_pAudioNetCom->IsShutdown())
@@ -1138,6 +1140,9 @@ void CVideoDeviceChildFrame::StartShutdown3()
 
 	// Set flag
 	m_bShutdown3Started = TRUE;
+
+	// Start killing rtsp thread
+	pDoc->m_RtspThread.Kill_NoBlocking();
 
 	// Start connections shutdown
 	// (this must happen when m_HttpThread is not running
@@ -1247,7 +1252,7 @@ BOOL CVideoDeviceChildFrame::IsShutdown3Done()
 	// Check whether the connections have been shutdown
 	BOOL bVideoShutdown = pDoc->m_pVideoNetCom ? pDoc->m_pVideoNetCom->IsShutdown() : TRUE;
 	BOOL bAudioShutdown = pDoc->m_pAudioNetCom ? pDoc->m_pAudioNetCom->IsShutdown() : TRUE;
-	if (bVideoShutdown && bAudioShutdown)
+	if (!pDoc->m_RtspThread.IsAlive() && bVideoShutdown && bAudioShutdown)
 		return TRUE;
 	else
 		return FALSE;

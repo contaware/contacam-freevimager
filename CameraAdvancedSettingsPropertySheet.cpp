@@ -57,7 +57,7 @@ CString CCameraAdvancedSettingsPropertySheet::MakeTitle(CVideoDeviceDoc* pDoc)
 		sTitle = pDoc->GetAssignedDeviceName() + _T(" (") + pDoc->GetDeviceName() + _T(")");
 	else
 		sTitle = pDoc->GetDeviceName();
-	if (pDoc->m_pVideoNetCom)
+	if (!pDoc->m_pDxCapture)
 	{
 		switch(pDoc->m_nNetworkDeviceTypeMode)
 		{
@@ -92,9 +92,10 @@ CString CCameraAdvancedSettingsPropertySheet::MakeTitle(CVideoDeviceDoc* pDoc)
 			case CVideoDeviceDoc::TPLINK_CP		: sTitle += CString(_T(" , ")) + _T("TP-Link (") + ML_STRING(1866, "Client Poll Mode") + _T(")"); break;
 			case CVideoDeviceDoc::FOSCAM_SP		: sTitle += CString(_T(" , ")) + _T("Foscam/Tenvis/Clones (") + ML_STRING(1865, "Server Push Mode") + _T(")"); break;
 			case CVideoDeviceDoc::FOSCAM_CP		: sTitle += CString(_T(" , ")) + _T("Foscam/Tenvis/Clones (") + ML_STRING(1866, "Client Poll Mode") + _T(")"); break;
+			case CVideoDeviceDoc::URL_RTSP		: sTitle += CString(_T(" , ")) + pDoc->m_HttpGetFrameLocations[0]; break;
 			default : break;
 		}
-		if (pDoc->m_pVideoNetCom->GetSocketFamily() == AF_INET6)
+		if (pDoc->m_pVideoNetCom && pDoc->m_pVideoNetCom->GetSocketFamily() == AF_INET6)
 			sTitle += _T(" , IPv6");
 	}
 	return sTitle;

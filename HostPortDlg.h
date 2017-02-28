@@ -37,6 +37,8 @@ public:
 
 // Implementation
 protected:
+	int GetCurDeviceTypeMode();
+	void SetCurDeviceTypeMode(int nDeviceTypeMode);
 	void EnableDisableCtrls();
 	static CString MakeDevicePathName(const CString& sInHost, int nInPort, int nInDeviceTypeMode);
 	void LoadCredentialsAndTitle();
