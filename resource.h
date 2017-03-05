@@ -3065,6 +3065,7 @@
 #define IDC_STATIC_SERVERPUSH           2561
 #define IDC_STATIC_CLIENTPOLL           2562
 #define IDC_LABEL_QUALITY               2563
+#define IDC_STATIC_RTSP                 2563
 #define IDC_EDIT_CREDITS                2564
 #define IDC_VIDEO_COMPRESSION_QUALITY_INFO 2565
 #define IDC_BUTTON_DOCROOT              2566
@@ -3296,7 +3297,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        1500
+#define _APS_NEXT_RESOURCE_VALUE        1502
 #define _APS_NEXT_COMMAND_VALUE         33511
 #define _APS_NEXT_CONTROL_VALUE         2572
 #define _APS_NEXT_SYMED_VALUE           101

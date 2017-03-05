@@ -1250,27 +1250,28 @@ BEGIN
     LTEXT           "(21: FTP / FTPES, 22: SFTP, 990: FTPS)",IDC_STATIC,104,58,128,8
 END
 
-IDD_HOSTPORT DIALOGEX 0, 0, 220, 217
+IDD_HOSTPORT DIALOGEX 0, 0, 226, 222
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Connect To"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    COMBOBOX        IDC_COMBO_HOST,14,17,194,49,CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_EDIT_PORT,14,56,194,14,ES_AUTOHSCROLL | ES_NUMBER
-    COMBOBOX        IDC_COMBO_DEVICETYPEMODE,14,97,194,165,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_AUTH_USERNAME,63,158,145,13,ES_AUTOHSCROLL
-    EDITTEXT        IDC_AUTH_PASSWORD,63,174,145,13,ES_PASSWORD | ES_AUTOHSCROLL
-    DEFPUSHBUTTON   "OK",IDOK,58,199,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,118,199,50,14
-    GROUPBOX        "Host name or Host IP or URL starting with http:// or rtsp://",IDC_STATIC_IP,7,5,207,32
-    GROUPBOX        "Port (not used if URL set)",IDC_STATIC_PORT,7,44,207,34
-    GROUPBOX        "Camera Type and Mode (not used if URL set)",IDC_STATIC_DEVICETYPEMODE,7,85,207,54
-    LTEXT           "Client poll mode for framerates < 1 frame/sec",IDC_STATIC_CLIENTPOLL,14,125,194,8
-    LTEXT           "Server push mode for framerates > 1 frame/sec",IDC_STATIC_SERVERPUSH,14,114,194,8
-    LTEXT           "User Name:",IDC_STATIC2462,14,160,38,8
-    LTEXT           "Password:",IDC_STATIC2463,14,176,34,8
-    GROUPBOX        "Camera Login",IDC_STATIC_AUTHENTICATION,7,145,207,48
+    COMBOBOX        IDC_COMBO_HOST,14,17,199,49,CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_EDIT_PORT,14,54,199,14,ES_AUTOHSCROLL | ES_NUMBER
+    COMBOBOX        IDC_COMBO_DEVICETYPEMODE,14,95,199,165,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_AUTH_USERNAME,68,163,145,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_AUTH_PASSWORD,68,179,145,13,ES_PASSWORD | ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,58,204,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,118,204,50,14
+    GROUPBOX        "Host name or Host IP or URL starting with http:// or rtsp://",IDC_STATIC_IP,7,5,213,29
+    GROUPBOX        "Port (554 for RTSP or 80 for HTTP)",IDC_STATIC_PORT,7,42,213,34
+    GROUPBOX        "Camera Type and Mode",IDC_STATIC_DEVICETYPEMODE,7,83,213,60
+    LTEXT           "HTTP jpeg snapshots: low framerate",IDC_STATIC_CLIENTPOLL,14,130,199,8
+    LTEXT           "HTTP motion jpeg: low latency",IDC_STATIC_SERVERPUSH,14,119,199,8
+    LTEXT           "User Name",IDC_STATIC2462,14,165,38,8
+    LTEXT           "Password",IDC_STATIC2463,14,181,31,8
+    GROUPBOX        "Camera Login",IDC_STATIC_AUTHENTICATION,7,151,213,47
+    LTEXT           "RTSP: preferred choice, especially for WiFi cameras",IDC_STATIC_RTSP,14,108,199,8
 END
 
 IDD_MOVDET DIALOGEX 0, 0, 417, 268
@@ -2691,11 +2692,11 @@ BEGIN
     IDD_HOSTPORT, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 214
+        RIGHTMARGIN, 220
         VERTGUIDE, 14
-        VERTGUIDE, 208
+        VERTGUIDE, 213
         TOPMARGIN, 7
-        BOTTOMMARGIN, 213
+        BOTTOMMARGIN, 218
     END
 
     IDD_MOVDET, DIALOG
@@ -4081,7 +4082,7 @@ BEGIN
     IDS_STRING1542          "Medium"
     IDS_STRING1543          "Good"
     IDS_STRING1544          "Best"
-    IDS_STRING1548          "Other HTTP Camera"
+    IDS_STRING1548          "Other Camera"
 END
 
 STRINGTABLE
@@ -4436,8 +4437,8 @@ BEGIN
     IDS_STRING1862          "Params can include case sensitive variables\r\n%sec% %min% %hour%\r\n%day% %month% %year%\r\n%fullvideo% %smallvideo% %counter%"
     IDS_STRING1863          "Fast Rate"
     IDS_STRING1864          "JPEG Quality\n(0: worst, 100: best)"
-    IDS_STRING1865          "Server Push Mode"
-    IDS_STRING1866          "Client Poll Mode"
+    IDS_STRING1865          "HTTP motion jpeg"
+    IDS_STRING1866          "HTTP jpeg snapshots"
     IDS_STRING1868          "or"
     IDS_STRING1869          "Choose a directory under the %s drive"
     IDS_STRING1870          "The new folder cannot be a subfolder of the old one"

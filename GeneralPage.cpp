@@ -337,8 +337,8 @@ BOOL CGeneralPage::OnInitDialog()
 		else if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::PIXORD_SP ||
 				m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::FOSCAM_SP)
 			m_SpinFrameRate.SetRange(MIN_FRAMERATE, MAX_FRAMERATE);
-		// Disable all other Server Push devices,
-		// Client Poll devices will be enabled in OnTimer()
+		// Disable all other HTTP motion jpeg devices,
+		// HTTP jpeg snapshots devices will be enabled in OnTimer()
 		else
 		{
 			m_SpinFrameRate.SetRange(0.0, 0.0);
@@ -617,7 +617,7 @@ void CGeneralPage::OnTimer(UINT nIDEvent)
 			pEdit->SetWindowText(sDataRate);
 		}
 
-		// Enable Frame Rate Edit Control for Client Poll devices
+		// Enable Frame Rate Edit Control for HTTP jpeg snapshots devices
 		CString sFrameRate;
 		pEdit = (CEdit*)GetDlgItem(IDC_FRAMERATE);
 		if (m_pDoc->m_pVideoNetCom &&

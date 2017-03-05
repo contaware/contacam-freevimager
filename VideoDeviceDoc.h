@@ -598,28 +598,56 @@ public:
 	BOOL OpenNetVideoDevice(CString sAddress, DWORD dwConnectDelayMs = 0U);
 
 	// Connect to the chosen Networking Type and Mode
+	// ATTENTION: DO NOT CHANGE THE ASSOCIATED NUMBERS!
+	// (SP: Server Push, CP: Client Poll, RTSP: Realtime streaming protocol)
 	typedef enum {
-		OTHERONE_SP = 0,	// Other HTTP device (mjpeg)
-		OTHERONE_CP,		// Other HTTP device (jpegs)
-		AXIS_SP,			// Axis Server Push (mjpeg)
-		AXIS_CP,			// Axis Client Poll (jpegs)
-		PANASONIC_SP,		// Panasonic Server Push (mjpeg)
-		PANASONIC_CP,		// Panasonic Client Poll (jpegs)
-		PIXORD_SP,			// Pixord Server Push (mjpeg)
-		PIXORD_CP,			// Pixord Client Poll (jpegs)
-		EDIMAX_SP,			// Edimax Server Push (mjpeg)
-		EDIMAX_CP,			// Edimax Client Poll (jpegs)
-		TPLINK_SP,			// TP-Link Server Push (mjpeg)
-		TPLINK_CP,			// TP-Link Client Poll (jpegs)
-		FOSCAM_SP,			// Foscam Server Push (mjpeg)
-		FOSCAM_CP,			// Foscam Client Poll (jpegs)
+		OTHERONE_SP = 0,		// Other HTTP motion jpeg devices
+		OTHERONE_CP,			// Other HTTP jpeg snapshots devices
+		AXIS_SP,				// Axis HTTP motion jpeg
+		AXIS_CP,				// Axis HTTP jpeg snapshots
+		PANASONIC_SP,			// Panasonic HTTP motion jpeg
+		PANASONIC_CP,			// Panasonic HTTP jpeg snapshots
+		PIXORD_SP,				// Pixord HTTP motion jpeg
+		PIXORD_CP,				// Pixord HTTP jpeg snapshots
+		EDIMAX_SP,				// Edimax HTTP motion jpeg
+		EDIMAX_CP,				// Edimax HTTP jpeg snapshots
+		TPLINK_SP,				// TP-Link HTTP motion jpeg
+		TPLINK_CP,				// TP-Link HTTP jpeg snapshots
+		FOSCAM_SP,				// Foscam HTTP motion jpeg
+		FOSCAM_CP,				// Foscam HTTP jpeg snapshots
 		// Add more http devices here...
-		URL_RTSP = 1000,	// URL RTSP
-		AXIS_RTSP,			// Axis RTSP
+		URL_RTSP = 1000,		// URL RTSP
+		OTHERONE_RTSP = 1010,	// Other RTSP device
+		ABUS_RTSP = 1020,		// Abus RTSP
+		ACTI_RTSP = 1030,		// ACTi RTSP
+		ARECONT_RTSP = 1040,	// Arecont Vision RTSP
+		AXIS_RTSP = 1050,		// Axis RTSP
+		BOSCH_RTSP = 1060,		// Bosch RTSP
+		CANON_RTSP = 1070,		// Canon RTSP
+		DLINK_RTSP = 1080,		// D-Link RTSP
+		DAHUA_RTSP = 1090,		// Dahua RTSP
+		DERICAM_RTSP = 1100,	// Dericam RTSP
+		EDIMAX_RTSP = 1110,		// Edimax RTSP
+		FOSCAM_RTSP = 1120,		// Foscam RTSP
+		HIKVISION_RTSP = 1130,	// HIKVision RTSP
+		LINKSYS_RTSP = 1140,	// Linksys RTSP
+		LOGITECH_RTSP = 1150,	// Logitech RTSP
+		PANASONIC_RTSP = 1160,	// Panasonic RTSP
+		PIXORD_RTSP = 1170,		// Pixord RTSP
+		PLANET_RTSP = 1180,		// Planet RTSP
+		SAMSUNG_RTSP = 1190,	// Samsung RTSP
+		SONY_RTSP = 1200,		// Sony RTSP
+		TOSHIBA_RTSP = 1210,	// Toshiba RTSP
+		TPLINK_RTSP = 1220,		// TP-Link RTSP
+		TRENDNET_RTSP = 1230,	// TrendNet RTSP
+		VIVOTEK_RTSP = 1240,	// Vivotek RTSP
+		WANSVIEW_RTSP = 1250,	// Wansview RTSP
+		ZMODO_RTSP = 1260,		// Zmodo RTSP
 		// Add more rtsp devices here...
-		LAST_DEVICE			// Placeholder for range check
+		LAST_DEVICE				// Placeholder for range check
 	} NetworkDeviceTypeMode;
 	BOOL ConnectHttp(DWORD dwConnectDelayMs = 0U);
+	BOOL ConnectRtsp(DWORD dwConnectDelayMs = 0U);
 
 	// Dialogs
 	void CaptureCameraBasicSettings();

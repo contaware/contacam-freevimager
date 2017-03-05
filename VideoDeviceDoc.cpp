@@ -2693,14 +2693,14 @@ int CVideoDeviceDoc::CHttpThread::Work()
 
 	for (;;)
 	{
-		// Set wait delay for client poll mode and set
-		// check-timeout for both client poll and server
-		// push modes when trying to setup a connection 
+		// Set wait delay for HTTP jpeg snapshots mode and set
+		// check-timeout for both HTTP jpeg snapshots and
+		// HTTP motion jpeg modes when trying to setup a connection 
 		DWORD dwWaitDelay = HTTP_THREAD_DEFAULT_DELAY;
 		if (m_pDoc->m_dFrameRate > 0.0)
 			dwWaitDelay = (DWORD)Round(1000.0 / m_pDoc->m_dFrameRate);
 
-		// Alarm dependent wait delay (only used in client poll mode)
+		// Alarm dependent wait delay (only used in HTTP jpeg snapshots mode)
 		if (nAlarmLevel == 1)
 		{
 			dwWaitDelay = MAX(2U*dwWaitDelay, HTTP_THREAD_MIN_DELAY_ALARM1);
@@ -2724,14 +2724,14 @@ int CVideoDeviceDoc::CHttpThread::Work()
 												dwWaitDelay);
 		switch (Event)
 		{
-			// Shutdown Event (for both client poll and server push modes)
+			// Shutdown Event (for both HTTP jpeg snapshots and HTTP motion jpeg modes)
 			case WAIT_OBJECT_0 :		
 			{
 				CleanUpAllConnections();
 				return 0;
 			}
 
-			// Http Setup Video Connection Event (for client poll init and server push mode)
+			// Http Setup Video Connection Event (for HTTP jpeg snapshots init and HTTP motion jpeg mode)
 			case WAIT_OBJECT_0 + 1 :
 			{
 				::ResetEvent(m_hEventArray[1]);
@@ -2762,7 +2762,7 @@ int CVideoDeviceDoc::CHttpThread::Work()
 				break;
 			}
 
-			// Http Video Connected Event (for client poll init and server push mode)
+			// Http Video Connected Event (for HTTP jpeg snapshots init and HTTP motion jpeg mode)
 			case WAIT_OBJECT_0 + 2 :
 			{
 				::ResetEvent(m_hEventArray[2]);
@@ -2777,7 +2777,7 @@ int CVideoDeviceDoc::CHttpThread::Work()
 				break;
 			}
 
-			// Http Video Connection failed Event (for client poll init and server push mode)
+			// Http Video Connection failed Event (for HTTP jpeg snapshots init and HTTP motion jpeg mode)
 			case WAIT_OBJECT_0 + 3 :
 			{
 				::ResetEvent(m_hEventArray[3]);
@@ -2789,7 +2789,7 @@ int CVideoDeviceDoc::CHttpThread::Work()
 				break;
 			}
 
-			// Http Video Read Event (for client poll init and server push mode)
+			// Http Video Read Event (for HTTP jpeg snapshots init and HTTP motion jpeg mode)
 			case WAIT_OBJECT_0 + 4 :
 			{
 				::ResetEvent(m_hEventArray[4]);
@@ -2834,7 +2834,7 @@ int CVideoDeviceDoc::CHttpThread::Work()
 			// Timeout
 			case WAIT_TIMEOUT :		
 			{	
-				// Setup connection timeout (for client poll init and server push mode)
+				// Setup connection timeout (for HTTP jpeg snapshots init and HTTP motion jpeg mode)
 				if (m_pDoc->m_pHttpVideoParseProcess->m_bTryConnecting && bCheckConnectionTimeout)
 				{
 					CTimeSpan ConnectionAge = CTime::GetCurrentTime() - m_pDoc->m_pVideoNetCom->m_InitTime;
@@ -2846,7 +2846,7 @@ int CVideoDeviceDoc::CHttpThread::Work()
 					}
 				}
 
-				// Poll (only client poll mode)
+				// Poll (only HTTP jpeg snapshots mode)
 				if (m_pDoc->m_pHttpVideoParseProcess->m_bPollNextJpeg)
 				{
 					// Keep-alive: just send the request to the already open connection
@@ -4096,12 +4096,17 @@ void CVideoDeviceDoc::SetDocumentTitle()
 
 		// Network info
 		CString sNetworkMode;
-		if (m_pVideoNetCom && m_pHttpVideoParseProcess)
+		if (!m_pDxCapture)
 		{
-			if (m_pHttpVideoParseProcess->m_FormatType == CHttpParseProcess::FORMATVIDEO_MJPEG)
-				sNetworkMode = ML_STRING(1865, "Server Push Mode");
-			else if (m_pHttpVideoParseProcess->m_FormatType == CHttpParseProcess::FORMATVIDEO_JPEG)
-				sNetworkMode = ML_STRING(1866, "Client Poll Mode");
+			if (m_pVideoNetCom && m_pHttpVideoParseProcess)
+			{
+				if (m_pHttpVideoParseProcess->m_FormatType == CHttpParseProcess::FORMATVIDEO_MJPEG)
+					sNetworkMode = ML_STRING(1865, "HTTP motion jpeg");
+				else if (m_pHttpVideoParseProcess->m_FormatType == CHttpParseProcess::FORMATVIDEO_JPEG)
+					sNetworkMode = ML_STRING(1866, "HTTP jpeg snapshots");
+			}
+			else
+				sNetworkMode = _T("RTSP");
 		}
 
 		// Update Property Sheet title
@@ -5176,20 +5181,7 @@ BOOL CVideoDeviceDoc::OpenNetVideoDevice(CString sAddress, DWORD dwConnectDelayM
 	}
 	else
 	{
-		if (m_sHttpGetFrameUsername.IsEmpty() && m_sHttpGetFramePassword.IsEmpty())
-		{
-			m_RtspThread.m_sURL.Format(_T("rtsp://%s:%d%s"),	m_sGetFrameVideoHost,
-																m_nGetFrameVideoPort,
-																m_HttpGetFrameLocations[0]);
-		}
-		else
-		{
-			m_RtspThread.m_sURL.Format(_T("rtsp://%s:%s@%s:%d%s"),	::UrlEncode(m_sHttpGetFrameUsername, TRUE),
-																	::UrlEncode(m_sHttpGetFramePassword, TRUE),
-																	m_sGetFrameVideoHost, m_nGetFrameVideoPort, m_HttpGetFrameLocations[0]);
-		}
-		m_RtspThread.m_dwConnectDelayMs = dwConnectDelayMs;
-		if (!m_RtspThread.Start())
+		if (!ConnectRtsp(dwConnectDelayMs))
 		{
 			ConnectErr(ML_STRING(1465, "Cannot connect to the specified network device or server"), GetDevicePathName(), GetDeviceName());
 			return FALSE;
@@ -5256,20 +5248,7 @@ BOOL CVideoDeviceDoc::OpenNetVideoDevice(CHostPortDlg* pDlg)
 	}
 	else
 	{
-		if (m_sHttpGetFrameUsername.IsEmpty() && m_sHttpGetFramePassword.IsEmpty())
-		{
-			m_RtspThread.m_sURL.Format(_T("rtsp://%s:%d%s"),	m_sGetFrameVideoHost,
-																m_nGetFrameVideoPort,
-																m_HttpGetFrameLocations[0]);
-		}
-		else
-		{
-			m_RtspThread.m_sURL.Format(_T("rtsp://%s:%s@%s:%d%s"),	::UrlEncode(m_sHttpGetFrameUsername, TRUE),
-																	::UrlEncode(m_sHttpGetFramePassword, TRUE),
-																	m_sGetFrameVideoHost, m_nGetFrameVideoPort, m_HttpGetFrameLocations[0]);
-		}
-		m_RtspThread.m_dwConnectDelayMs = 0U;
-		if (!m_RtspThread.Start())
+		if (!ConnectRtsp())
 		{
 			ConnectErr(ML_STRING(1465, "Cannot connect to the specified network device or server"), GetDevicePathName(), GetDeviceName());
 			return FALSE;
@@ -8920,24 +8899,24 @@ BOOL CVideoDeviceDoc::ConnectHttp(DWORD dwConnectDelayMs/*=0U*/)
 	m_pHttpVideoParseProcess->m_bTryConnecting = TRUE;
 	switch (m_nNetworkDeviceTypeMode)
 	{
-		case OTHERONE_SP :	// Other HTTP device (mjpeg)
-		case OTHERONE_CP :	// Other HTTP device (jpegs)
+		case OTHERONE_SP :	// Other HTTP motion jpeg devices
+		case OTHERONE_CP :	// Other HTTP jpeg snapshots devices
 			// Format not yet known because there are ambivalent connection strings in m_HttpGetFrameLocations
 			m_pHttpVideoParseProcess->m_FormatType = CHttpParseProcess::FORMATVIDEO_UNKNOWN;
 			m_nHttpGetFrameLocationPos = 0;
 			break;
 
-		case AXIS_SP :		// Axis Server Push (mjpeg)
+		case AXIS_SP :		// Axis HTTP motion jpeg
 			m_pHttpVideoParseProcess->m_bQueryVideoProperties = TRUE;
 			m_pHttpVideoParseProcess->m_FormatType = CHttpParseProcess::FORMATVIDEO_MJPEG;
 			break;
 
-		case AXIS_CP :		// Axis Client Poll (jpegs)
+		case AXIS_CP :		// Axis HTTP jpeg snapshots
 			m_pHttpVideoParseProcess->m_bQueryVideoProperties = TRUE;
 			m_pHttpVideoParseProcess->m_FormatType = CHttpParseProcess::FORMATVIDEO_JPEG;
 			break;
 
-		case PANASONIC_SP :	// Panasonic Server Push (mjpeg)
+		case PANASONIC_SP :	// Panasonic HTTP motion jpeg
 			m_pHttpVideoParseProcess->m_FormatType = CHttpParseProcess::FORMATVIDEO_MJPEG;
 			m_pHttpVideoParseProcess->m_Sizes.RemoveAll();			
 			m_pHttpVideoParseProcess->m_Sizes.Add(CSize(160, 120));
@@ -8947,7 +8926,7 @@ BOOL CVideoDeviceDoc::ConnectHttp(DWORD dwConnectDelayMs/*=0U*/)
 			m_pHttpVideoParseProcess->m_Sizes.Add(CSize(1280, 1024)); // Support models such as BB-HCM515
 			break;
 
-		case PANASONIC_CP :	// Panasonic Client Poll (jpegs)
+		case PANASONIC_CP :	// Panasonic HTTP jpeg snapshots
 			m_pHttpVideoParseProcess->m_FormatType = CHttpParseProcess::FORMATVIDEO_JPEG;
 			m_pHttpVideoParseProcess->m_Sizes.RemoveAll();			
 			m_pHttpVideoParseProcess->m_Sizes.Add(CSize(160, 120));
@@ -8957,7 +8936,7 @@ BOOL CVideoDeviceDoc::ConnectHttp(DWORD dwConnectDelayMs/*=0U*/)
 			m_pHttpVideoParseProcess->m_Sizes.Add(CSize(1280, 1024)); // Support models such as BB-HCM515
 			break;
 
-		case PIXORD_SP :	// Pixord Server Push (mjpeg)
+		case PIXORD_SP :	// Pixord HTTP motion jpeg
 			m_pHttpVideoParseProcess->m_FormatType = CHttpParseProcess::FORMATVIDEO_MJPEG;
 			m_pHttpVideoParseProcess->m_Sizes.RemoveAll();			
 			m_pHttpVideoParseProcess->m_Sizes.Add(CSize(176, 112));
@@ -8965,7 +8944,7 @@ BOOL CVideoDeviceDoc::ConnectHttp(DWORD dwConnectDelayMs/*=0U*/)
 			m_pHttpVideoParseProcess->m_Sizes.Add(CSize(704, 480));
 			break;
 
-		case PIXORD_CP :	// Pixord Client Poll (jpegs)
+		case PIXORD_CP :	// Pixord HTTP jpeg snapshots
 			m_pHttpVideoParseProcess->m_FormatType = CHttpParseProcess::FORMATVIDEO_JPEG;
 			m_pHttpVideoParseProcess->m_Sizes.RemoveAll();			
 			m_pHttpVideoParseProcess->m_Sizes.Add(CSize(176, 112));
@@ -8973,7 +8952,7 @@ BOOL CVideoDeviceDoc::ConnectHttp(DWORD dwConnectDelayMs/*=0U*/)
 			m_pHttpVideoParseProcess->m_Sizes.Add(CSize(704, 480));
 			break;
 
-		case EDIMAX_SP :	// Edimax Server Push (mjpeg)
+		case EDIMAX_SP :	// Edimax HTTP motion jpeg
 			m_pHttpVideoParseProcess->m_bQueryVideoProperties = TRUE;
 			m_pHttpVideoParseProcess->m_bSetVideoResolution = TRUE;
 			m_pHttpVideoParseProcess->m_bSetVideoCompression = TRUE;
@@ -8981,29 +8960,29 @@ BOOL CVideoDeviceDoc::ConnectHttp(DWORD dwConnectDelayMs/*=0U*/)
 			m_pHttpVideoParseProcess->m_FormatType = CHttpParseProcess::FORMATVIDEO_MJPEG;
 			break;
 
-		case EDIMAX_CP :	// Edimax Client Poll (jpegs)
+		case EDIMAX_CP :	// Edimax HTTP jpeg snapshots
 			m_pHttpVideoParseProcess->m_bQueryVideoProperties = TRUE;
 			m_pHttpVideoParseProcess->m_bSetVideoResolution = TRUE;
 			m_pHttpVideoParseProcess->m_bSetVideoCompression = TRUE;
 			m_pHttpVideoParseProcess->m_FormatType = CHttpParseProcess::FORMATVIDEO_JPEG;
 			break;
 
-		case TPLINK_SP :	// TP-Link Server Push (mjpeg)
+		case TPLINK_SP :	// TP-Link HTTP motion jpeg
 			m_pHttpVideoParseProcess->m_FormatType = CHttpParseProcess::FORMATVIDEO_MJPEG;
 			break;
 
-		case TPLINK_CP :	// TP-Link Client Poll (jpegs)
+		case TPLINK_CP :	// TP-Link HTTP jpeg snapshots
 			m_pHttpVideoParseProcess->m_FormatType = CHttpParseProcess::FORMATVIDEO_JPEG;
 			break;
 
-		case FOSCAM_SP :	// Foscam Server Push (mjpeg)
+		case FOSCAM_SP :	// Foscam HTTP motion jpeg
 			m_pHttpVideoParseProcess->m_FormatType = CHttpParseProcess::FORMATVIDEO_MJPEG;
 			m_pHttpVideoParseProcess->m_Sizes.RemoveAll();			
 			m_pHttpVideoParseProcess->m_Sizes.Add(CSize(320, 240));
 			m_pHttpVideoParseProcess->m_Sizes.Add(CSize(640, 480));
 			break;
 
-		case FOSCAM_CP :	// Foscam Client Poll (jpegs)
+		case FOSCAM_CP :	// Foscam HTTP jpeg snapshots
 			m_pHttpVideoParseProcess->m_FormatType = CHttpParseProcess::FORMATVIDEO_JPEG;
 			m_pHttpVideoParseProcess->m_Sizes.RemoveAll();			
 			m_pHttpVideoParseProcess->m_Sizes.Add(CSize(320, 240));
@@ -9032,6 +9011,66 @@ BOOL CVideoDeviceDoc::ConnectHttp(DWORD dwConnectDelayMs/*=0U*/)
 		bAudioOK = m_HttpThread.SetEventAudioConnect(_T(""), dwConnectDelayMs);
 
 	return bVideoOK && bAudioOK;
+}
+
+BOOL CVideoDeviceDoc::ConnectRtsp(DWORD dwConnectDelayMs/*=0U*/)
+{
+	// Check
+	if (m_sGetFrameVideoHost == _T(""))
+		return FALSE;
+
+	// Prepare query string
+	CString sQuery;
+	switch (m_nNetworkDeviceTypeMode)
+	{
+		case URL_RTSP:			sQuery = m_HttpGetFrameLocations[0]; break;
+		case OTHERONE_RTSP:		sQuery = _T("/"); break;
+		case ABUS_RTSP:			sQuery = _T("/video.mp4"); break;
+		case ACTI_RTSP:			sQuery = _T("/h264"); break;
+		case ARECONT_RTSP:		sQuery = _T("/h264.sdp"); break;
+		case AXIS_RTSP:			sQuery = _T("/axis-media/media.amp"); break;
+		case BOSCH_RTSP:		sQuery = _T("/h264"); break;
+		case CANON_RTSP:		sQuery = _T("/stream/profile0=r"); break;
+		case DLINK_RTSP:		sQuery = _T("/live1.sdp"); break;
+		case DAHUA_RTSP:		sQuery = _T("/live"); break;
+		case DERICAM_RTSP:		sQuery = _T("/ch0.h264"); break;
+		case EDIMAX_RTSP:		sQuery = _T("/ipcam_h264.sdp"); break;
+		case FOSCAM_RTSP:		sQuery = _T("/videoMain"); break;
+		case HIKVISION_RTSP:	sQuery = _T("/Streaming/Channels/1"); break;
+		case LINKSYS_RTSP :		sQuery = _T("/img/media.sav"); break;
+		case LOGITECH_RTSP:		sQuery = _T("/HighResolutionVideo"); break;
+		case PANASONIC_RTSP:	sQuery = _T("/MediaInput/h264"); break;
+		case PIXORD_RTSP:		sQuery = _T("/v00"); break;
+		case PLANET_RTSP:		sQuery = _T("/stream1"); break;
+		case SAMSUNG_RTSP:		sQuery = _T("/profile1/media.smp"); break;
+		case SONY_RTSP:			sQuery = _T("/media/video1"); break;
+		case TOSHIBA_RTSP:		sQuery = _T("/live.sdp"); break;
+		case TPLINK_RTSP:		sQuery = _T("/video.mp4"); break;
+		case TRENDNET_RTSP:		sQuery = _T("/Streaming/Channels/1"); break;
+		case VIVOTEK_RTSP:		sQuery = _T("/live.sdp"); break;
+		case WANSVIEW_RTSP:		sQuery = _T("/11"); break;
+		case ZMODO_RTSP:		sQuery = _T("/udp/av0_0"); break;
+		default:				return FALSE;
+	}
+
+	// Start thread with given url and delay
+	CString sHost(m_sGetFrameVideoHost);
+	if ((sHost.Find(_T(':'))) >= 0) // IPv6?
+		sHost = _T("[") + sHost + _T("]");
+	if (m_sHttpGetFrameUsername.IsEmpty() && m_sHttpGetFramePassword.IsEmpty())
+	{
+		m_RtspThread.m_sURL.Format(_T("rtsp://%s:%d%s"), sHost, m_nGetFrameVideoPort, sQuery);
+	}
+	else
+	{
+		m_RtspThread.m_sURL.Format(_T("rtsp://%s:%s@%s:%d%s"),	::UrlEncode(m_sHttpGetFrameUsername, TRUE),
+																::UrlEncode(m_sHttpGetFramePassword, TRUE),
+																sHost, m_nGetFrameVideoPort, sQuery);
+	}
+	m_RtspThread.m_dwConnectDelayMs = dwConnectDelayMs;
+	if (g_nLogLevel > 0)
+		::LogLine(_T("%s, rtsp://%s:%d%s"), GetAssignedDeviceName(), sHost, m_nGetFrameVideoPort, sQuery);
+	return (BOOL)m_RtspThread.Start();
 }
 
 BOOL CVideoDeviceDoc::CHttpParseProcess::SendRawRequest(CString sRequest)
@@ -9233,8 +9272,8 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 		::EnterCriticalSection(&m_pDoc->m_csHttpParams);
 		switch (m_pDoc->m_nNetworkDeviceTypeMode)
 		{
-			case OTHERONE_SP :	// Other HTTP device (mjpeg)
-			case OTHERONE_CP :	// Other HTTP device (jpegs)
+			case OTHERONE_SP :	// Other HTTP motion jpeg devices
+			case OTHERONE_CP :	// Other HTTP jpeg snapshots devices
 			{
 				if (m_pDoc->m_nHttpGetFrameLocationPos < m_pDoc->m_HttpGetFrameLocations.GetSize())
 					sLocation = m_pDoc->m_HttpGetFrameLocations[m_pDoc->m_nHttpGetFrameLocationPos];
@@ -9245,7 +9284,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 								m_bOldVersion ? _T("1.0") : _T("1.1"));
 				break;
 			}
-			case AXIS_SP :		// Axis Server Push (mjpeg)
+			case AXIS_SP :		// Axis HTTP motion jpeg
 			{
 				if (m_bQueryVideoProperties)
 				{
@@ -9293,7 +9332,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 				}
 				break;
 			}
-			case AXIS_CP :		// Axis Client Poll (jpegs)
+			case AXIS_CP :		// Axis HTTP jpeg snapshots
 			{
 				if (m_bQueryVideoProperties)
 				{
@@ -9335,7 +9374,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 				}
 				break;
 			}
-			case PANASONIC_SP :	// Panasonic Server Push (mjpeg)
+			case PANASONIC_SP :	// Panasonic HTTP motion jpeg
 			{
 				sLocation = _T("/nphMotionJpeg");
 				if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
@@ -9379,7 +9418,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 				}
 				break;
 			}
-			case PANASONIC_CP :	// Panasonic Client Poll (jpegs)
+			case PANASONIC_CP :	// Panasonic HTTP jpeg snapshots
 			{
 				sLocation = _T("/SnapshotJPEG");
 				if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
@@ -9423,7 +9462,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 				}
 				break;
 			}
-			case PIXORD_SP :	// Pixord Server Push (mjpeg)
+			case PIXORD_SP :	// Pixord HTTP motion jpeg
 			{
 				sLocation = _T("/getimage");
 				if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
@@ -9461,7 +9500,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 				}
 				break;
 			}
-			case PIXORD_CP :	// Pixord Client Poll (jpegs)
+			case PIXORD_CP :	// Pixord HTTP jpeg snapshots
 			{
 				sLocation = _T("/images1");
 				if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
@@ -9497,7 +9536,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 				}
 				break;
 			}
-			case EDIMAX_SP :	// Edimax Server Push (mjpeg)
+			case EDIMAX_SP :	// Edimax HTTP motion jpeg
 			{
 				if (m_bQueryVideoProperties)
 				{
@@ -9566,7 +9605,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 				}
 				break;
 			}
-			case EDIMAX_CP :	// Edimax Client Poll (jpegs)
+			case EDIMAX_CP :	// Edimax HTTP jpeg snapshots
 			{
 				if (m_bQueryVideoProperties)
 				{
@@ -9624,7 +9663,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 				}
 				break;
 			}
-			case TPLINK_SP :	// TP-Link Server Push (mjpeg)
+			case TPLINK_SP :	// TP-Link HTTP motion jpeg
 			{
 				sLocation = _T("/video.mjpg");
 				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
@@ -9632,7 +9671,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 							m_bOldVersion ? _T("1.0") : _T("1.1"));
 				break;
 			}
-			case TPLINK_CP :	// TP-Link Client Poll (jpegs)
+			case TPLINK_CP :	// TP-Link HTTP jpeg snapshots
 			{
 				sLocation = _T("/jpg/image.jpg");
 				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
@@ -9640,7 +9679,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 							m_bOldVersion ? _T("1.0") : _T("1.1"));
 				break;
 			}
-			case FOSCAM_SP :	// Foscam Server Push (mjpeg)
+			case FOSCAM_SP :	// Foscam HTTP motion jpeg
 			{
 				int nRate;
 				if (m_pDoc->m_dFrameRate > 20.0)
@@ -9699,7 +9738,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 				}
 				break;
 			}
-			case FOSCAM_CP :	// Foscam Client Poll (jpegs)
+			case FOSCAM_CP :	// Foscam HTTP jpeg snapshots
 			{
 				sLocation = CString(_T("/snapshot.cgi")) +
 							_T("?user=") + HTTP_USERNAME_PLACEHOLDER +
@@ -9744,10 +9783,10 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 	{
 		switch (m_pDoc->m_nNetworkDeviceTypeMode)
 		{
-			case OTHERONE_SP :	// Other HTTP device (mjpeg), use axis audio
-			case OTHERONE_CP :	// Other HTTP device (jpegs), use axis audio
-			case AXIS_SP :		// Axis Server Push (mjpeg)
-			case AXIS_CP :		// Axis Client Poll (jpegs)
+			case OTHERONE_SP :	// Other HTTP motion jpeg devices, use axis audio
+			case OTHERONE_CP :	// Other HTTP jpeg snapshots devices, use axis audio
+			case AXIS_SP :		// Axis HTTP motion jpeg
+			case AXIS_CP :		// Axis HTTP jpeg snapshots
 			case PANASONIC_SP :	// TODO: for now use axis request
 			case PANASONIC_CP :	// TODO: for now use axis request
 			case PIXORD_SP :	// TODO: for now use axis request

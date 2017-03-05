@@ -57,47 +57,6 @@ CString CCameraAdvancedSettingsPropertySheet::MakeTitle(CVideoDeviceDoc* pDoc)
 		sTitle = pDoc->GetAssignedDeviceName() + _T(" (") + pDoc->GetDeviceName() + _T(")");
 	else
 		sTitle = pDoc->GetDeviceName();
-	if (!pDoc->m_pDxCapture)
-	{
-		switch(pDoc->m_nNetworkDeviceTypeMode)
-		{
-			case CVideoDeviceDoc::OTHERONE_SP	:
-			case CVideoDeviceDoc::OTHERONE_CP	:
-			{
-				int nHttpGetFrameLocationPos = pDoc->m_nHttpGetFrameLocationPos; // make a local copy because it is updated by another thread
-				if (nHttpGetFrameLocationPos > 0 && nHttpGetFrameLocationPos < pDoc->m_HttpGetFrameLocations.GetSize())
-					sTitle += CString(_T(" , ")) + pDoc->m_HttpGetFrameLocations[nHttpGetFrameLocationPos];
-				else if (pDoc->m_HttpGetFrameLocations[0] == _T("/"))
-					sTitle += CString(_T(" , ")) + ML_STRING(1548, "Other HTTP Camera");
-				else
-					sTitle += CString(_T(" , ")) + pDoc->m_HttpGetFrameLocations[0];
-				if (pDoc->m_pHttpVideoParseProcess)
-				{
-					if (pDoc->m_pHttpVideoParseProcess->m_FormatType == CVideoDeviceDoc::CHttpParseProcess::FORMATVIDEO_MJPEG)
-						sTitle += _T(" (") + ML_STRING(1865, "Server Push Mode") + _T(")");
-					else if (pDoc->m_pHttpVideoParseProcess->m_FormatType == CVideoDeviceDoc::CHttpParseProcess::FORMATVIDEO_JPEG)
-						sTitle += _T(" (") + ML_STRING(1866, "Client Poll Mode") + _T(")");
-				}
-				break;
-			}
-			case CVideoDeviceDoc::AXIS_SP		: sTitle += CString(_T(" , ")) + _T("Axis (") + ML_STRING(1865, "Server Push Mode") + _T(")"); break;
-			case CVideoDeviceDoc::AXIS_CP		: sTitle += CString(_T(" , ")) + _T("Axis (") + ML_STRING(1866, "Client Poll Mode") + _T(")"); break;
-			case CVideoDeviceDoc::PANASONIC_SP	: sTitle += CString(_T(" , ")) + _T("Panasonic (") + ML_STRING(1865, "Server Push Mode") + _T(")"); break;
-			case CVideoDeviceDoc::PANASONIC_CP	: sTitle += CString(_T(" , ")) + _T("Panasonic (") + ML_STRING(1866, "Client Poll Mode") + _T(")"); break;
-			case CVideoDeviceDoc::PIXORD_SP		: sTitle += CString(_T(" , ")) + _T("Pixord/NetComm (") + ML_STRING(1865, "Server Push Mode") + _T(")"); break;
-			case CVideoDeviceDoc::PIXORD_CP		: sTitle += CString(_T(" , ")) + _T("Pixord/NetComm (") + ML_STRING(1866, "Client Poll Mode") + _T(")"); break;
-			case CVideoDeviceDoc::EDIMAX_SP		: sTitle += CString(_T(" , ")) + _T("Edimax (") + ML_STRING(1865, "Server Push Mode") + _T(")"); break;
-			case CVideoDeviceDoc::EDIMAX_CP		: sTitle += CString(_T(" , ")) + _T("Edimax (") + ML_STRING(1866, "Client Poll Mode") + _T(")"); break;
-			case CVideoDeviceDoc::TPLINK_SP		: sTitle += CString(_T(" , ")) + _T("TP-Link (") + ML_STRING(1865, "Server Push Mode") + _T(")"); break;
-			case CVideoDeviceDoc::TPLINK_CP		: sTitle += CString(_T(" , ")) + _T("TP-Link (") + ML_STRING(1866, "Client Poll Mode") + _T(")"); break;
-			case CVideoDeviceDoc::FOSCAM_SP		: sTitle += CString(_T(" , ")) + _T("Foscam/Tenvis/Clones (") + ML_STRING(1865, "Server Push Mode") + _T(")"); break;
-			case CVideoDeviceDoc::FOSCAM_CP		: sTitle += CString(_T(" , ")) + _T("Foscam/Tenvis/Clones (") + ML_STRING(1866, "Client Poll Mode") + _T(")"); break;
-			case CVideoDeviceDoc::URL_RTSP		: sTitle += CString(_T(" , ")) + pDoc->m_HttpGetFrameLocations[0]; break;
-			default : break;
-		}
-		if (pDoc->m_pVideoNetCom && pDoc->m_pVideoNetCom->GetSocketFamily() == AF_INET6)
-			sTitle += _T(" , IPv6");
-	}
 	return sTitle;
 }
 
