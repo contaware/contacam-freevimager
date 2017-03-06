@@ -620,13 +620,13 @@ public:
 		OTHERONE_RTSP = 1010,	// Other RTSP device
 		ABUS_RTSP = 1020,		// Abus RTSP
 		ACTI_RTSP = 1030,		// ACTi RTSP
+		AMCREST_RTSP = 1035,	// Amcrest RTSP
 		ARECONT_RTSP = 1040,	// Arecont Vision RTSP
 		AXIS_RTSP = 1050,		// Axis RTSP
 		BOSCH_RTSP = 1060,		// Bosch RTSP
 		CANON_RTSP = 1070,		// Canon RTSP
 		DLINK_RTSP = 1080,		// D-Link RTSP
 		DAHUA_RTSP = 1090,		// Dahua RTSP
-		DERICAM_RTSP = 1100,	// Dericam RTSP
 		EDIMAX_RTSP = 1110,		// Edimax RTSP
 		FOSCAM_RTSP = 1120,		// Foscam RTSP
 		HIKVISION_RTSP = 1130,	// HIKVision RTSP
@@ -641,7 +641,6 @@ public:
 		TPLINK_RTSP = 1220,		// TP-Link RTSP
 		TRENDNET_RTSP = 1230,	// TrendNet RTSP
 		VIVOTEK_RTSP = 1240,	// Vivotek RTSP
-		WANSVIEW_RTSP = 1250,	// Wansview RTSP
 		ZMODO_RTSP = 1260,		// Zmodo RTSP
 		// Add more rtsp devices here...
 		LAST_DEVICE				// Placeholder for range check

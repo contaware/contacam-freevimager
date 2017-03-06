@@ -4081,6 +4081,7 @@ void CVideoDeviceDoc::SetDocumentTitle()
 		// General info
 		CString sWidthHeight;
 		CString sFramerate;
+		CString sCompressedDataRate;
 		CString sPixelFormat;
 		if (m_DocRect.Width() > 0 && m_DocRect.Height() > 0)
 		{
@@ -4088,7 +4089,12 @@ void CVideoDeviceDoc::SetDocumentTitle()
 			sWidthHeight.Format(_T("%dx%d"), m_DocRect.Width(), m_DocRect.Height());
 
 			// Framerate
-			sFramerate.Format(_T("%0.1ff/s"), m_dEffectiveFrameRate > 0.0 ? m_dEffectiveFrameRate : m_dFrameRate);
+			if (m_dEffectiveFrameRate > 0.0)
+				sFramerate.Format(_T("%0.1ffps"), m_dEffectiveFrameRate);
+
+			// Datarate
+			if (m_lCompressedDataRate > 0)
+				sCompressedDataRate.Format(_T("%dkbps"), m_lCompressedDataRate / 128);
 
 			// Pixel Format
 			sPixelFormat = CDib::GetCompressionName((LPBITMAPINFO)&m_CaptureBMI);
@@ -4118,6 +4124,8 @@ void CVideoDeviceDoc::SetDocumentTitle()
 			sTitle += _T(" , ") + sWidthHeight;
 		if (!sFramerate.IsEmpty())
 			sTitle += _T(" , ") + sFramerate;
+		if (!sCompressedDataRate.IsEmpty())
+			sTitle += _T(" , ") + sCompressedDataRate;
 		if (!sPixelFormat.IsEmpty())
 			sTitle += _T(" , ") + sPixelFormat;
 		if (!sNetworkMode.IsEmpty())
@@ -8806,8 +8814,8 @@ Standard -> Standard quality.
 Clarity  -> Lower compression rate, fewer frames, better image clarity.
 
 
-PIXORD/NETCOMM
---------------
+PIXORD
+------
 
 JPEG
 _T("GET /images<channel><resolution> HTTP/1.1\r\n")
@@ -8856,8 +8864,8 @@ _T("GET /cgi-bin/admin/param?action=update&Image.I0.Appearance.Compression=Compr
 _T("GET /cgi-bin/admin/param?action=update&Image.I0.MJPEG.FPS=Fps HTTP/1.1\r\n")                           -> set framerate, valid range: 1-30
 
 
-FOSCAM/TENVIS/CLONES
---------------------
+FOSCAM
+------
 
 JPEG
 _T("GET /snapshot.cgi?user=<user>&pwd=<password>&resolution=<resolution> HTTP/1.1\r\n")
@@ -9024,16 +9032,16 @@ BOOL CVideoDeviceDoc::ConnectRtsp(DWORD dwConnectDelayMs/*=0U*/)
 	switch (m_nNetworkDeviceTypeMode)
 	{
 		case URL_RTSP:			sQuery = m_HttpGetFrameLocations[0]; break;
-		case OTHERONE_RTSP:		sQuery = _T("/"); break;
+		case OTHERONE_RTSP:		sQuery = _T("/11"); break;
 		case ABUS_RTSP:			sQuery = _T("/video.mp4"); break;
 		case ACTI_RTSP:			sQuery = _T("/h264"); break;
+		case AMCREST_RTSP:		sQuery = _T("/cam/realmonitor?channel=1&subtype=0"); break;
 		case ARECONT_RTSP:		sQuery = _T("/h264.sdp"); break;
 		case AXIS_RTSP:			sQuery = _T("/axis-media/media.amp"); break;
 		case BOSCH_RTSP:		sQuery = _T("/h264"); break;
 		case CANON_RTSP:		sQuery = _T("/stream/profile0=r"); break;
 		case DLINK_RTSP:		sQuery = _T("/live1.sdp"); break;
 		case DAHUA_RTSP:		sQuery = _T("/live"); break;
-		case DERICAM_RTSP:		sQuery = _T("/ch0.h264"); break;
 		case EDIMAX_RTSP:		sQuery = _T("/ipcam_h264.sdp"); break;
 		case FOSCAM_RTSP:		sQuery = _T("/videoMain"); break;
 		case HIKVISION_RTSP:	sQuery = _T("/Streaming/Channels/1"); break;
@@ -9048,7 +9056,6 @@ BOOL CVideoDeviceDoc::ConnectRtsp(DWORD dwConnectDelayMs/*=0U*/)
 		case TPLINK_RTSP:		sQuery = _T("/video.mp4"); break;
 		case TRENDNET_RTSP:		sQuery = _T("/Streaming/Channels/1"); break;
 		case VIVOTEK_RTSP:		sQuery = _T("/live.sdp"); break;
-		case WANSVIEW_RTSP:		sQuery = _T("/11"); break;
 		case ZMODO_RTSP:		sQuery = _T("/udp/av0_0"); break;
 		default:				return FALSE;
 	}
