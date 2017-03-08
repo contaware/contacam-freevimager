@@ -629,7 +629,7 @@ public:
 		DAHUA_RTSP = 1090,		// Dahua RTSP
 		EDIMAX_RTSP = 1110,		// Edimax RTSP
 		FOSCAM_RTSP = 1120,		// Foscam RTSP
-		HIKVISION_RTSP = 1130,	// HIKVision RTSP
+		HIKVISION_RTSP = 1130,	// Hikvision RTSP
 		LINKSYS_RTSP = 1140,	// Linksys RTSP
 		LOGITECH_RTSP = 1150,	// Logitech RTSP
 		PANASONIC_RTSP = 1160,	// Panasonic RTSP
@@ -640,7 +640,11 @@ public:
 		TOSHIBA_RTSP = 1210,	// Toshiba RTSP
 		TPLINK_RTSP = 1220,		// TP-Link RTSP
 		TRENDNET_RTSP = 1230,	// TrendNet RTSP
+		UBIQUITI_RTSP = 1235,	// Ubiquiti RTSP
 		VIVOTEK_RTSP = 1240,	// Vivotek RTSP
+		XIAOMI_RTSP = 1245,		// Xiaomi RTSP
+		YCAM_RTSP = 1250,		// Y-cam RTSP
+		ZAVIO_RTSP = 1255,		// Zavio RTSP
 		ZMODO_RTSP = 1260,		// Zmodo RTSP
 		// Add more rtsp devices here...
 		LAST_DEVICE				// Placeholder for range check

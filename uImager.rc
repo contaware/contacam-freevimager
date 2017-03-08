@@ -1263,9 +1263,9 @@ BEGIN
     EDITTEXT        IDC_AUTH_PASSWORD,68,179,145,13,ES_PASSWORD | ES_AUTOHSCROLL
     DEFPUSHBUTTON   "OK",IDOK,58,204,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,118,204,50,14
-    GROUPBOX        "Host name or Host IP or URL starting with http:// or rtsp://",IDC_STATIC_IP,7,5,213,29
-    GROUPBOX        "Port (554 for RTSP or 80 for HTTP)",IDC_STATIC_PORT,7,42,213,34
-    GROUPBOX        "Camera Type and Mode",IDC_STATIC_DEVICETYPEMODE,7,83,213,60
+    GROUPBOX        "Camera IP or URL starting with rtsp:// or http://",IDC_STATIC_IP,7,5,213,29
+    GROUPBOX        "Camera Port (554 for RTSP or 80 for HTTP)",IDC_STATIC_PORT,7,42,213,34
+    GROUPBOX        "Camera Maker and Protocol",IDC_STATIC_DEVICETYPEMODE,7,83,213,60
     LTEXT           "HTTP jpeg snapshots: low framerate",IDC_STATIC_CLIENTPOLL,14,130,199,8
     LTEXT           "HTTP motion jpeg: low latency",IDC_STATIC_SERVERPUSH,14,119,199,8
     LTEXT           "User Name",IDC_STATIC2462,14,165,38,8

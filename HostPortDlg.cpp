@@ -62,7 +62,7 @@ BOOL CHostPortDlg::OnInitDialog()
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Foscam (RTSP)")), (DWORD)CVideoDeviceDoc::FOSCAM_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Foscam (") + ML_STRING(1865, "HTTP motion jpeg") + _T(")")), (DWORD)CVideoDeviceDoc::FOSCAM_SP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Foscam (") + ML_STRING(1866, "HTTP jpeg snapshots") + _T(")")), (DWORD)CVideoDeviceDoc::FOSCAM_CP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("HIKVision (RTSP)")), (DWORD)CVideoDeviceDoc::HIKVISION_RTSP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Hikvision (RTSP)")), (DWORD)CVideoDeviceDoc::HIKVISION_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Linksys (RTSP)")), (DWORD)CVideoDeviceDoc::LINKSYS_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Logitech (RTSP)")), (DWORD)CVideoDeviceDoc::LOGITECH_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Panasonic (RTSP)")), (DWORD)CVideoDeviceDoc::PANASONIC_RTSP);
@@ -79,7 +79,11 @@ BOOL CHostPortDlg::OnInitDialog()
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("TP-Link (") + ML_STRING(1865, "HTTP motion jpeg") + _T(")")), (DWORD)CVideoDeviceDoc::TPLINK_SP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("TP-Link (") + ML_STRING(1866, "HTTP jpeg snapshots") + _T(")")), (DWORD)CVideoDeviceDoc::TPLINK_CP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("TrendNet (RTSP)")), (DWORD)CVideoDeviceDoc::TRENDNET_RTSP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Ubiquiti (RTSP)")), (DWORD)CVideoDeviceDoc::UBIQUITI_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Vivotek (RTSP)")), (DWORD)CVideoDeviceDoc::VIVOTEK_RTSP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Xiaomi (RTSP)")), (DWORD)CVideoDeviceDoc::XIAOMI_RTSP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Y-cam (RTSP)")), (DWORD)CVideoDeviceDoc::YCAM_RTSP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Zavio (RTSP)")), (DWORD)CVideoDeviceDoc::ZAVIO_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Zmodo (RTSP)")), (DWORD)CVideoDeviceDoc::ZMODO_RTSP);
 
 	CDialog::OnInitDialog();
@@ -301,7 +305,10 @@ void CHostPortDlg::ParseUrl(const CString& sInHost,
 int CHostPortDlg::GetCurDeviceTypeMode()
 {
 	CComboBox* pComboBoxDevTypeMode = (CComboBox*)GetDlgItem(IDC_COMBO_DEVICETYPEMODE);
-	return pComboBoxDevTypeMode->GetItemData(pComboBoxDevTypeMode->GetCurSel());
+	int nCurSel = pComboBoxDevTypeMode->GetCurSel();
+	if (nCurSel == CB_ERR)
+		nCurSel = 0; // fallback to first entry
+	return pComboBoxDevTypeMode->GetItemData(nCurSel);
 }
 
 void CHostPortDlg::SetCurDeviceTypeMode(int nDeviceTypeMode)
@@ -312,9 +319,10 @@ void CHostPortDlg::SetCurDeviceTypeMode(int nDeviceTypeMode)
 		if (nDeviceTypeMode == pComboBoxDevTypeMode->GetItemData(i))
 		{
 			pComboBoxDevTypeMode->SetCurSel(i);
-			break;
+			return;
 		}
 	}
+	pComboBoxDevTypeMode->SetCurSel(0); // fallback to first entry
 }
 
 /*

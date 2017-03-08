@@ -9055,7 +9055,11 @@ BOOL CVideoDeviceDoc::ConnectRtsp(DWORD dwConnectDelayMs/*=0U*/)
 		case TOSHIBA_RTSP:		sQuery = _T("/live.sdp"); break;
 		case TPLINK_RTSP:		sQuery = _T("/video.mp4"); break;
 		case TRENDNET_RTSP:		sQuery = _T("/Streaming/Channels/1"); break;
+		case UBIQUITI_RTSP:		sQuery = _T("/live/ch00_0"); break;
 		case VIVOTEK_RTSP:		sQuery = _T("/live.sdp"); break;
+		case XIAOMI_RTSP:		sQuery = _T("/ch0_0.h264"); break;
+		case YCAM_RTSP:			sQuery = _T("/live_mpeg4.sdp"); break;
+		case ZAVIO_RTSP:		sQuery = _T("/video.pro1"); break;
 		case ZMODO_RTSP:		sQuery = _T("/udp/av0_0"); break;
 		default:				return FALSE;
 	}
