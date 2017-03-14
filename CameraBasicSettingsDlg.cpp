@@ -835,7 +835,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 		m_pDoc->m_bCaptureAudio = FALSE;
 		if (m_pDoc->m_pAudioNetCom)
 			m_pDoc->m_pAudioNetCom->Close();
-		else
+		else if (m_pDoc->m_pDxCapture)
 			m_pDoc->m_CaptureAudioThread.Kill();
 	}
 	else
@@ -1167,7 +1167,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 		m_pDoc->m_bCaptureAudio = TRUE;
 		if (m_pDoc->m_pAudioNetCom)
 			m_pDoc->m_HttpThread.SetEventAudioConnect();
-		else
+		else if (m_pDoc->m_pDxCapture)
 			m_pDoc->m_CaptureAudioThread.Start();
 	}
 

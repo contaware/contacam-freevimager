@@ -78,7 +78,7 @@ double CAudioTools::GenerateSinus(	LPBYTE pData, UINT32 uiNumFrames, const LPWAV
 	// Phase increment
     double dPhaseInc = 2.0 * PI * dFrequency / pWaveFormat->nSamplesPerSec;
 
-	// Positive peaks can go up to +1.0, negative peaks to -1.0 and silence are 0.0
+	// Positive peaks can go up to +1.0, negative peaks to -1.0 and silence is 0.0
 	WORD wFormatTag = GetWaveFormatTag(pWaveFormat);
 	if (wFormatTag == WAVE_FORMAT_IEEE_FLOAT)
 	{
@@ -92,7 +92,7 @@ double CAudioTools::GenerateSinus(	LPBYTE pData, UINT32 uiNumFrames, const LPWAV
 	}
 	else if (wFormatTag == WAVE_FORMAT_PCM)
 	{
-		// Positive peaks can go up to +32767, negative peaks to -32768 and silence are 0
+		// Positive peaks can go up to +32767, negative peaks to -32768 and silence is 0
 		if (pWaveFormat->wBitsPerSample == 16)
 		{
 			short* pData16 = (short*)pData;
@@ -155,7 +155,7 @@ float* CAudioTools::ToFloat(LPBYTE pSrc, int nNumFrames, const LPWAVEFORMATEX pS
 	// Convert
 	if (pSrcWaveFormat->wBitsPerSample == 16)
 	{
-		// Positive peaks can go up to +32767, negative peaks to -32768 and silence are 0
+		// Positive peaks can go up to +32767, negative peaks to -32768 and silence is 0
 		short* pData16 = (short*)pSrc;
 		for (int i = 0 ; i < nNumFrames ; i++)
 		{

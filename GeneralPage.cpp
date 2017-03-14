@@ -431,14 +431,14 @@ BOOL CGeneralPage::OnInitDialog()
 
 	// Enable Audio Source Button?
 	pButton = (CButton*)GetDlgItem(IDC_AUDIO_INPUT);
-	if (!m_pDoc->m_pAudioNetCom)
+	if (m_pDoc->m_pDxCapture)
 		pButton->EnableWindow(TRUE);
 	else
 		pButton->EnableWindow(FALSE);
 
 	// Enable Audio Mixer Buttom?
 	pButton = (CButton*)GetDlgItem(IDC_AUDIO_MIXER);
-	if (!m_pDoc->m_pAudioNetCom)
+	if (m_pDoc->m_pDxCapture)
 		pButton->EnableWindow(TRUE);
 	else
 		pButton->EnableWindow(FALSE);
@@ -536,7 +536,7 @@ void CGeneralPage::OnRecAudio()
 			m_pDoc->m_HttpThread.SetEventAudioConnect();
 			::Sleep(200); // wait to let CHttpThread process the event
 		}
-		else
+		else if (m_pDoc->m_pDxCapture)
 			m_pDoc->m_CaptureAudioThread.Start();
 	}
 	else
@@ -547,7 +547,7 @@ void CGeneralPage::OnRecAudio()
 			m_pDoc->m_pAudioNetCom->ShutdownConnection_NoBlocking();
 			::Sleep(200); // wait to let CMsgThread process the event
 		}
-		else
+		else if (m_pDoc->m_pDxCapture)
 			m_pDoc->m_CaptureAudioThread.Kill();
 	}
 

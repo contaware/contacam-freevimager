@@ -2904,20 +2904,29 @@ int CVideoDeviceDoc::CRtspThread::Work()
 {
 	ASSERT(m_pDoc);
 
+	// Init COM for audio play
+	::CoInitialize(NULL);
+
 	// Wait before connecting or Exit if wished so
 	if (::WaitForSingleObject(m_hKillEvent, m_dwConnectDelayMs) == WAIT_OBJECT_0)
-		return 0;
+		goto exit;
 
 	for (;;)
 	{
 		int ret = 0;
-		AVCodec* pCodec = NULL;
-		AVCodecContext* pCodecCtx = NULL;
+		AVCodec* pVideoCodec = NULL;
+		AVCodecContext* pVideoCodecCtx = NULL;
+		AVCodec* pAudioCodec = NULL;
+		AVCodecContext* pAudioCodecCtx = NULL;
 		SwsContext* pImgConvertCtx = NULL;
-		AVFrame* pFrame = NULL;
-		AVFrame* pFrameI420 = NULL;
+		AVFrame* pVideoFrame = NULL;
+		AVFrame* pAudioFrame = NULL;
+		AVFrame* pVideoFrameI420 = NULL;
 		LPBYTE pI420Buf = NULL;
 		AVFormatContext* pFormatCtx = avformat_alloc_context();
+		CAudioTools* pAudioTools = NULL;
+		CAudioPlay* pAudioPlay = NULL;
+		BOOL bAudioSupported = FALSE;
 
 		// Set options
 		AVDictionary* opts = NULL;
@@ -2944,47 +2953,67 @@ int CVideoDeviceDoc::CRtspThread::Work()
 		if ((ret = avformat_open_input(&pFormatCtx, sAnsiURL, NULL, &opts)) < 0)
 			goto free;
 
-		// Search video stream for which we have a decoder
+		// Search video and audio streams for which we have decoders
 		if ((ret = avformat_find_stream_info(pFormatCtx, NULL)) < 0)
 			goto free;
-		int nVideoStreamIndex = av_find_best_stream(pFormatCtx, AVMEDIA_TYPE_VIDEO, -1, -1, &pCodec, 0);
+		int nVideoStreamIndex = av_find_best_stream(pFormatCtx, AVMEDIA_TYPE_VIDEO, -1, -1, &pVideoCodec, 0);
 		if (nVideoStreamIndex < 0)
 		{
 			ret = nVideoStreamIndex;
 			goto free;
 		}
+		int nAudioStreamIndex = av_find_best_stream(pFormatCtx, AVMEDIA_TYPE_AUDIO, -1, -1, &pAudioCodec, 0);
 
 		// Set capture FourCC from codec id
-		const struct AVCodecTag *table[] = {avformat_get_riff_video_tags(), 0};
-		m_pDoc->m_CaptureBMI.bmiHeader.biCompression = av_codec_get_tag(table, pCodec->id);
+		const struct AVCodecTag *table[] = { avformat_get_riff_video_tags(), 0 };
+		m_pDoc->m_CaptureBMI.bmiHeader.biCompression = av_codec_get_tag(table, pVideoCodec->id);
 
 		// Open codec context
-		pCodecCtx = pFormatCtx->streams[nVideoStreamIndex]->codec;
-		if ((ret = avcodec_open2(pCodecCtx, pCodec, 0)) < 0)
+		pVideoCodecCtx = pFormatCtx->streams[nVideoStreamIndex]->codec;
+		if ((ret = avcodec_open2(pVideoCodecCtx, pVideoCodec, 0)) < 0)
 			goto free;
+		if (nAudioStreamIndex >= 0)
+		{
+			pAudioCodecCtx = pFormatCtx->streams[nAudioStreamIndex]->codec;
+			if (avcodec_open2(pAudioCodecCtx, pAudioCodec, 0) >= 0 && pAudioCodecCtx->channels <= 2)
+				bAudioSupported = TRUE;
+		}
 
-		// Init
-		pImgConvertCtx = sws_getContextHelper(	pCodecCtx->width, pCodecCtx->height,
-												pCodecCtx->pix_fmt,
-												pCodecCtx->width, pCodecCtx->height,
+		// Init Video
+		pImgConvertCtx = sws_getContextHelper(	pVideoCodecCtx->width, pVideoCodecCtx->height,
+												pVideoCodecCtx->pix_fmt,
+												pVideoCodecCtx->width, pVideoCodecCtx->height,
 												AV_PIX_FMT_YUV420P,
 												SWS_BICUBIC);
 		if (!pImgConvertCtx)
 			goto free;
-		pFrame = av_frame_alloc();
-		if (!pFrame)
+		pVideoFrame = av_frame_alloc();
+		if (!pVideoFrame)
 			goto free;
-		pFrameI420 = av_frame_alloc();
-		if (!pFrameI420)
+		pVideoFrameI420 = av_frame_alloc();
+		if (!pVideoFrameI420)
 			goto free;
-		int nI420ImageSize = avpicture_get_size(AV_PIX_FMT_YUV420P, pCodecCtx->width, pCodecCtx->height);
+		int nI420ImageSize = avpicture_get_size(AV_PIX_FMT_YUV420P, pVideoCodecCtx->width, pVideoCodecCtx->height);
 		if (nI420ImageSize <= 0)
 			goto free;
 		pI420Buf = (LPBYTE)av_malloc(2 * (nI420ImageSize + FF_INPUT_BUFFER_PADDING_SIZE));
 		if (!pI420Buf)
 			goto free;
-		avpicture_fill((AVPicture *)pFrameI420, pI420Buf, AV_PIX_FMT_YUV420P, pCodecCtx->width, pCodecCtx->height);
-		
+		avpicture_fill((AVPicture *)pVideoFrameI420, pI420Buf, AV_PIX_FMT_YUV420P, pVideoCodecCtx->width, pVideoCodecCtx->height);
+
+		// Init Audio
+		if (bAudioSupported)
+		{
+			pAudioFrame = av_frame_alloc();
+			if (!pAudioFrame)
+				goto free;
+			int bits = av_get_bytes_per_sample(pAudioCodecCtx->sample_fmt) << 3;
+			if (bits <= 16)
+				WaveInitFormat(pAudioCodecCtx->channels, pAudioCodecCtx->sample_rate, bits, m_pDoc->m_pSrcWaveFormat);
+			else
+				WaveInitFormat(pAudioCodecCtx->channels, pAudioCodecCtx->sample_rate, 16, m_pDoc->m_pSrcWaveFormat);
+		}
+
 		// Exit?
 		if (DoExit())
 			goto free;
@@ -3007,7 +3036,7 @@ int CVideoDeviceDoc::CRtspThread::Work()
 				{
 					// Decode
 					int got_picture = 0;
-					ret = avcodec_decode_video2(pCodecCtx, pFrame, &got_picture, &avpkt);
+					ret = avcodec_decode_video2(pVideoCodecCtx, pVideoFrame, &got_picture, &avpkt);
 					if (ret < 0)
 					{
 						av_free_packet(&orig_pkt);
@@ -3016,12 +3045,12 @@ int CVideoDeviceDoc::CRtspThread::Work()
 					decoded = MIN(ret, avpkt.size);
 
 					// Init if size changed
-					if (m_pDoc->m_DocRect.right != pCodecCtx->width ||
-						m_pDoc->m_DocRect.bottom != pCodecCtx->height)
+					if (m_pDoc->m_DocRect.right != pVideoCodecCtx->width ||
+						m_pDoc->m_DocRect.bottom != pVideoCodecCtx->height)
 					{
 						m_pDoc->m_ProcessFrameBMI.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-						m_pDoc->m_ProcessFrameBMI.bmiHeader.biWidth = (DWORD)pCodecCtx->width;
-						m_pDoc->m_ProcessFrameBMI.bmiHeader.biHeight = (DWORD)pCodecCtx->height;
+						m_pDoc->m_ProcessFrameBMI.bmiHeader.biWidth = (DWORD)pVideoCodecCtx->width;
+						m_pDoc->m_ProcessFrameBMI.bmiHeader.biHeight = (DWORD)pVideoCodecCtx->height;
 						m_pDoc->m_ProcessFrameBMI.bmiHeader.biPlanes = 1; // must be 1
 						m_pDoc->m_ProcessFrameBMI.bmiHeader.biBitCount = 12;
 						m_pDoc->m_ProcessFrameBMI.bmiHeader.biCompression = FCC('I420');
@@ -3059,19 +3088,154 @@ int CVideoDeviceDoc::CRtspThread::Work()
 							0, 0);
 					}
 
-					// Convert
+					// Convert and Process
 					if (got_picture)
 					{
-						if ((ret = sws_scale(pImgConvertCtx, pFrame->data, pFrame->linesize, 0, pCodecCtx->height, pFrameI420->data, pFrameI420->linesize)) <= 0)
+						if ((ret = sws_scale(pImgConvertCtx, pVideoFrame->data, pVideoFrame->linesize, 0, pVideoCodecCtx->height, pVideoFrameI420->data, pVideoFrameI420->linesize)) <= 0)
 						{
 							av_free_packet(&orig_pkt);
 							goto free;
 						}
 						m_pDoc->m_lCompressedDataRateSum += avpkt.size;
-						if (pCodecCtx->codec_id == AV_CODEC_ID_MJPEG)
+						if (pVideoCodecCtx->codec_id == AV_CODEC_ID_MJPEG)
 							m_pDoc->ProcessI420Frame(pI420Buf, nI420ImageSize, avpkt.data, avpkt.size);
 						else
 							m_pDoc->ProcessI420Frame(pI420Buf, nI420ImageSize, NULL, 0U);
+					}
+				}
+				// Audio Packet
+				else if (avpkt.stream_index == nAudioStreamIndex && bAudioSupported && m_pDoc->m_bCaptureAudio)
+				{
+					// Init audio listen
+					if (!pAudioTools)
+						pAudioTools = new CAudioTools;
+					if (!pAudioPlay)
+						pAudioPlay = new CAudioPlay;
+					if (pAudioPlay && !pAudioPlay->IsInit())
+						pAudioPlay->Init(10000000);
+
+					// Decode
+					int got_frame = 0;
+					ret = avcodec_decode_audio4(pAudioCodecCtx, pAudioFrame, &got_frame, &avpkt);
+
+					// Process
+					if (ret >= 0)
+					{
+						decoded = MIN(ret, avpkt.size);
+
+						// Add samples to queue and limit its size
+						if (got_frame)
+						{
+							CUserBuf UserBuf;
+
+							// Convert from planar float to packed 16 bit
+							if (pAudioCodecCtx->sample_fmt == AV_SAMPLE_FMT_FLTP)
+							{
+								// Mono
+								if (pAudioCodecCtx->channels == 1)
+								{
+									UserBuf.m_dwSize = 2 * pAudioFrame->nb_samples;
+									UserBuf.m_pBuf = (LPBYTE)av_malloc(UserBuf.m_dwSize);
+									if (!UserBuf.m_pBuf)
+										goto free;
+
+									// Convert
+									// (positive peaks can go up to +32767, negative peaks to -32768 and silence is 0)
+									short* pDst = (short*)UserBuf.m_pBuf;
+									float* pSrc = (float*)pAudioFrame->data[0];
+									for (int i = 0; i < pAudioFrame->nb_samples; i++)
+									{	
+										pDst[i] = (short)(pSrc[i] * 32767.0f);
+									}
+								}
+								// Stereo
+								else
+								{
+									UserBuf.m_dwSize = 4 * pAudioFrame->nb_samples;
+									UserBuf.m_pBuf = (LPBYTE)av_malloc(UserBuf.m_dwSize);
+									if (!UserBuf.m_pBuf)
+										goto free;
+
+									// Convert
+									// (positive peaks can go up to +32767, negative peaks to -32768 and silence is 0)
+									short* pDst = (short*)UserBuf.m_pBuf;
+									float* pSrc0 = (float*)pAudioFrame->data[0];
+									float* pSrc1 = (float*)pAudioFrame->data[1];
+									for (int i = 0; i < pAudioFrame->nb_samples; i++)
+									{
+										// Channel 0
+										pDst[2*i] = (short)(pSrc0[i] * 32767.0f);
+
+										// Channel 1
+										pDst[2*i + 1] = (short)(pSrc1[i] * 32767.0f);
+									}
+								}
+							}
+							// Convert from packed float to packed 16 bit
+							else if (pAudioCodecCtx->sample_fmt == AV_SAMPLE_FMT_FLT)
+							{
+								// Mono
+								if (pAudioCodecCtx->channels == 1)
+								{
+									UserBuf.m_dwSize = 2 * pAudioFrame->nb_samples;
+									UserBuf.m_pBuf = (LPBYTE)av_malloc(UserBuf.m_dwSize);
+									if (!UserBuf.m_pBuf)
+										goto free;
+
+									// Convert
+									// (positive peaks can go up to +32767, negative peaks to -32768 and silence is 0)
+									short* pDst = (short*)UserBuf.m_pBuf;
+									float* pSrc = (float*)pAudioFrame->data[0];
+									for (int i = 0; i < pAudioFrame->nb_samples; i++)
+									{
+										pDst[i] = (short)(pSrc[i] * 32767.0f);
+									}
+								}
+								// Stereo
+								else
+								{
+									UserBuf.m_dwSize = 4 * pAudioFrame->nb_samples;
+									UserBuf.m_pBuf = (LPBYTE)av_malloc(UserBuf.m_dwSize);
+									if (!UserBuf.m_pBuf)
+										goto free;
+
+									// Convert
+									// (positive peaks can go up to +32767, negative peaks to -32768 and silence is 0)
+									short* pDst = (short*)UserBuf.m_pBuf;
+									float* pSrc = (float*)pAudioFrame->data[0];
+									for (int i = 0; i < pAudioFrame->nb_samples; i++)
+									{
+										// Channel 0
+										pDst[2*i] = (short)(pSrc[2*i] * 32767.0f);
+
+										// Channel 1
+										pDst[2*i + 1] = (short)(pSrc[2*i + 1] * 32767.0f);
+									}
+								}
+							}
+							else
+							{
+								UserBuf.m_dwSize = av_get_bytes_per_sample(pAudioCodecCtx->sample_fmt) * pAudioCodecCtx->channels * pAudioFrame->nb_samples;
+								UserBuf.m_pBuf = (LPBYTE)av_malloc(UserBuf.m_dwSize);
+								if (!UserBuf.m_pBuf)
+									goto free;
+								memcpy(UserBuf.m_pBuf, pAudioFrame->data[0], UserBuf.m_dwSize);
+							}
+							::EnterCriticalSection(&m_pDoc->m_csAudioList);
+							m_pDoc->m_AudioList.AddTail(UserBuf);
+							m_pDoc->AudioListen(UserBuf.m_pBuf, UserBuf.m_dwSize, pAudioTools, pAudioPlay);
+							if (m_pDoc->m_AudioList.GetCount() > AUDIO_MAX_LIST_SIZE)
+							{
+								UserBuf = m_pDoc->m_AudioList.RemoveHead();
+								if (UserBuf.m_pBuf)
+								{
+									av_free(UserBuf.m_pBuf);
+									UserBuf.m_pBuf = NULL;
+								}
+							}
+							::LeaveCriticalSection(&m_pDoc->m_csAudioList);
+							::InterlockedExchange(&m_pDoc->m_lLastAudioFramesUpTime, (LONG)::timeGetTime());
+						}
 					}
 				}
 
@@ -3098,12 +3262,16 @@ int CVideoDeviceDoc::CRtspThread::Work()
 		avcodec_get_context_defaults3() with a non-NULL codec. Subsequent calls will
 		do nothing.
 		*/
-		if (pCodecCtx)
-			avcodec_close(pCodecCtx);
-		if (pFrame)
-			av_frame_free(&pFrame);
-		if (pFrameI420)
-			av_frame_free(&pFrameI420);
+		if (pVideoCodecCtx)
+			avcodec_close(pVideoCodecCtx);
+		if (pAudioCodecCtx)
+			avcodec_close(pAudioCodecCtx);
+		if (pVideoFrame)
+			av_frame_free(&pVideoFrame);
+		if (pAudioFrame)
+			av_frame_free(&pAudioFrame);
+		if (pVideoFrameI420)
+			av_frame_free(&pVideoFrameI420);
 		if (pI420Buf)
 			av_free(pI420Buf);
 		if (pImgConvertCtx)
@@ -3111,10 +3279,20 @@ int CVideoDeviceDoc::CRtspThread::Work()
 		if (pFormatCtx)
 			avformat_close_input(&pFormatCtx);
 		av_dict_free(&opts);
+		if (pAudioPlay)
+		{
+			delete pAudioPlay;
+			pAudioPlay = NULL;
+		}
+		if (pAudioTools)
+		{
+			delete pAudioTools;
+			pAudioTools = NULL;
+		}
 
 		// Exit?
 		if (DoExit())
-			return 0;
+			goto exit;
 		else if (!m_pDoc->m_bCaptureStarted)
 		{
 			CString sErrorMsg;
@@ -3130,18 +3308,20 @@ int CVideoDeviceDoc::CRtspThread::Work()
 			}
 			CVideoDeviceDoc::ConnectErr(sErrorMsg, m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
 			m_pDoc->CloseDocument();
-			return 0;
+			goto exit;
 		}
 		else
 		{
 			// Wait before reconnecting or Exit if wished so
 			if (::WaitForSingleObject(m_hKillEvent, HTTP_RECONNECTION_DELAY) == WAIT_OBJECT_0)
-				return 0;
+				goto exit;
 			else
 				::LogLine(_T("%s try reconnecting"), m_pDoc->GetAssignedDeviceName());
 		}
 	}
 
+exit:
+	::CoUninitialize();
 	return 0;
 }
 
@@ -10830,6 +11010,9 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::DecodeVideo(AVPacket* avpkt)
 * - m_pCodecCtx->sample_fmt
 * - av_get_bytes_per_sample(m_pCodecCtx->sample_fmt) returns the
 *   bytes count per sample and per channel
+* - Attention:
+*   m_pFrame->linesize[0]  >=
+*   av_get_bytes_per_sample(m_pCodecCtx->sample_fmt) * m_pCodecCtx->channels * m_pFrame->nb_samples
 */
 BOOL CVideoDeviceDoc::CHttpParseProcess::DecodeAudio(AVPacket* avpkt)
 {
@@ -10844,7 +11027,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::DecodeAudio(AVPacket* avpkt)
 
 	// Add samples to queue and limit its size
 	CUserBuf UserBuf;
-	UserBuf.m_dwSize = m_pFrame->linesize[0];
+	UserBuf.m_dwSize = av_get_bytes_per_sample(m_pCodecCtx->sample_fmt) * m_pCodecCtx->channels * m_pFrame->nb_samples;
 	UserBuf.m_pBuf = (LPBYTE)av_malloc(UserBuf.m_dwSize);
 	if (!UserBuf.m_pBuf)
 		return FALSE;
