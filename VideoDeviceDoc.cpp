@@ -9174,6 +9174,7 @@ BOOL CVideoDeviceDoc::ConnectRtsp(DWORD dwConnectDelayMs/*=0U*/)
 		case PLANET_RTSP:		sQuery = _T("/stream1"); break;
 		case SAMSUNG_RTSP:		sQuery = _T("/profile1/media.smp"); break;
 		case SONY_RTSP:			sQuery = _T("/media/video1"); break;
+		case SRICAM_RTSP:		sQuery = _T("/onvif1"); break;
 		case TOSHIBA_RTSP:		sQuery = _T("/live.sdp"); break;
 		case TPLINK_RTSP:		sQuery = _T("/video.mp4"); break;
 		case TRENDNET_RTSP:		sQuery = _T("/Streaming/Channels/1"); break;
