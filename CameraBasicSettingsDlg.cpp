@@ -833,9 +833,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	{
 		bDoCaptureAudio = TRUE;
 		m_pDoc->m_bCaptureAudio = FALSE;
-		if (m_pDoc->m_pAudioNetCom)
-			m_pDoc->m_pAudioNetCom->Close();
-		else if (m_pDoc->m_pDxCapture)
+		if (m_pDoc->m_pDxCapture)
 			m_pDoc->m_CaptureAudioThread.Kill();
 	}
 	else
@@ -1163,11 +1161,8 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	// Restart audio
 	if (bDoCaptureAudio)
 	{
-		::InterlockedExchange(&m_pDoc->m_lLastAudioFramesUpTime, (LONG)::timeGetTime());
 		m_pDoc->m_bCaptureAudio = TRUE;
-		if (m_pDoc->m_pAudioNetCom)
-			m_pDoc->m_HttpThread.SetEventAudioConnect();
-		else if (m_pDoc->m_pDxCapture)
+		if (m_pDoc->m_pDxCapture)
 			m_pDoc->m_CaptureAudioThread.Start();
 	}
 

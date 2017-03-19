@@ -216,15 +216,13 @@ public:
 	class CHttpParseProcess : public CNetCom::CParseProcess
 	{
 		public:
-			CHttpParseProcess(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc; m_pAudioTools = NULL; m_pAudioPlay = NULL; m_dwCNonceCount = 0U; Clear();};
+			CHttpParseProcess(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc; m_dwCNonceCount = 0U; Clear();};
 			virtual ~CHttpParseProcess() {FreeAVCodec();};
 			void Close() {FreeAVCodec(); Clear();};
 			BOOL SendRawRequest(CString sRequest);
 			BOOL SendRequest();
 			virtual BOOL Parse(CNetCom* pNetCom, BOOL bLastCall);
 			virtual void Process(unsigned char* pLinBuf, int nSize);
-			void OnThreadStart();
-			void OnThreadShutdown();
 			BOOL HasResolution(const CSize& Size);
 			
 			CArray<CSize,CSize> m_Sizes;
@@ -234,7 +232,7 @@ public:
 			CString m_sAlgorithm;
 			CString m_sOpaque;
 			DWORD m_dwCNonceCount;
-			volatile enum {FORMATVIDEO_UNKNOWN = 0, FORMATVIDEO_JPEG, FORMATVIDEO_MJPEG, FORMATAUDIO_UNKNOWN, FORMATAUDIO_MULAW, FORMATAUDIO_G726_24, FORMATAUDIO_G726_32} m_FormatType;
+			volatile enum {FORMATVIDEO_UNKNOWN = 0, FORMATVIDEO_JPEG, FORMATVIDEO_MJPEG} m_FormatType;
 			typedef enum {AUTHNONE = 0, AUTHBASIC, AUTHDIGEST} AUTHTYPE;
 			volatile AUTHTYPE m_AnswerAuthorizationType; // authorization type chosen by parsing WWW-Authenticate header
 			volatile BOOL m_bQueryVideoProperties;
@@ -291,11 +289,8 @@ public:
 			void FreeAVCodec();
 			BOOL InitImgConvert();
 			BOOL DecodeVideo(AVPacket* avpkt);
-			BOOL DecodeAudio(AVPacket* avpkt);
 			
 			CVideoDeviceDoc* m_pDoc;
-			CAudioTools* m_pAudioTools;
-			CAudioPlay* m_pAudioPlay;
 			BOOL m_bMultipartNoLength;
 			CString m_sLastRequest;
 			CString m_sMultipartBoundary;
@@ -348,24 +343,19 @@ public:
 	{
 		public:
 			CHttpThread() {	m_pDoc = NULL;
-							m_dwAudioConnectDelayMs	= 0U;									// Delay before starting Audio connection
 							m_dwVideoConnectDelayMs	= 0U;									// Delay before starting video connection
 							m_hEventArray[0]	= GetKillEvent();							// Kill Event
 							m_hEventArray[1]	= ::CreateEvent(NULL, TRUE, FALSE, NULL);	// Http Setup Video Connection Event
 							m_hEventArray[2]	= ::CreateEvent(NULL, TRUE, FALSE, NULL);	// Http Video Connected Event
 							m_hEventArray[3]	= ::CreateEvent(NULL, TRUE, FALSE, NULL);	// Http Video Connect Failed Event
 							m_hEventArray[4]	= ::CreateEvent(NULL, TRUE, FALSE, NULL);	// Http Video Read Event
-							m_hEventArray[5]	= ::CreateEvent(NULL, TRUE, FALSE, NULL);	// Http Setup Audio Connection Event
-							::InitializeCriticalSection(&m_csVideoConnectRequestParams);
-							::InitializeCriticalSection(&m_csAudioConnectRequestParams);};
+							::InitializeCriticalSection(&m_csVideoConnectRequestParams);};
 			virtual ~CHttpThread() {Kill();
 									::CloseHandle(m_hEventArray[1]);
 									::CloseHandle(m_hEventArray[2]);
 									::CloseHandle(m_hEventArray[3]);
 									::CloseHandle(m_hEventArray[4]);
-									::CloseHandle(m_hEventArray[5]);
-									::DeleteCriticalSection(&m_csVideoConnectRequestParams);
-									::DeleteCriticalSection(&m_csAudioConnectRequestParams);};
+									::DeleteCriticalSection(&m_csVideoConnectRequestParams);};
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
 			__forceinline BOOL SetEventVideoConnect(LPCTSTR lpszRequest = _T(""), DWORD dwConnectDelayMs = 0U)
 			{
@@ -374,14 +364,6 @@ public:
 				m_dwVideoConnectDelayMs = dwConnectDelayMs;
 				::LeaveCriticalSection(&m_csVideoConnectRequestParams);
 				return ::SetEvent(m_hEventArray[1]);	
-			};
-			__forceinline BOOL SetEventAudioConnect(LPCTSTR lpszRequest = _T(""), DWORD dwConnectDelayMs = 0U)
-			{
-				::EnterCriticalSection(&m_csAudioConnectRequestParams);
-				m_sAudioRequest = CString(lpszRequest);
-				m_dwAudioConnectDelayMs = dwConnectDelayMs;
-				::LeaveCriticalSection(&m_csAudioConnectRequestParams);
-				return ::SetEvent(m_hEventArray[5]);	
 			};
 
 		protected:
@@ -396,13 +378,10 @@ public:
 			BOOL PollAndClean(BOOL bDoNewPoll);
 			void CleanUpAllConnections();
 			CVideoDeviceDoc* m_pDoc;
-			HANDLE m_hEventArray[6];
+			HANDLE m_hEventArray[5];
 			volatile DWORD m_dwVideoConnectDelayMs;
-			volatile DWORD m_dwAudioConnectDelayMs;
 			CString m_sVideoRequest;
-			CString m_sAudioRequest;
 			CRITICAL_SECTION m_csVideoConnectRequestParams;
-			CRITICAL_SECTION m_csAudioConnectRequestParams;
 			NETCOMLIST m_HttpVideoNetComList;
 			NETCOMPARSEPROCESSLIST m_HttpVideoParseProcessList;
 	};
@@ -411,11 +390,13 @@ public:
 	class CRtspThread : public CWorkerThread
 	{
 		public:
-			CRtspThread() { m_pDoc = NULL; m_dwConnectDelayMs = 0U; };
+			CRtspThread() { m_pDoc = NULL; m_dwConnectDelayMs = 0U; m_nVideoCodecID = -1; m_nAudioCodecID = -1; };
 			virtual ~CRtspThread() {Kill();};
 			void SetDoc(CVideoDeviceDoc* pDoc) { m_pDoc = pDoc; };
 			CString m_sURL;
 			DWORD m_dwConnectDelayMs;
+			volatile int m_nVideoCodecID;
+			volatile int m_nAudioCodecID;
 
 		protected:
 			int Work();
@@ -894,9 +875,7 @@ public:
 
 	// Watchdog vars
 	volatile LONG m_lCurrentInitUpTime;					// Uptime set in ProcessI420Frame()
-	volatile LONG m_lLastAudioFramesUpTime;				// Uptime set on audio frame arrival
 	volatile BOOL m_bWatchDogVideoAlarm;				// WatchDog Video Alarm
-	volatile BOOL m_bWatchDogAudioAlarm;				// WatchDog Audio Alarm
 
 	// DirectShow Capture Vars
 	volatile BOOL m_bStopAndChangeFormat;				// Flag indicating that we are changing the DV format
@@ -936,14 +915,12 @@ public:
 
 	// HTTP Networking
 	CNetCom* volatile m_pVideoNetCom;					// HTTP Video Instance
-	CNetCom* volatile m_pAudioNetCom;					// HTTP Audio Instance
 	volatile NetworkDeviceTypeMode m_nNetworkDeviceTypeMode;// Video Network Device Type and Mode
 	CString m_sGetFrameVideoHost;						// HTTP Host
 	volatile int m_nGetFrameVideoPort;					// HTTP Port
 	CString m_sHttpGetFrameUsername;					// HTTP Username
 	CString m_sHttpGetFramePassword;					// HTTP Password
 	CHttpParseProcess* volatile m_pHttpVideoParseProcess; // HTTP Video Parse & Process
-	CHttpParseProcess* volatile m_pHttpAudioParseProcess; // HTTP Audio Parse & Process
 	volatile int m_nHttpVideoQuality;					// 0 Best Quality, 100 Worst Quality
 	volatile int m_nHttpVideoSizeX;						// Video width
 	volatile int m_nHttpVideoSizeY;						// Video height

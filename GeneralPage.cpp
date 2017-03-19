@@ -436,7 +436,7 @@ BOOL CGeneralPage::OnInitDialog()
 	else
 		pButton->EnableWindow(FALSE);
 
-	// Enable Audio Mixer Buttom?
+	// Enable Audio Mixer Button?
 	pButton = (CButton*)GetDlgItem(IDC_AUDIO_MIXER);
 	if (m_pDoc->m_pDxCapture)
 		pButton->EnableWindow(TRUE);
@@ -513,9 +513,6 @@ void CGeneralPage::OnChangeFrameRate()
 
 void CGeneralPage::OnRecAudio() 
 {
-	// Stop watchdog thread
-	m_pDoc->m_WatchdogThread.Kill();
-
 	// Stop Save Frame List Thread
 	m_pDoc->m_SaveFrameListThread.Kill();
 
@@ -528,34 +525,19 @@ void CGeneralPage::OnRecAudio()
 	BOOL bDoCaptureAudio = (pCheck->GetCheck() == 1);
 	if (bDoCaptureAudio)
 	{
-		::InterlockedExchange(&m_pDoc->m_lLastAudioFramesUpTime, (LONG)::timeGetTime());
 		m_pDoc->m_bCaptureAudio = TRUE;
-		if (m_pDoc->m_pAudioNetCom)
-		{
-			m_pDoc->m_pHttpAudioParseProcess->m_bTryConnecting = TRUE;
-			m_pDoc->m_HttpThread.SetEventAudioConnect();
-			::Sleep(200); // wait to let CHttpThread process the event
-		}
-		else if (m_pDoc->m_pDxCapture)
+		if (m_pDoc->m_pDxCapture)
 			m_pDoc->m_CaptureAudioThread.Start();
 	}
 	else
 	{
 		m_pDoc->m_bCaptureAudio = FALSE;
-		if (m_pDoc->m_pAudioNetCom)
-		{
-			m_pDoc->m_pAudioNetCom->ShutdownConnection_NoBlocking();
-			::Sleep(200); // wait to let CMsgThread process the event
-		}
-		else if (m_pDoc->m_pDxCapture)
+		if (m_pDoc->m_pDxCapture)
 			m_pDoc->m_CaptureAudioThread.Kill();
 	}
 
 	// Restart Save Frame List Thread
 	m_pDoc->m_SaveFrameListThread.Start();
-
-	// Restart watchdog thread
-	m_pDoc->m_WatchdogThread.Start();
 }
 
 void CGeneralPage::OnTimer(UINT nIDEvent) 

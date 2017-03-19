@@ -1056,8 +1056,6 @@ void CVideoDeviceChildFrame::OnClose()
 				t += _T(", rtsp thread still alive");
 			if (pDoc->m_pVideoNetCom && !pDoc->m_pVideoNetCom->IsShutdown())
 				t += _T(", netcom video threads still alive");
-			if (pDoc->m_pAudioNetCom && !pDoc->m_pAudioNetCom->IsShutdown())
-				t += _T(", netcom audio threads still alive");
 			if (pDoc->m_DeleteThread.IsAlive())
 				t += _T(", delete thread still alive");
 			if (pDoc->m_CaptureAudioThread.IsAlive())
@@ -1144,14 +1142,12 @@ void CVideoDeviceChildFrame::StartShutdown3()
 	// Start killing rtsp thread
 	pDoc->m_RtspThread.Kill_NoBlocking();
 
-	// Start connections shutdown
+	// Start connection shutdown
 	// (this must happen when m_HttpThread is not running
 	// anymore, because inside this thread http connections
 	// can be established)
 	if (pDoc->m_pVideoNetCom)
 		pDoc->m_pVideoNetCom->ShutdownConnection_NoBlocking();
-	if (pDoc->m_pAudioNetCom)
-		pDoc->m_pAudioNetCom->ShutdownConnection_NoBlocking();
 }
 
 void CVideoDeviceChildFrame::EndShutdown()
@@ -1170,15 +1166,6 @@ void CVideoDeviceChildFrame::EndShutdown()
 		// Kill() which locks indefinitely freezing the interface
 		delete pDoc->m_pVideoNetCom;
 		pDoc->m_pVideoNetCom = NULL;
-	}
-	if (pDoc->m_pAudioNetCom)
-	{
-		// This calls Close() which is not locking indefinitely,
-		// but attention the destructors of the message threads
-		// (both base class and derived class destructors) call
-		// Kill() which locks indefinitely freezing the interface
-		delete pDoc->m_pAudioNetCom;
-		pDoc->m_pAudioNetCom = NULL;
 	}
 
 	// Delete DirectShow Capture Object
@@ -1251,8 +1238,7 @@ BOOL CVideoDeviceChildFrame::IsShutdown3Done()
 
 	// Check whether the connections have been shutdown
 	BOOL bVideoShutdown = pDoc->m_pVideoNetCom ? pDoc->m_pVideoNetCom->IsShutdown() : TRUE;
-	BOOL bAudioShutdown = pDoc->m_pAudioNetCom ? pDoc->m_pAudioNetCom->IsShutdown() : TRUE;
-	if (!pDoc->m_RtspThread.IsAlive() && bVideoShutdown && bAudioShutdown)
+	if (!pDoc->m_RtspThread.IsAlive() && bVideoShutdown)
 		return TRUE;
 	else
 		return FALSE;

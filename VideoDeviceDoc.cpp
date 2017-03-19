@@ -1760,7 +1760,6 @@ int CVideoDeviceDoc::CCaptureAudioThread::Loop()
 													}
 												}
 												::LeaveCriticalSection(&m_pDoc->m_csAudioList);
-												::InterlockedExchange(&m_pDoc->m_lLastAudioFramesUpTime, (LONG)::timeGetTime());
 
 												// New Buffer
 												m_pUncompressedBuf[m_uiWaveInBufPos] = (LPBYTE)av_malloc(m_dwUncompressedBufSize);
@@ -2718,7 +2717,7 @@ int CVideoDeviceDoc::CHttpThread::Work()
 		}	
 
 		// Wait for events
-		DWORD Event = ::WaitForMultipleObjects(	6,
+		DWORD Event = ::WaitForMultipleObjects(	5,
 												m_hEventArray,
 												FALSE,
 												dwWaitDelay);
@@ -2794,40 +2793,6 @@ int CVideoDeviceDoc::CHttpThread::Work()
 			{
 				::ResetEvent(m_hEventArray[4]);
 				bCheckConnectionTimeout = FALSE;
-				break;
-			}
-
-			// Http Setup Audio Connection Event
-			case WAIT_OBJECT_0 + 5 :
-			{
-				::ResetEvent(m_hEventArray[5]);
-				::EnterCriticalSection(&m_csAudioConnectRequestParams);
-				DWORD dwConnectDelayMs = m_dwAudioConnectDelayMs;
-				::LeaveCriticalSection(&m_csAudioConnectRequestParams);
-				m_pDoc->m_pAudioNetCom->ShutdownConnection_NoBlocking();
-				if (::WaitForSingleObject(GetKillEvent(), dwConnectDelayMs) == WAIT_OBJECT_0)
-					return 0;
-				m_pDoc->m_pAudioNetCom->Close(); // this also empties the rx & tx fifos
-				if (!Connect(m_pDoc->m_pAudioNetCom,
-							m_pDoc->m_pHttpAudioParseProcess,
-							((CUImagerApp*)::AfxGetApp())->m_bIPv6 ? AF_INET6 : AF_INET))
-				{
-					if (m_pDoc->m_pHttpAudioParseProcess->m_bTryConnecting)
-					{
-						m_pDoc->m_pHttpAudioParseProcess->m_bTryConnecting = FALSE;
-						OnError(FALSE);
-					}
-				}
-				else
-				{
-					::EnterCriticalSection(&m_csAudioConnectRequestParams);
-					CString sRequest = m_sAudioRequest;
-					::LeaveCriticalSection(&m_csAudioConnectRequestParams);
-					if (sRequest == _T(""))
-						m_pDoc->m_pHttpAudioParseProcess->SendRequest();
-					else
-						m_pDoc->m_pHttpAudioParseProcess->SendRawRequest(sRequest);
-				}
 				break;
 			}
 
@@ -2977,7 +2942,19 @@ int CVideoDeviceDoc::CRtspThread::Work()
 			pAudioCodecCtx = pFormatCtx->streams[nAudioStreamIndex]->codec;
 			if (avcodec_open2(pAudioCodecCtx, pAudioCodec, 0) >= 0 && pAudioCodecCtx->channels <= 2)
 				bAudioSupported = TRUE;
+			else
+				::LogLine(_T("%s, %s"), m_pDoc->GetAssignedDeviceName(), ML_STRING(1492, "Audio format/encoding not supported"));
 		}
+
+		// Set codec IDs (-1 means not set)
+		if (pVideoCodec)
+			m_nVideoCodecID = pVideoCodec->id;
+		else
+			m_nVideoCodecID = AV_CODEC_ID_NONE;
+		if (pAudioCodec)
+			m_nAudioCodecID = pAudioCodec->id;
+		else
+			m_nAudioCodecID = AV_CODEC_ID_NONE;
 
 		// Init Video
 		pImgConvertCtx = sws_getContextHelper(	pVideoCodecCtx->width, pVideoCodecCtx->height,
@@ -3114,7 +3091,22 @@ int CVideoDeviceDoc::CRtspThread::Work()
 					if (pAudioPlay && !pAudioPlay->IsInit())
 						pAudioPlay->Init(10000000);
 
-					// Decode
+					/* Decode
+					* For planar audio, each channel has a separate data pointer, and
+					* pAudioFrame->linesize[i] contains the size of each channel buffer.
+					* For packed audio, there is just one data pointer, and
+					* pAudioFrame->linesize[0] contains the total size of the buffer for
+					* all channels.
+					* - pAudioFrame->nb_samples is the number of audio samples (per channel)
+					* - pAudioCodecCtx->channels
+					* - pAudioCodecCtx->sample_rate
+					* - pAudioCodecCtx->sample_fmt
+					* - av_get_bytes_per_sample(pAudioCodecCtx->sample_fmt) returns the
+					*   bytes count per sample and per channel
+					* - Attention:
+					*   pAudioFrame->linesize[0]  >=
+					*   av_get_bytes_per_sample(pAudioCodecCtx->sample_fmt) * pAudioCodecCtx->channels * pAudioFrame->nb_samples
+					*/
 					int got_frame = 0;
 					ret = avcodec_decode_audio4(pAudioCodecCtx, pAudioFrame, &got_frame, &avpkt);
 
@@ -3234,7 +3226,6 @@ int CVideoDeviceDoc::CRtspThread::Work()
 								}
 							}
 							::LeaveCriticalSection(&m_pDoc->m_csAudioList);
-							::InterlockedExchange(&m_pDoc->m_lLastAudioFramesUpTime, (LONG)::timeGetTime());
 						}
 					}
 				}
@@ -3395,15 +3386,6 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 				DWORD dwMsSinceLastProcessFrame = dwCurrentUpTime - (DWORD)m_pDoc->m_lCurrentInitUpTime;
 				m_pDoc->m_bWatchDogVideoAlarm = (dwMsSinceLastProcessFrame > WATCHDOG_THRESHOLD);
 
-				// Audio watchdog
-				if (m_pDoc->m_bCaptureAudio)
-				{
-					DWORD dwMsSinceLastAudioFrames = dwCurrentUpTime - (DWORD)m_pDoc->m_lLastAudioFramesUpTime;
-					m_pDoc->m_bWatchDogAudioAlarm = (dwMsSinceLastAudioFrames > WATCHDOG_THRESHOLD);
-				}
-				else
-					m_pDoc->m_bWatchDogAudioAlarm = FALSE;
-
 				// Save Frame List may be called many times till
 				// CSaveFrameListThread::Work() reacts and starts working:
 				// it's not a problem because CSaveFrameListThread::Work()
@@ -3419,7 +3401,7 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 					m_pDoc->SaveFrameList(FALSE);
 
 				// Watchdog actions
-				if (m_pDoc->m_bWatchDogVideoAlarm || m_pDoc->m_bWatchDogAudioAlarm)
+				if (m_pDoc->m_bWatchDogVideoAlarm)
 				{
 					// Http reconnect
 					if (m_pDoc->m_pVideoNetCom)
@@ -3430,8 +3412,6 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 							LastHttpReconnectTime = CurrentTime;
 							DWORD dwConnectDelayMs = MIN(((CUImagerApp*)::AfxGetApp())->m_dwAutostartDelayMs, 1000 * HTTP_CONNECTION_TIMEOUT / 2);
 							m_pDoc->m_HttpThread.SetEventVideoConnect(_T(""), dwConnectDelayMs);
-							if (m_pDoc->m_bCaptureAudio)
-								m_pDoc->m_HttpThread.SetEventAudioConnect(_T(""), dwConnectDelayMs);
 							if (dwConnectDelayMs == 0)
 								::LogLine(_T("%s try reconnecting"), m_pDoc->GetAssignedDeviceName());
 							else
@@ -3819,15 +3799,11 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nDeviceFormatWidth = 0;
 	m_nDeviceFormatHeight = 0;
 	m_lCurrentInitUpTime = 0;
-	m_lLastAudioFramesUpTime = 0;
 	m_bWatchDogVideoAlarm = FALSE;
-	m_bWatchDogAudioAlarm = FALSE;
 
 	// Networking
 	m_pVideoNetCom = NULL;
-	m_pAudioNetCom = NULL;
 	m_pHttpVideoParseProcess = NULL;
-	m_pHttpAudioParseProcess = NULL;
 	m_sGetFrameVideoHost = _T("");
 	m_nGetFrameVideoPort = DEFAULT_TCP_PORT;
 	m_nNetworkDeviceTypeMode = OTHERONE_SP;
@@ -3941,7 +3917,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_pSrcWaveFormat = (WAVEFORMATEX*)new BYTE[sizeof(WAVEFORMATEX)];
 	WaveInitFormat(DEFAULT_AUDIO_CHANNELS, DEFAULT_AUDIO_SAMPLINGRATE, DEFAULT_AUDIO_BITS, m_pSrcWaveFormat);
 	m_pDstWaveFormat = (WAVEFORMATEX*)new BYTE[sizeof(WAVEFORMATEX)];
-	UpdateDstWaveFormat(); // m_sAVRecFileExt and m_pAudioNetCom must be initialized!
+	UpdateDstWaveFormat(); // m_sAVRecFileExt must be initialized!
 
 	// Property Sheet
 	m_pMovementDetectionPage = NULL;
@@ -4024,11 +4000,6 @@ CVideoDeviceDoc::~CVideoDeviceDoc()
 	{
 		delete m_pHttpVideoParseProcess;
 		m_pHttpVideoParseProcess = NULL;
-	}
-	if (m_pHttpAudioParseProcess)
-	{
-		delete m_pHttpAudioParseProcess;
-		m_pHttpAudioParseProcess = NULL;
 	}
 	FreeMovementDetector();
 	if (m_MovementDetectorCurrentIntensity)
@@ -4262,7 +4233,7 @@ void CVideoDeviceDoc::SetDocumentTitle()
 		CString sWidthHeight;
 		CString sFramerate;
 		CString sCompressedDataRate;
-		CString sPixelFormat;
+		CString sFormat;
 		if (m_DocRect.Width() > 0 && m_DocRect.Height() > 0)
 		{
 			// Width and Height
@@ -4276,23 +4247,42 @@ void CVideoDeviceDoc::SetDocumentTitle()
 			if (m_lCompressedDataRate > 0)
 				sCompressedDataRate.Format(_T("%dkbps"), m_lCompressedDataRate / 128);
 
-			// Pixel Format
-			sPixelFormat = CDib::GetCompressionName((LPBITMAPINFO)&m_CaptureBMI);
-		}
-
-		// Network info
-		CString sNetworkMode;
-		if (!m_pDxCapture)
-		{
-			if (m_pVideoNetCom && m_pHttpVideoParseProcess)
+			// Format
+			if (m_pDxCapture)
+				sFormat = CDib::GetCompressionName((LPBITMAPINFO)&m_CaptureBMI).MakeLower();
+			else if (m_pVideoNetCom)
 			{
-				if (m_pHttpVideoParseProcess->m_FormatType == CHttpParseProcess::FORMATVIDEO_MJPEG)
-					sNetworkMode = ML_STRING(1865, "HTTP motion jpeg");
-				else if (m_pHttpVideoParseProcess->m_FormatType == CHttpParseProcess::FORMATVIDEO_JPEG)
-					sNetworkMode = ML_STRING(1866, "HTTP jpeg snapshots");
+				if (m_pHttpVideoParseProcess)
+				{
+					if (m_pHttpVideoParseProcess->m_FormatType == CHttpParseProcess::FORMATVIDEO_MJPEG)
+						sFormat = ML_STRING(1865, "HTTP motion jpeg") + _T("/") + ML_STRING(1493, "no audio");
+					else if (m_pHttpVideoParseProcess->m_FormatType == CHttpParseProcess::FORMATVIDEO_JPEG)
+						sFormat = ML_STRING(1866, "HTTP jpeg snapshots") + _T("/") + ML_STRING(1493, "no audio");
+				}
 			}
 			else
-				sNetworkMode = _T("RTSP");
+			{
+				if (m_RtspThread.m_nVideoCodecID >= AV_CODEC_ID_NONE)
+				{
+					if (m_RtspThread.m_nVideoCodecID > AV_CODEC_ID_NONE)
+						sFormat += CString(avcodec_get_name((enum AVCodecID)m_RtspThread.m_nVideoCodecID));
+					else
+						sFormat += ML_STRING(1494, "no video");
+				}
+				if (m_RtspThread.m_nAudioCodecID >= AV_CODEC_ID_NONE)
+				{
+					if (!sFormat.IsEmpty())
+						sFormat += _T("/");
+					if (m_RtspThread.m_nAudioCodecID > AV_CODEC_ID_NONE)
+						sFormat += CString(avcodec_get_name((enum AVCodecID)m_RtspThread.m_nAudioCodecID));
+					else
+						sFormat += ML_STRING(1493, "no audio");
+				}
+				if (!sFormat.IsEmpty())
+					sFormat = _T("RTSP ") + sFormat;
+				else
+					sFormat = _T("RTSP");
+			}
 		}
 
 		// Update Property Sheet title
@@ -4306,10 +4296,8 @@ void CVideoDeviceDoc::SetDocumentTitle()
 			sTitle += _T(" , ") + sFramerate;
 		if (!sCompressedDataRate.IsEmpty())
 			sTitle += _T(" , ") + sCompressedDataRate;
-		if (!sPixelFormat.IsEmpty())
-			sTitle += _T(" , ") + sPixelFormat;
-		if (!sNetworkMode.IsEmpty())
-			sTitle += _T(" , ") + sNetworkMode;
+		if (!sFormat.IsEmpty())
+			sTitle += _T(" , ") + sFormat;
 	}
 	CDocument::SetTitle(sTitle);
 }
@@ -5045,7 +5033,6 @@ BOOL CVideoDeviceDoc::OpenDxVideoDevice(int nId)
 	m_dwFrameCountUp = 0U;
 	m_dwNextSnapshotUpTime = ::timeGetTime();
 	::InterlockedExchange(&m_lCurrentInitUpTime, (LONG)m_dwNextSnapshotUpTime);
-	::InterlockedExchange(&m_lLastAudioFramesUpTime, (LONG)m_dwNextSnapshotUpTime);
 
 	// Init and Open Dx Capture
 	if (InitOpenDxCapture(nId))
@@ -5269,9 +5256,7 @@ double CVideoDeviceDoc::GetDefaultNetworkFrameRate(NetworkDeviceTypeMode nNetwor
 BOOL CVideoDeviceDoc::OpenNetVideoDevice(CString sAddress, DWORD dwConnectDelayMs/*=0U*/)
 {
 	ASSERT(!m_pVideoNetCom);
-	ASSERT(!m_pAudioNetCom);
 	ASSERT(!m_pHttpVideoParseProcess);
-	ASSERT(!m_pHttpAudioParseProcess);
 
 	// Init Host, Port, FrameLocation and NetworkDeviceTypeMode
 	int i = sAddress.ReverseFind(_T(':'));
@@ -5332,14 +5317,8 @@ BOOL CVideoDeviceDoc::OpenNetVideoDevice(CString sAddress, DWORD dwConnectDelayM
 		m_pVideoNetCom = new CNetCom;
 		if (!m_pVideoNetCom)
 			return FALSE;
-		m_pAudioNetCom = new CNetCom;
-		if (!m_pAudioNetCom)
-			return FALSE;
 		m_pHttpVideoParseProcess = new CHttpParseProcess(this);
 		if (!m_pHttpVideoParseProcess)
-			return FALSE;
-		m_pHttpAudioParseProcess = new CHttpParseProcess(this);
-		if (!m_pHttpAudioParseProcess)
 			return FALSE;
 	}
 
@@ -5354,7 +5333,6 @@ BOOL CVideoDeviceDoc::OpenNetVideoDevice(CString sAddress, DWORD dwConnectDelayM
 	m_dwFrameCountUp = 0U;
 	m_dwNextSnapshotUpTime = ::timeGetTime();
 	::InterlockedExchange(&m_lCurrentInitUpTime, (LONG)m_dwNextSnapshotUpTime);
-	::InterlockedExchange(&m_lLastAudioFramesUpTime, (LONG)m_dwNextSnapshotUpTime);
 
 	// Connect
 	if (m_nNetworkDeviceTypeMode < CVideoDeviceDoc::URL_RTSP)
@@ -5382,9 +5360,7 @@ BOOL CVideoDeviceDoc::OpenNetVideoDevice(CString sAddress, DWORD dwConnectDelayM
 BOOL CVideoDeviceDoc::OpenNetVideoDevice(CHostPortDlg* pDlg)
 {
 	ASSERT(!m_pVideoNetCom);
-	ASSERT(!m_pAudioNetCom);
 	ASSERT(!m_pHttpVideoParseProcess);
-	ASSERT(!m_pHttpAudioParseProcess);
 	ASSERT(pDlg);
 	CHostPortDlg::ParseUrl(	pDlg->m_sHost, pDlg->m_nPort, pDlg->m_nDeviceTypeMode,
 							m_sGetFrameVideoHost, (int&)m_nGetFrameVideoPort,
@@ -5399,14 +5375,8 @@ BOOL CVideoDeviceDoc::OpenNetVideoDevice(CHostPortDlg* pDlg)
 		m_pVideoNetCom = new CNetCom;
 		if (!m_pVideoNetCom)
 			return FALSE;
-		m_pAudioNetCom = new CNetCom;
-		if (!m_pAudioNetCom)
-			return FALSE;
 		m_pHttpVideoParseProcess = new CHttpParseProcess(this);
 		if (!m_pHttpVideoParseProcess)
-			return FALSE;
-		m_pHttpAudioParseProcess = new CHttpParseProcess(this);
-		if (!m_pHttpAudioParseProcess)
 			return FALSE;
 	}
 
@@ -5421,7 +5391,6 @@ BOOL CVideoDeviceDoc::OpenNetVideoDevice(CHostPortDlg* pDlg)
 	m_dwFrameCountUp = 0U;
 	m_dwNextSnapshotUpTime = ::timeGetTime();
 	::InterlockedExchange(&m_lCurrentInitUpTime, (LONG)m_dwNextSnapshotUpTime);
-	::InterlockedExchange(&m_lLastAudioFramesUpTime, (LONG)m_dwNextSnapshotUpTime);
 
 	// Connect
 	if (m_nNetworkDeviceTypeMode < CVideoDeviceDoc::URL_RTSP)
@@ -5611,24 +5580,11 @@ void CVideoDeviceDoc::UpdateDstWaveFormat()
 	if (m_pDstWaveFormat)
 	{
 		// Init
+		WaveInitFormat(DEFAULT_AUDIO_CHANNELS, DEFAULT_AUDIO_SAMPLINGRATE, DEFAULT_AUDIO_BITS, m_pDstWaveFormat);
 		if (m_sAVRecFileExt == _T(".mp4"))
-		{
-			WaveInitFormat(DEFAULT_AUDIO_CHANNELS, DEFAULT_AUDIO_SAMPLINGRATE, DEFAULT_AUDIO_BITS, m_pDstWaveFormat);
 			m_pDstWaveFormat->wFormatTag = DEFAULT_MP4_AUDIO_FORMAT_TAG;
-		}
 		else
-		{
-			if (m_pAudioNetCom)
-			{
-				WaveInitFormat(DEFAULT_NETCOM_AUDIO_CHANNELS, DEFAULT_NETCOM_AUDIO_SAMPLINGRATE, DEFAULT_NETCOM_AUDIO_BITS, m_pDstWaveFormat);
-				m_pDstWaveFormat->wFormatTag = DEFAULT_NETCOM_AUDIO_FORMAT_TAG;
-			}
-			else
-			{
-				WaveInitFormat(DEFAULT_AUDIO_CHANNELS, DEFAULT_AUDIO_SAMPLINGRATE, DEFAULT_AUDIO_BITS, m_pDstWaveFormat);
-				m_pDstWaveFormat->wFormatTag = DEFAULT_AUDIO_FORMAT_TAG;
-			}
-		}
+			m_pDstWaveFormat->wFormatTag = DEFAULT_AUDIO_FORMAT_TAG;
 
 		// Update according to format tag
 		if (m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_DVI_ADPCM)
@@ -9075,9 +9031,7 @@ rates (value range 0-23):
 BOOL CVideoDeviceDoc::ConnectHttp(DWORD dwConnectDelayMs/*=0U*/)
 {
 	ASSERT(m_pVideoNetCom);
-	ASSERT(m_pAudioNetCom);
 	ASSERT(m_pHttpVideoParseProcess);
-	ASSERT(m_pHttpAudioParseProcess);
 
 	// Check
 	if (m_sGetFrameVideoHost == _T(""))
@@ -9182,23 +9136,11 @@ BOOL CVideoDeviceDoc::ConnectHttp(DWORD dwConnectDelayMs/*=0U*/)
 			return FALSE;
 	}
 
-	// Init Audio
-	m_pHttpAudioParseProcess->m_bTryConnecting = TRUE;
-	m_pHttpAudioParseProcess->m_FormatType = CHttpParseProcess::FORMATAUDIO_UNKNOWN;
-	WaveInitFormat(DEFAULT_NETCOM_AUDIO_CHANNELS, DEFAULT_NETCOM_AUDIO_SAMPLINGRATE, DEFAULT_NETCOM_AUDIO_BITS, m_pSrcWaveFormat); // all supported http network formats decode to Mono, 8000Hz, 16bit
-
-	// Start thread
+	// Start Http Thread
 	m_HttpThread.Start();
 
 	// Connect video
-	BOOL bVideoOK = m_HttpThread.SetEventVideoConnect(_T(""), dwConnectDelayMs);
-
-	// Start Audio Capture
-	BOOL bAudioOK = TRUE;
-	if (m_bCaptureAudio)
-		bAudioOK = m_HttpThread.SetEventAudioConnect(_T(""), dwConnectDelayMs);
-
-	return bVideoOK && bAudioOK;
+	return m_HttpThread.SetEventVideoConnect(_T(""), dwConnectDelayMs);
 }
 
 BOOL CVideoDeviceDoc::ConnectRtsp(DWORD dwConnectDelayMs/*=0U*/)
@@ -9457,547 +9399,512 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 	CString sLocation;
 	CString sRequest;
 
-	// Video
-	if (m_FormatType < FORMATAUDIO_UNKNOWN)			
+	::EnterCriticalSection(&m_pDoc->m_csHttpParams);
+	switch (m_pDoc->m_nNetworkDeviceTypeMode)
 	{
-		::EnterCriticalSection(&m_pDoc->m_csHttpParams);
-		switch (m_pDoc->m_nNetworkDeviceTypeMode)
+		case OTHERONE_SP :	// Other HTTP motion jpeg devices
+		case OTHERONE_CP :	// Other HTTP jpeg snapshots devices
 		{
-			case OTHERONE_SP :	// Other HTTP motion jpeg devices
-			case OTHERONE_CP :	// Other HTTP jpeg snapshots devices
+			if (m_pDoc->m_nHttpGetFrameLocationPos < m_pDoc->m_HttpGetFrameLocations.GetSize())
+				sLocation = m_pDoc->m_HttpGetFrameLocations[m_pDoc->m_nHttpGetFrameLocationPos];
+			else
+				sLocation = m_pDoc->m_HttpGetFrameLocations[0];
+			sRequest.Format(_T("GET %s HTTP/%s\r\n"),
+							sLocation,
+							m_bOldVersion ? _T("1.0") : _T("1.1"));
+			break;
+		}
+		case AXIS_SP :		// Axis HTTP motion jpeg
+		{
+			if (m_bQueryVideoProperties)
 			{
-				if (m_pDoc->m_nHttpGetFrameLocationPos < m_pDoc->m_HttpGetFrameLocations.GetSize())
-					sLocation = m_pDoc->m_HttpGetFrameLocations[m_pDoc->m_nHttpGetFrameLocationPos];
-				else
-					sLocation = m_pDoc->m_HttpGetFrameLocations[0];
+				sLocation = _T("/axis-cgi/view/param.cgi?action=list&group=Properties.Image");
 				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
 								sLocation,
 								m_bOldVersion ? _T("1.0") : _T("1.1"));
-				break;
 			}
-			case AXIS_SP :		// Axis HTTP motion jpeg
+			else
 			{
-				if (m_bQueryVideoProperties)
+				int nFrameRate = Round(m_pDoc->m_dFrameRate);
+				if (nFrameRate <= 0)
+					nFrameRate = 1;
+				sLocation = _T("/axis-cgi/mjpg/video.cgi");
+				if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
 				{
-					sLocation = _T("/axis-cgi/view/param.cgi?action=list&group=Properties.Image");
-					sRequest.Format(_T("GET %s HTTP/%s\r\n"),
-									sLocation,
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
+					sRequest.Format(_T("GET %s?clock=0&date=0&resolution=%dx%d&compression=%d&fps=%d HTTP/%s\r\n"),
+							sLocation,
+							m_pDoc->m_nHttpVideoSizeX,
+							m_pDoc->m_nHttpVideoSizeY,
+							m_pDoc->m_nHttpVideoQuality,
+							nFrameRate,
+							m_bOldVersion ? _T("1.0") : _T("1.1"));
+				}
+				else if (m_Sizes.GetSize() > 0)
+				{
+					sRequest.Format(_T("GET %s?clock=0&date=0&resolution=%dx%d&compression=%d&fps=%d HTTP/%s\r\n"),
+							sLocation,
+							m_Sizes[0].cx,
+							m_Sizes[0].cy,
+							m_pDoc->m_nHttpVideoQuality,
+							nFrameRate,
+							m_bOldVersion ? _T("1.0") : _T("1.1"));
+					m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
+					m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
 				}
 				else
 				{
-					int nFrameRate = Round(m_pDoc->m_dFrameRate);
-					if (nFrameRate <= 0)
-						nFrameRate = 1;
-					sLocation = _T("/axis-cgi/mjpg/video.cgi");
-					if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
-					{
-						sRequest.Format(_T("GET %s?clock=0&date=0&resolution=%dx%d&compression=%d&fps=%d HTTP/%s\r\n"),
+					sRequest.Format(_T("GET %s?clock=0&date=0&compression=%d&fps=%d HTTP/%s\r\n"),
+							sLocation,
+							m_pDoc->m_nHttpVideoQuality,
+							nFrameRate,
+							m_bOldVersion ? _T("1.0") : _T("1.1"));
+				}
+			}
+			break;
+		}
+		case AXIS_CP :		// Axis HTTP jpeg snapshots
+		{
+			if (m_bQueryVideoProperties)
+			{
+				sLocation = _T("/axis-cgi/view/param.cgi?action=list&group=Properties.Image");
+				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
+								sLocation,
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+			}
+			else
+			{
+				sLocation = _T("/axis-cgi/jpg/image.cgi");
+				if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
+				{
+					sRequest.Format(_T("GET %s?clock=0&date=0&resolution=%dx%d&compression=%d HTTP/%s\r\n"),
+									sLocation,
+									m_pDoc->m_nHttpVideoSizeX,
+									m_pDoc->m_nHttpVideoSizeY,
+									m_pDoc->m_nHttpVideoQuality,
+									m_bOldVersion ? _T("1.0") : _T("1.1"));		
+				}
+				else if (m_Sizes.GetSize() > 0)
+				{
+					sRequest.Format(_T("GET %s?clock=0&date=0&resolution=%dx%d&compression=%d HTTP/%s\r\n"),
+									sLocation,
+									m_Sizes[0].cx,
+									m_Sizes[0].cy,
+									m_pDoc->m_nHttpVideoQuality,
+									m_bOldVersion ? _T("1.0") : _T("1.1"));
+					m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
+					m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
+				}
+				else
+				{
+					sRequest.Format(_T("GET %s?clock=0&date=0&compression=%d HTTP/%s\r\n"),
+									sLocation,
+									m_pDoc->m_nHttpVideoQuality,
+									m_bOldVersion ? _T("1.0") : _T("1.1"));
+				}
+			}
+			break;
+		}
+		case PANASONIC_SP :	// Panasonic HTTP motion jpeg
+		{
+			sLocation = _T("/nphMotionJpeg");
+			if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
+			{
+				sRequest.Format(_T("GET %s?Resolution=%dx%d&Quality=%s HTTP/%s\r\n"),
 								sLocation,
 								m_pDoc->m_nHttpVideoSizeX,
 								m_pDoc->m_nHttpVideoSizeY,
-								m_pDoc->m_nHttpVideoQuality,
-								nFrameRate,
+								m_pDoc->m_nHttpVideoQuality == 0 ?
+								_T("Clarity") :
+								(m_pDoc->m_nHttpVideoQuality == 100 ?
+								_T("Motion") :
+								_T("Standard")),
 								m_bOldVersion ? _T("1.0") : _T("1.1"));
-					}
-					else if (m_Sizes.GetSize() > 0)
-					{
-						sRequest.Format(_T("GET %s?clock=0&date=0&resolution=%dx%d&compression=%d&fps=%d HTTP/%s\r\n"),
+			}
+			else if (m_Sizes.GetSize() > 0)
+			{
+				sRequest.Format(_T("GET %s?Resolution=%dx%d&Quality=%s HTTP/%s\r\n"),
 								sLocation,
 								m_Sizes[0].cx,
 								m_Sizes[0].cy,
-								m_pDoc->m_nHttpVideoQuality,
-								nFrameRate,
+								m_pDoc->m_nHttpVideoQuality == 0 ?
+								_T("Clarity") :
+								(m_pDoc->m_nHttpVideoQuality == 100 ?
+								_T("Motion") :
+								_T("Standard")),
 								m_bOldVersion ? _T("1.0") : _T("1.1"));
-						m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
-						m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
-					}
-					else
-					{
-						sRequest.Format(_T("GET %s?clock=0&date=0&compression=%d&fps=%d HTTP/%s\r\n"),
+				m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
+				m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
+			}
+			else
+			{
+				sRequest.Format(_T("GET %s?Quality=%s HTTP/%s\r\n"),
 								sLocation,
-								m_pDoc->m_nHttpVideoQuality,
-								nFrameRate,
+								m_pDoc->m_nHttpVideoQuality == 0 ?
+								_T("Clarity") :
+								(m_pDoc->m_nHttpVideoQuality == 100 ?
+								_T("Motion") :
+								_T("Standard")),
 								m_bOldVersion ? _T("1.0") : _T("1.1"));
-					}
-				}
-				break;
 			}
-			case AXIS_CP :		// Axis HTTP jpeg snapshots
+			break;
+		}
+		case PANASONIC_CP :	// Panasonic HTTP jpeg snapshots
+		{
+			sLocation = _T("/SnapshotJPEG");
+			if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
 			{
-				if (m_bQueryVideoProperties)
-				{
-					sLocation = _T("/axis-cgi/view/param.cgi?action=list&group=Properties.Image");
-					sRequest.Format(_T("GET %s HTTP/%s\r\n"),
-									sLocation,
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
-				}
-				else
-				{
-					sLocation = _T("/axis-cgi/jpg/image.cgi");
-					if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
-					{
-						sRequest.Format(_T("GET %s?clock=0&date=0&resolution=%dx%d&compression=%d HTTP/%s\r\n"),
-										sLocation,
-										m_pDoc->m_nHttpVideoSizeX,
-										m_pDoc->m_nHttpVideoSizeY,
-										m_pDoc->m_nHttpVideoQuality,
-										m_bOldVersion ? _T("1.0") : _T("1.1"));		
-					}
-					else if (m_Sizes.GetSize() > 0)
-					{
-						sRequest.Format(_T("GET %s?clock=0&date=0&resolution=%dx%d&compression=%d HTTP/%s\r\n"),
-										sLocation,
-										m_Sizes[0].cx,
-										m_Sizes[0].cy,
-										m_pDoc->m_nHttpVideoQuality,
-										m_bOldVersion ? _T("1.0") : _T("1.1"));
-						m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
-						m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
-					}
-					else
-					{
-						sRequest.Format(_T("GET %s?clock=0&date=0&compression=%d HTTP/%s\r\n"),
-										sLocation,
-										m_pDoc->m_nHttpVideoQuality,
-										m_bOldVersion ? _T("1.0") : _T("1.1"));
-					}
-				}
-				break;
+				sRequest.Format(_T("GET %s?Resolution=%dx%d&Quality=%s HTTP/%s\r\n"),
+								sLocation,
+								m_pDoc->m_nHttpVideoSizeX,
+								m_pDoc->m_nHttpVideoSizeY,
+								m_pDoc->m_nHttpVideoQuality == 0 ?
+								_T("Clarity") :
+								(m_pDoc->m_nHttpVideoQuality == 100 ?
+								_T("Motion") :
+								_T("Standard")),
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
 			}
-			case PANASONIC_SP :	// Panasonic HTTP motion jpeg
+			else if (m_Sizes.GetSize() > 0)
 			{
-				sLocation = _T("/nphMotionJpeg");
+				sRequest.Format(_T("GET %s?Resolution=%dx%d&Quality=%s HTTP/%s\r\n"),
+								sLocation,
+								m_Sizes[0].cx,
+								m_Sizes[0].cy,
+								m_pDoc->m_nHttpVideoQuality == 0 ?
+								_T("Clarity") :
+								(m_pDoc->m_nHttpVideoQuality == 100 ?
+								_T("Motion") :
+								_T("Standard")),
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+				m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
+				m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
+			}
+			else
+			{
+				sRequest.Format(_T("GET %s?Quality=%s HTTP/%s\r\n"),
+								sLocation,
+								m_pDoc->m_nHttpVideoQuality == 0 ?
+								_T("Clarity") :
+								(m_pDoc->m_nHttpVideoQuality == 100 ?
+								_T("Motion") :
+								_T("Standard")),
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+			}
+			break;
+		}
+		case PIXORD_SP :	// Pixord HTTP motion jpeg
+		{
+			sLocation = _T("/getimage");
+			if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
+			{
+				sRequest.Format(_T("GET %s?camera=1&fmt=%s&delay=%d HTTP/%s\r\n"),
+								sLocation,
+								m_pDoc->m_nHttpVideoSizeX == 176 ?
+								_T("qsif") :
+								(m_pDoc->m_nHttpVideoSizeX == 352 ?
+								_T("sif") :
+								_T("full")),
+								Round(100.0 / m_pDoc->m_dFrameRate),
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+			}
+			else if (m_Sizes.GetSize() > 0)
+			{
+				sRequest.Format(_T("GET %s?camera=1&fmt=%s&delay=%d HTTP/%s\r\n"),
+								sLocation,
+								m_Sizes[0].cx == 176 ?
+								_T("qsif") :
+								(m_Sizes[0].cx == 352 ?
+								_T("sif") :
+								_T("full")),
+								Round(100.0 / m_pDoc->m_dFrameRate),
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+				m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
+				m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
+			}
+			else
+			{
+				sRequest.Format(_T("GET %s?camera=1&delay=%d HTTP/%s\r\n"),
+								sLocation,
+								Round(100.0 / m_pDoc->m_dFrameRate),
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+			}
+			break;
+		}
+		case PIXORD_CP :	// Pixord HTTP jpeg snapshots
+		{
+			sLocation = _T("/images1");
+			if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
+			{
+				sRequest.Format(_T("GET %s%s HTTP/%s\r\n"),
+								sLocation,
+								m_pDoc->m_nHttpVideoSizeX == 176 ?
+								_T("qsif") :
+								(m_pDoc->m_nHttpVideoSizeX == 352 ?
+								_T("sif") :
+								_T("full")),
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+			}
+			else if (m_Sizes.GetSize() > 0)
+			{
+				sRequest.Format(_T("GET %s%s HTTP/%s\r\n"),
+								sLocation,
+								m_Sizes[0].cx == 176 ?
+								_T("qsif") :
+								(m_Sizes[0].cx == 352 ?
+								_T("sif") :
+								_T("full")),
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+				m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
+				m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
+			}
+			else
+			{
+				sRequest.Format(_T("GET %s%s HTTP/%s\r\n"),
+								sLocation,
+								_T("sif"),
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+			}
+			break;
+		}
+		case EDIMAX_SP :	// Edimax HTTP motion jpeg
+		{
+			if (m_bQueryVideoProperties)
+			{
+				sLocation = _T("/camera-cgi/admin/param.cgi?action=list&group=Properties.Image.I0");
+				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
+								sLocation,
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+			}
+			else if (m_bSetVideoResolution)
+			{
+				sLocation = _T("/camera-cgi/admin/param.cgi");
 				if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
 				{
-					sRequest.Format(_T("GET %s?Resolution=%dx%d&Quality=%s HTTP/%s\r\n"),
+					sRequest.Format(_T("GET %s?action=update&Image.I0.Appearance.Resolution=%dx%d HTTP/%s\r\n"),
 									sLocation,
 									m_pDoc->m_nHttpVideoSizeX,
 									m_pDoc->m_nHttpVideoSizeY,
-									m_pDoc->m_nHttpVideoQuality == 0 ?
-									_T("Clarity") :
-									(m_pDoc->m_nHttpVideoQuality == 100 ?
-									_T("Motion") :
-									_T("Standard")),
 									m_bOldVersion ? _T("1.0") : _T("1.1"));
 				}
 				else if (m_Sizes.GetSize() > 0)
 				{
-					sRequest.Format(_T("GET %s?Resolution=%dx%d&Quality=%s HTTP/%s\r\n"),
+					sRequest.Format(_T("GET %s?action=update&Image.I0.Appearance.Resolution=%dx%d HTTP/%s\r\n"),
 									sLocation,
 									m_Sizes[0].cx,
 									m_Sizes[0].cy,
-									m_pDoc->m_nHttpVideoQuality == 0 ?
-									_T("Clarity") :
-									(m_pDoc->m_nHttpVideoQuality == 100 ?
-									_T("Motion") :
-									_T("Standard")),
 									m_bOldVersion ? _T("1.0") : _T("1.1"));
 					m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
 					m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
 				}
 				else
 				{
-					sRequest.Format(_T("GET %s?Quality=%s HTTP/%s\r\n"),
+					sRequest.Format(_T("GET %s?action=update&Image.I0.Appearance.Resolution=%dx%d HTTP/%s\r\n"),
 									sLocation,
-									m_pDoc->m_nHttpVideoQuality == 0 ?
-									_T("Clarity") :
-									(m_pDoc->m_nHttpVideoQuality == 100 ?
-									_T("Motion") :
-									_T("Standard")),
+									HTTP_DEFAULT_VIDEO_SIZE_CX,
+									HTTP_DEFAULT_VIDEO_SIZE_CY,
 									m_bOldVersion ? _T("1.0") : _T("1.1"));
+					m_pDoc->m_nHttpVideoSizeX = HTTP_DEFAULT_VIDEO_SIZE_CX;
+					m_pDoc->m_nHttpVideoSizeY = HTTP_DEFAULT_VIDEO_SIZE_CY;
 				}
-				break;
 			}
-			case PANASONIC_CP :	// Panasonic HTTP jpeg snapshots
+			else if (m_bSetVideoCompression)
 			{
-				sLocation = _T("/SnapshotJPEG");
-				if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
-				{
-					sRequest.Format(_T("GET %s?Resolution=%dx%d&Quality=%s HTTP/%s\r\n"),
-									sLocation,
-									m_pDoc->m_nHttpVideoSizeX,
-									m_pDoc->m_nHttpVideoSizeY,
-									m_pDoc->m_nHttpVideoQuality == 0 ?
-									_T("Clarity") :
-									(m_pDoc->m_nHttpVideoQuality == 100 ?
-									_T("Motion") :
-									_T("Standard")),
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
-				}
-				else if (m_Sizes.GetSize() > 0)
-				{
-					sRequest.Format(_T("GET %s?Resolution=%dx%d&Quality=%s HTTP/%s\r\n"),
-									sLocation,
-									m_Sizes[0].cx,
-									m_Sizes[0].cy,
-									m_pDoc->m_nHttpVideoQuality == 0 ?
-									_T("Clarity") :
-									(m_pDoc->m_nHttpVideoQuality == 100 ?
-									_T("Motion") :
-									_T("Standard")),
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
-					m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
-					m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
-				}
-				else
-				{
-					sRequest.Format(_T("GET %s?Quality=%s HTTP/%s\r\n"),
-									sLocation,
-									m_pDoc->m_nHttpVideoQuality == 0 ?
-									_T("Clarity") :
-									(m_pDoc->m_nHttpVideoQuality == 100 ?
-									_T("Motion") :
-									_T("Standard")),
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
-				}
-				break;
-			}
-			case PIXORD_SP :	// Pixord HTTP motion jpeg
-			{
-				sLocation = _T("/getimage");
-				if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
-				{
-					sRequest.Format(_T("GET %s?camera=1&fmt=%s&delay=%d HTTP/%s\r\n"),
-									sLocation,
-									m_pDoc->m_nHttpVideoSizeX == 176 ?
-									_T("qsif") :
-									(m_pDoc->m_nHttpVideoSizeX == 352 ?
-									_T("sif") :
-									_T("full")),
-									Round(100.0 / m_pDoc->m_dFrameRate),
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
-				}
-				else if (m_Sizes.GetSize() > 0)
-				{
-					sRequest.Format(_T("GET %s?camera=1&fmt=%s&delay=%d HTTP/%s\r\n"),
-									sLocation,
-									m_Sizes[0].cx == 176 ?
-									_T("qsif") :
-									(m_Sizes[0].cx == 352 ?
-									_T("sif") :
-									_T("full")),
-									Round(100.0 / m_pDoc->m_dFrameRate),
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
-					m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
-					m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
-				}
-				else
-				{
-					sRequest.Format(_T("GET %s?camera=1&delay=%d HTTP/%s\r\n"),
-									sLocation,
-									Round(100.0 / m_pDoc->m_dFrameRate),
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
-				}
-				break;
-			}
-			case PIXORD_CP :	// Pixord HTTP jpeg snapshots
-			{
-				sLocation = _T("/images1");
-				if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
-				{
-					sRequest.Format(_T("GET %s%s HTTP/%s\r\n"),
-									sLocation,
-									m_pDoc->m_nHttpVideoSizeX == 176 ?
-									_T("qsif") :
-									(m_pDoc->m_nHttpVideoSizeX == 352 ?
-									_T("sif") :
-									_T("full")),
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
-				}
-				else if (m_Sizes.GetSize() > 0)
-				{
-					sRequest.Format(_T("GET %s%s HTTP/%s\r\n"),
-									sLocation,
-									m_Sizes[0].cx == 176 ?
-									_T("qsif") :
-									(m_Sizes[0].cx == 352 ?
-									_T("sif") :
-									_T("full")),
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
-					m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
-					m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
-				}
-				else
-				{
-					sRequest.Format(_T("GET %s%s HTTP/%s\r\n"),
-									sLocation,
-									_T("sif"),
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
-				}
-				break;
-			}
-			case EDIMAX_SP :	// Edimax HTTP motion jpeg
-			{
-				if (m_bQueryVideoProperties)
-				{
-					sLocation = _T("/camera-cgi/admin/param.cgi?action=list&group=Properties.Image.I0");
-					sRequest.Format(_T("GET %s HTTP/%s\r\n"),
-									sLocation,
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
-				}
-				else if (m_bSetVideoResolution)
-				{
-					sLocation = _T("/camera-cgi/admin/param.cgi");
-					if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
-					{
-						sRequest.Format(_T("GET %s?action=update&Image.I0.Appearance.Resolution=%dx%d HTTP/%s\r\n"),
-										sLocation,
-										m_pDoc->m_nHttpVideoSizeX,
-										m_pDoc->m_nHttpVideoSizeY,
-										m_bOldVersion ? _T("1.0") : _T("1.1"));
-					}
-					else if (m_Sizes.GetSize() > 0)
-					{
-						sRequest.Format(_T("GET %s?action=update&Image.I0.Appearance.Resolution=%dx%d HTTP/%s\r\n"),
-										sLocation,
-										m_Sizes[0].cx,
-										m_Sizes[0].cy,
-										m_bOldVersion ? _T("1.0") : _T("1.1"));
-						m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
-						m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
-					}
-					else
-					{
-						sRequest.Format(_T("GET %s?action=update&Image.I0.Appearance.Resolution=%dx%d HTTP/%s\r\n"),
-										sLocation,
-										HTTP_DEFAULT_VIDEO_SIZE_CX,
-										HTTP_DEFAULT_VIDEO_SIZE_CY,
-										m_bOldVersion ? _T("1.0") : _T("1.1"));
-						m_pDoc->m_nHttpVideoSizeX = HTTP_DEFAULT_VIDEO_SIZE_CX;
-						m_pDoc->m_nHttpVideoSizeY = HTTP_DEFAULT_VIDEO_SIZE_CY;
-					}
-				}
-				else if (m_bSetVideoCompression)
-				{
-					sLocation = _T("/camera-cgi/admin/param.cgi");
-					sRequest.Format(_T("GET %s?action=update&Image.I0.Appearance.Compression=%d HTTP/%s\r\n"),
-									sLocation,
-									(100 - m_pDoc->m_nHttpVideoQuality) / 25, // value range is 0-4
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
-				}
-				else if (m_bSetVideoFramerate)
-				{
-					int nFrameRate = Round(m_pDoc->m_dFrameRate);
-					if (nFrameRate <= 0)
-						nFrameRate = 1;
-					sLocation = _T("/camera-cgi/admin/param.cgi");
-					sRequest.Format(_T("GET %s?action=update&Image.I0.Stream.FPS=%d HTTP/%s\r\n"),
-									sLocation,
-									nFrameRate, // (1, 3, 5, 10, 15, 30)
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
-				}
-				else
-				{
-					sLocation = _T("/mjpg/video.mjpg");
-					sRequest.Format(_T("GET %s HTTP/%s\r\n"),
+				sLocation = _T("/camera-cgi/admin/param.cgi");
+				sRequest.Format(_T("GET %s?action=update&Image.I0.Appearance.Compression=%d HTTP/%s\r\n"),
 								sLocation,
+								(100 - m_pDoc->m_nHttpVideoQuality) / 25, // value range is 0-4
 								m_bOldVersion ? _T("1.0") : _T("1.1"));
-				}
-				break;
 			}
-			case EDIMAX_CP :	// Edimax HTTP jpeg snapshots
+			else if (m_bSetVideoFramerate)
 			{
-				if (m_bQueryVideoProperties)
-				{
-					sLocation = _T("/camera-cgi/admin/param.cgi?action=list&group=Properties.Image.I0");
-					sRequest.Format(_T("GET %s HTTP/%s\r\n"),
-									sLocation,
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
-				}
-				else if (m_bSetVideoResolution)
-				{
-					sLocation = _T("/camera-cgi/admin/param.cgi");
-					if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
-					{
-						sRequest.Format(_T("GET %s?action=update&Image.I0.Appearance.Resolution=%dx%d HTTP/%s\r\n"),
-										sLocation,
-										m_pDoc->m_nHttpVideoSizeX,
-										m_pDoc->m_nHttpVideoSizeY,
-										m_bOldVersion ? _T("1.0") : _T("1.1"));
-					}
-					else if (m_Sizes.GetSize() > 0)
-					{
-						sRequest.Format(_T("GET %s?action=update&Image.I0.Appearance.Resolution=%dx%d HTTP/%s\r\n"),
-										sLocation,
-										m_Sizes[0].cx,
-										m_Sizes[0].cy,
-										m_bOldVersion ? _T("1.0") : _T("1.1"));
-						m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
-						m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
-					}
-					else
-					{
-						sRequest.Format(_T("GET %s?action=update&Image.I0.Appearance.Resolution=%dx%d HTTP/%s\r\n"),
-										sLocation,
-										HTTP_DEFAULT_VIDEO_SIZE_CX,
-										HTTP_DEFAULT_VIDEO_SIZE_CY,
-										m_bOldVersion ? _T("1.0") : _T("1.1"));
-						m_pDoc->m_nHttpVideoSizeX = HTTP_DEFAULT_VIDEO_SIZE_CX;
-						m_pDoc->m_nHttpVideoSizeY = HTTP_DEFAULT_VIDEO_SIZE_CY;
-					}
-				}
-				else if (m_bSetVideoCompression)
-				{
-					sLocation = _T("/camera-cgi/admin/param.cgi");
-					sRequest.Format(_T("GET %s?action=update&Image.I0.Appearance.Compression=%d HTTP/%s\r\n"),
-									sLocation,
-									(100 - m_pDoc->m_nHttpVideoQuality) / 25, // value range is 0-4
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
-				}
-				else
-				{
-					sLocation = _T("/jpg/image.jpg");
-					sRequest.Format(_T("GET %s HTTP/%s\r\n"),
+				int nFrameRate = Round(m_pDoc->m_dFrameRate);
+				if (nFrameRate <= 0)
+					nFrameRate = 1;
+				sLocation = _T("/camera-cgi/admin/param.cgi");
+				sRequest.Format(_T("GET %s?action=update&Image.I0.Stream.FPS=%d HTTP/%s\r\n"),
 								sLocation,
+								nFrameRate, // (1, 3, 5, 10, 15, 30)
 								m_bOldVersion ? _T("1.0") : _T("1.1"));
-				}
-				break;
 			}
-			case TPLINK_SP :	// TP-Link HTTP motion jpeg
+			else
 			{
-				sLocation = _T("/video.mjpg");
+				sLocation = _T("/mjpg/video.mjpg");
 				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
 							sLocation,
 							m_bOldVersion ? _T("1.0") : _T("1.1"));
-				break;
 			}
-			case TPLINK_CP :	// TP-Link HTTP jpeg snapshots
+			break;
+		}
+		case EDIMAX_CP :	// Edimax HTTP jpeg snapshots
+		{
+			if (m_bQueryVideoProperties)
+			{
+				sLocation = _T("/camera-cgi/admin/param.cgi?action=list&group=Properties.Image.I0");
+				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
+								sLocation,
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+			}
+			else if (m_bSetVideoResolution)
+			{
+				sLocation = _T("/camera-cgi/admin/param.cgi");
+				if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
+				{
+					sRequest.Format(_T("GET %s?action=update&Image.I0.Appearance.Resolution=%dx%d HTTP/%s\r\n"),
+									sLocation,
+									m_pDoc->m_nHttpVideoSizeX,
+									m_pDoc->m_nHttpVideoSizeY,
+									m_bOldVersion ? _T("1.0") : _T("1.1"));
+				}
+				else if (m_Sizes.GetSize() > 0)
+				{
+					sRequest.Format(_T("GET %s?action=update&Image.I0.Appearance.Resolution=%dx%d HTTP/%s\r\n"),
+									sLocation,
+									m_Sizes[0].cx,
+									m_Sizes[0].cy,
+									m_bOldVersion ? _T("1.0") : _T("1.1"));
+					m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
+					m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
+				}
+				else
+				{
+					sRequest.Format(_T("GET %s?action=update&Image.I0.Appearance.Resolution=%dx%d HTTP/%s\r\n"),
+									sLocation,
+									HTTP_DEFAULT_VIDEO_SIZE_CX,
+									HTTP_DEFAULT_VIDEO_SIZE_CY,
+									m_bOldVersion ? _T("1.0") : _T("1.1"));
+					m_pDoc->m_nHttpVideoSizeX = HTTP_DEFAULT_VIDEO_SIZE_CX;
+					m_pDoc->m_nHttpVideoSizeY = HTTP_DEFAULT_VIDEO_SIZE_CY;
+				}
+			}
+			else if (m_bSetVideoCompression)
+			{
+				sLocation = _T("/camera-cgi/admin/param.cgi");
+				sRequest.Format(_T("GET %s?action=update&Image.I0.Appearance.Compression=%d HTTP/%s\r\n"),
+								sLocation,
+								(100 - m_pDoc->m_nHttpVideoQuality) / 25, // value range is 0-4
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+			}
+			else
 			{
 				sLocation = _T("/jpg/image.jpg");
 				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
 							sLocation,
 							m_bOldVersion ? _T("1.0") : _T("1.1"));
-				break;
 			}
-			case FOSCAM_SP :	// Foscam HTTP motion jpeg
-			{
-				int nRate;
-				if (m_pDoc->m_dFrameRate > 20.0)
-					nRate = 0;	// full speed
-				else if (m_pDoc->m_dFrameRate > 15.0)
-					nRate = 1;	// 20 fps
-				else if (m_pDoc->m_dFrameRate > 10.0)
-					nRate = 3;	// 15 fps
-				else if (m_pDoc->m_dFrameRate > 5.0)
-					nRate = 6;	// 10 fps
-				else if (m_pDoc->m_dFrameRate > 4.0)
-					nRate = 11;	// 5 fps
-				else if (m_pDoc->m_dFrameRate > 3.0)
-					nRate = 12;	// 4 fps
-				else if (m_pDoc->m_dFrameRate > 2.0)
-					nRate = 13;	// 3 fps
-				else if (m_pDoc->m_dFrameRate > 1.0)
-					nRate = 14;	// 2 fps
-				else if (m_pDoc->m_dFrameRate > 0.5)
-					nRate = 15;	// 1 fps
-				else if (m_pDoc->m_dFrameRate > 0.333333)
-					nRate = 17;	// 0.5 fps
-				else if (m_pDoc->m_dFrameRate > 0.25)
-					nRate = 19;	// 0.333333 fps
-				else if (m_pDoc->m_dFrameRate > 0.2)
-					nRate = 21;	// 0.25 fps
-				else
-					nRate = 23;	// 0.2 fps
-				sLocation =	CString(_T("/videostream.cgi")) +
-							_T("?user=") + HTTP_USERNAME_PLACEHOLDER +
-							_T("&pwd=") + HTTP_PASSWORD_PLACEHOLDER;
-				if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
-				{
-					sRequest.Format(_T("GET %s&resolution=%d&rate=%d HTTP/%s\r\n"),
-									sLocation,
-									m_pDoc->m_nHttpVideoSizeX == 640 ? 32 : 8,
-									nRate,
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
-				}
-				else if (m_Sizes.GetSize() > 0)
-				{
-					sRequest.Format(_T("GET %s&resolution=%d&rate=%d HTTP/%s\r\n"),
-									sLocation,
-									m_Sizes[0].cx == 640 ? 32 : 8,
-									nRate,
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
-					m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
-					m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
-				}
-				else
-				{
-					sRequest.Format(_T("GET %s&rate=%d HTTP/%s\r\n"),
-									sLocation,
-									nRate,
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
-				}
-				break;
-			}
-			case FOSCAM_CP :	// Foscam HTTP jpeg snapshots
-			{
-				sLocation = CString(_T("/snapshot.cgi")) +
-							_T("?user=") + HTTP_USERNAME_PLACEHOLDER +
-							_T("&pwd=") + HTTP_PASSWORD_PLACEHOLDER;
-				if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
-				{
-					sRequest.Format(_T("GET %s&resolution=%d HTTP/%s\r\n"),
-									sLocation,
-									m_pDoc->m_nHttpVideoSizeX == 640 ? 32 : 8,
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
-				}
-				else if (m_Sizes.GetSize() > 0)
-				{
-					sRequest.Format(_T("GET %s&resolution=%d HTTP/%s\r\n"),
-									sLocation,
-									m_Sizes[0].cx == 640 ? 32 : 8,
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
-					m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
-					m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
-				}
-				else
-				{
-					sRequest.Format(_T("GET %s HTTP/%s\r\n"),
-									sLocation,
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
-				}
-				break;
-			}
-			default :
-			{
-				::LeaveCriticalSection(&m_pDoc->m_csHttpParams);
-				ASSERT(FALSE);
-				return FALSE;
-			}
+			break;
 		}
-		::LeaveCriticalSection(&m_pDoc->m_csHttpParams);
-	}
-	// Audio
-	// Note: audio data can be sent over a new connection or
-	//       be interleaved with the multipart video data
-	else
-	{
-		switch (m_pDoc->m_nNetworkDeviceTypeMode)
+		case TPLINK_SP :	// TP-Link HTTP motion jpeg
 		{
-			case OTHERONE_SP :	// Other HTTP motion jpeg devices, use axis audio
-			case OTHERONE_CP :	// Other HTTP jpeg snapshots devices, use axis audio
-			case AXIS_SP :		// Axis HTTP motion jpeg
-			case AXIS_CP :		// Axis HTTP jpeg snapshots
-			case PANASONIC_SP :	// TODO: for now use axis request
-			case PANASONIC_CP :	// TODO: for now use axis request
-			case PIXORD_SP :	// TODO: for now use axis request
-			case PIXORD_CP :	// TODO: for now use axis request
-			case EDIMAX_SP :	// TODO: for now use axis request
-			case EDIMAX_CP :	// TODO: for now use axis request
-			case TPLINK_SP :	// TODO: for now use axis request
-			case TPLINK_CP :	// TODO: for now use axis request
-			case FOSCAM_SP :	// TODO: for now use axis request
-			case FOSCAM_CP :	// TODO: for now use axis request
-				sLocation = _T("/axis-cgi/audio/receive.cgi");
-				sRequest.Format(_T("GET %s?httptype=multipart HTTP/%s\r\n"),
+			sLocation = _T("/video.mjpg");
+			sRequest.Format(_T("GET %s HTTP/%s\r\n"),
+						sLocation,
+						m_bOldVersion ? _T("1.0") : _T("1.1"));
+			break;
+		}
+		case TPLINK_CP :	// TP-Link HTTP jpeg snapshots
+		{
+			sLocation = _T("/jpg/image.jpg");
+			sRequest.Format(_T("GET %s HTTP/%s\r\n"),
+						sLocation,
+						m_bOldVersion ? _T("1.0") : _T("1.1"));
+			break;
+		}
+		case FOSCAM_SP :	// Foscam HTTP motion jpeg
+		{
+			int nRate;
+			if (m_pDoc->m_dFrameRate > 20.0)
+				nRate = 0;	// full speed
+			else if (m_pDoc->m_dFrameRate > 15.0)
+				nRate = 1;	// 20 fps
+			else if (m_pDoc->m_dFrameRate > 10.0)
+				nRate = 3;	// 15 fps
+			else if (m_pDoc->m_dFrameRate > 5.0)
+				nRate = 6;	// 10 fps
+			else if (m_pDoc->m_dFrameRate > 4.0)
+				nRate = 11;	// 5 fps
+			else if (m_pDoc->m_dFrameRate > 3.0)
+				nRate = 12;	// 4 fps
+			else if (m_pDoc->m_dFrameRate > 2.0)
+				nRate = 13;	// 3 fps
+			else if (m_pDoc->m_dFrameRate > 1.0)
+				nRate = 14;	// 2 fps
+			else if (m_pDoc->m_dFrameRate > 0.5)
+				nRate = 15;	// 1 fps
+			else if (m_pDoc->m_dFrameRate > 0.333333)
+				nRate = 17;	// 0.5 fps
+			else if (m_pDoc->m_dFrameRate > 0.25)
+				nRate = 19;	// 0.333333 fps
+			else if (m_pDoc->m_dFrameRate > 0.2)
+				nRate = 21;	// 0.25 fps
+			else
+				nRate = 23;	// 0.2 fps
+			sLocation =	CString(_T("/videostream.cgi")) +
+						_T("?user=") + HTTP_USERNAME_PLACEHOLDER +
+						_T("&pwd=") + HTTP_PASSWORD_PLACEHOLDER;
+			if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
+			{
+				sRequest.Format(_T("GET %s&resolution=%d&rate=%d HTTP/%s\r\n"),
+								sLocation,
+								m_pDoc->m_nHttpVideoSizeX == 640 ? 32 : 8,
+								nRate,
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+			}
+			else if (m_Sizes.GetSize() > 0)
+			{
+				sRequest.Format(_T("GET %s&resolution=%d&rate=%d HTTP/%s\r\n"),
+								sLocation,
+								m_Sizes[0].cx == 640 ? 32 : 8,
+								nRate,
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+				m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
+				m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
+			}
+			else
+			{
+				sRequest.Format(_T("GET %s&rate=%d HTTP/%s\r\n"),
+								sLocation,
+								nRate,
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+			}
+			break;
+		}
+		case FOSCAM_CP :	// Foscam HTTP jpeg snapshots
+		{
+			sLocation = CString(_T("/snapshot.cgi")) +
+						_T("?user=") + HTTP_USERNAME_PLACEHOLDER +
+						_T("&pwd=") + HTTP_PASSWORD_PLACEHOLDER;
+			if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
+			{
+				sRequest.Format(_T("GET %s&resolution=%d HTTP/%s\r\n"),
+								sLocation,
+								m_pDoc->m_nHttpVideoSizeX == 640 ? 32 : 8,
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+			}
+			else if (m_Sizes.GetSize() > 0)
+			{
+				sRequest.Format(_T("GET %s&resolution=%d HTTP/%s\r\n"),
+								sLocation,
+								m_Sizes[0].cx == 640 ? 32 : 8,
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+				m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
+				m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
+			}
+			else
+			{
+				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
 								sLocation,
 								m_bOldVersion ? _T("1.0") : _T("1.1"));
-				break;
-
-			default :
-				break;
+			}
+			break;
+		}
+		default :
+		{
+			::LeaveCriticalSection(&m_pDoc->m_csHttpParams);
+			ASSERT(FALSE);
+			return FALSE;
 		}
 	}
+	::LeaveCriticalSection(&m_pDoc->m_csHttpParams);
 	
 	return SendRawRequest(sRequest);
 }
@@ -10148,35 +10055,17 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::ParseMultipart(CNetCom* pNetCom,
 	// Process data
 	if (nSize >= m_nProcessOffset + m_nProcessSize)
 	{
-		if (sContentType != _T(""))
+		// Remove unknown stream
+		if (sContentType != _T("") && sContentType.Find(_T("image/jpeg")) < 0)
 		{
-			// G.711 μ-law 64 kbps, 8 kHz
-			if (sContentType.Find(_T("audio/basic")) >= 0)
-			{
-				m_FormatType = FORMATAUDIO_MULAW;
-				return TRUE;
-			}
-			// G.726 24 kbps, 8 kHz
-			else if (sContentType.Find(_T("audio/g726-24")) >= 0)
-			{
-				m_FormatType = FORMATAUDIO_G726_24;
-				return TRUE;
-			}
-			// G.726 32 kbps, 8 kHz
-			else if (sContentType.Find(_T("audio/g726-32")) >= 0)
-			{
-				m_FormatType = FORMATAUDIO_G726_32;
-				return TRUE;
-			}
-			// Remove unknown stream
-			else if (sContentType.Find(_T("image/jpeg")) < 0)
-			{
-				pNetCom->Read(NULL, m_nProcessOffset + m_nProcessSize);
-				return FALSE;
-			}
+			pNetCom->Read(NULL, m_nProcessOffset + m_nProcessSize);
+			return FALSE;
 		}
-		m_FormatType = FORMATVIDEO_MJPEG;
-		return TRUE;
+		else
+		{
+			m_FormatType = FORMATVIDEO_MJPEG;
+			return TRUE;
+		}
 	}
 	else
 		return FALSE;
@@ -10447,7 +10336,6 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 				if ((m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE_SP	||
 					m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE_CP)	&&
 					m_bTryConnecting									&&
-					m_FormatType < FORMATAUDIO_UNKNOWN					&&
 					++m_pDoc->m_nHttpGetFrameLocationPos < m_pDoc->m_HttpGetFrameLocations.GetSize())
 				{
 					// Empty the buffers, so that parser stops calling us!
@@ -10564,8 +10452,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 					pNetCom->Read();
 
 					// Close
-					if (m_FormatType < FORMATAUDIO_UNKNOWN)
-						m_pDoc->CloseDocument();
+					m_pDoc->CloseDocument();
 				}
 				delete [] pMsg;
 				if (g_nLogLevel > 0 && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0))
@@ -10578,7 +10465,6 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 				if ((m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE_SP	||
 					m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE_CP)	&&
 					m_bTryConnecting									&&
-					m_FormatType < FORMATAUDIO_UNKNOWN					&&
 					++m_pDoc->m_nHttpGetFrameLocationPos < m_pDoc->m_HttpGetFrameLocations.GetSize())
 				{
 					// Empty the buffers, so that parser stops calling us!
@@ -10599,8 +10485,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 					pNetCom->Read();
 					
 					// Close
-					if (m_FormatType < FORMATAUDIO_UNKNOWN)
-						m_pDoc->CloseDocument();
+					m_pDoc->CloseDocument();
 				}
 				delete [] pMsg;
 				if (g_nLogLevel > 0 && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0))
@@ -10661,10 +10546,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 			pNetCom->Read();
 
 			// Start Connection with New Request
-			if (m_FormatType < FORMATAUDIO_UNKNOWN)
-				m_pDoc->m_HttpThread.SetEventVideoConnect(sNewRequest);
-			else
-				m_pDoc->m_HttpThread.SetEventAudioConnect(sNewRequest);
+			m_pDoc->m_HttpThread.SetEventVideoConnect(sNewRequest);
 	
 			delete [] pMsg;
 			if (g_nLogLevel > 0 && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0))
@@ -10721,8 +10603,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 				CVideoDeviceDoc::ConnectErr(ML_STRING(1780, "The request to connect could not be completed because the supplied user name and/or password are incorrect"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
 
 				// Close
-				if (m_FormatType < FORMATAUDIO_UNKNOWN)
-					m_pDoc->CloseDocument();
+				m_pDoc->CloseDocument();
 
 				delete [] pMsg;
 				return FALSE; // Do not call Processor
@@ -10782,10 +10663,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 			m_dwCNonceCount = 0U;
 
 			// Start Connection with Last Request
-			if (m_FormatType < FORMATAUDIO_UNKNOWN)
-				m_pDoc->m_HttpThread.SetEventVideoConnect(m_sLastRequest);
-			else
-				m_pDoc->m_HttpThread.SetEventAudioConnect(m_sLastRequest);
+			m_pDoc->m_HttpThread.SetEventVideoConnect(m_sLastRequest);
 	
 			delete [] pMsg;
 			if (g_nLogLevel > 0 && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0))
@@ -10797,7 +10675,6 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 			if ((m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE_SP	||
 				m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE_CP)	&&
 				m_bTryConnecting									&&
-				m_FormatType < FORMATAUDIO_UNKNOWN					&&
 				++m_pDoc->m_nHttpGetFrameLocationPos < m_pDoc->m_HttpGetFrameLocations.GetSize())
 			{
 				// Empty the buffers, so that parser stops calling us!
@@ -10814,13 +10691,6 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 				// Msg
 				if (sCode == _T("503")) // Service Unavailable
 					CVideoDeviceDoc::ConnectErr(ML_STRING(1491, "Server is too busy, try later"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
-				else if (m_FormatType >= FORMATAUDIO_UNKNOWN)
-				{
-					if (sCode == _T("405")) // Method Not Allowed
-						CVideoDeviceDoc::ConnectErr(ML_STRING(1492, "Audio format/encoding not supported or audio not enabled in camera web interface"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
-					else
-						CVideoDeviceDoc::ConnectErr(ML_STRING(1493, "Audio not supported for this camera"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
-				}
 				else
 					CVideoDeviceDoc::ConnectErr(ML_STRING(1490, "Unsupported network camera type or mode"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
 
@@ -10828,8 +10698,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 				pNetCom->Read();
 
 				// Close
-				if (m_FormatType < FORMATAUDIO_UNKNOWN)
-					m_pDoc->CloseDocument();
+				m_pDoc->CloseDocument();
 			}
 			// Maybe we polled to fast or we changed a param and camera is not yet ready
 			else
@@ -10838,10 +10707,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 				pNetCom->Read();
 
 				// Retry start connection with delay
-				if (m_FormatType < FORMATAUDIO_UNKNOWN)
-					m_pDoc->m_HttpThread.SetEventVideoConnect(_T(""), HTTP_RECONNECTION_DELAY);
-				else
-					m_pDoc->m_HttpThread.SetEventAudioConnect(_T(""), HTTP_RECONNECTION_DELAY);
+				m_pDoc->m_HttpThread.SetEventVideoConnect(_T(""), HTTP_RECONNECTION_DELAY);
 			}
 			delete [] pMsg;
 			if (g_nLogLevel > 0 && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0))
@@ -10998,96 +10864,6 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::DecodeVideo(AVPacket* avpkt)
 	return TRUE;
 }
 
-/*
-* For planar audio, each channel has a separate data pointer, and
-* m_pFrame->linesize[0] contains the size of each channel buffer.
-* For packed audio, there is just one data pointer, and
-* m_pFrame->linesize[0] contains the total size of the buffer for
-* all channels.
-* - m_pFrame->nb_samples is the number of audio samples (per channel)
-* - m_pCodecCtx->channels
-* - m_pCodecCtx->sample_rate
-* - m_pCodecCtx->sample_fmt
-* - av_get_bytes_per_sample(m_pCodecCtx->sample_fmt) returns the
-*   bytes count per sample and per channel
-* - Attention:
-*   m_pFrame->linesize[0]  >=
-*   av_get_bytes_per_sample(m_pCodecCtx->sample_fmt) * m_pCodecCtx->channels * m_pFrame->nb_samples
-*/
-BOOL CVideoDeviceDoc::CHttpParseProcess::DecodeAudio(AVPacket* avpkt)
-{
-	// Decode
-	int got_frame = 0;
-	int len = avcodec_decode_audio4(m_pCodecCtx,
-									m_pFrame,
-									&got_frame,
-									avpkt);
-	if (len <= 0 || got_frame == 0)
-		return FALSE;
-
-	// Add samples to queue and limit its size
-	CUserBuf UserBuf;
-	UserBuf.m_dwSize = av_get_bytes_per_sample(m_pCodecCtx->sample_fmt) * m_pCodecCtx->channels * m_pFrame->nb_samples;
-	UserBuf.m_pBuf = (LPBYTE)av_malloc(UserBuf.m_dwSize);
-	if (!UserBuf.m_pBuf)
-		return FALSE;
-	memcpy(UserBuf.m_pBuf, m_pFrame->data[0], UserBuf.m_dwSize);
-	::EnterCriticalSection(&m_pDoc->m_csAudioList);
-	m_pDoc->m_AudioList.AddTail(UserBuf);
-	m_pDoc->AudioListen(UserBuf.m_pBuf, UserBuf.m_dwSize, m_pAudioTools, m_pAudioPlay);
-	if (m_pDoc->m_AudioList.GetCount() > AUDIO_MAX_LIST_SIZE)
-	{
-		UserBuf = m_pDoc->m_AudioList.RemoveHead();
-		if (UserBuf.m_pBuf)
-		{
-			av_free(UserBuf.m_pBuf);
-			UserBuf.m_pBuf = NULL;
-		}
-	}
-	::LeaveCriticalSection(&m_pDoc->m_csAudioList);
-	::InterlockedExchange(&m_pDoc->m_lLastAudioFramesUpTime, (LONG)::timeGetTime());
-
-	return TRUE;
-}
-
-void CVideoDeviceDoc::CHttpParseProcess::OnThreadStart()
-{
-	if (m_FormatType >= FORMATAUDIO_UNKNOWN)
-	{
-		// Init COM
-		::CoInitialize(NULL);
-
-		// Init audio listen
-		if (!m_pAudioTools)
-			m_pAudioTools = new CAudioTools;
-		if (!m_pAudioPlay)
-			m_pAudioPlay = new CAudioPlay;
-		if (m_pAudioPlay)
-			m_pAudioPlay->Init(10000000);
-	}
-}
-
-void CVideoDeviceDoc::CHttpParseProcess::OnThreadShutdown()
-{
-	if (m_FormatType >= FORMATAUDIO_UNKNOWN)
-	{
-		// Close audio listen and free
-		if (m_pAudioPlay)
-		{
-			delete m_pAudioPlay;
-			m_pAudioPlay = NULL;
-		}
-		if (m_pAudioTools)
-		{
-			delete m_pAudioTools;
-			m_pAudioTools = NULL;
-		}
-
-		// Uninit COM
-		::CoUninitialize();
-	}
-}
-
 // pLinBuf is a correctly aligned buffer ending
 // with FF_INPUT_BUFFER_PADDING_SIZE zero bytes
 void CVideoDeviceDoc::CHttpParseProcess::Process(unsigned char* pLinBuf, int nSize)
@@ -11119,24 +10895,12 @@ void CVideoDeviceDoc::CHttpParseProcess::Process(unsigned char* pLinBuf, int nSi
 	// Reset structure 
 	av_frame_unref(m_pFrame);
 
-	// Decode
-	if (m_FormatType < FORMATAUDIO_UNKNOWN)
+	// Decode Video
+	if (!DecodeVideo(&avpkt))
 	{
-		if (!DecodeVideo(&avpkt))
-		{
-			av_free_packet(&avpkt);
-			::LeaveCriticalSection(&m_pDoc->m_csHttpProcess);
-			return;
-		}
-	}
-	else
-	{
-		if (!DecodeAudio(&avpkt))
-		{
-			av_free_packet(&avpkt);
-			::LeaveCriticalSection(&m_pDoc->m_csHttpProcess);
-			return;
-		}
+		av_free_packet(&avpkt);
+		::LeaveCriticalSection(&m_pDoc->m_csHttpProcess);
+		return;
 	}
 
 	// Reset flag
@@ -11154,98 +10918,39 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::OpenAVCodec()
 	// Free
 	FreeAVCodec();
 
-	// Video
-	if (m_FormatType < FORMATAUDIO_UNKNOWN)
-	{
-		// Find the decoder for the video stream
-		m_pCodec = avcodec_find_decoder(AV_CODEC_ID_MJPEG);
-		if (!m_pCodec)
-			goto error;
-		m_pDoc->m_CaptureBMI.bmiHeader.biCompression = FCC('MJPG');
+	// Find the decoder for the video stream
+	m_pCodec = avcodec_find_decoder(AV_CODEC_ID_MJPEG);
+	if (!m_pCodec)
+		goto error;
+	m_pDoc->m_CaptureBMI.bmiHeader.biCompression = FCC('MJPG');
 
-		// Allocate Context
-		/* if m_pCodec non-NULL, allocate private data and initialize defaults
-		 * for the given codec. It is illegal to then call avcodec_open2()
-		 * with a different codec.
-		 * If NULL, then the codec-specific defaults won't be initialized,
-		 * which may result in suboptimal default settings (this is
-		 * important mainly for encoders, e.g. libx264).
-		 */
-		m_pCodecCtx = avcodec_alloc_context3(m_pCodec);
-		if (!m_pCodecCtx)
-			goto error;
+	// Allocate Context
+	/* if m_pCodec non-NULL, allocate private data and initialize defaults
+		* for the given codec. It is illegal to then call avcodec_open2()
+		* with a different codec.
+		* If NULL, then the codec-specific defaults won't be initialized,
+		* which may result in suboptimal default settings (this is
+		* important mainly for encoders, e.g. libx264).
+		*/
+	m_pCodecCtx = avcodec_alloc_context3(m_pCodec);
+	if (!m_pCodecCtx)
+		goto error;
 
-		// Width and Height Unknown at this point
-		m_pCodecCtx->coded_width = 0;
-		m_pCodecCtx->coded_height = 0;
+	// Width and Height Unknown at this point
+	m_pCodecCtx->coded_width = 0;
+	m_pCodecCtx->coded_height = 0;
 
-		// Set FourCC
-		m_pCodecCtx->codec_tag = FCC('MJPG');
+	// Set FourCC
+	m_pCodecCtx->codec_tag = FCC('MJPG');
 
-		// Open codec
-		if (avcodec_open2(m_pCodecCtx, m_pCodec, 0) < 0)
-			goto error;
+	// Open codec
+	if (avcodec_open2(m_pCodecCtx, m_pCodec, 0) < 0)
+		goto error;
 
-		// Allocate I420 frame
-		m_pFrameI420 = av_frame_alloc();
-		if (!m_pFrameI420)
-			goto error;
-	}
-	// Audio
-	else
-	{
-		// Codec id
-		AVCodecID id = AV_CODEC_ID_NONE;
-		if (m_FormatType == FORMATAUDIO_MULAW)
-			id = AV_CODEC_ID_PCM_MULAW;
-		else if (m_FormatType == FORMATAUDIO_G726_24)
-			id = AV_CODEC_ID_ADPCM_G726LE;	// little endian version of AV_CODEC_ID_ADPCM_G726
-		else if (m_FormatType == FORMATAUDIO_G726_32)
-			id = AV_CODEC_ID_ADPCM_G726LE;	// little endian version of AV_CODEC_ID_ADPCM_G726
-
-		// Find the decoder for the video stream
-		m_pCodec = avcodec_find_decoder(id);
-		if (!m_pCodec)
-			goto error;
-
-		// Allocate Context
-		/* if m_pCodec non-NULL, allocate private data and initialize defaults
-		 * for the given codec. It is illegal to then call avcodec_open2()
-		 * with a different codec.
-		 * If NULL, then the codec-specific defaults won't be initialized,
-		 * which may result in suboptimal default settings (this is
-		 * important mainly for encoders, e.g. libx264).
-		 */
-		m_pCodecCtx = avcodec_alloc_context3(m_pCodec);
-		if (!m_pCodecCtx)
-			goto error;
-
-		// Init
-		if (m_FormatType == FORMATAUDIO_MULAW)
-		{
-			m_pCodecCtx->channels = 1;
-			m_pCodecCtx->sample_rate = 8000;
-			m_pCodecCtx->bit_rate = 64000;
-		}
-		else if (m_FormatType == FORMATAUDIO_G726_24)
-		{
-			m_pCodecCtx->channels = 1;
-			m_pCodecCtx->sample_rate = 8000;
-			m_pCodecCtx->bit_rate = 24000;
-			m_pCodecCtx->bits_per_coded_sample = (int)((m_pCodecCtx->bit_rate + m_pCodecCtx->sample_rate/2) / m_pCodecCtx->sample_rate);
-		}
-		else if (m_FormatType == FORMATAUDIO_G726_32)
-		{
-			m_pCodecCtx->channels = 1;
-			m_pCodecCtx->sample_rate = 8000;
-			m_pCodecCtx->bit_rate = 32000;
-			m_pCodecCtx->bits_per_coded_sample = (int)((m_pCodecCtx->bit_rate + m_pCodecCtx->sample_rate/2) / m_pCodecCtx->sample_rate);
-		}
-
-		// Open codec
-		if (avcodec_open2(m_pCodecCtx, m_pCodec, 0) < 0)
-			goto error;
-	}
+	// Allocate I420 frame
+	m_pFrameI420 = av_frame_alloc();
+	if (!m_pFrameI420)
+		goto error;
 
 	// Allocate frame
 	m_pFrame = av_frame_alloc();
