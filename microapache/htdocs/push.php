@@ -41,13 +41,33 @@ function doServerPush($file,$type,$poll) {
 		$retry = 333;
 		while ($retry > 0) {
 			$retry--;
-			$filecontent = @file_get_contents($file);
-			if ($filecontent === false)
+			clearstatcache();
+			$handle = @fopen($file, 'rb');
+			if ($handle === false)
+			{
 				usleep(15000); // wait 15ms
+				continue;
+			}
+			$filecontentsize = @filesize($file);
+			if ($filecontentsize === false)
+			{
+				fclose($handle);
+				usleep(15000); // wait 15ms
+				continue;
+			}
+			$filecontent = fread($handle, $filecontentsize);
+			if ($filecontent === false)
+			{
+				fclose($handle);
+				usleep(15000); // wait 15ms
+				continue;
+			}
 			else
+			{
+				fclose($handle);
 				break;
+			}
 		}
-		$filecontentsize = strlen($filecontent);
 		
 		// Output Content-Length and the content data
 		echo "Content-Length: $filecontentsize\r\n\r\n";
