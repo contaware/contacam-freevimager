@@ -30,7 +30,7 @@ function doClientPoll($file,$type) {
 			usleep(15000); // wait 15ms
 			continue;
 		}
-		$filecontent = fread($handle, $filecontentsize);
+		$filecontent = fread($handle, 2 * $filecontentsize); // bigger size in case image has been updated between size read and data read
 		if ($filecontent === false)
 		{
 			fclose($handle);
@@ -39,8 +39,18 @@ function doClientPoll($file,$type) {
 		}
 		else
 		{
-			fclose($handle);
-			break;
+			$filecontentsize = ftell($handle); // get read bytes
+			if ($filecontentsize === false)
+			{
+				fclose($handle);
+				usleep(15000); // wait 15ms
+				continue;
+			}
+			else
+			{
+				fclose($handle);
+				break;
+			}
 		}
 	}
 	
