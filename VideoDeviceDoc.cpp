@@ -6034,15 +6034,18 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 
 	// Global settings
 	sConfig += _T("ThreadsPerChild 128\r\n");
-	sConfig += _T("Win32DisableAcceptEx On\r\n");
-	sConfig += _T("LoadModule access_module modules/mod_access.dll\r\n");
-	sConfig += _T("LoadModule dir_module modules/mod_dir.dll\r\n");
-	sConfig += _T("LoadModule mime_module modules/mod_mime.dll\r\n");
-	sConfig += _T("LoadModule rewrite_module modules/mod_rewrite.dll\r\n");
-	sConfig += _T("LoadModule auth_module modules/mod_auth.dll\r\n");
-	sConfig += _T("LoadModule auth_digest_module modules/mod_auth_digest.dll\r\n");
-	sConfig += _T("LoadModule php5_module \"php5apache2.dll\"\r\n");
-	sConfig += _T("AddType application/x-httpd-php .php .php3\r\n");
+	sConfig += _T("AcceptFilter http none\r\n");
+	sConfig += _T("AcceptFilter https none\r\n");
+	sConfig += _T("LoadFile php/libeay32.dll\r\n");
+	sConfig += _T("LoadFile php/ssleay32.dll\r\n");
+	sConfig += _T("LoadModule access_compat_module modules/mod_access_compat.so\r\n");
+	sConfig += _T("LoadModule authz_core_module modules/mod_authz_core.so\r\n");
+	sConfig += _T("LoadModule dir_module modules/mod_dir.so\r\n");
+	sConfig += _T("LoadModule mime_module modules/mod_mime.so\r\n");
+	sConfig += _T("LoadModule rewrite_module modules/mod_rewrite.so\r\n");
+	sConfig += _T("LoadModule php5_module php/php5apache2_4.dll\r\n");
+	sConfig += _T("AddHandler application/x-httpd-php .php\r\n");
+	sConfig += _T("PHPIniDir php\r\n");
 	sConfig += _T("AcceptPathInfo off\r\n");
 	sConfig += _T("KeepAlive on\r\n");
 	sConfig += _T("KeepAliveTimeout 15\r\n");
