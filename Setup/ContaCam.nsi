@@ -290,11 +290,13 @@ Section "${APPNAME_NOEXT} Program (required)"
   File "MasterConfig.ini"
   SetOverwrite on
   
-  ; Microapache files
+  ; Microapache files and VC9 redistributables for it
   SetOutPath $INSTDIR\microapache
   File /r /x .svn /x configuration*.* "..\microapache\*.*"
   SetOutPath $INSTDIR
   File "/oname=microapache\htdocs\configuration.php" "..\microapache\htdocs\configuration${INSTALLER_LANGUAGE_SUFFIX}.php"
+  File "vcredist_x86.exe"
+  ExecWait '"$INSTDIR\vcredist_x86.exe" /q'  ; /q to install silently
   
   ; Mailer files
   SetOutPath $INSTDIR\mail

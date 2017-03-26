@@ -5990,18 +5990,21 @@ void CVideoDeviceDoc::OnUpdateViewVideo(CCmdUI* pCmdUI)
 
 void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 {
-	// Copy index.php to Doc Root (overwrite if existing)
 	CString sDocRoot = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
 	sDocRoot.TrimRight(_T('\\'));
 	TCHAR szDrive[_MAX_DRIVE];
 	TCHAR szDir[_MAX_DIR];
 	TCHAR szProgramName[MAX_PATH];
-	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
-	{
-		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-		CString sMicroapacheHtDocs = CString(szDrive) + CString(szDir) + MICROAPACHE_HTDOCS + _T("\\");
-		::CopyFile(sMicroapacheHtDocs + PHP_INDEXROOTDIRNAME_EXT, sDocRoot + _T("\\") + PHP_INDEXNAME_EXT, FALSE);
-	}
+	CString sMicroapacheDir;
+	CString sMicroapacheHtDocs;
+	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
+		return;
+	_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+	sMicroapacheDir = CString(szDrive) + CString(szDir) + MICROAPACHE_DIR + _T("\\");
+	sMicroapacheHtDocs = CString(szDrive) + CString(szDir) + MICROAPACHE_HTDOCS + _T("\\");
+
+	// Copy index.php to Doc Root (overwrite if existing)
+	::CopyFile(sMicroapacheHtDocs + PHP_INDEXROOTDIRNAME_EXT, sDocRoot + _T("\\") + PHP_INDEXNAME_EXT, FALSE);
 
 	// Warning
 	CString sConfig, sFormat;
@@ -6010,6 +6013,8 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 
 	// Listen Port
 	sFormat.Format(_T("Listen %d\r\n"), ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort);
+	sConfig += sFormat;
+	sFormat.Format(_T("Listen %d\r\n"), 443); // TODO: make the https port configurable
 	sConfig += sFormat;
 
 	// Server name, root and admin email
@@ -6036,13 +6041,14 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	sConfig += _T("ThreadsPerChild 128\r\n");
 	sConfig += _T("AcceptFilter http none\r\n");
 	sConfig += _T("AcceptFilter https none\r\n");
-	sConfig += _T("LoadFile php/libeay32.dll\r\n");
-	sConfig += _T("LoadFile php/ssleay32.dll\r\n");
+	sConfig += _T("LoadFile php/libeay32.dll\r\n");				// for PHP but also for mod_ssl.so
+	sConfig += _T("LoadFile php/ssleay32.dll\r\n");				// for PHP but also for mod_ssl.so
 	sConfig += _T("LoadModule access_compat_module modules/mod_access_compat.so\r\n");
 	sConfig += _T("LoadModule authz_core_module modules/mod_authz_core.so\r\n");
 	sConfig += _T("LoadModule dir_module modules/mod_dir.so\r\n");
 	sConfig += _T("LoadModule mime_module modules/mod_mime.so\r\n");
 	sConfig += _T("LoadModule rewrite_module modules/mod_rewrite.so\r\n");
+	sConfig += _T("LoadModule ssl_module modules/mod_ssl.so\r\n");
 	sConfig += _T("LoadModule php5_module php/php5apache2_4.dll\r\n");
 	sConfig += _T("AddHandler application/x-httpd-php .php\r\n");
 	sConfig += _T("PHPIniDir php\r\n");
@@ -6072,6 +6078,14 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	sConfig += _T("php_value session.gc_probability 1\r\n");	// session_start() has 1 / 10 or 10% probability
 	sConfig += _T("php_value session.gc_divisor 10\r\n");		// to clean-up old session files
 	sConfig += _T("php_value session.gc_maxlifetime 1440\r\n");	// session maximum lifetime is 1440 seconds
+
+	// SSL
+	sConfig += _T("<VirtualHost *:443>\r\n");
+	sConfig += _T("ServerName localhost\r\n");
+	sConfig += _T("SSLEngine on\r\n");
+	sConfig += _T("SSLCertificateFile \"") + sMicroapacheDir + _T("https.crt") + _T("\"\r\n");
+	sConfig += _T("SSLCertificateKeyFile \"") + sMicroapacheDir + _T("https.key") + _T("\"\r\n");
+	sConfig += _T("</VirtualHost>\r\n");
 
 	// Do not allow .htaccess files and setup the rewrite engine
 	sConfig += _T("<Directory />\r\n");

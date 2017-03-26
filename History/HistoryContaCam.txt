@@ -4,6 +4,8 @@ CONTACAM HISTORY
 
 - Native RTSP cameras support (dropped VLC re-streaming of RTSP
   cameras)
+- Updated internal web server to Apache 2.4.25 and PHP 5.4.45
+  (both with OpenSSL 1.0.2k-fips)
 
 5.5.0 (February 18th 2017)
 

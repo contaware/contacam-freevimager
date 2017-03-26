@@ -1,0 +1,11 @@
+Attention: we use the VC9 builds to be compatible with WinXP and Win2003!
+
+- apache 2.4
+  http://www.apachehaus.com/cgi-bin/download.plx#APACHE24VC09
+
+- php 5.4
+  https://www.apachelounge.com/viewtopic.php?t=6359
+  (official php.net builds use OpenSSL 0.9.8 for php 5.4 that's not good because the above used apache 2.4 uses OpenSSL 1.0.2)
+  
+- VC9 redistributable, Microsoft Visual C++ 2008 SP1 Redistributable Package (x86)
+  http://www.microsoft.com/downloads/en/details.aspx?FamilyID=A5C84275-3B97-4AB7-A40D-3802B2AF5FC2
