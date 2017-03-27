@@ -1,6 +1,6 @@
 CONTACAM HISTORY
 
-5.5.5 (Month xxth 2017)
+7.0.0 (Month xxth 2017)
 
 - Native RTSP cameras support (dropped VLC re-streaming of RTSP
   cameras)
