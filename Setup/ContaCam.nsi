@@ -265,6 +265,7 @@ Section "${APPNAME_NOEXT} Program (required)"
   Delete $INSTDIR\${APPNAME_EXT}
   Delete $INSTDIR\ContaCamDump.bat
   Delete $INSTDIR\NeroBurn.exe
+  Delete $INSTDIR\vcredist_x86.exe
   Delete $INSTDIR\ContaCamService.exe
   Delete $INSTDIR\${UNINSTNAME_EXT}
   RMDir /r "$INSTDIR\ActiveX"
@@ -601,6 +602,7 @@ Section "Uninstall"
   Delete $INSTDIR\procdump.exe
   Delete $INSTDIR\vmmap.exe
   Delete $INSTDIR\NeroBurn.exe
+  Delete $INSTDIR\vcredist_x86.exe
   Delete $INSTDIR\ContaCamService.exe
   Delete $INSTDIR\ContaCamService.ini
   Delete $INSTDIR\ContaCamService.log
