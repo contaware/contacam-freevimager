@@ -297,7 +297,7 @@ Section "${APPNAME_NOEXT} Program (required)"
   SetOutPath $INSTDIR
   File "/oname=microapache\htdocs\configuration.php" "..\microapache\htdocs\configuration${INSTALLER_LANGUAGE_SUFFIX}.php"
   File "vcredist_x86.exe"
-  ExecWait '"$INSTDIR\vcredist_x86.exe" /q'  ; /q to install silently
+  ExecWait '"$INSTDIR\vcredist_x86.exe" /qb!'  ; /qb! unattended mode with "Cancel" button disabled
   
   ; Mailer files
   SetOutPath $INSTDIR\mail
