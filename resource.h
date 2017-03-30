@@ -1256,6 +1256,7 @@
 #define IDC_EDIT_FIRSTSTART_DELAY       1242
 #define IDS_MULTILANG_1243              1243
 #define IDC_CHECK_ANTIALIASING          1243
+#define IDC_EDIT_PORT_SSL               1243
 #define IDS_MULTILANG_1244              1244
 #define IDC_TIME_ONCE_START             1244
 #define IDC_CHECK_LOSSLESS              1244

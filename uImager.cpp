@@ -148,6 +148,7 @@ CUImagerApp::CUImagerApp()
 	m_bMovFragmented = FALSE;
 	m_bStartMicroApache = FALSE;
 	m_nMicroApachePort = MICROAPACHE_DEFAULT_PORT;
+	m_nMicroApachePortSSL = MICROAPACHE_DEFAULT_PORT_SSL;
 	::InitializeCriticalSection(&m_csMovDetSaveReservation);
 	m_bSingleInstance = TRUE;
 	m_bServiceProcess = FALSE;
@@ -1040,13 +1041,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			if (m_bFirstRunEver)
 			{
 #ifdef VIDEODEVICEDOC
-				// Try to set the microapache server to MICROAPACHE_PREFERRED_PORT
-				if (!CVideoDeviceDoc::MicroApacheIsPortUsed(MICROAPACHE_PREFERRED_PORT, MICROAPACHE_STARTUP_TIMEOUT_MS))
-				{
-					m_nMicroApachePort = MICROAPACHE_PREFERRED_PORT;
-					WriteProfileInt(_T("GeneralApp"), _T("MicroApachePort"), m_nMicroApachePort);
-				}
-
 				// Enable autostart
 				Autostart(TRUE);
 #endif
@@ -1087,19 +1081,12 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		CVideoDeviceDoc::MicroApacheUpdateMainFiles();
 
 		// Start Micro Apache
-		// Note:      make sure the web server is running because the below devices
-		//            autorun which can connect to localhost's push.php or poll.php
-		//            and the browser autostart need it
-		// Attention: with MicroApacheWaitStartDone() we make sure that mapache.exe
-		//            is really listening because MicroApacheWaitCanConnect() alone
-		//            could return TRUE if the configured port is used by another server
-		if (m_bStartMicroApache															&&
-			!(CVideoDeviceDoc::MicroApacheInitStart()									&&
-			CVideoDeviceDoc::MicroApacheWaitStartDone(MICROAPACHE_STARTUP_TIMEOUT_MS)	&&
-			CVideoDeviceDoc::MicroApacheWaitCanConnect(MICROAPACHE_STARTUP_TIMEOUT_MS)))
+		// Note: make sure the web server is running because the below devices
+		//       autorun which can connect to localhost's push.php or poll.php
+		//       and the browser autostart need it
+		if (m_bStartMicroApache && !CVideoDeviceDoc::MicroApacheStart(MICROAPACHE_STARTUP_TIMEOUT_MS))
 		{
-			CString sMsg(	ML_STRING(1475, "Failed to start the web server") + _T(" ") +
-							ML_STRING(1476, "(change the Port number to an unused one)"));
+			CString sMsg(ML_STRING(1475, "Failed to start the web server"));
 			if (!m_bServiceProcess)
 				::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, sMsg, 0);
 			::LogLine(_T("%s"), sMsg);
@@ -3512,8 +3499,9 @@ void CUImagerApp::LoadSettings(UINT showCmd/*=SW_SHOWNORMAL*/)
 	m_sMicroApacheDocRoot = GetProfileString(sSection, _T("MicroApacheDocRoot"), m_sMicroApacheDocRoot);
 	::CreateDir(m_sMicroApacheDocRoot);
 
-	// Micro Apache Server Port
+	// Micro Apache Server Ports
 	m_nMicroApachePort = GetProfileInt(sSection, _T("MicroApachePort"), MICROAPACHE_DEFAULT_PORT);
+	m_nMicroApachePortSSL = GetProfileInt(sSection, _T("MicroApachePortSSL"), MICROAPACHE_DEFAULT_PORT_SSL);
 
 	// Authentication
 	m_sMicroApacheUsername = GetSecureProfileString(sSection, _T("MicroApacheUsername"));

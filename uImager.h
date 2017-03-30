@@ -54,9 +54,8 @@
 #define MICROAPACHE_TIMEOUT_MS							15000U
 #define MICROAPACHE_STARTUP_TIMEOUT_MS					30000U
 #define MICROAPACHE_WAITTIME_MS							100U
-#define MICROAPACHE_CANCONNECT_ATTEMPTS					10
-#define MICROAPACHE_PREFERRED_PORT						80
 #define MICROAPACHE_DEFAULT_PORT						8800
+#define MICROAPACHE_DEFAULT_PORT_SSL					8443
 #define MICROAPACHE_LOGNAME_EXT							_T("httpd_log.txt")
 #define MICROAPACHE_PIDNAME_EXT							_T("httpd_pid.txt")
 #define MICROAPACHE_CONFIGNAME_EXT						_T("httpd_conf.txt")
@@ -619,8 +618,9 @@ public:
 	// Micro Apache Document Root
 	CString m_sMicroApacheDocRoot;
 
-	// Micro Apache Server Port
+	// Micro Apache Server Ports
 	int m_nMicroApachePort;
+	int m_nMicroApachePortSSL;
 
 	// Authentication
 	CString m_sMicroApacheUsername;

@@ -53,6 +53,7 @@ public:
 	BOOL	m_bTopMost;
 	BOOL	m_bStartMicroApache;
 	int		m_nMicroApachePort;
+	int		m_nMicroApachePortSSL;
 	CString	m_sMicroApacheUsername;
 	CString	m_sMicroApachePassword;
 	CString m_sMicroApacheDocRoot;

@@ -2403,6 +2403,7 @@ BEGIN
     PUSHBUTTON      "...",IDC_BUTTON_DOCROOT,321,127,17,13
     CONTROL         "Enable Internal Web Server",IDC_CHECK_WEBSERVER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,173,105,10
     EDITTEXT        IDC_EDIT_PORT,232,172,27,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_PORT_SSL,310,171,27,13,ES_AUTOHSCROLL
     EDITTEXT        IDC_AUTH_USERNAME,61,194,106,13,ES_AUTOHSCROLL
     EDITTEXT        IDC_AUTH_PASSWORD,232,194,106,13,ES_PASSWORD | ES_AUTOHSCROLL
     DEFPUSHBUTTON   "OK",IDOK,117,224,50,14
@@ -2410,7 +2411,7 @@ BEGIN
     LTEXT           "User Name",IDC_STATIC,11,196,43,8
     LTEXT           "Password",IDC_STATIC,185,196,40,8
     GROUPBOX        "General",IDC_STATIC2248,5,5,339,56
-    LTEXT           "Port",IDC_STATIC,185,174,19,8
+    LTEXT           "Http Port",IDC_STATIC,185,174,30,8
     GROUPBOX        "Network Cameras",IDC_STATIC,5,69,339,35
     LTEXT           "Autostart a camera each",IDC_STATIC,11,85,80,8
     LTEXT           "sec",IDC_STATIC,128,85,12,8
@@ -2418,6 +2419,7 @@ BEGIN
     LTEXT           "Delay cameras autostart by",IDC_STATIC,185,45,90,8
     LTEXT           "sec",IDC_STATIC,308,45,12,8
     GROUPBOX        "Web Interface",IDC_STATIC,5,158,339,59
+    LTEXT           "Https Port",IDC_STATIC,271,173,35,8
 END
 
 IDD_CAMERABASICSETTINGS DIALOGEX 0, 0, 418, 324
@@ -3602,7 +3604,6 @@ BEGIN
     IDS_MULTILANG_1473      "Camera folder must reside inside the document root directory!"
     IDS_MULTILANG_1474      "Failed to stop the web server"
     IDS_MULTILANG_1475      "Failed to start the web server"
-    IDS_STRING1476          "(change the Port number to an unused one)"
     IDS_MULTILANG_1484      "&Copying...\tCtrl+C"
     IDS_MULTILANG_1485      "&Copy\tCtrl+C"
 END

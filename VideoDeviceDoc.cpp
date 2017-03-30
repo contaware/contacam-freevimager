@@ -6011,10 +6011,10 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	sConfig =  _T("# DO NOT MODIFY THIS FILE (ContaCam will overwrite your changes)\r\n");
 	sConfig += _T("# Make your customizations in ") + CString(MICROAPACHE_EDITABLE_CONFIGNAME_EXT) + _T("\r\n\r\n");
 
-	// Listen Port
+	// Listen Ports
 	sFormat.Format(_T("Listen %d\r\n"), ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort);
 	sConfig += sFormat;
-	sFormat.Format(_T("Listen %d\r\n"), 443); // TODO: make the https port configurable
+	sFormat.Format(_T("Listen %d\r\n"), ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePortSSL);
 	sConfig += sFormat;
 
 	// Server name, root and admin email
@@ -6080,7 +6080,8 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	sConfig += _T("php_value session.gc_maxlifetime 1440\r\n");	// session maximum lifetime is 1440 seconds
 
 	// SSL
-	sConfig += _T("<VirtualHost *:443>\r\n");
+	sFormat.Format(_T("<VirtualHost *:%d>\r\n"), ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePortSSL);
+	sConfig += sFormat;
 	sConfig += _T("ServerName localhost\r\n");
 	sConfig += _T("SSLEngine on\r\n");
 	sConfig += _T("SSLCertificateFile \"") + sMicroapacheDir + _T("https.crt") + _T("\"\r\n");
@@ -6463,49 +6464,7 @@ CString CVideoDeviceDoc::MicroApacheGetPidFileName()
 	return sMicroapachePidFile;
 }
 
-BOOL CVideoDeviceDoc::MicroApacheIsPortUsed(int nPort, DWORD dwTimeout)
-{
-	BOOL bUsed = FALSE;
-	CNetCom NetCom;
-	HANDLE hEventArray[2];
-	hEventArray[0] = ::CreateEvent(NULL, TRUE, FALSE, NULL); // Http Connected Event						
-	hEventArray[1] = ::CreateEvent(NULL, TRUE, FALSE, NULL); // Http Connect Failed Event
-	if (NetCom.Init(
-				NULL,					// Parser
-				_T("localhost"),		// Peer Address (IP or Host Name)
-				nPort,					// Peer Port
-				hEventArray[0],			// Handle to an Event Object that will get Connect Events
-				hEventArray[1],			// Handle to an Event Object that will get Connect Failed Events
-				NULL,					// Handle to an Event Object that will get Read Events
-				AF_UNSPEC))				// Socket family
-	{
-		DWORD Event = ::WaitForMultipleObjects(	2,
-												hEventArray,
-												FALSE,
-												dwTimeout);
-		switch (Event)
-		{
-			// Http Connected Event
-			case WAIT_OBJECT_0 :
-				bUsed = TRUE;
-				break;
-
-			// Http Connection failed Event
-			case WAIT_OBJECT_0 + 1 :
-				break;
-
-			// Timeout
-			default :
-				break;
-		}
-	}
-	NetCom.Close();
-	::CloseHandle(hEventArray[0]);
-	::CloseHandle(hEventArray[1]);
-	return bUsed;
-}
-
-BOOL CVideoDeviceDoc::MicroApacheInitStart()
+BOOL CVideoDeviceDoc::MicroApacheStart(DWORD dwTimeoutMs)
 {
 	CString sMicroapacheConfigFile = MicroApacheGetConfigFileName();
 	if (!::IsExistingFile(sMicroapacheConfigFile))
@@ -6524,78 +6483,82 @@ BOOL CVideoDeviceDoc::MicroApacheInitStart()
 	sMicroapacheConfigFile = ::GetASCIICompatiblePath(sMicroapacheConfigFile); // file must exist!
 	sMicroapacheConfigFile.Replace(_T('\\'), _T('/')); // change path from \ to / (otherwise apache is not happy)
 	CString sParams = _T("-f \"") + sMicroapacheConfigFile + _T("\"");
-	return ::ExecHiddenApp(sMicroapacheStartFile, sParams);
-}
-
-BOOL CVideoDeviceDoc::MicroApacheWaitStartDone(DWORD dwTimeout)
-{
-	DWORD dwElapsedMs = 0U;
-	while (::EnumKillProcByName(MICROAPACHE_FILENAME) < MICROAPACHE_NUM_PROCESS)
-	{
-		dwElapsedMs += MICROAPACHE_WAITTIME_MS;
-		::Sleep(MICROAPACHE_WAITTIME_MS);
-		if (dwElapsedMs >= dwTimeout)
-			return FALSE;
-	}
-	return TRUE;
-}
-
-BOOL CVideoDeviceDoc::MicroApacheWaitCanConnect(DWORD dwTimeout)
-{
+	TCHAR lpCommandLine[32768];
 	CNetCom NetCom;
 	HANDLE hEventArray[2];
 	hEventArray[0] = ::CreateEvent(NULL, TRUE, FALSE, NULL); // Http Connected Event						
 	hEventArray[1] = ::CreateEvent(NULL, TRUE, FALSE, NULL); // Http Connect Failed Event
-	int nConnectAttempt = 0;
-	while (++nConnectAttempt <= MICROAPACHE_CANCONNECT_ATTEMPTS)
+	DWORD dwStartUpTimeMs = ::GetTickCount();
+	int nWaitMul = 2;
+	BOOL res = FALSE;
+	do
 	{
-		::ResetEvent(hEventArray[0]);
-		::ResetEvent(hEventArray[1]);
-		if (NetCom.Init(
-					NULL,					// Parser
-					_T("localhost"),									// Peer Address (IP or Host Name)
-					((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort,	// Peer Port
-					hEventArray[0],			// Handle to an Event Object that will get Connect Events
-					hEventArray[1],			// Handle to an Event Object that will get Connect Failed Events
-					NULL,					// Handle to an Event Object that will get Read Events
-					AF_UNSPEC))				// Socket family
+		// Start mapache.exe
+		// Note: do not use ShellExecuteEx because it creates a separate thread
+		//       and does not return until that thread completes. During this time
+		//       ShellExecuteEx will pump window messages to prevent windows
+		//       owned by the calling thread from appearing hung. We do not want
+		//       that messages are pumped when starting ContaCam!
+		STARTUPINFO si;
+		PROCESS_INFORMATION pi;
+		memset(&si, 0, sizeof(si));
+		memset(&pi, 0, sizeof(pi));
+		si.cb = sizeof(si);
+		si.dwFlags = STARTF_USESHOWWINDOW;
+		si.wShowWindow = SW_HIDE;
+		_tcscpy_s(lpCommandLine, _T("\"") + sMicroapacheStartFile + _T("\"") + _T(" ") + sParams);
+		BOOL bStarted = ::CreateProcess(sMicroapacheStartFile, lpCommandLine,
+										NULL, NULL, FALSE, NORMAL_PRIORITY_CLASS, NULL,
+										::GetDriveAndDirName(sMicroapacheStartFile), &si, &pi);
+		if (pi.hProcess)
+			::CloseHandle(pi.hProcess);
+		if (bStarted)
 		{
-			DWORD Event = ::WaitForMultipleObjects(	2,
-													hEventArray,
-													FALSE,
-													dwTimeout);
-			switch (Event)
-			{
-				// Http Connected Event
-				case WAIT_OBJECT_0 :
-					NetCom.Close();
-					::CloseHandle(hEventArray[0]);
-					::CloseHandle(hEventArray[1]);
-					return TRUE;
-
-				// Http Connection failed Event
-				case WAIT_OBJECT_0 + 1 :
-					::Sleep(nConnectAttempt * MICROAPACHE_WAITTIME_MS);
-					break;
-
-				// Timeout
-				default :
-					NetCom.Close();
-					::CloseHandle(hEventArray[0]);
-					::CloseHandle(hEventArray[1]);
-					return FALSE;
-			}
+			::Sleep(nWaitMul * MICROAPACHE_WAITTIME_MS);
+			if (nWaitMul < 5)
+				nWaitMul = 5;
+			else
+				nWaitMul = 10;
 		}
 		else
-			::Sleep(nConnectAttempt * MICROAPACHE_WAITTIME_MS);
+			goto exit;
+
+		// Try connecting to mapache.exe
+		// Note: if another server is running on our port, mapache.exe will terminate after
+		//       successfully starting. In that case the below connection test succeeds.
+		//       In previous code versions after the connection test I checked whether
+		//       mapache.exe was running, but that's not reliable because as stated above
+		//       mapache.exe may run for a short time and then exit. We want a fast ContaCam
+		//       start, so we cannot wait a long time to make sure mapache.exe is really
+		//       listening on the set port!
+		NetCom.Close();
+		::ResetEvent(hEventArray[0]);
+		::ResetEvent(hEventArray[1]);
+		if (NetCom.Init(NULL,					// Parser
+						_T("localhost"),		// Peer Address (IP or Host Name)
+						((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort,	// Peer Port
+						hEventArray[0],			// Handle to an Event Object that will get Connect Events
+						hEventArray[1],			// Handle to an Event Object that will get Connect Failed Events
+						NULL,					// Handle to an Event Object that will get Read Events
+						AF_UNSPEC))				// Socket family
+		{
+			if (::WaitForMultipleObjects(2, hEventArray, FALSE, dwTimeoutMs / 2U) == WAIT_OBJECT_0) // http Connected Event
+			{
+				res = TRUE;
+				goto exit;
+			}
+		}
 	}
+	while ((::GetTickCount() - dwStartUpTimeMs) < dwTimeoutMs);
+
+exit:
 	NetCom.Close();
 	::CloseHandle(hEventArray[0]);
 	::CloseHandle(hEventArray[1]);
-	return FALSE;
+	return res;
 }
 
-BOOL CVideoDeviceDoc::MicroApacheShutdown(DWORD dwTimeout)
+BOOL CVideoDeviceDoc::MicroApacheShutdown(DWORD dwTimeoutMs)
 {
 	BOOL res;
 	LPBYTE pData = NULL;
@@ -6653,21 +6616,21 @@ BOOL CVideoDeviceDoc::MicroApacheShutdown(DWORD dwTimeout)
 		::EnumKillProcByName(MICROAPACHE_FILENAME, TRUE);
 	}
 
-	// Wait a max of dwTimeout
+	// Wait a max of dwTimeoutMs
 	res = TRUE;
 	DWORD dwElapsedMs = 0U;
 	while (::EnumKillProcByName(MICROAPACHE_FILENAME) > 0)
 	{
 		dwElapsedMs += MICROAPACHE_WAITTIME_MS;
 		::Sleep(MICROAPACHE_WAITTIME_MS);
-		if (dwElapsedMs >= dwTimeout)
+		if (dwElapsedMs >= dwTimeoutMs)
 		{
 			res = FALSE;
 			break;
 		}
 	}
 
-	// Wait again a max of dwTimeout
+	// Kill and wait again a max of dwTimeoutMs
 	if (!res)
 	{
 		::EnumKillProcByName(MICROAPACHE_FILENAME, TRUE);
@@ -6677,7 +6640,7 @@ BOOL CVideoDeviceDoc::MicroApacheShutdown(DWORD dwTimeout)
 		{
 			dwElapsedMs += MICROAPACHE_WAITTIME_MS;
 			::Sleep(MICROAPACHE_WAITTIME_MS);
-			if (dwElapsedMs >= dwTimeout)
+			if (dwElapsedMs >= dwTimeoutMs)
 			{
 				res = FALSE;
 				break;

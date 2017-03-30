@@ -33,6 +33,7 @@ CSettingsDlgVideoDeviceDoc::CSettingsDlgVideoDeviceDoc(CWnd* pParent /*=NULL*/)
 	m_nFirstStartDelay = ((CUImagerApp*)::AfxGetApp())->m_dwFirstStartDelayMs / 1000;
 	m_bStartMicroApache = ((CUImagerApp*)::AfxGetApp())->m_bStartMicroApache;
 	m_nMicroApachePort = ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort;
+	m_nMicroApachePortSSL = ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePortSSL;
 	m_sMicroApacheUsername = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheUsername;
 	m_sMicroApachePassword = ((CUImagerApp*)::AfxGetApp())->m_sMicroApachePassword;
 	m_sMicroApacheDocRootOld = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
@@ -57,6 +58,8 @@ void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_WEBSERVER, m_bStartMicroApache);
 	DDX_Text(pDX, IDC_EDIT_PORT, m_nMicroApachePort);
 	DDV_MinMaxInt(pDX, m_nMicroApachePort, 0, 65535);
+	DDX_Text(pDX, IDC_EDIT_PORT_SSL, m_nMicroApachePortSSL);
+	DDV_MinMaxInt(pDX, m_nMicroApachePortSSL, 0, 65535);
 	DDX_Text(pDX, IDC_AUTH_USERNAME, m_sMicroApacheUsername);
 	DDX_Text(pDX, IDC_AUTH_PASSWORD, m_sMicroApachePassword);
 	DDX_Text(pDX, IDC_EDIT_DOCROOT, m_sMicroApacheDocRoot);
@@ -150,6 +153,7 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsInit()
 	// Micro Apache
 	if (pApp->m_bStartMicroApache != m_bStartMicroApache			||
 		pApp->m_nMicroApachePort != m_nMicroApachePort				||
+		pApp->m_nMicroApachePortSSL != m_nMicroApachePortSSL		||
 		pApp->m_sMicroApacheUsername != m_sMicroApacheUsername		||
 		pApp->m_sMicroApachePassword != m_sMicroApachePassword		||
 		m_sMicroApacheDocRoot.CompareNoCase(m_sMicroApacheDocRootOld) != 0)
@@ -194,6 +198,7 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsEnd()
 	// Micro Apache
 	if (pApp->m_bStartMicroApache != m_bStartMicroApache			||
 		pApp->m_nMicroApachePort != m_nMicroApachePort				||
+		pApp->m_nMicroApachePortSSL != m_nMicroApachePortSSL		||
 		pApp->m_sMicroApacheUsername != m_sMicroApacheUsername		||
 		pApp->m_sMicroApachePassword != m_sMicroApachePassword		||
 		m_sMicroApacheDocRoot.CompareNoCase(m_sMicroApacheDocRootOld) != 0)
@@ -213,6 +218,7 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsEnd()
 		// Update vars
 		pApp->m_bStartMicroApache = m_bStartMicroApache;
 		pApp->m_nMicroApachePort = m_nMicroApachePort;
+		pApp->m_nMicroApachePortSSL = m_nMicroApachePortSSL;
 		pApp->m_sMicroApacheUsername = m_sMicroApacheUsername;
 		pApp->m_sMicroApachePassword = m_sMicroApachePassword;
 		pApp->m_sMicroApacheDocRoot = m_sMicroApacheDocRoot;
@@ -221,15 +227,10 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsEnd()
 		CVideoDeviceDoc::MicroApacheUpdateMainFiles();
 
 		// Start Micro Apache
-		if (m_bStartMicroApache													&&
-			!(CVideoDeviceDoc::MicroApacheInitStart()							&&
-			CVideoDeviceDoc::MicroApacheWaitStartDone(MICROAPACHE_TIMEOUT_MS)	&&
-			CVideoDeviceDoc::MicroApacheWaitCanConnect(MICROAPACHE_TIMEOUT_MS)))
+		if (m_bStartMicroApache && !CVideoDeviceDoc::MicroApacheStart(MICROAPACHE_TIMEOUT_MS))
 		{
 			EndWaitCursor();
-			::AfxMessageBox(ML_STRING(1475, "Failed to start the web server") + _T("\n") + 
-							ML_STRING(1476, "(change the Port number to an unused one)"),
-							MB_ICONSTOP);
+			::AfxMessageBox(ML_STRING(1475, "Failed to start the web server"), MB_ICONSTOP);
 			BeginWaitCursor();
 		}
 	}
@@ -259,6 +260,9 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsEnd()
 	pApp->WriteProfileInt(			_T("GeneralApp"),
 									_T("MicroApachePort"),
 									m_nMicroApachePort);
+	pApp->WriteProfileInt(			_T("GeneralApp"),
+									_T("MicroApachePortSSL"),
+									m_nMicroApachePortSSL);
 	pApp->WriteSecureProfileString(	_T("GeneralApp"),
 									_T("MicroApacheUsername"),
 									m_sMicroApacheUsername);
@@ -344,6 +348,8 @@ void CSettingsDlgVideoDeviceDoc::EnableDisableAllCtrls(BOOL bEnable)
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_WEBSERVER);
 	pCheck->EnableWindow(bEnable);
 	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PORT);
+	pEdit->EnableWindow(bEnable);
+	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PORT_SSL);
 	pEdit->EnableWindow(bEnable);
 	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_USERNAME);
 	pEdit->EnableWindow(bEnable);

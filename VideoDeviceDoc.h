@@ -788,11 +788,8 @@ public:
 	static CString MicroApacheGetPidFileName();
 	static void MicroApacheUpdateMainFiles();
 	static BOOL MicroApacheUpdateWebFiles(CString sAutoSaveDir);
-	static BOOL MicroApacheIsPortUsed(int nPort, DWORD dwTimeout);
-	static BOOL MicroApacheInitStart();
-	static BOOL MicroApacheWaitStartDone(DWORD dwTimeout);
-	static BOOL MicroApacheWaitCanConnect(DWORD dwTimeout);
-	static BOOL MicroApacheShutdown(DWORD dwTimeout);
+	static BOOL MicroApacheStart(DWORD dwTimeoutMs);
+	static BOOL MicroApacheShutdown(DWORD dwTimeoutMs);
 	
 	// Mailer
 	// returns the handle of the started mailsend process
