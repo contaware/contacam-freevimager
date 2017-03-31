@@ -613,6 +613,8 @@ public:
 		HIKVISION_RTSP = 1130,	// Hikvision RTSP
 		LINKSYS_RTSP = 1140,	// Linksys RTSP
 		LOGITECH_RTSP = 1150,	// Logitech RTSP
+		MONACOR_RTSP = 1154,	// Monacor 3MP/4MP/5MP/.. Series RTSP
+		MONACOR_2MP_RTSP = 1155,// Monacor 2MP Series RTSP
 		PANASONIC_RTSP = 1160,	// Panasonic RTSP
 		PIXORD_RTSP = 1170,		// Pixord RTSP
 		PLANET_RTSP = 1180,		// Planet RTSP

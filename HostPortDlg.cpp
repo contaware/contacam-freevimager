@@ -65,6 +65,8 @@ BOOL CHostPortDlg::OnInitDialog()
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Hikvision (RTSP)")), (DWORD)CVideoDeviceDoc::HIKVISION_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Linksys (RTSP)")), (DWORD)CVideoDeviceDoc::LINKSYS_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Logitech (RTSP)")), (DWORD)CVideoDeviceDoc::LOGITECH_RTSP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Monacor 3MP/4MP/5MP/.. Series (RTSP)")), (DWORD)CVideoDeviceDoc::MONACOR_RTSP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Monacor 2MP Series (RTSP)")), (DWORD)CVideoDeviceDoc::MONACOR_2MP_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Panasonic (RTSP)")), (DWORD)CVideoDeviceDoc::PANASONIC_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Panasonic (") + ML_STRING(1865, "HTTP motion jpeg") + _T(")")), (DWORD)CVideoDeviceDoc::PANASONIC_SP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Panasonic (") + ML_STRING(1866, "HTTP jpeg snapshots") + _T(")")), (DWORD)CVideoDeviceDoc::PANASONIC_CP);
