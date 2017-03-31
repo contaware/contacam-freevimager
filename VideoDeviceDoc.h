@@ -610,6 +610,7 @@ public:
 		DAHUA_RTSP = 1090,		// Dahua RTSP
 		EDIMAX_RTSP = 1110,		// Edimax RTSP
 		FOSCAM_RTSP = 1120,		// Foscam RTSP
+		GEOVISION_RTSP = 1125,	// GeoVision RTSP
 		HIKVISION_RTSP = 1130,	// Hikvision RTSP
 		LINKSYS_RTSP = 1140,	// Linksys RTSP
 		LOGITECH_RTSP = 1150,	// Logitech RTSP

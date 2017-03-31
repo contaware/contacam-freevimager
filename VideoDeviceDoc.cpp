@@ -9146,6 +9146,7 @@ BOOL CVideoDeviceDoc::ConnectRtsp(DWORD dwConnectDelayMs/*=0U*/)
 		case DAHUA_RTSP:		sQuery = _T("/live"); break;
 		case EDIMAX_RTSP:		sQuery = _T("/ipcam_h264.sdp"); break;
 		case FOSCAM_RTSP:		sQuery = _T("/videoMain"); break;
+		case GEOVISION_RTSP:	sQuery = _T("/CH001.sdp"); break;
 		case HIKVISION_RTSP:	sQuery = _T("/Streaming/Channels/1"); break;
 		case LINKSYS_RTSP:		sQuery = _T("/img/media.sav"); break;
 		case LOGITECH_RTSP:		sQuery = _T("/HighResolutionVideo"); break;
