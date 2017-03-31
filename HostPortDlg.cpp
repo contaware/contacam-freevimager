@@ -342,6 +342,8 @@ void CHostPortDlg::EnableDisableCtrls()
 
 	// Disable / Enable
 	CEdit* pEditPort = (CEdit*)GetDlgItem(IDC_EDIT_PORT);
+	CStatic* pStaticRtspPorts = (CStatic*)GetDlgItem(IDC_STATIC_RTSP_PORTS);
+	CStatic* pStaticHttpPorts = (CStatic*)GetDlgItem(IDC_STATIC_HTTP_PORTS);
 	CComboBox* pComboBoxDevTypeMode = (CComboBox*)GetDlgItem(IDC_COMBO_DEVICETYPEMODE);
 	CStatic* pStaticRtsp = (CStatic*)GetDlgItem(IDC_STATIC_RTSP);
 	CStatic* pStaticServerPush = (CStatic*)GetDlgItem(IDC_STATIC_SERVERPUSH);
@@ -349,6 +351,8 @@ void CHostPortDlg::EnableDisableCtrls()
 	if (sHostLowerCase.Find(_T("http://")) >= 0 || sHostLowerCase.Find(_T("rtsp://")) >= 0)
 	{
 		pEditPort->EnableWindow(FALSE);
+		pStaticRtspPorts->EnableWindow(FALSE);
+		pStaticHttpPorts->EnableWindow(FALSE);
 		pComboBoxDevTypeMode->EnableWindow(FALSE);
 		pStaticRtsp->EnableWindow(FALSE);
 		pStaticServerPush->EnableWindow(FALSE);
@@ -357,6 +361,8 @@ void CHostPortDlg::EnableDisableCtrls()
 	else
 	{
 		pEditPort->EnableWindow(TRUE);
+		pStaticRtspPorts->EnableWindow(TRUE);
+		pStaticHttpPorts->EnableWindow(TRUE);
 		pComboBoxDevTypeMode->EnableWindow(TRUE);
 		pStaticRtsp->EnableWindow(TRUE);
 		pStaticServerPush->EnableWindow(TRUE);
