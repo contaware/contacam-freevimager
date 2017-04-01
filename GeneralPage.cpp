@@ -446,7 +446,7 @@ BOOL CGeneralPage::OnInitDialog()
 	// Set scheduler date range
 	CDateTimeCtrl* pDateTimeCtrl = (CDateTimeCtrl*)GetDlgItem(IDC_DATE_ONCE_START);
 	CTime t1(CTime::GetCurrentTime());
-	CTime t2(3000, 12, 31, 23, 59, 59);
+	CTime t2(3000, 12, 31, 12, 0, 0); // do not set time to 23:59:59 as that crashes if time zone is UTC-09:00 or less
 	pDateTimeCtrl->SetRange(&t1, &t2);
 	pDateTimeCtrl = (CDateTimeCtrl*)GetDlgItem(IDC_DATE_ONCE_STOP);
 	pDateTimeCtrl->SetRange(&t1, &t2);

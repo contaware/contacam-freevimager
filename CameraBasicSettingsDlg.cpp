@@ -538,7 +538,7 @@ void CCameraBasicSettingsDlg::EnableDisable24hRec(BOOL bEnable)
 																		CurrentTime.GetSecond());
 
 			// Stop Time
-			CTime MaxTime(3000, 12, 31, 23, 59, 59);
+			CTime MaxTime(3000, 12, 31, 12, 0, 0); // do not set time to 23:59:59 as that crashes if time zone is UTC-09:00 or less
 			m_pDoc->m_pGeneralPage->m_SchedulerOnceDateStop = CTime(	MaxTime.GetYear(),
 																		MaxTime.GetMonth(),
 																		MaxTime.GetDay(),
@@ -589,7 +589,7 @@ void CCameraBasicSettingsDlg::EnableDisable24hRec(BOOL bEnable)
 			pSchedulerEntry->m_StartTime = CTime::GetCurrentTime();
 
 			// Stop Time
-			pSchedulerEntry->m_StopTime = CTime(3000, 12, 31, 23, 59, 59);
+			pSchedulerEntry->m_StopTime = CTime(3000, 12, 31, 12, 0, 0); // do not set time to 23:59:59 as that crashes if time zone is UTC-09:00 or less
 			
 			// 6 Hours Segmentation
 			m_pDoc->m_bRecTimeSegmentation = TRUE;
@@ -615,7 +615,7 @@ BOOL CCameraBasicSettingsDlg::Is24hRec()
 		((CUImagerApp*)::AfxGetApp())->GetOnceSchedulerEntry(m_pDoc->GetDevicePathName());
 	if (pOnceSchedulerEntry											&&
 		pOnceSchedulerEntry->m_StartTime <= CTime::GetCurrentTime()	&&
-		pOnceSchedulerEntry->m_StopTime == CTime(3000, 12, 31, 23, 59, 59))
+		pOnceSchedulerEntry->m_StopTime.GetYear() >= 3000)
 		return TRUE;
 	else
 		return FALSE;
