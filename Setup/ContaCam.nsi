@@ -289,6 +289,8 @@ Section "${APPNAME_NOEXT} Program (required)"
   SetOverwrite off
   File "..\ContaCamService\Release\ContaCamService.ini"
   File "MasterConfig.ini"
+  File "https.crt"
+  File "https.key"
   SetOverwrite on
   
   ; Microapache files and VC9 redistributables for it
@@ -607,6 +609,8 @@ Section "Uninstall"
   Delete $INSTDIR\ContaCamService.ini
   Delete $INSTDIR\ContaCamService.log
   Delete $INSTDIR\MasterConfig.ini
+  Delete $INSTDIR\https.crt
+  Delete $INSTDIR\https.key
   Delete $INSTDIR\${UNINSTNAME_EXT}
   
   ; Remove directories used

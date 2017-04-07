@@ -5995,12 +5995,10 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	TCHAR szDrive[_MAX_DRIVE];
 	TCHAR szDir[_MAX_DIR];
 	TCHAR szProgramName[MAX_PATH];
-	CString sMicroapacheDir;
 	CString sMicroapacheHtDocs;
 	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
 		return;
 	_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-	sMicroapacheDir = CString(szDrive) + CString(szDir) + MICROAPACHE_DIR + _T("\\");
 	sMicroapacheHtDocs = CString(szDrive) + CString(szDir) + MICROAPACHE_HTDOCS + _T("\\");
 
 	// Copy index.php to Doc Root (overwrite if existing)
@@ -6084,8 +6082,8 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	sConfig += sFormat;
 	sConfig += _T("ServerName localhost\r\n");
 	sConfig += _T("SSLEngine on\r\n");
-	sConfig += _T("SSLCertificateFile \"") + sMicroapacheDir + _T("https.crt") + _T("\"\r\n");
-	sConfig += _T("SSLCertificateKeyFile \"") + sMicroapacheDir + _T("https.key") + _T("\"\r\n");
+	sConfig += _T("SSLCertificateFile \"") + CString(szDrive) + CString(szDir) + _T("https.crt") + _T("\"\r\n");
+	sConfig += _T("SSLCertificateKeyFile \"") + CString(szDrive) + CString(szDir) + _T("https.key") + _T("\"\r\n");
 	sConfig += _T("</VirtualHost>\r\n");
 
 	// Do not allow .htaccess files and setup the rewrite engine
