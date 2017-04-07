@@ -152,7 +152,9 @@ BOOL CSnapshotPage::OnInitDialog()
 
 void CSnapshotPage::OnDestroy() 
 {
+	// Base class
 	CPropertyPage::OnDestroy();
+
 	// Set Page Pointer to NULL
 	m_pDoc->m_pSnapshotPage = NULL;
 }

@@ -121,7 +121,7 @@ class CMovementDetectionPage;
 #define MOVDET_SAVEFRAMES_POLL				1000U		// ms
 #define MOVDET_MIN_FRAMES_IN_LIST			10			// Min. frames in list before saving the list in the
 														// case of insufficient memory
-#define MOVDET_MAX_FRAMES_IN_LIST			15000		// Default maximum frames per list
+#define MOVDET_MAX_FRAMES_IN_LIST			2000		// Default maximum frames per list
 #define MOVDET_SAVE_MIN_FRAMERATE_RATIO		0.3			// Min ratio between calculated (last - first) and m_dEffectiveFrameRate
 #define MOVDET_TIMEOUT						1000U		// Timeout in ms for detection zones
 #define MOVDET_ANIMGIF_MAX_FRAMES			60			// Maximum number of frames per animated gif
@@ -673,7 +673,7 @@ public:
 	__forceinline void ShrinkNewestFrameList();						// Free oldest frames from newest frame list
 																	// making the list m_nMilliSecondsRecBeforeMovementBegin long
 	__forceinline int GetNewestMovementDetectionsListCount();		// Get the newest list's count
-	__forceinline CDib* AllocMJPGFrame(CDib* pDib,					// Allocate new MJPG frame compressing pDib or copying pMJPGData if available
+	__forceinline CDib* AllocDetFrame(CDib* pDib,					// Allocate a new detection buffering frame
 								LPBYTE pMJPGData, DWORD dwMJPGSize);// (copies also audio samples)
 	__forceinline void AddNewFrameToNewestList(CDib* pDib,			// Add new frame to newest list
 								LPBYTE pMJPGData, DWORD dwMJPGSize);

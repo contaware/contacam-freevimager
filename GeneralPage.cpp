@@ -472,7 +472,7 @@ BOOL CGeneralPage::OnInitDialog()
 	m_pDoc->m_pGeneralPage = this;
 
 	// Set Timer
-	SetTimer(ID_TIMER_GENERALDLG, GENERALDLG_TIMER_MS, NULL);
+	SetTimer(ID_TIMER_GENERALPAGE, GENERALPAGE_TIMER_MS, NULL);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -481,12 +481,12 @@ BOOL CGeneralPage::OnInitDialog()
 void CGeneralPage::OnDestroy() 
 {
 	// Kill timer
-	KillTimer(ID_TIMER_GENERALDLG);
+	KillTimer(ID_TIMER_GENERALPAGE);
 
 	// Base class
 	CPropertyPage::OnDestroy();
 
-	// Set Dialog Pointer to NULL
+	// Set Page Pointer to NULL
 	m_pDoc->m_pGeneralPage = NULL;
 }
 

@@ -2896,7 +2896,7 @@ int CVideoDeviceDoc::CRtspThread::Work()
 		// Set options
 		AVDictionary* opts = NULL;
 		//av_dict_set(&opts, "rtsp_transport", "tcp", 0);			// udp or tcp (default udp)
-		//av_dict_set(&opts, "rtsp_flags", "prefer_tcp", 0);		// try RTP via TCP first, if available
+		//av_dict_set(&opts, "rtsp_flags", "prefer_tcp", 0);		// if set, and if TCP is available as RTP transport, then TCP will be tried first instead of UDP
 		av_dict_set_int(&opts, "stimeout", 10000000, 0);			// set timeout (in microseconds) of socket TCP I/O operations
 		//av_dict_set(&opts, "reorder_queue_size", "128", 0);		// set number of packets to buffer for handling of reordered packets
 		//
@@ -8493,11 +8493,13 @@ __forceinline void CVideoDeviceDoc::ClearNewestFrameList()
 	::LeaveCriticalSection(&m_csMovementDetectionsList);
 }
 
-__forceinline CDib* CVideoDeviceDoc::AllocMJPGFrame(CDib* pDib, LPBYTE pMJPGData, DWORD dwMJPGSize)
+__forceinline CDib* CVideoDeviceDoc::AllocDetFrame(CDib* pDib, LPBYTE pMJPGData, DWORD dwMJPGSize)
 {
 	CDib* pNewDib = NULL;
 	if (pDib)
 	{
+#if 0
+		// Buffer as MJPG frame
 		BITMAPINFO Bmi;
 		memset(&Bmi, 0, sizeof(BITMAPINFO));
 		Bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
@@ -8544,6 +8546,19 @@ __forceinline CDib* CVideoDeviceDoc::AllocMJPGFrame(CDib* pDib, LPBYTE pMJPGData
 				}
 			}
 		}
+#else
+		// Buffer as I420 frame
+		pNewDib = new CDib;
+		if (pNewDib)
+		{
+			pNewDib->SetShowMessageBoxOnError(FALSE);
+			pNewDib->SetBMI(pDib->GetBMI());			// set BMI	
+			pNewDib->SetBits((LPBYTE)pDib->GetBits());	// copy bits
+			pNewDib->SetUpTime(pDib->GetUpTime());		// copy frame uptime
+			pNewDib->SetUserFlag(pDib->GetUserFlag());	// copy motion, deinterlace and rotate by 180° flags
+			pNewDib->CopyUserList(pDib->m_UserList);	// copy audio bufs if any
+		}
+#endif
 	}
 	return pNewDib;
 }
@@ -8568,10 +8583,11 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestList(CDib* pDib, LPBYTE p
 						CDib::FreeList(*pTail);
 				}
 
-				// Add the new frame
-				CDib* pNewDib = AllocMJPGFrame(pDib, pMJPGData, dwMJPGSize);
+				// Allocate the new frame
+				CDib* pNewDib = AllocDetFrame(pDib, pMJPGData, dwMJPGSize);
 				if (pNewDib)
 				{
+					// Add the new frame
 					if (!pNewDib->BitsToSharedMemory())
 					{
 						::LogLine(_T("%s"), ML_STRING(1817, "OUT OF MEMORY: increase the Page File size, add more RAM, lower the \"Split detection files longer than\" value for all cameras"));
@@ -8605,8 +8621,8 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestListAndShrink(CDib* pDib,
 						CDib::FreeList(*pTail);
 				}
 
-				// Alloc MJPG frame
-				CDib* pNewDib = AllocMJPGFrame(pDib, pMJPGData, dwMJPGSize);
+				// Allocate the new frame
+				CDib* pNewDib = AllocDetFrame(pDib, pMJPGData, dwMJPGSize);
 				if (pNewDib)
 				{
 					// Add the new frame

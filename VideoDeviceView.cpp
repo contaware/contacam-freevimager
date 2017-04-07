@@ -814,8 +814,6 @@ void CVideoDeviceView::OnTimer(UINT nIDEvent)
 		case ID_TIMER_RELOAD_SETTINGS :
 		{
 			pDoc->m_dwVideoProcessorMode = (DWORD) MIN(1, MAX(0, ::AfxGetApp()->GetProfileInt(pDoc->GetDevicePathName(), _T("VideoProcessorMode"), 0)));
-			if (pDoc->m_pMovementDetectionPage)
-				pDoc->m_pMovementDetectionPage->UpdateDetectionState();
 			break;
 		}
 		default:

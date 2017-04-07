@@ -71,6 +71,7 @@ BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	ON_WM_DESTROY()
 	ON_EN_CHANGE(IDC_SECONDS_AFTER_MOVEMENT_END, OnChangeSecondsAfterMovementEnd)
 	ON_EN_CHANGE(IDC_SECONDS_BEFORE_MOVEMENT_BEGIN, OnChangeSecondsBeforeMovementBegin)
+	ON_WM_TIMER()
 	ON_WM_HSCROLL()
 	ON_NOTIFY(NM_RELEASEDCAPTURE, IDC_DETECTION_LEVEL, OnReleasedcaptureDetectionLevel)
 	ON_BN_CLICKED(IDC_ANIMATEDGIF_SIZE, OnAnimatedgifSize)
@@ -216,70 +217,29 @@ BOOL CMovementDetectionPage::OnInitDialog()
 		pCheckWaitExecCommandMovementDetection->SetCheck(0);
 	UpdateExecHelp();
 
-	// Update Detection State
-	UpdateDetectionState();
+	// Hide Warning
+	CEdit* pEditWarning = (CEdit*)GetDlgItem(IDC_WARNING);
+	if (pEditWarning)
+		pEditWarning->ShowWindow(SW_HIDE);
 
 	// Set Page Pointer to this
 	m_pDoc->m_pMovementDetectionPage = this;
 	
+	// Set Timer
+	SetTimer(ID_TIMER_MOVDETPAGE, MOVDETPAGE_TIMER_MS, NULL);
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CMovementDetectionPage::UpdateDetectionState()
-{
-	// Detection Mode
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_DETECTION_MODE);
-	if (pEdit)
-	{
-		CString sDetectionMode(ML_STRING(1845, "OFF"));
-		if (m_pDoc->m_dwVideoProcessorMode)
-		{
-			// Show current set detection mode(s)
-			if (!m_pDoc->m_sDetectionTriggerFileName.IsEmpty() && m_pDoc->m_nDetectionLevel > 0)
-				sDetectionMode = ML_STRING(1848, "Software + Trigger File");
-			else if (!m_pDoc->m_sDetectionTriggerFileName.IsEmpty())
-				sDetectionMode = ML_STRING(1846, "Trigger File");
-			else if (m_pDoc->m_nDetectionLevel > 0)
-				sDetectionMode = ML_STRING(1847, "Software");
-
-			// If scheduler set
-			if (m_pDoc->m_nDetectionStartStop > 0)
-			{
-				// Is current time in schedule?
-				BOOL bInSchedule = m_pDoc->IsInMovDetSchedule(CTime::GetCurrentTime());
-
-				// 1 -> Enable detection on specified schedule
-				if (m_pDoc->m_nDetectionStartStop == 1)
-				{
-					if (!bInSchedule)
-						sDetectionMode = ML_STRING(1845, "OFF");
-				}
-				// 2 -> Disable detection on specified schedule
-				else
-				{
-					if (bInSchedule)
-						sDetectionMode = ML_STRING(1845, "OFF");
-				}
-			}
-		}
-		pEdit->SetWindowText(sDetectionMode);
-	}
-
-	// Warning
-	pEdit = (CEdit*)GetDlgItem(IDC_WARNING);
-	if (pEdit)
-	{
-		if (m_pDoc->m_bUnsupportedVideoSizeForMovDet)
-			pEdit->ShowWindow(SW_SHOW);
-		else
-			pEdit->ShowWindow(SW_HIDE);
-	}
-}
-
 void CMovementDetectionPage::OnDestroy() 
 {
+	// Kill timer
+	KillTimer(ID_TIMER_MOVDETPAGE);
+
+	// Base class
 	CPropertyPage::OnDestroy();
+
 	// Set Page Pointer to NULL
 	m_pDoc->m_pMovementDetectionPage = NULL;
 }
@@ -356,6 +316,83 @@ void CMovementDetectionPage::OnChangeEditDetectionMaxFrames()
 {
 	if (UpdateData(TRUE))
 		m_pDoc->m_nDetectionMaxFrames = m_nDetectionMaxFrames;
+}
+
+void CMovementDetectionPage::OnTimer(UINT nIDEvent)
+{
+	if (!m_pDoc->m_bClosing)
+	{
+		// Detection Mode
+		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_DETECTION_MODE);
+		if (pEdit)
+		{
+			CString sDetectionMode(ML_STRING(1845, "OFF"));
+			if (m_pDoc->m_dwVideoProcessorMode)
+			{
+				// Show current set detection mode(s)
+				if (!m_pDoc->m_sDetectionTriggerFileName.IsEmpty() && m_pDoc->m_nDetectionLevel > 0)
+					sDetectionMode = ML_STRING(1848, "Software + Trigger File");
+				else if (!m_pDoc->m_sDetectionTriggerFileName.IsEmpty())
+					sDetectionMode = ML_STRING(1846, "Trigger File");
+				else if (m_pDoc->m_nDetectionLevel > 0)
+					sDetectionMode = ML_STRING(1847, "Software");
+
+				// If scheduler set
+				if (m_pDoc->m_nDetectionStartStop > 0)
+				{
+					// Is current time in schedule?
+					BOOL bInSchedule = m_pDoc->IsInMovDetSchedule(CTime::GetCurrentTime());
+
+					// 1 -> Enable detection on specified schedule
+					if (m_pDoc->m_nDetectionStartStop == 1)
+					{
+						if (!bInSchedule)
+							sDetectionMode = ML_STRING(1845, "OFF");
+					}
+					// 2 -> Disable detection on specified schedule
+					else
+					{
+						if (bInSchedule)
+							sDetectionMode = ML_STRING(1845, "OFF");
+					}
+				}
+			}
+			pEdit->SetWindowText(sDetectionMode);
+		}
+
+		// Warning
+		pEdit = (CEdit*)GetDlgItem(IDC_WARNING);
+		if (pEdit)
+		{
+			if (m_pDoc->m_bUnsupportedVideoSizeForMovDet)
+				pEdit->ShowWindow(SW_SHOW);
+			else
+				pEdit->ShowWindow(SW_HIDE);
+		}
+
+		// Max Det Video Length
+		pEdit = (CEdit*)GetDlgItem(IDC_MAX_MOVDET_VIDEOLENGTH);
+		if (pEdit)
+		{
+			CString sMaxDetVideoLengthSec;
+			double dEffectiveFrameRate = m_pDoc->m_dEffectiveFrameRate;
+			if (dEffectiveFrameRate > 0.0)
+				sMaxDetVideoLengthSec.Format(_T("%0.1f"), (double)m_pDoc->m_nDetectionMaxFrames / dEffectiveFrameRate);
+			pEdit->SetWindowText(sMaxDetVideoLengthSec);
+		}
+
+		// Max Det Queue Size
+		pEdit = (CEdit*)GetDlgItem(IDC_MAX_MOVDET_QUEUESIZE);
+		if (pEdit)
+		{
+			CString sMaxDetQueueSizeGB;
+			LONG lFrameSize = m_pDoc->m_ProcessFrameBMI.bmiHeader.biSizeImage;
+			if (lFrameSize > 0)
+				sMaxDetQueueSizeGB.Format(_T("%0.1f"), (double)lFrameSize * m_pDoc->m_nDetectionMaxFrames / 1073741824.0);
+			pEdit->SetWindowText(sMaxDetQueueSizeGB);
+		}
+	}
+	CPropertyPage::OnTimer(nIDEvent);
 }
 
 void CMovementDetectionPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) 

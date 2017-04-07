@@ -2194,7 +2194,9 @@
 #define IDC_EDIT_SNAPSHOT_HISTORY_FRAMERATE 1768
 #define IDS_STRING1768                  1768
 #define IDS_STRING1769                  1769
+#define IDC_MAX_MOVDET_QUEUESIZE        1769
 #define IDS_STRING1770                  1770
+#define IDC_MAX_MOVDET_VIDEOLENGTH      1770
 #define IDS_STRING1771                  1771
 #define IDS_STRING1772                  1772
 #define IDS_STRING1773                  1773
