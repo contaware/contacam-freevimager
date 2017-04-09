@@ -2895,11 +2895,9 @@ int CVideoDeviceDoc::CRtspThread::Work()
 
 		// Set options
 		AVDictionary* opts = NULL;
-		//av_dict_set(&opts, "rtsp_transport", "tcp", 0);			// udp or tcp (default udp)
-		//av_dict_set(&opts, "rtsp_flags", "prefer_tcp", 0);		// if set, and if TCP is available as RTP transport, then TCP will be tried first instead of UDP
-		av_dict_set_int(&opts, "stimeout", 10000000, 0);			// set timeout (in microseconds) of socket TCP I/O operations
-		//av_dict_set(&opts, "reorder_queue_size", "128", 0);		// set number of packets to buffer for handling of reordered packets
-		//
+		if (((CUImagerApp*)::AfxGetApp())->m_bPreferTcpforRtsp)
+			av_dict_set(&opts, "rtsp_flags", "prefer_tcp", 0);		// if set, and if TCP is available as RTP transport, then TCP will be tried first instead of UDP
+		av_dict_set_int(&opts, "stimeout", 10000000, 0);			// set timeout (in microseconds) of socket TCP I/O operations (=10 seconds)
 		// SO_RCVBUF is the size of the buffer the system allocates to hold the data arriving
 		// into the given socket during the time between it arrives over the network and when it
 		// is read by the program that owns this socket. With TCP, if data arrives and you aren't

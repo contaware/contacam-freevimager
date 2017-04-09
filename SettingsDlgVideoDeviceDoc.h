@@ -60,6 +60,7 @@ public:
 	BOOL	m_bBrowserAutostart;
 	BOOL	m_bStartFromService;
 	BOOL	m_bIPv6;
+	BOOL	m_bPreferTcpforRtsp;
 	int		m_nAutostartDelay;
 	int		m_nFirstStartDelay;
 	//}}AFX_DATA
