@@ -390,13 +390,14 @@ public:
 	class CRtspThread : public CWorkerThread
 	{
 		public:
-			CRtspThread() { m_pDoc = NULL; m_dwConnectDelayMs = 0U; m_nVideoCodecID = -1; m_nAudioCodecID = -1; };
+			CRtspThread() { m_pDoc = NULL; m_dwConnectDelayMs = 0U; m_nVideoCodecID = -1; m_nAudioCodecID = -1; m_nUnderlyingTransport = -1; };
 			virtual ~CRtspThread() {Kill();};
 			void SetDoc(CVideoDeviceDoc* pDoc) { m_pDoc = pDoc; };
 			CString m_sURL;
 			DWORD m_dwConnectDelayMs;
-			volatile int m_nVideoCodecID;
-			volatile int m_nAudioCodecID;
+			volatile int m_nVideoCodecID;			// -1 means not set 
+			volatile int m_nAudioCodecID;			// -1 means not set
+			volatile int m_nUnderlyingTransport;	// -1 means not set, 0: UDP, 1: TCP, 2: UDP MULTICAST
 
 		protected:
 			int Work();

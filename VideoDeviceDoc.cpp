@@ -3000,6 +3000,18 @@ int CVideoDeviceDoc::CRtspThread::Work()
 		avpkt.size = 0;
 		while ((ret = av_read_frame(pFormatCtx, &avpkt)) >= 0)
 		{
+			// Get underlying transport, that may change while streaming,
+			// so poll it regularly.
+			// The offset of lower_transport from RTSPState in rtsp.h
+			// (cannot include rtsp.h here as it doesn't compile)
+			// has been calculated taking into account the padding/alignment
+			// for the int64_t variables.
+			//
+			// ATTENTION: when updating the ffmpeg source make sure the offset
+			//            is still correct!!
+			//
+			m_nUnderlyingTransport = *((int*)((LPBYTE)(pFormatCtx->priv_data) + 564));
+			
 			AVPacket orig_pkt = avpkt;
 
 			do
@@ -4276,10 +4288,21 @@ void CVideoDeviceDoc::SetDocumentTitle()
 					else
 						sFormat += ML_STRING(1493, "no audio");
 				}
+				CString sProto(_T("RTSP"));
+				if (m_RtspThread.m_nUnderlyingTransport >= 0)
+				{
+					switch (m_RtspThread.m_nUnderlyingTransport)
+					{
+						case 0: sProto += _T(" (UDP)"); break;
+						case 1: sProto += _T(" (TCP)"); break;
+						case 2: sProto += _T(" (UDP Multicast)"); break;
+						default:sProto += _T(" (Unknown Transport)"); break;
+					}
+				}
 				if (!sFormat.IsEmpty())
-					sFormat = _T("RTSP ") + sFormat;
+					sFormat = sProto + _T(" ") + sFormat;
 				else
-					sFormat = _T("RTSP");
+					sFormat = sProto;
 			}
 		}
 

@@ -97,3 +97,8 @@ Linking to FFmpeg
   #include <stdint.h>
   #pragma warning(pop)
   #endif
+  
+  
+ATTENTION: when updating the ffmpeg source make sure the offset to init 
+m_nUnderlyingTransport with the lower_transport from RTSPState in rtsp.h 
+is still correct!!

@@ -29,6 +29,10 @@ $ make distclean
 $ ./config_mingw
 $ make
 
+ATTENTION: when updating the ffmpeg source make sure the offset to init 
+m_nUnderlyingTransport with the lower_transport from RTSPState in rtsp.h 
+is still correct!!
+
 
 X264 (to disable asm and multi-threading use --disable-asm --disable-thread)
 ----------------------------------------------------------------------------
