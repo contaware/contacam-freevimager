@@ -193,6 +193,10 @@ class CMovementDetectionPage;
 #define HTTP_USERNAME_PLACEHOLDER			_T("[USERNAME]") // only use letters, numbers, uri unreserved or uri reserved chars
 #define HTTP_PASSWORD_PLACEHOLDER			_T("[PASSWORD]") // only use letters, numbers, uri unreserved or uri reserved chars
 
+// Rtsp Networking
+#define RTSP_SOCKET_TIMEOUT					15000000	// timeout in microseconds of socket I/O operations
+
+
 // The Document Class
 class CVideoDeviceDoc : public CUImagerDoc
 {
