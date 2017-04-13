@@ -14,7 +14,7 @@ SRC_PATH=.
 ifndef MAIN_MAKEFILE
 SRC_PATH:=$(SRC_PATH:.%=..%)
 endif
-CC_IDENT=gcc 4.8.1 (GCC)
+CC_IDENT=gcc 5.3.0 (GCC)
 ARCH=x86
 INTRINSICS=none
 CC=gcc
