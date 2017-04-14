@@ -229,7 +229,7 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 
 	// Check whether pixel format is supported
 	AVPixelFormat pix_fmt;
-	if (m_pOutputFormat->video_codec == CODEC_ID_RAWVIDEO)
+	if (m_pOutputFormat->video_codec == AV_CODEC_ID_RAWVIDEO)
 		pix_fmt = AVCodecBMIToPixFormat(pDstFormat);
 	else
 	{
