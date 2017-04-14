@@ -20,7 +20,7 @@ FFMPEG
    
    In VS2015 to correctly link we have to remove pow.o, strtoimax.o, strtof.o, sinf.o and exp2f.o from libmingwex.a,
    perform the following in visual studio command prompt:
-   $ lib -remove:pow.o -remove:strtoimax.o -remove:strtof.o -remove:sinf.o -remove:exp2f.o libmingwex.a
+   $ lib -remove:pow.o -remove:strtoimax.o -remove:strtoumax.o -remove:strtof.o -remove:sinf.o -remove:exp2f.o libmingwex.a
    $ rename libmingwex.lib libmingwex.a
 
 3. Open msys console:
