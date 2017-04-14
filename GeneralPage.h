@@ -47,7 +47,6 @@ public:
 	BOOL	m_bAutorun;
 	int		m_nTimeSegmentationIndex;
 	BOOL	m_bRecAutoOpen;
-	BOOL	m_bDeinterlace;
 	BOOL	m_bRotate180;
 	BOOL	m_bAudioListen;
 	//}}AFX_DATA
@@ -87,7 +86,6 @@ protected:
 	afx_msg void OnCheckTimeSegmentation();
 	afx_msg void OnCheckAutorun();
 	afx_msg void OnSelchangeTimeSegmentation();
-	afx_msg void OnCheckLiveDeinterlace();
 	afx_msg void OnCheckLiveRotate180();
 	afx_msg void OnCheckAutoopen();
 	afx_msg void OnCheckAudioListen();

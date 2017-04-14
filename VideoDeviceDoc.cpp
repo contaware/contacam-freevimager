@@ -206,14 +206,10 @@ void CVideoDeviceDoc::CSaveFrameListThread::LoadAndDecodeFrame(CDib* pDib)
 			BIGFREE(pOldBits);
 
 		// Frames coming from a mjpeg source have to be processed here
-		// if set so. The other ones are already deinterlaced and/or
-		// rotated by 180° in ProcessI420Frame() before being compressed
+		// if set so. The other ones are already rotated by 180° in
+		// ProcessI420Frame() before being compressed
 		if (res && bDeviceIsMJPG)
 		{
-			// De-Interlace?
-			if (pDib->GetUserFlag() & FRAME_USER_FLAG_DEINTERLACE)
-				CVideoDeviceDoc::Deinterlace(pDib);
-
 			// Rotate by 180°?
 			if (pDib->GetUserFlag() & FRAME_USER_FLAG_ROTATE180)
 				CVideoDeviceDoc::Rotate180(pDib);
@@ -3772,7 +3768,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_dwStopProcessFrame = 0U;
 	m_dwProcessFrameStopped = 0U;
 	m_pAVRec = NULL;
-	m_bDeinterlace = FALSE;
 	m_bRotate180 = FALSE;
 	memset(&m_CaptureBMI, 0, sizeof(BITMAPINFOFULL));
 	memset(&m_ProcessFrameBMI, 0, sizeof(BITMAPINFOFULL));
@@ -4576,7 +4571,6 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 
 	// All other
 	m_bVideoView = (BOOL) pApp->GetProfileInt(sSection, _T("VideoView"), TRUE);
-	m_bDeinterlace = (BOOL) pApp->GetProfileInt(sSection, _T("Deinterlace"), FALSE);
 	m_bRotate180 = (BOOL) pApp->GetProfileInt(sSection, _T("Rotate180"), FALSE);
 	m_bRecAutoOpen = (BOOL) pApp->GetProfileInt(sSection, _T("RecAutoOpen"), TRUE);
 	m_bRecTimeSegmentation = (BOOL) pApp->GetProfileInt(sSection, _T("RecTimeSegmentation"), FALSE);
@@ -4791,7 +4785,6 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteSecureProfileString(sSection, _T("HTTPGetFramePassword"), m_sHttpGetFramePassword);
 
 	// All other
-	pApp->WriteProfileInt(sSection, _T("Deinterlace"), (int)m_bDeinterlace);
 	pApp->WriteProfileInt(sSection, _T("Rotate180"), (int)m_bRotate180);
 	pApp->WriteProfileInt(sSection, _T("RecAutoOpen"), m_bRecAutoOpen);
 	pApp->WriteProfileInt(sSection, _T("RecTimeSegmentation"), m_bRecTimeSegmentation);
@@ -7155,24 +7148,6 @@ BOOL CVideoDeviceDoc::Rotate180(CDib* pDib)
 	return TRUE;
 }
 
-BOOL CVideoDeviceDoc::Deinterlace(CDib* pDib)
-{
-	if (!pDib)
-		return FALSE;
-	AVPicture Frame;
-	AVPixelFormat pix_fmt = CAVRec::AVCodecBMIToPixFormat(pDib->GetBMI());
-	avpicture_fill(	&Frame,
-					(uint8_t*)pDib->GetBits(),
-					pix_fmt,
-					pDib->GetWidth(),
-					pDib->GetHeight());
-	return (avpicture_deinterlace(	&Frame,	// Dst
-									&Frame,	// Src
-									pix_fmt,
-									pDib->GetWidth(),
-									pDib->GetHeight()) >= 0);
-}
-
 BOOL CVideoDeviceDoc::IsInMovDetSchedule(const CTime& Time)
 {
 	BOOL bInSchedule = TRUE;
@@ -7571,13 +7546,6 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize, LPBYTE pMJPGD
 	{
 		// Clear the user flag from any previous content
 		pDib->SetUserFlag(0);
-
-		// De-Interlace if divisible by 4
-		if (m_bDeinterlace && (pDib->GetWidth() & 3) == 0 && (pDib->GetHeight() & 3) == 0)
-		{
-			Deinterlace(pDib);
-			pDib->SetUserFlag(pDib->GetUserFlag() | FRAME_USER_FLAG_DEINTERLACE);
-		}
 
 		// Rotate by 180° if divisible by 4
 		if (m_bRotate180 && (pDib->GetHeight() & 3) == 0)

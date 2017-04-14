@@ -2007,7 +2007,6 @@
 #define IDS_STRING1650                  1650
 #define IDS_STRING1651                  1651
 #define IDS_STRING1652                  1652
-#define IDC_CHECK_LIVE_DEINTERLACE      1652
 #define IDC_VIDEO_COMPRESSION_QUALITY   1653
 #define IDS_STRING1653                  1653
 #define IDS_STRING1654                  1654

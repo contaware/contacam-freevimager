@@ -57,7 +57,6 @@ class CMovementDetectionPage;
 #define AUDIO_UNCOMPRESSED_BUFS_COUNT		16			// Number of audio buffers
 #define AUDIO_RECONNECTION_DELAY			1000U		// ms
 #define FRAME_USER_FLAG_MOTION				0x01		// mark the frame as a motion frame
-#define FRAME_USER_FLAG_DEINTERLACE			0x02		// mark the frame as being deinterlaced
 #define FRAME_USER_FLAG_ROTATE180			0x04		// mark the frame as being rotated by 180°
 #define FRAME_USER_FLAG_LAST				0x08		// mark the frame as being the last frame of the detection sequence
 #define DEFAULT_DEL_RECS_OLDER_THAN_DAYS	31			// by default delete recordings older than a month
@@ -691,7 +690,6 @@ public:
 	void ProcessM420Frame(LPBYTE pData, DWORD dwSize);
 	void ProcessI420Frame(LPBYTE pData, DWORD dwSize, LPBYTE pMJPGData, DWORD dwMJPGSize);
 	static BOOL Rotate180(CDib* pDib);
-	static BOOL Deinterlace(CDib* pDib);
 	BOOL IsInMovDetSchedule(const CTime& Time);
 
 	// To Start / Stop Frame Processing and Avoid Dead-Locks!
@@ -844,7 +842,6 @@ public:
 	// General Vars
 	CAVRec* volatile m_pAVRec;							// Pointer to the currently recording file
 	CRITICAL_SECTION m_csAVRec;							// Critical section for the recording file
-	volatile BOOL m_bDeinterlace;						// De-Interlace Video
 	volatile BOOL m_bRotate180;							// Rotate Video by 180°
 	volatile double m_dFrameRate;						// Set Capture Frame Rate
 	volatile double m_dEffectiveFrameRate;				// Current Calculated Frame Rate
