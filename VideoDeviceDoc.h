@@ -57,8 +57,7 @@ class CMovementDetectionPage;
 #define AUDIO_UNCOMPRESSED_BUFS_COUNT		16			// Number of audio buffers
 #define AUDIO_RECONNECTION_DELAY			1000U		// ms
 #define FRAME_USER_FLAG_MOTION				0x01		// mark the frame as a motion frame
-#define FRAME_USER_FLAG_ROTATE180			0x04		// mark the frame as being rotated by 180°
-#define FRAME_USER_FLAG_LAST				0x08		// mark the frame as being the last frame of the detection sequence
+#define FRAME_USER_FLAG_LAST				0x02		// mark the frame as being the last frame of the detection sequence
 #define DEFAULT_DEL_RECS_OLDER_THAN_DAYS	31			// by default delete recordings older than a month
 #define MIN_DISK_FREE_PERMILLION			50000		// 5%
 #define DEFAULT_VIDEO_FILEEXT				_T(".mp4")	// default file extension
@@ -109,7 +108,6 @@ class CMovementDetectionPage;
 #define DEFAULT_PRE_BUFFER_MSEC				2000		// ms
 #define DEFAULT_POST_BUFFER_MSEC			6000		// ms
 #define MOVDET_MIN_LENGTH_MSEC				1000		// Minimum detection length in ms, below this value SaveFrameList() is not called
-#define MOVDET_BUFFER_COMPRESSIONQUALITY	4			// 2: best quality, 31: worst quality
 #define DEFAULT_MOVDET_LEVEL				50			// Detection level default value (1 .. 100 = Max Sensitivity)
 #define DEFAULT_MOVDET_INTENSITY_LIMIT		25			// Intensity difference default value
 #define MOVDET_MAX_ZONES_BLOCK_SIZE			1024		// Subdivide settings in blocks (MOVDET_MAX_ZONES must be a multiple of this)
@@ -452,7 +450,7 @@ public:
 			__forceinline BOOL IsWorking() const {return m_bWorking;};
 
 		protected:
-			void LoadAndDecodeFrame(CDib* pDib);
+			void LoadDetFrame(CDib* pDib);
 			int Work();
 			BOOL SaveSingleGif(		CDib* pDib,
 									const CString& sGIFFileName,
@@ -677,18 +675,17 @@ public:
 	__forceinline void ShrinkNewestFrameList();						// Free oldest frames from newest frame list
 																	// making the list m_nMilliSecondsRecBeforeMovementBegin long
 	__forceinline int GetNewestMovementDetectionsListCount();		// Get the newest list's count
-	__forceinline CDib* AllocDetFrame(CDib* pDib,					// Allocate a new detection buffering frame
-								LPBYTE pMJPGData, DWORD dwMJPGSize);// (copies also audio samples)
-	__forceinline void AddNewFrameToNewestList(CDib* pDib,			// Add new frame to newest list
-								LPBYTE pMJPGData, DWORD dwMJPGSize);
-	__forceinline void AddNewFrameToNewestListAndShrink(CDib* pDib,	// Add new frame to newest list leaving in the list
-								LPBYTE pMJPGData, DWORD dwMJPGSize);// m_nMilliSecondsRecBeforeMovementBegin of frames
+	__forceinline CDib* AllocDetFrame(CDib* pDib);					// Allocate a new detection buffering frame
+																	// (copies also audio samples)
+	__forceinline void AddNewFrameToNewestList(CDib* pDib);			// Add new frame to newest list
+	__forceinline void AddNewFrameToNewestListAndShrink(CDib* pDib);// Add new frame to newest list leaving in the list
+																	// m_nMilliSecondsRecBeforeMovementBegin of frames
 																	
 	// Main Decode & Process Functions
 	void ProcessOtherFrame(LPBYTE pData, DWORD dwSize);
 	void ProcessNV12Frame(LPBYTE pData, DWORD dwSize, BOOL bFlipUV);
 	void ProcessM420Frame(LPBYTE pData, DWORD dwSize);
-	void ProcessI420Frame(LPBYTE pData, DWORD dwSize, LPBYTE pMJPGData, DWORD dwMJPGSize);
+	void ProcessI420Frame(LPBYTE pData, DWORD dwSize);
 	static BOOL Rotate180(CDib* pDib);
 	BOOL IsInMovDetSchedule(const CTime& Time);
 
@@ -732,8 +729,6 @@ public:
 
 	// Movement Detection
 	void MovementDetectionProcessing(	CDib* pDib,
-										LPBYTE pMJPGData,
-										DWORD dwMJPGSize,
 										DWORD dwVideoProcessorMode,
 										BOOL b1SecTick);
 	BOOL MovementDetector(CDib* pDib, int nDetectionLevel);

@@ -133,88 +133,11 @@ BOOL CVideoDeviceDoc::CreateCheckYearMonthDayDir(CTime Time, CString sBaseDir, C
 	return TRUE;
 }
 
-void CVideoDeviceDoc::CSaveFrameListThread::LoadAndDecodeFrame(CDib* pDib)
+void CVideoDeviceDoc::CSaveFrameListThread::LoadDetFrame(CDib* pDib)
 {
 	// Move back the bits from shared memory
 	if (pDib && pDib->m_hBitsSharedMemory)
 		pDib->SharedMemoryToBits();
-
-	// Check whether still compressed, could already have
-	// been decompressed by thread loop or AnimatedGifInit()
-	if (pDib && (pDib->GetCompression() == FCC('MJPG') || pDib->GetCompression() == FCC('M601')))
-	{
-		// Init device flag
-		BOOL bDeviceIsMJPG = FALSE;
-		if (pDib->GetCompression() == FCC('MJPG'))
-			bDeviceIsMJPG = TRUE;
-
-		// Store old pointers
-		LPBITMAPINFO pOldBmi = pDib->GetBMI();
-		LPBYTE pOldBits = pDib->GetBits();
-		pDib->SetDibPointers(NULL, NULL);
-
-		// Set new header
-		BITMAPINFO NewBmi;
-		memset(&NewBmi, 0, sizeof(BITMAPINFO));
-		NewBmi.bmiHeader.biSize =			sizeof(BITMAPINFOHEADER);
-		NewBmi.bmiHeader.biWidth =			pOldBmi->bmiHeader.biWidth;
-		NewBmi.bmiHeader.biHeight =			pOldBmi->bmiHeader.biHeight;
-		NewBmi.bmiHeader.biPlanes =			1;
-		NewBmi.bmiHeader.biCompression =	FCC('I420');
-		NewBmi.bmiHeader.biBitCount =		12;
-		int stride = ::CalcYUVStride(NewBmi.bmiHeader.biCompression, (int)NewBmi.bmiHeader.biWidth);
-		NewBmi.bmiHeader.biSizeImage =		::CalcYUVSize(NewBmi.bmiHeader.biCompression, stride, (int)NewBmi.bmiHeader.biHeight);
-		pDib->SetBMI(&NewBmi);
-
-		// Decode
-		BOOL res = m_AVDetDecoder.Decode(pOldBmi,
-										pOldBits,
-										pOldBmi->bmiHeader.biSizeImage,
-										pDib);
-		// In case that avcodec_decode_video2 fails try LoadJPEG
-		if (!res)
-		{
-			if (g_nLogLevel > 0)
-				::LogLine(_T("%s, m_AVDetDecoder.Decode() FAILURE, trying LoadJPEG() + Compress(I420)"), m_pDoc->GetAssignedDeviceName());
-			res = pDib->LoadJPEG(pOldBits, pOldBmi->bmiHeader.biSizeImage, 1, TRUE) && pDib->Compress(FCC('I420'));
-			if (res)
-			{
-				if (g_nLogLevel > 0)
-					::LogLine(_T("%s, LoadJPEG() + Compress(I420) success"), m_pDoc->GetAssignedDeviceName());
-			}
-			else
-			{
-				if (g_nLogLevel > 0)
-					::LogLine(_T("%s, LoadJPEG() + Compress(I420) FAILURE"), m_pDoc->GetAssignedDeviceName());
-			}
-		}
-
-		// Make sure we have valid bits, if not make a green frame
-		if (!pDib->GetBits())
-		{
-			pDib->AllocateBits(	NewBmi.bmiHeader.biBitCount,
-								NewBmi.bmiHeader.biCompression,
-								NewBmi.bmiHeader.biWidth,
-								NewBmi.bmiHeader.biHeight,
-								(COLORREF)16); // green
-		}
-
-		// Free
-		if (pOldBmi)
-			delete [] pOldBmi;
-		if (pOldBits)
-			BIGFREE(pOldBits);
-
-		// Frames coming from a mjpeg source have to be processed here
-		// if set so. The other ones are already rotated by 180° in
-		// ProcessI420Frame() before being compressed
-		if (res && bDeviceIsMJPG)
-		{
-			// Rotate by 180°?
-			if (pDib->GetUserFlag() & FRAME_USER_FLAG_ROTATE180)
-				CVideoDeviceDoc::Rotate180(pDib);
-		}
-	}
 }
 
 int CVideoDeviceDoc::CSaveFrameListThread::Work() 
@@ -421,7 +344,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			// Get Frame
 			currentpos = nextpos;
 			pDib = m_pFrameList->GetNext(nextpos);
-			LoadAndDecodeFrame(pDib);
+			LoadDetFrame(pDib);
 
 			// Video
 			if (bMakeVideo)
@@ -733,21 +656,21 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors
 	// Make sure the 3 image pointers are ok
 	if (!pDibForPalette1)
 		pDibForPalette1 = m_pFrameList->GetHead();
-	LoadAndDecodeFrame(pDibForPalette1);
+	LoadDetFrame(pDibForPalette1);
 	DibForPalette1 = *pDibForPalette1;
 	if (DibForPalette1.IsCompressed() || DibForPalette1.GetBitCount() <= 8)
 		DibForPalette1.Decompress(32);
 	DibForPalette1.StretchBits(m_pDoc->m_dwAnimatedGifWidth, m_pDoc->m_dwAnimatedGifHeight);
 	if (!pDibForPalette2)
 		pDibForPalette2 = m_pFrameList->GetHead();
-	LoadAndDecodeFrame(pDibForPalette2);
+	LoadDetFrame(pDibForPalette2);
 	DibForPalette2 = *pDibForPalette2;
 	if (DibForPalette2.IsCompressed() || DibForPalette2.GetBitCount() <= 8)
 		DibForPalette2.Decompress(32);
 	DibForPalette2.StretchBits(m_pDoc->m_dwAnimatedGifWidth, m_pDoc->m_dwAnimatedGifHeight);
 	if (!pDibForPalette3)
 		pDibForPalette3 = m_pFrameList->GetHead();
-	LoadAndDecodeFrame(pDibForPalette3);
+	LoadDetFrame(pDibForPalette3);
 	DibForPalette3 = *pDibForPalette3;
 	if (DibForPalette3.IsCompressed() || DibForPalette3.GetBitCount() <= 8)
 		DibForPalette3.Decompress(32);
@@ -2004,7 +1927,7 @@ BOOL CVideoDeviceDoc::AudioListen(	LPBYTE pData, DWORD dwSizeInBytes,
 		return FALSE;
 }
 
-void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, LPBYTE pMJPGData, DWORD dwMJPGSize, DWORD dwVideoProcessorMode, BOOL b1SecTick)
+void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, DWORD dwVideoProcessorMode, BOOL b1SecTick)
 {
 	BOOL bSoftwareDetectionMovement = FALSE;
 	BOOL bExternalFileTriggerMovement = FALSE;
@@ -2238,7 +2161,7 @@ end_of_software_detection:
 	{
 		// Add new frame
 		if (bStoreFrames)
-			AddNewFrameToNewestList(pDib, pMJPGData, dwMJPGSize);
+			AddNewFrameToNewestList(pDib);
 
 		// Check if end of detection period
 		if ((pDib->GetUpTime() - m_dwLastDetFrameUpTime) > (DWORD)m_nMilliSecondsRecAfterMovementEnd)
@@ -2262,7 +2185,7 @@ end_of_software_detection:
 	else if (bStoreFrames)
 	{
 		// Add new frame and shrink to a size of m_nMilliSecondsRecBeforeMovementBegin
-		AddNewFrameToNewestListAndShrink(pDib, pMJPGData, dwMJPGSize);
+		AddNewFrameToNewestListAndShrink(pDib);
 	}
 	else
 		ClearNewestFrameList();
@@ -3080,10 +3003,7 @@ int CVideoDeviceDoc::CRtspThread::Work()
 							goto free;
 						}
 						m_pDoc->m_lCompressedDataRateSum += avpkt.size;
-						if (pVideoCodecCtx->codec_id == AV_CODEC_ID_MJPEG)
-							m_pDoc->ProcessI420Frame(pI420Buf, nI420ImageSize, avpkt.data, avpkt.size);
-						else
-							m_pDoc->ProcessI420Frame(pI420Buf, nI420ImageSize, NULL, 0U);
+						m_pDoc->ProcessI420Frame(pI420Buf, nI420ImageSize);
 					}
 				}
 				// Audio Packet
@@ -7190,12 +7110,8 @@ void CVideoDeviceDoc::ProcessOtherFrame(LPBYTE pData, DWORD dwSize)
 							m_pProcessFrameExtraDib)) // this function will allocate the dst bits if necessary
 	{
 		if (m_AVDecoder.GetCodecId() == AV_CODEC_ID_MJPEG)
-		{
 			m_lCompressedDataRateSum += dwSize;
-			ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize(), pData, dwSize);
-		}
-		else
-			ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize(), NULL, 0U);
+		ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize());
 	}
 	// In case that avcodec_decode_video2 fails try LoadJPEG
 	else if (m_CaptureBMI.bmiHeader.biCompression == FCC('MJPG'))
@@ -7207,7 +7123,7 @@ void CVideoDeviceDoc::ProcessOtherFrame(LPBYTE pData, DWORD dwSize)
 			if (g_nLogLevel > 0)
 				::LogLine(_T("%s, LoadJPEG() + Compress(I420) success"), GetAssignedDeviceName());
 			m_lCompressedDataRateSum += dwSize;
-			ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize(), pData, dwSize);
+			ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize());
 		}
 		else
 		{
@@ -7235,7 +7151,7 @@ void CVideoDeviceDoc::ProcessOtherFrame(LPBYTE pData, DWORD dwSize)
 		{
 			if (g_nLogLevel > 0)
 				::LogLine(_T("%s, Compress(I420) success"), GetAssignedDeviceName());
-			ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize(), NULL, 0U);
+			ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize());
 		}
 		else
 		{
@@ -7371,7 +7287,7 @@ void CVideoDeviceDoc::ProcessNV12Frame(LPBYTE pData, DWORD dwSize, BOOL bFlipUV)
 	}
 
 	// Call Process Frame
-	ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize(), NULL, 0U);
+	ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize());
 }
 
 /* 
@@ -7500,10 +7416,10 @@ void CVideoDeviceDoc::ProcessM420Frame(LPBYTE pData, DWORD dwSize)
 	}
 
 	// Call Process Frame
-	ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize(), NULL, 0U);
+	ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize());
 }
 
-void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize, LPBYTE pMJPGData, DWORD dwMJPGSize)
+void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 {
 	// Timing
 	DWORD dwCurrentFrameTime;
@@ -7549,10 +7465,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize, LPBYTE pMJPGD
 
 		// Rotate by 180° if divisible by 4
 		if (m_bRotate180 && (pDib->GetHeight() & 3) == 0)
-		{
 			Rotate180(pDib);
-			pDib->SetUserFlag(pDib->GetUserFlag() | FRAME_USER_FLAG_ROTATE180);
-		}
 
 		// Set the UpTime Var
 		pDib->SetUpTime(dwCurrentInitUpTime);
@@ -7593,7 +7506,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize, LPBYTE pMJPGD
 			}
 
 			// Do Motion Detection Processing
-			MovementDetectionProcessing(pDib, pMJPGData, dwMJPGSize, dwVideoProcessorMode, b1SecTick);
+			MovementDetectionProcessing(pDib, dwVideoProcessorMode, b1SecTick);
 		}
 
 		// Copy to Clipboard
@@ -8480,61 +8393,11 @@ __forceinline void CVideoDeviceDoc::ClearNewestFrameList()
 	::LeaveCriticalSection(&m_csMovementDetectionsList);
 }
 
-__forceinline CDib* CVideoDeviceDoc::AllocDetFrame(CDib* pDib, LPBYTE pMJPGData, DWORD dwMJPGSize)
+__forceinline CDib* CVideoDeviceDoc::AllocDetFrame(CDib* pDib)
 {
 	CDib* pNewDib = NULL;
 	if (pDib)
 	{
-#if 0
-		// Buffer as MJPG frame
-		BITMAPINFO Bmi;
-		memset(&Bmi, 0, sizeof(BITMAPINFO));
-		Bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-		Bmi.bmiHeader.biWidth = pDib->GetWidth();
-		Bmi.bmiHeader.biHeight = pDib->GetHeight();
-		Bmi.bmiHeader.biPlanes = 1;
-		Bmi.bmiHeader.biBitCount = 12;
-		if (pMJPGData && dwMJPGSize > 0U)
-		{
-			Bmi.bmiHeader.biCompression = FCC('MJPG');
-			Bmi.bmiHeader.biSizeImage = dwMJPGSize;
-			pNewDib = new CDib;
-			if (pNewDib)
-			{
-				pNewDib->SetShowMessageBoxOnError(FALSE);
-				pNewDib->SetBMI((LPBITMAPINFO)&Bmi);						// set BMI	
-				pNewDib->SetBits(pMJPGData);								// copy bits
-				pNewDib->SetUpTime(pDib->GetUpTime());						// copy frame uptime
-				pNewDib->SetUserFlag(pDib->GetUserFlag());					// copy motion, deinterlace and rotate by 180° flags
-				pNewDib->CopyUserList(pDib->m_UserList);					// copy audio bufs if any
-			}
-		}
-		else
-		{
-			DWORD dwEncodedLen = m_MJPEGDetEncoder.Encode(	MOVDET_BUFFER_COMPRESSIONQUALITY,
-															pDib->GetBMI(), pDib->GetBits(),
-															((CUImagerApp*)::AfxGetApp())->m_nCoresCount);
-			if (dwEncodedLen > 0U)
-			{
-				// Contaware introduced this fourcc to distinguish the unofficial jpeg ITU601
-				// color space so that the mjpeg decompressor in CSaveFrameListThread
-				// is re-opened when switching between normal FCC('MJPG') and unofficial FCC('M601')
-				Bmi.bmiHeader.biCompression = FCC('M601');
-				Bmi.bmiHeader.biSizeImage = dwEncodedLen;
-				pNewDib = new CDib;
-				if (pNewDib)
-				{
-					pNewDib->SetShowMessageBoxOnError(FALSE);
-					pNewDib->SetBMI((LPBITMAPINFO)&Bmi);						// set BMI	
-					pNewDib->SetBits((LPBYTE)m_MJPEGDetEncoder.GetEncodedBuf());// copy bits
-					pNewDib->SetUpTime(pDib->GetUpTime());						// copy frame uptime
-					pNewDib->SetUserFlag(pDib->GetUserFlag());					// copy motion, deinterlace and rotate by 180° flags
-					pNewDib->CopyUserList(pDib->m_UserList);					// copy audio bufs if any
-				}
-			}
-		}
-#else
-		// Buffer as I420 frame
 		pNewDib = new CDib;
 		if (pNewDib)
 		{
@@ -8545,12 +8408,11 @@ __forceinline CDib* CVideoDeviceDoc::AllocDetFrame(CDib* pDib, LPBYTE pMJPGData,
 			pNewDib->SetUserFlag(pDib->GetUserFlag());	// copy motion, deinterlace and rotate by 180° flags
 			pNewDib->CopyUserList(pDib->m_UserList);	// copy audio bufs if any
 		}
-#endif
 	}
 	return pNewDib;
 }
 
-__forceinline void CVideoDeviceDoc::AddNewFrameToNewestList(CDib* pDib, LPBYTE pMJPGData, DWORD dwMJPGSize)
+__forceinline void CVideoDeviceDoc::AddNewFrameToNewestList(CDib* pDib)
 {
 	if (pDib)
 	{
@@ -8571,7 +8433,7 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestList(CDib* pDib, LPBYTE p
 				}
 
 				// Allocate the new frame
-				CDib* pNewDib = AllocDetFrame(pDib, pMJPGData, dwMJPGSize);
+				CDib* pNewDib = AllocDetFrame(pDib);
 				if (pNewDib)
 				{
 					// Add the new frame
@@ -8588,7 +8450,7 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestList(CDib* pDib, LPBYTE p
 	}
 }
 
-__forceinline void CVideoDeviceDoc::AddNewFrameToNewestListAndShrink(CDib* pDib, LPBYTE pMJPGData, DWORD dwMJPGSize)
+__forceinline void CVideoDeviceDoc::AddNewFrameToNewestListAndShrink(CDib* pDib)
 {
 	if (pDib)
 	{
@@ -8609,7 +8471,7 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestListAndShrink(CDib* pDib,
 				}
 
 				// Allocate the new frame
-				CDib* pNewDib = AllocDetFrame(pDib, pMJPGData, dwMJPGSize);
+				CDib* pNewDib = AllocDetFrame(pDib);
 				if (pNewDib)
 				{
 					// Add the new frame
@@ -10824,7 +10686,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::DecodeVideo(AVPacket* avpkt)
 		if (bOk)
 		{
 			m_pDoc->m_lCompressedDataRateSum += avpkt->size;
-			m_pDoc->ProcessI420Frame(m_pI420Buf, m_dwI420ImageSize, avpkt->data, avpkt->size);
+			m_pDoc->ProcessI420Frame(m_pI420Buf, m_dwI420ImageSize);
 		}
 	}
 	// In case that avcodec_decode_video2 fails try LoadJPEG
@@ -10839,7 +10701,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::DecodeVideo(AVPacket* avpkt)
 			if (g_nLogLevel > 0)
 				::LogLine(_T("%s, LoadJPEG() + Compress(I420) success"), m_pDoc->GetAssignedDeviceName());
 			m_pDoc->m_lCompressedDataRateSum += avpkt->size;
-			m_pDoc->ProcessI420Frame(Dib.GetBits(), Dib.GetImageSize(), avpkt->data, avpkt->size);
+			m_pDoc->ProcessI420Frame(Dib.GetBits(), Dib.GetImageSize());
 		}
 		else
 		{

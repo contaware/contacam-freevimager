@@ -1422,8 +1422,7 @@ enum AVPixelFormat CAVRec::AVCodecBMIToPixFormat(LPBITMAPINFO pBMI)
 enum AVCodecID CAVRec::AVCodecFourCCToCodecID(DWORD dwFourCC)
 {
 	CString sFourCC = FourCCToStringUpperCase(dwFourCC);
-	if (sFourCC == _T("MJPG")	||
-		sFourCC == _T("M601"))	// contaware introduced this fourcc to distinguish the unofficial jpeg ITU601 color space
+	if (sFourCC == _T("MJPG"))
 		return AV_CODEC_ID_MJPEG;
 	else if (sFourCC == _T("H264"))
 		return AV_CODEC_ID_H264;
