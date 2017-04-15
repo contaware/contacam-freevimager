@@ -1206,7 +1206,6 @@
 #define IDC_SENDER_MAIL                 1217
 #define IDS_MULTILANG_1218              1218
 #define IDC_ATTACHMENT                  1218
-#define IDC_DATA_RATE                   1218
 #define IDS_MULTILANG_1219              1219
 #define IDC_AUTH_USERNAME               1219
 #define IDC_SENDMAIL_CONFIGURE          1219

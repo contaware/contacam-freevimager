@@ -3002,7 +3002,7 @@ int CVideoDeviceDoc::CRtspThread::Work()
 							av_free_packet(&orig_pkt);
 							goto free;
 						}
-						m_pDoc->m_lCompressedDataRateSum += avpkt.size;
+						m_pDoc->m_lEffectiveDataRateSum += avpkt.size;
 						m_pDoc->ProcessI420Frame(pI420Buf, nI420ImageSize);
 					}
 				}
@@ -3698,8 +3698,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bDoEditCopy = FALSE;
 	m_bDoEditSnapshot = FALSE;
 	m_lProcessFrameTime = 0;
-	m_lCompressedDataRate = 0;
-	m_lCompressedDataRateSum = 0;
+	m_lEffectiveDataRate = 0;
+	m_lEffectiveDataRateSum = 0;
 	m_bPlacementLoaded = FALSE;
 	m_bCaptureStarted = FALSE;
 	m_bShowFrameTime = TRUE;
@@ -4156,8 +4156,8 @@ void CVideoDeviceDoc::SetDocumentTitle()
 
 		// General info
 		CString sWidthHeight;
-		CString sFramerate;
-		CString sCompressedDataRate;
+		CString sFrameRate;
+		CString sDataRate;
 		CString sFormat;
 		if (m_DocRect.Width() > 0 && m_DocRect.Height() > 0)
 		{
@@ -4166,11 +4166,17 @@ void CVideoDeviceDoc::SetDocumentTitle()
 
 			// Framerate
 			if (m_dEffectiveFrameRate > 0.0)
-				sFramerate.Format(_T("%0.1ffps"), m_dEffectiveFrameRate);
+				sFrameRate.Format(_T("%0.1ffps"), m_dEffectiveFrameRate);
 
 			// Datarate
-			if (m_lCompressedDataRate > 0)
-				sCompressedDataRate.Format(_T("%dkbps"), m_lCompressedDataRate / 128);
+			if (m_lEffectiveDataRate > 0)
+			{
+				int kbps = m_lEffectiveDataRate / 125; // 1000 bits are 1 kbit, while 1024 bytes are 1 KB (or KiB)
+				if (kbps >= 1000)
+					sDataRate.Format(_T("%0.1fMbps"), (double)kbps / 1000.0);
+				else
+					sDataRate.Format(_T("%dkbps"), kbps);
+			}
 
 			// Format
 			if (m_pDxCapture)
@@ -4228,10 +4234,10 @@ void CVideoDeviceDoc::SetDocumentTitle()
 		// Set main title
 		if (!sWidthHeight.IsEmpty())
 			sTitle += _T(" , ") + sWidthHeight;
-		if (!sFramerate.IsEmpty())
-			sTitle += _T(" , ") + sFramerate;
-		if (!sCompressedDataRate.IsEmpty())
-			sTitle += _T(" , ") + sCompressedDataRate;
+		if (!sFrameRate.IsEmpty())
+			sTitle += _T(" , ") + sFrameRate;
+		if (!sDataRate.IsEmpty())
+			sTitle += _T(" , ") + sDataRate;
 		if (!sFormat.IsEmpty())
 			sTitle += _T(" , ") + sFormat;
 	}
@@ -5645,7 +5651,6 @@ void CVideoDeviceDoc::OnChangeDxVideoFormat()
 					m_dFrameRate = 30000.0 / 1001.0; // ~29,97
 				else
 					m_dFrameRate = 25.0;
-				m_lCompressedDataRate = Round(m_dFrameRate * (double)m_pDxCapture->GetAvgFrameSize());
 			}
 			int nWidth, nHeight;
 			if (m_pDxCapture->GetDVSize(&nWidth, &nHeight))
@@ -5706,8 +5711,6 @@ void CVideoDeviceDoc::OnChangeDxVideoFormat()
 			}
 			m_DocRect.right = m_ProcessFrameBMI.bmiHeader.biWidth;
 			m_DocRect.bottom = m_ProcessFrameBMI.bmiHeader.biHeight;
-			m_lCompressedDataRate = 0;
-			m_lCompressedDataRateSum = 0;
 			m_pDxCapture->DeleteMediaType(pmtConfig);
 		}
 	}
@@ -7100,6 +7103,7 @@ BOOL CVideoDeviceDoc::IsInMovDetSchedule(const CTime& Time)
 	}
 	return bInSchedule;
 }
+
 void CVideoDeviceDoc::ProcessOtherFrame(LPBYTE pData, DWORD dwSize)
 {	
 	// Decode ffmpeg supported formats
@@ -7109,8 +7113,6 @@ void CVideoDeviceDoc::ProcessOtherFrame(LPBYTE pData, DWORD dwSize)
 							dwSize,
 							m_pProcessFrameExtraDib)) // this function will allocate the dst bits if necessary
 	{
-		if (m_AVDecoder.GetCodecId() == AV_CODEC_ID_MJPEG)
-			m_lCompressedDataRateSum += dwSize;
 		ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize());
 	}
 	// In case that avcodec_decode_video2 fails try LoadJPEG
@@ -7122,7 +7124,6 @@ void CVideoDeviceDoc::ProcessOtherFrame(LPBYTE pData, DWORD dwSize)
 		{
 			if (g_nLogLevel > 0)
 				::LogLine(_T("%s, LoadJPEG() + Compress(I420) success"), GetAssignedDeviceName());
-			m_lCompressedDataRateSum += dwSize;
 			ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize());
 		}
 		else
@@ -7661,10 +7662,10 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 			{
 				m_dEffectiveFrameRate = 1000.0 * (double)m_dwEffectiveFrameTimeCountUp / m_dEffectiveFrameTimeSum;
 				m_dwEffectiveFrameTimeCountUp = 0U;
-				if (m_lCompressedDataRateSum > 0)
+				if (m_lEffectiveDataRateSum > 0)
 				{
-					m_lCompressedDataRate = Round(1000.0 * (double)m_lCompressedDataRateSum / m_dEffectiveFrameTimeSum);
-					m_lCompressedDataRateSum = 0;
+					m_lEffectiveDataRate = Round(1000.0 * (double)m_lEffectiveDataRateSum / m_dEffectiveFrameTimeSum);
+					m_lEffectiveDataRateSum = 0;
 				}
 				m_dEffectiveFrameTimeSum = 0.0;
 			}
@@ -7675,10 +7676,10 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 			{
 				m_dEffectiveFrameRate = 1000.0 * (double)m_dwEffectiveFrameTimeCountUp / m_dEffectiveFrameTimeSum;
 				m_dwEffectiveFrameTimeCountUp = 0U;
-				if (m_lCompressedDataRateSum > 0)
+				if (m_lEffectiveDataRateSum > 0)
 				{
-					m_lCompressedDataRate = Round(1000.0 * (double)m_lCompressedDataRateSum / m_dEffectiveFrameTimeSum);
-					m_lCompressedDataRateSum = 0;
+					m_lEffectiveDataRate = Round(1000.0 * (double)m_lEffectiveDataRateSum / m_dEffectiveFrameTimeSum);
+					m_lEffectiveDataRateSum = 0;
 				}
 				m_dEffectiveFrameTimeSum = 0.0;
 			}
@@ -7689,10 +7690,10 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 			{
 				m_dEffectiveFrameRate = 1000.0 * (double)m_dwEffectiveFrameTimeCountUp / m_dEffectiveFrameTimeSum;
 				m_dwEffectiveFrameTimeCountUp = 0U;
-				if (m_lCompressedDataRateSum > 0)
+				if (m_lEffectiveDataRateSum > 0)
 				{
-					m_lCompressedDataRate = Round(1000.0 * (double)m_lCompressedDataRateSum / m_dEffectiveFrameTimeSum);
-					m_lCompressedDataRateSum = 0;
+					m_lEffectiveDataRate = Round(1000.0 * (double)m_lEffectiveDataRateSum / m_dEffectiveFrameTimeSum);
+					m_lEffectiveDataRateSum = 0;
 				}
 				m_dEffectiveFrameTimeSum = 0.0;
 			}
@@ -7703,10 +7704,10 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 			{
 				m_dEffectiveFrameRate = 1000.0 * (double)m_dwEffectiveFrameTimeCountUp / m_dEffectiveFrameTimeSum;
 				m_dwEffectiveFrameTimeCountUp = 0U;
-				if (m_lCompressedDataRateSum > 0)
+				if (m_lEffectiveDataRateSum > 0)
 				{
-					m_lCompressedDataRate = Round(1000.0 * (double)m_lCompressedDataRateSum / m_dEffectiveFrameTimeSum);
-					m_lCompressedDataRateSum = 0;
+					m_lEffectiveDataRate = Round(1000.0 * (double)m_lEffectiveDataRateSum / m_dEffectiveFrameTimeSum);
+					m_lEffectiveDataRateSum = 0;
 				}
 				m_dEffectiveFrameTimeSum = 0.0;
 			}
@@ -7717,10 +7718,10 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 			{
 				m_dEffectiveFrameRate = 1000.0 * (double)m_dwEffectiveFrameTimeCountUp / m_dEffectiveFrameTimeSum;
 				m_dwEffectiveFrameTimeCountUp = 0U;
-				if (m_lCompressedDataRateSum > 0)
+				if (m_lEffectiveDataRateSum > 0)
 				{
-					m_lCompressedDataRate = Round(1000.0 * (double)m_lCompressedDataRateSum / m_dEffectiveFrameTimeSum);
-					m_lCompressedDataRateSum = 0;
+					m_lEffectiveDataRate = Round(1000.0 * (double)m_lEffectiveDataRateSum / m_dEffectiveFrameTimeSum);
+					m_lEffectiveDataRateSum = 0;
 				}
 				m_dEffectiveFrameTimeSum = 0.0;
 			}
@@ -7731,10 +7732,10 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 			{
 				m_dEffectiveFrameRate = 1000.0 * (double)m_dwEffectiveFrameTimeCountUp / m_dEffectiveFrameTimeSum;
 				m_dwEffectiveFrameTimeCountUp = 0U;
-				if (m_lCompressedDataRateSum > 0)
+				if (m_lEffectiveDataRateSum > 0)
 				{
-					m_lCompressedDataRate = Round(1000.0 * (double)m_lCompressedDataRateSum / m_dEffectiveFrameTimeSum);
-					m_lCompressedDataRateSum = 0;
+					m_lEffectiveDataRate = Round(1000.0 * (double)m_lEffectiveDataRateSum / m_dEffectiveFrameTimeSum);
+					m_lEffectiveDataRateSum = 0;
 				}
 				m_dEffectiveFrameTimeSum = 0.0;
 			}
@@ -10685,7 +10686,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::DecodeVideo(AVPacket* avpkt)
 		}
 		if (bOk)
 		{
-			m_pDoc->m_lCompressedDataRateSum += avpkt->size;
+			m_pDoc->m_lEffectiveDataRateSum += avpkt->size;
 			m_pDoc->ProcessI420Frame(m_pI420Buf, m_dwI420ImageSize);
 		}
 	}
@@ -10700,7 +10701,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::DecodeVideo(AVPacket* avpkt)
 		{
 			if (g_nLogLevel > 0)
 				::LogLine(_T("%s, LoadJPEG() + Compress(I420) success"), m_pDoc->GetAssignedDeviceName());
-			m_pDoc->m_lCompressedDataRateSum += avpkt->size;
+			m_pDoc->m_lEffectiveDataRateSum += avpkt->size;
 			m_pDoc->ProcessI420Frame(Dib.GetBits(), Dib.GetImageSize());
 		}
 		else

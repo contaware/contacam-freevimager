@@ -69,6 +69,7 @@ public:
 
     STDMETHODIMP BufferCB(double Time, BYTE *pBuffer, long BufferLen)
     {
+		m_pDoc->m_lEffectiveDataRateSum += BufferLen;
 		switch (m_pDoc->m_CaptureBMI.bmiHeader.biCompression)
 		{
 			case FCC('I420') :	m_pDoc->ProcessI420Frame(pBuffer, BufferLen);			break;

@@ -575,27 +575,6 @@ void CGeneralPage::OnTimer(UINT nIDEvent)
 			pEdit->SetWindowText(sProcessFrameTime);
 		}
 
-		// Show Data Rate
-		pEdit = (CEdit*)GetDlgItem(IDC_DATA_RATE);
-		if (pEdit)
-		{
-			CString sDataRate(_T("xxx"));
-			LONG lUncompressedAvgFrameSize = m_pDoc->m_ProcessFrameBMI.bmiHeader.biSizeImage;
-			if (lUncompressedAvgFrameSize > 0)
-			{
-				if (m_pDoc->m_lCompressedDataRate > 0)
-				{
-					sDataRate.Format(_T("%0.1f -> %0.1f"),	(double)m_pDoc->m_lCompressedDataRate / 1024.0,						// KB / Sec
-															(double)lUncompressedAvgFrameSize * dEffectiveFrameRate / 1024.0);	// KB / Sec
-				}
-				else
-				{
-					sDataRate.Format(_T("%0.1f"),			(double)lUncompressedAvgFrameSize * dEffectiveFrameRate / 1024.0);	// KB / Sec
-				}
-			}
-			pEdit->SetWindowText(sDataRate);
-		}
-
 		// Enable Frame Rate Edit Control for HTTP jpeg snapshots devices
 		CString sFrameRate;
 		pEdit = (CEdit*)GetDlgItem(IDC_FRAMERATE);

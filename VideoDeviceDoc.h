@@ -839,10 +839,10 @@ public:
 	CRITICAL_SECTION m_csAVRec;							// Critical section for the recording file
 	volatile BOOL m_bRotate180;							// Rotate Video by 180°
 	volatile double m_dFrameRate;						// Set Capture Frame Rate
-	volatile double m_dEffectiveFrameRate;				// Current Calculated Frame Rate
+	volatile double m_dEffectiveFrameRate;				// Current calculated Frame Rate
 	volatile LONG m_lProcessFrameTime;					// Time in ms inside ProcessI420Frame()
-	volatile LONG m_lCompressedDataRate;				// Compressed data rate in bytes / sec
-	volatile LONG m_lCompressedDataRateSum;				// Compressed data rate sum
+	volatile LONG m_lEffectiveDataRate;					// Current calculated Data Rate in bytes / sec
+	volatile LONG m_lEffectiveDataRateSum;				// Current calculated Data Rate sum
 	BITMAPINFOFULL m_CaptureBMI;						// Capture source format
 	BITMAPINFOFULL m_ProcessFrameBMI;					// BMI of Frame reaching ProcessI420Frame()
 	volatile BOOL m_bPlacementLoaded;					// Placement Settings have been loaded
