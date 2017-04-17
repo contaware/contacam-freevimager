@@ -810,7 +810,7 @@ void CVideoDeviceView::OnTimer(UINT nIDEvent)
 			// Load video source obscuration state
 			CString sRecordAutoSaveDir = pDoc->m_sRecordAutoSaveDir;
 			sRecordAutoSaveDir.TrimRight(_T('\\'));
-			pDoc->m_bSourceObscured = ::IsExistingFile(sRecordAutoSaveDir + _T("\\") + CAMERA_IS_OBSCURED_FILENAME);
+			pDoc->m_bObscureSource = ::IsExistingFile(sRecordAutoSaveDir + _T("\\") + CAMERA_IS_OBSCURED_FILENAME);
 				
 			break;
 		}

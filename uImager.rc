@@ -195,6 +195,7 @@ BEGIN
     BEGIN
         MENUITEM "Record\tEnter",               ID_CAPTURE_RECORD
         MENUITEM "Movement Detection",          ID_CAPTURE_MOVDET
+        MENUITEM "Obscure Source",              ID_CAPTURE_OBSCURESOURCE
         MENUITEM SEPARATOR
         MENUITEM "Global Settings...",          ID_FILE_SETTINGS
         MENUITEM "Camera Basic Settings...",    ID_CAPTURE_CAMERABASICSETTINGS
@@ -267,6 +268,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Record\tEnter",               ID_CAPTURE_RECORD
         MENUITEM "Movement Detection",          ID_CAPTURE_MOVDET
+        MENUITEM "Obscure Source",              ID_CAPTURE_OBSCURESOURCE
     END
     POPUP "&Settings"
     BEGIN
@@ -3751,6 +3753,8 @@ BEGIN
     ID_INDICATOR_YCOORDINATE "Y:               "
     ID_SETTINGS_LOG_ALL_MESSAGES 
                             "Enable verbose diagnostic logging\nDiagnostic Log"
+    ID_CAPTURE_OBSCURESOURCE 
+                            "Obscure / show video source\nObscure Video Source"
 END
 
 STRINGTABLE

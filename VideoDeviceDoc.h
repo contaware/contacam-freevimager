@@ -849,7 +849,7 @@ public:
 	volatile BOOL m_bPlacementLoaded;					// Placement Settings have been loaded
 	volatile BOOL m_bCaptureStarted;					// Flag set when first frame has been processed
 	CTime m_CaptureStartTime;							// Grabbing device started at this time
-	volatile BOOL m_bSourceObscured;					// Flag indicating whether the source has to be obscured
+	volatile BOOL m_bObscureSource;						// Flag indicating whether the source has to be obscured
 	volatile BOOL m_bShowFrameTime;						// Show / Hide Frame Time Inside the Frame (frame time is also recorded)
 	volatile int m_nRefFontSize;						// Minimum font size for frame time, detection indicator, save/email/ftp progress
 	volatile BOOL m_bDoEditCopy;						// Copy Frame to Clipboard in ProcessI420Frame()
@@ -1070,6 +1070,8 @@ protected:
 	afx_msg void OnUpdateCaptureRecord(CCmdUI* pCmdUI);
 	afx_msg void OnCaptureMovDet();
 	afx_msg void OnUpdateCaptureMovDet(CCmdUI* pCmdUI);
+	afx_msg void OnCaptureObscureSource();
+	afx_msg void OnUpdateCaptureObscureSource(CCmdUI* pCmdUI);
 	afx_msg void OnCaptureCameraAdvancedSettings();
 	afx_msg void OnViewFrametime();
 	afx_msg void OnUpdateViewFrametime(CCmdUI* pCmdUI);

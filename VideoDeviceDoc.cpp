@@ -50,6 +50,8 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_UPDATE_COMMAND_UI(ID_CAPTURE_RECORD, OnUpdateCaptureRecord)
 	ON_COMMAND(ID_CAPTURE_MOVDET, OnCaptureMovDet)
 	ON_UPDATE_COMMAND_UI(ID_CAPTURE_MOVDET, OnUpdateCaptureMovDet)
+	ON_COMMAND(ID_CAPTURE_OBSCURESOURCE, OnCaptureObscureSource)
+	ON_UPDATE_COMMAND_UI(ID_CAPTURE_OBSCURESOURCE, OnUpdateCaptureObscureSource)
 	ON_COMMAND(ID_CAPTURE_CAMERAADVANCEDSETTINGS, OnCaptureCameraAdvancedSettings)
 	ON_COMMAND(ID_VIEW_FRAMETIME, OnViewFrametime)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FRAMETIME, OnUpdateViewFrametime)
@@ -3706,7 +3708,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nMovDetSavesCountDay = CurrentTime.GetDay();
 	m_nMovDetSavesCountMonth = CurrentTime.GetMonth();
 	m_nMovDetSavesCountYear = CurrentTime.GetYear();
-	m_bSourceObscured = FALSE;
+	m_bObscureSource = FALSE;
 	m_dwVideoProcessorMode = 0;
 	m_dwFrameCountUp = 0U;
 	m_bSizeToDoc = TRUE;
@@ -4501,7 +4503,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_sRecordAutoSaveDir = pApp->GetProfileString(sSection, _T("RecordAutoSaveDir"), sDefaultAutoSaveDir);
 	CString sRecordAutoSaveDir = m_sRecordAutoSaveDir;
 	sRecordAutoSaveDir.TrimRight(_T('\\'));
-	m_bSourceObscured = ::IsExistingFile(sRecordAutoSaveDir + _T("\\") + CAMERA_IS_OBSCURED_FILENAME);
+	m_bObscureSource = ::IsExistingFile(sRecordAutoSaveDir + _T("\\") + CAMERA_IS_OBSCURED_FILENAME);
 	m_sDetectionTriggerFileName = pApp->GetProfileString(sSection, _T("DetectionTriggerFileName"), _T("movtrigger.txt"));
 	CString sDetectionTriggerFileName(m_sDetectionTriggerFileName);
 	sDetectionTriggerFileName.TrimLeft();
@@ -5628,6 +5630,38 @@ void CVideoDeviceDoc::OnCaptureMovDet()
 void CVideoDeviceDoc::OnUpdateCaptureMovDet(CCmdUI* pCmdUI) 
 {	
 	pCmdUI->SetCheck(m_dwVideoProcessorMode ? 1 : 0);
+}
+
+void CVideoDeviceDoc::OnCaptureObscureSource()
+{
+	CString sFileName;
+	if (m_sRecordAutoSaveDir != _T(""))
+	{
+		sFileName = m_sRecordAutoSaveDir;
+		sFileName.TrimRight(_T('\\'));
+		sFileName += CString(_T("\\")) + CAMERA_IS_OBSCURED_FILENAME;
+	}
+	if (m_bObscureSource)
+	{
+		::DeleteFile(sFileName);
+		m_bObscureSource = FALSE;
+	}
+	else
+	{
+		FILE* pf = _tfopen(sFileName, _T("wb"));
+		if (pf)
+		{
+			const char msg[] = "Note: delete this file to re-enable the camera";
+			fwrite(msg, sizeof(char), strlen(msg), pf);
+			fclose(pf);
+		}
+		m_bObscureSource = TRUE;
+	}
+}
+
+void CVideoDeviceDoc::OnUpdateCaptureObscureSource(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(m_bObscureSource ? 1 : 0);
 }
 
 // Function called from the UI thread and when ProcessI420Frame() is not called
@@ -7452,7 +7486,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 		pDib->SetUserFlag(0);
 
 		// Obscure the video source?
-		if (m_bSourceObscured)
+		if (m_bObscureSource)
 			pDib->SetBitColors(16);
 
 		// Rotate by 180° if divisible by 4
