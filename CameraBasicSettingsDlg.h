@@ -38,6 +38,7 @@ public:
 	int		m_nComboSnapshotHistorySize;
 	BOOL	m_bCheckFullStretch;
 	BOOL	m_bCheckTrashCommand;
+	BOOL	m_bCheckCameraCommands;
 	BOOL	m_bCheckSendMailDeviceOK;
 	BOOL	m_bCheckSendMailMalfunction;
 	BOOL	m_bCheckSendMailMovementDetection;

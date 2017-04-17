@@ -1,5 +1,7 @@
 <?php
 require_once( 'configuration.php' );
+if ($show_trash_command == 0)
+	exit('Direct access not permitted');
 
 function check_safety($name) {
 	if (strpos($name, '/') !== false)

@@ -46,6 +46,7 @@ void CCameraBasicSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_CBIndex(pDX, IDC_COMBO_SNAPSHOTHISTORY_SIZE, m_nComboSnapshotHistorySize);
 	DDX_Check(pDX, IDC_CHECK_FULLSTRETCH, m_bCheckFullStretch);
 	DDX_Check(pDX, IDC_CHECK_TRASHCOMMAND, m_bCheckTrashCommand);
+	DDX_Check(pDX, IDC_CHECK_CAMERACOMMANDS, m_bCheckCameraCommands);
 	DDX_Check(pDX, IDC_CHECK_SENDMAIL_DEVICE_OK, m_bCheckSendMailDeviceOK);
 	DDX_Check(pDX, IDC_CHECK_SENDMAIL_MALFUNCTION, m_bCheckSendMailMalfunction);
 	DDX_Check(pDX, IDC_CHECK_SENDMAIL_MOVEMENT_DETECTION, m_bCheckSendMailMovementDetection);
@@ -200,6 +201,7 @@ BOOL CCameraBasicSettingsDlg::OnInitDialog()
 	m_bCheckFullStretch = FALSE;
 	m_sName = m_pDoc->GetAssignedDeviceName();
 	m_bCheckTrashCommand = (m_pDoc->PhpConfigFileGetParam(PHPCONFIG_SHOW_TRASH_COMMAND) == _T("1"));
+	m_bCheckCameraCommands = (m_pDoc->PhpConfigFileGetParam(PHPCONFIG_SHOW_CAMERA_COMMANDS) == _T("1"));
 	CString sInitDefaultPage = m_pDoc->PhpConfigFileGetParam(PHPCONFIG_DEFAULTPAGE);
 	if (sInitDefaultPage.CompareNoCase(PHPCONFIG_SUMMARYSNAPSHOT_PHP) == 0)
 		m_nUsage = 0;
@@ -468,6 +470,8 @@ void CCameraBasicSettingsDlg::EnableDisableAllCtrls(BOOL bEnable)
 	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_THUMBSPERPAGE);
 	pComboBox->EnableWindow(bEnable);
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_TRASHCOMMAND);
+	pCheck->EnableWindow(bEnable);
+	pCheck = (CButton*)GetDlgItem(IDC_CHECK_CAMERACOMMANDS);
 	pCheck->EnableWindow(bEnable);
 	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_KEEPFOR);
 	pComboBox->EnableWindow(bEnable);
@@ -882,6 +886,12 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	else
 		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SHOW_TRASH_COMMAND, _T("0"));
 	
+	// Camera commands
+	if (m_bCheckCameraCommands)
+		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SHOW_CAMERA_COMMANDS, _T("1"));
+	else
+		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SHOW_CAMERA_COMMANDS, _T("0"));
+
 	// Snapshot file names
 	m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTNAME, m_pDoc->m_sSnapshotLiveJpegName + _T(".jpg"));
 	m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTTHUMBNAME, m_pDoc->m_sSnapshotLiveJpegThumbName + _T(".jpg"));

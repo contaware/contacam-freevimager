@@ -184,7 +184,10 @@ echo "<div>\n";
 echo "<span class=\"globalbuttons\">";
 echo "<a class=\"homebuttons\" href=\"" . getParentUrl() . "\" target=\"_top\">&nbsp;</a>&nbsp;";
 echo "<a class=\"reloadbuttons\" href=\"#\" onclick=\"window.location.reload(); return false;\">&nbsp;</a>&nbsp;";
-echo strftime('%X') . "\n";
+if ($show_camera_commands) {
+	echo "<a href=\"camera.php?source=on&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\">I</a>&nbsp;";
+	echo "<a href=\"camera.php?source=off&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\">O</a>&nbsp;";
+}
 echo "</span>\n";
 echo "</div>\n";
 

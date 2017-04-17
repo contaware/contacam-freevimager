@@ -33,6 +33,12 @@ if (defined('SHOW_TRASH_COMMAND'))
 else
 	$show_trash_command = 0;
 
+// Camera commands
+if (defined('SHOW_CAMERA_COMMANDS'))
+	$show_camera_commands = SHOW_CAMERA_COMMANDS;
+else
+	$show_camera_commands = 0;
+
 // Get Internet Explorer version
 function getIEVersion() {
 	$match = preg_match('/MSIE ([0-9]+\.[0-9]+)/', $_SERVER['HTTP_USER_AGENT'], $reg);

@@ -81,6 +81,7 @@
 #define	PHP_AUTHENTICATENAME_EXT						_T("authenticate.php")
 #define PHP_LANGUAGES_DIR								_T("languages")
 #define CSS_STYLE_DIR									_T("styles")
+#define CAMERA_IS_OBSCURED_FILENAME						_T("CAMERA_IS_OBSCURED.txt")
 
 // Default wait time between network devices start
 #define DEFAULT_AUTOSTART_DELAY_MS						1000U

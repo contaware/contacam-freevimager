@@ -3709,6 +3709,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nMovDetSavesCountMonth = CurrentTime.GetMonth();
 	m_nMovDetSavesCountYear = CurrentTime.GetYear();
 	m_bVideoView = TRUE;
+	m_bSourceObscured = FALSE;
 	m_dwVideoProcessorMode = 0;
 	m_dwFrameCountUp = 0U;
 	m_bSizeToDoc = TRUE;
@@ -4502,6 +4503,9 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_bRecTimeSegmentation = (BOOL) pApp->GetProfileInt(sSection, _T("RecTimeSegmentation"), FALSE);
 	m_nTimeSegmentationIndex = pApp->GetProfileInt(sSection, _T("TimeSegmentationIndex"), 0);
 	m_sRecordAutoSaveDir = pApp->GetProfileString(sSection, _T("RecordAutoSaveDir"), sDefaultAutoSaveDir);
+	CString sRecordAutoSaveDir = m_sRecordAutoSaveDir;
+	sRecordAutoSaveDir.TrimRight(_T('\\'));
+	m_bSourceObscured = ::IsExistingFile(sRecordAutoSaveDir + _T("\\") + CAMERA_IS_OBSCURED_FILENAME);
 	m_sDetectionTriggerFileName = pApp->GetProfileString(sSection, _T("DetectionTriggerFileName"), _T("movtrigger.txt"));
 	CString sDetectionTriggerFileName(m_sDetectionTriggerFileName);
 	sDetectionTriggerFileName.TrimLeft();
@@ -7463,6 +7467,10 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 	{
 		// Clear the user flag from any previous content
 		pDib->SetUserFlag(0);
+
+		// Obscure the video source?
+		if (m_bSourceObscured)
+			pDib->SetBitColors(16);
 
 		// Rotate by 180° if divisible by 4
 		if (m_bRotate180 && (pDib->GetHeight() & 3) == 0)

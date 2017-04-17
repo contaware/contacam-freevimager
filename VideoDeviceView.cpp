@@ -813,7 +813,14 @@ void CVideoDeviceView::OnTimer(UINT nIDEvent)
 	{
 		case ID_TIMER_RELOAD_SETTINGS :
 		{
+			// Load detection on/off from registry/ini file
 			pDoc->m_dwVideoProcessorMode = (DWORD) MIN(1, MAX(0, ::AfxGetApp()->GetProfileInt(pDoc->GetDevicePathName(), _T("VideoProcessorMode"), 0)));
+			
+			// Load video source obscuration state
+			CString sRecordAutoSaveDir = pDoc->m_sRecordAutoSaveDir;
+			sRecordAutoSaveDir.TrimRight(_T('\\'));
+			pDoc->m_bSourceObscured = ::IsExistingFile(sRecordAutoSaveDir + _T("\\") + CAMERA_IS_OBSCURED_FILENAME);
+				
 			break;
 		}
 		default:
