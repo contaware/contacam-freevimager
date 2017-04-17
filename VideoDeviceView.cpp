@@ -317,7 +317,6 @@ void CVideoDeviceView::Draw(HDC hDC)
 	ASSERT_VALID(pDoc);
 
 	// Init
-	BOOL bVideoView = pDoc->m_bVideoView;
 	BOOL bStopAndChangeFormat = pDoc->m_bStopAndChangeFormat;
 	BOOL bDxDeviceUnplugged = pDoc->m_bDxDeviceUnplugged;
 	BOOL bWatchDogVideoAlarm = pDoc->m_bWatchDogVideoAlarm;
@@ -327,7 +326,7 @@ void CVideoDeviceView::Draw(HDC hDC)
 	GetClientRect(&rcClient);
 
 	// Erase Background
-	if (bStopAndChangeFormat || bDxDeviceUnplugged || bWatchDogVideoAlarm || !bVideoView)
+	if (bStopAndChangeFormat || bDxDeviceUnplugged || bWatchDogVideoAlarm)
 	{
 		CBrush br;
 		br.CreateSolidBrush(DRAW_BKG_COLOR);	
@@ -359,7 +358,7 @@ void CVideoDeviceView::Draw(HDC hDC)
 						OPAQUE, DRAW_BKG_COLOR); // faster drawing with opaque!
 	}
 	// Draw
-	else if (bVideoView)
+	else
 	{
 		// Enter CS
 		::EnterCriticalSection(&pDoc->m_csDib);
@@ -382,14 +381,6 @@ void CVideoDeviceView::Draw(HDC hDC)
 		if (pDoc->m_bDetectingMinLengthMovement ||
 			(pDoc->m_SaveFrameListThread.IsWorking() && pDoc->m_SaveFrameListThread.GetSaveProgress() < 100))
 			DrawTextMsg(hDC);
-	}
-	// Display: Preview Off
-	else
-	{
-		::DrawBigText(	hDC, rcClient,
-						ML_STRING(1571, "Preview Off"),
-						DRAW_MESSAGE_SUCCESS_COLOR, 72, DT_CENTER | DT_VCENTER,
-						OPAQUE, DRAW_BKG_COLOR); // faster drawing with opaque!
 	}
 }
 

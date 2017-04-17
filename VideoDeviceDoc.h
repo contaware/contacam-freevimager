@@ -849,7 +849,6 @@ public:
 	volatile BOOL m_bPlacementLoaded;					// Placement Settings have been loaded
 	volatile BOOL m_bCaptureStarted;					// Flag set when first frame has been processed
 	CTime m_CaptureStartTime;							// Grabbing device started at this time
-	volatile BOOL m_bVideoView;							// Flag indicating whether the frame grabbing is to be previewed
 	volatile BOOL m_bSourceObscured;					// Flag indicating whether the source has to be obscured
 	volatile BOOL m_bShowFrameTime;						// Show / Hide Frame Time Inside the Frame (frame time is also recorded)
 	volatile int m_nRefFontSize;						// Minimum font size for frame time, detection indicator, save/email/ftp progress
@@ -1072,8 +1071,6 @@ protected:
 	afx_msg void OnCaptureMovDet();
 	afx_msg void OnUpdateCaptureMovDet(CCmdUI* pCmdUI);
 	afx_msg void OnCaptureCameraAdvancedSettings();
-	afx_msg void OnViewVideo();
-	afx_msg void OnUpdateViewVideo(CCmdUI* pCmdUI);
 	afx_msg void OnViewFrametime();
 	afx_msg void OnUpdateViewFrametime(CCmdUI* pCmdUI);
 	afx_msg void OnFileClose();

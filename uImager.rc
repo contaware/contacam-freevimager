@@ -249,7 +249,6 @@ BEGIN
         MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
         MENUITEM SEPARATOR
-        MENUITEM "Preview",                     ID_VIEW_VIDEO
         MENUITEM "Fit",                         ID_VIEW_FIT
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
         MENUITEM SEPARATOR
@@ -3642,7 +3641,6 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_VIEW_VIDEO           "Enable / disable video input preview\nPreview Video"
     ID_ZOOM_COMBOX          "Select image zoom level\nZoom Image"
 END
 
@@ -4115,7 +4113,6 @@ BEGIN
     IDS_STRING1568          "Unplugged"
     IDS_STRING1569          "Change Size"
     IDS_STRING1570          "No Frames"
-    IDS_STRING1571          "Preview Off"
     IDS_STRING1574          "File"
     IDS_STRING1575          "Files"
     IDS_STRING1576          "More Colors..."

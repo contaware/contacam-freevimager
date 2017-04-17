@@ -3082,7 +3082,6 @@
 #define ID_FILE_SELECTTWAINSOURCE       32779
 #define ID_FILE_ACQUIRE                 32780
 #define ID_CAPTURE_CAMERAADVANCEDSETTINGS 32781
-#define ID_VIEW_VIDEO                   32788
 #define ID_ZOOM_COMBOX                  32799
 #define ID_VIEW_FULLSCREEN              32804
 #define ID_FILE_OPEN_DIR                32805

@@ -51,8 +51,6 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_COMMAND(ID_CAPTURE_MOVDET, OnCaptureMovDet)
 	ON_UPDATE_COMMAND_UI(ID_CAPTURE_MOVDET, OnUpdateCaptureMovDet)
 	ON_COMMAND(ID_CAPTURE_CAMERAADVANCEDSETTINGS, OnCaptureCameraAdvancedSettings)
-	ON_COMMAND(ID_VIEW_VIDEO, OnViewVideo)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_VIDEO, OnUpdateViewVideo)
 	ON_COMMAND(ID_VIEW_FRAMETIME, OnViewFrametime)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FRAMETIME, OnUpdateViewFrametime)
 	ON_COMMAND(ID_FILE_CLOSE, OnFileClose)
@@ -3708,7 +3706,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nMovDetSavesCountDay = CurrentTime.GetDay();
 	m_nMovDetSavesCountMonth = CurrentTime.GetMonth();
 	m_nMovDetSavesCountYear = CurrentTime.GetYear();
-	m_bVideoView = TRUE;
 	m_bSourceObscured = FALSE;
 	m_dwVideoProcessorMode = 0;
 	m_dwFrameCountUp = 0U;
@@ -4497,7 +4494,6 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_sHttpGetFramePassword = pApp->GetSecureProfileString(sSection, _T("HTTPGetFramePassword"));
 
 	// All other
-	m_bVideoView = (BOOL) pApp->GetProfileInt(sSection, _T("VideoView"), TRUE);
 	m_bRotate180 = (BOOL) pApp->GetProfileInt(sSection, _T("Rotate180"), FALSE);
 	m_bRecAutoOpen = (BOOL) pApp->GetProfileInt(sSection, _T("RecAutoOpen"), TRUE);
 	m_bRecTimeSegmentation = (BOOL) pApp->GetProfileInt(sSection, _T("RecTimeSegmentation"), FALSE);
@@ -5914,19 +5910,6 @@ void CVideoDeviceDoc::VideoFormatDialog()
 			dlg.DoModal();
 		}
 	}
-}
-
-void CVideoDeviceDoc::OnViewVideo() 
-{
-	m_bVideoView = !m_bVideoView;
-	if (!m_bVideoView)
-		GetView()->Invalidate(FALSE);
-	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("VideoView"), m_bVideoView);
-}
-
-void CVideoDeviceDoc::OnUpdateViewVideo(CCmdUI* pCmdUI) 
-{
-	pCmdUI->SetCheck(m_bVideoView ? 1 : 0);
 }
 
 void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
@@ -7610,8 +7593,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 		::EnterCriticalSection(&m_csDib);
 		m_pProcessFrameDib = m_pDib;
 		m_pDib = pDib;
-		if (m_bVideoView										&&
-			!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess	&&
+		if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess &&
 			(!((CUImagerApp*)::AfxGetApp())->m_bTrayIcon || !::AfxGetMainFrame()->m_TrayIcon.IsMinimizedToTray()))
 		{
 			BITMAPINFO BmiRgb32;
