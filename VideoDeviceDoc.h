@@ -846,6 +846,8 @@ public:
 	volatile LONG m_lEffectiveDataRateSum;				// Current calculated Data Rate sum
 	BITMAPINFOFULL m_CaptureBMI;						// Capture source format
 	BITMAPINFOFULL m_ProcessFrameBMI;					// BMI of Frame reaching ProcessI420Frame()
+	volatile DWORD m_dwLastVideoWidth;					// Last processed video width
+	volatile DWORD m_dwLastVideoHeight;					// Last processed video height
 	volatile BOOL m_bPlacementLoaded;					// Placement Settings have been loaded
 	volatile BOOL m_bCaptureStarted;					// Flag set when first frame has been processed
 	CTime m_CaptureStartTime;							// Grabbing device started at this time
@@ -871,6 +873,7 @@ public:
 
 	// Drawing
 	CDib* volatile m_pDrawDibRGB32;						// Frame in RGB32 format for drawing
+	CDib* volatile m_pCamOffDib;						// Dib used to obscure the camera source
 
 	// Watchdog vars
 	volatile LONG m_lCurrentInitUpTime;					// Uptime set in ProcessI420Frame()

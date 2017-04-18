@@ -77,8 +77,7 @@
 #define IDB_BITMAP_DRAGDROP_SINGLE      243
 #define IDB_BITMAP_DRAGDROP_MULTI       244
 #define IDB_HEADER_CTRL                 245
-#define IDB_BITSTREAM_VERA_10           249
-#define IDB_BITSTREAM_VERA_12           251
+#define IDB_CAMOFF                      249
 #define IDD_SHARPEN                     257
 #define IDD_ADD_BORDERS                 260
 #define IDD_SOFT_BORDERS                261

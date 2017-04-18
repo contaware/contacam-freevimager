@@ -3681,6 +3681,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_pProcessFrameExtraDib->SetShowMessageBoxOnError(FALSE);
 	m_pDrawDibRGB32 = new CDib;
 	m_pDrawDibRGB32->SetShowMessageBoxOnError(FALSE);
+	m_pCamOffDib = new CDib;
+	m_pCamOffDib->SetShowMessageBoxOnError(FALSE);
 
 	// General Vars
 	m_pView = NULL;
@@ -3691,6 +3693,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bRotate180 = FALSE;
 	memset(&m_CaptureBMI, 0, sizeof(BITMAPINFOFULL));
 	memset(&m_ProcessFrameBMI, 0, sizeof(BITMAPINFOFULL));
+	m_dwLastVideoWidth = 0;
+	m_dwLastVideoHeight = 0;
 	m_dFrameRate = DEFAULT_FRAMERATE;
 	m_dEffectiveFrameRate = 0.0;
 	m_dEffectiveFrameTimeSum = 0.0;
@@ -3975,6 +3979,11 @@ CVideoDeviceDoc::~CVideoDeviceDoc()
 	{
 		delete m_pDrawDibRGB32;
 		m_pDrawDibRGB32 = NULL;
+	}
+	if (m_pCamOffDib)
+	{
+		delete m_pCamOffDib;
+		m_pCamOffDib = NULL;
 	}
 	if (m_pSrcWaveFormat)
 	{
@@ -7482,16 +7491,53 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 		pDib->SetBMI((LPBITMAPINFO)&m_ProcessFrameBMI) &&
 		pDib->SetBits(pData, dwSize))
 	{
+		// Did the video size change?
+		if (m_dwLastVideoWidth != pDib->GetWidth() || m_dwLastVideoHeight != pDib->GetHeight())
+		{
+			m_pCamOffDib->Free();
+			m_dwLastVideoWidth = pDib->GetWidth();
+			m_dwLastVideoHeight = pDib->GetHeight();
+		}
+
 		// Clear the user flag from any previous content
 		pDib->SetUserFlag(0);
-
-		// Obscure the video source?
-		if (m_bObscureSource)
-			pDib->SetBitColors(16);
 
 		// Rotate by 180° if divisible by 4
 		if (m_bRotate180 && (pDib->GetHeight() & 3) == 0)
 			Rotate180(pDib);
+
+		// Obscure the video source?
+		if (m_bObscureSource)
+		{
+			// Make frame black
+			memset(pDib->GetBits(), 16, pDib->GetWidth() * pDib->GetHeight()); // set Y plane
+			memset(pDib->GetBits() + pDib->GetWidth() * pDib->GetHeight(), 0x80, pDib->GetWidth() * pDib->GetHeight() / 2); // set Chroma planes
+			
+			// Init Dib
+			if (!m_pCamOffDib->IsValid())
+			{
+				m_pCamOffDib->LoadDibSectionRes(GetModuleHandle(NULL), IDB_CAMOFF);
+				m_pCamOffDib->ConvertTo(32);
+				m_pCamOffDib->StretchBitsFitRect((pDib->GetWidth() / 4) & ~0x1, (pDib->GetHeight() / 4) & ~0x1);
+				m_pCamOffDib->Compress(FCC('I420'));
+			}
+
+			// Copy Dib bits
+			CDib::CopyBits(	FCC('I420'),
+							12,
+							(pDib->GetWidth() - m_pCamOffDib->GetWidth()) / 2, // dst X
+							(pDib->GetHeight() - m_pCamOffDib->GetHeight()) / 2, // dst Y
+							0,
+							0,
+							m_pCamOffDib->GetWidth(),
+							m_pCamOffDib->GetHeight(),
+							pDib->GetHeight(),
+							m_pCamOffDib->GetHeight(),
+							pDib->GetBits(),
+							m_pCamOffDib->GetBits(),
+							pDib->GetWidth(),
+							m_pCamOffDib->GetWidth());
+		}
 
 		// Set the UpTime Var
 		pDib->SetUpTime(dwCurrentInitUpTime);

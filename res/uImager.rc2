@@ -463,7 +463,7 @@ IDR_VIDEO_DEVICE_TOOLBAR2X BITMAP               "res\\toolbars\\videodevicedoc\\
 IDR_MAINFRAME3X            BITMAP               "res\\toolbars\\contacam\\contacam3x.bmp"
 IDR_PICTURE_TOOLBAR3X      BITMAP               "res\\toolbars\\picturedoc\\picturedoc3x.bmp"
 IDR_VIDEO_DEVICE_TOOLBAR3X BITMAP               "res\\toolbars\\videodevicedoc\\videodevicedoc3x.bmp"
-
+IDB_CAMOFF                 BITMAP               "res\\camoff.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //

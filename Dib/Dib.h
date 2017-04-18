@@ -1029,7 +1029,7 @@ public:
 					CWnd* pProgressWnd = NULL,
 					BOOL bProgressSend = TRUE);
 
-	// Set / Get Bits
+	// Set/Get/Copy Bits
 
 	// If lpBits == NULL, only create the dibsection (if necessary)
 	BOOL SetDibSectionBits(LPBYTE lpBits, DWORD dwSize);
@@ -1055,6 +1055,44 @@ public:
 	
 	// Converts From DibSection if necesssary
 	LPBYTE GetBits(BOOL bDeleteDibSection = FALSE);
+
+	// Copy Bits from the source rectangle to the destination rectangle
+	//
+	// Supported FCCs:
+	// BI_RGB
+	// BI_BITFIELDS
+	// YV16
+	// Y42B
+	// YV12
+	// I420 (and the equivalent : IYUV)
+	// YVU9
+	// YUV9
+	// YUY2 (and the equivalents: VYUY, V422, YUYV, YUNV)
+	// YVYU
+	// UYVY (and the equivalents: UYNV, Y422)
+	//
+	// Note: Min. copy size is one byte ->
+	//       for 1bpp & 4bpp images you have to
+	//       make sure to align and copy multiples
+	//       of 8 & 2 pixels!
+	//
+	// Coordinates are bottom-up for BI_RGB and BI_BITFIELDS
+	// and top-down for the YUV formats
+	//
+	static BOOL CopyBits(	DWORD dwFourCC,
+							DWORD dwBitCount,
+							DWORD uiDstStartX,
+							DWORD uiDstStartY,
+							DWORD uiSrcStartX,
+							DWORD uiSrcStartY,
+							DWORD uiWidthCopy,
+							DWORD uiHeightCopy,
+							DWORD uiDstHeight,
+							DWORD uiSrcHeight,
+							LPBYTE pDstBits,
+							LPBYTE pSrcBits,
+							DWORD uiDIBDstScanLineSize,
+							DWORD uiDIBSrcScanLineSize);
 
 	// BMI Functions
 	BOOL IsSameBMI(LPBITMAPINFO lpBMI) const;
@@ -1835,43 +1873,6 @@ protected:
 	__forceinline BOOL FloodFillPop(int &x, int &y);
 	__forceinline BOOL FloodFillPush(int x, int y);
 
-	// Copy Bits from the source rectangle to the destination rectangle
-	//
-	// Supported FCCs:
-	// BI_RGB
-	// BI_BITFIELDS
-	// YV16
-	// Y42B
-	// YV12
-	// I420 (and the equivalent : IYUV)
-	// YVU9
-	// YUV9
-	// YUY2 (and the equivalents: VYUY, V422, YUYV, YUNV)
-	// YVYU
-	// UYVY (and the equivalents: UYNV, Y422)
-	//
-	// Note: Min. copy size is one byte ->
-	//       for 1bpp & 4bpp images you have to
-	//       make sure to align and copy multiples
-	//       of 8 & 2 pixels!
-	//
-	// Coordinates are bottom-up for BI_RGB and BI_BITFIELDS
-	// and top-down for the YUV formats
-	//
-	static BOOL CopyBits(	DWORD dwFourCC,
-							DWORD dwBitCount,
-							DWORD uiDstStartX,
-							DWORD uiDstStartY,
-							DWORD uiSrcStartX,
-							DWORD uiSrcStartY,
-							DWORD uiWidthCopy,
-							DWORD uiHeightCopy,
-							DWORD uiDstHeight,
-							DWORD uiSrcHeight,
-							LPBYTE pDstBits,
-							LPBYTE pSrcBits,
-							DWORD uiDIBDstScanLineSize,
-							DWORD uiDIBSrcScanLineSize);
 public:
 	// PCX header
 	struct PCXHeader
