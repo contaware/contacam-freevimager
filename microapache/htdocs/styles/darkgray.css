@@ -152,6 +152,12 @@ a.homebuttons {
 a.reloadbuttons {
 	background: transparent url('reload_darkgray.png') no-repeat center center;
 }
+a.camonbuttons {
+	background: transparent url('camon_darkgray.png') no-repeat center center;
+}
+a.camoffbuttons {
+	background: transparent url('camoff_darkgray.png') no-repeat center center;
+}
 a.savebuttons {
 	background: transparent url('save_darkgray.png') no-repeat center center;
 }
