@@ -143,7 +143,7 @@ CUImagerApp::CUImagerApp()
 	m_bAutostartsExecuted = FALSE;
 	m_bBrowserAutostart = FALSE;
 	m_bIPv6 = FALSE;
-	m_bPreferTcpforRtsp = TRUE;
+	m_bPreferTcpforRtsp = FALSE;
 	m_dwAutostartDelayMs = DEFAULT_AUTOSTART_DELAY_MS;
 	m_dwFirstStartDelayMs = DEFAULT_FIRSTSTART_DELAY_MS;
 	m_bMovFragmented = FALSE;
@@ -3485,7 +3485,7 @@ void CUImagerApp::LoadSettings(UINT showCmd/*=SW_SHOWNORMAL*/)
 	m_bIPv6 = (BOOL)GetProfileInt(sSection, _T("IPv6"), FALSE);
 
 	// As RTSP transport first try TCP then UDP
-	m_bPreferTcpforRtsp = (BOOL)GetProfileInt(sSection, _T("PreferTcpforRtsp"), TRUE);
+	m_bPreferTcpforRtsp = (BOOL)GetProfileInt(sSection, _T("PreferTcpforRtsp"), FALSE);
 
 	// Wait time between network devices start
 	m_dwAutostartDelayMs = (DWORD)GetProfileInt(sSection, _T("AutostartDelayMs"), DEFAULT_AUTOSTART_DELAY_MS);
