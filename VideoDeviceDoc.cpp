@@ -2825,9 +2825,6 @@ int CVideoDeviceDoc::CRtspThread::Work()
 		// discarded.
 		// SO_RCVBUF is set by the OS to 8K for Win7 or older and to 64K for newer. ffmpeg inits it
 		// to UDP_MAX_PKT_SIZE. The user can change it with the "buffer_size" option.
-		//
-		// Note: for my current ffmpeg version that option is not yet supported, I changed
-		//       UDP_MAX_PKT_SIZE define from 65536 to 1048576 in uimager\ffmpeg\libavformat\udp.c
 		av_dict_set_int(&opts, "buffer_size", 1048576, 0); // 1MB
 
 		// Open rtsp
