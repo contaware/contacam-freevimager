@@ -11,6 +11,10 @@ static char THIS_FILE[] = __FILE__;
 
 #ifdef VIDEODEVICEDOC
 
+// TODO: remove the warnings suppression and use the new ffmpeg API interface
+#pragma warning(push)
+#pragma warning(disable : 4996)
+
 // Defined in uImager.cpp
 SwsContext *sws_getCachedContextHelper(	struct SwsContext *context,
 										int srcW, int srcH, enum AVPixelFormat srcFormat,
@@ -313,5 +317,7 @@ BOOL CAVDecoder::Decode(LPBITMAPINFO pSrcBMI,
 		return FALSE;
 	}
 }
+
+#pragma warning(pop)
 
 #endif

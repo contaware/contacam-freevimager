@@ -10,6 +10,10 @@ static char THIS_FILE[] = __FILE__;
 
 #ifdef VIDEODEVICEDOC
 
+// TODO: remove the warnings suppression and use the new ffmpeg API interface
+#pragma warning(push)
+#pragma warning(disable : 4996)
+
 BOOL CMJPEGEncoder::Open(LPBITMAPINFO pSrcBMI, int nThreadCount)
 {
 	// Already open?
@@ -162,5 +166,7 @@ DWORD CMJPEGEncoder::Encode(int qscale, LPBITMAPINFO pSrcBMI, LPBYTE pSrcBits, i
 		return 0U;
 	}
 }
+
+#pragma warning(pop)
 
 #endif

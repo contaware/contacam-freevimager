@@ -7,6 +7,10 @@
 #include <mmsystem.h>
 #include <mmreg.h>
 #include "YuvToRgb.h"
+
+// TODO: remove the warnings suppression and use the new ffmpeg API interface
+#pragma warning(push)
+#pragma warning(disable : 4996)
 extern "C"
 {
 #include "libavutil/opt.h"
@@ -133,7 +137,7 @@ public:
 																	m_pFormatCtx->streams[dwStreamNum]->codec) ?
 																	m_pFormatCtx->streams[dwStreamNum]->codec->time_base.den :
 																	1;};
-	__forceinline int GetTimeBaseNumerator(DWORD dwStreamNum) const {return	(m_pFormatCtx					&&
+	__forceinline int GetTimeBaseNumerator(DWORD dwStreamNum) const {return	(m_pFormatCtx						&&
 																	dwStreamNum < m_pFormatCtx->nb_streams		&&
 																	m_pFormatCtx->streams[dwStreamNum]			&&
 																	m_pFormatCtx->streams[dwStreamNum]->codec) ?
@@ -269,6 +273,8 @@ __forceinline DWORD CAVRec::AudioStreamNumToStreamNum(DWORD dwAudioStreamNum)
 
 	return 0;
 }
+
+#pragma warning(pop)
 
 #endif
 #endif //!_INC_AVREC

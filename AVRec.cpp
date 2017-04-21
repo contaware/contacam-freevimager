@@ -12,6 +12,10 @@ static char THIS_FILE[] = __FILE__;
 
 #ifdef VIDEODEVICEDOC
 
+// TODO: remove the warnings suppression and use the new ffmpeg API interface
+#pragma warning(push)
+#pragma warning(disable : 4996)
+
 // Defined in uImager.cpp
 SwsContext *sws_getCachedContextHelper(	struct SwsContext *context,
 										int srcW, int srcH, enum AVPixelFormat srcFormat,
@@ -456,7 +460,6 @@ int CAVRec::AddAudioStream(	const LPWAVEFORMATEX pSrcWaveFormat,
 	pCodecCtx->channel_layout = (pCodecCtx->channels == 1 ? AV_CH_LAYOUT_MONO : AV_CH_LAYOUT_STEREO);
 	if (strcmp(m_pFormatCtx->oformat->name, "avi") == 0)
 		pCodecCtx->codec_tag = pDstWaveFormat->wFormatTag;
-	pCodecCtx->strict_std_compliance = FF_COMPLIANCE_EXPERIMENTAL; // to enable AAC
 
 	// Set the wanted Codec Timebase
 	pCodecCtx->time_base.num = 1;
@@ -1452,5 +1455,7 @@ float CAVRec::ClipVideoQuality(float fQuality)
 		fQuality = VIDEO_QUALITY_BEST;
 	return fQuality;
 }
+
+#pragma warning(pop)
 
 #endif
