@@ -74,6 +74,8 @@ BEGIN_MESSAGE_MAP(CGeneralPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_VIDEO_SOURCE, OnVideoSource)
 	ON_EN_CHANGE(IDC_FRAMERATE, OnChangeFrameRate)
 	ON_BN_CLICKED(IDC_REC_AUDIO, OnRecAudio)
+	ON_BN_CLICKED(IDC_REC_AUDIO_FROM_STREAM, OnRecAudioFromStream)
+	ON_BN_CLICKED(IDC_REC_AUDIO_FROM_SOURCE, OnRecAudioFromSource)
 	ON_WM_TIMER()
 	ON_WM_DESTROY()
 	ON_WM_HSCROLL()
@@ -364,6 +366,20 @@ BOOL CGeneralPage::OnInitDialog()
 	else
 		pCheck->SetCheck(0);
 
+	// Capture Audio from Stream Check Box
+	CButton* pCheckAudioFromStream = (CButton*)GetDlgItem(IDC_REC_AUDIO_FROM_STREAM);
+	CButton* pCheckAudioFromSource = (CButton*)GetDlgItem(IDC_REC_AUDIO_FROM_SOURCE);
+	if (m_pDoc->m_bCaptureAudioFromStream)
+	{
+		pCheckAudioFromStream->SetCheck(1);
+		pCheckAudioFromSource->SetCheck(0);
+	}
+	else
+	{
+		pCheckAudioFromStream->SetCheck(0);
+		pCheckAudioFromSource->SetCheck(1);
+	}
+
 	// Audio Listen only supported on Vista or higher
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_AUDIO_LISTEN);
 	if (!g_bWinVistaOrHigher)
@@ -423,20 +439,6 @@ BOOL CGeneralPage::OnInitDialog()
 		else
 			pButton->EnableWindow(FALSE);
 	}
-	else
-		pButton->EnableWindow(FALSE);
-
-	// Enable Audio Source Button?
-	pButton = (CButton*)GetDlgItem(IDC_AUDIO_INPUT);
-	if (m_pDoc->m_pDxCapture)
-		pButton->EnableWindow(TRUE);
-	else
-		pButton->EnableWindow(FALSE);
-
-	// Enable Audio Mixer Button?
-	pButton = (CButton*)GetDlgItem(IDC_AUDIO_MIXER);
-	if (m_pDoc->m_pDxCapture)
-		pButton->EnableWindow(TRUE);
 	else
 		pButton->EnableWindow(FALSE);
 
@@ -523,15 +525,53 @@ void CGeneralPage::OnRecAudio()
 	if (bDoCaptureAudio)
 	{
 		m_pDoc->m_bCaptureAudio = TRUE;
-		if (m_pDoc->m_pDxCapture)
+		if (!m_pDoc->m_bCaptureAudioFromStream)
 			m_pDoc->m_CaptureAudioThread.Start();
 	}
 	else
 	{
 		m_pDoc->m_bCaptureAudio = FALSE;
-		if (m_pDoc->m_pDxCapture)
+		if (!m_pDoc->m_bCaptureAudioFromStream)
 			m_pDoc->m_CaptureAudioThread.Kill();
 	}
+
+	// Restart Save Frame List Thread
+	m_pDoc->m_SaveFrameListThread.Start();
+}
+
+void CGeneralPage::OnRecAudioFromStream()
+{
+	// Stop Save Frame List Thread
+	m_pDoc->m_SaveFrameListThread.Kill();
+
+	// Stop Rec
+	if (m_pDoc->m_pAVRec)
+		m_pDoc->CaptureRecord();
+
+	// Stop the Capture Audio Thread (if audio enabled)
+	// and set the Capture Audio from Stream flag
+	if (m_pDoc->m_bCaptureAudio)
+		m_pDoc->m_CaptureAudioThread.Kill();
+	m_pDoc->m_bCaptureAudioFromStream = TRUE;
+
+	// Restart Save Frame List Thread
+	m_pDoc->m_SaveFrameListThread.Start();
+}
+
+void CGeneralPage::OnRecAudioFromSource()
+{
+	// Stop Save Frame List Thread
+	m_pDoc->m_SaveFrameListThread.Kill();
+
+	// Stop Rec
+	if (m_pDoc->m_pAVRec)
+		m_pDoc->CaptureRecord();
+
+	// Clear the Capture Audio from Stream flag
+	// and start the Capture Audio Thread (if audio enabled)
+	m_pDoc->m_bCaptureAudioFromStream = FALSE;
+	if (m_pDoc->m_bCaptureAudio)
+		m_pDoc->m_CaptureAudioThread.Start();
 
 	// Restart Save Frame List Thread
 	m_pDoc->m_SaveFrameListThread.Start();

@@ -1597,11 +1597,11 @@ void CVideoDeviceDoc::CCaptureAudioThread::AudioInSourceDialog()
 			m_pDoc->CaptureRecord();
 
 		// Set new ID
-		if (m_pDoc->m_bCaptureAudio)
+		if (m_pDoc->m_bCaptureAudio && !m_pDoc->m_bCaptureAudioFromStream)
 			Kill();
 		m_pDoc->m_dwCaptureAudioDeviceID = dlg.m_uiDeviceID;
 		m_pDoc->m_sCaptureAudioDeviceName = CaptureAudioDeviceIDToName(m_pDoc->m_dwCaptureAudioDeviceID);
-		if (m_pDoc->m_bCaptureAudio)
+		if (m_pDoc->m_bCaptureAudio && !m_pDoc->m_bCaptureAudioFromStream)
 			Start();
 
 		// Restart Save Frame List Thread
@@ -2668,6 +2668,8 @@ int CVideoDeviceDoc::CHttpThread::Work()
 					return 0;
 				m_pDoc->m_pVideoNetCom->Close(); // this also empties the rx & tx fifos
 				m_pDoc->m_pHttpVideoParseProcess->m_bPollNextJpeg = FALSE;
+				if (m_pDoc->m_bCaptureAudio && !m_pDoc->m_bCaptureAudioFromStream)
+					m_pDoc->m_CaptureAudioThread.Start();
 				if (!Connect(m_pDoc->m_pVideoNetCom,
 							m_pDoc->m_pHttpVideoParseProcess,
 							((CUImagerApp*)::AfxGetApp())->m_bIPv6 ? AF_INET6 : AF_INET,
@@ -2909,6 +2911,12 @@ int CVideoDeviceDoc::CRtspThread::Work()
 				WaveInitFormat(pAudioCodecCtx->channels, pAudioCodecCtx->sample_rate, 16, m_pDoc->m_pSrcWaveFormat);
 		}
 
+		// Start Audio Capture Thread?
+		// Note: use the stream's m_pSrcWaveFormat to avoid problems
+		//       when toggling the m_bCaptureAudioFromStream flag
+		if (m_pDoc->m_bCaptureAudio && !m_pDoc->m_bCaptureAudioFromStream)
+			m_pDoc->m_CaptureAudioThread.Start();
+
 		// Exit?
 		if (DoExit())
 			goto free;
@@ -3008,7 +3016,8 @@ int CVideoDeviceDoc::CRtspThread::Work()
 					}
 				}
 				// Audio Packet
-				else if (avpkt.stream_index == nAudioStreamIndex && bAudioSupported && m_pDoc->m_bCaptureAudio)
+				else if (avpkt.stream_index == nAudioStreamIndex && bAudioSupported &&
+						m_pDoc->m_bCaptureAudio && m_pDoc->m_bCaptureAudioFromStream)
 				{
 					// Init audio listen
 					if (!pAudioTools)
@@ -3843,6 +3852,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	// Audio
 	m_dwCaptureAudioDeviceID = 0U;
 	m_bCaptureAudio = FALSE;
+	m_bCaptureAudioFromStream = FALSE;
 	m_bAudioListen = FALSE;
 	m_pSrcWaveFormat = (WAVEFORMATEX*)new BYTE[sizeof(WAVEFORMATEX)];
 	WaveInitFormat(DEFAULT_AUDIO_CHANNELS, DEFAULT_AUDIO_SAMPLINGRATE, DEFAULT_AUDIO_BITS, m_pSrcWaveFormat);
@@ -4196,29 +4206,17 @@ void CVideoDeviceDoc::SetDocumentTitle()
 				if (m_pHttpVideoParseProcess)
 				{
 					if (m_pHttpVideoParseProcess->m_FormatType == CHttpParseProcess::FORMATVIDEO_MJPEG)
-						sFormat = ML_STRING(1865, "HTTP motion jpeg") + _T("/") + ML_STRING(1493, "no audio");
+						sFormat = ML_STRING(1865, "HTTP motion jpeg");
 					else if (m_pHttpVideoParseProcess->m_FormatType == CHttpParseProcess::FORMATVIDEO_JPEG)
-						sFormat = ML_STRING(1866, "HTTP jpeg snapshots") + _T("/") + ML_STRING(1493, "no audio");
+						sFormat = ML_STRING(1866, "HTTP jpeg snapshots");
 				}
 			}
 			else
 			{
-				if (m_RtspThread.m_nVideoCodecID >= AV_CODEC_ID_NONE)
-				{
-					if (m_RtspThread.m_nVideoCodecID > AV_CODEC_ID_NONE)
-						sFormat += CString(avcodec_get_name((enum AVCodecID)m_RtspThread.m_nVideoCodecID));
-					else
-						sFormat += ML_STRING(1494, "no video");
-				}
-				if (m_RtspThread.m_nAudioCodecID >= AV_CODEC_ID_NONE)
-				{
-					if (!sFormat.IsEmpty())
-						sFormat += _T("/");
-					if (m_RtspThread.m_nAudioCodecID > AV_CODEC_ID_NONE)
-						sFormat += CString(avcodec_get_name((enum AVCodecID)m_RtspThread.m_nAudioCodecID));
-					else
-						sFormat += ML_STRING(1493, "no audio");
-				}
+				if (m_RtspThread.m_nVideoCodecID > AV_CODEC_ID_NONE)
+					sFormat += CString(avcodec_get_name((enum AVCodecID)m_RtspThread.m_nVideoCodecID));
+				if (m_RtspThread.m_nAudioCodecID > AV_CODEC_ID_NONE)
+					sFormat += _T("/") + CString(avcodec_get_name((enum AVCodecID)m_RtspThread.m_nAudioCodecID));
 				CString sProto(_T("RTSP"));
 				if (m_RtspThread.m_nUnderlyingTransport >= 0)
 				{
@@ -4414,7 +4412,10 @@ void CVideoDeviceDoc::SaveZonesSettings()
 	}
 }
 
-void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, CString sDeviceName)
+void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
+									BOOL bDefaultCaptureAudioFromStream,
+									CString sSection,
+									CString sDeviceName)
 {
 	CUImagerApp* pApp = (CUImagerApp*)::AfxGetApp();
 
@@ -4563,6 +4564,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 											pApp->GetProfileInt(sSection, _T("SnapshotStopMin"), t.GetMinute()),
 											pApp->GetProfileInt(sSection, _T("SnapshotStopSec"), t.GetSecond()));
 	m_bCaptureAudio = (BOOL) pApp->GetProfileInt(sSection, _T("CaptureAudio"), FALSE);
+	m_bCaptureAudioFromStream = (BOOL)pApp->GetProfileInt(sSection, _T("CaptureAudioFromStream"), bDefaultCaptureAudioFromStream);
 	m_bAudioListen = (BOOL) pApp->GetProfileInt(sSection, _T("AudioListen"), FALSE);
 	m_dwCaptureAudioDeviceID = (DWORD) pApp->GetProfileInt(sSection, _T("AudioCaptureDeviceID"), 0);
 	m_sCaptureAudioDeviceName = pApp->GetProfileString(sSection, _T("AudioCaptureDeviceName"), CaptureAudioDeviceIDToName(m_dwCaptureAudioDeviceID));
@@ -4751,6 +4753,7 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("SnapshotStopMin"), m_SnapshotStopTime.GetMinute());
 	pApp->WriteProfileInt(sSection, _T("SnapshotStopSec"), m_SnapshotStopTime.GetSecond());
 	pApp->WriteProfileInt(sSection, _T("CaptureAudio"), m_bCaptureAudio);
+	pApp->WriteProfileInt(sSection, _T("CaptureAudioFromStream"), m_bCaptureAudioFromStream);
 	pApp->WriteProfileInt(sSection, _T("AudioListen"), (int)m_bAudioListen);
 	pApp->WriteProfileInt(sSection, _T("AudioCaptureDeviceID"), m_dwCaptureAudioDeviceID);
 	pApp->WriteProfileString(sSection, _T("AudioCaptureDeviceName"), m_sCaptureAudioDeviceName);
@@ -4948,7 +4951,7 @@ BOOL CVideoDeviceDoc::InitOpenDxCapture(int nId)
 				StartProcessFrame(PROCESSFRAME_DXOPEN);
 
 				// Start Audio Capture Thread
-				if (m_bCaptureAudio)
+				if (m_bCaptureAudio && !m_bCaptureAudioFromStream)
 					m_CaptureAudioThread.Start();
 
 				// Title
@@ -4975,7 +4978,7 @@ BOOL CVideoDeviceDoc::OpenDxVideoDevice(int nId)
 	sDevicePathName.Replace(_T('\\'), _T('/'));
 
 	// Load Settings
-	LoadSettings(DEFAULT_FRAMERATE, sDevicePathName, sDeviceName);
+	LoadSettings(DEFAULT_FRAMERATE, FALSE, sDevicePathName, sDeviceName);
 
 	// Start Delete Thread
 	if (!m_DeleteThread.IsAlive())
@@ -5275,7 +5278,10 @@ BOOL CVideoDeviceDoc::OpenNetVideoDevice(CString sAddress, DWORD dwConnectDelayM
 	}
 
 	// Load Settings
-	LoadSettings(GetDefaultNetworkFrameRate(m_nNetworkDeviceTypeMode), GetDevicePathName(), GetDeviceName());
+	LoadSettings(	GetDefaultNetworkFrameRate(m_nNetworkDeviceTypeMode),
+					m_nNetworkDeviceTypeMode >= CVideoDeviceDoc::URL_RTSP,
+					GetDevicePathName(),
+					GetDeviceName());
 
 	// Start Delete Thread
 	if (!m_DeleteThread.IsAlive())
@@ -5333,7 +5339,10 @@ BOOL CVideoDeviceDoc::OpenNetVideoDevice(CHostPortDlg* pDlg)
 	}
 
 	// Load Settings
-	LoadSettings(GetDefaultNetworkFrameRate(m_nNetworkDeviceTypeMode), GetDevicePathName(), GetDeviceName());
+	LoadSettings(	GetDefaultNetworkFrameRate(m_nNetworkDeviceTypeMode),
+					m_nNetworkDeviceTypeMode >= CVideoDeviceDoc::URL_RTSP,
+					GetDevicePathName(),
+					GetDeviceName());
 
 	// Start Delete Thread
 	if (!m_DeleteThread.IsAlive())

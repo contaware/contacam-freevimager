@@ -74,6 +74,8 @@ protected:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnChangeFrameRate();
 	afx_msg void OnRecAudio();
+	afx_msg void OnRecAudioFromStream();
+	afx_msg void OnRecAudioFromSource();
 	afx_msg void OnTimer(UINT nIDEvent);
 	afx_msg void OnDestroy();
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);

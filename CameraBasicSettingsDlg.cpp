@@ -837,7 +837,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	{
 		bDoCaptureAudio = TRUE;
 		m_pDoc->m_bCaptureAudio = FALSE;
-		if (m_pDoc->m_pDxCapture)
+		if (!m_pDoc->m_bCaptureAudioFromStream)
 			m_pDoc->m_CaptureAudioThread.Kill();
 	}
 	else
@@ -1172,7 +1172,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	if (bDoCaptureAudio)
 	{
 		m_pDoc->m_bCaptureAudio = TRUE;
-		if (m_pDoc->m_pDxCapture)
+		if (!m_pDoc->m_bCaptureAudioFromStream)
 			m_pDoc->m_CaptureAudioThread.Start();
 	}
 

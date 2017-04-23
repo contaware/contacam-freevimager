@@ -756,7 +756,10 @@ public:
 	// Settings
 	BOOL LoadZonesSettings();
 	void SaveZonesSettings();
-	void LoadSettings(double dDefaultFrameRate, CString sSection, CString sDeviceName);
+	void LoadSettings(	double dDefaultFrameRate,
+						BOOL bDefaultCaptureAudioFromStream,
+						CString sSection,
+						CString sDeviceName);
 	void SavePlacement();
 	void SaveSettings();
 	void ExportDetectionZones(const CString& sFileName);
@@ -890,6 +893,7 @@ public:
 	volatile DWORD m_dwCaptureAudioDeviceID;			// Audio Capture Device ID
 	CString m_sCaptureAudioDeviceName;					// Audio Capture Device Name
 	volatile BOOL m_bCaptureAudio;						// Do Capture Audio Flag
+	volatile BOOL m_bCaptureAudioFromStream;			// Do Capture Audio from stream
 	volatile BOOL m_bAudioListen;						// Listen audio source
 	LPWAVEFORMATEX m_pSrcWaveFormat;					// Uncompressed audio source format
 	LPWAVEFORMATEX m_pDstWaveFormat;					// Wanted save format

@@ -930,10 +930,13 @@ BEGIN
     PUSHBUTTON      "Video Size && Format",IDC_VIDEO_FORMAT,98,214,87,19
     PUSHBUTTON      "TV Tuner",IDC_VIDEO_TUNER,13,236,82,19
     PUSHBUTTON      "Video Input Select",IDC_VIDEO_INPUT,98,236,87,19
-    CONTROL         "Enable",IDC_REC_AUDIO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,203,22,38,10
-    CONTROL         "Listen",IDC_CHECK_AUDIO_LISTEN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,263,22,35,10
-    PUSHBUTTON      "Source",IDC_AUDIO_INPUT,203,42,96,19
-    PUSHBUTTON      "Mixer",IDC_AUDIO_MIXER,304,42,100,19
+    CONTROL         "Enable",IDC_REC_AUDIO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,203,21,38,10
+    CONTROL         "Listen",IDC_CHECK_AUDIO_LISTEN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,263,21,35,10
+    CONTROL         "Audio from stream (only for RTSP cameras with audio)",IDC_REC_AUDIO_FROM_STREAM,
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,203,39,189,10
+    CONTROL         "Audio from:",IDC_REC_AUDIO_FROM_SOURCE,"Button",BS_AUTORADIOBUTTON,203,54,52,10
+    PUSHBUTTON      "Source",IDC_AUDIO_INPUT,261,53,65,12
+    PUSHBUTTON      "Mixer",IDC_AUDIO_MIXER,338,53,65,12
     CONTROL         "Start a new file each",IDC_CHECK_TIME_SEGMENTATION,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,203,99,81,10
     COMBOBOX        IDC_TIME_SEGMENTATION,310,98,94,83,CBS_DROPDOWNLIST | WS_TABSTOP
@@ -3623,8 +3626,6 @@ BEGIN
     IDS_MULTILANG_1490      "Unsupported network camera type or mode"
     IDS_MULTILANG_1491      "Server is too busy, try later"
     IDS_STRING1492          "Audio format/encoding not supported"
-    IDS_STRING1493          "no audio"
-    IDS_STRING1494          "no video"
     IDS_STRING1496          "cm"
     IDS_STRING1497          "inch"
     IDS_STRING1499          "Nearest Neighbor"
