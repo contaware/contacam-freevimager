@@ -28,7 +28,6 @@ CSettingsDlgVideoDeviceDoc::CSettingsDlgVideoDeviceDoc(CWnd* pParent /*=NULL*/)
 	m_bAutostart =		((CUImagerApp*)::AfxGetApp())->IsAutostart();
 	m_bStartFromService = CUImagerApp::GetContaCamServiceState() > 0;
 	m_bBrowserAutostart = ((CUImagerApp*)::AfxGetApp())->m_bBrowserAutostart;
-	m_bIPv6 = ((CUImagerApp*)::AfxGetApp())->m_bIPv6;
 	m_bPreferTcpforRtsp = ((CUImagerApp*)::AfxGetApp())->m_bPreferTcpforRtsp;
 	m_nAutostartDelay = ((CUImagerApp*)::AfxGetApp())->m_dwAutostartDelayMs / 1000;
 	m_nFirstStartDelay = ((CUImagerApp*)::AfxGetApp())->m_dwFirstStartDelayMs / 1000;
@@ -66,7 +65,6 @@ void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_DOCROOT, m_sMicroApacheDocRoot);
 	DDX_Check(pDX, IDC_CHECK_BROWSER_AUTOSTART, m_bBrowserAutostart);
 	DDX_Check(pDX, IDC_CHECK_STARTFROM_SERVICE, m_bStartFromService);
-	DDX_Check(pDX, IDC_CHECK_IPV6, m_bIPv6);
 	DDX_Check(pDX, IDC_CHECK_PREFER_TCP_FOR_RTSP, m_bPreferTcpforRtsp);
 	DDX_Text(pDX, IDC_EDIT_AUTOSTART_DELAY, m_nAutostartDelay);
 	DDV_MinMaxInt(pDX, m_nAutostartDelay, 0, 600);
@@ -142,9 +140,6 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsInit()
 
 	// Browser
 	pApp->m_bBrowserAutostart = m_bBrowserAutostart;
-
-	// Priority to IPv6
-	pApp->m_bIPv6 = m_bIPv6;
 
 	// As RTSP transport first try TCP then UDP
 	pApp->m_bPreferTcpforRtsp = m_bPreferTcpforRtsp;
@@ -251,9 +246,6 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsEnd()
 									_T("BrowserAutostart"),
 									m_bBrowserAutostart);
 	pApp->WriteProfileInt(			_T("GeneralApp"),
-									_T("IPv6"),
-									m_bIPv6);
-	pApp->WriteProfileInt(			_T("GeneralApp"),
 									_T("PreferTcpforRtsp"),
 									m_bPreferTcpforRtsp);
 	pApp->WriteProfileInt(			_T("GeneralApp"),
@@ -349,8 +341,6 @@ void CSettingsDlgVideoDeviceDoc::EnableDisableAllCtrls(BOOL bEnable)
 	pEdit->EnableWindow(bEnable);
 	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_AUTOSTART_DELAY);
 	pEdit->EnableWindow(bEnable);
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_IPV6);
-	pCheck->EnableWindow(bEnable);
 	CButton* pButton = (CButton*)GetDlgItem(IDC_BUTTON_DOCROOT);
 	pButton->EnableWindow(bEnable);
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_WEBSERVER);

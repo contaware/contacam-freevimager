@@ -601,9 +601,6 @@ public:
 	// Browser
 	BOOL m_bBrowserAutostart;
 
-	// Priority to IPv6
-	volatile BOOL m_bIPv6;
-
 	// As RTSP transport first try TCP then UDP
 	volatile BOOL m_bPreferTcpforRtsp;
 

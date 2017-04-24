@@ -142,7 +142,6 @@ CUImagerApp::CUImagerApp()
 	m_pVideoDeviceDocTemplate = NULL;
 	m_bAutostartsExecuted = FALSE;
 	m_bBrowserAutostart = FALSE;
-	m_bIPv6 = FALSE;
 	m_bPreferTcpforRtsp = FALSE;
 	m_dwAutostartDelayMs = DEFAULT_AUTOSTART_DELAY_MS;
 	m_dwFirstStartDelayMs = DEFAULT_FIRSTSTART_DELAY_MS;
@@ -3480,9 +3479,6 @@ void CUImagerApp::LoadSettings(UINT showCmd/*=SW_SHOWNORMAL*/)
 #ifdef VIDEODEVICEDOC
 	// Browser
 	m_bBrowserAutostart = (BOOL)GetProfileInt(sSection, _T("BrowserAutostart"), FALSE);
-
-	// Priority to IPv6
-	m_bIPv6 = (BOOL)GetProfileInt(sSection, _T("IPv6"), FALSE);
 
 	// As RTSP transport first try TCP then UDP
 	m_bPreferTcpforRtsp = (BOOL)GetProfileInt(sSection, _T("PreferTcpforRtsp"), FALSE);

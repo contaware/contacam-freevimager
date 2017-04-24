@@ -702,7 +702,7 @@ BOOL CNetCom::Init(	CParseProcess* pParseProcess,		// Parser & Processor
 					HANDLE hConnectEvent,				// Handle to an Event Object that will get Connect Events
 					HANDLE hConnectFailedEvent,			// Handle to an Event Object that will get Connect Failed Events
 					HANDLE hReadEvent,					// Handle to an Event Object that will get Read Events
-					int nSocketFamily)					// Socket family
+					int nSocketFamily)					// Socket family priority: AF_INET for IPv4, AF_INET6 for IPv6
 {
 	// First close
 	Close();

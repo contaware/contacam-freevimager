@@ -2603,7 +2603,7 @@ BOOL CVideoDeviceDoc::CHttpThread::Connect(	CNetCom* pNetCom,
 						hConnectedEvent,				// Handle to an Event Object that will get Connect Events
 						hConnectFailedEvent,			// Handle to an Event Object that will get Connect Failed Events
 						hReadEvent,						// Handle to an Event Object that will get Read Events
-						nSocketFamily);					// Socket family
+						nSocketFamily);					// Socket family priority: AF_INET for IPv4, AF_INET6 for IPv6
 }
 
 int CVideoDeviceDoc::CHttpThread::Work()
@@ -2672,7 +2672,7 @@ int CVideoDeviceDoc::CHttpThread::Work()
 					m_pDoc->m_CaptureAudioThread.Start();
 				if (!Connect(m_pDoc->m_pVideoNetCom,
 							m_pDoc->m_pHttpVideoParseProcess,
-							((CUImagerApp*)::AfxGetApp())->m_bIPv6 ? AF_INET6 : AF_INET,
+							AF_INET,			// Socket family priority: AF_INET for IPv4, AF_INET6 for IPv6
 							m_hEventArray[2],	// Http Video Connected Event
 							m_hEventArray[3],	// Http Video Connect Failed Event
 							m_hEventArray[4]))	// Http Video Read Event
