@@ -1920,8 +1920,8 @@ BOOL CVideoDeviceDoc::AudioListen(	LPBYTE pData, DWORD dwSizeInBytes,
 													pAudioPlay->GetWaveFormat()->nSamplesPerSec,
 													pAudioPlay->GetWaveFormat()->nChannels);
 
-		// Clear buffer if not listening
-		if (!m_bAudioListen)
+		// Clear buffer if not listening or if obscuring the source
+		if (!m_bAudioListen || m_bObscureSource)
 			memset(pResampleBuf, 0, nNumDstFrames * pAudioPlay->GetWaveFormat()->nChannels * sizeof(float));
 
 		// Finally play it
@@ -7552,12 +7552,30 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 		// Set the UpTime Var
 		pDib->SetUpTime(dwCurrentInitUpTime);
 
-		// Move samples from audio queue to Dib
+		// Capture audio?
 		if (m_bCaptureAudio)
 		{
+			// Move samples from audio queue to Dib
 			::EnterCriticalSection(&m_csAudioList);
 			pDib->MoveUserList(m_AudioList);
 			::LeaveCriticalSection(&m_csAudioList);
+
+			// Obscure the audio source?
+			if (m_bObscureSource)
+			{
+				POSITION pos = pDib->m_UserList.GetHeadPosition();
+				while (pos)
+				{
+					CUserBuf UserBuf = pDib->m_UserList.GetNext(pos);
+					if (UserBuf.m_pBuf && UserBuf.m_dwSize > 0)
+					{
+						if (m_pSrcWaveFormat->wBitsPerSample == 8)
+							memset(UserBuf.m_pBuf, 128, UserBuf.m_dwSize);
+						else
+							memset(UserBuf.m_pBuf, 0, UserBuf.m_dwSize);
+					}
+				}
+			}
 		}
 		else
 			pDib->FreeUserList();
