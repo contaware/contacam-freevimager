@@ -1342,10 +1342,10 @@ BEGIN
     LTEXT           "frames",IDC_STATIC2293,175,147,30,8
     GROUPBOX        "On Detection",IDC_STATIC2288,215,19,195,243
     RTEXT           "",IDC_MAX_MOVDET_QUEUESIZE,134,170,38,11,SS_CENTERIMAGE
-    RTEXT           "-> max buffer MEM usage",IDC_STATIC,13,170,99,8
+    RTEXT           "-> max detection buffer size",IDC_STATIC,13,170,99,8
     LTEXT           "GB",IDC_STATIC2294,175,170,11,11,SS_CENTERIMAGE
     RTEXT           "",IDC_MAX_MOVDET_VIDEOLENGTH,134,159,38,11,SS_CENTERIMAGE
-    RTEXT           "-> max VIDEO length",IDC_STATIC,13,159,99,11
+    RTEXT           "-> max video length",IDC_STATIC,13,159,99,11
     LTEXT           "sec",IDC_STATIC2295,175,159,11,11,SS_CENTERIMAGE
 END
 
@@ -3743,15 +3743,18 @@ END
 STRINGTABLE
 BEGIN
     ID_INDICATOR_PROGRESS   "                                   "
+    ID_INDICATOR_DETBUFS_SIZE
+	                        "BUF:             "
     ID_INDICATOR_HD_USAGE   "HD:              "
     ID_INDICATOR_CPU_USAGE  "CPU:             "
-    ID_INDICATOR_MEM_USAGE  "MEM:             "
-    ID_INDICATOR_XCOORDINATE "X:               "
-    ID_INDICATOR_YCOORDINATE "Y:               "
+    ID_INDICATOR_XCOORDINATE
+	                        "X:               "
+    ID_INDICATOR_YCOORDINATE
+	                        "Y:               "
     ID_SETTINGS_LOG_ALL_MESSAGES 
                             "Enable verbose diagnostic logging\nDiagnostic Log"
-    ID_CAPTURE_OBSCURESOURCE 
-                            "Obscure / show video source\nObscure Video Source"
+    ID_CAPTURE_OBSCURESOURCE
+	                        "Obscure / show source\nObscure Source"
 END
 
 STRINGTABLE
@@ -4341,7 +4344,7 @@ BEGIN
     IDS_STRING1760          "Application Log File has not yet been created"
     IDS_STRING1761          "HD usage"
     IDS_STRING1762          "CPU usage"
-    IDS_STRING1763          "MEM usage"
+    IDS_STRING1763          "Maximum overall movement detection buffers size"
     IDS_STRING1764          "Starting"
     IDS_STRING1765          "%s already exists.\nDo you want to proceed and merge the files?"
     IDS_STRING1766          "Only ASCII characters allowed in path"

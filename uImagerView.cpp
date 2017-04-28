@@ -666,8 +666,8 @@ void CUImagerView::UpdatePaneText()
 			nYDpi = DEFAULT_DPI;
 		sYCoord.Format(_T("Y: %0.2fcm"), (double)ptCoord.y * 2.54 / (double)nYDpi);
 	}
-	::AfxGetMainFrame()->GetStatusBar()->SetPaneText(::AfxGetMainFrame()->GetStatusBar()->CommandToIndex(ID_INDICATOR_XCOORDINATE), sXCoord);
-	::AfxGetMainFrame()->GetStatusBar()->SetPaneText(::AfxGetMainFrame()->GetStatusBar()->CommandToIndex(ID_INDICATOR_YCOORDINATE), sYCoord);
+	::AfxGetMainFrame()->GetStatusBar()->SetPaneText(::AfxGetMainFrame()->GetStatusBar()->CommandToIndex(ID_INDICATOR_XCOORDINATE), _T(" ") + sXCoord + _T(" "));
+	::AfxGetMainFrame()->GetStatusBar()->SetPaneText(::AfxGetMainFrame()->GetStatusBar()->CommandToIndex(ID_INDICATOR_YCOORDINATE), _T(" ") + sYCoord + _T(" "));
 }
 
 int CUImagerView::DoRealizePalette(BOOL bForceBackground)

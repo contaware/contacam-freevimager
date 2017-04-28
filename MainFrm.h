@@ -220,9 +220,9 @@ protected:
 	void FullScreenModeOn();
 	void FullScreenModeOff();
 	void ChangeCoordinatesUnit();
-	static CString GetDiskStats(LPCTSTR lpszPath, int nMinDiskFreePermillion = 0);
-	static CString GetPageFileStats();
+	static BOOL GetDiskStats(CString& sDiskStats, LPCTSTR lpszPath, int nMinDiskFreePermillion);
 #ifdef VIDEODEVICEDOC
+	static BOOL GetMaxDetBufsSizeStats(CString& sMaxDetBufsSize);
 	void CleanupFileMenu(CMenu* pPopupMenu);
 	void PopulateCaptureMenu(CMenu* pPopupMenu);
 #endif
