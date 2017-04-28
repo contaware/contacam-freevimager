@@ -3809,7 +3809,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nMilliSecondsRecBeforeMovementBegin = DEFAULT_PRE_BUFFER_MSEC;
 	m_nMilliSecondsRecAfterMovementEnd = DEFAULT_POST_BUFFER_MSEC;
 	m_nDetectionMinLengthMilliSeconds = MOVDET_MIN_LENGTH_MSEC;
-	m_nDetectionMaxFrames = MOVDET_MAX_FRAMES_IN_LIST;
+	m_nDetectionMaxFrames = MOVDET_DEFAULT_MAX_FRAMES_IN_LIST;
 	m_bSaveVideoMovementDetection = TRUE;
 	m_bSaveAnimGIFMovementDetection = TRUE;
 	m_bSendMailDeviceOK = FALSE;
@@ -4575,7 +4575,11 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_nMilliSecondsRecBeforeMovementBegin = (int) pApp->GetProfileInt(sSection, _T("MilliSecondsRecBeforeMovementBegin"), DEFAULT_PRE_BUFFER_MSEC);
 	m_nMilliSecondsRecAfterMovementEnd = (int) pApp->GetProfileInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), DEFAULT_POST_BUFFER_MSEC);
 	m_nDetectionMinLengthMilliSeconds = (int) pApp->GetProfileInt(sSection, _T("DetectionMinLengthMilliSeconds"), MOVDET_MIN_LENGTH_MSEC);
-	m_nDetectionMaxFrames = (int) pApp->GetProfileInt(sSection, _T("DetectionMaxFrames"), MOVDET_MAX_FRAMES_IN_LIST);
+	int nDetectionMaxFrames = (int) pApp->GetProfileInt(sSection, _T("DetectionMaxFrames"), MOVDET_DEFAULT_MAX_FRAMES_IN_LIST);
+	if (nDetectionMaxFrames >= 1 && nDetectionMaxFrames <= MOVDET_MAX_MAX_FRAMES_IN_LIST)
+		m_nDetectionMaxFrames = nDetectionMaxFrames;
+	else
+		m_nDetectionMaxFrames = MOVDET_DEFAULT_MAX_FRAMES_IN_LIST; // restore the default if a strange value is set
 	m_nDetectionLevel = (int) pApp->GetProfileInt(sSection, _T("DetectionLevel"), DEFAULT_MOVDET_LEVEL);
 	m_nCurrentDetectionZoneSize = m_nDetectionZoneSize = (int) pApp->GetProfileInt(sSection, _T("DetectionZoneSize"), 0);
 	m_bSaveVideoMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveVideoMovementDetection"), TRUE);

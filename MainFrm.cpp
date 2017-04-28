@@ -89,6 +89,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_MESSAGE(WM_AUTORUN_VIDEODEVICES, OnAutorunVideoDevices)
 	ON_COMMAND(ID_VIEW_WEB, OnViewWeb)
 	ON_COMMAND(ID_VIEW_FILES, OnViewFiles)
+	ON_COMMAND(ID_INDICATOR_DETBUFS_SIZE, OnDetBufsSizeClick)
 #endif
 END_MESSAGE_MAP()
 
@@ -103,12 +104,12 @@ static SBACTPANEINFO sba_indicators[] =
 	{ ID_SEPARATOR, _T(""), SBACTF_NORMAL },		// status line indicator
 	{ ID_INDICATOR_PROGRESS, _T(""), SBACTF_NORMAL },
 #ifdef VIDEODEVICEDOC
-	{ ID_INDICATOR_DETBUFS_SIZE, sba_DETBUFSHelp, SBACTF_AUTOFIT },
+	{ ID_INDICATOR_DETBUFS_SIZE, sba_DETBUFSHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_SINGLECLICK | SBACTF_DOUBLECLICK | SBACTF_HANDCURSOR },
 	{ ID_INDICATOR_HD_USAGE, sba_HDHelp, SBACTF_AUTOFIT },
 	{ ID_INDICATOR_CPU_USAGE, sba_CPUHelp, SBACTF_AUTOFIT },
 #endif
-	{ ID_INDICATOR_XCOORDINATE, sba_CoordinateHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_HANDCURSOR },
-	{ ID_INDICATOR_YCOORDINATE, sba_CoordinateHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_HANDCURSOR },
+	{ ID_INDICATOR_XCOORDINATE, sba_CoordinateHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_SINGLECLICK | SBACTF_DOUBLECLICK | SBACTF_HANDCURSOR },
+	{ ID_INDICATOR_YCOORDINATE, sba_CoordinateHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_SINGLECLICK | SBACTF_DOUBLECLICK | SBACTF_HANDCURSOR },
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -177,14 +178,14 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// Create Statusbar
 	((CUImagerApp*)::AfxGetApp())->m_bShowStatusbar = (BOOL)((CUImagerApp*)::AfxGetApp())->GetProfileInt(_T("GeneralApp"), _T("ShowStatusbar"), TRUE);
 #ifdef VIDEODEVICEDOC
-	_tcsncpy(sba_DETBUFSHelp, ML_STRING(1763, "Maximum overall movement detection buffers size\n"), MAX_PATH);
+	_tcsncpy(sba_DETBUFSHelp, ML_STRING(1763, "Maximum overall movement detection buffers size\n(click for more information)"), MAX_PATH);
 	sba_DETBUFSHelp[MAX_PATH - 1] = _T('\0');
 	_tcsncpy(sba_HDHelp, ML_STRING(1761, "HD usage"), MAX_PATH);
 	sba_HDHelp[MAX_PATH - 1] = _T('\0');
 	_tcsncpy(sba_CPUHelp, CString(APPNAME_NOEXT) + _T(": ") + ML_STRING(1762, "CPU usage"), MAX_PATH);
 	sba_CPUHelp[MAX_PATH - 1] = _T('\0');
 #endif
-	_tcsncpy(sba_CoordinateHelp, ML_STRING(1768, "Double-click to change unit"), MAX_PATH);
+	_tcsncpy(sba_CoordinateHelp, ML_STRING(1768, "Click to change unit"), MAX_PATH);
 	sba_CoordinateHelp[MAX_PATH - 1] = _T('\0');
 	if (!m_wndStatusBar.Create(this, (((CUImagerApp*)::AfxGetApp())->m_bShowStatusbar ? WS_VISIBLE : 0) | WS_CHILD | CBRS_BOTTOM, AFX_IDW_STATUS_BAR) || 
 		!m_wndStatusBar.SetPanes(sba_indicators, sizeof(sba_indicators)/sizeof(SBACTPANEINFO)))
@@ -1111,6 +1112,12 @@ void CMainFrame::OnViewFiles()
 					NULL,
 					SW_SHOWNORMAL);
 }
+
+void CMainFrame::OnDetBufsSizeClick()
+{
+	PopupToaster(APPNAME_NOEXT, ML_STRING(1781, "To limit the movement detection buffer size lower the \"Split detection files longer than\" value under \"Camera Advanced Settings - Movement Detection\" tab"), 0);
+}
+
 #endif
 
 void CMainFrame::EnterExitFullscreen()

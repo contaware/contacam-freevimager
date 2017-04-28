@@ -61,7 +61,7 @@ void CMovementDetectionPage::DoDataExchange(CDataExchange* pDX)
 	DDV_MinMaxInt(pDX, m_nDetectionMinLengthSeconds, 0, 99);
 	DDX_Control(pDX, IDC_SPIN_DETECTION_MIN_LENGTH, m_SpinDetectionMinLengthSeconds);
 	DDX_Text(pDX, IDC_EDIT_DETECTION_MAX_FRAMES, m_nDetectionMaxFrames);
-	DDV_MinMaxInt(pDX, m_nDetectionMaxFrames, 1, 1000000);
+	DDV_MinMaxInt(pDX, m_nDetectionMaxFrames, 1, MOVDET_MAX_MAX_FRAMES_IN_LIST);
 	//}}AFX_DATA_MAP
 }
 

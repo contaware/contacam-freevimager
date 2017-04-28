@@ -116,7 +116,8 @@ class CMovementDetectionPage;
 #define MOVDET_ZONE_FORMAT					_T("DoMovementDetection%03i")
 #define MOVDET_ZONES_BLOCK_FORMAT			_T("MovDetZones%i")
 #define MOVDET_SAVEFRAMES_POLL				1000U		// ms
-#define MOVDET_MAX_FRAMES_IN_LIST			1000		// Default maximum frames per list
+#define MOVDET_DEFAULT_MAX_FRAMES_IN_LIST	1000		// Default maximum frames per list
+#define MOVDET_MAX_MAX_FRAMES_IN_LIST		14999		// Upper limit for the maximum frames per list
 #define MOVDET_SAVE_MIN_FRAMERATE_RATIO		0.3			// Min ratio between calculated (last - first) and m_dEffectiveFrameRate
 #define MOVDET_TIMEOUT						1000U		// Timeout in ms for detection zones
 #define MOVDET_ANIMGIF_MAX_FRAMES			60			// Maximum number of frames per animated gif

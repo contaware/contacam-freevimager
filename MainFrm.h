@@ -280,6 +280,7 @@ protected:
 	afx_msg LONG OnAutorunVideoDevices(WPARAM wparam, LPARAM lparam);
 	afx_msg void OnViewWeb();
 	afx_msg void OnViewFiles();
+	afx_msg void OnDetBufsSizeClick();
 #endif
 	DECLARE_MESSAGE_MAP()
 };
