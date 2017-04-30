@@ -1115,7 +1115,7 @@ void CMainFrame::OnViewFiles()
 
 void CMainFrame::OnDetBufsSizeClick()
 {
-	PopupToaster(APPNAME_NOEXT, ML_STRING(1781, "To limit the movement detection buffer size lower the \"Split detection files longer than\" value under \"Camera Advanced Settings - Movement Detection\" tab"), 0);
+	PopupToaster(APPNAME_NOEXT, ML_STRING(1819, "To limit the movement detection buffer size lower the \"Split detection files longer than\" value under \"Camera Advanced Settings - Movement Detection\" tab"), 0);
 }
 
 #endif

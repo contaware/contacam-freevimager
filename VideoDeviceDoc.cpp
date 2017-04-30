@@ -9112,6 +9112,7 @@ BOOL CVideoDeviceDoc::ConnectRtsp(DWORD dwConnectDelayMs/*=0U*/)
 		case CANON_RTSP:		sQuery = _T("/stream/profile0=r"); break;
 		case DLINK_RTSP:		sQuery = _T("/live1.sdp"); break;
 		case DAHUA_RTSP:		sQuery = _T("/live"); break;
+		case DIGOO_RTSP:		sQuery = _T("/onvif1"); break;
 		case EDIMAX_RTSP:		sQuery = _T("/ipcam_h264.sdp"); break;
 		case FOSCAM_RTSP:		sQuery = _T("/videoMain"); break;
 		case GEOVISION_RTSP:	sQuery = _T("/CH001.sdp"); break;
@@ -9131,6 +9132,7 @@ BOOL CVideoDeviceDoc::ConnectRtsp(DWORD dwConnectDelayMs/*=0U*/)
 		case TRENDNET_RTSP:		sQuery = _T("/Streaming/Channels/1"); break;
 		case UBIQUITI_RTSP:		sQuery = _T("/live/ch00_0"); break;
 		case VIVOTEK_RTSP:		sQuery = _T("/live.sdp"); break;
+		case VSTARCAM_RTSP:		sQuery = _T("/tcp/av0_0"); break;
 		case XIAOMI_RTSP:		sQuery = _T("/ch0_0.h264"); break;
 		case YCAM_RTSP:			sQuery = _T("/live_mpeg4.sdp"); break;
 		case ZAVIO_RTSP:		sQuery = _T("/video.pro1"); break;

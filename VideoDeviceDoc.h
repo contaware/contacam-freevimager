@@ -610,6 +610,7 @@ public:
 		CANON_RTSP = 1070,		// Canon RTSP
 		DLINK_RTSP = 1080,		// D-Link RTSP
 		DAHUA_RTSP = 1090,		// Dahua RTSP
+		DIGOO_RTSP = 1100,		// Digoo RTSP
 		EDIMAX_RTSP = 1110,		// Edimax RTSP
 		FOSCAM_RTSP = 1120,		// Foscam RTSP
 		GEOVISION_RTSP = 1125,	// GeoVision RTSP
@@ -629,6 +630,7 @@ public:
 		TRENDNET_RTSP = 1230,	// TrendNet RTSP
 		UBIQUITI_RTSP = 1235,	// Ubiquiti RTSP
 		VIVOTEK_RTSP = 1240,	// Vivotek RTSP
+		VSTARCAM_RTSP = 1242,	// VStarCam RTSP
 		XIAOMI_RTSP = 1245,		// Xiaomi RTSP
 		YCAM_RTSP = 1250,		// Y-cam RTSP
 		ZAVIO_RTSP = 1255,		// Zavio RTSP

@@ -4358,7 +4358,6 @@ END
 STRINGTABLE
 BEGIN
     IDS_STRING1780          "The request to connect could not be completed because the supplied user name and/or password are incorrect"
-    IDS_STRING1781          "To limit the movement detection buffer size lower the ""Split detection files longer than"" value under ""Camera Advanced Settings - Movement Detection"" tab"
     IDS_STRING1784          "Error with code %u."
     IDS_STRING1785          "General"
     IDS_STRING1786          "Shrink"
@@ -4380,6 +4379,7 @@ BEGIN
     IDS_STRING1816          "Create a text file where each line represents a Paste\ncommand at the given position:\n  1. Origin: top left, top right, bottom left, bottom right\n  2. horizontal and vertical positions with sign and unit\n      (px, in, cm, mm)\n\nExample:\n\ntop left 1.57cm -1.32cm\nbottom right 12.1mm 5.5mm"
     IDS_STRING1817          "OUT OF MEMORY: increase the Page File size, add more RAM, lower the ""Split detection files longer than"" value for all cameras"
     IDS_STRING1818          "Aborting"
+    IDS_STRING1819          "To limit the movement detection buffer size lower the ""Split detection files longer than"" value under ""Camera Advanced Settings - Movement Detection"" tab"
     IDS_STRING1820          "usable"
     IDS_STRING1822          "Fit"
     IDS_STRING1823          "Fit Big"
@@ -4446,6 +4446,7 @@ BEGIN
     IDS_STRING1864          "JPEG Quality\n(0: worst, 100: best)"
     IDS_STRING1865          "HTTP motion jpeg"
     IDS_STRING1866          "HTTP jpeg snapshots"
+    IDS_STRING1867          "Custom URLs have to begin with rtsp:// or http://"
     IDS_STRING1868          "or"
     IDS_STRING1869          "Choose a directory under the %s drive"
     IDS_STRING1870          "The new folder cannot be a subfolder of the old one"

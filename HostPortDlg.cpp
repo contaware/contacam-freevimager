@@ -56,6 +56,7 @@ BOOL CHostPortDlg::OnInitDialog()
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Canon (RTSP)")), (DWORD)CVideoDeviceDoc::CANON_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("D-Link (RTSP)")), (DWORD)CVideoDeviceDoc::DLINK_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Dahua (RTSP)")), (DWORD)CVideoDeviceDoc::DAHUA_RTSP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Digoo (RTSP)")), (DWORD)CVideoDeviceDoc::DIGOO_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Edimax (RTSP)")), (DWORD)CVideoDeviceDoc::EDIMAX_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Edimax (") + ML_STRING(1865, "HTTP motion jpeg") + _T(")")), (DWORD)CVideoDeviceDoc::EDIMAX_SP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Edimax (") + ML_STRING(1866, "HTTP jpeg snapshots") + _T(")")), (DWORD)CVideoDeviceDoc::EDIMAX_CP);
@@ -85,6 +86,7 @@ BOOL CHostPortDlg::OnInitDialog()
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("TrendNet (RTSP)")), (DWORD)CVideoDeviceDoc::TRENDNET_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Ubiquiti (RTSP)")), (DWORD)CVideoDeviceDoc::UBIQUITI_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Vivotek (RTSP)")), (DWORD)CVideoDeviceDoc::VIVOTEK_RTSP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("VStarCam (RTSP)")), (DWORD)CVideoDeviceDoc::VSTARCAM_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Xiaomi (RTSP)")), (DWORD)CVideoDeviceDoc::XIAOMI_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Y-cam (RTSP)")), (DWORD)CVideoDeviceDoc::YCAM_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Zavio (RTSP)")), (DWORD)CVideoDeviceDoc::ZAVIO_RTSP);
@@ -437,6 +439,18 @@ void CHostPortDlg::OnSelchangeComboDeviceTypeMode()
 
 void CHostPortDlg::OnOK() 
 {
+	CString sHostLowerCase(m_sHost);
+	sHostLowerCase.MakeLower();
+	if (sHostLowerCase.Find(_T("http://")) < 0 &&
+		sHostLowerCase.Find(_T("rtsp://")) < 0 &&
+		(sHostLowerCase.Find(_T(":")) >= 0 || sHostLowerCase.Find(_T("/")) >= 0))
+	{
+		CComboBox* pComboBoxHost = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
+		::SetFocus(pComboBoxHost->GetSafeHwnd());
+		::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, ML_STRING(1867, "Custom URLs have to begin with rtsp:// or http://"), 0);
+		::MessageBeep(0xFFFFFFFF);
+		return;
+	}
 	SaveHistory(m_sHost, m_nPort, m_nDeviceTypeMode,
 				m_HostsHistory, m_PortsHistory, m_DeviceTypeModesHistory);
 	SaveCredentials();
