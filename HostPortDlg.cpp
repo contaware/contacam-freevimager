@@ -132,7 +132,7 @@ BOOL CHostPortDlg::OnInitDialog()
 
 	// Update Controls
 	EnableDisableCtrls();
-	LoadCredentialsAndTitle();
+	Load();
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -377,7 +377,7 @@ void CHostPortDlg::OnEditchangeComboHost()
 	CComboBox* pComboBoxHost = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
 	pComboBoxHost->GetWindowText(m_sHost);
 	EnableDisableCtrls();
-	LoadCredentialsAndTitle();
+	Load();
 }
 
 /*
@@ -414,7 +414,7 @@ void CHostPortDlg::OnSelchangeComboHost()
 
 	// Update Controls
 	EnableDisableCtrls();
-	LoadCredentialsAndTitle();
+	Load();
 }
 
 void CHostPortDlg::OnChangeEditPort()
@@ -428,13 +428,13 @@ void CHostPortDlg::OnChangeEditPort()
 		m_nPort = nPort;
 	else
 		m_nPort = DEFAULT_TCP_PORT;
-	LoadCredentialsAndTitle();
+	Load();
 }
 
 void CHostPortDlg::OnSelchangeComboDeviceTypeMode()
 {
 	m_nDeviceTypeMode = GetCurDeviceTypeMode();
-	LoadCredentialsAndTitle();
+	Load();
 }
 
 void CHostPortDlg::OnOK() 
@@ -453,7 +453,7 @@ void CHostPortDlg::OnOK()
 	}
 	SaveHistory(m_sHost, m_nPort, m_nDeviceTypeMode,
 				m_HostsHistory, m_PortsHistory, m_DeviceTypeModesHistory);
-	SaveCredentials();
+	Save();
 	CDialog::OnOK();
 }
 
@@ -470,7 +470,7 @@ CString CHostPortDlg::MakeDevicePathName(const CString& sInHost, int nInPort, in
 														sOutGetFrameLocation, nOutDeviceTypeMode);
 }
 
-void CHostPortDlg::LoadCredentialsAndTitle()
+void CHostPortDlg::Load()
 {
 	// Get device path name
 	CString sDevicePathName = MakeDevicePathName(m_sHost, m_nPort, m_nDeviceTypeMode);
@@ -479,15 +479,18 @@ void CHostPortDlg::LoadCredentialsAndTitle()
 	// which creates the key if it doesn't exist. We do not want a new key for each typed char!
 	BOOL bSectionExists = ((CUImagerApp*)::AfxGetApp())->IsExistingSection(sDevicePathName);
 
-	// Load and display credentials
+	// Load
 	if (bSectionExists)
 	{
 		CString	sUsername = ((CUImagerApp*)::AfxGetApp())->GetSecureProfileString(sDevicePathName, _T("HTTPGetFrameUsername"));
-		CString	sPassword = ((CUImagerApp*)::AfxGetApp())->GetSecureProfileString(sDevicePathName, _T("HTTPGetFramePassword"));
 		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_AUTH_USERNAME);
 		pEdit->SetWindowText(sUsername);
+		CString	sPassword = ((CUImagerApp*)::AfxGetApp())->GetSecureProfileString(sDevicePathName, _T("HTTPGetFramePassword"));
 		pEdit = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
 		pEdit->SetWindowText(sPassword);
+		BOOL bPreferTcpforRtsp = (BOOL)((CUImagerApp*)::AfxGetApp())->GetProfileInt(sDevicePathName, _T("PreferTcpforRtsp"), FALSE);
+		CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_PREFER_TCP_FOR_RTSP);
+		pCheck->SetCheck(bPreferTcpforRtsp ? 1 : 0);
 	}
 
 	// Update dialog title
@@ -506,7 +509,7 @@ void CHostPortDlg::LoadCredentialsAndTitle()
 		SetWindowText(m_sInitialDlgTitle + _T(" ") + sName);
 }
 
-void CHostPortDlg::SaveCredentials()
+void CHostPortDlg::Save()
 {
 	// Get device path name
 	CString sDevicePathName = MakeDevicePathName(m_sHost, m_nPort, m_nDeviceTypeMode);
@@ -519,6 +522,8 @@ void CHostPortDlg::SaveCredentials()
 	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
 	pEdit->GetWindowText(sText);
 	((CUImagerApp*)::AfxGetApp())->WriteSecureProfileString(sDevicePathName, _T("HTTPGetFramePassword"), sText);
+	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_PREFER_TCP_FOR_RTSP);
+	((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sDevicePathName, _T("PreferTcpforRtsp"), pCheck->GetCheck());
 }
 
 void CHostPortDlg::LoadHistory(	CStringArray& HostsHistory,

@@ -601,9 +601,6 @@ public:
 	// Browser
 	BOOL m_bBrowserAutostart;
 
-	// As RTSP transport first try TCP then UDP
-	volatile BOOL m_bPreferTcpforRtsp;
-
 	// Wait time between network devices start
 	volatile DWORD m_dwAutostartDelayMs;
 

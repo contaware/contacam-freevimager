@@ -28,7 +28,6 @@ CSettingsDlgVideoDeviceDoc::CSettingsDlgVideoDeviceDoc(CWnd* pParent /*=NULL*/)
 	m_bAutostart =		((CUImagerApp*)::AfxGetApp())->IsAutostart();
 	m_bStartFromService = CUImagerApp::GetContaCamServiceState() > 0;
 	m_bBrowserAutostart = ((CUImagerApp*)::AfxGetApp())->m_bBrowserAutostart;
-	m_bPreferTcpforRtsp = ((CUImagerApp*)::AfxGetApp())->m_bPreferTcpforRtsp;
 	m_nAutostartDelay = ((CUImagerApp*)::AfxGetApp())->m_dwAutostartDelayMs / 1000;
 	m_nFirstStartDelay = ((CUImagerApp*)::AfxGetApp())->m_dwFirstStartDelayMs / 1000;
 	m_bStartMicroApache = ((CUImagerApp*)::AfxGetApp())->m_bStartMicroApache;
@@ -65,7 +64,6 @@ void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_DOCROOT, m_sMicroApacheDocRoot);
 	DDX_Check(pDX, IDC_CHECK_BROWSER_AUTOSTART, m_bBrowserAutostart);
 	DDX_Check(pDX, IDC_CHECK_STARTFROM_SERVICE, m_bStartFromService);
-	DDX_Check(pDX, IDC_CHECK_PREFER_TCP_FOR_RTSP, m_bPreferTcpforRtsp);
 	DDX_Text(pDX, IDC_EDIT_AUTOSTART_DELAY, m_nAutostartDelay);
 	DDV_MinMaxInt(pDX, m_nAutostartDelay, 0, 600);
 	DDX_Text(pDX, IDC_EDIT_FIRSTSTART_DELAY, m_nFirstStartDelay);
@@ -140,9 +138,6 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsInit()
 
 	// Browser
 	pApp->m_bBrowserAutostart = m_bBrowserAutostart;
-
-	// As RTSP transport first try TCP then UDP
-	pApp->m_bPreferTcpforRtsp = m_bPreferTcpforRtsp;
 
 	// Wait time between network devices start
 	pApp->m_dwAutostartDelayMs = 1000 * m_nAutostartDelay;
@@ -245,9 +240,6 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsEnd()
 	pApp->WriteProfileInt(			_T("GeneralApp"),
 									_T("BrowserAutostart"),
 									m_bBrowserAutostart);
-	pApp->WriteProfileInt(			_T("GeneralApp"),
-									_T("PreferTcpforRtsp"),
-									m_bPreferTcpforRtsp);
 	pApp->WriteProfileInt(			_T("GeneralApp"),
 									_T("AutostartDelayMs"),
 									1000 * m_nAutostartDelay);

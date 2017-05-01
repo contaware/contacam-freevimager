@@ -41,8 +41,8 @@ protected:
 	void SetCurDeviceTypeMode(int nDeviceTypeMode);
 	void EnableDisableCtrls();
 	static CString MakeDevicePathName(const CString& sInHost, int nInPort, int nInDeviceTypeMode);
-	void LoadCredentialsAndTitle();
-	void SaveCredentials();
+	void Load(); // load settings for given m_sHost, m_nPort, m_nDeviceTypeMode
+	void Save(); // save settings for given m_sHost, m_nPort, m_nDeviceTypeMode
 	static void LoadHistory(CStringArray& HostsHistory,
 							CDWordArray& PortsHistory,
 							CDWordArray& DeviceTypeModesHistory);

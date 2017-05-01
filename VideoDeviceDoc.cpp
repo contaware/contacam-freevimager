@@ -2820,7 +2820,7 @@ int CVideoDeviceDoc::CRtspThread::Work()
 
 		// Set options
 		AVDictionary* opts = NULL;
-		if (((CUImagerApp*)::AfxGetApp())->m_bPreferTcpforRtsp)
+		if (m_pDoc->m_bPreferTcpforRtsp)
 			av_dict_set(&opts, "rtsp_flags", "prefer_tcp", 0);		// if set, and if TCP is available as RTP transport, then TCP will be tried first instead of UDP
 		av_dict_set_int(&opts, "stimeout", RTSP_SOCKET_TIMEOUT, 0);	// set timeout (in microseconds) of socket I/O operations
 		// SO_RCVBUF is the size of the buffer the system allocates to hold the data arriving
@@ -3746,6 +3746,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_sGetFrameVideoHost = _T("");
 	m_nGetFrameVideoPort = DEFAULT_TCP_PORT;
 	m_nNetworkDeviceTypeMode = OTHERONE_SP;
+	m_bPreferTcpforRtsp = FALSE;
 	m_nHttpVideoQuality = HTTP_DEFAULT_VIDEO_QUALITY;
 	m_nHttpVideoSizeX = HTTP_DEFAULT_VIDEO_SIZE_CX;
 	m_nHttpVideoSizeY = HTTP_DEFAULT_VIDEO_SIZE_CY;
@@ -4505,6 +4506,7 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_nHttpVideoSizeY = (int) pApp->GetProfileInt(sSection, _T("HTTPVideoSizeY"), HTTP_DEFAULT_VIDEO_SIZE_CY);
 	m_sHttpGetFrameUsername = pApp->GetSecureProfileString(sSection, _T("HTTPGetFrameUsername"));
 	m_sHttpGetFramePassword = pApp->GetSecureProfileString(sSection, _T("HTTPGetFramePassword"));
+	m_bPreferTcpforRtsp = (BOOL) pApp->GetProfileInt(sSection, _T("PreferTcpforRtsp"), FALSE);
 
 	// All other
 	m_bRotate180 = (BOOL) pApp->GetProfileInt(sSection, _T("Rotate180"), FALSE);
@@ -4727,6 +4729,7 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("HTTPVideoSizeY"), m_nHttpVideoSizeY);
 	pApp->WriteSecureProfileString(sSection, _T("HTTPGetFrameUsername"), m_sHttpGetFrameUsername);
 	pApp->WriteSecureProfileString(sSection, _T("HTTPGetFramePassword"), m_sHttpGetFramePassword);
+	pApp->WriteProfileInt(sSection, _T("PreferTcpforRtsp"), m_bPreferTcpforRtsp);
 
 	// All other
 	pApp->WriteProfileInt(sSection, _T("Rotate180"), (int)m_bRotate180);
@@ -9132,11 +9135,11 @@ BOOL CVideoDeviceDoc::ConnectRtsp(DWORD dwConnectDelayMs/*=0U*/)
 		case TRENDNET_RTSP:		sQuery = _T("/Streaming/Channels/1"); break;
 		case UBIQUITI_RTSP:		sQuery = _T("/live/ch00_0"); break;
 		case VIVOTEK_RTSP:		sQuery = _T("/live.sdp"); break;
-		case VSTARCAM_RTSP:		sQuery = _T("/tcp/av0_0"); break;
+		case VSTARCAM_RTSP:		sQuery = m_bPreferTcpforRtsp ? _T("/tcp/av0_0") : _T("/udp/av0_0"); break;
 		case XIAOMI_RTSP:		sQuery = _T("/ch0_0.h264"); break;
 		case YCAM_RTSP:			sQuery = _T("/live_mpeg4.sdp"); break;
 		case ZAVIO_RTSP:		sQuery = _T("/video.pro1"); break;
-		case ZMODO_RTSP:		sQuery = _T("/udp/av0_0"); break;
+		case ZMODO_RTSP:		sQuery = m_bPreferTcpforRtsp ? _T("/tcp/av0_0") : _T("/udp/av0_0"); break;
 		default:				return FALSE;
 	}
 

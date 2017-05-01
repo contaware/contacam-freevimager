@@ -920,13 +920,14 @@ public:
 														// 0 means no limit
 	volatile int m_nMinDiskFreePermillion;				// Minimum disk free size in permillion, if the free space is lower than that the oldest files are removed
 
-	// HTTP Networking
+	// Networking
 	CNetCom* volatile m_pVideoNetCom;					// HTTP Video Instance
 	volatile NetworkDeviceTypeMode m_nNetworkDeviceTypeMode;// Video Network Device Type and Mode
-	CString m_sGetFrameVideoHost;						// HTTP Host
-	volatile int m_nGetFrameVideoPort;					// HTTP Port
-	CString m_sHttpGetFrameUsername;					// HTTP Username
-	CString m_sHttpGetFramePassword;					// HTTP Password
+	CString m_sGetFrameVideoHost;						// Host
+	volatile int m_nGetFrameVideoPort;					// Port
+	CString m_sHttpGetFrameUsername;					// Username
+	CString m_sHttpGetFramePassword;					// Password
+	volatile BOOL m_bPreferTcpforRtsp;					// As RTSP transport try first TCP then UDP
 	CHttpParseProcess* volatile m_pHttpVideoParseProcess; // HTTP Video Parse & Process
 	volatile int m_nHttpVideoQuality;					// 0 Best Quality, 100 Worst Quality
 	volatile int m_nHttpVideoSizeX;						// Video width
