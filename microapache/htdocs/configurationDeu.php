@@ -16,12 +16,6 @@ define ("SNAPSHOTTHUMBNAME","snapshot_thumb.jpg");
 define ("SERVERPUSH_POLLRATE_MS","200");
 // Summary will auto-reload each given seconds
 define ("SUMMARYREFRESHSEC","300");
-// mjpeg(=server push) is not supported by Internet Explorer.
-// If this flag is set to 1 Internet Explorer will continue to work
-// in client poll mode, all the other browsers will switch to server
-// push mode: Firefox, Chrome, Opera, Safari and iPhone support that
-// well, Android has problems
-define ("USESERVERPUSH","0");
 
 
 /******************************

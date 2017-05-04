@@ -57,11 +57,6 @@ a:hover {
 	text-decoration: underline;
 }
 
-/* Transparent background */
-.transparentbkg {
-	background: transparent url('transparent.gif');
-}
-
 /* Highlight currently selected page offset */
 a.highlight:link, a.highlight:visited, a.highlight:active, a.highlight:hover, a.highlight:focus {
 	color: #ffa23c;
