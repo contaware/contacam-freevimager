@@ -1565,7 +1565,6 @@
 #define IDS_MULTILANG_1422              1422
 #define IDC_BUTTON_NEXT_METADATA        1422
 #define IDS_MULTILANG_1423              1423
-#define IDC_SLIDER_TRANSPARENCY         1423
 #define IDS_MULTILANG_1424              1424
 #define IDC_BUTTON_EXPORT_METADATA      1424
 #define IDS_MULTILANG_1425              1425

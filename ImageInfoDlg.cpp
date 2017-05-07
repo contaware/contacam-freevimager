@@ -22,28 +22,18 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CImageInfoDlg dialog
 
-
 CImageInfoDlg::CImageInfoDlg(CPictureDoc* pDoc) : cdxCDynamicDialog(IDD = IDD_IMAGEINFO, NULL)
 {
 	//{{AFX_DATA_INIT(CImageInfoDlg)
 	m_nMetadataGroupView = EXIF;
 	//}}AFX_DATA_INIT
 	m_nMetadataType = FILE_COMMENT;
-	m_bLayered = FALSE;
 	m_pDoc = pDoc;
 	ASSERT_VALID(m_pDoc);
-	m_bDisableTimer = FALSE;
-	m_uiTimerID = 0;
-	m_nOpacity = MAX_OPACITY;
-	m_nMinOpacity = MIN_OPACITY;
 	CPictureView* pView = m_pDoc->GetView();
 	pView->ForceCursor();
 
-	// On older systems like win98 disable
-	// CopyBits & AntiFlicker because they have
-	// a re-painting problem.
-	// On newer system I do not see a difference
-	// -> disable them!
+	// I do not see a difference -> disable them!
 	ModifyFlags(0, flSWPCopyBits);
 	ModifyFlags(0, flAntiFlicker);
 
@@ -61,111 +51,6 @@ CImageInfoDlg::~CImageInfoDlg()
 	
 }
 
-void CImageInfoDlg::SetOpacity(int nPercent)
-{
-	if (m_pDoc->m_pSetLayeredWindowAttributes)
-	{
-		if (nPercent < 0)
-			nPercent = 0;
-		else if (nPercent > 100)
-			nPercent = 100;
-
-		m_pDoc->m_pSetLayeredWindowAttributes(	this->GetSafeHwnd(),
-												0,
-												(255 * nPercent) / 100,
-												LWA_ALPHA);
-	}
-}
-
-// Set Layered Extended Style
-void CImageInfoDlg::SetLayered()
-{
-	if (m_pDoc->m_pSetLayeredWindowAttributes && !m_bLayered)
-	{
-		// Set WS_EX_LAYERED to this window styles
-		::SetWindowLong(this->GetSafeHwnd(),
-						GWL_EXSTYLE,
-						::GetWindowLong(this->GetSafeHwnd(),
-										GWL_EXSTYLE) |
-										WS_EX_LAYERED);
-		m_bLayered = TRUE;
-	}
-}
-
-// Remove Layered Extended Style
-void CImageInfoDlg::RemoveLayered()
-{
-	if (m_pDoc->m_pSetLayeredWindowAttributes && m_bLayered)
-	{
-		// Remove WS_EX_LAYERED from this window styles
-		::SetWindowLong(this->GetSafeHwnd(), 
-						GWL_EXSTYLE,
-						::GetWindowLong(this->GetSafeHwnd(),
-										GWL_EXSTYLE) &
-										~WS_EX_LAYERED);
-		m_bLayered = FALSE;
-	}
-}
-
-void CImageInfoDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) 
-{
-	if (pScrollBar)
-	{
-		CSliderCtrl* pSlider = (CSliderCtrl*)pScrollBar;
-		if (SB_THUMBTRACK == nSBCode)			// Dragging Slider
-		{
-			m_nMinOpacity = pSlider->GetPos();
-			m_bDisableTimer = TRUE;
-			SetLayered();
-			SetOpacity(m_nMinOpacity);
-		}
-		else if ((SB_THUMBPOSITION == nSBCode) ||// Wheel On Mouse And End Of Dragging Slider
-				(SB_LINEUP  == nSBCode) ||		// Keyboard Arrow
-				(SB_LINEDOWN  == nSBCode) ||	// Keyboard Arrow
-				(SB_PAGEUP == nSBCode) ||		// Mouse Press Above Slider
-				(SB_PAGEDOWN == nSBCode) ||		// Mouse Press Below Slider
-				(SB_LEFT == nSBCode)	||		// Home Button
-				(SB_RIGHT == nSBCode))			// End Button  
-		{
-			m_nMinOpacity = pSlider->GetPos();
-			if (m_nMinOpacity == 100)
-			{
-				// Disable Timer
-				m_bDisableTimer = TRUE;
-	
-				// Kill Timer
-				if (m_pDoc->m_pSetLayeredWindowAttributes &&
-					m_uiTimerID > 0)
-					KillTimer(m_uiTimerID);
-				m_uiTimerID = 0;
-
-				// Remove Layered
-				RemoveLayered();
-			}
-			else
-			{
-				// Set Layered & Opacity
-				SetLayered();
-				SetOpacity(MAX_OPACITY);
-
-				// Enable Timer
-				m_bDisableTimer = FALSE;
-
-				// Start Timer
-				if (m_pDoc->m_pSetLayeredWindowAttributes &&
-					m_uiTimerID == 0)
-				{
-					m_uiTimerID = SetTimer(	ID_TIMER_TRANSPARENCY,
-											TRANSPARENCY_TIMER_MS,
-											NULL);
-				}
-			}
-		}
-	}
-	
-	cdxCDynamicDialog::OnHScroll(nSBCode, nPos, pScrollBar);
-}
-
 void CImageInfoDlg::DoDataExchange(CDataExchange* pDX)
 {
 	cdxCDynamicDialog::DoDataExchange(pDX);
@@ -174,18 +59,13 @@ void CImageInfoDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_COMBO_METADATA, m_cbMetadata);
 	//}}AFX_DATA_MAP
 	DDX_CBIndex(pDX, IDC_COMBO_METADATA, m_nMetadataType);
-	if (IDD == IDD_IMAGEINFO)
-		DDX_Control(pDX, IDC_SLIDER_TRANSPARENCY, m_TransparencySlider);
 }
-
 
 BEGIN_MESSAGE_MAP(CImageInfoDlg, cdxCDynamicDialog)
 	//{{AFX_MSG_MAP(CImageInfoDlg)
 	ON_WM_CLOSE()
 	ON_EN_CHANGE(IDC_EDIT_METADATA, OnChangeMetadata)
 	ON_BN_CLICKED(IDC_BUTTON_SAVE_METADATA, OnButtonSaveMetadata)
-	ON_WM_TIMER()
-	ON_WM_ACTIVATE()
 	ON_CBN_SELCHANGE(IDC_COMBO_METADATA, OnSelchangeComboMetadata)
 	ON_BN_CLICKED(IDC_RADIO_METADATA, OnRadioMetadata)
 	ON_BN_CLICKED(IDC_RADIO_EXIF, OnRadioExif)
@@ -196,39 +76,17 @@ BEGIN_MESSAGE_MAP(CImageInfoDlg, cdxCDynamicDialog)
 	ON_BN_CLICKED(IDC_BUTTON_NEXT_METADATA, OnButtonNextMetadata)
 	ON_BN_CLICKED(IDC_BUTTON_IMPORT_METADATA, OnButtonImportMetadata)
 	ON_BN_CLICKED(IDC_BUTTON_EXPORT_METADATA, OnButtonExportMetadata)
-	ON_WM_HSCROLL()
-	ON_WM_CREATE()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CImageInfoDlg message handlers
 
-int CImageInfoDlg::OnCreate(LPCREATESTRUCT lpCreateStruct) 
-{
-	if (cdxCDynamicDialog::OnCreate(lpCreateStruct) == -1)
-		return -1;
-	
-	if (m_nMinOpacity < 100)
-	{
-		// Set Layered Extended Style
-		SetLayered();
-
-		// Set Opacity
-		SetOpacity(m_nOpacity);
-	}
-
-	return 0;
-}
-
 BOOL CImageInfoDlg::OnInitDialog() 
 {
 	cdxCDynamicDialog::OnInitDialog();
 
 	// Add Resizing Controls
-
-	if (IDD == IDD_IMAGEINFO)
-		AddSzControl(IDC_SLIDER_TRANSPARENCY, mdResize, mdNone);
 	
 	AddSzControl(IDC_FILEINFO, mdResize, mdNone);
 	AddSzControl(IDC_FILEINFO_BORDER, mdResize, mdNone);
@@ -321,27 +179,8 @@ BOOL CImageInfoDlg::OnInitDialog()
 	// Set Combo Box Selection
 	m_cbMetadata.SetCurSel(m_nMetadataType);
 
-	// Setup Transparency Slider
-	if (IDD == IDD_IMAGEINFO)
-	{
-		m_TransparencySlider.SetRange(5, 100);
-		m_TransparencySlider.SetPageSize(5);
-		m_TransparencySlider.SetLineSize(5);
-		m_TransparencySlider.SetPos(m_nMinOpacity);
-	}
-
 	// Set Edit Metadata Text
 	SetEditMetadataText();
-
-	// Init Transparency
-	if (m_pDoc->m_pSetLayeredWindowAttributes &&
-		m_nMinOpacity < 100)
-	{
-		// Start Timer
-		m_uiTimerID = SetTimer(	ID_TIMER_TRANSPARENCY,
-								TRANSPARENCY_TIMER_MS,
-								NULL);
-	}
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -361,15 +200,6 @@ void CImageInfoDlg::UpdateDlgTitle()
 
 void CImageInfoDlg::OnClose() 
 {
-	// Disable Timer
-	m_bDisableTimer = TRUE;
-
-	// Kill Timer
-	if (m_pDoc->m_pSetLayeredWindowAttributes &&
-		m_uiTimerID > 0)
-		KillTimer(m_uiTimerID);
-	m_uiTimerID = 0;
-
 	// Prompt to Save
 	if (SaveModified())
 	{
@@ -436,7 +266,6 @@ BOOL CImageInfoDlg::OnCommand(WPARAM wParam, LPARAM lParam)
 				return cdxCDynamicDialog::OnCommand(wParam, lParam);
 		}
 	}
-	
 	return cdxCDynamicDialog::OnCommand(wParam, lParam);
 }
 
@@ -464,88 +293,6 @@ BOOL CImageInfoDlg::PreTranslateMessage(MSG* pMsg)
 		}
 	}
 	return cdxCDynamicDialog::PreTranslateMessage(pMsg);
-}
-
-void CImageInfoDlg::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
-{
-	// Choose:
-	//
-	// Commenting this out will badly flicker when Layer is set.
-	// (= when dialog is deactivated)
-	// Commenting this will make it harder to resize the dialog.
-
-	/*
-	if (!m_bDisableTimer)
-	{
-		if (nState == WA_INACTIVE)
-			SetLayered();
-		else
-			RemoveLayered();
-	}
-	*/
-
-	cdxCDynamicDialog::OnActivate(nState, pWndOther, bMinimized);
-}
-
-void CImageInfoDlg::OnTimer(UINT nIDEvent) 
-{
-	if (!m_bDisableTimer)
-	{
-		POINT ptCursor;
-		CRect rcDlg, rcView, rcIntersect;
-		::GetSafeCursorPos(&ptCursor);
-		GetWindowRect(&rcDlg);
-		if (::IsWindow(m_pDoc->GetView()->GetSafeHwnd()))
-		{
-			m_pDoc->GetView()->GetWindowRect(&rcView);
-
-			BOOL res = rcIntersect.IntersectRect(&rcDlg, &rcView);
-
-			if (this == CWnd::GetActiveWindow())
-			{
-				if (m_nOpacity < MAX_OPACITY)
-				{
-					m_nOpacity += 5;
-					m_nOpacity = MIN(MAX_OPACITY, m_nOpacity);
-					SetOpacity(m_nOpacity);
-				}
-			}
-			else if (res &&
-					rcIntersect.Width() > 2 &&
-					rcIntersect.Height() > 2)
-			{
-				if (rcDlg.PtInRect(ptCursor))
-				{
-					if (m_nOpacity < MAX_OPACITY)
-					{
-						m_nOpacity += 5;
-						m_nOpacity = MIN(MAX_OPACITY, m_nOpacity);
-						SetOpacity(m_nOpacity);
-					}
-				}
-				else
-				{
-					if (m_nOpacity > m_nMinOpacity)
-					{
-						m_nOpacity -= 2;
-						m_nOpacity = MAX(m_nMinOpacity, m_nOpacity);
-						SetOpacity(m_nOpacity);
-					}
-				}
-			}
-			else
-			{
-				if (m_nOpacity < MAX_OPACITY)
-				{
-					m_nOpacity += 5;
-					m_nOpacity = MIN(MAX_OPACITY, m_nOpacity);
-					SetOpacity(m_nOpacity);
-				}
-			}
-		}
-	}
-
-	cdxCDynamicDialog::OnTimer(nIDEvent);
 }
 
 void CImageInfoDlg::OnSelchangeComboMetadata() 
@@ -3278,9 +3025,6 @@ void CImageInfoDlg::LoadSettings()
 {
 	CWinApp* pApp = ::AfxGetApp();
 	CString sSection(_T("FileInfoDlg"));
-	
-	// Opacity
-	m_nMinOpacity = pApp->GetProfileInt(sSection, _T("MinOpacity"), MIN_OPACITY);
 
 	// Date Created Source
 	m_nMetadataGroupView = pApp->GetProfileInt(sSection, _T("MetadataGroupView"), EXIF);
@@ -3290,9 +3034,6 @@ void CImageInfoDlg::SaveSettings()
 {
 	CWinApp* pApp = ::AfxGetApp();
 	CString sSection(_T("FileInfoDlg"));
-
-	// Opacity
-	pApp->WriteProfileInt(sSection, _T("MinOpacity"), m_nMinOpacity);
 
 	// Date Created Source
 	pApp->WriteProfileInt(sSection, _T("MetadataGroupView"), m_nMetadataGroupView);

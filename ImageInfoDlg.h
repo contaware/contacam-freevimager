@@ -22,10 +22,6 @@ class CPictureDoc;
 class CImageInfoDlg : public cdxCDynamicDialog
 {
 public:
-	enum {	TRANSPARENCY_TIMER_MS	= 25,
-			MAX_OPACITY				= 100,
-			MIN_OPACITY				= 45};
-
 	enum METADATA
 	{	
 		FILE_COMMENT,
@@ -81,9 +77,6 @@ public:
 
 	CImageInfoDlg(CPictureDoc* pDoc);
 	virtual ~CImageInfoDlg();
-	void SetOpacity(int nPercent);	// 0 Fully Transparent, 100 Opaque
-	void SetLayered();
-	void RemoveLayered();
 	void Close();
 	void UpdateMetadata();
 	BOOL SaveModified(BOOL bPrompt = TRUE);
@@ -100,8 +93,7 @@ public:
 
 // Dialog Data
 	//{{AFX_DATA(CImageInfoDlg)
-	CSliderCtrl	m_TransparencySlider;
-	int		m_nMetadataGroupView;
+	int	m_nMetadataGroupView;
 	CSeparatorComboBox m_cbMetadata;
 	//}}AFX_DATA
 
@@ -142,12 +134,7 @@ protected:
 					CStringArray& CurrentIptc);
 	void SetIptc();
 
-	BOOL m_bLayered;
-	int m_nOpacity;
-	int m_nMinOpacity;
-	UINT m_uiTimerID;
 	CPictureDoc* m_pDoc;
-	BOOL m_bDisableTimer;
 	int IDD;
 
 	// Generated message map functions
@@ -156,8 +143,6 @@ protected:
 	afx_msg void OnClose();
 	afx_msg void OnChangeMetadata();
 	afx_msg void OnButtonSaveMetadata();
-	afx_msg void OnTimer(UINT nIDEvent);
-	afx_msg void OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized);
 	afx_msg void OnSelchangeComboMetadata();
 	afx_msg void OnRadioMetadata();
 	afx_msg void OnRadioExif();
@@ -168,8 +153,6 @@ protected:
 	afx_msg void OnButtonNextMetadata();
 	afx_msg void OnButtonImportMetadata();
 	afx_msg void OnButtonExportMetadata();
-	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
-	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
