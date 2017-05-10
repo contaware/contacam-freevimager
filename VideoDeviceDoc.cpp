@@ -9106,6 +9106,7 @@ BOOL CVideoDeviceDoc::ConnectRtsp(DWORD dwConnectDelayMs/*=0U*/)
 	{
 		case URL_RTSP:			sQuery = m_HttpGetFrameLocations[0]; break;
 		case OTHERONE_RTSP:		sQuery = _T("/11"); break;
+		case SEVENLINKS_RTSP:	sQuery = _T("/videoMain"); break;
 		case ABUS_RTSP:			sQuery = _T("/video.mp4"); break;
 		case ACTI_RTSP:			sQuery = _T("/h264"); break;
 		case AMCREST_RTSP:		sQuery = _T("/cam/realmonitor?channel=1&subtype=0"); break;
@@ -9136,6 +9137,7 @@ BOOL CVideoDeviceDoc::ConnectRtsp(DWORD dwConnectDelayMs/*=0U*/)
 		case UBIQUITI_RTSP:		sQuery = _T("/live/ch00_0"); break;
 		case VIVOTEK_RTSP:		sQuery = _T("/live.sdp"); break;
 		case VSTARCAM_RTSP:		sQuery = m_bPreferTcpforRtsp ? _T("/tcp/av0_0") : _T("/udp/av0_0"); break;
+		case WANSVIEW_RTSP:		sQuery = _T("/live/ch0"); break;
 		case XIAOMI_RTSP:		sQuery = _T("/ch0_0.h264"); break;
 		case YCAM_RTSP:			sQuery = _T("/live_mpeg4.sdp"); break;
 		case ZAVIO_RTSP:		sQuery = _T("/video.pro1"); break;

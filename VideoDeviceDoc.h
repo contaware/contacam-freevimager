@@ -601,6 +601,7 @@ public:
 		// Add more http devices here...
 		URL_RTSP = 1000,		// URL RTSP
 		OTHERONE_RTSP = 1010,	// Other RTSP device
+		SEVENLINKS_RTSP = 1015,	// 7Links RTSP
 		ABUS_RTSP = 1020,		// Abus RTSP
 		ACTI_RTSP = 1030,		// ACTi RTSP
 		AMCREST_RTSP = 1035,	// Amcrest RTSP
@@ -631,6 +632,7 @@ public:
 		UBIQUITI_RTSP = 1235,	// Ubiquiti RTSP
 		VIVOTEK_RTSP = 1240,	// Vivotek RTSP
 		VSTARCAM_RTSP = 1242,	// VStarCam RTSP
+		WANSVIEW_RTSP = 1244,	// Wansview RTSP
 		XIAOMI_RTSP = 1245,		// Xiaomi RTSP
 		YCAM_RTSP = 1250,		// Y-cam RTSP
 		ZAVIO_RTSP = 1255,		// Zavio RTSP
