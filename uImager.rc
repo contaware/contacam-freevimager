@@ -2405,8 +2405,8 @@ BEGIN
     CONTROL         "Web Browser Autostart",IDC_CHECK_BROWSER_AUTOSTART,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,185,17,91,10
     CONTROL         "Always on Top",IDC_CHECK_TOPMOST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,185,30,63,10
-    EDITTEXT        IDC_EDIT_FIRSTSTART_DELAY,185,54,23,13,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_AUTOSTART_DELAY,185,71,23,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_FIRSTSTART_DELAY,185,54,28,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_AUTOSTART_DELAY,185,71,28,13,ES_AUTOHSCROLL
     EDITTEXT        IDC_EDIT_DOCROOT,11,112,309,13,ES_AUTOHSCROLL | ES_READONLY
     PUSHBUTTON      "...",IDC_BUTTON_DOCROOT,321,112,17,13
     CONTROL         "Enable Internal Web Server",IDC_CHECK_WEBSERVER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,158,105,10
@@ -2420,10 +2420,10 @@ BEGIN
     LTEXT           "Password",IDC_STATIC,185,181,40,8
     GROUPBOX        "General",IDC_STATIC2248,5,5,339,83
     LTEXT           "HTTP Port",IDC_STATIC,185,159,36,8
-    LTEXT           "Autostart a network camera each",IDC_STATIC,11,73,106,8
+    LTEXT           "Autostart a network camera each",IDC_STATIC,11,73,120,8
     LTEXT           "sec",IDC_STATIC,220,74,12,8
     GROUPBOX        "Parent Directory of all Cameras",IDC_STATIC,5,97,339,37
-    LTEXT           "Delay cameras autostart by",IDC_STATIC,11,59,90,8
+    LTEXT           "Delay cameras autostart by",IDC_STATIC,11,59,94,8
     LTEXT           "sec",IDC_STATIC,220,57,12,8
     GROUPBOX        "Web Interface",IDC_STATIC,5,143,339,59
     LTEXT           "HTTPS Port",IDC_STATIC,269,159,40,8
@@ -2450,17 +2450,17 @@ BEGIN
     COMBOBOX        IDC_COMBO_SNAPSHOT_RATE,152,40,114,198,CBS_DROPDOWNLIST | WS_TABSTOP
     CONTROL         "Full stretch (for mobile applications)",IDC_CHECK_FULLSTRETCH,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,279,42,129,10
-    GROUPBOX        "2. Name",IDC_STATIC,5,73,407,33
-    LTEXT           "Enter a friendly name for your camera",IDC_STATIC,16,84,123,8
-    LTEXT           "(that's also the camera folder name)",IDC_STATIC,16,93,117,8
-    EDITTEXT        IDC_EDIT_NAME,152,86,254,13,ES_AUTOHSCROLL
-    GROUPBOX        "3. Web interface",IDC_STATIC,5,112,407,41
-    LTEXT           "Language",IDC_STATIC,16,124,32,8
-    COMBOBOX        IDC_COMBO_LANGUAGE,152,121,114,222,CBS_DROPDOWNLIST | WS_TABSTOP
-    LTEXT           "Style / color",IDC_STATIC,16,138,39,8
+    GROUPBOX        "2. Name",IDC_STATIC,5,72,407,33
+    LTEXT           "Enter a friendly name for your camera",IDC_STATIC,16,83,123,8
+    LTEXT           "(that's also the camera folder name)",IDC_STATIC,16,92,117,8
+    EDITTEXT        IDC_EDIT_NAME,152,85,254,13,ES_AUTOHSCROLL
+    GROUPBOX        "3. Web interface",IDC_STATIC,5,110,407,43
+    LTEXT           "Language",IDC_STATIC,16,122,32,8
+    COMBOBOX        IDC_COMBO_LANGUAGE,152,120,114,222,CBS_DROPDOWNLIST | WS_TABSTOP
+    LTEXT           "Style / color",IDC_STATIC,16,137,39,8
     COMBOBOX        IDC_COMBO_STYLE,152,136,114,222,CBS_DROPDOWNLIST | WS_TABSTOP
-    LTEXT           "Thumbnails per page",IDC_LABEL_THUMBSPERPAGE,280,121,72,8
-    COMBOBOX        IDC_COMBO_THUMBSPERPAGE,368,121,38,288,CBS_DROPDOWNLIST | WS_TABSTOP
+    LTEXT           "Thumbnails per page",IDC_LABEL_THUMBSPERPAGE,280,118,72,8
+    COMBOBOX        IDC_COMBO_THUMBSPERPAGE,368,117,38,288,CBS_DROPDOWNLIST | WS_TABSTOP
     CONTROL         "Allow deleting files",IDC_CHECK_TRASHCOMMAND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,279,131,75,10
     CONTROL         "Allow obscuring source",IDC_CHECK_CAMERACOMMANDS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,279,141,89,10
     GROUPBOX        "4. Storage",IDC_STATIC,5,158,407,71

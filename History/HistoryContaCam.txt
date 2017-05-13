@@ -1,11 +1,16 @@
 CONTACAM HISTORY
 
-7.0.0 (Month xxth 2017)
+7.0.0 (May 13th 2017)
 
 - Native RTSP cameras support (dropped VLC re-streaming of RTSP
   cameras)
 - Updated internal web server to Apache 2.4.25 and PHP 5.4.45
   (both with OpenSSL 1.0.2k-fips)
+- Possibility to obscure the video source from the web interface
+- All cameras can now capture audio from a selectable source
+  (removed Axis HTTP audio support, please use RTSP)
+- New status-bar pane showing the maximum overall movement detection
+  buffers size
 
 5.5.0 (February 18th 2017)
 
