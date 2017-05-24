@@ -105,9 +105,12 @@ public:
 														// plug&play device is removed)
 	CString GetDeviceName()								// Returns Friendly Device Name
 		const {return m_sDeviceName;};
-
+	void SetDeviceName(const CString& sDeviceName)		// Set Friendly Device Name
+		{m_sDeviceName = sDeviceName;};
 	CString GetDevicePath()								// Returns Unique Device Path (It's a Unique Id)
 		const {return m_sDevicePath;};
+	void SetDevicePath(const CString& sDevicePath)		// Set Unique Device Path (It's a Unique Id)
+		{m_sDevicePath = sDevicePath;};
 
 	BOOL Run();											// Do Capture
 	BOOL Stop();										// Stop Capture
