@@ -342,6 +342,7 @@ This approach is more accessible and can be supported consistently by all UI fra
 void CHostPortDlg::EnableDisableCtrls()
 {
 	CString sHostLowerCase(m_sHost);
+	sHostLowerCase.Trim();
 	sHostLowerCase.MakeLower();
 
 	// Disable / Enable
@@ -442,10 +443,18 @@ void CHostPortDlg::OnSelchangeComboDeviceTypeMode()
 void CHostPortDlg::OnOK() 
 {
 	CString sHostLowerCase(m_sHost);
+	sHostLowerCase.Trim();
 	sHostLowerCase.MakeLower();
-	if (sHostLowerCase.Find(_T("http://")) < 0 &&
-		sHostLowerCase.Find(_T("rtsp://")) < 0 &&
-		(sHostLowerCase.Find(_T(":")) >= 0 || sHostLowerCase.Find(_T("/")) >= 0))
+	if (sHostLowerCase.IsEmpty())
+	{
+		CComboBox* pComboBoxHost = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
+		::SetFocus(pComboBoxHost->GetSafeHwnd());
+		::MessageBeep(0xFFFFFFFF);
+		return;
+	}
+	else if (sHostLowerCase.Find(_T("http://")) < 0 &&
+			sHostLowerCase.Find(_T("rtsp://")) < 0 &&
+			(sHostLowerCase.Find(_T(":")) >= 0 || sHostLowerCase.Find(_T("/")) >= 0))
 	{
 		CComboBox* pComboBoxHost = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
 		::SetFocus(pComboBoxHost->GetSafeHwnd());
