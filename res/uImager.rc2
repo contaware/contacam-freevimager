@@ -66,8 +66,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 7,0,0,0
- PRODUCTVERSION 7,0,0,0
+ FILEVERSION 7,0,1,0
+ PRODUCTVERSION 7,0,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -85,14 +85,14 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "FreeVimager\0"
-            VALUE "FileVersion", "7.0.0.0\0"
+            VALUE "FileVersion", "7.0.1.0\0"
             VALUE "InternalName", "FreeVimager\0"
             VALUE "LegalCopyright", "© Contaware.com\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "FreeVimager\0"
-            VALUE "ProductVersion", "7.0.0.0\0"
+            VALUE "ProductVersion", "7.0.1.0\0"
             VALUE "SpecialBuild", "\0"
         END
     END
@@ -396,8 +396,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 7,0,0,0
- PRODUCTVERSION 7,0,0,0
+ FILEVERSION 7,0,1,0
+ PRODUCTVERSION 7,0,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -415,14 +415,14 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "ContaCam\0"
-            VALUE "FileVersion", "7.0.0.0\0"
+            VALUE "FileVersion", "7.0.1.0\0"
             VALUE "InternalName", "ContaCam\0"
             VALUE "LegalCopyright", "© Contaware.com\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "ContaCam\0"
-            VALUE "ProductVersion", "7.0.0.0\0"
+            VALUE "ProductVersion", "7.0.1.0\0"
             VALUE "SpecialBuild", "\0"
         END
     END
