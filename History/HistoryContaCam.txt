@@ -2,7 +2,7 @@ CONTACAM HISTORY
 
 7.0.1 (Month xxth 2017)
 
-- ...
+- For network devices when starting try to connect infinitely
 
 7.0.0 (May 13th 2017)
 
