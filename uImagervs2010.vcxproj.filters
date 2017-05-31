@@ -78,9 +78,6 @@
     <ClCompile Include="ColourPopup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ConnectErrMsgBoxDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CPUCount.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -439,9 +436,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ColourPopup.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ConnectErrMsgBoxDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CPUCount.h">

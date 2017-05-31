@@ -439,7 +439,6 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="ConnectErrMsgBoxDlg.cpp" />
     <ClCompile Include="CPUCount.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -1062,7 +1061,6 @@
     <ClInclude Include="ColorButtonPicker.h" />
     <ClInclude Include="ColorProgressCtrl.h" />
     <ClInclude Include="ColourPopup.h" />
-    <ClInclude Include="ConnectErrMsgBoxDlg.h" />
     <ClInclude Include="CPUCount.h" />
     <ClInclude Include="CPUSpeed.h" />
     <ClInclude Include="CreditsDlg.h" />

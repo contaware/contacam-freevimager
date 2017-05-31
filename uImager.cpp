@@ -142,7 +142,6 @@ CUImagerApp::CUImagerApp()
 	m_pVideoDeviceDocTemplate = NULL;
 	m_bAutostartsExecuted = FALSE;
 	m_bBrowserAutostart = FALSE;
-	m_dwAutostartDelayMs = DEFAULT_AUTOSTART_DELAY_MS;
 	m_dwFirstStartDelayMs = DEFAULT_FIRSTSTART_DELAY_MS;
 	m_bMovFragmented = FALSE;
 	m_bStartMicroApache = FALSE;
@@ -1684,10 +1683,7 @@ void CUImagerApp::OnCaptureNetwork()
 	{
 		CVideoDeviceDoc* pDoc = (CVideoDeviceDoc*)GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
 		if (pDoc)
-		{
-			if (!pDoc->OpenNetVideoDevice(&dlg))
-				pDoc->CloseDocument();
-		}
+			pDoc->OpenNetVideoDevice(&dlg);
 	}
 }
 
@@ -1695,10 +1691,7 @@ void CUImagerApp::OnFileDxVideoDevice(UINT nID)
 {
 	CVideoDeviceDoc* pDoc = (CVideoDeviceDoc*)GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
 	if (pDoc)
-	{
-		if (!pDoc->OpenDxVideoDevice(nID - ID_DIRECTSHOW_VIDEODEV_FIRST))
-			pDoc->CloseDocument();
-	}
+		pDoc->OpenDxVideoDevice(nID - ID_DIRECTSHOW_VIDEODEV_FIRST, _T(""), _T(""));
 }
 
 #endif
@@ -2195,48 +2188,20 @@ void CUImagerApp::AutorunVideoDevices(BOOL bStartDelay/*=TRUE*/)
 	else
 	{
 		// Start devices
-		DWORD dwInitTickCount = ::GetTickCount();
-		DWORD dwOpenNetworkDeviceCount = 0U;
 		for (unsigned int i = 0 ; i < MAX_DEVICE_AUTORUN_KEYS ; i++)
 		{
 			CString sKey, sDevRegistry;
 			sKey.Format(_T("%02u"), i);
-			if ((sDevRegistry = ::AfxGetApp()->GetProfileString(_T("DeviceAutorun"), sKey, _T(""))) != _T(""))
+			if ((sDevRegistry = GetProfileString(_T("DeviceAutorun"), sKey, _T(""))) != _T(""))
 			{
 				// Open Empty Document
 				CVideoDeviceDoc* pDoc = (CVideoDeviceDoc*)GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
 				if (pDoc)
 				{
 					if (CVideoDeviceDoc::GetHostFromDevicePathName(sDevRegistry) != _T(""))
-					{
-						DWORD dwCurrentStartupDelayMs = ::GetTickCount() - dwInitTickCount;
-						DWORD dwWantedNetworkDeviceStartupDelayMs = (dwOpenNetworkDeviceCount + 1U) * m_dwAutostartDelayMs;
-						DWORD dwConnectDelayMs;
-						if (dwWantedNetworkDeviceStartupDelayMs > dwCurrentStartupDelayMs)
-							dwConnectDelayMs = dwWantedNetworkDeviceStartupDelayMs - dwCurrentStartupDelayMs;
-						else
-							dwConnectDelayMs = 0U;
-						if (!pDoc->OpenNetVideoDevice(sDevRegistry, dwConnectDelayMs))
-							pDoc->CloseDocument();
-						else
-							dwOpenNetworkDeviceCount++;
-					}
+						pDoc->OpenNetVideoDevice(sDevRegistry);
 					else
-					{
-						CString sDev(sDevRegistry);
-						sDev.Replace(_T('/'), _T('\\'));
-						int nID = CDxCapture::GetDeviceID(sDev);
-						if (nID >= 0)
-						{
-							if (!pDoc->OpenDxVideoDevice(nID))
-								pDoc->CloseDocument();
-						}
-						else
-						{
-							CVideoDeviceDoc::ConnectErr(ML_STRING(1568, "Unplugged"), sDevRegistry, sDevRegistry);
-							pDoc->CloseDocument();
-						}
-					}
+						pDoc->OpenDxVideoDevice(-1, sDevRegistry, GetProfileString(sDevRegistry, _T("DeviceName"), _T("")));
 				}
 			}
 		}
@@ -3478,9 +3443,6 @@ void CUImagerApp::LoadSettings(UINT showCmd/*=SW_SHOWNORMAL*/)
 #ifdef VIDEODEVICEDOC
 	// Browser
 	m_bBrowserAutostart = (BOOL)GetProfileInt(sSection, _T("BrowserAutostart"), FALSE);
-
-	// Wait time between network devices start
-	m_dwAutostartDelayMs = (DWORD)GetProfileInt(sSection, _T("AutostartDelayMs"), DEFAULT_AUTOSTART_DELAY_MS);
 
 	// Wait time before autostarting first device
 	m_dwFirstStartDelayMs = (DWORD)GetProfileInt(sSection, _T("FirstStartDelayMs"), DEFAULT_FIRSTSTART_DELAY_MS);

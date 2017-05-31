@@ -27,8 +27,7 @@ extern "C"
 #define WM_SCANANDEMAIL								WM_USER + 103
 #define WM_TRAY_NOTIFICATION						WM_USER + 104
 #ifdef VIDEODEVICEDOC
-#define WM_THREADSAFE_CONNECTERR					WM_USER + 105
-#define WM_AUTORUN_VIDEODEVICES						WM_USER + 106
+#define WM_AUTORUN_VIDEODEVICES						WM_USER + 105
 #endif
 														
 #define ID_TIMER_FULLSCREEN							1
@@ -276,7 +275,6 @@ protected:
 	afx_msg LONG OnThreadSafePopupToaster(WPARAM wparam, LPARAM lparam);
 #ifdef VIDEODEVICEDOC
 	afx_msg void OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu);
-	afx_msg LONG OnThreadSafeConnectErr(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnAutorunVideoDevices(WPARAM wparam, LPARAM lparam);
 	afx_msg void OnViewWeb();
 	afx_msg void OnViewFiles();

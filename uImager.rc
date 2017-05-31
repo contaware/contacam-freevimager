@@ -2393,7 +2393,7 @@ BEGIN
     LTEXT           "(21: FTP / FTPES, 22: SFTP, 990: FTPS)",IDC_STATIC,104,58,128,8
 END
 
-IDD_SETTINGS_VIDEODEVICEDOC DIALOGEX 0, 0, 350, 235
+IDD_SETTINGS_VIDEODEVICEDOC DIALOGEX 0, 0, 350, 215
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Global Settings"
@@ -2406,27 +2406,24 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,185,17,91,10
     CONTROL         "Always on Top",IDC_CHECK_TOPMOST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,185,30,63,10
     EDITTEXT        IDC_EDIT_FIRSTSTART_DELAY,185,54,28,13,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_AUTOSTART_DELAY,185,71,28,13,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_DOCROOT,11,112,309,13,ES_AUTOHSCROLL | ES_READONLY
-    PUSHBUTTON      "...",IDC_BUTTON_DOCROOT,321,112,17,13
-    CONTROL         "Enable Internal Web Server",IDC_CHECK_WEBSERVER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,158,105,10
-    EDITTEXT        IDC_EDIT_PORT,232,157,27,13,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_PORT_SSL,310,157,27,13,ES_AUTOHSCROLL
-    EDITTEXT        IDC_AUTH_USERNAME,61,179,106,13,ES_AUTOHSCROLL
-    EDITTEXT        IDC_AUTH_PASSWORD,232,179,106,13,ES_PASSWORD | ES_AUTOHSCROLL
-    DEFPUSHBUTTON   "OK",IDOK,117,209,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,185,209,47,14
-    LTEXT           "User Name",IDC_STATIC,11,181,43,8
-    LTEXT           "Password",IDC_STATIC,185,181,40,8
-    GROUPBOX        "General",IDC_STATIC2248,5,5,339,83
-    LTEXT           "HTTP Port",IDC_STATIC,185,159,36,8
-    LTEXT           "Autostart a network camera each",IDC_STATIC,11,73,120,8
-    LTEXT           "sec",IDC_STATIC,220,74,12,8
-    GROUPBOX        "Parent Directory of all Cameras",IDC_STATIC,5,97,339,37
+    EDITTEXT        IDC_EDIT_DOCROOT,11,99,309,13,ES_AUTOHSCROLL | ES_READONLY
+    PUSHBUTTON      "...",IDC_BUTTON_DOCROOT,321,99,17,13
+    CONTROL         "Enable Internal Web Server",IDC_CHECK_WEBSERVER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,145,105,10
+    EDITTEXT        IDC_EDIT_PORT,232,144,27,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_PORT_SSL,310,144,27,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_AUTH_USERNAME,61,166,106,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_AUTH_PASSWORD,232,166,106,13,ES_PASSWORD | ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,117,195,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,185,195,47,14
+    LTEXT           "User Name",IDC_STATIC,11,168,43,8
+    LTEXT           "Password",IDC_STATIC,185,168,40,8
+    GROUPBOX        "General",IDC_STATIC2248,5,5,339,70
+    LTEXT           "HTTP Port",IDC_STATIC,185,146,36,8
+    GROUPBOX        "Parent Directory of all Cameras",IDC_STATIC,5,84,339,37
     LTEXT           "Delay cameras autostart by",IDC_STATIC,11,59,94,8
     LTEXT           "sec",IDC_STATIC,220,57,12,8
-    GROUPBOX        "Web Interface",IDC_STATIC,5,143,339,59
-    LTEXT           "HTTPS Port",IDC_STATIC,269,159,40,8
+    GROUPBOX        "Web Interface",IDC_STATIC,5,130,339,59
+    LTEXT           "HTTPS Port",IDC_STATIC,269,146,40,8
 END
 
 IDD_CAMERABASICSETTINGS DIALOGEX 0, 0, 418, 324
@@ -2513,16 +2510,6 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,64,186,50,19
     PUSHBUTTON      "Sel All",IDC_BUTTON_LIST_SELECTALL,166,186,35,19
     PUSHBUTTON      "Sel None",IDC_BUTTON_LIST_SELECTNONE,208,186,35,19
-END
-
-IDD_CONNECTERR_MSGBOX DIALOG 0, 0, 249, 74
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Dialog"
-FONT 8, "MS Shell Dlg"
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,191,53,50,15
-    ICON            "",IDC_CONNECTERR_ICON,11,11,20,20
-    CONTROL         "Autostart camera",IDC_CHECK_AUTORUN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,56,68,10
 END
 
 IDD_SNAPSHOT_NAMES DIALOGEX 0, 0, 217, 76
@@ -3107,7 +3094,7 @@ BEGIN
         VERTGUIDE, 185
         VERTGUIDE, 232
         TOPMARGIN, 6
-        BOTTOMMARGIN, 230
+        BOTTOMMARGIN, 210
     END
 
     IDD_CAMERABASICSETTINGS, DIALOG
@@ -3138,14 +3125,6 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 205
         HORZGUIDE, 186
-    END
-
-    IDD_CONNECTERR_MSGBOX, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 241
-        TOPMARGIN, 5
-        BOTTOMMARGIN, 68
     END
 
     IDD_SNAPSHOT_NAMES, DIALOG
@@ -3602,8 +3581,8 @@ BEGIN
     IDS_MULTILANG_1456      "%s already existing."
     IDS_MULTILANG_1457      "Zip Extraction Progress"
     IDS_MULTILANG_1458      "Zip Compression Progress"
-    IDS_MULTILANG_1465      "Cannot connect to the specified network device or server"
-    IDS_MULTILANG_1466      "The capture device is already in use or not compatible"
+    IDS_MULTILANG_1465      "Cannot connect to camera"
+    IDS_STRING1466          "In use or not compatible"
 END
 
 STRINGTABLE
@@ -3617,10 +3596,9 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_MULTILANG_1488      "Camera is telling you something,\nfirst open it in a browser, then come back here."
-    IDS_MULTILANG_1489      "Camera is asking you something (probably to set a password),\nfirst open it in a browser, then come back here."
-    IDS_MULTILANG_1490      "Unsupported network camera type or mode"
-    IDS_MULTILANG_1491      "Server is too busy, try later"
+    IDS_MULTILANG_1488      "First open camera in browser"
+    IDS_MULTILANG_1490      "Wrong camera type"
+    IDS_MULTILANG_1491      "Camera is too busy"
     IDS_STRING1492          "Audio format/encoding not supported"
     IDS_STRING1496          "cm"
     IDS_STRING1497          "inch"
@@ -4357,7 +4335,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_STRING1780          "The request to connect could not be completed because the supplied user name and/or password are incorrect"
+    IDS_STRING1780          "Authorization failed"
     IDS_STRING1784          "Error with code %u."
     IDS_STRING1785          "General"
     IDS_STRING1786          "Shrink"

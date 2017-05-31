@@ -2521,10 +2521,10 @@ BOOL CVideoDeviceDoc::CHttpThread::PollAndClean(BOOL bDoNewPoll)
 		{
 			// Remove oldest connection?
 			CTimeSpan ConnectionAge = CTime::GetCurrentTime() - pNetCom->m_InitTime;
-			if (pNetCom->IsShutdown()										||	// done?
-				ConnectionAge.GetTotalSeconds() >= HTTP_CONNECTION_TIMEOUT	||	// too old?
-				ConnectionAge.GetTotalSeconds() < 0							||	// "
-				!bDoNewPoll)													// too many open connections?
+			if (pNetCom->IsShutdown()											||	// done?
+				ConnectionAge.GetTotalSeconds() >= DEFAULT_CONNECTION_TIMEOUT	||	// too old?
+				ConnectionAge.GetTotalSeconds() < 0								||	// "
+				!bDoNewPoll)														// too many open connections?
 			{
 				delete pNetCom; // this calls Close() which blocks till all net threads are done
 				m_HttpVideoNetComList.RemoveHead();
@@ -2551,16 +2551,7 @@ BOOL CVideoDeviceDoc::CHttpThread::PollAndClean(BOOL bDoNewPoll)
 	return res;
 }
 
-int CVideoDeviceDoc::CHttpThread::OnError(BOOL bCloseDocument)
-{
-	CleanUpAllConnections();
-	CVideoDeviceDoc::ConnectErr(ML_STRING(1465, "Cannot connect to the specified network device or server"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
-	if (bCloseDocument)
-		m_pDoc->CloseDocument();
-	return 0;
-}
-
-void CVideoDeviceDoc::CHttpThread::CleanUpAllConnections()
+void CVideoDeviceDoc::CHttpThread::CleanUpAllPollConnections()
 {
 	// Start Shutdown All Connections
 	POSITION pos = m_HttpVideoNetComList.GetHeadPosition();
@@ -2589,8 +2580,7 @@ BOOL CVideoDeviceDoc::CHttpThread::Connect(	CNetCom* pNetCom,
 											CVideoDeviceDoc::CHttpParseProcess* pParseProcess,
 											int nSocketFamily,
 											HANDLE hConnectedEvent/*=NULL*/,
-											HANDLE hConnectFailedEvent/*=NULL*/,
-											HANDLE hReadEvent/*=NULL*/)
+											HANDLE hConnectFailedEvent/*=NULL*/)
 {
 	// Check
 	if (!pNetCom)
@@ -2602,7 +2592,7 @@ BOOL CVideoDeviceDoc::CHttpThread::Connect(	CNetCom* pNetCom,
 						m_pDoc->m_nGetFrameVideoPort,	// Peer Port
 						hConnectedEvent,				// Handle to an Event Object that will get Connect Events
 						hConnectFailedEvent,			// Handle to an Event Object that will get Connect Failed Events
-						hReadEvent,						// Handle to an Event Object that will get Read Events
+						NULL,							// Handle to an Event Object that will get Read Events
 						nSocketFamily);					// Socket family priority: AF_INET for IPv4, AF_INET6 for IPv6
 }
 
@@ -2610,19 +2600,14 @@ int CVideoDeviceDoc::CHttpThread::Work()
 {
 	ASSERT(m_pDoc);
 	int nAlarmLevel = 0;
-	BOOL bCheckConnectionTimeout = FALSE;
 	int nConnectionKeepAliveSupported = HTTP_MIN_KEEPALIVE_REQUESTS; // 0: not supported, 1: supported, >1: to be verified
 
 	for (;;)
 	{
-		// Set wait delay for HTTP jpeg snapshots mode and set
-		// check-timeout for both HTTP jpeg snapshots and
-		// HTTP motion jpeg modes when trying to setup a connection 
+		// Set wait delay for HTTP jpeg snapshots mode
 		DWORD dwWaitDelay = HTTP_THREAD_DEFAULT_DELAY;
 		if (m_pDoc->m_dFrameRate > 0.0)
 			dwWaitDelay = (DWORD)Round(1000.0 / m_pDoc->m_dFrameRate);
-
-		// Alarm dependent wait delay (only used in HTTP jpeg snapshots mode)
 		if (nAlarmLevel == 1)
 		{
 			dwWaitDelay = MAX(2U*dwWaitDelay, HTTP_THREAD_MIN_DELAY_ALARM1);
@@ -2640,16 +2625,13 @@ int CVideoDeviceDoc::CHttpThread::Work()
 		}	
 
 		// Wait for events
-		DWORD Event = ::WaitForMultipleObjects(	5,
-												m_hEventArray,
-												FALSE,
-												dwWaitDelay);
+		DWORD Event = ::WaitForMultipleObjects(4, m_hEventArray, FALSE, dwWaitDelay);
 		switch (Event)
 		{
 			// Shutdown Event (for both HTTP jpeg snapshots and HTTP motion jpeg modes)
 			case WAIT_OBJECT_0 :		
 			{
-				CleanUpAllConnections();
+				CleanUpAllPollConnections();
 				return 0;
 			}
 
@@ -2657,16 +2639,14 @@ int CVideoDeviceDoc::CHttpThread::Work()
 			case WAIT_OBJECT_0 + 1 :
 			{
 				::ResetEvent(m_hEventArray[1]);
-				bCheckConnectionTimeout = TRUE;
 				nConnectionKeepAliveSupported = HTTP_MIN_KEEPALIVE_REQUESTS; // 0: not supported, 1: supported, >1: to be verified
 				::EnterCriticalSection(&m_csVideoConnectRequestParams);
-				DWORD dwConnectDelayMs = m_dwVideoConnectDelayMs;
+				BOOL bResetHttpGetFrameLocationPos = m_bResetHttpGetFrameLocationPos;
 				::LeaveCriticalSection(&m_csVideoConnectRequestParams);
-				CleanUpAllConnections();
-				m_pDoc->m_pVideoNetCom->ShutdownConnection_NoBlocking();
-				if (::WaitForSingleObject(GetKillEvent(), dwConnectDelayMs) == WAIT_OBJECT_0)
-					return 0;
+				CleanUpAllPollConnections();
 				m_pDoc->m_pVideoNetCom->Close(); // this also empties the rx & tx fifos
+				if (bResetHttpGetFrameLocationPos)
+					m_pDoc->m_nHttpGetFrameLocationPos = 0;
 				m_pDoc->m_pHttpVideoParseProcess->m_bPollNextJpeg = FALSE;
 				if (m_pDoc->m_bCaptureAudio && !m_pDoc->m_bCaptureAudioFromStream)
 					m_pDoc->m_CaptureAudioThread.Start();
@@ -2674,15 +2654,8 @@ int CVideoDeviceDoc::CHttpThread::Work()
 							m_pDoc->m_pHttpVideoParseProcess,
 							AF_INET,			// Socket family priority: AF_INET for IPv4, AF_INET6 for IPv6
 							m_hEventArray[2],	// Http Video Connected Event
-							m_hEventArray[3],	// Http Video Connect Failed Event
-							m_hEventArray[4]))	// Http Video Read Event
-				{
-					if (m_pDoc->m_pHttpVideoParseProcess->m_bTryConnecting)
-					{
-						m_pDoc->m_pHttpVideoParseProcess->m_bTryConnecting = FALSE;
-						return OnError(TRUE);
-					}
-				}
+							m_hEventArray[3]))	// Http Video Connect Failed Event
+					m_pDoc->ConnectErr(ML_STRING(1465, "Cannot connect to camera"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
 				break;
 			}
 
@@ -2705,37 +2678,13 @@ int CVideoDeviceDoc::CHttpThread::Work()
 			case WAIT_OBJECT_0 + 3 :
 			{
 				::ResetEvent(m_hEventArray[3]);
-				if (m_pDoc->m_pHttpVideoParseProcess->m_bTryConnecting)
-				{
-					m_pDoc->m_pHttpVideoParseProcess->m_bTryConnecting = FALSE;
-					return OnError(TRUE);
-				}
-				break;
-			}
-
-			// Http Video Read Event (for HTTP jpeg snapshots init and HTTP motion jpeg mode)
-			case WAIT_OBJECT_0 + 4 :
-			{
-				::ResetEvent(m_hEventArray[4]);
-				bCheckConnectionTimeout = FALSE;
+				m_pDoc->ConnectErr(ML_STRING(1465, "Cannot connect to camera"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
 				break;
 			}
 
 			// Timeout
 			case WAIT_TIMEOUT :		
-			{	
-				// Setup connection timeout (for HTTP jpeg snapshots init and HTTP motion jpeg mode)
-				if (m_pDoc->m_pHttpVideoParseProcess->m_bTryConnecting && bCheckConnectionTimeout)
-				{
-					CTimeSpan ConnectionAge = CTime::GetCurrentTime() - m_pDoc->m_pVideoNetCom->m_InitTime;
-					if (ConnectionAge.GetTotalSeconds() >= HTTP_CONNECTION_TIMEOUT ||
-						ConnectionAge.GetTotalSeconds() < 0)
-					{
-						m_pDoc->m_pHttpVideoParseProcess->m_bTryConnecting = FALSE;
-						return OnError(TRUE);
-					}
-				}
-
+			{
 				// Poll (only HTTP jpeg snapshots mode)
 				if (m_pDoc->m_pHttpVideoParseProcess->m_bPollNextJpeg)
 				{
@@ -2789,17 +2738,12 @@ int CVideoDeviceDoc::CHttpThread::Work()
 	return 0;
 }
 
-// Get latest ffmpeg as some av_dict_set() params are new!!!
 int CVideoDeviceDoc::CRtspThread::Work()
 {
 	ASSERT(m_pDoc);
 
 	// Init COM for audio play
 	::CoInitialize(NULL);
-
-	// Wait before connecting or Exit if wished so
-	if (::WaitForSingleObject(m_hKillEvent, m_dwConnectDelayMs) == WAIT_OBJECT_0)
-		goto exit;
 
 	for (;;)
 	{
@@ -3220,30 +3164,31 @@ int CVideoDeviceDoc::CRtspThread::Work()
 		// Exit?
 		if (DoExit())
 			goto exit;
-		else if (!m_pDoc->m_bCaptureStarted)
+		else
 		{
+			// Error message
 			CString sErrorMsg;
 			switch (ret)
 			{
-				case AVERROR_HTTP_BAD_REQUEST:	sErrorMsg = _T("Server returned 400 Bad Request"); break;
-				case AVERROR_HTTP_UNAUTHORIZED:	sErrorMsg = _T("Server returned 401 Unauthorized (authorization failed)"); break;
-				case AVERROR_HTTP_FORBIDDEN:	sErrorMsg = _T("Server returned 403 Forbidden (access denied)"); break;
-				case AVERROR_HTTP_NOT_FOUND:	sErrorMsg = _T("Server returned 404 Not Found"); break;
-				case AVERROR_HTTP_OTHER_4XX:	sErrorMsg = _T("Server returned 4XX Client Error, but not one of 40{0,1,3,4}"); break;
-				case AVERROR_HTTP_SERVER_ERROR:	sErrorMsg = _T("Server returned 5XX Server Error reply"); break;
-				default:						sErrorMsg = ML_STRING(1465, "Cannot connect to the specified network device or server"); break;
+				case AVERROR_HTTP_BAD_REQUEST:	sErrorMsg = _T("400 Bad Request"); break;
+				case AVERROR_HTTP_UNAUTHORIZED:	sErrorMsg = ML_STRING(1780, "Authorization failed"); break;
+				case AVERROR_HTTP_FORBIDDEN:	sErrorMsg = _T("403 Forbidden"); break;
+				case AVERROR_HTTP_NOT_FOUND:	sErrorMsg = _T("404 Not Found"); break;
+				case AVERROR_HTTP_OTHER_4XX:	sErrorMsg = _T("Error 4XX"); break;
+				case AVERROR_HTTP_SERVER_ERROR:	sErrorMsg = _T("Error 5XX"); break;
+				default:						sErrorMsg = ML_STRING(1465, "Cannot connect to camera"); break;
 			}
-			CVideoDeviceDoc::ConnectErr(sErrorMsg, m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
-			m_pDoc->CloseDocument();
-			goto exit;
-		}
-		else
-		{
-			// Wait before reconnecting or Exit if wished so
-			if (::WaitForSingleObject(m_hKillEvent, HTTP_RECONNECTION_DELAY) == WAIT_OBJECT_0)
+			m_pDoc->ConnectErr(sErrorMsg, m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
+
+			// Wait some time before reconnecting
+			if (::WaitForSingleObject(m_hKillEvent, DEFAULT_CONNECTION_TIMEOUT * 1000) == WAIT_OBJECT_0)
 				goto exit;
-			else
-				::LogLine(_T("%s try reconnecting"), m_pDoc->GetAssignedDeviceName());
+
+			// Reconnect
+			::EnterCriticalSection(&m_pDoc->m_csConnectionAttemptAndError);
+			m_pDoc->m_sLastConnectionError.Empty();
+			m_pDoc->m_llConnectionAttempt++;
+			::LeaveCriticalSection(&m_pDoc->m_csConnectionAttemptAndError);
 		}
 	}
 
@@ -3255,45 +3200,6 @@ exit:
 int CVideoDeviceDoc::CWatchdogThread::Work()
 {
 	ASSERT(m_pDoc);
-
-	// Poll capture starting
-	while (m_bPollCaptureStarted)
-	{
-		// Shutdown Event?
-		if (::WaitForSingleObject(GetKillEvent(), WATCHDOG_CHECK_TIME) == WAIT_OBJECT_0)
-			return 0;
-		// Did we get the first frame?
-		// (note that at this point the view has been created) 
-		else if (m_pDoc->m_bCaptureStarted)
-		{
-			// Log the starting
-			::LogLine(_T("%s"), m_pDoc->GetAssignedDeviceName() + _T(" starting"));
-
-			// Init settings reload timer
-			::SetTimer(	m_pDoc->GetView()->GetSafeHwnd(),
-						ID_TIMER_RELOAD_SETTINGS,
-						RELOAD_SETTINGS_TIMER_MS, NULL);
-			
-			// Trigger drawing of the possible "Preview Off" message
-			::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-							WM_THREADSAFE_UPDATEWINDOWSIZES,
-							(WPARAM)UPDATEWINDOWSIZES_INVALIDATE,
-							(LPARAM)0);
-
-			// Reset flag
-			m_bPollCaptureStarted = FALSE;
-		}
-		// Trigger drawing of the Please wait... progress bar
-		// (make sure view has been created as this thread is
-		//  started from the document constructor)
-		else if (m_pDoc->GetView())
-		{
-			::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-							WM_THREADSAFE_UPDATEWINDOWSIZES,
-							(WPARAM)UPDATEWINDOWSIZES_INVALIDATE,
-							(LPARAM)0);
-		}
-	}
 
 	// Init vars
 	CTime LastHttpReconnectTime = CTime(0); // set time far in the past
@@ -3343,15 +3249,14 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 					if (m_pDoc->m_pVideoNetCom)
 					{
 						CTimeSpan TimeSpan = CurrentTime - LastHttpReconnectTime;
-						if (TimeSpan.GetTotalSeconds() > HTTP_CONNECTION_TIMEOUT)
+						if (TimeSpan.GetTotalSeconds() > DEFAULT_CONNECTION_TIMEOUT)
 						{
+							::EnterCriticalSection(&m_pDoc->m_csConnectionAttemptAndError);
+							m_pDoc->m_sLastConnectionError.Empty();
+							m_pDoc->m_llConnectionAttempt++;
+							::LeaveCriticalSection(&m_pDoc->m_csConnectionAttemptAndError);
 							LastHttpReconnectTime = CurrentTime;
-							DWORD dwConnectDelayMs = MIN(((CUImagerApp*)::AfxGetApp())->m_dwAutostartDelayMs, 1000 * HTTP_CONNECTION_TIMEOUT / 2);
-							m_pDoc->m_HttpThread.SetEventVideoConnect(_T(""), dwConnectDelayMs);
-							if (dwConnectDelayMs == 0)
-								::LogLine(_T("%s try reconnecting"), m_pDoc->GetAssignedDeviceName());
-							else
-								::LogLine(_T("%s try reconnecting in %u sec"), m_pDoc->GetAssignedDeviceName(), dwConnectDelayMs / 1000U);
+							m_pDoc->m_HttpThread.SetEventVideoConnect(_T(""), TRUE);
 						}
 					}
 
@@ -3392,10 +3297,13 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 				}
 
 				// Trigger drawing in case no frames reaching
-				::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-								WM_THREADSAFE_UPDATEWINDOWSIZES,
-								(WPARAM)UPDATEWINDOWSIZES_INVALIDATE,
-								(LPARAM)0);
+				if (m_pDoc->GetView())
+				{
+					::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
+									WM_THREADSAFE_UPDATEWINDOWSIZES,
+									(WPARAM)UPDATEWINDOWSIZES_INVALIDATE,
+									(LPARAM)0);
+				}
 
 				break;
 			}
@@ -3716,6 +3624,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_lEffectiveDataRateSum = 0;
 	m_bPlacementLoaded = FALSE;
 	m_bCaptureStarted = FALSE;
+	m_llConnectionAttempt = 0;
 	m_bShowFrameTime = TRUE;
 	m_nRefFontSize = 9;
 	m_nMovDetSavesCount = 1;
@@ -3922,6 +3831,9 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	// Init Samples List Critical Section
 	::InitializeCriticalSection(&m_csAudioList);
 
+	// Init Connection Attempt & Error Critical Section
+	::InitializeCriticalSection(&m_csConnectionAttemptAndError);
+
 	// Init Movement Detector
 	OneEmptyFrameList();
 	FreeMovementDetector();
@@ -3964,6 +3876,7 @@ CVideoDeviceDoc::~CVideoDeviceDoc()
 		m_DoMovementDetection = NULL;
 	}
 	ClearMovementDetectionsList();
+	::DeleteCriticalSection(&m_csConnectionAttemptAndError);
 	::DeleteCriticalSection(&m_csAudioList);
 	::DeleteCriticalSection(&m_csProcessFrameStop);
 	::DeleteCriticalSection(&m_csSnapshotConfiguration);
@@ -4017,10 +3930,12 @@ CVideoDeviceDoc::~CVideoDeviceDoc()
 
 void CVideoDeviceDoc::ConnectErr(LPCTSTR lpszText, const CString& sDevicePathName, const CString& sDeviceName)
 {
-	::PostMessage(	::AfxGetMainFrame()->GetSafeHwnd(),
-					WM_THREADSAFE_CONNECTERR,
-					(WPARAM)(new CString(sDeviceName + _T(", ") + lpszText)),
-					(LPARAM)(new CString(sDevicePathName)));
+	CString sMsg;
+	::EnterCriticalSection(&m_csConnectionAttemptAndError);
+	m_sLastConnectionError = lpszText;
+	sMsg.Format(_T("%s, %s (%I64d)"), sDeviceName, lpszText, m_llConnectionAttempt);
+	::LeaveCriticalSection(&m_csConnectionAttemptAndError);
+	::LogLine(_T("%s"), sMsg);
 }
 
 void CVideoDeviceDoc::FreeMovementDetector()
@@ -4040,11 +3955,6 @@ void CVideoDeviceDoc::FreeMovementDetector()
 	m_bDetectingMinLengthMovement = FALSE;
 	if (m_MovementDetections)
 		memset(m_MovementDetections, 0, MOVDET_MAX_ZONES);
-}
-
-void CVideoDeviceDoc::CloseDocument()
-{
-	GetFrame()->PostMessage(WM_CLOSE, 0, 0);
 }
 
 CString CVideoDeviceDoc::GetHostFromDevicePathName(const CString& sDevicePathName)
@@ -4911,81 +4821,42 @@ void CVideoDeviceDoc::ImportDetectionZones(const CString& sFileName)
 	EndWaitCursor();
 }
 
-BOOL CVideoDeviceDoc::InitOpenDxCapture(int nId)
+void CVideoDeviceDoc::OpenDxVideoDevice(int nId, CString sDevicePathName, CString sDeviceName)
 {
+	BOOL bOK = FALSE;
+
+	// Allocate
+	ASSERT(!m_pDxCapture);
 	m_pDxCapture = new CDxCapture;
-	if (m_pDxCapture)
+	m_pDxCapture->SetDoc(this);
+
+	// Device Id
+	if (nId < 0)
 	{
-		m_pDxCapture->SetDoc(this);
-		BOOL bOpened = m_pDxCapture->Open(	GetView()->GetSafeHwnd(),
-											nId,
-											m_dFrameRate,
-											m_nDeviceFormatId,
-											m_nDeviceFormatWidth,
-											m_nDeviceFormatHeight);
-		if (!bOpened)
-			bOpened = m_pDxCapture->Open(	GetView()->GetSafeHwnd(),
-											nId,
-											m_dFrameRate,
-											m_nDeviceFormatId,
-											m_nDeviceFormatWidth,
-											m_nDeviceFormatHeight,
-											&MEDIASUBTYPE_YUY2);
-		if (bOpened)
+		CString sDev(sDevicePathName);
+		sDev.Replace(_T('/'), _T('\\'));
+		nId = CDxCapture::GetDeviceID(sDev);
+		if (nId < 0)
 		{
-			// Update format
-			OnChangeDxVideoFormat();
-
-			// Start capturing video data
-			StopProcessFrame(PROCESSFRAME_DXOPEN);
-			if (m_pDxCapture->Run())
-			{
-				// Select Input Id for Capture Devices with multiple inputs (S-Video, TV-Tuner,...)
-				if (m_nDeviceInputId >= 0 && m_nDeviceInputId < m_pDxCapture->GetInputsCount())
-				{
-					if (!m_pDxCapture->SetCurrentInput(m_nDeviceInputId))
-						m_nDeviceInputId = -1;
-				}
-				else
-					m_nDeviceInputId = m_pDxCapture->SetDefaultInput();
-
-				// Some devices need that...
-				// Process frame must still be stopped when calling Dx Stop()!
-				m_pDxCapture->Stop();
-				m_pDxCapture->Run();
-
-				// Restart process frame
-				StartProcessFrame(PROCESSFRAME_DXOPEN);
-
-				// Start Audio Capture Thread
-				if (m_bCaptureAudio && !m_bCaptureAudioFromStream)
-					m_CaptureAudioThread.Start();
-
-				// Title
-				SetDocumentTitle();
-
-				return TRUE;
-			}
+			m_pDxCapture->SetDevicePath(sDev);
+			m_pDxCapture->SetDeviceName(sDeviceName);
 		}
-		delete m_pDxCapture;
-		m_pDxCapture = NULL;
 	}
-	return FALSE;
-}
 
-BOOL CVideoDeviceDoc::OpenDxVideoDevice(int nId)
-{
-	// Already open?
-	if (m_pDxCapture)
-		return TRUE;
+	// Device Pathname
+	if (sDevicePathName.IsEmpty())
+	{
+		sDevicePathName = CDxCapture::GetDevicePath(nId);
+		sDevicePathName.Replace(_T('\\'), _T('/'));
+	}
 
-	// Device path and name
-	CString sDevicePathName = CDxCapture::GetDevicePath(nId);
-	CString sDeviceName = CDxCapture::GetDeviceName(nId);
-	sDevicePathName.Replace(_T('\\'), _T('/'));
+	// Device Name
+	if (sDeviceName.IsEmpty())
+		sDeviceName = CDxCapture::GetDeviceName(nId);
 
 	// Load Settings
 	LoadSettings(DEFAULT_FRAMERATE, FALSE, sDevicePathName, sDeviceName);
+	::SetTimer(GetView()->GetSafeHwnd(), ID_TIMER_RELOAD_SETTINGS, RELOAD_SETTINGS_TIMER_MS, NULL);
 
 	// Start Delete Thread
 	if (!m_DeleteThread.IsAlive())
@@ -4996,13 +4867,67 @@ BOOL CVideoDeviceDoc::OpenDxVideoDevice(int nId)
 	m_dwNextSnapshotUpTime = ::timeGetTime();
 	::InterlockedExchange(&m_lCurrentInitUpTime, (LONG)m_dwNextSnapshotUpTime);
 
-	// Init and Open Dx Capture
-	if (InitOpenDxCapture(nId))
-		return TRUE;
+	// Open Dx Capture
+	::EnterCriticalSection(&m_csConnectionAttemptAndError);
+	m_llConnectionAttempt++;
+	::LeaveCriticalSection(&m_csConnectionAttemptAndError);
+	BOOL bOpened = m_pDxCapture->Open(	GetView()->GetSafeHwnd(),
+										nId,
+										m_dFrameRate,
+										m_nDeviceFormatId,
+										m_nDeviceFormatWidth,
+										m_nDeviceFormatHeight);
+	if (!bOpened)
+		bOpened = m_pDxCapture->Open(	GetView()->GetSafeHwnd(),
+										nId,
+										m_dFrameRate,
+										m_nDeviceFormatId,
+										m_nDeviceFormatWidth,
+										m_nDeviceFormatHeight,
+										&MEDIASUBTYPE_YUY2);
+	if (bOpened)
+	{
+		// Update format
+		OnChangeDxVideoFormat();
 
-	// Failure
-	ConnectErr(ML_STRING(1466, "The capture device is already in use or not compatible"), sDevicePathName, sDeviceName);
-	return FALSE;
+		// Start capturing video data
+		StopProcessFrame(PROCESSFRAME_DXOPEN);
+		if (m_pDxCapture->Run())
+		{
+			// Select Input Id for Capture Devices with multiple inputs (S-Video, TV-Tuner,...)
+			if (m_nDeviceInputId >= 0 && m_nDeviceInputId < m_pDxCapture->GetInputsCount())
+			{
+				if (!m_pDxCapture->SetCurrentInput(m_nDeviceInputId))
+					m_nDeviceInputId = -1;
+			}
+			else
+				m_nDeviceInputId = m_pDxCapture->SetDefaultInput();
+
+			// Some devices need that...
+			// Process frame must still be stopped when calling Dx Stop()!
+			m_pDxCapture->Stop();
+			bOK = m_pDxCapture->Run();
+
+			// Restart process frame
+			StartProcessFrame(PROCESSFRAME_DXOPEN);
+
+			// Start Audio Capture Thread
+			if (m_bCaptureAudio && !m_bCaptureAudioFromStream)
+				m_CaptureAudioThread.Start();
+
+			// Title
+			SetDocumentTitle();
+		}
+	}
+	
+	// Show error message?
+	if (!bOK)
+	{
+		if (nId < 0)
+			ConnectErr(ML_STRING(1568, "Unplugged"), sDevicePathName, sDeviceName);
+		else
+			ConnectErr(ML_STRING(1466, "In use or not compatible"), sDevicePathName, sDeviceName);
+	}
 }
 
 void CVideoDeviceDoc::InitHttpGetFrameLocations()
@@ -5215,7 +5140,7 @@ double CVideoDeviceDoc::GetDefaultNetworkFrameRate(NetworkDeviceTypeMode nNetwor
 // sAddress: Must have the IP:Port:FrameLocation:NetworkDeviceTypeMode or
 //           HostName:Port:FrameLocation:NetworkDeviceTypeMode Format
 // Note: FrameLocation is m_HttpGetFrameLocations[0]
-BOOL CVideoDeviceDoc::OpenNetVideoDevice(CString sAddress, DWORD dwConnectDelayMs/*=0U*/)
+void CVideoDeviceDoc::OpenNetVideoDevice(CString sAddress)
 {
 	ASSERT(!m_pVideoNetCom);
 	ASSERT(!m_pHttpVideoParseProcess);
@@ -5277,11 +5202,7 @@ BOOL CVideoDeviceDoc::OpenNetVideoDevice(CString sAddress, DWORD dwConnectDelayM
 
 		// Allocate
 		m_pVideoNetCom = new CNetCom;
-		if (!m_pVideoNetCom)
-			return FALSE;
 		m_pHttpVideoParseProcess = new CHttpParseProcess(this);
-		if (!m_pHttpVideoParseProcess)
-			return FALSE;
 	}
 
 	// Load Settings
@@ -5289,6 +5210,7 @@ BOOL CVideoDeviceDoc::OpenNetVideoDevice(CString sAddress, DWORD dwConnectDelayM
 					m_nNetworkDeviceTypeMode >= CVideoDeviceDoc::URL_RTSP,
 					GetDevicePathName(),
 					GetDeviceName());
+	::SetTimer(GetView()->GetSafeHwnd(), ID_TIMER_RELOAD_SETTINGS, RELOAD_SETTINGS_TIMER_MS, NULL);
 
 	// Start Delete Thread
 	if (!m_DeleteThread.IsAlive())
@@ -5301,28 +5223,12 @@ BOOL CVideoDeviceDoc::OpenNetVideoDevice(CString sAddress, DWORD dwConnectDelayM
 
 	// Connect
 	if (m_nNetworkDeviceTypeMode < CVideoDeviceDoc::URL_RTSP)
-	{
-		if (!ConnectHttp(dwConnectDelayMs))
-		{
-			ConnectErr(ML_STRING(1465, "Cannot connect to the specified network device or server"), GetDevicePathName(), GetDeviceName());
-			return FALSE;
-		}
-		else
-			return TRUE;
-	}
+		ConnectHttp();
 	else
-	{
-		if (!ConnectRtsp(dwConnectDelayMs))
-		{
-			ConnectErr(ML_STRING(1465, "Cannot connect to the specified network device or server"), GetDevicePathName(), GetDeviceName());
-			return FALSE;
-		}
-		else
-			return TRUE;
-	}
+		ConnectRtsp();
 }
 
-BOOL CVideoDeviceDoc::OpenNetVideoDevice(CHostPortDlg* pDlg)
+void CVideoDeviceDoc::OpenNetVideoDevice(CHostPortDlg* pDlg)
 {
 	ASSERT(!m_pVideoNetCom);
 	ASSERT(!m_pHttpVideoParseProcess);
@@ -5338,11 +5244,7 @@ BOOL CVideoDeviceDoc::OpenNetVideoDevice(CHostPortDlg* pDlg)
 
 		// Allocate
 		m_pVideoNetCom = new CNetCom;
-		if (!m_pVideoNetCom)
-			return FALSE;
 		m_pHttpVideoParseProcess = new CHttpParseProcess(this);
-		if (!m_pHttpVideoParseProcess)
-			return FALSE;
 	}
 
 	// Load Settings
@@ -5350,6 +5252,7 @@ BOOL CVideoDeviceDoc::OpenNetVideoDevice(CHostPortDlg* pDlg)
 					m_nNetworkDeviceTypeMode >= CVideoDeviceDoc::URL_RTSP,
 					GetDevicePathName(),
 					GetDeviceName());
+	::SetTimer(GetView()->GetSafeHwnd(), ID_TIMER_RELOAD_SETTINGS, RELOAD_SETTINGS_TIMER_MS, NULL);
 
 	// Start Delete Thread
 	if (!m_DeleteThread.IsAlive())
@@ -5362,25 +5265,9 @@ BOOL CVideoDeviceDoc::OpenNetVideoDevice(CHostPortDlg* pDlg)
 
 	// Connect
 	if (m_nNetworkDeviceTypeMode < CVideoDeviceDoc::URL_RTSP)
-	{
-		if (!ConnectHttp())
-		{
-			ConnectErr(ML_STRING(1465, "Cannot connect to the specified network device or server"), GetDevicePathName(), GetDeviceName());
-			return FALSE;
-		}
-		else
-			return TRUE;
-	}
+		ConnectHttp();
 	else
-	{
-		if (!ConnectRtsp())
-		{
-			ConnectErr(ML_STRING(1465, "Cannot connect to the specified network device or server"), GetDevicePathName(), GetDeviceName());
-			return FALSE;
-		}
-		else
-			return TRUE;
-	}
+		ConnectRtsp();
 }
 
 CString CVideoDeviceDoc::MakeJpegManualSnapshotFileName(const CTime& Time)
@@ -7734,7 +7621,8 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 		else
 			::LeaveCriticalSection(&m_csDib);
 
-		// Set start time, flag and open the Camera Basic Settings dialog
+		// Set start time, flag, open the Camera Basic Settings dialog
+		// and log the starting
 		if (!m_bCaptureStarted)
 		{
 			// Do not invert the order of the following two assignments!
@@ -7746,6 +7634,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 								WM_THREADSAFE_CAPTURECAMERABASICSETTINGS,
 								0, 0);
 			}
+			::LogLine(_T("%s"), GetAssignedDeviceName() + _T(" starting"));
 		}
 	}
 
@@ -8837,7 +8726,7 @@ void CVideoDeviceDoc::OnUpdateEditSnapshot(CCmdUI* pCmdUI)
 
 void CVideoDeviceDoc::OnFileClose() 
 {
-	CloseDocument();
+	GetFrame()->PostMessage(WM_CLOSE, 0, 0);
 }
 
 void CVideoDeviceDoc::OnFileSave() 
@@ -8979,17 +8868,12 @@ rates (value range 0-23):
 21 -> 0.25 fps
 23 -> 0.2 fps
 */
-BOOL CVideoDeviceDoc::ConnectHttp(DWORD dwConnectDelayMs/*=0U*/)
+void CVideoDeviceDoc::ConnectHttp()
 {
 	ASSERT(m_pVideoNetCom);
 	ASSERT(m_pHttpVideoParseProcess);
 
-	// Check
-	if (m_sGetFrameVideoHost == _T(""))
-		return FALSE;
-
 	// Init Video
-	m_pHttpVideoParseProcess->m_bTryConnecting = TRUE;
 	switch (m_nNetworkDeviceTypeMode)
 	{
 		case OTHERONE_SP :	// Other HTTP motion jpeg devices
@@ -9084,22 +8968,21 @@ BOOL CVideoDeviceDoc::ConnectHttp(DWORD dwConnectDelayMs/*=0U*/)
 
 		default :
 			ASSERT(FALSE);
-			return FALSE;
+			break;
 	}
 
 	// Start Http Thread
 	m_HttpThread.Start();
 
 	// Connect video
-	return m_HttpThread.SetEventVideoConnect(_T(""), dwConnectDelayMs);
+	::EnterCriticalSection(&m_csConnectionAttemptAndError);
+	m_llConnectionAttempt++;
+	::LeaveCriticalSection(&m_csConnectionAttemptAndError);
+	m_HttpThread.SetEventVideoConnect();
 }
 
-BOOL CVideoDeviceDoc::ConnectRtsp(DWORD dwConnectDelayMs/*=0U*/)
+void CVideoDeviceDoc::ConnectRtsp()
 {
-	// Check
-	if (m_sGetFrameVideoHost == _T(""))
-		return FALSE;
-
 	// Prepare query string
 	CString sQuery;
 	switch (m_nNetworkDeviceTypeMode)
@@ -9142,10 +9025,10 @@ BOOL CVideoDeviceDoc::ConnectRtsp(DWORD dwConnectDelayMs/*=0U*/)
 		case YCAM_RTSP:			sQuery = _T("/live_mpeg4.sdp"); break;
 		case ZAVIO_RTSP:		sQuery = _T("/video.pro1"); break;
 		case ZMODO_RTSP:		sQuery = m_bPreferTcpforRtsp ? _T("/tcp/av0_0") : _T("/udp/av0_0"); break;
-		default:				return FALSE;
+		default:				ASSERT(FALSE); break;
 	}
 
-	// Start thread with given url and delay
+	// Start thread with given url
 	CString sHost(m_sGetFrameVideoHost);
 	if ((sHost.Find(_T(':'))) >= 0) // IPv6?
 		sHost = _T("[") + sHost + _T("]");
@@ -9159,10 +9042,12 @@ BOOL CVideoDeviceDoc::ConnectRtsp(DWORD dwConnectDelayMs/*=0U*/)
 																::UrlEncode(m_sHttpGetFramePassword, TRUE),
 																sHost, m_nGetFrameVideoPort, sQuery);
 	}
-	m_RtspThread.m_dwConnectDelayMs = dwConnectDelayMs;
 	if (g_nLogLevel > 0)
 		::LogLine(_T("%s, rtsp://%s:%d%s"), GetAssignedDeviceName(), sHost, m_nGetFrameVideoPort, sQuery);
-	return (BOOL)m_RtspThread.Start();
+	::EnterCriticalSection(&m_csConnectionAttemptAndError);
+	m_llConnectionAttempt++;
+	::LeaveCriticalSection(&m_csConnectionAttemptAndError);
+	m_RtspThread.Start();
 }
 
 BOOL CVideoDeviceDoc::CHttpParseProcess::SendRawRequest(CString sRequest)
@@ -10264,8 +10149,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 				}
 				m_sMultipartBoundary = CString(m_szMultipartBoundary);
 
-				// Flags
-				m_bTryConnecting = FALSE;
+				// Flag
 				m_bFirstProcessing = TRUE;
 
 				// Call mjpeg parser
@@ -10278,8 +10162,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 			// Single image
 			else if ((nPos = sMsgLowerCase.Find(_T("content-type: image/jpeg"), 0)) >= 0)
 			{
-				// Flags
-				m_bTryConnecting = FALSE;
+				// Flag
 				m_bFirstProcessing = TRUE;
 
 				// Call jpeg parser
@@ -10294,7 +10177,6 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 			{
 				if ((m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE_SP	||
 					m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE_CP)	&&
-					m_bTryConnecting									&&
 					++m_pDoc->m_nHttpGetFrameLocationPos < m_pDoc->m_HttpGetFrameLocations.GetSize())
 				{
 					// Empty the buffers, so that parser stops calling us!
@@ -10353,9 +10235,8 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 						nPos = nNextPos + 1;
 					}
 
-					// Reset flags
+					// Reset flag
 					m_bQueryVideoProperties = FALSE;
-					m_bTryConnecting = FALSE;
 
 					// Empty the buffers, so that parser stops calling us!
 					pNetCom->Read();
@@ -10365,9 +10246,8 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 				}
 				else if (m_bSetVideoResolution)
 				{
-					// Reset flags
+					// Reset flag
 					m_bSetVideoResolution = FALSE;
-					m_bTryConnecting = FALSE;
 
 					// Empty the buffers, so that parser stops calling us!
 					pNetCom->Read();
@@ -10377,9 +10257,8 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 				}
 				else if (m_bSetVideoCompression)
 				{
-					// Reset flags
+					// Reset flag
 					m_bSetVideoCompression = FALSE;
-					m_bTryConnecting = FALSE;
 
 					// Empty the buffers, so that parser stops calling us!
 					pNetCom->Read();
@@ -10389,9 +10268,8 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 				}
 				else if (m_bSetVideoFramerate)
 				{
-					// Reset flags
+					// Reset flag
 					m_bSetVideoFramerate = FALSE;
-					m_bTryConnecting = FALSE;
 
 					// Empty the buffers, so that parser stops calling us!
 					pNetCom->Read();
@@ -10399,19 +10277,13 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 					// Start Connection
 					m_pDoc->m_HttpThread.SetEventVideoConnect();
 				}
-				else if (m_bTryConnecting)
+				else
 				{
-					// Reset flag
-					m_bTryConnecting = FALSE;
-
 					// Msg
-					CVideoDeviceDoc::ConnectErr(ML_STRING(1488, "Camera is telling you something,\nfirst open it in a browser, then come back here."), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
+					m_pDoc->ConnectErr(ML_STRING(1488, "First open camera in browser"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
 					
 					// Empty the buffers, so that parser stops calling us!
 					pNetCom->Read();
-
-					// Close
-					m_pDoc->CloseDocument();
 				}
 				delete [] pMsg;
 				if (g_nLogLevel > 0 && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0))
@@ -10423,7 +10295,6 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 			{
 				if ((m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE_SP	||
 					m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE_CP)	&&
-					m_bTryConnecting									&&
 					++m_pDoc->m_nHttpGetFrameLocationPos < m_pDoc->m_HttpGetFrameLocations.GetSize())
 				{
 					// Empty the buffers, so that parser stops calling us!
@@ -10432,19 +10303,13 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 					// Try next possible video device location string
 					m_pDoc->m_HttpThread.SetEventVideoConnect();
 				}
-				else if (m_bTryConnecting)
+				else
 				{
-					// Reset flag
-					m_bTryConnecting = FALSE;
-
 					// Msg
-					CVideoDeviceDoc::ConnectErr(ML_STRING(1489, "Camera is asking you something (probably to set a password),\nfirst open it in a browser, then come back here."), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
+					m_pDoc->ConnectErr(ML_STRING(1488, "First open camera in browser"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
 					
 					// Empty the buffers, so that parser stops calling us!
 					pNetCom->Read();
-					
-					// Close
-					m_pDoc->CloseDocument();
 				}
 				delete [] pMsg;
 				if (g_nLogLevel > 0 && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0))
@@ -10551,22 +10416,9 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 			pNetCom->Read(); // Empty the buffers, so that parser stops calling us!
 
 			// Authentication failed?
-			// Note: an ip cam may decide to issue a new nonce by replying with a 401,
-			//       for this reason it's important to check the m_bTryConnecting flag
-			if (m_bTryConnecting && m_AnswerAuthorizationType != AUTHNONE)
-			{
-				// Reset flag
-				m_bTryConnecting = FALSE;
-
-				// Msg
-				CVideoDeviceDoc::ConnectErr(ML_STRING(1780, "The request to connect could not be completed because the supplied user name and/or password are incorrect"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
-
-				// Close
-				m_pDoc->CloseDocument();
-
-				delete [] pMsg;
-				return FALSE; // Do not call Processor
-			}
+			// Note: an ip cam may also decide to issue a new nonce by replying with a 401
+			if (m_AnswerAuthorizationType != AUTHNONE)
+				m_pDoc->ConnectErr(ML_STRING(1780, "Authorization failed"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
 
 			// Set the Authorization Type
 			m_AnswerAuthorizationType = ChosenAuthorizationType;
@@ -10633,7 +10485,6 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 		{
 			if ((m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE_SP	||
 				m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE_CP)	&&
-				m_bTryConnecting									&&
 				++m_pDoc->m_nHttpGetFrameLocationPos < m_pDoc->m_HttpGetFrameLocations.GetSize())
 			{
 				// Empty the buffers, so that parser stops calling us!
@@ -10642,31 +10493,16 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 				// Try next possible video device location string
 				m_pDoc->m_HttpThread.SetEventVideoConnect();
 			}
-			else if (m_bTryConnecting)
-			{
-				// Reset flag
-				m_bTryConnecting = FALSE;
-
-				// Msg
-				if (sCode == _T("503")) // Service Unavailable
-					CVideoDeviceDoc::ConnectErr(ML_STRING(1491, "Server is too busy, try later"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
-				else
-					CVideoDeviceDoc::ConnectErr(ML_STRING(1490, "Unsupported network camera type or mode"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
-
-				// Empty the buffers, so that parser stops calling us!
-				pNetCom->Read();
-
-				// Close
-				m_pDoc->CloseDocument();
-			}
-			// Maybe we polled to fast or we changed a param and camera is not yet ready
 			else
 			{
+				// Msg
+				if (sCode == _T("503")) // Service Unavailable
+					m_pDoc->ConnectErr(ML_STRING(1491, "Camera is too busy"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
+				else
+					m_pDoc->ConnectErr(ML_STRING(1490, "Wrong camera type"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
+
 				// Empty the buffers, so that parser stops calling us!
 				pNetCom->Read();
-
-				// Retry start connection with delay
-				m_pDoc->m_HttpThread.SetEventVideoConnect(_T(""), HTTP_RECONNECTION_DELAY);
 			}
 			delete [] pMsg;
 			if (g_nLogLevel > 0 && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0))

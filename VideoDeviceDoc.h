@@ -164,8 +164,9 @@ class CMovementDetectionPage;
 #define PHPCONFIG_MAX_THUMSPERPAGE			39
 #define PHPCONFIG_DEFAULT_THUMSPERPAGE		27
 
-// Http Networking
+// Networking
 #define DEFAULT_TCP_PORT					80
+#define DEFAULT_CONNECTION_TIMEOUT			60			// in sec
 #define HTTP_MAX_HEADER_SIZE				1400		// bytes
 #define HTTP_MAX_MULTIPART_BOUNDARY			128			// boundary string buffer size in bytes
 #define HTTP_MIN_MULTIPART_SIZE				256			// minimum size of a multipart content
@@ -173,7 +174,6 @@ class CMovementDetectionPage;
 #define HTTP_DEFAULT_VIDEO_QUALITY			30			// 0 Best Quality, 100 Worst Quality
 #define HTTP_DEFAULT_VIDEO_SIZE_CX			640			// pixels
 #define HTTP_DEFAULT_VIDEO_SIZE_CY			480			// pixels
-#define HTTP_RECONNECTION_DELAY				5000U		// in case of a unhandled HTTP return code wait that time in ms before reconnecting
 #define HTTP_MAXPOLLS_ALARM1				30			// Maximum polling connections: alarm level 1
 #define HTTP_MAXPOLLS_ALARM2				40			// Maximum polling connections: alarm level 2
 #define HTTP_MAXPOLLS_ALARM3				50			// Maximum polling connections: alarm level 3
@@ -182,15 +182,9 @@ class CMovementDetectionPage;
 #define HTTP_THREAD_MIN_DELAY_ALARM2		400U		// ms
 #define HTTP_THREAD_MIN_DELAY_ALARM3		1000U		// ms
 #define HTTP_THREAD_MAX_DELAY_ALARM			((DWORD)(1000.0 / MIN_FRAMERATE)) // ms
-#define HTTP_CONNECTION_TIMEOUT				60			// Connection timeout in sec, used:
-														// - remove the oldest connections in network poll mode
-														// - network setup try connecting timeout
-														// - network reconnect in watchdog
 #define HTTP_MIN_KEEPALIVE_REQUESTS			50			// Keep-alive support check
 #define HTTP_USERNAME_PLACEHOLDER			_T("[USERNAME]") // only use letters, numbers, uri unreserved or uri reserved chars
 #define HTTP_PASSWORD_PLACEHOLDER			_T("[PASSWORD]") // only use letters, numbers, uri unreserved or uri reserved chars
-
-// Rtsp Networking
 #define RTSP_SOCKET_TIMEOUT					15000000	// timeout in microseconds of socket I/O operations
 
 
@@ -241,7 +235,6 @@ public:
 			volatile BOOL m_bSetVideoCompression;
 			volatile BOOL m_bSetVideoFramerate;
 			volatile BOOL m_bFirstProcessing;
-			volatile BOOL m_bTryConnecting;
 			volatile BOOL m_bConnectionKeepAlive;
 			volatile BOOL m_bPollNextJpeg;
 			volatile BOOL m_bOldVersion;
@@ -250,7 +243,6 @@ public:
 			void Clear() {	m_bMultipartNoLength = FALSE;
 							m_nMultipartBoundaryLength = 0;
 							m_bFirstProcessing = TRUE;
-							m_bTryConnecting = FALSE;
 							m_bQueryVideoProperties = FALSE;
 							m_bSetVideoResolution = FALSE;
 							m_bSetVideoCompression = FALSE;
@@ -344,43 +336,40 @@ public:
 	{
 		public:
 			CHttpThread() {	m_pDoc = NULL;
-							m_dwVideoConnectDelayMs	= 0U;									// Delay before starting video connection
+							m_bResetHttpGetFrameLocationPos = FALSE;						// Set m_nHttpGetFrameLocationPos to 0 before starting connection
 							m_hEventArray[0]	= GetKillEvent();							// Kill Event
 							m_hEventArray[1]	= ::CreateEvent(NULL, TRUE, FALSE, NULL);	// Http Setup Video Connection Event
 							m_hEventArray[2]	= ::CreateEvent(NULL, TRUE, FALSE, NULL);	// Http Video Connected Event
 							m_hEventArray[3]	= ::CreateEvent(NULL, TRUE, FALSE, NULL);	// Http Video Connect Failed Event
-							m_hEventArray[4]	= ::CreateEvent(NULL, TRUE, FALSE, NULL);	// Http Video Read Event
 							::InitializeCriticalSection(&m_csVideoConnectRequestParams);};
 			virtual ~CHttpThread() {Kill();
 									::CloseHandle(m_hEventArray[1]);
 									::CloseHandle(m_hEventArray[2]);
 									::CloseHandle(m_hEventArray[3]);
-									::CloseHandle(m_hEventArray[4]);
 									::DeleteCriticalSection(&m_csVideoConnectRequestParams);};
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
-			__forceinline BOOL SetEventVideoConnect(LPCTSTR lpszRequest = _T(""), DWORD dwConnectDelayMs = 0U)
+			__forceinline void SetEventVideoConnect(LPCTSTR lpszRequest = _T(""),
+													BOOL bResetHttpGetFrameLocationPos = FALSE)
 			{
 				::EnterCriticalSection(&m_csVideoConnectRequestParams);
 				m_sVideoRequest = CString(lpszRequest);
-				m_dwVideoConnectDelayMs = dwConnectDelayMs;
+				m_bResetHttpGetFrameLocationPos = bResetHttpGetFrameLocationPos;
 				::LeaveCriticalSection(&m_csVideoConnectRequestParams);
-				return ::SetEvent(m_hEventArray[1]);	
+				::SetEvent(m_hEventArray[1]);	
 			};
 
 		protected:
 			int Work();
-			int OnError(BOOL bCloseDocument);
 			__forceinline BOOL Connect(	CNetCom* pNetCom,
 										CHttpParseProcess* pParseProcess,
 										int nSocketFamily,
 										HANDLE hConnectedEvent = NULL,
-										HANDLE hConnectFailedEvent = NULL,
-										HANDLE hReadEvent = NULL);
+										HANDLE hConnectFailedEvent = NULL);
 			BOOL PollAndClean(BOOL bDoNewPoll);
-			void CleanUpAllConnections();
+			void CleanUpAllPollConnections();
 			CVideoDeviceDoc* m_pDoc;
-			HANDLE m_hEventArray[5];
-			volatile DWORD m_dwVideoConnectDelayMs;
+			HANDLE m_hEventArray[4];
+			volatile BOOL m_bResetHttpGetFrameLocationPos;
 			CString m_sVideoRequest;
 			CRITICAL_SECTION m_csVideoConnectRequestParams;
 			NETCOMLIST m_HttpVideoNetComList;
@@ -391,11 +380,10 @@ public:
 	class CRtspThread : public CWorkerThread
 	{
 		public:
-			CRtspThread() { m_pDoc = NULL; m_dwConnectDelayMs = 0U; m_nVideoCodecID = -1; m_nAudioCodecID = -1; m_nUnderlyingTransport = -1; };
+			CRtspThread() { m_pDoc = NULL; m_nVideoCodecID = -1; m_nAudioCodecID = -1; m_nUnderlyingTransport = -1; };
 			virtual ~CRtspThread() {Kill();};
 			void SetDoc(CVideoDeviceDoc* pDoc) { m_pDoc = pDoc; };
 			CString m_sURL;
-			DWORD m_dwConnectDelayMs;
 			volatile int m_nVideoCodecID;			// -1 means not set 
 			volatile int m_nAudioCodecID;			// -1 means not set
 			volatile int m_nUnderlyingTransport;	// -1 means not set, 0: UDP, 1: TCP, 2: UDP MULTICAST
@@ -409,14 +397,13 @@ public:
 	class CWatchdogThread : public CWorkerThread
 	{
 		public:
-			CWatchdogThread() {m_pDoc = NULL; m_bPollCaptureStarted = TRUE;};
+			CWatchdogThread() {m_pDoc = NULL;};
 			virtual ~CWatchdogThread() {Kill();};
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
 
 		protected:
 			int Work();
 			CVideoDeviceDoc* m_pDoc;
-			BOOL m_bPollCaptureStarted;
 	};
 
 	// Delete Thread
@@ -556,8 +543,7 @@ protected: // create from serialization only
 public:
 	
 	// General Functions
-	static void ConnectErr(LPCTSTR lpszText, const CString& sDevicePathName, const CString& sDeviceName); // Called when a device start fails
-	void CloseDocument();														// Close Document by sending a WM_CLOSE to the Parent Frame
+	void ConnectErr(LPCTSTR lpszText, const CString& sDevicePathName, const CString& sDeviceName); // Called when a device start fails
 	CString GetAssignedDeviceName();											// Get User Assigned Device Name
 	static CString GetHostFromDevicePathName(const CString& sDevicePathName);	// Returns host name or _T("") if it's not a network device
 	CString GetDeviceName();													// Friendly Device Name
@@ -574,11 +560,11 @@ public:
 	static BOOL CreateCheckYearMonthDayDir(CTime Time, CString sBaseDir, CString& sYearMonthDayDir);
 
 	// Open Dx Video Device
-	BOOL OpenDxVideoDevice(int nId);
+	void OpenDxVideoDevice(int nId, CString sDevicePathName, CString sDeviceName);
 
 	// Open Network Video Device
-	BOOL OpenNetVideoDevice(CHostPortDlg* pDlg);
-	BOOL OpenNetVideoDevice(CString sAddress, DWORD dwConnectDelayMs = 0U);
+	void OpenNetVideoDevice(CHostPortDlg* pDlg);
+	void OpenNetVideoDevice(CString sAddress);
 
 	// Connect to the chosen Networking Type and Mode
 	// ATTENTION: DO NOT CHANGE THE ASSOCIATED NUMBERS!
@@ -640,8 +626,8 @@ public:
 		// Add more rtsp devices here...
 		LAST_DEVICE				// Placeholder for range check
 	} NetworkDeviceTypeMode;
-	BOOL ConnectHttp(DWORD dwConnectDelayMs = 0U);
-	BOOL ConnectRtsp(DWORD dwConnectDelayMs = 0U);
+	void ConnectHttp();
+	void ConnectRtsp();
 
 	// Dialogs
 	void CaptureCameraBasicSettings();
@@ -823,7 +809,6 @@ public:
 
 // Protected Functions
 protected:
-	BOOL InitOpenDxCapture(int nId);
 	void Snapshot(CDib* pDib, const CTime& Time);
 	BOOL EditCopy(CDib* pDib, const CTime& Time);
 	void EditSnapshot(CDib* pDib, const CTime& Time);
@@ -857,6 +842,9 @@ public:
 	volatile BOOL m_bPlacementLoaded;					// Placement Settings have been loaded
 	volatile BOOL m_bCaptureStarted;					// Flag set when first frame has been processed
 	CTime m_CaptureStartTime;							// Grabbing device started at this time
+	volatile LONGLONG m_llConnectionAttempt;			// Connection attempt count
+	CString m_sLastConnectionError;						// Last connection error
+	CRITICAL_SECTION m_csConnectionAttemptAndError;		// Critical section for the connection Attempt & Error
 	volatile BOOL m_bObscureSource;						// Flag indicating whether the source has to be obscured
 	volatile BOOL m_bShowFrameTime;						// Show / Hide Frame Time Inside the Frame (frame time is also recorded)
 	volatile int m_nRefFontSize;						// Minimum font size for frame time, detection indicator, save/email/ftp progress

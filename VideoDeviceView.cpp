@@ -641,7 +641,12 @@ void CVideoDeviceView::OnDraw(CDC* pDC)
 		CFont* pOldFont = MemDC.SelectObject(&m_GDIDrawFont);
 
 		// Draw
-		MemDC.DrawText(	ML_STRING(1565, "Please wait..."),
+		CString sMsg(ML_STRING(1565, "Please wait..."));
+		::EnterCriticalSection(&pDoc->m_csConnectionAttemptAndError);
+		if (!pDoc->m_sLastConnectionError.IsEmpty())
+			sMsg.Format(_T("%s (%I64d)"), pDoc->m_sLastConnectionError, pDoc->m_llConnectionAttempt);
+		::LeaveCriticalSection(&pDoc->m_csConnectionAttemptAndError);
+		MemDC.DrawText(	sMsg,
 						-1,
 						&rcClient,
 						(DT_CENTER | DT_VCENTER | DT_NOCLIP | DT_NOPREFIX | DT_SINGLELINE));
@@ -849,7 +854,7 @@ void CVideoDeviceView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			else if (m_bFullScreenMode)
 				::AfxGetMainFrame()->EnterExitFullscreen();	// Exit Full-Screen Mode
 			else
-				pDoc->CloseDocument();
+				pDoc->GetFrame()->PostMessage(WM_CLOSE, 0, 0);
 			break;
 
 		case VK_INSERT :

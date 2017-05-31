@@ -28,7 +28,6 @@ CSettingsDlgVideoDeviceDoc::CSettingsDlgVideoDeviceDoc(CWnd* pParent /*=NULL*/)
 	m_bAutostart =		((CUImagerApp*)::AfxGetApp())->IsAutostart();
 	m_bStartFromService = CUImagerApp::GetContaCamServiceState() > 0;
 	m_bBrowserAutostart = ((CUImagerApp*)::AfxGetApp())->m_bBrowserAutostart;
-	m_nAutostartDelay = ((CUImagerApp*)::AfxGetApp())->m_dwAutostartDelayMs / 1000;
 	m_nFirstStartDelay = ((CUImagerApp*)::AfxGetApp())->m_dwFirstStartDelayMs / 1000;
 	m_bStartMicroApache = ((CUImagerApp*)::AfxGetApp())->m_bStartMicroApache;
 	m_nMicroApachePort = ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort;
@@ -64,8 +63,6 @@ void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_DOCROOT, m_sMicroApacheDocRoot);
 	DDX_Check(pDX, IDC_CHECK_BROWSER_AUTOSTART, m_bBrowserAutostart);
 	DDX_Check(pDX, IDC_CHECK_STARTFROM_SERVICE, m_bStartFromService);
-	DDX_Text(pDX, IDC_EDIT_AUTOSTART_DELAY, m_nAutostartDelay);
-	DDV_MinMaxInt(pDX, m_nAutostartDelay, 0, 600);
 	DDX_Text(pDX, IDC_EDIT_FIRSTSTART_DELAY, m_nFirstStartDelay);
 	DDV_MinMaxInt(pDX, m_nFirstStartDelay, 0, 600);
 	//}}AFX_DATA_MAP
@@ -138,9 +135,6 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsInit()
 
 	// Browser
 	pApp->m_bBrowserAutostart = m_bBrowserAutostart;
-
-	// Wait time between network devices start
-	pApp->m_dwAutostartDelayMs = 1000 * m_nAutostartDelay;
 
 	// Wait time before autostarting first device
 	pApp->m_dwFirstStartDelayMs = 1000 * m_nFirstStartDelay;
@@ -241,9 +235,6 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsEnd()
 									_T("BrowserAutostart"),
 									m_bBrowserAutostart);
 	pApp->WriteProfileInt(			_T("GeneralApp"),
-									_T("AutostartDelayMs"),
-									1000 * m_nAutostartDelay);
-	pApp->WriteProfileInt(			_T("GeneralApp"),
 									_T("FirstStartDelayMs"),
 									1000 * m_nFirstStartDelay);
 	pApp->WriteProfileInt(			_T("GeneralApp"),
@@ -330,8 +321,6 @@ void CSettingsDlgVideoDeviceDoc::EnableDisableAllCtrls(BOOL bEnable)
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_TOPMOST);
 	pCheck->EnableWindow(bEnable);
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_FIRSTSTART_DELAY);
-	pEdit->EnableWindow(bEnable);
-	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_AUTOSTART_DELAY);
 	pEdit->EnableWindow(bEnable);
 	CButton* pButton = (CButton*)GetDlgItem(IDC_BUTTON_DOCROOT);
 	pButton->EnableWindow(bEnable);

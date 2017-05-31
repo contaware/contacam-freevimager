@@ -59,7 +59,6 @@ public:
 	CString m_sMicroApacheDocRoot;
 	BOOL	m_bBrowserAutostart;
 	BOOL	m_bStartFromService;
-	int		m_nAutostartDelay;
 	int		m_nFirstStartDelay;
 	//}}AFX_DATA
 

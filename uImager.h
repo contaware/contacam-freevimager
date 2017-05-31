@@ -83,9 +83,6 @@
 #define CSS_STYLE_DIR									_T("styles")
 #define CAMERA_IS_OBSCURED_FILENAME						_T("CAMERA_IS_OBSCURED.txt")
 
-// Default wait time between network devices start
-#define DEFAULT_AUTOSTART_DELAY_MS						1000U
-
 // Default wait time before autostarting first device
 #define DEFAULT_FIRSTSTART_DELAY_MS						0U
 
@@ -600,9 +597,6 @@ public:
 
 	// Browser
 	BOOL m_bBrowserAutostart;
-
-	// Wait time between network devices start
-	volatile DWORD m_dwAutostartDelayMs;
 
 	// Wait time before autostarting first device
 	volatile DWORD m_dwFirstStartDelayMs;
