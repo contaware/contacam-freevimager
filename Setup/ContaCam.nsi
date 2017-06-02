@@ -266,6 +266,8 @@ Section "${APPNAME_NOEXT} Program (required)"
   Delete $INSTDIR\ContaCamDump.bat
   Delete $INSTDIR\NeroBurn.exe
   Delete $INSTDIR\vcredist_x86.exe
+  Delete $INSTDIR\https.crt
+  Delete $INSTDIR\https.key
   Delete $INSTDIR\ContaCamService.exe
   Delete $INSTDIR\${UNINSTNAME_EXT}
   RMDir /r "$INSTDIR\ActiveX"
@@ -289,11 +291,11 @@ Section "${APPNAME_NOEXT} Program (required)"
   SetOverwrite off
   File "..\ContaCamService\Release\ContaCamService.ini"
   File "MasterConfig.ini"
-  File "https.crt"
-  File "https.key"
   SetOverwrite on
   
   ; Microapache files and VC9 redistributables for it
+  File "https.crt"
+  File "https.key"
   SetOutPath $INSTDIR\microapache
   File /r /x .svn /x configuration*.* "..\microapache\*.*"
   SetOutPath $INSTDIR
@@ -605,12 +607,12 @@ Section "Uninstall"
   Delete $INSTDIR\vmmap.exe
   Delete $INSTDIR\NeroBurn.exe
   Delete $INSTDIR\vcredist_x86.exe
+  Delete $INSTDIR\https.crt
+  Delete $INSTDIR\https.key
   Delete $INSTDIR\ContaCamService.exe
   Delete $INSTDIR\ContaCamService.ini
   Delete $INSTDIR\ContaCamService.log
   Delete $INSTDIR\MasterConfig.ini
-  Delete $INSTDIR\https.crt
-  Delete $INSTDIR\https.key
   Delete $INSTDIR\${UNINSTNAME_EXT}
   
   ; Remove directories used
