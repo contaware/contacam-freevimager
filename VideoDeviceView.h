@@ -21,7 +21,6 @@ public:
 	CVideoDeviceView();
 	virtual ~CVideoDeviceView();
 	CVideoDeviceDoc* GetDocument();
-	void Draw(HDC hDC);
 
 protected:
 	DECLARE_DYNCREATE(CVideoDeviceView)

@@ -2655,7 +2655,7 @@ int CVideoDeviceDoc::CHttpThread::Work()
 							AF_INET,			// Socket family priority: AF_INET for IPv4, AF_INET6 for IPv6
 							m_hEventArray[2],	// Http Video Connected Event
 							m_hEventArray[3]))	// Http Video Connect Failed Event
-					m_pDoc->ConnectErr(ML_STRING(1465, "Cannot connect to camera"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
+					m_pDoc->ConnectErr(ML_STRING(1465, "Cannot connect to camera"), m_pDoc->GetDeviceName());
 				break;
 			}
 
@@ -2678,7 +2678,7 @@ int CVideoDeviceDoc::CHttpThread::Work()
 			case WAIT_OBJECT_0 + 3 :
 			{
 				::ResetEvent(m_hEventArray[3]);
-				m_pDoc->ConnectErr(ML_STRING(1465, "Cannot connect to camera"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
+				m_pDoc->ConnectErr(ML_STRING(1465, "Cannot connect to camera"), m_pDoc->GetDeviceName());
 				break;
 			}
 
@@ -3178,17 +3178,14 @@ int CVideoDeviceDoc::CRtspThread::Work()
 				case AVERROR_HTTP_SERVER_ERROR:	sErrorMsg = _T("Error 5XX"); break;
 				default:						sErrorMsg = ML_STRING(1465, "Cannot connect to camera"); break;
 			}
-			m_pDoc->ConnectErr(sErrorMsg, m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
+			m_pDoc->ConnectErr(sErrorMsg, m_pDoc->GetDeviceName());
 
 			// Wait some time before reconnecting
 			if (::WaitForSingleObject(m_hKillEvent, DEFAULT_CONNECTION_TIMEOUT * 1000) == WAIT_OBJECT_0)
 				goto exit;
 
 			// Reconnect
-			::EnterCriticalSection(&m_pDoc->m_csConnectionAttemptAndError);
-			m_pDoc->m_sLastConnectionError.Empty();
-			m_pDoc->m_llConnectionAttempt++;
-			::LeaveCriticalSection(&m_pDoc->m_csConnectionAttemptAndError);
+			m_pDoc->ClearConnectErr();
 		}
 	}
 
@@ -3251,10 +3248,7 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 						CTimeSpan TimeSpan = CurrentTime - LastHttpReconnectTime;
 						if (TimeSpan.GetTotalSeconds() > DEFAULT_CONNECTION_TIMEOUT)
 						{
-							::EnterCriticalSection(&m_pDoc->m_csConnectionAttemptAndError);
-							m_pDoc->m_sLastConnectionError.Empty();
-							m_pDoc->m_llConnectionAttempt++;
-							::LeaveCriticalSection(&m_pDoc->m_csConnectionAttemptAndError);
+							m_pDoc->ClearConnectErr();
 							LastHttpReconnectTime = CurrentTime;
 							m_pDoc->m_HttpThread.SetEventVideoConnect(_T(""), TRUE);
 						}
@@ -3624,7 +3618,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_lEffectiveDataRateSum = 0;
 	m_bPlacementLoaded = FALSE;
 	m_bCaptureStarted = FALSE;
-	m_llConnectionAttempt = 0;
 	m_bShowFrameTime = TRUE;
 	m_nRefFontSize = 9;
 	m_nMovDetSavesCount = 1;
@@ -3642,8 +3635,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_pDxCapture = NULL;
 	m_nDeviceInputId = -1;
 	m_nDeviceFormatId = -1;
-	m_bStopAndChangeFormat = FALSE;
-	m_bDxDeviceUnplugged = FALSE;
+	m_bStopAndChangeDVFormat = FALSE;
 	m_nDeviceFormatWidth = 0;
 	m_nDeviceFormatHeight = 0;
 	m_lCurrentInitUpTime = 0;
@@ -3831,8 +3823,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	// Init Samples List Critical Section
 	::InitializeCriticalSection(&m_csAudioList);
 
-	// Init Connection Attempt & Error Critical Section
-	::InitializeCriticalSection(&m_csConnectionAttemptAndError);
+	// Init Connection Error Critical Section
+	::InitializeCriticalSection(&m_csConnectionError);
 
 	// Init Movement Detector
 	OneEmptyFrameList();
@@ -3876,7 +3868,7 @@ CVideoDeviceDoc::~CVideoDeviceDoc()
 		m_DoMovementDetection = NULL;
 	}
 	ClearMovementDetectionsList();
-	::DeleteCriticalSection(&m_csConnectionAttemptAndError);
+	::DeleteCriticalSection(&m_csConnectionError);
 	::DeleteCriticalSection(&m_csAudioList);
 	::DeleteCriticalSection(&m_csProcessFrameStop);
 	::DeleteCriticalSection(&m_csSnapshotConfiguration);
@@ -3928,14 +3920,19 @@ CVideoDeviceDoc::~CVideoDeviceDoc()
 	}
 }
 
-void CVideoDeviceDoc::ConnectErr(LPCTSTR lpszText, const CString& sDevicePathName, const CString& sDeviceName)
+void CVideoDeviceDoc::ClearConnectErr()
 {
-	CString sMsg;
-	::EnterCriticalSection(&m_csConnectionAttemptAndError);
+	::EnterCriticalSection(&m_csConnectionError);
+	m_sLastConnectionError.Empty();
+	::LeaveCriticalSection(&m_csConnectionError);
+}
+
+void CVideoDeviceDoc::ConnectErr(LPCTSTR lpszText, const CString& sDeviceName)
+{
+	::EnterCriticalSection(&m_csConnectionError);
 	m_sLastConnectionError = lpszText;
-	sMsg.Format(_T("%s, %s (%I64d)"), sDeviceName, lpszText, m_llConnectionAttempt);
-	::LeaveCriticalSection(&m_csConnectionAttemptAndError);
-	::LogLine(_T("%s"), sMsg);
+	::LeaveCriticalSection(&m_csConnectionError);
+	::LogLine(_T("%s, %s"), sDeviceName, lpszText);
 }
 
 void CVideoDeviceDoc::FreeMovementDetector()
@@ -4868,9 +4865,6 @@ void CVideoDeviceDoc::OpenDxVideoDevice(int nId, CString sDevicePathName, CStrin
 	::InterlockedExchange(&m_lCurrentInitUpTime, (LONG)m_dwNextSnapshotUpTime);
 
 	// Open Dx Capture
-	::EnterCriticalSection(&m_csConnectionAttemptAndError);
-	m_llConnectionAttempt++;
-	::LeaveCriticalSection(&m_csConnectionAttemptAndError);
 	BOOL bOpened = m_pDxCapture->Open(	GetView()->GetSafeHwnd(),
 										nId,
 										m_dFrameRate,
@@ -4924,9 +4918,9 @@ void CVideoDeviceDoc::OpenDxVideoDevice(int nId, CString sDevicePathName, CStrin
 	if (!bOK)
 	{
 		if (nId < 0)
-			ConnectErr(ML_STRING(1568, "Unplugged"), sDevicePathName, sDeviceName);
+			ConnectErr(ML_STRING(1568, "Unplugged"), sDeviceName);
 		else
-			ConnectErr(ML_STRING(1466, "In use or not compatible"), sDevicePathName, sDeviceName);
+			ConnectErr(ML_STRING(1466, "In use or not compatible"), sDeviceName);
 	}
 }
 
@@ -5789,13 +5783,9 @@ void CVideoDeviceDoc::VideoFormatDialog()
 		if (m_pDxCapture->IsDV())
 		{
 			// Do not call 2 or more times!
-			if (!m_bStopAndChangeFormat)
+			if (!m_bStopAndChangeDVFormat)
 			{
-				m_bStopAndChangeFormat = TRUE;
-				::PostMessage(	GetView()->GetSafeHwnd(),
-								WM_THREADSAFE_UPDATEWINDOWSIZES,
-								(WPARAM)UPDATEWINDOWSIZES_INVALIDATE,
-								(LPARAM)0);
+				m_bStopAndChangeDVFormat = TRUE;
 				StopProcessFrame(PROCESSFRAME_DVFORMATDIALOG);
 				double dFrameRate = m_dEffectiveFrameRate;
 				int delay;
@@ -8975,9 +8965,6 @@ void CVideoDeviceDoc::ConnectHttp()
 	m_HttpThread.Start();
 
 	// Connect video
-	::EnterCriticalSection(&m_csConnectionAttemptAndError);
-	m_llConnectionAttempt++;
-	::LeaveCriticalSection(&m_csConnectionAttemptAndError);
 	m_HttpThread.SetEventVideoConnect();
 }
 
@@ -9044,9 +9031,6 @@ void CVideoDeviceDoc::ConnectRtsp()
 	}
 	if (g_nLogLevel > 0)
 		::LogLine(_T("%s, rtsp://%s:%d%s"), GetAssignedDeviceName(), sHost, m_nGetFrameVideoPort, sQuery);
-	::EnterCriticalSection(&m_csConnectionAttemptAndError);
-	m_llConnectionAttempt++;
-	::LeaveCriticalSection(&m_csConnectionAttemptAndError);
 	m_RtspThread.Start();
 }
 
@@ -10280,7 +10264,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 				else
 				{
 					// Msg
-					m_pDoc->ConnectErr(ML_STRING(1488, "First open camera in browser"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
+					m_pDoc->ConnectErr(ML_STRING(1488, "First open camera in browser"), m_pDoc->GetDeviceName());
 					
 					// Empty the buffers, so that parser stops calling us!
 					pNetCom->Read();
@@ -10306,7 +10290,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 				else
 				{
 					// Msg
-					m_pDoc->ConnectErr(ML_STRING(1488, "First open camera in browser"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
+					m_pDoc->ConnectErr(ML_STRING(1488, "First open camera in browser"), m_pDoc->GetDeviceName());
 					
 					// Empty the buffers, so that parser stops calling us!
 					pNetCom->Read();
@@ -10418,7 +10402,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 			// Authentication failed?
 			// Note: an ip cam may also decide to issue a new nonce by replying with a 401
 			if (m_AnswerAuthorizationType != AUTHNONE)
-				m_pDoc->ConnectErr(ML_STRING(1780, "Authorization failed"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
+				m_pDoc->ConnectErr(ML_STRING(1780, "Authorization failed"), m_pDoc->GetDeviceName());
 
 			// Set the Authorization Type
 			m_AnswerAuthorizationType = ChosenAuthorizationType;
@@ -10497,9 +10481,9 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 			{
 				// Msg
 				if (sCode == _T("503")) // Service Unavailable
-					m_pDoc->ConnectErr(ML_STRING(1491, "Camera is too busy"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
+					m_pDoc->ConnectErr(ML_STRING(1491, "Camera is too busy"), m_pDoc->GetDeviceName());
 				else
-					m_pDoc->ConnectErr(ML_STRING(1490, "Wrong camera type"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
+					m_pDoc->ConnectErr(ML_STRING(1490, "Wrong camera type"), m_pDoc->GetDeviceName());
 
 				// Empty the buffers, so that parser stops calling us!
 				pNetCom->Read();

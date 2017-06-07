@@ -73,8 +73,6 @@ class CMovementDetectionPage;
 #define THUMBMESSAGE_FONTSIZE				8
 #define DRAW_BKG_COLOR						RGB(0,0,0)
 #define DRAW_MESSAGE_COLOR					RGB(0xFF,0xFF,0xFF)
-#define DRAW_MESSAGE_SUCCESS_COLOR			RGB(0,0xFF,0)
-#define DRAW_MESSAGE_ERROR_COLOR			RGB(0xFF,0,0)
 
 // Process Frame Stop Engine
 #define PROCESSFRAME_MAX_RETRY_TIME			3500		// maximum retry time in ms for Process Frame Stop Engine
@@ -543,7 +541,8 @@ protected: // create from serialization only
 public:
 	
 	// General Functions
-	void ConnectErr(LPCTSTR lpszText, const CString& sDevicePathName, const CString& sDeviceName); // Called when a device start fails
+	void ClearConnectErr();														// Clear the connection error message
+	void ConnectErr(LPCTSTR lpszText, const CString& sDeviceName);				// Called when a device start fails
 	CString GetAssignedDeviceName();											// Get User Assigned Device Name
 	static CString GetHostFromDevicePathName(const CString& sDevicePathName);	// Returns host name or _T("") if it's not a network device
 	CString GetDeviceName();													// Friendly Device Name
@@ -842,9 +841,8 @@ public:
 	volatile BOOL m_bPlacementLoaded;					// Placement Settings have been loaded
 	volatile BOOL m_bCaptureStarted;					// Flag set when first frame has been processed
 	CTime m_CaptureStartTime;							// Grabbing device started at this time
-	volatile LONGLONG m_llConnectionAttempt;			// Connection attempt count
 	CString m_sLastConnectionError;						// Last connection error
-	CRITICAL_SECTION m_csConnectionAttemptAndError;		// Critical section for the connection Attempt & Error
+	CRITICAL_SECTION m_csConnectionError;				// Critical section for the connection error
 	volatile BOOL m_bObscureSource;						// Flag indicating whether the source has to be obscured
 	volatile BOOL m_bShowFrameTime;						// Show / Hide Frame Time Inside the Frame (frame time is also recorded)
 	volatile int m_nRefFontSize;						// Minimum font size for frame time, detection indicator, save/email/ftp progress
@@ -874,8 +872,7 @@ public:
 	volatile BOOL m_bWatchDogVideoAlarm;				// WatchDog Video Alarm
 
 	// DirectShow Capture Vars
-	volatile BOOL m_bStopAndChangeFormat;				// Flag indicating that we are changing the DV format
-	volatile BOOL m_bDxDeviceUnplugged;					// Device Has Been Unplugged
+	volatile BOOL m_bStopAndChangeDVFormat;				// Flag indicating that we are changing the DV format
 	CDxCapture* volatile m_pDxCapture;					// DirectShow Capture Object
 	int m_nDeviceInputId;								// Input ID
 	int m_nDeviceFormatId;								// Format ID

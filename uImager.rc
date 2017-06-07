@@ -4089,8 +4089,6 @@ END
 STRINGTABLE
 BEGIN
     IDS_STRING1568          "Unplugged"
-    IDS_STRING1569          "Change Size"
-    IDS_STRING1570          "No Frames"
     IDS_STRING1574          "File"
     IDS_STRING1575          "Files"
     IDS_STRING1576          "More Colors..."

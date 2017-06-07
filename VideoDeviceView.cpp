@@ -125,7 +125,7 @@ LONG CVideoDeviceView::OnThreadSafeDVChangeVideoFormat(WPARAM wparam, LPARAM lpa
 				// Restart watchdog thread
 				pDoc->m_WatchdogThread.Start();
 			}
-			pDoc->m_bStopAndChangeFormat = FALSE;
+			pDoc->m_bStopAndChangeDVFormat = FALSE;
 
 			return 1;
 		}
@@ -311,79 +311,6 @@ int CVideoDeviceView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 }
 
-void CVideoDeviceView::Draw(HDC hDC)
-{
-	CVideoDeviceDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-
-	// Init
-	BOOL bStopAndChangeFormat = pDoc->m_bStopAndChangeFormat;
-	BOOL bDxDeviceUnplugged = pDoc->m_bDxDeviceUnplugged;
-	BOOL bWatchDogVideoAlarm = pDoc->m_bWatchDogVideoAlarm;
-
-	// Draw Rect
-	CRect rcClient;
-	GetClientRect(&rcClient);
-
-	// Erase Background
-	if (bStopAndChangeFormat || bDxDeviceUnplugged || bWatchDogVideoAlarm)
-	{
-		CBrush br;
-		br.CreateSolidBrush(DRAW_BKG_COLOR);	
-		::FillRect(hDC, &rcClient, (HBRUSH)br.GetSafeHandle());
-	}
-
-	// Display: Change Size
-	if (bStopAndChangeFormat)
-	{
-		::DrawBigText(	hDC, rcClient,
-						ML_STRING(1569, "Change Size"),
-						DRAW_MESSAGE_COLOR, 72, DT_CENTER | DT_VCENTER,
-						OPAQUE, DRAW_BKG_COLOR); // faster drawing with opaque!
-	}
-	// Display: Unplugged
-	else if (bDxDeviceUnplugged)
-	{
-		::DrawBigText(	hDC, rcClient,
-						ML_STRING(1568, "Unplugged"),
-						DRAW_MESSAGE_ERROR_COLOR, 72, DT_CENTER | DT_VCENTER,
-						OPAQUE, DRAW_BKG_COLOR); // faster drawing with opaque!
-	}
-	// Display: No Frames
-	else if (bWatchDogVideoAlarm)
-	{
-		::DrawBigText(	hDC, rcClient,
-						ML_STRING(1570, "No Frames"),
-						DRAW_MESSAGE_ERROR_COLOR, 72, DT_CENTER | DT_VCENTER,
-						OPAQUE, DRAW_BKG_COLOR); // faster drawing with opaque!
-	}
-	// Draw
-	else
-	{
-		// Enter CS
-		::EnterCriticalSection(&pDoc->m_csDib);
-
-		// Draw Frame
-		pDoc->m_pDrawDibRGB32->Paint(hDC,
-									&rcClient,
-									CRect(0, 0, pDoc->m_pDrawDibRGB32->GetWidth(), pDoc->m_pDrawDibRGB32->GetHeight()),
-									FALSE);
-
-		// Leave CS
-		::LeaveCriticalSection(&pDoc->m_csDib);
-
-		// Draw Zones
-		if (pDoc->m_nShowEditDetectionZones ||
-			(pDoc->m_dwVideoProcessorMode && pDoc->m_bShowMovementDetections))
-			DrawZones(hDC);
-
-		// Draw Text
-		if (pDoc->m_bDetectingMinLengthMovement ||
-			(pDoc->m_SaveFrameListThread.IsWorking() && pDoc->m_SaveFrameListThread.GetSaveProgress() < 100))
-			DrawTextMsg(hDC);
-	}
-}
-
 void CVideoDeviceView::DrawTextMsg(HDC hDC)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
@@ -399,7 +326,7 @@ void CVideoDeviceView::DrawTextMsg(HDC hDC)
 	if (pDoc->m_bDetectingMinLengthMovement)
 	{
 		::DrawBigText(	hDC, CRect(0, 0, rcClient.Width(), rcClient.Height()),
-						ML_STRING(1844, "Detection"), DRAW_MESSAGE_SUCCESS_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT,
+						ML_STRING(1844, "Detection"), DRAW_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT,
 						OPAQUE, DRAW_BKG_COLOR);
 	}
 
@@ -612,8 +539,30 @@ void CVideoDeviceView::OnDraw(CDC* pDC)
 	CMyMemDC MemDC(pDC, &rcClient);
 
 	// Draw
-	if (pDoc->m_bCaptureStarted)
-		Draw(MemDC.GetSafeHdc());
+	if (pDoc->m_bCaptureStarted && !pDoc->m_bWatchDogVideoAlarm)
+	{
+		// Enter CS
+		::EnterCriticalSection(&pDoc->m_csDib);
+
+		// Draw Frame
+		pDoc->m_pDrawDibRGB32->Paint(	MemDC.GetSafeHdc(),
+										&rcClient,
+										CRect(0, 0, pDoc->m_pDrawDibRGB32->GetWidth(), pDoc->m_pDrawDibRGB32->GetHeight()),
+										FALSE);
+
+		// Leave CS
+		::LeaveCriticalSection(&pDoc->m_csDib);
+
+		// Draw Zones
+		if (pDoc->m_nShowEditDetectionZones ||
+			(pDoc->m_dwVideoProcessorMode && pDoc->m_bShowMovementDetections))
+			DrawZones(MemDC.GetSafeHdc());
+
+		// Draw Text
+		if (pDoc->m_bDetectingMinLengthMovement ||
+			(pDoc->m_SaveFrameListThread.IsWorking() && pDoc->m_SaveFrameListThread.GetSaveProgress() < 100))
+			DrawTextMsg(MemDC.GetSafeHdc());
+	}
 	else
 	{
 		//  Erase Background
@@ -640,16 +589,13 @@ void CVideoDeviceView::OnDraw(CDC* pDC)
 		COLORREF crOldBkColor = MemDC.SetBkColor(DRAW_BKG_COLOR);
 		CFont* pOldFont = MemDC.SelectObject(&m_GDIDrawFont);
 
-		// Draw
+		// Display message
 		CString sMsg(ML_STRING(1565, "Please wait..."));
-		::EnterCriticalSection(&pDoc->m_csConnectionAttemptAndError);
+		::EnterCriticalSection(&pDoc->m_csConnectionError);
 		if (!pDoc->m_sLastConnectionError.IsEmpty())
-			sMsg.Format(_T("%s (%I64d)"), pDoc->m_sLastConnectionError, pDoc->m_llConnectionAttempt);
-		::LeaveCriticalSection(&pDoc->m_csConnectionAttemptAndError);
-		MemDC.DrawText(	sMsg,
-						-1,
-						&rcClient,
-						(DT_CENTER | DT_VCENTER | DT_NOCLIP | DT_NOPREFIX | DT_SINGLELINE));
+			sMsg = pDoc->m_sLastConnectionError;
+		::LeaveCriticalSection(&pDoc->m_csConnectionError);
+		MemDC.DrawText(sMsg, -1, &rcClient, (DT_CENTER | DT_VCENTER | DT_NOCLIP | DT_NOPREFIX | DT_SINGLELINE));
 		TEXTMETRIC TextMetrics;
 		MemDC.GetTextMetrics(&TextMetrics);
 		int nBoxLength = TextMetrics.tmHeight / 4;
@@ -991,11 +937,7 @@ LONG CVideoDeviceView::OnDirectShowGraphNotify(WPARAM wparam, LPARAM lparam)
 				// Device was removed
 				if (evParam2 == 0)
 				{
-					// Set Unplugged Flag
-					pDoc->m_bDxDeviceUnplugged = TRUE;
-					Invalidate(FALSE);
-					::LogLine(_T("%s"), pDoc->GetAssignedDeviceName() + _T(" unplugged"));
-
+					pDoc->ConnectErr(ML_STRING(1568, "Unplugged"), pDoc->GetDeviceName());
                     break;
 				}
 				// Device is available again
@@ -1005,14 +947,9 @@ LONG CVideoDeviceView::OnDirectShowGraphNotify(WPARAM wparam, LPARAM lparam)
 					pDoc->StopProcessFrame(PROCESSFRAME_DXREPLUGGED);
 					if (ReOpenDxDevice())
 					{
-						// Reset Unplugged Flag
-						pDoc->m_bDxDeviceUnplugged = FALSE;
-						::LogLine(_T("%s"), pDoc->GetAssignedDeviceName() + _T(" replugged"));
-
-						// Restart process frame
+						pDoc->ClearConnectErr();
 						pDoc->StartProcessFrame(PROCESSFRAME_DXREPLUGGED);
 					}
-
 					break;
 				}
 			}
