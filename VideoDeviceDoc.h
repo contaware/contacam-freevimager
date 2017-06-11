@@ -227,7 +227,8 @@ public:
 			DWORD m_dwCNonceCount;
 			volatile enum {FORMATVIDEO_UNKNOWN = 0, FORMATVIDEO_JPEG, FORMATVIDEO_MJPEG} m_FormatType;
 			typedef enum {AUTHNONE = 0, AUTHBASIC, AUTHDIGEST} AUTHTYPE;
-			volatile AUTHTYPE m_AnswerAuthorizationType; // authorization type chosen by parsing WWW-Authenticate header
+			volatile AUTHTYPE m_AnswerAuthorizationType;	// authorization type chosen by parsing the WWW-Authenticate header
+			volatile BOOL m_bAuthorized;					// if set it indicates that the authorization has been accepted or is not necessary
 			volatile BOOL m_bQueryVideoProperties;
 			volatile BOOL m_bSetVideoResolution;
 			volatile BOOL m_bSetVideoCompression;
@@ -248,6 +249,7 @@ public:
 							m_bPollNextJpeg = FALSE;
 							m_FormatType = FORMATVIDEO_UNKNOWN;
 							m_AnswerAuthorizationType = AUTHNONE;
+							m_bAuthorized = FALSE;
 							m_bOldVersion = FALSE;
 							m_bConnectionKeepAlive = FALSE;
 							m_pCodec = NULL;

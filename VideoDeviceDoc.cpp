@@ -2481,6 +2481,7 @@ BOOL CVideoDeviceDoc::CHttpThread::PollAndClean(BOOL bDoNewPoll)
 		
 		// Copy the authorization variables and increment the client nonce count
 		pHttpVideoParseProcess->m_AnswerAuthorizationType = m_pDoc->m_pHttpVideoParseProcess->m_AnswerAuthorizationType;
+		pHttpVideoParseProcess->m_bAuthorized = m_pDoc->m_pHttpVideoParseProcess->m_bAuthorized;
 		pHttpVideoParseProcess->m_sRealm = m_pDoc->m_pHttpVideoParseProcess->m_sRealm;
 		pHttpVideoParseProcess->m_sQop = m_pDoc->m_pHttpVideoParseProcess->m_sQop;
 		pHttpVideoParseProcess->m_sNonce = m_pDoc->m_pHttpVideoParseProcess->m_sNonce;
@@ -10099,6 +10100,9 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 		// OK
 		if (sCode == _T("200"))
 		{
+			// Set flag
+			m_bAuthorized = TRUE;
+
 			// Multipart image
 			if ((nPos = sMsgLowerCase.Find(_T("content-type: multipart/x-mixed-replace"), 0)) >= 0)
 			{
@@ -10400,12 +10404,18 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 			pNetCom->Read(); // Empty the buffers, so that parser stops calling us!
 
 			// Authentication failed?
-			// Note: an ip cam may also decide to issue a new nonce by replying with a 401
-			if (m_AnswerAuthorizationType != AUTHNONE)
+			// Note: an ip cam may also decide to issue a new nonce by replying with a 401,
+			//       for this reason it's important to check the m_bAuthorized flag
+			if (!m_bAuthorized && m_AnswerAuthorizationType != AUTHNONE)
+			{
 				m_pDoc->ConnectErr(ML_STRING(1780, "Authorization failed"), m_pDoc->GetDeviceName());
+				delete[] pMsg;
+				return FALSE; // Do not call Processor
+			}
 
-			// Set the Authorization Type
+			// Set the Authorization Type and clear the flag
 			m_AnswerAuthorizationType = ChosenAuthorizationType;
+			m_bAuthorized = FALSE;
 
 			// Realm (m_sRealm will not contain the double quotes)
 			if ((nPos = sChosenAuthLineLowerCase.Find(_T("realm=\""), 0)) >= 0)
