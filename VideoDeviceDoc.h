@@ -209,9 +209,30 @@ public:
 	class CHttpParseProcess : public CNetCom::CParseProcess
 	{
 		public:
-			CHttpParseProcess(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc; m_dwCNonceCount = 0U; Clear();};
+			CHttpParseProcess(CVideoDeviceDoc* pDoc) {	m_pDoc = pDoc;
+														m_dwCNonceCount = 0U;
+														m_bMultipartNoLength = FALSE;
+														m_nMultipartBoundaryLength = 0;
+														m_bFirstProcessing = TRUE;
+														m_bQueryVideoProperties = FALSE;
+														m_bSetVideoResolution = FALSE;
+														m_bSetVideoCompression = FALSE;
+														m_bSetVideoFramerate = FALSE;
+														m_bPollNextJpeg = FALSE;
+														m_FormatType = FORMATVIDEO_UNKNOWN;
+														m_AnswerAuthorizationType = AUTHNONE;
+														m_bAuthorized = FALSE;
+														m_bOldVersion = FALSE;
+														m_bConnectionKeepAlive = FALSE;
+														m_pCodec = NULL;
+														m_pCodecCtx = NULL;
+														m_pFrame = NULL;
+														m_pFrameI420 = NULL;
+														m_pImgConvertCtx = NULL;
+														m_pI420Buf = NULL;
+														m_dwI420BufSize = 0;
+														m_dwI420ImageSize = 0;};
 			virtual ~CHttpParseProcess() {FreeAVCodec();};
-			void Close() {FreeAVCodec(); Clear();};
 			BOOL SendRawRequest(CString sRequest);
 			BOOL SendRequest();
 			virtual BOOL Parse(CNetCom* pNetCom, BOOL bLastCall);
@@ -239,27 +260,6 @@ public:
 			volatile BOOL m_bOldVersion;
 
 		protected:
-			void Clear() {	m_bMultipartNoLength = FALSE;
-							m_nMultipartBoundaryLength = 0;
-							m_bFirstProcessing = TRUE;
-							m_bQueryVideoProperties = FALSE;
-							m_bSetVideoResolution = FALSE;
-							m_bSetVideoCompression = FALSE;
-							m_bSetVideoFramerate = FALSE;
-							m_bPollNextJpeg = FALSE;
-							m_FormatType = FORMATVIDEO_UNKNOWN;
-							m_AnswerAuthorizationType = AUTHNONE;
-							m_bAuthorized = FALSE;
-							m_bOldVersion = FALSE;
-							m_bConnectionKeepAlive = FALSE;
-							m_pCodec = NULL;
-							m_pCodecCtx = NULL;
-							m_pFrame = NULL;
-							m_pFrameI420 = NULL;
-							m_pImgConvertCtx = NULL;
-							m_pI420Buf = NULL;						
-							m_dwI420BufSize = 0;
-							m_dwI420ImageSize = 0;};
 			BOOL ParseSingle(	BOOL bLastCall,
 								int nSize,
 								const CString& sMsg,
