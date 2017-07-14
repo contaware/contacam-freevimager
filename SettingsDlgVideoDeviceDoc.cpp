@@ -247,10 +247,10 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsEnd()
 									_T("MicroApachePortSSL"),
 									m_nMicroApachePortSSL);
 	pApp->WriteSecureProfileString(	_T("GeneralApp"),
-									_T("MicroApacheUsername"),
+									_T("MicroApacheUsernameExportable"),
 									m_sMicroApacheUsername);
 	pApp->WriteSecureProfileString(	_T("GeneralApp"),
-									_T("MicroApachePassword"),
+									_T("MicroApachePasswordExportable"),
 									m_sMicroApachePassword);
 	pApp->WriteProfileString(		_T("GeneralApp"),
 									_T("MicroApacheDocRoot"),

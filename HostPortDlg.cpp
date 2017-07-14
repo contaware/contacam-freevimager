@@ -493,10 +493,10 @@ void CHostPortDlg::Load()
 	// Load
 	if (bSectionExists)
 	{
-		CString	sUsername = ((CUImagerApp*)::AfxGetApp())->GetSecureProfileString(sDevicePathName, _T("HTTPGetFrameUsername"));
+		CString	sUsername = ((CUImagerApp*)::AfxGetApp())->GetSecureProfileString(sDevicePathName, _T("HTTPGetFrameUsernameExportable"));
 		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_AUTH_USERNAME);
 		pEdit->SetWindowText(sUsername);
-		CString	sPassword = ((CUImagerApp*)::AfxGetApp())->GetSecureProfileString(sDevicePathName, _T("HTTPGetFramePassword"));
+		CString	sPassword = ((CUImagerApp*)::AfxGetApp())->GetSecureProfileString(sDevicePathName, _T("HTTPGetFramePasswordExportable"));
 		pEdit = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
 		pEdit->SetWindowText(sPassword);
 		BOOL bPreferTcpforRtsp = (BOOL)((CUImagerApp*)::AfxGetApp())->GetProfileInt(sDevicePathName, _T("PreferTcpforRtsp"), FALSE);
@@ -529,10 +529,10 @@ void CHostPortDlg::Save()
 	CString sText;
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_AUTH_USERNAME);
 	pEdit->GetWindowText(sText);
-	((CUImagerApp*)::AfxGetApp())->WriteSecureProfileString(sDevicePathName, _T("HTTPGetFrameUsername"), sText);
+	((CUImagerApp*)::AfxGetApp())->WriteSecureProfileString(sDevicePathName, _T("HTTPGetFrameUsernameExportable"), sText);
 	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
 	pEdit->GetWindowText(sText);
-	((CUImagerApp*)::AfxGetApp())->WriteSecureProfileString(sDevicePathName, _T("HTTPGetFramePassword"), sText);
+	((CUImagerApp*)::AfxGetApp())->WriteSecureProfileString(sDevicePathName, _T("HTTPGetFramePasswordExportable"), sText);
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_PREFER_TCP_FOR_RTSP);
 	((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sDevicePathName, _T("PreferTcpforRtsp"), pCheck->GetCheck());
 }

@@ -45,9 +45,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-// TODO: remove when removing the code using CryptUnprotectData!!
-#pragma comment(lib, "Crypt32.lib")
-
 // TODO: remove when dropping Windows XP support!
 // From ShObjIdl.h (IApplicationActivationManager not available in SDK 7.1)
 #ifndef __IApplicationActivationManager_INTERFACE_DEFINED__
@@ -3462,8 +3459,8 @@ void CUImagerApp::LoadSettings(UINT showCmd/*=SW_SHOWNORMAL*/)
 	m_nMicroApachePortSSL = GetProfileInt(sSection, _T("MicroApachePortSSL"), MICROAPACHE_DEFAULT_PORT_SSL);
 
 	// Authentication
-	m_sMicroApacheUsername = GetSecureProfileString(sSection, _T("MicroApacheUsername"));
-	m_sMicroApachePassword = GetSecureProfileString(sSection, _T("MicroApachePassword"));
+	m_sMicroApacheUsername = GetSecureProfileString(sSection, _T("MicroApacheUsernameExportable"));
+	m_sMicroApachePassword = GetSecureProfileString(sSection, _T("MicroApachePasswordExportable"));
 
 	// Load Schedulers
 	int nCount = GetProfileInt(sSection, _T("SchedulerCount"), 0);
@@ -5098,78 +5095,18 @@ __int64 CUImagerApp::GetProfileInt64(LPCTSTR lpszSection, LPCTSTR lpszEntry, __i
 
 void CUImagerApp::WriteSecureProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszValue)
 {
-	// Remove old entry
-	// TODO: remove this code when removing CryptUnprotectData in GetSecureProfileString
-	if (m_pszRegistryKey)
-		::DeleteRegistryValue(HKEY_CURRENT_USER, CString(_T("Software\\")) + MYCOMPANY + _T("\\") + APPNAME_NOEXT + _T("\\") + lpszSection, lpszEntry);
-	else
-		::WritePrivateProfileString(lpszSection, lpszEntry, NULL, m_pszProfileName);
-
 	// Exportable (depends only on the MAGIC_KEY defined in CEncryptDecrypt.h)
 	CEncryptDecrypt Encrypt;
 	Encrypt.Encrypt(CString(lpszValue)); // note: encrypting _T("") returns _T("")
-	WriteProfileString(lpszSection, CString(lpszEntry) + _T("Exportable"), Encrypt.GetEncryptedValues());
+	WriteProfileString(lpszSection, lpszEntry, Encrypt.GetEncryptedValues());
 }
 
 CString CUImagerApp::GetSecureProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry)
 {
+	// Exportable (depends only on the MAGIC_KEY defined in CEncryptDecrypt.h)
 	CString sDecrypted;
-
-	// TODO: remove CryptUnprotectData code in future releases and add
-	//       to all calls "Exportable" so that we can remove it here
-	//       and in WriteSecureProfileString
-	DATA_BLOB blobIn, blobOut, blobEntropy;
-	blobIn.cbData = 0;
-	blobIn.pbData = NULL;
-	blobOut.cbData = 0;
-	blobOut.pbData = NULL;
-	BYTE Entropy[] = {
-		0x6B, 0x31, 0x20, 0x85, 0x08, 0x79, 0xA3, 0x1B, 0x53, 0xAB, 0x3D, 0x08, 0x67, 0xFD, 0x55, 0x66, 
-		0x26, 0x7B, 0x46, 0x28, 0x91, 0xBB, 0x11, 0x8D, 0x8E, 0xB0, 0x2C, 0x99, 0x1E, 0x5B, 0x4A, 0x68};
-	blobEntropy.pbData = Entropy;
-	blobEntropy.cbData = sizeof(Entropy);
-	LPWSTR pDescrOut = (LPWSTR)0xbaadf00d ; // Not NULL!
-	GetProfileBinary(lpszSection, lpszEntry, &blobIn.pbData, (UINT*)&blobIn.cbData);
-	if (blobIn.pbData && (blobIn.cbData > 0))
-	{
-		if (CryptUnprotectData(	&blobIn,
-								&pDescrOut,
-								&blobEntropy,
-								NULL,
-								NULL,
-								0,
-								&blobOut))
-		{
-			CString sType(pDescrOut);
-			if (sType == L"UNICODE")
-				sDecrypted = CString((LPCWSTR)blobOut.pbData);
-			else if (sType == L"ASCII") // ascii backwards compatibility
-				sDecrypted = CString((LPCSTR)blobOut.pbData);
-			delete [] blobIn.pbData;
-			::LocalFree(pDescrOut);
-			::LocalFree(blobOut.pbData);
-			WriteSecureProfileString(lpszSection, lpszEntry, sDecrypted); // upgrade
-			return sDecrypted;
-		}
-		else
-		{
-			delete [] blobIn.pbData;
-			::LocalFree(pDescrOut);
-			::LocalFree(blobOut.pbData);
-		}
-	}
-	else
-	{
-		if (blobIn.pbData)
-			delete [] blobIn.pbData;
-	}
-
-	// CryptUnprotectData fails when:
-	// - the blob was encrypted by a different user than the one now trying to decrypt it
-	// - the user password has changed and the automatic reprocessing of keys based on user password failed
-	// - changing machine
 	CEncryptDecrypt Decrypt;
-	Decrypt.SetEncryptedValues(GetProfileString(lpszSection, CString(lpszEntry) + _T("Exportable")));
+	Decrypt.SetEncryptedValues(GetProfileString(lpszSection, lpszEntry));
 	Decrypt.Decrypt(sDecrypted); // note: decrypting _T("") returns _T("")
 	return sDecrypted;
 }
