@@ -8,9 +8,6 @@
 #include <wincrypt.h>
 #endif
 
-// SHA256 support in:
-// - Windows XP SP3
-// - Windows Server 2003 Service Pack 2 + KB938397 installed
 #ifndef CALG_SHA_256
 #define ALG_SID_SHA_256         12
 #define CALG_SHA_256            (ALG_CLASS_HASH | ALG_TYPE_ANY | ALG_SID_SHA_256)

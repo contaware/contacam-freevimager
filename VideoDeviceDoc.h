@@ -765,10 +765,6 @@ public:
 	// NOTE for console applications started by a service
 	// (this holds for microapache which is a console app)
 	//
-	// Up to Windows XP and Windows Server 2003 the first logged on user and the services
-	// both run in session 0. When logging off, the system sends a logoff event to all
-	// console applications from all users which run in session 0 -> the mapache.exe
-	// processes terminate even if started from a service!
 	// Starting from Windows Vista and Windows Server 2008 the services run in session 0,
 	// all the other processes in session 1 or higher. Logging off will not terminate
 	// the mapache.exe processes started from the service because they are session 0

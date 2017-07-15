@@ -52,20 +52,7 @@
 #include <atlsocket.h>
 #include <atlimage.h>
 
-// Including both stdint.h and intsafe.h generates warnings in vs2010 (fixed in vs2012)
-// http://connect.microsoft.com/VisualStudio/feedback/details/621653/including-stdint-after-intsafe-generates-warnings
-#if _MSC_VER == 1600
-#pragma warning(push)
-#pragma warning(disable : 4005)
-#include <intsafe.h>
-#include <stdint.h>
-#pragma warning(pop)
-#endif
-
 // Maximum file path size for file dialog
-// Note: WinXP seems to only support 32k, passing
-// a bigger buffer doesn't fail the file dialog
-// function but the above mentioned limit remains
 #define MAX_FILEDLG_PATH							1048576		// 1M
 
 // Default Font Face

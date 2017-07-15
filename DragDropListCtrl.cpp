@@ -284,10 +284,6 @@ void CDragDropListCtrl::OnMouseMove(UINT nFlags, CPoint point)
 		CPoint ptDragImage(point);
 		ClientToScreen(&ptDragImage);
 		m_pDragImage->DragMove(ptDragImage);
-		
-		// Leave dragging so we can update potential drop target selection
-		if (!g_bWinVistaOrHigher)
-			m_pDragImage->DragLeave(CWnd::GetDesktopWindow());
 
 		// Client Rect & Coordinates
 		CRect rectClient;
@@ -353,10 +349,6 @@ void CDragDropListCtrl::OnMouseMove(UINT nFlags, CPoint point)
 			else
 				UpdateSelection(nDropIndex);
 		}
-
-		// Resume dragging
-		if (!g_bWinVistaOrHigher)
-			m_pDragImage->DragEnter(CWnd::GetDesktopWindow(), ptDragImage);
 	}
 	else
 		KillScrollTimer();

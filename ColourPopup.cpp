@@ -206,11 +206,7 @@ void CColourPopup::Initialise()
 		m_nBoxSize = 5 + 2*m_nMargin + 2;
 
     // Create the font
-#if (WINVER >= 0x0600)
-    NONCLIENTMETRICS ncm = {sizeof(NONCLIENTMETRICS) - sizeof(int)}; // to make it work with all OSs leave it like this!
-#else
-	NONCLIENTMETRICS ncm = {sizeof(NONCLIENTMETRICS)};
-#endif
+    NONCLIENTMETRICS ncm = {sizeof(NONCLIENTMETRICS)};
     VERIFY(::SystemParametersInfo(SPI_GETNONCLIENTMETRICS, ncm.cbSize, &ncm, 0));
     m_Font.CreateFontIndirect(&(ncm.lfMessageFont));
 

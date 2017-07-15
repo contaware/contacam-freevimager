@@ -18,7 +18,6 @@
 #define THUMBS_DB				_T("Thumbs.db")
 
 extern int g_nSystemDPI;
-extern BOOL g_bWinVistaOrHigher;
 extern BOOL g_bMMX;
 extern BOOL g_bSSE;
 extern BOOL g_bSSE2;
@@ -313,9 +312,6 @@ extern void GetHeapStats(SIZE_T* pDefaultHeapSize = NULL,
 
 // Heap Check and Dump
 extern void HeapDump(HANDLE heap, CString sConfigFilesDir);
-
-// Enable the LFH heap for both the default heap and the CRT heap
-extern BOOL EnableLFHeap();
 
 // Private bytes (Commit Size or VM Size in Explorer / PrivateUsage or 
 // PagefileUsage of PROCESS_MEMORY_COUNTERS_EX) is the portion of a 

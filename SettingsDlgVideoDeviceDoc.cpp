@@ -417,12 +417,9 @@ BOOL CSettingsDlgVideoDeviceDoc::OnInitDialog()
 	CDialog::OnInitDialog();
 	
 	// Shield Icon on OK Button
-	if (g_bWinVistaOrHigher)
-	{
-		CButton* pOK = (CButton*)GetDlgItem(IDOK);
-		if (pOK)
-			pOK->SendMessage(BCM_SETSHIELD, 0, TRUE);
-	}
+	CButton* pOK = (CButton*)GetDlgItem(IDOK);
+	if (pOK)
+		pOK->SendMessage(BCM_SETSHIELD, 0, TRUE);
 
 	// Init timer
 	SetTimer(ID_TIMER_SETTINGSDLG, SETTINGSDLG_TIMER_MS, NULL);

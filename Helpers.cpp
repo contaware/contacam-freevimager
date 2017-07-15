@@ -42,7 +42,6 @@ static char THIS_FILE[] = __FILE__;
 // default DPI, no multimedia instructions,
 // 64K allocation granularity, 4096 page size and 2GB RAM
 int g_nSystemDPI = 96;
-BOOL g_bWinVistaOrHigher = FALSE;
 BOOL g_bMMX = FALSE;
 BOOL g_bSSE = FALSE;
 BOOL g_bSSE2 = FALSE;
@@ -71,15 +70,6 @@ void InitHelpers()
 		g_nSystemDPI = GetDeviceCaps(hDC, LOGPIXELSY);
 		ReleaseDC(NULL, hDC);
 	}
-
-	// Windows Version
-	RTL_OSVERSIONINFOEXW ovi = {0};
-	ovi.dwOSVersionInfoSize = sizeof(RTL_OSVERSIONINFOEXW);
-	HMODULE hNtDll = GetModuleHandleW(L"ntdll.dll");
-	typedef LONG(WINAPI* FPRTLGETVERSION)(RTL_OSVERSIONINFOEXW*);
-	FPRTLGETVERSION fpRtlGetVersion = (FPRTLGETVERSION)GetProcAddress(hNtDll, "RtlGetVersion");
-	if (fpRtlGetVersion && fpRtlGetVersion(&ovi) == 0) // STATUS_SUCCESS
-		g_bWinVistaOrHigher = (ovi.dwPlatformId == 2) && (ovi.dwMajorVersion >= 6);
 
 	// Supported Instruction Sets
 	int nInstructionSets = GetCpuInstr();
@@ -2589,27 +2579,6 @@ void HeapDump(HANDLE heap, CString sConfigFilesDir)
 	fclose(pf);
 	CloseHandle(hFile);
 	DeleteFile(sHeapBinLogFileName);
-}
-
-BOOL EnableLFHeap()
-{
-	// Enable the low-fragmenation heap (LFH) for XP and Windows 2003.
-	// Starting with Windows Vista the LFH is enabled by default for
-	// the default heap and starting with Visual Studio 2010 it is
-	// enable by default for the CRT heap
-	ULONG HeapInformation = 2;	// LFH heap
-	BOOL bResDefaultHeap = HeapSetInformation(GetProcessHeap(),
-								HeapCompatibilityInformation,
-								&HeapInformation,
-								sizeof(HeapInformation));
-
-	HeapInformation = 2;		// LFH heap
-	BOOL bResCRTHeap = HeapSetInformation((HANDLE)_get_heap_handle(),
-								HeapCompatibilityInformation,
-								&HeapInformation,
-								sizeof(HeapInformation));
-
-	return (bResDefaultHeap && bResCRTHeap);
 }
 
 int GetVirtualMemUsedMB()

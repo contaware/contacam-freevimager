@@ -45,12 +45,9 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-// TODO: remove when dropping Windows XP support!
-// From ShObjIdl.h (IApplicationActivationManager not available in SDK 7.1)
 #ifndef __IApplicationActivationManager_INTERFACE_DEFINED__
 #define __IApplicationActivationManager_INTERFACE_DEFINED__
 const IID IID_IApplicationActivationManager = { 0x2e941141,0x7f97,0x4756,{ 0xba,0x1d,0x9d,0xec,0xde,0x89,0x4a,0x3d } };
-const CLSID CLSID_ApplicationActivationManager = { 0x45BA127D,0x10A8,0x46EA,{ 0x8A,0xB7,0x56,0xEA,0x90,0x78,0x94,0x3C } };
 typedef enum ACTIVATEOPTIONS
 {
 	AO_NONE = 0,
@@ -431,19 +428,6 @@ SwsContext *sws_getCachedContextHelper(	struct SwsContext *context,
     return context;
 }
 
-// Necessary hack to correctly link to ffmpeg which needs hypot,
-// the following two functions are declared in wrapperheaders\math.h
-#if _MSC_VER == 1600
-extern "C" double __cdecl hypot(double x, double y)
-{
-	return _hypot(x, y);
-}
-extern "C" float __cdecl hypotf(float x, float y)
-{
-	return _hypotf(x, y);
-}
-#endif
-
 /* level can be one of the following increasing values:
 AV_LOG_PANIC
 AV_LOG_FATAL
@@ -570,9 +554,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		if (m_nCmdShow == SW_HIDE)
 			m_bHideMainFrame = TRUE;
 
-		// InitCommonControlsEx() is required on Windows XP if an application
-		// manifest specifies use of ComCtl32.dll version 6 or later to enable
-		// visual styles.  Otherwise, any window creation will fail.
+		// Init common controls
 		INITCOMMONCONTROLSEX InitCtrls;
 		InitCtrls.dwSize = sizeof(InitCtrls);
 		// Set this to include all the common control classes you want to use
@@ -796,13 +778,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 
 		// Init Global Helper Functions
 		::InitHelpers();
-
-		// Enable the low-fragmenation heap (LFH) for XP and Windows 2003
-		// (available for release build only)
-#ifndef _DEBUG
-		if (!g_bWinVistaOrHigher)
-			::EnableLFHeap();
-#endif
 
 		// Init for the PostDelayedMessage() Function
 		CPostDelayedMessageThread::Init();
@@ -1286,11 +1261,7 @@ void CUImagerApp::OnFileSettings()
 	{
 		// Confirm the association in the OS dialog
 		if (!SettingsPageAppsDefaults(_T("SystemSettings_DefaultApps_Photos")))
-		{
-			// For older OS, but not for Windows XP
-			if (g_bWinVistaOrHigher)
-				::ShellExecute(NULL, NULL, _T("control.exe"), _T("/name Microsoft.DefaultPrograms /page pageFileAssoc"), NULL, SW_SHOWNORMAL);
-		}
+			::ShellExecute(NULL, NULL, _T("control.exe"), _T("/name Microsoft.DefaultPrograms /page pageFileAssoc"), NULL, SW_SHOWNORMAL);
 	}
 #endif
 }

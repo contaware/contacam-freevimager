@@ -22,18 +22,7 @@ class CBrowseDlg : public CWnd
 {
 	DECLARE_DYNAMIC(CBrowseDlg)
 
-	typedef struct _DllVersionInfo
-	{
-			DWORD cbSize;
-			DWORD dwMajorVersion;                   // Major version
-			DWORD dwMinorVersion;                   // Minor version
-			DWORD dwBuildNumber;                    // Build number
-			DWORD dwPlatformID;                     // DLLVER_PLATFORM_*
-	} DLLVERSIONINFO;
-
-	// Construction
 public:
-	// Construct
 	CBrowseDlg(	CWnd* pParentWnd,
 				CString* pDir,
 				CString sTitle = _T(""),
@@ -42,10 +31,6 @@ public:
 				CString sCheckboxCaption = _T(""),
 				BOOL bChecked = FALSE);
 	virtual ~CBrowseDlg();
- 
-	// ComCtl32 Version
-	int GetComCtl32MajorVersion();
-	int GetComCtl32MinorVersion();
 
 	// Attributes
 public:
@@ -137,7 +122,6 @@ private:
 	// ITEMIDLIST identifying the root
 	LPITEMIDLIST m_pRoot;
 };
-
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Developer Studio will insert additional declarations immediately before the previous line.

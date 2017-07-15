@@ -146,12 +146,7 @@ BOOL CPreviewFileDlg::OnInitDialog()
 
 void CPreviewFileDlg::OnInitDone()
 {
-	// Vista or higher remember automatically the selected view type
-	if (!g_bWinVistaOrHigher)
-	{
-		// This is necessary because the list view is not yet created!
-		PostMessage(WM_POST_INITDONE, 0, 0);
-	}
+	
 }
 
 LONG CPreviewFileDlg::OnPostInitDone(WPARAM wparam, LPARAM lparam)

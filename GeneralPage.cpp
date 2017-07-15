@@ -380,11 +380,6 @@ BOOL CGeneralPage::OnInitDialog()
 		pCheckAudioFromSource->SetCheck(1);
 	}
 
-	// Audio Listen only supported on Vista or higher
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_AUDIO_LISTEN);
-	if (!g_bWinVistaOrHigher)
-		pCheck->ShowWindow(SW_HIDE);
-
 	// Set reference font size
 	pComboBoxRefFontSize->SetCurSel(m_pDoc->m_nRefFontSize - 1);
 
@@ -770,18 +765,8 @@ Note: sndvol.exe currently displays volume controls for
 */
 void CGeneralPage::OnAudioMixer() 
 {
-	if (g_bWinVistaOrHigher)
-	{
-		::ShellExecute(	NULL, NULL,
-						_T("control.exe"), _T("mmsys.cpl,,1"), NULL, SW_SHOWNORMAL);
-	}
-	else
-	{
-		CString params;
-		params.Format(_T("/r /d%u"), m_pDoc->EffectiveCaptureAudioDeviceID());
-		::ShellExecute(	NULL, NULL,
-						_T("sndvol32.exe"), params, NULL, SW_SHOWNORMAL);
-	}
+	::ShellExecute(	NULL, NULL,
+					_T("control.exe"), _T("mmsys.cpl,,1"), NULL, SW_SHOWNORMAL);
 }
 
 void CGeneralPage::SetCheckSchedulerOnce(BOOL bCheck) 

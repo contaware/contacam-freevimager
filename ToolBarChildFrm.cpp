@@ -384,7 +384,7 @@ void CPictureToolBar::UpdateControls(void)
 		rect.left += 2;
 		(rect.right)--;
 		m_ZoomComboBox.SetItemHeight(-1, rect.Height() - 4*::GetSystemMetrics(SM_CYEDGE) + 1); // height of the static-text control
-		rect.bottom += 10; // set a minimum height for the dropdown to open and size itself correctly on Win XP and Win 2003
+		rect.bottom += 10; // set a minimum height for the dropdown to open and size itself
 
 		// To Avoid Flickering Of The ComboBox
 		if (m_rcLastZoomComboBox != rect)

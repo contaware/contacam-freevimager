@@ -32,35 +32,12 @@ CBrowseDlg::CBrowseDlg(	CWnd* pParentWnd,
 	m_pParentWnd(pParentWnd),
 	m_pRoot(NULL)
 {
-	m_nFlags = (BIF_RETURNONLYFSDIRS | BIF_RETURNFSANCESTORS);
-	
-	int nMajorVer = GetComCtl32MajorVersion();
-
 	// Init Flags
-	//
-	// Note:
-	// Win Vista may return Version 5 if no manifest,
-	// but version 5 of Win Vista supports
-	// also BIF_NONEWFOLDERBUTTON!
-	if (nMajorVer >= 6 || g_bWinVistaOrHigher)
-	{
-		m_nFlags |= BIF_NEWDIALOGSTYLE;
-		if (!bNewFolderButton)
-			m_nFlags |= BIF_NONEWFOLDERBUTTON;
-		else
-			m_bCheckbox = FALSE;
-	}
-	else if (nMajorVer == 5)
-	{
-		if (bNewFolderButton)
-			m_bCheckbox = FALSE;
-
-		// This Version Always Shows The New Folder with the new dialog style
-		// because the BIF_NONEWFOLDERBUTTON is not supported!
-		// -> Problem with Check Button!
-		if (!m_bCheckbox)
-			m_nFlags |= BIF_NEWDIALOGSTYLE;
-	}
+	m_nFlags = (BIF_RETURNONLYFSDIRS | BIF_RETURNFSANCESTORS | BIF_NEWDIALOGSTYLE);
+	if (!bNewFolderButton)
+		m_nFlags |= BIF_NONEWFOLDERBUTTON;
+	else
+		m_bCheckbox = FALSE;
 
 	// Init COM: COM may fail if its already been inited with a different 
     // concurrency model. And if it fails you shouldn't release it!
@@ -88,62 +65,6 @@ CBrowseDlg::~CBrowseDlg()
 	FreeItemIdList(pMalloc);
 	if (m_bCleanupCOM)
 		::CoUninitialize();
-}
-
-// Starting with version 4.71, the Shell and common
-// controls DLLs, among others, began exporting DllGetVersion
-int CBrowseDlg::GetComCtl32MajorVersion()
-{
-	int ret = 4;
-
-	typedef HRESULT (CALLBACK *DLLGETVERSION)(DLLVERSIONINFO*);
-	DLLGETVERSION pDLLGETVERSION = NULL;
-	HMODULE hModComCtl = ::LoadLibrary(_T("comctl32.dll"));
-    if (hModComCtl)
-    {
-        pDLLGETVERSION = (DLLGETVERSION)(
-			::GetProcAddress(hModComCtl, "DllGetVersion"));
-        if (pDLLGETVERSION)
-        {
-            DLLVERSIONINFO dvi = {0};
-            dvi.cbSize = sizeof dvi;
-            if (pDLLGETVERSION(&dvi) == NOERROR)
-            {
-                ret = dvi.dwMajorVersion;
-            }
-        }
-		::FreeLibrary(hModComCtl);                 
-    }
-
-	return ret;
-}
-
-// Starting with version 4.71, the Shell and common
-// controls DLLs, among others, began exporting DllGetVersion
-int CBrowseDlg::GetComCtl32MinorVersion()
-{
-	int ret = 7;
-
-	typedef HRESULT (CALLBACK *DLLGETVERSION)(DLLVERSIONINFO*);
-	DLLGETVERSION pDLLGETVERSION = NULL;
-	HMODULE hModComCtl = ::LoadLibrary(_T("comctl32.dll"));
-    if (hModComCtl)
-    {
-        pDLLGETVERSION = (DLLGETVERSION)(
-			::GetProcAddress(hModComCtl, "DllGetVersion"));
-        if (pDLLGETVERSION)
-        {
-            DLLVERSIONINFO dvi = {0};
-            dvi.cbSize = sizeof dvi;
-            if (pDLLGETVERSION(&dvi) == NOERROR)
-            {
-                ret = dvi.dwMinorVersion;
-            }
-        }
-		::FreeLibrary(hModComCtl);                 
-    }
-
-	return ret;
 }
 
 int CBrowseDlg::DoModal()

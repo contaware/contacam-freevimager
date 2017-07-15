@@ -1028,8 +1028,6 @@ BOOL CNetCom::StringToAddress(const TCHAR* sHost, const TCHAR* sPort, sockaddr* 
 		lpfFreeAddrInfo = (VOID(WSAAPI*)(PADDRINFOW))::GetProcAddress(hInstLib, "FreeAddrInfoW");
 		if (lpfGetAddrInfo && lpfFreeAddrInfo)
 		{
-			// Do not use ADDRINFOT because it is defined as addrinfo
-			// if _WIN32_WINNT < 0x0502 in the atlsocket.h file!
 			ADDRINFOW aiHints;
 			ADDRINFOW* aiList = NULL;
 			memset(&aiHints, 0, sizeof(aiHints));
@@ -1037,8 +1035,6 @@ BOOL CNetCom::StringToAddress(const TCHAR* sHost, const TCHAR* sPort, sockaddr* 
 			aiHints.ai_flags = AI_PASSIVE;
 			if (lpfGetAddrInfo(sHost, sPort, &aiHints, &aiList) == 0)
 			{
-				// Do not use ADDRINFOT because it is defined as addrinfo
-				// if _WIN32_WINNT < 0x0502 in the atlsocket.h file!
 				ADDRINFOW* walk;
 				for (walk = aiList ; walk != NULL ; walk = walk->ai_next)
 				{

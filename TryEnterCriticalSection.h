@@ -54,8 +54,8 @@ class CTryEnterCriticalSection
 	
 	protected:
 		HINSTANCE m_hKernel32;
-		HANDLE m_hMutex;		// For Win9x (Because ::TryEnterCriticalSection() is not supported)
-		CRITICAL_SECTION m_cs;	// For NT, Win2k, WinXp, Win2k3 and higher
+		HANDLE m_hMutex;
+		CRITICAL_SECTION m_cs;
 		FPTRYENTERCRITICALSECTION m_fpTryEnterCriticalSection;
 };
 
