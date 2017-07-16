@@ -1,8 +1,9 @@
 CONTACAM HISTORY
 
-7.0.1 (Month xxth 2017)
+7.5.0 (Month xxth 2017)
 
 - For network devices when starting try to connect infinitely
+- Dropped Windows XP and Windows 2003 support
 
 7.0.0 (May 13th 2017)
 

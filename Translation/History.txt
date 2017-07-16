@@ -1,6 +1,6 @@
 TRANSLATIONS HISTORY
 
-7.0.1 (Month xxth 2017)
+7.5.0 (Month xxth 2017)
 
 - ...
 
