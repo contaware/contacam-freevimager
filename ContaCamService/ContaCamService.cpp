@@ -654,7 +654,7 @@ void InitLsaString(PLSA_UNICODE_STRING LsaString, LPWSTR String)
 		return;
     }
     // Get the length of the string without the null terminator
-    StringLength = wcslen(String);
+    StringLength = (USHORT)wcslen(String);
 
     // Store the string
     LsaString->Buffer = String;
