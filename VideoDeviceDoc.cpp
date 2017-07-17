@@ -8985,7 +8985,8 @@ void CVideoDeviceDoc::ConnectRtsp()
 		case AXIS_RTSP:			sQuery = _T("/axis-media/media.amp"); break;
 		case BOSCH_RTSP:		sQuery = _T("/h264"); break;
 		case CANON_RTSP:		sQuery = _T("/stream/profile0=r"); break;
-		case DLINK_RTSP:		sQuery = _T("/live1.sdp"); break;
+		case DLINK_LIVE1_RTSP:	sQuery = _T("/live1.sdp"); break;
+		case DLINK_PLAY1_RTSP:	sQuery = _T("/play1.sdp"); break;
 		case DAHUA_RTSP:		sQuery = _T("/live"); break;
 		case DIGOO_RTSP:		sQuery = _T("/onvif1"); break;
 		case EDIMAX_RTSP:		sQuery = _T("/ipcam_h264.sdp"); break;

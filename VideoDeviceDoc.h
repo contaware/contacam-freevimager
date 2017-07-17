@@ -596,7 +596,8 @@ public:
 		AXIS_RTSP = 1050,		// Axis RTSP
 		BOSCH_RTSP = 1060,		// Bosch RTSP
 		CANON_RTSP = 1070,		// Canon RTSP
-		DLINK_RTSP = 1080,		// D-Link RTSP
+		DLINK_LIVE1_RTSP = 1080,// D-Link live1.sdp RTSP
+		DLINK_PLAY1_RTSP = 1081,// D-Link play1.sdp RTSP
 		DAHUA_RTSP = 1090,		// Dahua RTSP
 		DIGOO_RTSP = 1100,		// Digoo RTSP
 		EDIMAX_RTSP = 1110,		// Edimax RTSP
