@@ -602,12 +602,15 @@ public:
 		DIGOO_RTSP = 1100,		// Digoo RTSP
 		EDIMAX_RTSP = 1110,		// Edimax RTSP
 		FOSCAM_RTSP = 1120,		// Foscam RTSP
+		GEMBIRD_RTSP = 1123,	// Gembird RTSP
 		GEOVISION_RTSP = 1125,	// GeoVision RTSP
 		HIKVISION_RTSP = 1130,	// Hikvision RTSP
+		KUCAM_RTSP = 1135,		// Kucam RTSP
 		LINKSYS_RTSP = 1140,	// Linksys RTSP
 		LOGITECH_RTSP = 1150,	// Logitech RTSP
 		MONACOR_RTSP = 1154,	// Monacor 3MP/4MP/5MP/.. Series RTSP
 		MONACOR_2MP_RTSP = 1155,// Monacor 2MP Series RTSP
+		NEXGADGET_RTSP = 1157,	// NexGadget RTSP
 		PANASONIC_RTSP = 1160,	// Panasonic RTSP
 		PIXORD_RTSP = 1170,		// Pixord RTSP
 		PLANET_RTSP = 1180,		// Planet RTSP
@@ -618,6 +621,7 @@ public:
 		TPLINK_RTSP = 1220,		// TP-Link RTSP
 		TRENDNET_RTSP = 1230,	// TrendNet RTSP
 		UBIQUITI_RTSP = 1235,	// Ubiquiti RTSP
+		UOKOO_RTSP = 1237,		// Uokoo RTSP
 		VIVOTEK_RTSP = 1240,	// Vivotek RTSP
 		VSTARCAM_RTSP = 1242,	// VStarCam RTSP
 		WANSVIEW_RTSP = 1244,	// Wansview RTSP

@@ -8991,12 +8991,15 @@ void CVideoDeviceDoc::ConnectRtsp()
 		case DIGOO_RTSP:		sQuery = _T("/onvif1"); break;
 		case EDIMAX_RTSP:		sQuery = _T("/ipcam_h264.sdp"); break;
 		case FOSCAM_RTSP:		sQuery = _T("/videoMain"); break;
+		case GEMBIRD_RTSP:		sQuery = _T("/live/ch0"); break;
 		case GEOVISION_RTSP:	sQuery = _T("/CH001.sdp"); break;
 		case HIKVISION_RTSP:	sQuery = _T("/Streaming/Channels/1"); break;
+		case KUCAM_RTSP:		sQuery = _T("/live/ch0"); break;
 		case LINKSYS_RTSP:		sQuery = _T("/img/media.sav"); break;
 		case LOGITECH_RTSP:		sQuery = _T("/HighResolutionVideo"); break;
 		case MONACOR_RTSP:		sQuery = _T("/ch00/0"); break;
 		case MONACOR_2MP_RTSP:	sQuery = _T("/0"); break;
+		case NEXGADGET_RTSP:	sQuery = _T("/live/ch0"); break;
 		case PANASONIC_RTSP:	sQuery = _T("/MediaInput/h264"); break;
 		case PIXORD_RTSP:		sQuery = _T("/v00"); break;
 		case PLANET_RTSP:		sQuery = _T("/stream1"); break;
@@ -9007,6 +9010,7 @@ void CVideoDeviceDoc::ConnectRtsp()
 		case TPLINK_RTSP:		sQuery = _T("/video.mp4"); break;
 		case TRENDNET_RTSP:		sQuery = _T("/Streaming/Channels/1"); break;
 		case UBIQUITI_RTSP:		sQuery = _T("/live/ch00_0"); break;
+		case UOKOO_RTSP:		sQuery = _T("/live/ch0"); break;
 		case VIVOTEK_RTSP:		sQuery = _T("/live.sdp"); break;
 		case VSTARCAM_RTSP:		sQuery = m_bPreferTcpforRtsp ? _T("/tcp/av0_0") : _T("/udp/av0_0"); break;
 		case WANSVIEW_RTSP:		sQuery = _T("/live/ch0"); break;
