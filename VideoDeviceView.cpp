@@ -789,6 +789,29 @@ void CVideoDeviceView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			pDoc->CaptureRecord();
 			break;
 
+		case VK_CONTROL:
+			// Switch from Add to Remove
+			if (pDoc->m_nShowEditDetectionZones == 1)
+			{
+				// Bit14: previous key state (1 if the key is down before the call, 0 if the key is up)
+				if ((nFlags & (1 << 14)) == 0)
+				{
+					pDoc->m_nShowEditDetectionZones = 2;
+					Invalidate(FALSE);
+				}
+			}
+			// Switch from Remove to Add
+			else if (pDoc->m_nShowEditDetectionZones == 2)
+			{
+				// Bit14: previous key state (1 if the key is down before the call, 0 if the key is up)
+				if ((nFlags & (1 << 14)) == 0)
+				{
+					pDoc->m_nShowEditDetectionZones = 1;
+					Invalidate(FALSE);
+				}
+			}
+			break;
+
 		case VK_ESCAPE :
 			if (pDoc->m_pCameraAdvancedSettingsPropertySheet && pDoc->m_pCameraAdvancedSettingsPropertySheet->IsWindowVisible())
 				pDoc->m_pCameraAdvancedSettingsPropertySheet->Hide(TRUE);
@@ -964,6 +987,11 @@ void CVideoDeviceView::OnMouseMove(UINT nFlags, CPoint point)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
+
+	if (pDoc->m_nShowEditDetectionZones)
+		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** Ctrl: Add <-> Remove Zones ***"));
+	else
+		::AfxGetMainFrame()->StatusText();
 
 	if (pDoc->m_nShowEditDetectionZones	&&
 		(nFlags & MK_LBUTTON)			&&

@@ -8569,6 +8569,7 @@ void CVideoDeviceDoc::HideDetectionZones()
 		m_nShowEditDetectionZones = 0;
 		GetView()->ForceCursor(FALSE);
 		GetView()->Invalidate(FALSE);
+		::AfxGetMainFrame()->StatusText();
 	}
 }
 
@@ -8580,6 +8581,7 @@ void CVideoDeviceDoc::OnViewDetectionZonesAdd()
 		m_nShowEditDetectionZones = 1;
 		GetView()->ForceCursor();
 		GetView()->Invalidate(FALSE);
+		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** Ctrl: Add <-> Remove Zones ***"));
 	}
 	// Disable Add
 	else if (m_nShowEditDetectionZones == 1)
@@ -8608,6 +8610,7 @@ void CVideoDeviceDoc::OnViewDetectionZonesRemove()
 		m_nShowEditDetectionZones = 2;
 		GetView()->ForceCursor();
 		GetView()->Invalidate(FALSE);
+		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** Ctrl: Add <-> Remove Zones ***"));
 	}
 	// Disable Remove
 	else if (m_nShowEditDetectionZones == 2)
