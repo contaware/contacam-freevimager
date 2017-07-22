@@ -77,15 +77,6 @@ span.thumbcontainer a:active, span.thumbcontainer a:focus {
 	color: #ffa23c;
 }
 
-/* AVI link */
-a.avilink {
-	right: 2px;
-	bottom: 2px;
-	position: relative;
-	vertical-align: bottom;
-	font-size: 10px;
-}
-
 /* Thumbs margin for summaries */
 a.notselected, a.lastselected {
 	outline: none;
@@ -195,16 +186,4 @@ input[type='date'] {
 }
 input[type='password'] {
 	text-align: left;
-}
-input.playerbutton, input.playerinfotext {
-	padding: 4px;
-}
-input.playerbutton:hover, input.navbutton:hover, input.playerbutton:focus, input.navbutton:focus {
-	border-color: #33ccff #039ccf #039ccf #33ccff;
-}
-input.playerbutton:active, input.navbutton:active {
-	border-color: #039ccf #33ccff #33ccff #039ccf;
-}
-div#track1 {
-	background-image: url('scaler_slider_track_black.gif');
 }

@@ -56,8 +56,6 @@ if (isset($_GET['year']) && isset($_GET['month']) && isset($_GET['day']) && isse
 		strong_rename("$filenoext.mp4","$filenoext.mp4.recycled");
 	if (is_file("$filenoext.avi"))
 		strong_rename("$filenoext.avi","$filenoext.avi.recycled");
-	if (is_file("$filenoext.swf"))
-		strong_rename("$filenoext.swf","$filenoext.swf.recycled");
 	if (is_file("$filenoext.gif"))
 		strong_rename("$filenoext.gif","$filenoext.gif.recycled");
 	if (is_file("$filenoext.jpg"))
@@ -68,8 +66,6 @@ if (isset($_GET['year']) && isset($_GET['month']) && isset($_GET['day']) && isse
 		strong_rename("$filenoext_other.mp4","$filenoext_other.mp4.recycled");
 	if (is_file("$filenoext_other.avi"))
 		strong_rename("$filenoext_other.avi","$filenoext_other.avi.recycled");
-	if (is_file("$filenoext_other.swf"))
-		strong_rename("$filenoext_other.swf","$filenoext_other.swf.recycled");
 	if (is_file("$filenoext_other.gif"))
 		strong_rename("$filenoext_other.gif","$filenoext_other.gif.recycled");
 	if (is_file("$filenoext_other.jpg"))

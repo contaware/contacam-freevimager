@@ -10,7 +10,7 @@ else
 if (@ini_get('zlib.output_compression'))
 	@ini_set('zlib.output_compression', 'Off');
 $file_extension = strtolower(substr(strrchr($full_path,"."),1));
-if ($full_path == "" || !file_exists($full_path) || ($file_extension != "mp4" && $file_extension != "swf")) 
+if ($full_path == "" || !file_exists($full_path) || $file_extension != "mp4") 
 {
 	echo "<html><title>Download File</title><body>ERROR: File not found.</body></html>";
 	exit;

@@ -6220,8 +6220,7 @@ BOOL CVideoDeviceDoc::MicroApacheUpdateWebFiles(CString sAutoSaveDir)
 	::DeleteFile(sAutoSaveDir + _T("summary.php"));
 	::DeleteFile(sAutoSaveDir + _T("summarynav.php"));
 	::DeleteFile(sAutoSaveDir + _T("separator.php"));
-	::DeleteFile(sAutoSaveDir + _T("js\\calendarpopup.js"));
-	::DeleteFile(sAutoSaveDir + _T("js\\detect_timezone.js"));
+	::DeleteFile(sAutoSaveDir + _T("swf.php"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\show_black.gif"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\hide_black.gif"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\show_white.gif"));
@@ -6230,6 +6229,15 @@ BOOL CVideoDeviceDoc::MicroApacheUpdateWebFiles(CString sAutoSaveDir)
 	::DeleteFile(sAutoSaveDir + _T("styles\\hide_darkgray.gif"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\show_gray.gif"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\hide_gray.gif"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\scaler_slider_black.gif"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\scaler_slider_track_black.gif"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\scaler_slider_white.gif"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\scaler_slider_track_white.gif"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\scaler_slider_darkgray.gif"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\scaler_slider_track_darkgray.gif"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\scaler_slider_gray.gif"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\scaler_slider_track_gray.gif"));
+	::DeleteDir(sAutoSaveDir + _T("js"));
 
 	return TRUE;
 }

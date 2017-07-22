@@ -116,11 +116,6 @@ function loadIFrame(y,m,d) {
 			videouri_get = videouri_get.replace(/\//g, "%2F");
 			srcuri = 'mp4.php' + srcuri + videouri_get;
 		}
-		else if (urlExists(videouri_get + '.swf')) {
-			videouri_get += '.swf';
-			videouri_get = videouri_get.replace(/\//g, "%2F");
-			srcuri = 'swf.php' + srcuri + videouri_get;
-		}
 		else {
 			videouri_get += '.avi';
 			videouri_get = videouri_get.replace(/\//g, "%2F");
