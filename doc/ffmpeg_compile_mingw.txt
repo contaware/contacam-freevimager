@@ -133,31 +133,38 @@ warnings, and they will not realign the stack when called.
 ffmpeg is still crashing with the -mstackrealign option, I suppose there
 is another alignment problem or just buggy SIMD routines, limit the SIMD
 instructions to: 
-AV_CPU_FLAG_MMX, AV_CPU_FLAG_MMXEXT, AV_CPU_FLAG_3DNOW, AV_CPU_FLAG_SSE 
+AV_CPU_FLAG_MMX, AV_CPU_FLAG_MMXEXT, AV_CPU_FLAG_SSE 
 
 with the following code:
 unsigned int uiFlags = av_get_cpu_flags();
-av_force_cpu_flags(uiFlags & ~(	AV_CPU_FLAG_3DNOWEXT |
-								AV_CPU_FLAG_SSE2     |
-								AV_CPU_FLAG_SSE2SLOW |
-								AV_CPU_FLAG_SSE3     |
-								AV_CPU_FLAG_SSE3SLOW |
-								AV_CPU_FLAG_SSSE3    |
-								AV_CPU_FLAG_SSE4     |
-								AV_CPU_FLAG_SSE42    |
-								AV_CPU_FLAG_AVX      |
-								AV_CPU_FLAG_XOP      |
-								AV_CPU_FLAG_FMA3     |
-								AV_CPU_FLAG_FMA4     |
-								AV_CPU_FLAG_AVX2     ));
+av_force_cpu_flags(uiFlags & ~( AV_CPU_FLAG_3DNOW     |
+								AV_CPU_FLAG_3DNOWEXT  |
+								AV_CPU_FLAG_SSE2      |
+								AV_CPU_FLAG_SSE2SLOW  |
+								AV_CPU_FLAG_SSE3      |
+								AV_CPU_FLAG_SSE3SLOW  |
+								AV_CPU_FLAG_SSSE3     |
+								AV_CPU_FLAG_SSSE3SLOW |
+								AV_CPU_FLAG_SSE4      |
+								AV_CPU_FLAG_SSE42     |
+								AV_CPU_FLAG_AESNI     |
+								AV_CPU_FLAG_AVX       |
+								AV_CPU_FLAG_XOP       |
+								AV_CPU_FLAG_FMA3      |
+								AV_CPU_FLAG_FMA4      |
+								AV_CPU_FLAG_AVX2      |
+								AV_CPU_FLAG_BMI1      |
+								AV_CPU_FLAG_BMI2));
 
 and the following build options:
+--disable-amd3dnow
 --disable-amd3dnowext
 --disable-sse2
 --disable-sse3
 --disable-ssse3
 --disable-sse4
 --disable-sse42
+--disable-aesni
 --disable-avx
 --disable-xop
 --disable-fma3

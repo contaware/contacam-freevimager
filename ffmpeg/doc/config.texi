@@ -38,7 +38,7 @@
 @c @set have-ppc4xx no
 @c @set have-vsx no
 @c @set have-aesni no
-@set have-amd3dnow yes
+@c @set have-amd3dnow no
 @c @set have-amd3dnowext no
 @c @set have-avx no
 @c @set have-avx2 no
@@ -82,7 +82,7 @@
 @c @set have-ppc4xx-external no
 @c @set have-vsx-external no
 @c @set have-aesni-external no
-@set have-amd3dnow-external yes
+@c @set have-amd3dnow-external no
 @c @set have-amd3dnowext-external no
 @c @set have-avx-external no
 @c @set have-avx2-external no
@@ -126,7 +126,7 @@
 @c @set have-ppc4xx-inline no
 @c @set have-vsx-inline no
 @c @set have-aesni-inline no
-@set have-amd3dnow-inline yes
+@c @set have-amd3dnow-inline no
 @c @set have-amd3dnowext-inline no
 @c @set have-avx-inline no
 @c @set have-avx2-inline no
