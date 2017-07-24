@@ -261,6 +261,9 @@ static int decode_unit(SCPRContext *s, PixelModel *pixel, unsigned step, unsigne
             break;
         c++;
     }
+    if (x >= 16 || c >= 256) {
+        return AVERROR_INVALIDDATA;
+    }
 
     if ((ret = s->decode(gb, rc, cumfr, cnt_c, totfr)) < 0)
         return ret;
@@ -331,6 +334,9 @@ static int decompress_i(AVCodecContext *avctx, uint32_t *dst, int linesize)
         clr = (b << 16) + (g << 8) + r;
         k += run;
         while (run-- > 0) {
+            if (y >= avctx->height)
+                return AVERROR_INVALIDDATA;
+
             dst[y * linesize + x] = clr;
             lx = x;
             ly = y;
@@ -482,7 +488,7 @@ static int decompress_i(AVCodecContext *avctx, uint32_t *dst, int linesize)
 
         if (avctx->bits_per_coded_sample == 16) {
             cx1 = (clr & 0x3F00) >> 2;
-            cx = (clr & 0xFFFFFF) >> 16;
+            cx = (clr & 0x3FFFFF) >> 16;
         } else {
             cx1 = (clr & 0xFC00) >> 4;
             cx = (clr & 0xFFFFFF) >> 18;
@@ -720,7 +726,7 @@ static int decompress_p(AVCodecContext *avctx,
 
                     if (avctx->bits_per_coded_sample == 16) {
                         cx1 = (clr & 0x3F00) >> 2;
-                        cx = (clr & 0xFFFFFF) >> 16;
+                        cx = (clr & 0x3FFFFF) >> 16;
                     } else {
                         cx1 = (clr & 0xFC00) >> 4;
                         cx = (clr & 0xFFFFFF) >> 18;

@@ -1033,6 +1033,7 @@ static int tiff_decode_tag(TiffContext *s, AVFrame *frame)
             s->subsampling[i] = ff_tget(&s->gb, type, s->le);
             if (s->subsampling[i] <= 0) {
                 av_log(s->avctx, AV_LOG_ERROR, "subsampling %d is invalid\n", s->subsampling[i]);
+                s->subsampling[i] = 1;
                 return AVERROR_INVALIDDATA;
             }
         }
@@ -1135,6 +1136,8 @@ static int tiff_decode_tag(TiffContext *s, AVFrame *frame)
 
                     bytestream2_seek(&s->gb, pos + s->geotags[i].offset, SEEK_SET);
                     if (bytestream2_get_bytes_left(&s->gb) < s->geotags[i].count)
+                        return AVERROR_INVALIDDATA;
+                    if (s->geotags[i].val)
                         return AVERROR_INVALIDDATA;
                     ap = av_malloc(s->geotags[i].count);
                     if (!ap) {

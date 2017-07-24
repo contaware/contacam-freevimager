@@ -154,7 +154,7 @@ static int read_low_coeffs(AVCodecContext *avctx, int16_t *dst, int size, int wi
         state = 120 * (escape + flag) + state - (120 * state >> 8);
         flag = 0;
 
-        if (state * 4 > 0xFF || i >= size)
+        if (state * 4ULL > 0xFF || i >= size)
             continue;
 
         nbits = ((state + 8) >> 5) + (state ? ff_clz(state) : 32) - 24;
@@ -229,6 +229,8 @@ static int read_high_coeffs(AVCodecContext *avctx, uint8_t *src, int16_t *dst, i
             cnt1 = get_bits(b, nbits);
         } else {
             pfx = 14 + ((((uint64_t)(value - 14)) >> 32) & (value - 14));
+            if (pfx < 1 || pfx > 25)
+                return AVERROR_INVALIDDATA;
             cnt1 *= (1 << pfx) - 1;
             shbits = show_bits(b, pfx);
             if (shbits <= 1) {
@@ -256,11 +258,11 @@ static int read_high_coeffs(AVCodecContext *avctx, uint8_t *src, int16_t *dst, i
             j = 0;
             dst += stride;
         }
-        state += (int64_t)d * yflag - (d * state >> 8);
+        state += (int64_t)d * (uint64_t)yflag - ((int64_t)(d * (uint64_t)state) >> 8);
 
         flag = 0;
 
-        if (state * 4 > 0xFF || i >= size)
+        if (state * 4ULL > 0xFF || i >= size)
             continue;
 
         pfx = ((state + 8) >> 5) + (state ? ff_clz(state): 32) - 24;
@@ -591,6 +593,10 @@ static int pixlet_decode_frame(AVCodecContext *avctx, void *data,
 
     width  = bytestream2_get_be32(&ctx->gb);
     height = bytestream2_get_be32(&ctx->gb);
+
+    if (    width > INT_MAX - (1U << (NB_LEVELS + 1))
+        || height > INT_MAX - (1U << (NB_LEVELS + 1)))
+        return AVERROR_INVALIDDATA;
 
     w = FFALIGN(width,  1 << (NB_LEVELS + 1));
     h = FFALIGN(height, 1 << (NB_LEVELS + 1));
