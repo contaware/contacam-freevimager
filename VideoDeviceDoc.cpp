@@ -141,7 +141,17 @@ void CVideoDeviceDoc::CSaveFrameListThread::LoadDetFrame(CDib* pDib)
 {
 	// Move back the bits from shared memory
 	if (pDib && pDib->m_hBitsSharedMemory)
-		pDib->SharedMemoryToBits();
+	{
+		DWORD dwError;
+		if ((dwError = pDib->SharedMemoryToBits()) != ERROR_SUCCESS)
+		{
+			::LogLine(_T("SharedMemoryToBits() failed with error code: 0x%08X"), dwError);
+			CString sDetBufsStats;
+			::AfxGetMainFrame()->GetDetBufsStats(sDetBufsStats);
+			::LogLine(_T("%s"), sDetBufsStats);
+			abort();
+		}
+	}
 }
 
 int CVideoDeviceDoc::CSaveFrameListThread::Work() 
@@ -8431,8 +8441,13 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestList(CDib* pDib)
 				if (pNewDib)
 				{
 					// Add the new frame
-					if (!pNewDib->BitsToSharedMemory())
+					DWORD dwError;
+					if ((dwError = pNewDib->BitsToSharedMemory()) != ERROR_SUCCESS)
 					{
+						::LogLine(_T("BitsToSharedMemory() failed with error code: 0x%08X"), dwError);
+						CString sDetBufsStats;
+						::AfxGetMainFrame()->GetDetBufsStats(sDetBufsStats);
+						::LogLine(_T("%s"), sDetBufsStats);
 						::LogLine(_T("%s"), ML_STRING(1817, "OUT OF MEMORY: increase the Page File size, add more RAM, lower the \"Split detection files longer than\" value for all cameras"));
 						abort();
 					}
@@ -8469,8 +8484,13 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestListAndShrink(CDib* pDib)
 				if (pNewDib)
 				{
 					// Add the new frame
-					if (!pNewDib->BitsToSharedMemory())
+					DWORD dwError;
+					if ((dwError = pNewDib->BitsToSharedMemory()) != ERROR_SUCCESS)
 					{
+						::LogLine(_T("BitsToSharedMemory() failed with error code: 0x%08X"), dwError);
+						CString sDetBufsStats;
+						::AfxGetMainFrame()->GetDetBufsStats(sDetBufsStats);
+						::LogLine(_T("%s"), sDetBufsStats);
 						::LogLine(_T("%s"), ML_STRING(1817, "OUT OF MEMORY: increase the Page File size, add more RAM, lower the \"Split detection files longer than\" value for all cameras"));
 						abort();
 					}

@@ -14,6 +14,7 @@ CDib::CDib()
 	m_GetClosestColorIndexLookUp = NULL;
 #ifdef VIDEODEVICEDOC
 	m_hBitsSharedMemory = NULL;
+	m_dwSharedMemorySize = 0;
 #endif
 	Init();
 }
@@ -23,6 +24,7 @@ CDib::CDib(CBitmap* pBitmap, CPalette* pPal)
 	m_GetClosestColorIndexLookUp = NULL;
 #ifdef VIDEODEVICEDOC
 	m_hBitsSharedMemory = NULL;
+	m_dwSharedMemorySize = 0;
 #endif
 	Init();
 	SetDibSectionFromDDB(pBitmap, pPal);
@@ -33,6 +35,7 @@ CDib::CDib(HBITMAP hBitmap, HPALETTE hPal)
 	m_GetClosestColorIndexLookUp = NULL;
 #ifdef VIDEODEVICEDOC
 	m_hBitsSharedMemory = NULL;
+	m_dwSharedMemorySize = 0;
 #endif
 	Init();
 	SetDibSectionFromDDB(hBitmap, hPal);
@@ -43,6 +46,7 @@ CDib::CDib(HBITMAP hDibSection)
 	m_GetClosestColorIndexLookUp = NULL;
 #ifdef VIDEODEVICEDOC
 	m_hBitsSharedMemory = NULL;
+	m_dwSharedMemorySize = 0;
 #endif
 	Init();
 	AttachDibSection(hDibSection);
@@ -106,6 +110,7 @@ CDib::CDib(const CDib& dib) // Copy Constructor (CDib dib1 = dib2 or CDib dib1(d
 	m_GetClosestColorIndexLookUp = NULL;
 #ifdef VIDEODEVICEDOC
 	m_hBitsSharedMemory = NULL;
+	m_dwSharedMemorySize = 0;
 #endif
 
 	// Init the object
@@ -303,7 +308,10 @@ CDib::~CDib()
 #ifdef VIDEODEVICEDOC
 	FreeUserList();
 	if (m_hBitsSharedMemory)
+	{
+		::InterlockedAdd64(&m_llOverallSharedMemoryBytes, -((LONGLONG)m_dwSharedMemorySize));
 		::CloseHandle(m_hBitsSharedMemory);
+	}
 #endif
 }
 
@@ -328,11 +336,15 @@ void CDib::FreeList(CDib::LIST& l)
 }
 
 #ifdef VIDEODEVICEDOC
-BOOL CDib::BitsToSharedMemory()
+// Note: Error codes are 32-bit values (bit 31 is the most significant bit).
+//       Bit 29 is reserved for application-defined error codes.
+DWORD CDib::BitsToSharedMemory()
 {
 	// Check
 	if (m_hBitsSharedMemory)
-		return FALSE;
+		return 0x20000001;	// custom error code
+	if (m_dwSharedMemorySize > 0)
+		return 0x20000002;	// custom error code
 
 	// Calculate Shared Memory Size
 	DWORD dwSharedMemorySize = CalcSharedMemorySize();
@@ -363,7 +375,7 @@ BOOL CDib::BitsToSharedMemory()
 											dwSharedMemorySize,		// maximum object size (low-order DWORD)
 											NULL);					// no name for mapping object
 	if (mapping == NULL)
-		return FALSE;
+		return ::GetLastError();
 
 	// Map
 	void* region = ::MapViewOfFile(	mapping,				// handle to map object
@@ -373,8 +385,9 @@ BOOL CDib::BitsToSharedMemory()
 									dwSharedMemorySize);	// number of bytes to map
 	if (region == NULL)
 	{
+		DWORD dwLastError = ::GetLastError();
 		::CloseHandle(mapping);	// free if we cannot map into address space
-		return FALSE;
+		return dwLastError;
 	}
 
 	// Copy image bits
@@ -420,29 +433,32 @@ BOOL CDib::BitsToSharedMemory()
 		}
 	}
 
+	// Stats
+	::InterlockedAdd64(&m_llOverallSharedMemoryBytes, dwSharedMemorySize);
+
 	// Store mapping
 	m_hBitsSharedMemory = mapping;
+	m_dwSharedMemorySize = dwSharedMemorySize;
 
-    return TRUE;
+    return ERROR_SUCCESS;
 }
 
-BOOL CDib::SharedMemoryToBits()
+DWORD CDib::SharedMemoryToBits()
 {
 	// Check
 	if (!m_hBitsSharedMemory)
-		return FALSE;
-	
-	// Calculate Shared Memory Size
-	DWORD dwSharedMemorySize = CalcSharedMemorySize();
+		return 0x20000005;	// custom error code
+	if (m_dwSharedMemorySize == 0)
+		return 0x20000006;	// custom error code
 
 	// Map
 	void* region = ::MapViewOfFile(	m_hBitsSharedMemory,	// handle to map object
 									FILE_MAP_ALL_ACCESS,	// read/write permission
 									0,						// offset high
 									0,						// offset low, the offset must be a multiple of the allocation granularity
-									dwSharedMemorySize);	// number of bytes to map
+									m_dwSharedMemorySize);	// number of bytes to map
 	if (region == NULL)
-		return FALSE;
+		return ::GetLastError();
 
 	// Copy image bits
 	LPBYTE p = (LPBYTE)region;
@@ -452,7 +468,7 @@ BOOL CDib::SharedMemoryToBits()
 		if (!m_pBits)
 		{
 			::UnmapViewOfFile(region);
-			return FALSE;
+			return 0x20000007;	// custom error code
 		}
 		memcpy(m_pBits, p, GetImageSize());
 		p += GetImageSize();
@@ -469,7 +485,7 @@ BOOL CDib::SharedMemoryToBits()
 			if (!UserBuf.m_pBuf)
 			{
 				::UnmapViewOfFile(region);
-				return FALSE;
+				return 0x20000008;	// custom error code
 			}
 			memcpy(UserBuf.m_pBuf, p, UserBuf.m_dwSize);
 			p += UserBuf.m_dwSize;
@@ -479,11 +495,15 @@ BOOL CDib::SharedMemoryToBits()
 	// Unmap
 	::UnmapViewOfFile(region);
 
+	// Stats
+	::InterlockedAdd64(&m_llOverallSharedMemoryBytes, -((LONGLONG)m_dwSharedMemorySize));
+
 	// Free mapping
 	::CloseHandle(m_hBitsSharedMemory);
 	m_hBitsSharedMemory = NULL;
+	m_dwSharedMemorySize = 0;
 
-	return TRUE;
+	return ERROR_SUCCESS;
 }
 
 void CDib::CopyUserList(const USERLIST& UserList)
@@ -7096,6 +7116,10 @@ CString CDib::CFileInfo::GetDepthName()
 		}
 	}
 }
+
+#ifdef VIDEODEVICEDOC
+volatile LONGLONG CDib::m_llOverallSharedMemoryBytes = 0;
+#endif
 
 // GDI Colors 16
 RGBQUAD CDib::ms_GdiColors16[] = {

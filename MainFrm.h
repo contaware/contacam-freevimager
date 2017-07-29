@@ -145,6 +145,10 @@ public:
 	// Menu Positions
 	void InitMenuPositions(CDocument* pDoc = NULL);
 
+#ifdef VIDEODEVICEDOC
+	BOOL GetDetBufsStats(CString& sDetBufsStats);
+#endif
+
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CMainFrame)
@@ -221,7 +225,6 @@ protected:
 	void ChangeCoordinatesUnit();
 	static BOOL GetDiskStats(CString& sDiskStats, LPCTSTR lpszPath, int nMinDiskFreePermillion);
 #ifdef VIDEODEVICEDOC
-	static BOOL GetMaxDetBufsSizeStats(CString& sMaxDetBufsSize);
 	void CleanupFileMenu(CMenu* pPopupMenu);
 	void PopulateCaptureMenu(CMenu* pPopupMenu);
 #endif
