@@ -106,6 +106,7 @@ class CMovementDetectionPage;
 #define DEFAULT_PRE_BUFFER_MSEC				2000		// ms
 #define DEFAULT_POST_BUFFER_MSEC			6000		// ms
 #define MOVDET_MIN_LENGTH_MSEC				1000		// Minimum detection length in ms, below this value SaveFrameList() is not called
+#define MOVDET_MIN_FRAMES_TIME_CHECK_MSEC	8000U		// In case of a too high save time log a warning if the frames time is above this
 #define DEFAULT_MOVDET_LEVEL				50			// Detection level default value (1 .. 100 = Max Sensitivity)
 #define DEFAULT_MOVDET_INTENSITY_LIMIT		25			// Intensity difference default value
 #define MOVDET_MAX_ZONES_BLOCK_SIZE			1024		// Subdivide settings in blocks (MOVDET_MAX_ZONES must be a multiple of this)

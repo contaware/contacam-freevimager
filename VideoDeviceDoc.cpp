@@ -547,16 +547,19 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		// Save time calculation
 		DWORD dwSaveTimeMs = ::timeGetTime() - dwStartUpTime;
 		DWORD dwFramesTimeMs = dwLastUpTime - dwFirstUpTime;
-		if (m_pDoc->m_nDetectionLevel == 100)
+		if (dwFramesTimeMs < dwSaveTimeMs)
 		{
-			if (dwFramesTimeMs < dwSaveTimeMs)
+			if (m_pDoc->m_nDetectionLevel == 100 || g_nLogLevel > 0 || dwFramesTimeMs > MOVDET_MIN_FRAMES_TIME_CHECK_MSEC)
 			{
-				::LogLine(	_T("%s, attention cannot realtime save the detections: SaveTime=%0.1fs > FramesTime=%0.1fs"),
+				::LogLine(	ML_STRING(1840, "%s, attention cannot realtime save the detections: SaveTime=%0.1fsec > FramesTime=%0.1fsec"),
 							m_pDoc->GetAssignedDeviceName(), (double)dwSaveTimeMs / 1000.0, (double)dwFramesTimeMs / 1000.0);
 			}
-			else
+		}
+		else
+		{
+			if (m_pDoc->m_nDetectionLevel == 100 || g_nLogLevel > 1)
 			{
-				::LogLine(	_T("%s, realtime saving the detections is ok: SaveTime=%0.1fs < FramesTime=%0.1fs"),
+				::LogLine(	ML_STRING(1841, "%s, realtime saving the detections is ok: SaveTime=%0.1fsec < FramesTime=%0.1fsec"),
 							m_pDoc->GetAssignedDeviceName(), (double)dwSaveTimeMs / 1000.0, (double)dwFramesTimeMs / 1000.0);
 			}
 		}

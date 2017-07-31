@@ -4395,6 +4395,8 @@ END
 
 STRINGTABLE
 BEGIN
+    IDS_STRING1840          "%s, attention cannot realtime save the detections: SaveTime=%0.1fsec > FramesTime=%0.1fsec"
+    IDS_STRING1841          "%s, realtime saving the detections is ok: SaveTime=%0.1fsec < FramesTime=%0.1fsec"
     IDS_STRING1842          "After Detection Filter OK"
     IDS_STRING1843          "After Saving Done"
     IDS_STRING1844          "Detection"
