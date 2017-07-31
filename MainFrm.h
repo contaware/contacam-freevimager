@@ -145,6 +145,7 @@ public:
 	// Menu Positions
 	void InitMenuPositions(CDocument* pDoc = NULL);
 
+	// Overall movement detection buffers stats
 #ifdef VIDEODEVICEDOC
 	BOOL GetDetBufsStats(CString& sDetBufsStats);
 #endif

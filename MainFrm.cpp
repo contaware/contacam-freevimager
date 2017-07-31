@@ -2187,7 +2187,10 @@ void CMainFrame::OnViewAllNextPicture()
 #ifdef VIDEODEVICEDOC
 BOOL CMainFrame::GetDetBufsStats(CString& sDetBufsStats)
 {
-	double dSharedMemoryBytesGB = (double)(CDib::m_llOverallSharedMemoryBytes >> 20) / 1024.0;
+	// Overall Shared Memory Usage
+	double dOverallSharedMemoryGB = (double)(CDib::m_llOverallSharedMemoryBytes >> 20) / 1024.0;
+
+	// Maximum Overall Detection Queue Size
 	LONGLONG llMaxOverallDetectionQueueSizeMB = 0;
 	CUImagerMultiDocTemplate* pVideoDeviceDocTemplate = ((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate();
 	POSITION posVideoDeviceDoc = pVideoDeviceDocTemplate->GetFirstDocPosition();
@@ -2199,10 +2202,16 @@ BOOL CMainFrame::GetDetBufsStats(CString& sDetBufsStats)
 	}
 	llMaxOverallDetectionQueueSizeMB >>= 20;
 	double dMaxOverallDetectionQueueSizeGB = (double)llMaxOverallDetectionQueueSizeMB / 1024.0;
+
+	// Ram
 	double dRamGB = (double)g_nAvailablePhysRamMB / 1024.0;
+
+	// Format stats
 	sDetBufsStats.Format(_T("BUF: %0.1f/%0.1f") + ML_STRING(1826, "GB") + _T(" (RAM: %0.1f") + ML_STRING(1826, "GB") + _T(")"),
-						dSharedMemoryBytesGB, dMaxOverallDetectionQueueSizeGB, dRamGB);
-	return dMaxOverallDetectionQueueSizeGB > dRamGB;
+						dOverallSharedMemoryGB, dMaxOverallDetectionQueueSizeGB, dRamGB);
+
+	// return TRUE to alert!
+	return (dOverallSharedMemoryGB > dMaxOverallDetectionQueueSizeGB || dMaxOverallDetectionQueueSizeGB > dRamGB);
 }
 #endif
 
@@ -2223,9 +2232,12 @@ BOOL CMainFrame::GetDiskStats(CString& sDiskStats, LPCTSTR lpszPath, int nMinDis
 		return FALSE;
 	else
 	{
+		// Format stats
 		sDiskStats.Format(_T("HD: %I64u/%I64u") + ML_STRING(1826, "GB"),
 						(TotalNumberOfBytesAvailableToCaller.QuadPart - FreeBytesAvailableToCaller.QuadPart) >> 30,
 						TotalNumberOfBytesAvailableToCaller.QuadPart >> 30);
+
+		// return TRUE to alert!
 		return (FreeBytesAvailableToCaller.QuadPart < TotalNumberOfBytesAvailableToCaller.QuadPart / 1000000 * nMinDiskFreePermillion);
 	}
 }
@@ -2246,7 +2258,7 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 
 		// Get overall movement detection buffers stats
 		CString sDetBufsStats;
-		BOOL bMaxDetBufsSizeAlert = GetDetBufsStats(sDetBufsStats);
+		BOOL bDetBufsSizeAlert = GetDetBufsStats(sDetBufsStats);
 
 		// Get HD Usage
 		CString sSaveDir = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
@@ -2270,7 +2282,7 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		sCPUUsage.Format(_T("CPU: %0.1f%%"), ::GetCPUUsage());
 
 		// Show overall movement detection buffers stats
-		if (bMaxDetBufsSizeAlert && bFlashState)
+		if (bDetBufsSizeAlert && bFlashState)
 			GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_DETBUFS_SIZE), _T(" ") + sDetBufsStats + _T("!"));
 		else
 			GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_DETBUFS_SIZE), _T(" ") + sDetBufsStats + _T(" "));
