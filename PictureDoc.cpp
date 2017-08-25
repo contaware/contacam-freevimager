@@ -9004,8 +9004,7 @@ void CPictureDoc::EditCrop()
 			*m_pCropBkgDib = *pDib;
 		m_pCropBkgDib->AdjustImage(	CROP_BKG_BRIGHTNESS,
 									CROP_BKG_CONTRAST,
-									0, 0, 0, 1.0,
-									TRUE,	// Be Fast
+									0, 0,
 									FALSE);	// Disable Undo
 
 		EndWaitCursor();

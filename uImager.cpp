@@ -30,6 +30,7 @@
 #include "CEncryptDecrypt.h"
 #include <atlbase.h>
 #include <signal.h>
+#include <gdiplus.h>
 #ifdef VIDEODEVICEDOC
 #include "DeleteCamFoldersDlg.h"
 #include "SettingsDlgVideoDeviceDoc.h"
@@ -156,6 +157,7 @@ CUImagerApp::CUImagerApp()
 	m_bFileDlgPreview = TRUE;
 	m_bPlacementLoaded = FALSE;
 	m_hAppMutex = NULL;
+	m_GdiplusToken = 0;
 	m_bFirstRun = FALSE;
 	m_bFirstRunEver = FALSE;
 	m_bSilentInstall = FALSE;
@@ -832,6 +834,11 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 
 		// Zip Settings
 		m_Zip.SetAdvanced(65535 * 50, 16384 * 50, 32768 * 50);
+
+		// Init Gdiplus
+		// (GDI+ is not designed for multithreading, use it only from the main UI thread)
+		Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+		Gdiplus::GdiplusStartup(&m_GdiplusToken, &gdiplusStartupInput, NULL);
 
 		// Init YUV <-> RGB LUT
 		::InitYUVToRGBTable();
@@ -2062,6 +2069,9 @@ int CUImagerApp::ExitInstance()
 
 	// Store last selected printer
 	m_PrinterControl.SavePrinterSelection(m_hDevMode, m_hDevNames);
+
+	// Clean-up gdiplus
+	Gdiplus::GdiplusShutdown(m_GdiplusToken);
 
 	// Clean-Up Trace Log File
 	::EndTraceLogFile();

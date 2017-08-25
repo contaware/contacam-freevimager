@@ -81,7 +81,7 @@ class CPictureChildFrame;
 #define SLIDESHOW_DIRCHECK_TIMEOUT								2500U
 
 // The Crop Background Image Brightness and Contrast
-#define CROP_BKG_BRIGHTNESS										-35
+#define CROP_BKG_BRIGHTNESS										-110
 #define CROP_BKG_CONTRAST										-40
 
 // Layered dialog parameters

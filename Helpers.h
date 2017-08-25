@@ -514,5 +514,9 @@ extern BOOL CalcShrink(	DWORD dwOrigWidth,
 						DWORD& dwShrinkWidth,
 						DWORD& dwShrinkHeight);
 
+// For vertical sliders
+class CSliderCtrl;
+extern int GetRevertedPos(CSliderCtrl* pSliderCtrl);
+extern void SetRevertedPos(CSliderCtrl* pSliderCtrl, int nPos);
 
 #endif // !defined(AFX_HELPERS_H__8FD88286_7192_47B9_B311_4C2F27BF8B85__INCLUDED_)

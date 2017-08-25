@@ -8,7 +8,6 @@
 
 #include "resource.h"
 #include "Dib.h"
-#include "ColorProgressCtrl.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CHLSDlgModeless dialog
@@ -23,16 +22,6 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CHLSDlgModeless)
 	enum { IDD = IDD_HLS };
-	CColorProgressCtrl m_BandMax;
-	CColorProgressCtrl m_Band7;
-	CColorProgressCtrl m_Band6;
-	CColorProgressCtrl m_Band5;
-	CColorProgressCtrl m_Band4;
-	CColorProgressCtrl m_Band3;
-	CColorProgressCtrl m_Band2;
-	CColorProgressCtrl m_Band1;
-	CColorProgressCtrl m_Band0;
-	CColorProgressCtrl m_BandMin;
 	BOOL m_bShowOriginal;
 	//}}AFX_DATA
 
@@ -50,9 +39,7 @@ public:
 protected:
 	BOOL IsModified();
 	BOOL DoIt();
-	BOOL UpdateHysto();
 	BOOL AdjustColor(BOOL bAdjustPreviewDib);
-	BOOL m_bFast;
 	CDib m_OldPreviewDib;
 	// Generated message map functions
 	//{{AFX_MSG(CHLSDlgModeless)

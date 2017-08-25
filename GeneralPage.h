@@ -62,8 +62,6 @@ public:
 // Implementation
 protected:
 	void UpdateVideoQualityInfo();
-	__forceinline int GetRevertedPos(CSliderCtrl& SliderCtrl) {return SliderCtrl.GetRangeMin() + (SliderCtrl.GetRangeMax() - SliderCtrl.GetPos());};
-	__forceinline void SetRevertedPos(CSliderCtrl& SliderCtrl, int nPos) {SliderCtrl.SetPos(SliderCtrl.GetRangeMin() + (SliderCtrl.GetRangeMax() - nPos));};
 	void ApplySchedulerOnce();
 	void ApplySchedulerDaily();
 

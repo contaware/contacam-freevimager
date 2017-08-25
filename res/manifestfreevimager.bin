@@ -8,6 +8,12 @@
 		</dependentAssembly>
 	</dependency>
 
+	<dependency>
+		<dependentAssembly>
+			<assemblyIdentity type="win32" name="Microsoft.Windows.GdiPlus" version="1.1.0.0" processorArchitecture="x86" publicKeyToken="6595b64144ccf1df" language="*"/>
+		</dependentAssembly>
+	</dependency>
+
 	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
 		<security>
 			<requestedPrivileges>

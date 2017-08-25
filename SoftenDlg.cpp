@@ -6,7 +6,6 @@
 #include "SoftenDlg.h"
 #include "PictureDoc.h"
 #include "PictureView.h"
-#include "NoVistaFileDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

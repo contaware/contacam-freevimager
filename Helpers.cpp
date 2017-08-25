@@ -3261,3 +3261,17 @@ BOOL CalcShrink(	DWORD dwOrigWidth,
 
 	return bDoShrink;
 }
+
+int GetRevertedPos(CSliderCtrl* pSliderCtrl)
+{
+	if (pSliderCtrl)
+		return pSliderCtrl->GetRangeMin() + (pSliderCtrl->GetRangeMax() - pSliderCtrl->GetPos());
+	else
+		return 0;
+}
+
+void SetRevertedPos(CSliderCtrl* pSliderCtrl, int nPos)
+{
+	if (pSliderCtrl)
+		pSliderCtrl->SetPos(pSliderCtrl->GetRangeMin() + (pSliderCtrl->GetRangeMax() - nPos));
+}

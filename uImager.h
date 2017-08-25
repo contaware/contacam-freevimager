@@ -714,6 +714,9 @@ protected:
 	// whether this program is running
 	HANDLE m_hAppMutex;
 
+	// Gdiplus token
+	ULONG_PTR m_GdiplusToken;
+
 	// Doc Templates
 #ifdef VIDEODEVICEDOC
 	CUImagerMultiDocTemplate* m_pVideoDeviceDocTemplate;

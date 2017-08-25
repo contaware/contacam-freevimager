@@ -8,7 +8,6 @@
 #include "PictureDoc.h"
 #include "PictureView.h"
 #include "PaletteWnd.h"
-#include "NoVistaFileDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

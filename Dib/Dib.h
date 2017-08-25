@@ -386,12 +386,10 @@ protected:
 
 	DWORD m_dwImageSize;		// Size of image in dword aligned bytes
 
-	short m_wBrightness;		// -100..100 
+	short m_wBrightness;		// -255..255
 	short m_wContrast;			// -100..100
-	short m_wLightness;			// -100..100
 	short m_wSaturation;		// -100..100
-	unsigned short m_uwHue;		// 0..360
-	double m_dGamma;			// Usually between 0.1 .. 5.0
+	short m_wHue;				// -180..180
 	BOOL m_bColorUndoSet;		// If TRUE SetColorUndo() was called
 	BOOL m_bGrayscale;			// The colorspace is grayscale
 	BOOL m_bAlpha;				// Image Has a Alpha Channel
@@ -473,12 +471,6 @@ public:
 	__forceinline RGBQUAD* GetColors() const;
 	__forceinline BOOL  IsBuiltInColorAdj() const;
 	__forceinline void  ForceNoBuiltInColorAdj(BOOL bNoBuiltInColorAdj);
-	__forceinline short GetBrightness() const;
-	__forceinline short GetContrast() const;
-	__forceinline short GetLightness() const;
-	__forceinline short GetSaturation() const;
-	__forceinline unsigned short GetHue() const;
-	__forceinline double GetGamma() const;
 	__forceinline BOOL IsGrayscale() const;
 	__forceinline BOOL HasAlpha() const;
 	__forceinline void SetAlpha(BOOL bAlpha);
@@ -544,10 +536,6 @@ public:
 	__forceinline BOOL IsCompressed() const;
 
 	static __forceinline BOOL IsDibSection(HBITMAP hDibSection);
-
-	__forceinline void DoLookUpTable(	LPBYTE pLookUpTable,
-										CWnd* pProgressWnd = NULL,
-										BOOL bProgressSend = TRUE);
 
 	// Closest color matching
 	void InitGetClosestColorIndex();
@@ -715,16 +703,11 @@ public:
 	int FloodFillIndex(int x, int y, int nNewIndex, int nOldIndex); // For 8 bpp or less
 
 	// Color adjustment
-	BOOL AdjustImage(short brightness,
-					short contrast,
-					short lightness,
-					short saturation,
-					unsigned short hue,
-					double gamma,
-					BOOL bFast,			// For Fast And Imprecise Brightness & Contrast Regulation
-					BOOL bEnableUndo,	// Enable Undo of Adjusted Pixels
-					CWnd* pProgressWnd = NULL,
-					BOOL bProgressSend = TRUE);
+	BOOL AdjustImage(short brightness,	// -255..255
+					short contrast,		// -100..100
+					short saturation,	// -100..100
+					short hue,			// -180..180
+					BOOL bEnableUndo);	// Enable Undo of Adjusted Pixels
 	
 	// Negative, alpha channel is not touched!
 	BOOL Negative(	CWnd* pProgressWnd = NULL,
@@ -1783,22 +1766,6 @@ protected:
 										int nWidth);			// The length of a scan line in pixels
 	BOOL DecompressRLE8(CDib* pBackgroundDib = NULL);
 	BOOL DecompressRLE4(CDib* pBackgroundDib = NULL);
-										
-	// Adjust Colors
-	__forceinline void AdjustColor(CColor &color, short lightness, short saturation, unsigned short hue);
-	void AdjustBrightness(	short brightness,
-							CWnd* pProgressWnd = NULL,
-							BOOL bProgressSend = TRUE);
-	void AdjustContrast(short contrast,
-						CWnd* pProgressWnd = NULL,
-						BOOL bProgressSend = TRUE);
-	void AdjustBrightnessContrastFast(	short brightness,
-										short contrast,
-										CWnd* pProgressWnd = NULL,
-										BOOL bProgressSend = TRUE);
-	void AdjustGamma(	double gamma,
-						CWnd* pProgressWnd = NULL,
-						BOOL bProgressSend = TRUE);
 
 	// Resample
 	BOOL AvirResizeBits(			DWORD dwNewWidth,

@@ -57,11 +57,9 @@ void CDib::CopyVars(const CDib& SrcDib)
 	m_nStretchMode = SrcDib.m_nStretchMode;
 	m_bColorUndoSet = SrcDib.m_bColorUndoSet;
 	m_dwImageSize = SrcDib.m_dwImageSize;
-	m_uwHue = SrcDib.m_uwHue;
+	m_wHue = SrcDib.m_wHue;
 	m_wBrightness = SrcDib.m_wBrightness;
 	m_wContrast = SrcDib.m_wContrast;
-	m_dGamma = SrcDib.m_dGamma;
-	m_wLightness = SrcDib.m_wLightness;
 	m_wSaturation = SrcDib.m_wSaturation;
 	m_dwUpTime = SrcDib.m_dwUpTime;
 	m_dwUserFlag = SrcDib.m_dwUserFlag;
@@ -5705,10 +5703,8 @@ void CDib::Init()
 
 	m_wBrightness = 0;
 	m_wContrast = 0;
-	m_wLightness = 0;
 	m_wSaturation = 0;
-	m_uwHue = 0;
-	m_dGamma = 1.0;
+	m_wHue = 0;
 
 	m_bColorUndoSet = FALSE;
 	m_bGrayscale = FALSE;

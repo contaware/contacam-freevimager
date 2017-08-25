@@ -162,7 +162,7 @@ void CGeneralPage::UpdateVideoQualityInfo()
 {
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY_INFO);
 	CString sQuality;
-	switch (GetRevertedPos(m_VideoRecQuality))
+	switch (::GetRevertedPos(&m_VideoRecQuality))
 	{
 		case 3 : sQuality = ML_STRING(1544, "Best"); break;
 		case 4 : sQuality = ML_STRING(1543, "Good"); break;
@@ -388,7 +388,7 @@ BOOL CGeneralPage::OnInitDialog()
 	m_VideoRecQuality.SetPageSize(1);
 	m_VideoRecQuality.SetLineSize(1);
 	m_pDoc->m_fVideoRecQuality = CAVRec::ClipVideoQuality(m_pDoc->m_fVideoRecQuality);
-	SetRevertedPos(m_VideoRecQuality, (int)m_pDoc->m_fVideoRecQuality);
+	::SetRevertedPos(&m_VideoRecQuality, (int)m_pDoc->m_fVideoRecQuality);
 	UpdateVideoQualityInfo();
 
 	// Enable Format Button?
@@ -683,7 +683,7 @@ void CGeneralPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 		{
 			if (pSlider->GetDlgCtrlID() == IDC_VIDEO_COMPRESSION_QUALITY)
 			{
-				m_pDoc->m_fVideoRecQuality = (float)GetRevertedPos(m_VideoRecQuality);
+				m_pDoc->m_fVideoRecQuality = (float)::GetRevertedPos(&m_VideoRecQuality);
 				UpdateVideoQualityInfo();
 			}
 		}

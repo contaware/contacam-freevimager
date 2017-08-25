@@ -245,12 +245,6 @@ __forceinline double CDib::GetThumbnailDibRatio() {return m_dThumbnailDibRatio;}
 __forceinline double CDib::GetPreviewDibRatio() {return m_dPreviewDibRatio;};
 __forceinline BOOL CDib::UsesPalette(HDC hDC) { return (GetDeviceCaps(hDC, RASTERCAPS) & RC_PALETTE);};
 __forceinline RGBQUAD* CDib::GetColors() const {return m_pColors;};
-__forceinline short CDib::GetBrightness() const { return m_wBrightness;};
-__forceinline short CDib::GetContrast() const { return m_wContrast;};
-__forceinline short CDib::GetLightness() const { return m_wLightness;};
-__forceinline short CDib::GetSaturation() const { return m_wSaturation;};
-__forceinline unsigned short CDib::GetHue() const { return m_uwHue;};
-__forceinline double CDib::GetGamma() const { return m_dGamma;};
 __forceinline BOOL CDib::IsGrayscale() const {return m_bGrayscale;};
 __forceinline BOOL CDib::HasAlpha() const {return m_bAlpha;};
 __forceinline void CDib::SetAlpha(BOOL bAlpha) {m_bAlpha = bAlpha;};
@@ -721,109 +715,6 @@ __forceinline BOOL CDib::IsDibSection(HBITMAP hDibSection)
 		else
 			return FALSE;
 	}
-}
-
-__forceinline void CDib::DoLookUpTable(	LPBYTE pLookUpTable,
-										CWnd* pProgressWnd/*=NULL*/,
-										BOOL bProgressSend/*=TRUE*/)
-{
-	WORD wNumColors = GetNumColors();
-	unsigned int line, i, nWidthDWAligned;
-
-	DIB_INIT_PROGRESS;
-
-	switch (m_pBMI->bmiHeader.biBitCount)
-	{
-		case 1:
-		case 4:
-		case 8:
-		{
-			for (i = 0; i < (int)wNumColors; i++)
-			{
-				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, i, wNumColors);
-
-				m_pColors[i].rgbRed = pLookUpTable[m_pColors[i].rgbRed];
-				m_pColors[i].rgbGreen = pLookUpTable[m_pColors[i].rgbGreen];
-				m_pColors[i].rgbBlue = pLookUpTable[m_pColors[i].rgbBlue];
-			}
-			break;
-		}
-		case 16:
-		{
-			nWidthDWAligned = DWALIGNEDWIDTHBYTES(GetWidth() * 16); // DWORD aligned (in bytes)
-
-			for (line = 0 ; line < GetHeight() ; line++)
-			{
-				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, GetHeight());
-
-				for (i = (nWidthDWAligned/2) * line ; i < ((nWidthDWAligned/2) * (line+1)) ; i++)
-				{
-					BYTE R, G, B;
-					DIB16ToRGB(((WORD*)m_pBits)[i], &R, &G, &B);
-					((WORD*)m_pBits)[i] = RGBToDIB16(	pLookUpTable[R],
-														pLookUpTable[G],
-														pLookUpTable[B]);
-				}
-			}
-			break;
-		}
-		case 24:
-		{
-			nWidthDWAligned = DWALIGNEDWIDTHBYTES(GetWidth() * 24); // DWORD aligned (in bytes)
-
-			for (line = 0 ; line < GetHeight() ; line++)
-			{
-				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, GetHeight());
-
-				for (i = nWidthDWAligned * line ; i < (nWidthDWAligned * (line+1)) ; i++)
-				{
-					m_pBits[i] = pLookUpTable[m_pBits[i]];
-				}
-			}
-			break;
-		}
-		case 32:
-		{
-			if (HasAlpha())
-			{
-				for (line = 0 ; line < GetHeight() ; line++)
-				{
-					DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, GetHeight());
-
-					for (i = GetWidth() * line ; i < (GetWidth() * (line+1)) ; i++)
-					{
-						BYTE R, G, B, A;
-						DIB32ToRGBA(((DWORD*)m_pBits)[i], &R, &G, &B, &A);
-						((DWORD*)m_pBits)[i] = RGBAToDIB32(	pLookUpTable[R],
-															pLookUpTable[G],
-															pLookUpTable[B],
-															A);
-					}
-				}
-			}
-			else
-			{
-				for (line = 0 ; line < GetHeight() ; line++)
-				{
-					DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, GetHeight());
-
-					for (i = GetWidth() * line ; i < (GetWidth() * (line+1)) ; i++)
-					{
-						BYTE R, G, B;
-						DIB32ToRGB(((DWORD*)m_pBits)[i], &R, &G, &B);
-						((DWORD*)m_pBits)[i] = RGBToDIB32(	pLookUpTable[R],
-															pLookUpTable[G],
-															pLookUpTable[B]);
-					}
-				}
-			}
-			break;
-		}
-		default:
-			break;
-	}
-
-	DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
 }
 
 #define COLOR2LOOKUPINDEX(cr) ((unsigned int)((((cr)>>8)&(0x1F<<11))|(((cr)>>5)&(0x3F<<5))|(((cr)>>3)&0x1F)))

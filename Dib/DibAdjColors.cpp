@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "dib.h"
+#include <gdiplus.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -108,10 +109,8 @@ BOOL CDib::SetColorUndo()
 
 	m_wBrightness = 0;
 	m_wContrast = 0;
-	m_wLightness = 0;
 	m_wSaturation = 0;
-	m_uwHue = 0;
-	m_dGamma = 1.0;
+	m_wHue = 0;
 
 	return TRUE;
 }
@@ -133,10 +132,8 @@ BOOL CDib::ResetColorUndo()
 
 	m_wBrightness = 0;
 	m_wContrast = 0;
-	m_wLightness = 0;
 	m_wSaturation = 0;
-	m_uwHue = 0;
-	m_dGamma = 1.0;
+	m_wHue = 0;
 	
 	return TRUE;
 }
@@ -212,68 +209,17 @@ BOOL CDib::UndoColor()
 	}
 	m_wBrightness = 0;
 	m_wContrast = 0;
-	m_wLightness = 0;
 	m_wSaturation = 0;
-	m_uwHue = 0;
-	m_dGamma = 1.0;
+	m_wHue = 0;
 	
 	return TRUE;
 }
 
-// color:      The color to adjust
-// saturation: -100 .. +100
-// hue:           0 .. +360
-// lightness:  -100 .. +100
-__forceinline void CDib::AdjustColor(CColor &color, short lightness, short saturation, unsigned short hue)
-{
-	float fNewLightness = 0.0f;
-	float fNewSaturation = 0.0f;
-	float fNewHue = 0.0f;
-
-	// Adjust Saturation:
-	if (saturation != 0)
-	{
-		fNewSaturation = color.GetSaturation() * ((float)(saturation + 100) / 100.0f);
-		if (fNewSaturation > 1.0)
-			color.SetSaturation(1.0);
-		else if (fNewSaturation < 0.0)
-			color.SetSaturation(0.0);
-		else
-			color.SetSaturation(fNewSaturation);
-	}
-
-	// Adjust Lightness:
-	if (lightness != 0)
-	{
-		fNewLightness = color.GetLuminance() + (float)lightness / 100.0f;
-		if (fNewLightness > 1.0)
-			color.SetLuminance(1.0);
-		else if (fNewLightness < 0.0)
-			color.SetLuminance(0.0);
-		else
-			color.SetLuminance(fNewLightness);
-	}
-
-	// Adjust Hue:
-	if (hue > 0)
-	{
-		fNewHue = color.GetHue() + (float)hue;
-		if (fNewHue > 360.0f)
-			fNewHue = fNewHue - 360.0f;
-		color.SetHue(fNewHue);
-	}
-}
-
-BOOL CDib::AdjustImage(	short brightness,
-						short contrast,
-						short lightness,
-						short saturation,
-						unsigned short hue,
-						double gamma,
-						BOOL bFast,	// For Fast And Imprecise Brightness & Contrast Regulation
-						BOOL bEnableUndo, // Enable Undo of Adjusted Pixels
-						CWnd* pProgressWnd/*=NULL*/,
-						BOOL bProgressSend/*=TRUE*/)
+BOOL CDib::AdjustImage(	short brightness,	// -255..255
+						short contrast,		// -100..100
+						short saturation,	// -100..100
+						short hue,			// -180..180
+						BOOL bEnableUndo)	// Enable Undo of Adjusted Pixels
 {
 	// Reset Color Undo
 	if (!bEnableUndo)
@@ -281,10 +227,8 @@ BOOL CDib::AdjustImage(	short brightness,
 
 	if ((brightness == m_wBrightness) &&
 		(contrast == m_wContrast) &&
-		(lightness == m_wLightness) &&
 		(saturation == m_wSaturation) &&
-		(hue == m_uwHue) &&
-		(gamma == m_dGamma))
+		(hue == m_wHue))
 		return TRUE;
 
 	if (!m_pBits)
@@ -302,6 +246,15 @@ BOOL CDib::AdjustImage(	short brightness,
 			return FALSE;
 	}
 
+	// Make sure we have a 32 bpp image with alpha or fast (with 0xFF0000, 0xFF00, 0xFF masks)
+	if (GetBitCount() != 32)
+		ConvertTo32bits();
+	else if (!HasAlpha() && !IsFast32bpp())
+	{
+		ConvertTo24bits();
+		ConvertTo32bits();
+	}
+
 	// The first time this function is called make a copy of the image
 	if (bEnableUndo)
 	{
@@ -311,865 +264,55 @@ BOOL CDib::AdjustImage(	short brightness,
 			UndoColor(); // Restore the original image
 	}
 
-	WORD wNumColors = GetNumColors();
-	CColor color;
-	unsigned int line, i, nWidthDWAligned;
+	// GDI plus bitmap
+	// GDI plus constructors and functions taking DIBs or
+	// pixel buffers as parameter will be referencing them
+	// (no copy is made).
+	//
+	// GDI plus states that if the stride is positive,
+	// the bitmap is top-down and scan0 points to the start
+	// of first scan line, if the stride is negative, the
+	// bitmap is bottom-up and scan0 points to the start of
+	// the last scan line.
+	// -> to be correct we would have to set the stride to:
+	// -4 * GetWidth()
+	// and supply a pixels pointer of:
+	// GetBits() + (GetHeight() - 1) * 4 * GetWidth()
+	// -> but while processing the single pixel colors who
+	// cares that CDib is bottom-up!
+	Gdiplus::Bitmap GdiPlusBm(GetWidth(), GetHeight(), 4 * GetWidth(), HasAlpha() ? PixelFormat32bppARGB : PixelFormat32bppRGB, GetBits());
 
-	if ((lightness != 0) || (saturation != 0) || (hue != 0))
+	// Adjust brightness and contrast
+	if (brightness != 0 || contrast != 0)
 	{
-		DIB_INIT_PROGRESS;
-
-		switch (m_pBMI->bmiHeader.biBitCount)
-		{
-			case 1:
-			case 4:
-			case 8:
-			{
-				for (i = 0; i < (int)wNumColors; i++)
-				{
-					DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, i, wNumColors);
-
-					color.SetRed(m_pColors[i].rgbRed);
-					color.SetGreen(m_pColors[i].rgbGreen);
-					color.SetBlue(m_pColors[i].rgbBlue);
-
-					AdjustColor(color, lightness, saturation, hue);
-
-					m_pColors[i].rgbRed = (unsigned char)color.GetRed();
-					m_pColors[i].rgbGreen = (unsigned char)color.GetGreen();
-					m_pColors[i].rgbBlue = (unsigned char)color.GetBlue();
-				}
-				break;
-			}
-			case 16:
-			{
-				nWidthDWAligned = DWALIGNEDWIDTHBYTES(GetWidth() * 16); // DWORD aligned (in bytes)
-
-				for (line = 0 ; line < GetHeight() ; line++)
-				{
-					DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, GetHeight());
-
-					for (i = (nWidthDWAligned/2) * line ; i < ((nWidthDWAligned/2) * (line+1)) ; i++)
-					{
-						BYTE R, G, B;
-						DIB16ToRGB(((WORD*)m_pBits)[i], &R, &G, &B);
-						color.SetBlue ((int)B);
-						color.SetGreen((int)G);
-						color.SetRed  ((int)R);
-
-						AdjustColor(color, lightness, saturation, hue);
-
-						((WORD*)m_pBits)[i] = RGBToDIB16(color.GetRed(), color.GetGreen(), color.GetBlue());
-					}
-				}
-				break;
-			}
-			case 24:
-			{
-				nWidthDWAligned = DWALIGNEDWIDTHBYTES(GetWidth() * 24); // DWORD aligned (in bytes)
-			
-				for (line = 0 ; line < GetHeight(); line++)
-				{
-					DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, GetHeight());
-					
-					for (i = nWidthDWAligned * line ; (i+2) < (nWidthDWAligned * (line+1)) ; i = i+3)
-					{
-						color.SetBlue((int)m_pBits[i]);
-						color.SetGreen((int)m_pBits[i+1]);
-						color.SetRed((int)m_pBits[i+2]);
-
-						AdjustColor(color, lightness, saturation, hue);
-
-						m_pBits[i] = (BYTE)color.GetBlue();
-						m_pBits[i+1] = (BYTE)color.GetGreen();
-						m_pBits[i+2] = (BYTE)color.GetRed();
-					}
-				}
-				break;
-			}
-			case 32:
-			{
-				if (HasAlpha())
-				{
-					for (line = 0 ; line < GetHeight() ; line++)
-					{
-						DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, GetHeight());
-						
-						for (i = GetWidth() * line ; i < (GetWidth() * (line+1)) ; i++)
-						{
-							BYTE R, G, B, A;
-							DIB32ToRGBA(((DWORD*)m_pBits)[i], &R, &G, &B, &A);
-							color.SetBlue ((int)B);
-							color.SetGreen((int)G);
-							color.SetRed  ((int)R);
-
-							AdjustColor(color, lightness, saturation, hue);
-
-							((DWORD*)m_pBits)[i] = RGBAToDIB32(color.GetRed(), color.GetGreen(), color.GetBlue(), A);
-						}
-					}
-				}
-				else
-				{
-					for (line = 0 ; line < GetHeight() ; line++)
-					{
-						DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, GetHeight());
-						
-						for (i = GetWidth() * line ; i < (GetWidth() * (line+1)) ; i++)
-						{
-							BYTE R, G, B;
-							DIB32ToRGB(((DWORD*)m_pBits)[i], &R, &G, &B);
-							color.SetBlue ((int)B);
-							color.SetGreen((int)G);
-							color.SetRed  ((int)R);
-
-							AdjustColor(color, lightness, saturation, hue);
-
-							((DWORD*)m_pBits)[i] = RGBToDIB32(color.GetRed(), color.GetGreen(), color.GetBlue());
-						}
-					}
-				}
-				break;
-			}
-			default:
-				break;
-		}
-
-		DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
+		Gdiplus::BrightnessContrastParams MyBriConParams;
+		MyBriConParams.brightnessLevel = brightness;	// -255 through 255 (a value of 0 specifies no change)
+		MyBriConParams.contrastLevel = contrast;		// -100 through 100 (a value of 0 specifies no change)
+		Gdiplus::BrightnessContrast MyBriCon;
+		MyBriCon.SetParameters(&MyBriConParams);
+		GdiPlusBm.ApplyEffect(&MyBriCon, NULL);
 	}
-	m_wLightness = lightness;
+
+	// Adjust saturation and hue
+	if (saturation != 0 || hue != 0)
+	{
+		Gdiplus::HueSaturationLightnessParams MyHSLParams;
+		MyHSLParams.hueLevel = hue;						// -180 through 180 (a value of 0 specifies no change)
+		MyHSLParams.saturationLevel = saturation;		// -100 through 100 (a value of 0 specifies no change)
+		MyHSLParams.lightnessLevel = 0;					// -100 through 100 (a value of 0 specifies no change)
+		Gdiplus::HueSaturationLightness MyHSL;
+		MyHSL.SetParameters(&MyHSLParams);
+		GdiPlusBm.ApplyEffect(&MyHSL, NULL);
+	}
+
+	m_wBrightness = brightness;
+	m_wContrast = contrast;
 	m_wSaturation = saturation;
-	m_uwHue = hue;
-
-	if (bFast)
-		AdjustBrightnessContrastFast(brightness, contrast, pProgressWnd, bProgressSend);
-	else
-	{
-		AdjustBrightness(brightness, pProgressWnd, bProgressSend);
-		AdjustContrast(contrast, pProgressWnd, bProgressSend);
-	}
-
-	AdjustGamma(gamma, pProgressWnd, bProgressSend);
+	m_wHue = hue;
 
 	CreatePaletteFromBMI();
 
 	return TRUE;
-}
-
-// brightness: -100 .. +100
-// contrast: -100 .. +100
-void CDib::AdjustBrightnessContrastFast(short brightness,
-										short contrast,
-										CWnd* pProgressWnd/*=NULL*/,
-										BOOL bProgressSend/*=TRUE*/)
-{
-	if (brightness == 0 && contrast == 0)
-		return;
-
-	if (!m_pBits)
-	{
-		if (!DibSectionToBits())
-			return;
-	}
-
-	if (!m_pBits || !m_pBMI)
-		return;
-
-	if (IsCompressed())
-	{
-		if (!Decompress(GetBitCount())) // Decompress
-			return;
-	}
-
-	// Create Brightness & Contrast Lookup Table
-	float c = (100 + contrast) / 100.0f;
-
-	BYTE BrightnessContrastLookUpTable[256];
-	for (int i = 0 ; i < 256 ; i++)
-		BrightnessContrastLookUpTable[i] = (BYTE)MAX( 0, MIN( 255, (int)((i-128)*c) + 128 + (int)(2.55*brightness) ) );
-
-	DoLookUpTable(BrightnessContrastLookUpTable, pProgressWnd, bProgressSend);
-
-	m_wBrightness = brightness;
-	m_wContrast = contrast;
-}
-
-// brightness: -100 .. +100
-void CDib::AdjustBrightness(short brightness,
-							CWnd* pProgressWnd/*=NULL*/,
-							BOOL bProgressSend/*=TRUE*/)
-{
-	float fNewBrightness = 0.0f;
-
-	if (brightness == 0)
-		return;
-
-	if (!m_pBits)
-	{
-		if (!DibSectionToBits())
-			return;
-	}
-
-	if (!m_pBits || !m_pBMI)
-		return;
-
-	if (IsCompressed())
-	{
-		if (!Decompress(GetBitCount())) // Decompress
-			return;
-	}
-
-	WORD wNumColors = GetNumColors();
-	unsigned int line, i, nWidthDWAligned;
-
-	DIB_INIT_PROGRESS;
-	
-	switch (m_pBMI->bmiHeader.biBitCount)
-	{
-		case 1:
-		case 4:
-		case 8:
-		{
-			for (i = 0; i < (int)wNumColors; i++)
-			{
-				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, i, wNumColors);
-
-				// Use the YIQ Color Space. Y is the Brightness.
-				int R, G, B;
-				R = m_pColors[i].rgbRed;
-				G = m_pColors[i].rgbGreen;
-				B = m_pColors[i].rgbBlue;
-				int Y = 30 * R / 100 + 59 * G / 100 + 11 * B / 100;
-				int I = 60 * R / 100 - 28 * G / 100 - 32 * B / 100;
-				int Q = 21 * R / 100 - 52 * G / 100 + 31 * B / 100;
-				fNewBrightness = (float)brightness * 2.55f;
-				Y = Y + (int)fNewBrightness;
-				R = Y + 2401 * I / 2532 + 395 * Q / 633;
-				G = Y - 233 * I / 844 - 135 * Q / 211;
-				B = Y - 2799 * I / 2532 + 365 * Q / 211;
-				if (R > 255) R = 255;
-				else if (R < 0) R = 0;
-				if (G > 255) G = 255;
-				else if (G < 0) G = 0;
-				if (B > 255) B = 255;
-				else if (B < 0) B = 0;
-				m_pColors[i].rgbRed = (unsigned char)R;
-				m_pColors[i].rgbGreen = (unsigned char)G;
-				m_pColors[i].rgbBlue = (unsigned char)B;
-			}
-			break;
-		}
-		case 16:
-		{
-			nWidthDWAligned = DWALIGNEDWIDTHBYTES(GetWidth() * 16); // DWORD aligned (in bytes)
-
-			for (line = 0 ; line < GetHeight() ; line++)
-			{
-				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, GetHeight());
-
-				for (i = (nWidthDWAligned/2) * line ; i < ((nWidthDWAligned/2) * (line+1)) ; i++)
-				{
-					// Use the YIQ Color Space. Y is the Brightness.
-					BYTE R, G, B;
-					int r, g, b;
-					DIB16ToRGB(((WORD*)m_pBits)[i], &R, &G, &B);
-					int Y = 30 * R / 100 + 59 * G / 100 + 11 * B / 100;
-					int I = 60 * R / 100 - 28 * G / 100 - 32 * B / 100;
-					int Q = 21 * R / 100 - 52 * G / 100 + 31 * B / 100;
-					fNewBrightness = (float)brightness * 2.55f;
-					Y = Y + (int)fNewBrightness;
-					r = Y + 2401 * I / 2532 + 395 * Q / 633;
-					g = Y - 233 * I / 844 - 135 * Q / 211;
-					b = Y - 2799 * I / 2532 + 365 * Q / 211;
-					if (r > 255) R = 255;
-					else if (r < 0) R = 0;
-					else R = r;
-					if (g > 255) G = 255;
-					else if (g < 0) G = 0;
-					else G = g;
-					if (b > 255) B = 255;
-					else if (b < 0) B = 0;
-					else B = b;
-					((WORD*)m_pBits)[i] = RGBToDIB16(R, G, B);
-				}
-			}
-			break;
-		}
-		case 24:
-		{
-			nWidthDWAligned = DWALIGNEDWIDTHBYTES(GetWidth() * 24); // DWORD aligned (in bytes)
-		
-			for (line = 0 ; line < GetHeight(); line++)
-			{
-				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, GetHeight());
-
-				for (i = nWidthDWAligned * line ; (i+2) < (nWidthDWAligned * (line+1)) ; i = i+3)
-				{
-					// Use the YIQ Color Space. Y is the Brightness.
-					int R, G, B;
-					R = (int)m_pBits[i+2];
-					G = (int)m_pBits[i+1];
-					B = (int)m_pBits[i];
-					int Y = 30 * R / 100 + 59 * G / 100 + 11 * B / 100;
-					int I = 60 * R / 100 - 28 * G / 100 - 32 * B / 100;
-					int Q = 21 * R / 100 - 52 * G / 100 + 31 * B / 100;
-					fNewBrightness = (float)brightness * 2.55f;
-					Y = Y + (int)fNewBrightness;
-					R = Y + 2401 * I / 2532 + 395 * Q / 633;
-					G = Y - 233 * I / 844 - 135 * Q / 211;
-					B = Y - 2799 * I / 2532 + 365 * Q / 211;
-					if (R > 255) R = 255;
-					else if (R < 0) R = 0;
-					if (G > 255) G = 255;
-					else if (G < 0) G = 0;
-					if (B > 255) B = 255;
-					else if (B < 0) B = 0;
-					m_pBits[i] = (BYTE)B;
-					m_pBits[i+1] = (BYTE)G;
-					m_pBits[i+2] = (BYTE)R;
-				}
-			}
-			break;
-		}
-		case 32:
-		{
-			if (HasAlpha())
-			{
-				for (line = 0 ; line < GetHeight() ; line++)
-				{
-					DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, GetHeight());
-
-					for (i = GetWidth() * line ; i < (GetWidth() * (line+1)) ; i++)
-					{
-						// Use the YIQ Color Space. Y is the Brightness.
-						BYTE R, G, B, A;
-						int r, g, b;
-						DIB32ToRGBA(((DWORD*)m_pBits)[i], &R, &G, &B, &A);
-						int Y = 30 * R / 100 + 59 * G / 100 + 11 * B / 100;
-						int I = 60 * R / 100 - 28 * G / 100 - 32 * B / 100;
-						int Q = 21 * R / 100 - 52 * G / 100 + 31 * B / 100;
-						fNewBrightness = (float)brightness * 2.55f;
-						Y = Y + (int)fNewBrightness;
-						r = Y + 2401 * I / 2532 + 395 * Q / 633;
-						g = Y - 233 * I / 844 - 135 * Q / 211;
-						b = Y - 2799 * I / 2532 + 365 * Q / 211;
-						if (r > 255) R = 255;
-						else if (r < 0) R = 0;
-						else R = r;
-						if (g > 255) G = 255;
-						else if (g < 0) G = 0;
-						else G = g;
-						if (b > 255) B = 255;
-						else if (b < 0) B = 0;
-						else B = b;
-						((DWORD*)m_pBits)[i] = RGBAToDIB32(R, G, B, A);
-					}
-				}
-			}
-			else
-			{
-				for (line = 0 ; line < GetHeight() ; line++)
-				{
-					DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, GetHeight());
-
-					for (i = GetWidth() * line ; i < (GetWidth() * (line+1)) ; i++)
-					{
-						// Use the YIQ Color Space. Y is the Brightness.
-						BYTE R, G, B;
-						int r, g, b;
-						DIB32ToRGB(((DWORD*)m_pBits)[i], &R, &G, &B);
-						int Y = 30 * R / 100 + 59 * G / 100 + 11 * B / 100;
-						int I = 60 * R / 100 - 28 * G / 100 - 32 * B / 100;
-						int Q = 21 * R / 100 - 52 * G / 100 + 31 * B / 100;
-						fNewBrightness = (float)brightness * 2.55f;
-						Y = Y + (int)fNewBrightness;
-						r = Y + 2401 * I / 2532 + 395 * Q / 633;
-						g = Y - 233 * I / 844 - 135 * Q / 211;
-						b = Y - 2799 * I / 2532 + 365 * Q / 211;
-						if (r > 255) R = 255;
-						else if (r < 0) R = 0;
-						else R = r;
-						if (g > 255) G = 255;
-						else if (g < 0) G = 0;
-						else G = g;
-						if (b > 255) B = 255;
-						else if (b < 0) B = 0;
-						else B = b;
-						((DWORD*)m_pBits)[i] = RGBToDIB32(R, G, B);
-					}
-				}
-			}
-			break;
-		}
-		default:
-			break;
-	}
-	m_wBrightness = brightness;
-	DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
-}
-
-// contrast: -100 .. +100
-void CDib::AdjustContrast(	short contrast,
-							CWnd* pProgressWnd/*=NULL*/,
-							BOOL bProgressSend/*=TRUE*/)
-{
-	float fNewContrast = 0.0f;
-
-	if (contrast == 0)
-		return;
-
-	if (!m_pBits)
-	{
-		if (!DibSectionToBits())
-			return;
-	}
-
-	if (!m_pBits || !m_pBMI)
-		return;
-
-	if (IsCompressed())
-	{
-		if (!Decompress(GetBitCount())) // Decompress
-			return;
-	}
-
-	WORD wNumColors = GetNumColors();
-	unsigned int line, i, nWidthDWAligned;
-	int AverageImageBrightness = 0;
-	int pixcount = 0;
-	int linepixcount;
-
-	// For Average Image Brightness Calculation
-	int nHeightInc = GetHeight() / REASONABLE_SIZE_CONTRAST_AVGBRIGHT_CALC;
-	if (nHeightInc == 0) nHeightInc++;
-	int nWidthInc = GetWidth() / REASONABLE_SIZE_CONTRAST_AVGBRIGHT_CALC;
-	if (nWidthInc == 0) nWidthInc++;
-
-	DIB_INIT_PROGRESS;
-
-	switch (m_pBMI->bmiHeader.biBitCount)
-	{
-		case 1:
-		{
-			nWidthDWAligned = DWALIGNEDWIDTHBYTES(GetWidth()); // DWORD aligned (in bytes)
-
-			for (line = 0 ; line < GetHeight() ; line += nHeightInc)
-			{
-				linepixcount = 0;
-				for (i = nWidthDWAligned * line ; i < (nWidthDWAligned * (line+1)) ; i += nWidthInc)
-				{
-					// First pixel is the most significant bit of the byte
-					AverageImageBrightness += ((30 * (int)m_pColors[(m_pBits[i]>>7)&0x1].rgbRed +
-												59 * (int)m_pColors[(m_pBits[i]>>7)&0x1].rgbGreen +
-												11 * (int)m_pColors[(m_pBits[i]>>7)&0x1].rgbBlue) / 100);
-					pixcount++;
-					if (++linepixcount >= (int)GetWidth()) break;
-					
-					AverageImageBrightness += ((30 * (int)m_pColors[(m_pBits[i]>>6)&0x1].rgbRed +
-												59 * (int)m_pColors[(m_pBits[i]>>6)&0x1].rgbGreen +
-												11 * (int)m_pColors[(m_pBits[i]>>6)&0x1].rgbBlue) / 100);
-					pixcount++;
-					if (++linepixcount >= (int)GetWidth()) break;
-					
-					AverageImageBrightness += ((30 * (int)m_pColors[(m_pBits[i]>>5)&0x1].rgbRed +
-												59 * (int)m_pColors[(m_pBits[i]>>5)&0x1].rgbGreen +
-												11 * (int)m_pColors[(m_pBits[i]>>5)&0x1].rgbBlue) / 100);
-					pixcount++;
-					if (++linepixcount >= (int)GetWidth()) break;
-					
-					AverageImageBrightness += ((30 * (int)m_pColors[(m_pBits[i]>>4)&0x1].rgbRed +
-												59 * (int)m_pColors[(m_pBits[i]>>4)&0x1].rgbGreen +
-												11 * (int)m_pColors[(m_pBits[i]>>4)&0x1].rgbBlue) / 100);
-					pixcount++;
-					if (++linepixcount >= (int)GetWidth()) break;
-					
-					AverageImageBrightness += ((30 * (int)m_pColors[(m_pBits[i]>>3)&0x1].rgbRed +
-												59 * (int)m_pColors[(m_pBits[i]>>3)&0x1].rgbGreen +
-												11 * (int)m_pColors[(m_pBits[i]>>3)&0x1].rgbBlue) / 100);
-					pixcount++;
-					if (++linepixcount >= (int)GetWidth()) break;
-					
-					AverageImageBrightness += ((30 * (int)m_pColors[(m_pBits[i]>>2)&0x1].rgbRed +
-												59 * (int)m_pColors[(m_pBits[i]>>2)&0x1].rgbGreen +
-												11 * (int)m_pColors[(m_pBits[i]>>2)&0x1].rgbBlue) / 100);
-					pixcount++;
-					if (++linepixcount >= (int)GetWidth()) break;
-					
-					AverageImageBrightness += ((30 * (int)m_pColors[(m_pBits[i]>>1)&0x1].rgbRed +
-												59 * (int)m_pColors[(m_pBits[i]>>1)&0x1].rgbGreen +
-												11 * (int)m_pColors[(m_pBits[i]>>1)&0x1].rgbBlue) / 100);
-					pixcount++;
-					if (++linepixcount >= (int)GetWidth()) break;
-					
-					AverageImageBrightness += ((30 * (int)m_pColors[m_pBits[i]&0x1].rgbRed +
-												59 * (int)m_pColors[m_pBits[i]&0x1].rgbGreen +
-												11 * (int)m_pColors[m_pBits[i]&0x1].rgbBlue) / 100);
-					pixcount++;
-					if (++linepixcount >= (int)GetWidth()) break;
-				}
-			}
-			AverageImageBrightness /= pixcount;
-
-			for (i = 0; i < (int)wNumColors; i++)
-			{
-				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, i, wNumColors);
-
-				// Use the YIQ Color Space. Y is the Brightness.
-				int R, G, B;
-				R = m_pColors[i].rgbRed;
-				G = m_pColors[i].rgbGreen;
-				B = m_pColors[i].rgbBlue;
-				int Y = (30 * R + 59 * G + 11 * B) / 100;
-				int I = (60 * R - 28 * G - 32 * B) / 100;
-				int Q = (21 * R - 52 * G + 31 * B) / 100;
-				if (Y != AverageImageBrightness)
-				{
-					fNewContrast = (((float)contrast) + 100.0f) / 100.0f;
-					Y = (int)(fNewContrast * ((float)(Y - AverageImageBrightness))) + AverageImageBrightness;
-					R = Y + 2401 * I / 2532 + 395 * Q / 633;
-					G = Y - 233 * I / 844 - 135 * Q / 211;
-					B = Y - 2799 * I / 2532 + 365 * Q / 211;
-					if (R > 255) R = 255;
-					else if (R < 0) R = 0;
-					if (G > 255) G = 255;
-					else if (G < 0) G = 0;
-					if (B > 255) B = 255;
-					else if (B < 0) B = 0;
-					m_pColors[i].rgbRed = (unsigned char)R;
-					m_pColors[i].rgbGreen = (unsigned char)G;
-					m_pColors[i].rgbBlue = (unsigned char)B;
-				}
-			}
-			break;
-		}
-		case 4:
-		{
-			nWidthDWAligned = DWALIGNEDWIDTHBYTES(GetWidth() * 4); // DWORD aligned (in bytes)
-
-			for (line = 0 ; line < GetHeight() ; line += nHeightInc)
-			{
-				linepixcount = 0;
-				for (i = nWidthDWAligned * line ; i < (nWidthDWAligned * (line+1)) ; i += nWidthInc)
-				{
-					// First pixel is the most significant nibble of the byte
-					AverageImageBrightness += ((30 * (int)m_pColors[(m_pBits[i] & 0xF0)>>4].rgbRed +
-												59 * (int)m_pColors[(m_pBits[i] & 0xF0)>>4].rgbGreen +
-												11 * (int)m_pColors[(m_pBits[i] & 0xF0)>>4].rgbBlue) / 100);
-					pixcount++;
-					if (++linepixcount >= (int)GetWidth()) break;
-					
-					AverageImageBrightness += ((30 * (int)m_pColors[m_pBits[i] & 0x0F].rgbRed +
-												59 * (int)m_pColors[m_pBits[i] & 0x0F].rgbGreen +
-												11 * (int)m_pColors[m_pBits[i] & 0x0F].rgbBlue) / 100);
-					pixcount++;
-					if (++linepixcount >= (int)GetWidth()) break;
-				}
-			}
-			AverageImageBrightness /= pixcount;
-
-			for (i = 0; i < (int)wNumColors; i++)
-			{
-				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, i, wNumColors);
-
-				// Use the YIQ Color Space. Y is the Brightness.
-				int R, G, B;
-				R = m_pColors[i].rgbRed;
-				G = m_pColors[i].rgbGreen;
-				B = m_pColors[i].rgbBlue;
-				int Y = (30 * R + 59 * G + 11 * B) / 100;
-				int I = (60 * R - 28 * G - 32 * B) / 100;
-				int Q = (21 * R - 52 * G + 31 * B) / 100;
-				if (Y != AverageImageBrightness)
-				{
-					fNewContrast = (((float)contrast) + 100.0f) / 100.0f;
-					Y = (int)(fNewContrast * ((float)(Y - AverageImageBrightness))) + AverageImageBrightness;
-					R = Y + 2401 * I / 2532 + 395 * Q / 633;
-					G = Y - 233 * I / 844 - 135 * Q / 211;
-					B = Y - 2799 * I / 2532 + 365 * Q / 211;
-					if (R > 255) R = 255;
-					else if (R < 0) R = 0;
-					if (G > 255) G = 255;
-					else if (G < 0) G = 0;
-					if (B > 255) B = 255;
-					else if (B < 0) B = 0;
-					m_pColors[i].rgbRed = (unsigned char)R;
-					m_pColors[i].rgbGreen = (unsigned char)G;
-					m_pColors[i].rgbBlue = (unsigned char)B;
-				}
-			}
-			break;
-		}
-		case 8:
-		{
-			nWidthDWAligned = DWALIGNEDWIDTHBYTES(GetWidth() * 8); // DWORD aligned (in bytes)
-
-			for (line = 0 ; line < GetHeight() ; line += nHeightInc)
-			{
-				linepixcount = 0;
-				for (i = nWidthDWAligned * line ; i < (nWidthDWAligned * (line+1)) ; i += nWidthInc)
-				{
-					AverageImageBrightness += ((30 * (int)m_pColors[m_pBits[i]].rgbRed +
-												59 * (int)m_pColors[m_pBits[i]].rgbGreen +
-												11 * (int)m_pColors[m_pBits[i]].rgbBlue) / 100);
-					pixcount++;
-					if (++linepixcount >= (int)GetWidth()) break;
-				}
-			}
-			AverageImageBrightness /= pixcount;
-
-			for (i = 0; i < (int)wNumColors; i++)
-			{
-				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, i, wNumColors);
-
-				// Use the YIQ Color Space. Y is the Brightness.
-				int R, G, B;
-				R = m_pColors[i].rgbRed;
-				G = m_pColors[i].rgbGreen;
-				B = m_pColors[i].rgbBlue;
-				int Y = (30 * R + 59 * G + 11 * B) / 100;
-				int I = (60 * R - 28 * G - 32 * B) / 100;
-				int Q = (21 * R - 52 * G + 31 * B) / 100;
-				if (Y != AverageImageBrightness)
-				{
-					fNewContrast = (((float)contrast) + 100.0f) / 100.0f;
-					Y = (int)(fNewContrast * ((float)(Y - AverageImageBrightness))) + AverageImageBrightness;
-					R = Y + 2401 * I / 2532 + 395 * Q / 633;
-					G = Y - 233 * I / 844 - 135 * Q / 211;
-					B = Y - 2799 * I / 2532 + 365 * Q / 211;
-					if (R > 255) R = 255;
-					else if (R < 0) R = 0;
-					if (G > 255) G = 255;
-					else if (G < 0) G = 0;
-					if (B > 255) B = 255;
-					else if (B < 0) B = 0;
-					m_pColors[i].rgbRed = (unsigned char)R;
-					m_pColors[i].rgbGreen = (unsigned char)G;
-					m_pColors[i].rgbBlue = (unsigned char)B;
-				}
-			}
-			break;
-		}
-		case 16:
-		{
-			nWidthDWAligned = DWALIGNEDWIDTHBYTES(GetWidth() * 16); // DWORD aligned (in bytes)
-
-			for (line = 0 ; line < GetHeight() ; line += nHeightInc)
-			{
-				linepixcount = 0;
-				for (i = (nWidthDWAligned/2) * line ; i < ((nWidthDWAligned/2) * (line+1)) ; i += nWidthInc)
-				{
-					BYTE R, G, B;
-					DIB16ToRGB(((WORD*)m_pBits)[i], &R, &G, &B);
-					AverageImageBrightness += ((30 * (int)R + 59 * (int)G + 11 * (int)B) / 100);
-					pixcount++;
-					if (++linepixcount >= (int)GetWidth()) break;
-				}
-			}
-			AverageImageBrightness /= pixcount;
-
-			for (line = 0 ; line < GetHeight() ; line++)
-			{
-				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, GetHeight());
-
-				for (i = (nWidthDWAligned/2) * line ; i < ((nWidthDWAligned/2) * (line+1)) ; i++)
-				{
-					// Use the YIQ Color Space. Y is the Brightness.
-					int R, G, B;
-					DIB16ToRGB(((WORD*)m_pBits)[i], &R, &G, &B);
-					int Y = (30 * R + 59 * G + 11 * B) / 100;
-					int I = (60 * R - 28 * G - 32 * B) / 100;
-					int Q = (21 * R - 52 * G + 31 * B) / 100;
-					if (Y != AverageImageBrightness)
-					{
-						fNewContrast = (((float)contrast) + 100.0f) / 100.0f;
-						Y = (int)(fNewContrast * ((float)(Y - AverageImageBrightness))) + AverageImageBrightness;
-						R = Y + 2401 * I / 2532 + 395 * Q / 633;
-						G = Y - 233 * I / 844 - 135 * Q / 211;
-						B = Y - 2799 * I / 2532 + 365 * Q / 211;
-						if (R > 255) R = 255;
-						else if (R < 0) R = 0;
-						if (G > 255) G = 255;
-						else if (G < 0) G = 0;
-						if (B > 255) B = 255;
-						else if (B < 0) B = 0;
-						((WORD*)m_pBits)[i] = RGBToDIB16(R, G, B);
-					}
-				}
-			}
-			break;
-		}
-		case 24:
-		{
-			nWidthDWAligned = DWALIGNEDWIDTHBYTES(GetWidth() * 24); // DWORD aligned (in bytes)
-
-			for (line = 0 ; line < GetHeight(); line += nHeightInc)
-			{
-				linepixcount = 0;
-				for (i = nWidthDWAligned * line ; (i+2) < (nWidthDWAligned * (line+1)) ; i += 3*nWidthInc)
-				{
-					AverageImageBrightness += ((30 * (int)m_pBits[i+2] +
-												59 * (int)m_pBits[i+1] +
-												11 * (int)m_pBits[i]) / 100);
-					pixcount++;
-					if (++linepixcount >= (int)GetWidth()) break;
-				}
-			}
-			AverageImageBrightness /= pixcount;
-
-			for (line = 0 ; line < GetHeight(); line++)
-			{
-				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, GetHeight());
-
-				for (i = nWidthDWAligned * line ; (i+2) < (nWidthDWAligned * (line+1)) ; i = i+3)
-				{
-					// Use the YIQ Color Space. Y is the Brightness.
-					int R, G, B;
-					R = (int)m_pBits[i+2];
-					G = (int)m_pBits[i+1];
-					B = (int)m_pBits[i];
-					int Y = (30 * R + 59 * G + 11 * B) / 100;
-					int I = (60 * R - 28 * G - 32 * B) / 100;
-					int Q = (21 * R - 52 * G + 31 * B) / 100;
-					if (Y != AverageImageBrightness)
-					{
-						fNewContrast = (((float)contrast) + 100.0f) / 100.0f; // min factor is 1.00f
-						Y = (int)(fNewContrast * ((float)(Y - AverageImageBrightness))) + AverageImageBrightness;
-						R = Y + 2401 * I / 2532 + 395 * Q / 633;
-						G = Y - 233 * I / 844 - 135 * Q / 211;
-						B = Y - 2799 * I / 2532 + 365 * Q / 211;
-						if (R > 255) R = 255;
-						else if (R < 0) R = 0;
-						if (G > 255) G = 255;
-						else if (G < 0) G = 0;
-						if (B > 255) B = 255;
-						else if (B < 0) B = 0;
-						m_pBits[i] = (BYTE)B;
-						m_pBits[i+1] = (BYTE)G;
-						m_pBits[i+2] = (BYTE)R;
-					}
-				}
-			}
-			break;
-		}
-		case 32:
-		{
-			for (line = 0 ; line < GetHeight() ; line += nHeightInc)
-			{
-				for (i = GetWidth() * line ; i < (GetWidth() * (line+1)) ; i += nWidthInc)
-				{
-					BYTE R, G, B;
-					DIB32ToRGB(((DWORD*)m_pBits)[i], &R, &G, &B);
-					AverageImageBrightness += ((30 * (int)R + 59 * (int)G + 11 * (int)B) / 100);
-					pixcount++;
-				}
-			}
-			AverageImageBrightness /= pixcount;
-
-			if (HasAlpha())
-			{
-				for (line = 0 ; line < GetHeight() ; line++)
-				{
-					DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, GetHeight());
-
-					for (i = GetWidth() * line ; i < (GetWidth() * (line+1)) ; i++)
-					{
-						// Use the YIQ Color Space. Y is the Brightness.
-						int R, G, B, A;
-						DIB32ToRGBA(((DWORD*)m_pBits)[i], &R, &G, &B, &A);
-						int Y = (30 * R + 59 * G + 11 * B) / 100;
-						int I = (60 * R - 28 * G - 32 * B) / 100;
-						int Q = (21 * R - 52 * G + 31 * B) / 100;
-						if (Y != AverageImageBrightness)
-						{
-							fNewContrast = (((float)contrast) + 100.0f) / 100.0f;
-							Y = (int)(fNewContrast * ((float)(Y - AverageImageBrightness))) + AverageImageBrightness;
-							R = Y + 2401 * I / 2532 + 395 * Q / 633;
-							G = Y - 233 * I / 844 - 135 * Q / 211;
-							B = Y - 2799 * I / 2532 + 365 * Q / 211;
-							if (R > 255) R = 255;
-							else if (R < 0) R = 0;
-							if (G > 255) G = 255;
-							else if (G < 0) G = 0;
-							if (B > 255) B = 255;
-							else if (B < 0) B = 0;
-							((DWORD*)m_pBits)[i] = RGBAToDIB32(R, G, B, A);
-						}
-					}
-				}
-			}
-			else
-			{
-				for (line = 0 ; line < GetHeight() ; line++)
-				{
-					DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, GetHeight());
-
-					for (i = GetWidth() * line ; i < (GetWidth() * (line+1)) ; i++)
-					{
-						// Use the YIQ Color Space. Y is the Brightness.
-						int R, G, B;
-						DIB32ToRGB(((DWORD*)m_pBits)[i], &R, &G, &B);
-						int Y = (30 * R + 59 * G + 11 * B) / 100;
-						int I = (60 * R - 28 * G - 32 * B) / 100;
-						int Q = (21 * R - 52 * G + 31 * B) / 100;
-						if (Y != AverageImageBrightness)
-						{
-							fNewContrast = (((float)contrast) + 100.0f) / 100.0f;
-							Y = (int)(fNewContrast * ((float)(Y - AverageImageBrightness))) + AverageImageBrightness;
-							R = Y + 2401 * I / 2532 + 395 * Q / 633;
-							G = Y - 233 * I / 844 - 135 * Q / 211;
-							B = Y - 2799 * I / 2532 + 365 * Q / 211;
-							if (R > 255) R = 255;
-							else if (R < 0) R = 0;
-							if (G > 255) G = 255;
-							else if (G < 0) G = 0;
-							if (B > 255) B = 255;
-							else if (B < 0) B = 0;
-							((DWORD*)m_pBits)[i] = RGBToDIB32(R, G, B);
-						}
-					}
-				}
-			}
-			break;
-		}
-		default:
-			break;
-	}
-	m_wContrast = contrast;
-	DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
-}
-
-void CDib::AdjustGamma(	double gamma,
-						CWnd* pProgressWnd/*=NULL*/,
-						BOOL bProgressSend/*=TRUE*/)
-{
-	if (gamma == 1.0)
-		return;
-
-	if (!m_pBits)
-	{
-		if (!DibSectionToBits())
-			return;
-	}
-
-	if (!m_pBits || !m_pBMI)
-		return;
-
-	if (IsCompressed())
-	{
-		if (!Decompress(GetBitCount())) // Decompress
-			return;
-	}
-
-	// Create Gamma Lookup Table
-	double dInvGamma = 1.0 / gamma;
-	double dMax = pow(255.0, dInvGamma) / 255.0;
-	BYTE GammaLookUpTable[256];
-	for (int i = 0 ; i < 256 ; i++)
-		GammaLookUpTable[i] = (BYTE)MAX(0, MIN(255, (int)(pow((double)i, dInvGamma) / dMax)));
-
-	DoLookUpTable(GammaLookUpTable, pProgressWnd, bProgressSend);
-
-	m_dGamma = gamma;
 }
 
 // Negative
