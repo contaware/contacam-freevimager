@@ -246,14 +246,18 @@ BOOL CDib::AdjustImage(	short brightness,	// -255..255
 			return FALSE;
 	}
 
-	// Make sure we have a 32 bpp image with alpha or fast (with 0xFF0000, 0xFF00, 0xFF masks)
-	if (GetBitCount() != 32)
-		ConvertTo32bits();
-	else if (!HasAlpha() && !IsFast32bpp())
+	// Only 24 bpp or 32 bpp
+	if (GetBitCount() == 32)
 	{
-		ConvertTo24bits();
-		ConvertTo32bits();
+		// Make sure we have a 32 bpp image with alpha or fast (with 0xFF0000, 0xFF00, 0xFF masks)
+		if (!HasAlpha() && !IsFast32bpp())
+		{
+			ConvertTo24bits();
+			ConvertTo32bits();
+		}
 	}
+	else if (GetBitCount() < 24)
+		ConvertTo24bits();
 
 	// The first time this function is called make a copy of the image
 	if (bEnableUndo)
@@ -275,12 +279,18 @@ BOOL CDib::AdjustImage(	short brightness,	// -255..255
 	// bitmap is bottom-up and scan0 points to the start of
 	// the last scan line.
 	// -> to be correct we would have to set the stride to:
-	// -4 * GetWidth()
+	// -uiDIBScanLineSize
 	// and supply a pixels pointer of:
-	// GetBits() + (GetHeight() - 1) * 4 * GetWidth()
+	// GetBits() + (GetHeight() - 1) * uiDIBScanLineSize
 	// -> but while processing the single pixel colors who
 	// cares that CDib is bottom-up!
-	Gdiplus::Bitmap GdiPlusBm(GetWidth(), GetHeight(), 4 * GetWidth(), HasAlpha() ? PixelFormat32bppARGB : PixelFormat32bppRGB, GetBits());
+	Gdiplus::PixelFormat format;
+	if (GetBitCount() == 32)
+		format = HasAlpha() ? PixelFormat32bppARGB : PixelFormat32bppRGB;
+	else
+		format = PixelFormat24bppRGB;
+	DWORD uiDIBScanLineSize = DWALIGNEDWIDTHBYTES(GetWidth() * GetBitCount());
+	Gdiplus::Bitmap GdiPlusBm(GetWidth(), GetHeight(), uiDIBScanLineSize, format, GetBits());
 
 	// Adjust brightness and contrast
 	if (brightness != 0 || contrast != 0)
