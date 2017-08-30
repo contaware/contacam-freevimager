@@ -38,9 +38,8 @@ public:
 // Implementation
 protected:
 	BOOL IsModified();
-	BOOL DoIt();
-	BOOL AdjustColor(BOOL bAdjustPreviewDib);
-	CDib m_OldPreviewDib;
+	void DoIt();
+	void AdjustColor(BOOL bEnableUndo);
 	// Generated message map functions
 	//{{AFX_MSG(CHLSDlgModeless)
 	virtual BOOL OnInitDialog();

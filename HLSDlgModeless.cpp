@@ -94,22 +94,27 @@ BOOL CHLSDlgModeless::OnInitDialog()
 	int nMaxSizeX = szMonitor.cx;
 	int nMaxSizeY = szMonitor.cy;
 
-	// Alpha
-	CDib* pDib =	(pDoc->m_pDib->HasAlpha() && pDoc->m_pDib->GetBitCount() == 32) ?
-					&pDoc->m_AlphaRenderedDib :
-					pDoc->m_pDib;
-
-	// Store Preview Dib
-	if (pDib->GetPreviewDib() && pDib->GetPreviewDib()->IsValid())
-		m_OldPreviewDib = *(pDib->GetPreviewDib());
-
-	// Create Preview Dib
-	if ((int)pDib->GetWidth() <= nMaxSizeX &&
-		(int)pDib->GetHeight() <= nMaxSizeY)
-		pDib->CreatePreviewDib(pDib->GetWidth(), pDib->GetHeight());
+	// Work on Preview Dib if the Full Size Dib is too big
+	if ((int)pDoc->m_pDib->GetWidth() > nMaxSizeX || (int)pDoc->m_pDib->GetHeight() > nMaxSizeY)
+	{
+		BeginWaitCursor();
+		pDoc->m_pDib->CreatePreviewDib(nMaxSizeX, nMaxSizeY);
+		EndWaitCursor();
+	}
+	// Work on Preview Dib if a bit depth conversion is performed in AdjustImage()
+	else if (pDoc->m_pDib->GetBitCount() < 24 ||
+			(pDoc->m_pDib->GetBitCount() == 32 && !pDoc->m_pDib->HasAlpha() && !pDoc->m_pDib->IsFast32bpp()))
+	{
+		BeginWaitCursor();
+		pDoc->m_pDib->CreatePreviewDib(pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight());
+		EndWaitCursor();
+	}
+	// Work only on Full Size Dib
 	else
-		pDib->CreatePreviewDib(nMaxSizeX, nMaxSizeY);
+		pDoc->m_pDib->DeletePreviewDib();
 
+	// Update Alpha Rendered Dib and Invalidate
+	pDoc->UpdateAlphaRenderedDib();
 	pDoc->InvalidateAllViews(FALSE);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -131,7 +136,14 @@ void CHLSDlgModeless::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 		(SB_RIGHT == nSBCode))			// End Button
 	{
 		if (!m_bShowOriginal)
-			AdjustColor(TRUE); // Adjust Colors of the Preview Dib
+		{
+			// Adjust colors with undo
+			AdjustColor(TRUE);
+
+			// Update Alpha Rendered Dib and Invalidate
+			pDoc->UpdateAlphaRenderedDib();
+			pDoc->InvalidateAllViews(FALSE);
+		}
 	}
 
 	CDialog::OnVScroll(nSBCode, nPos, pScrollBar);
@@ -142,91 +154,79 @@ void CHLSDlgModeless::OnButtonUndo()
 	CPictureView* pView = (CPictureView*)m_pParentWnd;
 	CPictureDoc* pDoc = (CPictureDoc*)pView->GetDocument();
 
-	// Alpha
-	CDib* pDib =	(pDoc->m_pDib->HasAlpha() && pDoc->m_pDib->GetBitCount() == 32) ?
-					&pDoc->m_AlphaRenderedDib :
-					pDoc->m_pDib;
+	// Reset sliders
+	CSliderCtrl* pSlider;
+	pSlider = (CSliderCtrl*)GetDlgItem(IDC_SLIDER_BRIGHTNESS);
+	::SetRevertedPos(pSlider, 0);
+	pSlider = (CSliderCtrl*)GetDlgItem(IDC_SLIDER_CONTRAST);
+	::SetRevertedPos(pSlider, 0);
+	pSlider = (CSliderCtrl*)GetDlgItem(IDC_SLIDER_SATURATION);
+	::SetRevertedPos(pSlider, 0);
+	pSlider = (CSliderCtrl*)GetDlgItem(IDC_SLIDER_HUE);
+	::SetRevertedPos(pSlider, 0);
 
-	if (pDib->GetPreviewDib() && pDib->GetPreviewDib()->IsValid())
-	{
-		CSliderCtrl* pSlider;
-		pSlider = (CSliderCtrl*)GetDlgItem(IDC_SLIDER_BRIGHTNESS);
-		::SetRevertedPos(pSlider, 0);
-		pSlider = (CSliderCtrl*)GetDlgItem(IDC_SLIDER_CONTRAST);
-		::SetRevertedPos(pSlider, 0);
-		pSlider = (CSliderCtrl*)GetDlgItem(IDC_SLIDER_SATURATION);
-		::SetRevertedPos(pSlider, 0);
-		pSlider = (CSliderCtrl*)GetDlgItem(IDC_SLIDER_HUE);
-		::SetRevertedPos(pSlider, 0);
-
-		pDib->GetPreviewDib()->UndoColor();
+	// Undo Preview Dib
+	if (pDoc->m_pDib->GetPreviewDib())
+		pDoc->m_pDib->GetPreviewDib()->UndoColor();
+	// Undo Full Size Dib
+	else
+		pDoc->m_pDib->UndoColor();
 		
-		pDoc->InvalidateAllViews(FALSE);
-	}		
+	// Update Alpha Rendered Dib and Invalidate
+	pDoc->UpdateAlphaRenderedDib();
+	pDoc->InvalidateAllViews(FALSE);		
 }
 
-BOOL CHLSDlgModeless::AdjustColor(BOOL bAdjustPreviewDib)
+void CHLSDlgModeless::AdjustColor(BOOL bEnableUndo)
 {
 	CPictureView* pView = (CPictureView*)m_pParentWnd;
 	CPictureDoc* pDoc = (CPictureDoc*)pView->GetDocument();
 
-	BOOL res = FALSE;
-
-	if (bAdjustPreviewDib)
+	// Work on Preview Dib
+	if (pDoc->m_pDib->GetPreviewDib())
 	{
-		// Alpha
-		CDib* pDib =	(pDoc->m_pDib->HasAlpha() && pDoc->m_pDib->GetBitCount() == 32) ?
-						&pDoc->m_AlphaRenderedDib :
-						pDoc->m_pDib;
-
-		if (pDib->GetPreviewDib() && pDib->GetPreviewDib()->IsValid())
-		{
-			res = pDib->GetPreviewDib()->AdjustImage(::GetRevertedPos((CSliderCtrl*)GetDlgItem(IDC_SLIDER_BRIGHTNESS)),
+		pDoc->m_pDib->GetPreviewDib()->AdjustImage(	::GetRevertedPos((CSliderCtrl*)GetDlgItem(IDC_SLIDER_BRIGHTNESS)),
 													::GetRevertedPos((CSliderCtrl*)GetDlgItem(IDC_SLIDER_CONTRAST)),
 													::GetRevertedPos((CSliderCtrl*)GetDlgItem(IDC_SLIDER_SATURATION)),
 													::GetRevertedPos((CSliderCtrl*)GetDlgItem(IDC_SLIDER_HUE)),
-													TRUE); // Enable Undo
-
-			pDoc->InvalidateAllViews(FALSE);
-		}
+													bEnableUndo);
 	}
+	// Work on Full Size Dib
 	else
 	{
-		if (pDoc->m_pDib && pDoc->m_pDib->IsValid())
-		{
-			res = pDoc->m_pDib->AdjustImage(::GetRevertedPos((CSliderCtrl*)GetDlgItem(IDC_SLIDER_BRIGHTNESS)),
-											::GetRevertedPos((CSliderCtrl*)GetDlgItem(IDC_SLIDER_CONTRAST)),
-											::GetRevertedPos((CSliderCtrl*)GetDlgItem(IDC_SLIDER_SATURATION)),
-											::GetRevertedPos((CSliderCtrl*)GetDlgItem(IDC_SLIDER_HUE)),
-											FALSE); // Disable Undo
-			
-			pDoc->InvalidateAllViews(FALSE);
-		}
+		pDoc->m_pDib->AdjustImage(	::GetRevertedPos((CSliderCtrl*)GetDlgItem(IDC_SLIDER_BRIGHTNESS)),
+									::GetRevertedPos((CSliderCtrl*)GetDlgItem(IDC_SLIDER_CONTRAST)),
+									::GetRevertedPos((CSliderCtrl*)GetDlgItem(IDC_SLIDER_SATURATION)),
+									::GetRevertedPos((CSliderCtrl*)GetDlgItem(IDC_SLIDER_HUE)),
+									bEnableUndo);
 	}
-
-	return res;
 }
 
 void CHLSDlgModeless::OnCheckShowOriginal() 
 {
+	CPictureView* pView = (CPictureView*)m_pParentWnd;
+	CPictureDoc* pDoc = (CPictureDoc*)pView->GetDocument();
+
 	UpdateData(TRUE);
+
 	if (m_bShowOriginal)
 	{
-		CPictureView* pView = (CPictureView*)m_pParentWnd;
-		CPictureDoc* pDoc = (CPictureDoc*)pView->GetDocument();
-
-		// Alpha
-		CDib* pDib =	(pDoc->m_pDib->HasAlpha() && pDoc->m_pDib->GetBitCount() == 32) ?
-						&pDoc->m_AlphaRenderedDib :
-						pDoc->m_pDib;
-
-		if (pDib->GetPreviewDib() && pDib->GetPreviewDib()->IsValid())
-			pDib->GetPreviewDib()->UndoColor();
-
-		pDoc->InvalidateAllViews(FALSE);
+		// Undo Preview Dib
+		if (pDoc->m_pDib->GetPreviewDib())
+			pDoc->m_pDib->GetPreviewDib()->UndoColor();
+		// Undo Full Size Dib
+		else
+			pDoc->m_pDib->UndoColor();
 	}
 	else
-		AdjustColor(TRUE); // Adjust Colors of the Preview Dib
+	{
+		// Adjust colors with undo
+		AdjustColor(TRUE);
+	}
+
+	// Update Alpha Rendered Dib and Invalidate
+	pDoc->UpdateAlphaRenderedDib();
+	pDoc->InvalidateAllViews(FALSE);
 }
 
 BOOL CHLSDlgModeless::IsModified()
@@ -247,60 +247,45 @@ BOOL CHLSDlgModeless::IsModified()
 	return FALSE;
 }
 
-BOOL CHLSDlgModeless::DoIt()
+void CHLSDlgModeless::DoIt()
 {
 	CPictureView* pView = (CPictureView*)m_pParentWnd;
 	CPictureDoc* pDoc = (CPictureDoc*)pView->GetDocument();
 
-	// Alpha
-	CDib* pDib =	(pDoc->m_pDib->HasAlpha() && pDoc->m_pDib->GetBitCount() == 32) ?
-					&pDoc->m_AlphaRenderedDib :
-					pDoc->m_pDib;
-
-	// Restore Original Preview Dib
-	if (m_OldPreviewDib.IsValid())
-		*(pDib->GetPreviewDib()) = m_OldPreviewDib;
-	// Delete Preview Dib
+	// Work only on Full Size Dib
+	if (pDoc->m_pDib->GetPreviewDib())
+		pDoc->m_pDib->DeletePreviewDib();
+	// Undo Full Size Dib and clean-up
 	else
-		pDib->DeletePreviewDib();
-
-	// Do Nothing if Regulators are all reset
-	if (!IsModified())
 	{
-		// Update Alpha Rendered Dib
-		pDoc->UpdateAlphaRenderedDib();
-
-		// Invalidate
-		pDoc->InvalidateAllViews(FALSE);
-
-		return TRUE;
+		pDoc->m_pDib->UndoColor();
+		pDoc->m_pDib->ResetColorUndo();
 	}
 
-	// Add pDoc->m_pDib To Undo Array
-	pDoc->AddUndo();
-	
-	// Adjust Color:
-	BeginWaitCursor();
-	AdjustColor(TRUE); // Of Preview (if any)
-	BOOL res = AdjustColor(FALSE); // Of Picture
-	EndWaitCursor();
+	// Are sliders set?
+	if (IsModified())
+	{
+		// Add pDoc->m_pDib To Undo Array
+		pDoc->AddUndo();
 
-	// Update Alpha Rendered Dib
+		// Adjust colors without undo (of the Full Size Dib)
+		BeginWaitCursor();
+		AdjustColor(FALSE);
+		EndWaitCursor();
+
+		// Set Modified Flag
+		pDoc->SetModifiedFlag();
+
+		// Document Title
+		pDoc->SetDocumentTitle();
+
+		// Update Image Information
+		pDoc->UpdateImageInfo();
+	}
+
+	// Update Alpha Rendered Dib and Invalidate
 	pDoc->UpdateAlphaRenderedDib();
-
-	// Set Modified Flag
-	pDoc->SetModifiedFlag();
-
-	// Document Title
-	pDoc->SetDocumentTitle();
-
-	// Invalidate
 	pDoc->InvalidateAllViews(FALSE);
-
-	// Update Image Information
-	pDoc->UpdateImageInfo();
-
-	return res;
 }
 
 BOOL CHLSDlgModeless::OnCommand(WPARAM wParam, LPARAM lParam) 
@@ -331,20 +316,21 @@ void CHLSDlgModeless::OnClose()
 	CPictureView* pView = (CPictureView*)m_pParentWnd;
 	CPictureDoc* pDoc = (CPictureDoc*)pView->GetDocument();
 
-	// Alpha
-	CDib* pDib =	(pDoc->m_pDib->HasAlpha() && pDoc->m_pDib->GetBitCount() == 32) ?
-					&pDoc->m_AlphaRenderedDib :
-					pDoc->m_pDib;
-
-	// Restore Original Preview Dib
-	if (m_OldPreviewDib.IsValid())
-		*(pDib->GetPreviewDib()) = m_OldPreviewDib;
-	// Delete Preview Dib
+	// Work only on Full Size Dib
+	if (pDoc->m_pDib->GetPreviewDib())
+		pDoc->m_pDib->DeletePreviewDib();
+	// Undo Full Size Dib and clean-up
 	else
-		pDib->DeletePreviewDib();
+	{
+		pDoc->m_pDib->UndoColor();
+		pDoc->m_pDib->ResetColorUndo();
+	}
 
+	// Update Alpha Rendered Dib and Invalidate
 	pDoc->UpdateAlphaRenderedDib();
 	pDoc->InvalidateAllViews(FALSE);
+
+	// Destroy dialog window
 	DestroyWindow();
 }
 
