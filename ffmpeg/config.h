@@ -6,7 +6,7 @@
 #define CONFIG_THIS_YEAR 2017
 #define FFMPEG_DATADIR "/usr/local/share/ffmpeg"
 #define AVCONV_DATADIR "/usr/local/share/ffmpeg"
-#define CC_IDENT "gcc 5.3.0 (GCC)"
+#define CC_IDENT "gcc 6.3.0 (MinGW.org GCC-6.3.0-1)"
 #define av_restrict restrict
 #define EXTERN_PREFIX "_"
 #define EXTERN_ASM _

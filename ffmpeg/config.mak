@@ -17,7 +17,7 @@ SRC_LINK=.
 ifndef MAIN_MAKEFILE
 SRC_PATH:=$(SRC_PATH:.%=..%)
 endif
-CC_IDENT=gcc 5.3.0 (GCC)
+CC_IDENT=gcc 6.3.0 (MinGW.org GCC-6.3.0-1)
 ARCH=x86
 INTRINSICS=none
 CC=gcc
@@ -39,7 +39,7 @@ STRIP=strip
 CP=cp -p
 LN_S=ln -s -f
 CPPFLAGS= -D_ISOC99_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U__STRICT_ANSI__ -D__USE_MINGW_ANSI_STDIO=1 -D_WIN32_WINNT=0x0502 -D__MSVCRT_VERSION__=0x0700 -D__printf__=__gnu_printf__
-CFLAGS=  -mstackrealign -march=i686 -std=c11 -fomit-frame-pointer -Id:/mingw/include -Wdeclaration-after-statement -Wall -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -Wwrite-strings -Wtype-limits -Wundef -Wmissing-prototypes -Wno-pointer-to-int-cast -Wstrict-prototypes -Wempty-body -Wno-parentheses -Wno-switch -Wno-format-zero-length -Wno-pointer-sign -O3 -fno-math-errno -fno-signed-zeros -fno-tree-vectorize -Werror=format-security -Werror=implicit-function-declaration -Werror=missing-prototypes -Werror=return-type -Werror=vla -Wformat -fdiagnostics-color=auto -Wno-maybe-uninitialized
+CFLAGS=  -mstackrealign -march=i686 -std=c11 -fomit-frame-pointer -Id:/mingw/include -Wdeclaration-after-statement -Wall -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -Wwrite-strings -Wtype-limits -Wundef -Wmissing-prototypes -Wno-pointer-to-int-cast -Wstrict-prototypes -Wempty-body -Wno-parentheses -Wno-switch -Wno-format-zero-length -Wno-pointer-sign -Wno-unused-const-variable -O3 -fno-math-errno -fno-signed-zeros -fno-tree-vectorize -Werror=format-security -Werror=implicit-function-declaration -Werror=missing-prototypes -Werror=return-type -Werror=vla -Wformat -fdiagnostics-color=auto -Wno-maybe-uninitialized
 CXXFLAGS=  -D__STDC_CONSTANT_MACROS -std=c++11
 OBJCFLAGS=  
 ASFLAGS=  -mstackrealign -march=i686

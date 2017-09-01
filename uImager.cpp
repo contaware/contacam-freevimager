@@ -879,6 +879,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 										AV_CPU_FLAG_SSE42     |
 										AV_CPU_FLAG_AESNI     |
 										AV_CPU_FLAG_AVX       |
+										AV_CPU_FLAG_AVXSLOW   |
 										AV_CPU_FLAG_XOP       |
 										AV_CPU_FLAG_FMA3      |
 										AV_CPU_FLAG_FMA4      |

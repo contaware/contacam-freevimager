@@ -10,13 +10,8 @@ FFMPEG
 
 1. Copy yasm.exe and nasm.exe to c:\mingw\bin
 
-2. Copy latest c:\mingw\lib\gcc\mingw32\5.3.0\libgcc.a to /c/uimager/ffmpeg/mingw
+2. Copy latest c:\mingw\lib\gcc\mingw32\6.3.0\libgcc.a to /c/uimager/ffmpeg/mingw
                c:\mingw\lib\libmingwex.a to /c/uimager/ffmpeg/mingw
-			   
-   In VS2010 to correctly link we have to remove pow.o from libmingwex.a,
-   perform the following in visual studio command prompt:
-   $ lib -remove:pow.o libmingwex.a
-   $ rename libmingwex.lib libmingwex.a
    
    In VS2015 to correctly link we have to remove pow.o, strtoimax.o, strtof.o, sinf.o and exp2f.o from libmingwex.a,
    perform the following in visual studio command prompt:
@@ -38,7 +33,7 @@ X264 (to disable asm and multi-threading use --disable-asm --disable-thread)
 ----------------------------------------------------------------------------
 
 Put library source to /src and extract it
-(get src from: http://download.videolan.org/pub/videolan/x264/snapshots/last_stable_x264.tar.bz2)
+(get stable src from: ftp://ftp.videolan.org/pub/videolan/x264/snapshots/)
 
 Apparently mingw doesn't support 32-bytes stack alignment on Windows (-mpreferred-stack-boundary=5),
 this effectively prevents the use of 256-bit AVX instructions. In our code we prevent the use of AVX
@@ -149,6 +144,7 @@ av_force_cpu_flags(uiFlags & ~( AV_CPU_FLAG_3DNOW     |
 								AV_CPU_FLAG_SSE42     |
 								AV_CPU_FLAG_AESNI     |
 								AV_CPU_FLAG_AVX       |
+								AV_CPU_FLAG_AVXSLOW   |
 								AV_CPU_FLAG_XOP       |
 								AV_CPU_FLAG_FMA3      |
 								AV_CPU_FLAG_FMA4      |
