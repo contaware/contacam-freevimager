@@ -36,6 +36,8 @@
 #include "SettingsDlgVideoDeviceDoc.h"
 #include <WinSvc.h>
 #include "HostPortDlg.h"
+#include <PowrProf.h>
+#pragma comment(lib, "PowrProf.lib")
 #else
 #include "SettingsDlg.h"
 #endif
@@ -1054,11 +1056,56 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		::AfxGetMainFrame()->m_MDIClientWnd.Invalidate();
 
 		// Log the starting of the application
-		CString sAppId(CString(APPNAME_NOEXT) + _T(" ") + APPVERSION + _T(" (") + CString(_T(__TIME__)) + CString(_T(" ")) + CString(_T(__DATE__)) + _T(")"));
+		CString sMsg(CString(APPNAME_NOEXT) + _T(" ") + APPVERSION + _T(" (") + CString(_T(__TIME__)) + CString(_T(" ")) + CString(_T(__DATE__)) + _T(")"));
 		if (m_bServiceProcess)
-			::LogLine(_T("%s"), ML_STRING(1764, "Starting") + _T(" ") + sAppId + _T(" - SERVICE MODE"));
+			::LogLine(_T("%s"), ML_STRING(1764, "Starting") + _T(" ") + sMsg + _T(" - SERVICE MODE"));
 		else
-			::LogLine(_T("%s"), ML_STRING(1764, "Starting") + _T(" ") + sAppId);
+			::LogLine(_T("%s"), ML_STRING(1764, "Starting") + _T(" ") + sMsg);
+
+		// Warn if Sleep and/or Hibernation is enabled
+		GUID* pActivePolicyGuid = NULL;
+		if (::PowerGetActiveScheme(NULL, &pActivePolicyGuid) == ERROR_SUCCESS)
+		{
+			const GUID subGUID = GUID_SLEEP_SUBGROUP;
+
+			// Sleep
+			GUID activeGUID = GUID_STANDBY_TIMEOUT;
+			DWORD dwStandbyTimeout = 0;
+			::PowerReadACValueIndex(NULL, pActivePolicyGuid, &subGUID, &activeGUID, &dwStandbyTimeout);
+
+			// Hibernation
+			activeGUID = GUID_HIBERNATE_TIMEOUT;
+			DWORD dwHibernateTimeout = 0;
+			::PowerReadACValueIndex(NULL, pActivePolicyGuid, &subGUID, &activeGUID, &dwHibernateTimeout);
+			SYSTEM_POWER_CAPABILITIES SystemPowerCapabilities = { 0 };
+			::GetPwrCapabilities(&SystemPowerCapabilities);
+			if (!SystemPowerCapabilities.HiberFilePresent)
+				dwHibernateTimeout = 0;
+
+			if (dwStandbyTimeout != 0 && dwHibernateTimeout != 0)
+			{
+				sMsg = ML_STRING(1570, "In Power Options disable: ") + ML_STRING(1571, "Sleep") + _T(" + ") + ML_STRING(1572, "Hibernate");
+				if (!m_bServiceProcess)
+					::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, sMsg);
+				::LogLine(_T("%s"), sMsg);
+			}
+			else if (dwStandbyTimeout != 0)
+			{
+				sMsg = ML_STRING(1570, "In Power Options disable: ") + ML_STRING(1571, "Sleep");
+				if (!m_bServiceProcess)
+					::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, sMsg);
+				::LogLine(_T("%s"), sMsg);
+			}
+			else if (dwHibernateTimeout != 0)
+			{
+				sMsg = ML_STRING(1570, "In Power Options disable: ") + ML_STRING(1572, "Hibernate");
+				if (!m_bServiceProcess)
+					::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, sMsg);
+				::LogLine(_T("%s"), sMsg);
+			}
+		}
+		if (pActivePolicyGuid)
+			::LocalFree(pActivePolicyGuid);
 
 		// Update / create doc root index.php and config file for microapache
 		CVideoDeviceDoc::MicroApacheUpdateMainFiles();
@@ -1069,14 +1116,21 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		//       and the browser autostart need it
 		if (m_bStartMicroApache && !CVideoDeviceDoc::MicroApacheStart(MICROAPACHE_STARTUP_TIMEOUT_MS))
 		{
-			CString sMsg(ML_STRING(1475, "Failed to start the web server"));
+			sMsg = ML_STRING(1475, "Failed to start the web server");
 			if (!m_bServiceProcess)
 				::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, sMsg, 0);
 			::LogLine(_T("%s"), sMsg);
 		}
 
-		// Autorun Devices
-		AutorunVideoDevices();
+		// Autorun devices with a delay of m_dwFirstStartDelayMs
+		CPostDelayedMessageThread::PostDelayedMessage(	::AfxGetMainFrame()->GetSafeHwnd(),
+														WM_AUTORUN_VIDEODEVICES,
+														m_dwFirstStartDelayMs,
+														0, 0);
+		sMsg.Format(ML_STRING(1569, "Cameras autostart delay %d sec"), (int)(m_dwFirstStartDelayMs / 1000));
+		if (!m_bServiceProcess)
+			::AfxGetMainFrame()->StatusText(sMsg);
+		::LogLine(_T("%s"), sMsg);
 
 		// Start Browser
 		if (m_bBrowserAutostart && !m_bServiceProcess)
@@ -1790,29 +1844,6 @@ BOOL CUImagerApp::AreDocsOpen()
 	return FALSE;
 }
 
-int CUImagerApp::GetOpenDocsCount()
-{
-	CDocument* pDoc;
-	CUImagerMultiDocTemplate* curTemplate;
-	POSITION posTemplate, posDoc;
-	int nCount = 0;
-
-	posTemplate = GetFirstDocTemplatePosition();
-	while (posTemplate)
-	{
-		curTemplate = (CUImagerMultiDocTemplate*)GetNextDocTemplate(posTemplate);
-		posDoc = curTemplate->GetFirstDocPosition();
-		while (posDoc)
-		{
-			pDoc = curTemplate->GetNextDoc(posDoc);
-			if (pDoc)
-				++nCount;
-		}
-	}
-
-	return nCount;
-}
-
 BOOL CUImagerApp::ArePictureDocsOpen()
 {
 	CUImagerMultiDocTemplate* pPictureDocTemplate = GetPictureDocTemplate();
@@ -2149,48 +2180,6 @@ CPictureDoc* CUImagerApp::SlideShow(LPCTSTR sStartDirName, BOOL bRecursive)
 }
 
 #ifdef VIDEODEVICEDOC
-
-void CUImagerApp::AutorunVideoDevices(BOOL bStartDelay/*=TRUE*/)
-{
-	// Start delay?
-	if (bStartDelay)
-	{
-		// Delay the start by m_dwFirstStartDelayMs ms
-		CPostDelayedMessageThread::PostDelayedMessage(	::AfxGetMainFrame()->GetSafeHwnd(),
-														WM_AUTORUN_VIDEODEVICES,
-														m_dwFirstStartDelayMs,
-														0, 0);
-
-		// Show starting toaster
-		if (!m_bServiceProcess && m_dwFirstStartDelayMs > 0U)
-		{
-			::AfxGetMainFrame()->PopupToaster(	ML_STRING(1764, "Starting") + _T(" ") + APPNAME_NOEXT,
-												ML_STRING(1565, "Please wait..."),
-												m_dwFirstStartDelayMs);
-		}
-	}
-	else
-	{
-		// Start devices
-		for (unsigned int i = 0 ; i < MAX_DEVICE_AUTORUN_KEYS ; i++)
-		{
-			CString sKey, sDevRegistry;
-			sKey.Format(_T("%02u"), i);
-			if ((sDevRegistry = GetProfileString(_T("DeviceAutorun"), sKey, _T(""))) != _T(""))
-			{
-				// Open Empty Document
-				CVideoDeviceDoc* pDoc = (CVideoDeviceDoc*)GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
-				if (pDoc)
-				{
-					if (CVideoDeviceDoc::GetHostFromDevicePathName(sDevRegistry) != _T(""))
-						pDoc->OpenNetVideoDevice(sDevRegistry);
-					else
-						pDoc->OpenDxVideoDevice(-1, sDevRegistry, GetProfileString(sDevRegistry, _T("DeviceName"), _T("")));
-				}
-			}
-		}
-	}
-}
 
 int CUImagerApp::GetContaCamServiceState()
 { 

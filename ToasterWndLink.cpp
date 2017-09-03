@@ -8,19 +8,22 @@
 
 BOOL CToasterNotificationLink::IsClickable(const CString& sText)
 {
-	int nIndexHttp = sText.Find(_T("http://"));
-	int nIndexHttps = sText.Find(_T("https://"));
-	return (::IsExistingFile(sText) || ::IsExistingDir(sText) || nIndexHttp == 0 || nIndexHttps == 0);
+	return (::IsExistingFile(sText)			||
+			::IsExistingDir(sText)			||
+			sText.Find(_T("http://")) == 0	||
+			sText.Find(_T("https://")) == 0	||
+			sText.Find(ML_STRING(1570, "In Power Options disable: ")) == 0);
 }
 
 void CToasterNotificationLink::OnBodyTextClicked(CToasterWnd* pFrom)
 {
 	if (IsClickable(pFrom->m_sText))
 	{
-		// Open file/folder or web page
-		::ShellExecute(NULL, _T("open"), pFrom->m_sText, NULL, NULL, SW_SHOWNORMAL);
+		if (pFrom->m_sText.Find(ML_STRING(1570, "In Power Options disable: ")) == 0)
+			::ShellExecute(NULL, NULL, _T("control.exe"), _T("/name Microsoft.PowerOptions /page pagePlanSettings"), NULL, SW_SHOWNORMAL);
+		else
+			::ShellExecute(NULL, _T("open"), pFrom->m_sText, NULL, NULL, SW_SHOWNORMAL);
 
-		// Close toaster
 		::AfxGetMainFrame()->CloseToaster();
 	}
 }

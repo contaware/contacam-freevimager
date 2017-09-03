@@ -4046,6 +4046,10 @@ END
 STRINGTABLE
 BEGIN
     IDS_STRING1568          "Unplugged"
+    IDS_STRING1569          "Cameras autostart delay %d sec"
+    IDS_STRING1570          "In Power Options disable: "
+    IDS_STRING1571          "Sleep"
+    IDS_STRING1572          "Hibernate"
     IDS_STRING1574          "File"
     IDS_STRING1575          "Files"
     IDS_STRING1576          "More Colors..."

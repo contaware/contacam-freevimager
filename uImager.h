@@ -395,18 +395,12 @@ public:
 	// Is At least One Document Open?
 	BOOL AreDocsOpen();
 
-	// Returns the count of all open documents
-	int GetOpenDocsCount();
-
 	// Is At least One Picture Document Open?
 	BOOL ArePictureDocsOpen();
 	
 #ifdef VIDEODEVICEDOC
 	// Is At least One Video Device Document Open?
 	BOOL AreVideoDeviceDocsOpen();
-
-	// Autorun Video Devices
-	void AutorunVideoDevices(BOOL bStartDelay = TRUE);
 
 	// Get current ContaCamService state
 	// returns:	CONTACAMSERVICE_NOTINSTALLED

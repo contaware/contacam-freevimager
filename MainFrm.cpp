@@ -1036,7 +1036,24 @@ LONG CMainFrame::OnThreadSafeOpenDoc(WPARAM wparam, LPARAM lparam)
 
 LONG CMainFrame::OnAutorunVideoDevices(WPARAM wparam, LPARAM lparam)
 {
-	((CUImagerApp*)::AfxGetApp())->AutorunVideoDevices(FALSE);
+	if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
+		StatusText();
+	for (unsigned int i = 0; i < MAX_DEVICE_AUTORUN_KEYS; i++)
+	{
+		CString sKey, sDevRegistry;
+		sKey.Format(_T("%02u"), i);
+		if ((sDevRegistry = ::AfxGetApp()->GetProfileString(_T("DeviceAutorun"), sKey, _T(""))) != _T(""))
+		{
+			CVideoDeviceDoc* pDoc = (CVideoDeviceDoc*)((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
+			if (pDoc)
+			{
+				if (CVideoDeviceDoc::GetHostFromDevicePathName(sDevRegistry) != _T(""))
+					pDoc->OpenNetVideoDevice(sDevRegistry);
+				else
+					pDoc->OpenDxVideoDevice(-1, sDevRegistry, ::AfxGetApp()->GetProfileString(sDevRegistry, _T("DeviceName"), _T("")));
+			}
+		}
+	}
 	return 0;
 }
 
