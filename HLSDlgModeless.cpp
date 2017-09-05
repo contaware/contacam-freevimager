@@ -62,29 +62,29 @@ BOOL CHLSDlgModeless::OnInitDialog()
 	CSliderCtrl* pSlider;
 
 	pSlider = (CSliderCtrl*)GetDlgItem(IDC_SLIDER_BRIGHTNESS);
-	pSlider->SetRange(-200, 200, TRUE);
-	pSlider->SetTicFreq(20);
+	pSlider->SetRange(-50, 50, TRUE);
+	pSlider->SetTicFreq(1);
 	pSlider->SetLineSize(1);
 	pSlider->SetPageSize(10);
 	::SetRevertedPos(pSlider, 0);
 
 	pSlider = (CSliderCtrl*)GetDlgItem(IDC_SLIDER_CONTRAST);
-	pSlider->SetRange(-80, 80, TRUE);
-	pSlider->SetTicFreq(20);
+	pSlider->SetRange(-50, 50, TRUE);
+	pSlider->SetTicFreq(1);
 	pSlider->SetLineSize(1);
 	pSlider->SetPageSize(10);
 	::SetRevertedPos(pSlider, 0);
 
 	pSlider = (CSliderCtrl*)GetDlgItem(IDC_SLIDER_SATURATION);
 	pSlider->SetRange(-100, 100, TRUE);
-	pSlider->SetTicFreq(20);
+	pSlider->SetTicFreq(2);
 	pSlider->SetLineSize(1);
 	pSlider->SetPageSize(10);
 	::SetRevertedPos(pSlider, 0);
 
 	pSlider = (CSliderCtrl*)GetDlgItem(IDC_SLIDER_HUE);
 	pSlider->SetRange(-180, 180, TRUE);
-	pSlider->SetTicFreq(60);
+	pSlider->SetTicFreq(4);
 	pSlider->SetLineSize(1);
 	pSlider->SetPageSize(10);
 	::SetRevertedPos(pSlider, 0);
