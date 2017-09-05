@@ -551,8 +551,10 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		{
 			if (m_pDoc->m_nDetectionLevel == 100 || g_nLogLevel > 0 || dwFramesTimeMs > MOVDET_MIN_FRAMES_TIME_CHECK_MSEC)
 			{
-				::LogLine(	ML_STRING(1840, "%s, attention cannot realtime save the detections: SaveTime=%0.1fsec > FramesTime=%0.1fsec"),
+				::LogLine(	ML_STRING(1839, "%s, attention cannot realtime save the detections: SaveTime=%0.1fsec > FramesTime=%0.1fsec"),
 							m_pDoc->GetAssignedDeviceName(), (double)dwSaveTimeMs / 1000.0, (double)dwFramesTimeMs / 1000.0);
+				::LogLine(	ML_STRING(1840, "%s, consider lowering the framerate and/or video resolution!"),
+							m_pDoc->GetAssignedDeviceName());
 			}
 		}
 		else
