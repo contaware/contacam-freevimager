@@ -5872,14 +5872,14 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	TCHAR szDrive[_MAX_DRIVE];
 	TCHAR szDir[_MAX_DIR];
 	TCHAR szProgramName[MAX_PATH];
-	CString sMicroapacheHtDocs;
 	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
 		return;
 	_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-	sMicroapacheHtDocs = CString(szDrive) + CString(szDir) + MICROAPACHE_HTDOCS + _T("\\");
 
-	// Copy index.php to Doc Root (overwrite if existing)
-	::CopyFile(sMicroapacheHtDocs + PHP_INDEXROOTDIRNAME_EXT, sDocRoot + _T("\\") + PHP_INDEXNAME_EXT, FALSE);
+	// Copy index.php to Doc Root
+	::CopyFile(	CString(szDrive) + CString(szDir) + MICROAPACHE_HTDOCS + _T("\\") + PHP_INDEXROOTDIRNAME_EXT,
+				sDocRoot + _T("\\") + PHP_INDEXNAME_EXT,
+				FALSE); // overwrite if existing
 
 	// Warning
 	CString sConfig, sFormat;
@@ -5955,12 +5955,15 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	sConfig += _T("php_value session.gc_maxlifetime 1440\r\n");	// session maximum lifetime is 1440 seconds
 
 	// SSL
+	CString sSSLCertificateDir = CString(szDrive) + CString(szDir);
+	sSSLCertificateDir = ::GetASCIICompatiblePath(sSSLCertificateDir); // directory must exist!
+	sSSLCertificateDir.Replace(_T('\\'), _T('/')); // change path from \ to / (otherwise apache is not happy)
 	sFormat.Format(_T("<VirtualHost *:%d>\r\n"), ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePortSSL);
 	sConfig += sFormat;
 	sConfig += _T("ServerName localhost\r\n");
 	sConfig += _T("SSLEngine on\r\n");
-	sConfig += _T("SSLCertificateFile \"") + CString(szDrive) + CString(szDir) + _T("https.crt") + _T("\"\r\n");
-	sConfig += _T("SSLCertificateKeyFile \"") + CString(szDrive) + CString(szDir) + _T("https.key") + _T("\"\r\n");
+	sConfig += _T("SSLCertificateFile \"") + sSSLCertificateDir + _T("https.crt") + _T("\"\r\n");
+	sConfig += _T("SSLCertificateKeyFile \"") + sSSLCertificateDir + _T("https.key") + _T("\"\r\n");
 	sConfig += _T("</VirtualHost>\r\n");
 
 	// Do not allow .htaccess files and setup the rewrite engine
@@ -6180,27 +6183,22 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 
 BOOL CVideoDeviceDoc::MicroApacheUpdateWebFiles(CString sAutoSaveDir)
 {
-	// Source directory
+	// Init source directory file find
 	TCHAR szDrive[_MAX_DRIVE];
 	TCHAR szDir[_MAX_DIR];
 	TCHAR szProgramName[MAX_PATH];
 	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
 		return FALSE;
 	_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-	CString sMicroapacheHtDocs = CString(szDrive) + CString(szDir) + MICROAPACHE_HTDOCS + _T("\\");
-	
-	// Destination directory
-	sAutoSaveDir.TrimRight(_T('\\'));
-	sAutoSaveDir += _T('\\');
-
-	// Init source directory file find
 	CSortableFileFind FileFind;
-	if (!FileFind.InitRecursive(sMicroapacheHtDocs + _T("*"), FALSE))
+	if (!FileFind.InitRecursive(CString(szDrive) + CString(szDir) + MICROAPACHE_HTDOCS + _T("\\*"), FALSE))
 		return FALSE;
 	if (FileFind.WaitRecursiveDone() != 1)
 		return FALSE;
 
 	// Create dirs
+	sAutoSaveDir.TrimRight(_T('\\'));
+	sAutoSaveDir += _T('\\');
 	CString sRootDirName = FileFind.GetRootDirName();
 	sRootDirName.TrimRight(_T('\\'));
 	int nRootDirNameSize = sRootDirName.GetLength() + 1;
