@@ -2431,9 +2431,9 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 			CString sCRTHeapType;
 			switch (nCRTHeapType)
 			{
-				case 0:	sCRTHeapType = _T("regular"); break;
-				case 1:	sCRTHeapType = _T("look-asides"); break;
-				case 2:	sCRTHeapType = _T("LFH"); break;
+				case 0:		sCRTHeapType = _T("regular"); break;
+				case 1:		sCRTHeapType = _T("look-asides"); break;
+				case 2:		sCRTHeapType = _T("LFH"); break;
 				default:	sCRTHeapType = _T("unknown"); break;
 			}
 

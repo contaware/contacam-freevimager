@@ -372,8 +372,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 					AddFrameCount(&VideoSaveDib, m_pDoc->m_nMovDetSavesCount, m_pDoc->m_nRefFontSize);
 				}
 
-				// Open
-				if (!AVRecVideo.IsOpen())
+				// Open if first frame
+				if (nFrames == m_nNumFramesToSave)
 				{
 					BITMAPINFOHEADER DstBmi;
 					memset(&DstBmi, 0, sizeof(BITMAPINFOHEADER));
@@ -382,20 +382,30 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 					DstBmi.biHeight = VideoSaveDib.GetHeight();
 					DstBmi.biPlanes = 1;
 					DstBmi.biCompression = ::GetFileExt(AVRecVideo.GetFileName()) == _T(".mp4") ? DEFAULT_MP4_VIDEO_FOURCC : DEFAULT_VIDEO_FOURCC;
-					AVRecVideo.AddVideoStream(VideoSaveDib.GetBMI(),			// Source Video Format
-											(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
-											CalcFrameRate.num,					// Rate
-											CalcFrameRate.den,					// Scale			
-											m_pDoc->m_fVideoRecQuality,
-											((CUImagerApp*)::AfxGetApp())->m_nCoresCount);
+					if (AVRecVideo.AddVideoStream(	VideoSaveDib.GetBMI(),		// Source Video Format
+													(LPBITMAPINFO)(&DstBmi),	// Destination Video Format
+													CalcFrameRate.num,			// Rate
+													CalcFrameRate.den,			// Scale			
+													m_pDoc->m_fVideoRecQuality,
+													((CUImagerApp*)::AfxGetApp())->m_nCoresCount) < 0)
+					{
+						::LogLine(	_T("%s while saving motion detection failed to add video stream (video size=%dx%d, fps=%d/%d, used cpu cores=%d)"),
+									m_pDoc->GetAssignedDeviceName(), DstBmi.biWidth, DstBmi.biHeight, CalcFrameRate.num, CalcFrameRate.den, ((CUImagerApp*)::AfxGetApp())->m_nCoresCount);
+					}
 					if (m_pDoc->m_bCaptureAudio)
 					{	
-						AVRecVideo.AddAudioStream(	m_pDoc->m_pSrcWaveFormat,	// Src Wave Format
-													m_pDoc->m_pDstWaveFormat);	// Dst Wave Format
+						if (AVRecVideo.AddAudioStream(	m_pDoc->m_pSrcWaveFormat,		// Src Wave Format
+														m_pDoc->m_pDstWaveFormat) < 0)	// Dst Wave Format
+						{
+							::LogLine(	_T("%s while saving motion detection failed to add audio stream (sample rate=%d, channels=%d)"),
+										m_pDoc->GetAssignedDeviceName(), m_pDoc->m_pDstWaveFormat->nSamplesPerSec, m_pDoc->m_pDstWaveFormat->nChannels);
+						}
 					}
-					AVRecVideo.Open();
+					if (!AVRecVideo.Open())
+						::LogLine(_T("%s while saving motion detection failed to open"), m_pDoc->GetAssignedDeviceName());
 				}
 
+				// If open add data to file
 				if (AVRecVideo.IsOpen())
 				{
 					// Add Frame

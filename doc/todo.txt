@@ -21,7 +21,9 @@ ContaCam Program
 - Rotate by 0,90,180,270 degrees
 - Ability to send different emails to different people. For example
   send GIF files to one person and JPGs to another
-- Configurable saving frame-rate and resolution
+- Configurable saving frame-rate and resolution or skip excess frames
+  in cases where the source doesn't listen to the requested framerate
+  (chris@weldtest.com)
 - Allow Digital Zoom of live camera via mouse wheel
   (suggested by alanphoto@starpower.net)
 - Possibility to speed-up or slow-down animated gif preview

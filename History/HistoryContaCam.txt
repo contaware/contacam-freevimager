@@ -4,6 +4,7 @@ CONTACAM HISTORY
 
 - For network devices when starting try to connect infinitely
 - Dropped Windows XP and Windows 2003 support
+- Show a warning if sleep/standby/hibernation enabled
 
 7.0.0 (May 13th 2017)
 
