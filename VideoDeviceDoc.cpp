@@ -402,7 +402,10 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 						}
 					}
 					if (!AVRecVideo.Open())
-						::LogLine(_T("%s while saving motion detection failed to open"), m_pDoc->GetAssignedDeviceName());
+					{
+						::LogLine(_T("%s while saving motion detection failed to open (video size=%dx%d, fps=%d/%d, used cpu cores=%d)"),
+									m_pDoc->GetAssignedDeviceName(), DstBmi.biWidth, DstBmi.biHeight, CalcFrameRate.num, CalcFrameRate.den, ((CUImagerApp*)::AfxGetApp())->m_nCoresCount);
+					}
 				}
 
 				// If open add data to file

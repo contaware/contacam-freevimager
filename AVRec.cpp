@@ -546,6 +546,8 @@ int CAVRec::AddAudioStream(	const LPWAVEFORMATEX pSrcWaveFormat,
 
 bool CAVRec::Open()
 {
+	int ret;
+
 	// Check
 	if (!m_pOutputFormat || !m_pFormatCtx)
 		return false;
@@ -553,15 +555,21 @@ bool CAVRec::Open()
 	// Open the output file, if needed
 	if (!(m_pOutputFormat->flags & AVFMT_NOFILE))
 	{
-		if (avio_open(&m_pFormatCtx->pb, m_pFormatCtx->filename, AVIO_FLAG_WRITE) < 0)
+		if ((ret = avio_open(&m_pFormatCtx->pb, m_pFormatCtx->filename, AVIO_FLAG_WRITE)) < 0)
+		{
+			::LogLine(_T("avio_open() failed with error code: %d"), ret);
 			return false;
+		}
 		else
 			m_bFileOpened = true;
 	}
 
 	// Write the stream header, if any
-	if (avformat_write_header(m_pFormatCtx, NULL) < 0)
+	if ((ret = avformat_write_header(m_pFormatCtx, NULL)) < 0)
+	{
+		::LogLine(_T("avformat_write_header() failed with error code: %d"), ret);
 		return false;
+	}
 	else
 	{
 		m_bOpen = true;
