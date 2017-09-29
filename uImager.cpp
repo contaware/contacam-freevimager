@@ -1066,22 +1066,29 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		GUID* pActivePolicyGuid = NULL;
 		if (::PowerGetActiveScheme(NULL, &pActivePolicyGuid) == ERROR_SUCCESS)
 		{
-			const GUID subGUID = GUID_SLEEP_SUBGROUP;
-
-			// Sleep
-			GUID activeGUID = GUID_STANDBY_TIMEOUT;
-			DWORD dwStandbyTimeout = 0;
-			::PowerReadACValueIndex(NULL, pActivePolicyGuid, &subGUID, &activeGUID, &dwStandbyTimeout);
-
-			// Hibernation
-			activeGUID = GUID_HIBERNATE_TIMEOUT;
-			DWORD dwHibernateTimeout = 0;
-			::PowerReadACValueIndex(NULL, pActivePolicyGuid, &subGUID, &activeGUID, &dwHibernateTimeout);
 			SYSTEM_POWER_CAPABILITIES SystemPowerCapabilities = { 0 };
 			::GetPwrCapabilities(&SystemPowerCapabilities);
-			if (!SystemPowerCapabilities.HiberFilePresent)
-				dwHibernateTimeout = 0;
+			const GUID subGUID = GUID_SLEEP_SUBGROUP;
 
+			// Sleep?
+			GUID activeGUID = GUID_STANDBY_TIMEOUT;
+			DWORD dwStandbyTimeout = 0;
+			if (SystemPowerCapabilities.SystemS1 || SystemPowerCapabilities.SystemS2 || SystemPowerCapabilities.SystemS3)
+			{
+				// This function can return a value other than 0 also if SystemS1, SystemS2 and SystemS3 are all FALSE!
+				::PowerReadACValueIndex(NULL, pActivePolicyGuid, &subGUID, &activeGUID, &dwStandbyTimeout);
+			}
+
+			// Hibernation?
+			activeGUID = GUID_HIBERNATE_TIMEOUT;
+			DWORD dwHibernateTimeout = 0;
+			if (SystemPowerCapabilities.SystemS4 && SystemPowerCapabilities.HiberFilePresent)
+			{
+				// This function can return a value other than 0 also if SystemS4 or HiberFilePresent are FALSE!
+				::PowerReadACValueIndex(NULL, pActivePolicyGuid, &subGUID, &activeGUID, &dwHibernateTimeout);
+			}
+
+			// Warning
 			if (dwStandbyTimeout != 0 && dwHibernateTimeout != 0)
 			{
 				sMsg = ML_STRING(1570, "In Power Options disable: ") + ML_STRING(1571, "Sleep") + _T(" + ") + ML_STRING(1572, "Hibernate");
