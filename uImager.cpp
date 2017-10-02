@@ -469,6 +469,14 @@ extern "C" void my_av_log_trace(void* ptr, int level, const char* fmt, va_list v
 	delete [] asciifmt;
 	s[1023] = '\0';
 
+	// Avoid spamming users with api deprecated warnings
+#ifndef _DEBUG
+	CString sMsgLowerCase(s);
+	sMsgLowerCase.MakeLower();
+	if (sMsgLowerCase.Find(_T("deprecate")) >= 0)
+		return;
+#endif
+
 	// Output message string
 	::LogLine(_T("%s"), CString(s));
 }
