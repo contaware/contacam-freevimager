@@ -605,6 +605,7 @@ public:
 		FOSCAM_RTSP = 1120,		// Foscam RTSP
 		GEMBIRD_RTSP = 1123,	// Gembird RTSP
 		GEOVISION_RTSP = 1125,	// GeoVision RTSP
+		HIKAM_RTSP = 1128,		// HiKam RTSP
 		HIKVISION_RTSP = 1130,	// Hikvision RTSP
 		KUCAM_RTSP = 1135,		// Kucam RTSP
 		LINKSYS_RTSP = 1140,	// Linksys RTSP

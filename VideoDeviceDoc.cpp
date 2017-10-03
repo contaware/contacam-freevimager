@@ -9040,6 +9040,7 @@ void CVideoDeviceDoc::ConnectRtsp()
 		case FOSCAM_RTSP:		sQuery = _T("/videoMain"); break;
 		case GEMBIRD_RTSP:		sQuery = _T("/live/ch0"); break;
 		case GEOVISION_RTSP:	sQuery = _T("/CH001.sdp"); break;
+		case HIKAM_RTSP:		sQuery = _T("/onvif1"); break;
 		case HIKVISION_RTSP:	sQuery = _T("/Streaming/Channels/1"); break;
 		case KUCAM_RTSP:		sQuery = _T("/live/ch0"); break;
 		case LINKSYS_RTSP:		sQuery = _T("/img/media.sav"); break;
