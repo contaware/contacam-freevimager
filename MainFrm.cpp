@@ -198,6 +198,9 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	EnableDocking(CBRS_ALIGN_ANY);
 	DockControlBar(&m_wndToolBar);
 
+	// Create tab control
+	m_wndMDITabs.Create(this, MT_TOP | MT_HIDEWLT2VIEWS);
+
 	// Enable Drag'n'Drop
 	DragAcceptFiles(TRUE);
 
@@ -1258,6 +1261,9 @@ void CMainFrame::FullScreenModeOn()
 	if (pView->IsXOrYScroll())
 		m_ptChildScrollPosition = pView->GetScrollPosition();
 
+	// Hide Tabs
+	m_wndMDITabs.SetMinViews(INT_MAX);
+
 	// Store the Toolbars and Statusbar States and hide them
 	m_bToolBarWasVisible = (m_wndToolBar.IsWindowVisible() != FALSE);
 	m_wndToolBar.ShowWindow(SW_HIDE);
@@ -1449,6 +1455,9 @@ void CMainFrame::FullScreenModeOff()
 	// Show Menu
 	if (m_hMenu)
 		::SetMenu(GetSafeHwnd(), m_hMenu);
+
+	// Show Tabs
+	m_wndMDITabs.SetMinViews(2); // 2: because we created m_wndMDITabs with the MT_HIDEWLT2VIEWS flag
 
 	// Recalc Layout
 	RecalcLayout();
@@ -2521,6 +2530,12 @@ LRESULT CMainFrame::OnSetMessageString(WPARAM wParam, LPARAM lParam)
 	m_nIDLastMessage = (UINT)wParam;    	// new ID (or 0)
 	m_nIDTracking = (UINT)wParam;       	// so F1 on toolbar buttons work
 	return nIDLast;
+}
+
+void CMainFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
+{
+	CMDIFrameWnd::OnUpdateFrameTitle(bAddToTitle);
+	m_wndMDITabs.Update(); // sync the mdi tab control with all views
 }
 
 void CMainFrame::OnUpdateIndicatorXCoordinate(CCmdUI* pCmdUI)

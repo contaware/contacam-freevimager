@@ -13,6 +13,7 @@
 #include "Trayicon.h"
 #include "StatusBarACT.h"
 #include "MDIClientWnd.h"
+#include "MDITabs.h"
 #include "ToasterWnd.h"
 #include "ToasterWndLink.h"
 extern "C"
@@ -157,6 +158,7 @@ public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	protected:
 	virtual BOOL OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext);
+	virtual void OnUpdateFrameTitle(BOOL bAddToTitle);
 	//}}AFX_VIRTUAL
 
 #ifdef _DEBUG
@@ -194,9 +196,10 @@ public:
 	CMDIClientWnd m_MDIClientWnd;
 
 protected:
-	CStatusBarACT  m_wndStatusBar;
-	CToolBar    m_wndToolBar;
-	HMENU		m_hMenu;
+	CStatusBarACT	m_wndStatusBar;
+	CToolBar		m_wndToolBar;
+	HMENU			m_hMenu;
+	CMDITabs		m_wndMDITabs;
 	LONG m_lOldChildStyle;
 	LONG m_lOldChildExStyle;
 	LONG m_lOldStyle;

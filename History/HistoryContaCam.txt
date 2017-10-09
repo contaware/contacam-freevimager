@@ -5,10 +5,12 @@ CONTACAM HISTORY
 - For network devices when starting try to connect infinitely
   (dropped the "Autostart a network camera each" option as it
   is not necessary with the new connect infinitely feature)
+- Tabbed document interface (TDI)
 - Show a warning if sleep/standby/hibernation enabled
 - Use the Ctrl key to switch between Add and Remove Detection Zones
 - In web interface dropped swf (flash player) backwards compatibility
-- Dropped Windows XP and Windows 2003 support
+- Dropped Windows XP and Windows 2003 support (ReactOS support is also
+  dropped because ReactOS only implements the Windows 2003 API)
 
 7.0.0 (May 13th 2017)
 

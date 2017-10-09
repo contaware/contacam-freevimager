@@ -2,7 +2,10 @@ FREEVIMAGER HISTORY
 
 7.5.0 (Month xxth 2017)
 
-- Dropped Windows XP and Windows 2003 support
+- Better brightness, contrast, saturation and hue adjustment
+- Tabbed document interface (TDI)
+- Dropped Windows XP and Windows 2003 support (ReactOS support is also
+  dropped because ReactOS only implements the Windows 2003 API)
 
 7.0.0 (May 13th 2017)
 
