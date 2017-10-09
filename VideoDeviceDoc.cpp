@@ -165,12 +165,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 	CString sTempDetectionDir;
 	sTempDetectionDir.Format(_T("Detection%X"), dwCurrentThreadId);
 	sTempDetectionDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + sTempDetectionDir;
-	DWORD dwAttrib = ::GetFileAttributes(sTempDetectionDir);
-	if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
-	{
-		if (!::CreateDir(sTempDetectionDir))
-			::ShowErrorMsg(::GetLastError(), FALSE);
-	}
 
 	// Save loop
 	while (TRUE)
@@ -310,6 +304,15 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		sGIFFileName += _T("det_") + sFirstTime + _T(".gif");
 		CString sVideoTempFileName(sTempDetectionDir + _T("\\") + ::GetShortFileName(sVideoFileName));
 		CString sGIFTempFileName(sTempDetectionDir + _T("\\") + ::GetShortFileName(sGIFFileName));
+
+		// Make sure our temporary folder is existing
+		// (some temporary folder managers may delete it if not used for some time)
+		DWORD dwAttrib = ::GetFileAttributes(sTempDetectionDir);
+		if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
+		{
+			if (!::CreateDir(sTempDetectionDir))
+				::ShowErrorMsg(::GetLastError(), FALSE);
+		}
 
 		// Init the Video File
 		CAVRec AVRecVideo;
