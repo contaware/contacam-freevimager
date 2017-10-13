@@ -307,12 +307,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 
 		// Make sure our temporary folder is existing
 		// (some temporary folder managers may delete it if not used for some time)
-		DWORD dwAttrib = ::GetFileAttributes(sTempDetectionDir);
-		if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
-		{
-			if (!::CreateDir(sTempDetectionDir))
-				::ShowErrorMsg(::GetLastError(), FALSE);
-		}
+		if (!::CreateDir(sTempDetectionDir))
+			::ShowErrorMsg(::GetLastError(), FALSE);
 
 		// Init the Video File
 		CAVRec AVRecVideo;
