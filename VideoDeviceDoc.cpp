@@ -307,7 +307,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 
 		// Make sure our temporary folder is existing
 		// (some temporary folder managers may delete it if not used for some time)
-		if (!::CreateDir(sTempDetectionDir))
+		if (!::CreateDir(sTempDetectionDir)) // it does not fail if already existing
 			::ShowErrorMsg(::GetLastError(), FALSE);
 
 		// Init the Video File
@@ -381,30 +381,18 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 					DstBmi.biHeight = VideoSaveDib.GetHeight();
 					DstBmi.biPlanes = 1;
 					DstBmi.biCompression = ::GetFileExt(AVRecVideo.GetFileName()) == _T(".mp4") ? DEFAULT_MP4_VIDEO_FOURCC : DEFAULT_VIDEO_FOURCC;
-					if (AVRecVideo.AddVideoStream(	VideoSaveDib.GetBMI(),		// Source Video Format
-													(LPBITMAPINFO)(&DstBmi),	// Destination Video Format
-													CalcFrameRate.num,			// Rate
-													CalcFrameRate.den,			// Scale			
-													m_pDoc->m_fVideoRecQuality,
-													((CUImagerApp*)::AfxGetApp())->m_nCoresCount) < 0)
-					{
-						::LogLine(	_T("%s while saving motion detection failed to add video stream (video size=%dx%d, fps=%d/%d, used cpu cores=%d)"),
-									m_pDoc->GetAssignedDeviceName(), DstBmi.biWidth, DstBmi.biHeight, CalcFrameRate.num, CalcFrameRate.den, ((CUImagerApp*)::AfxGetApp())->m_nCoresCount);
-					}
+					AVRecVideo.AddVideoStream(VideoSaveDib.GetBMI(),			// Source Video Format
+											(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
+											CalcFrameRate.num,					// Rate
+											CalcFrameRate.den,					// Scale			
+											m_pDoc->m_fVideoRecQuality,
+											((CUImagerApp*)::AfxGetApp())->m_nCoresCount);
 					if (m_pDoc->m_bCaptureAudio)
 					{	
-						if (AVRecVideo.AddAudioStream(	m_pDoc->m_pSrcWaveFormat,		// Src Wave Format
-														m_pDoc->m_pDstWaveFormat) < 0)	// Dst Wave Format
-						{
-							::LogLine(	_T("%s while saving motion detection failed to add audio stream (sample rate=%d, channels=%d)"),
-										m_pDoc->GetAssignedDeviceName(), m_pDoc->m_pDstWaveFormat->nSamplesPerSec, m_pDoc->m_pDstWaveFormat->nChannels);
-						}
+						AVRecVideo.AddAudioStream(	m_pDoc->m_pSrcWaveFormat,	// Src Wave Format
+													m_pDoc->m_pDstWaveFormat);	// Dst Wave Format
 					}
-					if (!AVRecVideo.Open())
-					{
-						::LogLine(_T("%s while saving motion detection failed to open (video size=%dx%d, fps=%d/%d, used cpu cores=%d)"),
-									m_pDoc->GetAssignedDeviceName(), DstBmi.biWidth, DstBmi.biHeight, CalcFrameRate.num, CalcFrameRate.den, ((CUImagerApp*)::AfxGetApp())->m_nCoresCount);
-					}
+					AVRecVideo.Open();
 				}
 
 				// If open add data to file

@@ -555,11 +555,9 @@ bool CAVRec::Open()
 	// Open the output file, if needed
 	if (!(m_pOutputFormat->flags & AVFMT_NOFILE))
 	{
-		BOOL bBeforeExisting = ::IsExistingFile(CString(m_pFormatCtx->filename));
 		if ((ret = avio_open(&m_pFormatCtx->pb, m_pFormatCtx->filename, AVIO_FLAG_WRITE)) < 0)
 		{
-			BOOL bAfterExisting = ::IsExistingFile(CString(m_pFormatCtx->filename));
-			::LogLine(_T("avio_open() failed with error code: %d, %s existing before=%d/after=%d"), ret, CString(m_pFormatCtx->filename), bBeforeExisting, bAfterExisting);
+			::LogLine(_T("avio_open() failed with error code: %d"), ret);
 			return false;
 		}
 		else
