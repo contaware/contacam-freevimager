@@ -1,6 +1,6 @@
 CONTACAM HISTORY
 
-7.5.0 (Month xxth 2017)
+7.5.0 (October Xth 2017)
 
 - For network devices when starting try to connect infinitely
   (dropped the "Autostart a network camera each" option as it
@@ -8,6 +8,8 @@ CONTACAM HISTORY
 - Tabbed document interface (TDI)
 - Show a warning if sleep/standby/hibernation enabled
 - Use the Ctrl key to switch between Add and Remove Detection Zones
+- Fixed recent changes/problems of window.innerWidth/Height
+  (https://bugs.chromium.org/p/chromium/issues/detail?id=571297)
 - In web interface dropped swf (flash player) backwards compatibility
 - Dropped Windows XP and Windows 2003 support (ReactOS support is also
   dropped because ReactOS only implements the Windows 2003 API)
