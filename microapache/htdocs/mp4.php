@@ -116,14 +116,14 @@ function resizeMp4() {
 		width = 1;
 	if (height <= 0)
 		height = 1;
-	var windowWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-	var windowHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+	var windowWidth = document.documentElement.clientWidth;
+	var windowHeight = document.documentElement.clientHeight;
 	if (windowWidth <= 0 || windowHeight <= 0) { // in case not fully loaded
 		window.setTimeout("resizeMp4()", 1000);
 		return;
 	}
 	// Left and right margin
-	windowWidth -= 50; // this must be less than 60, see snapshothistory.php!
+	windowWidth -= 20;
 	// Buttons
 	windowHeight -= 60;
 	// Set a min. size
