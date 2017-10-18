@@ -1,8 +1,9 @@
 TRANSLATIONS HISTORY
 
-7.5.0 (Month xxth 2017)
+7.5.0 (October 18th 2017)
 
-- ...
+- Added/updated strings 1465, 1466, 1483, 1488, 1490, 1491, 
+  1569, 1570, 1571, 1572, 1780, 1839, 1840, 1841
 
 7.0.0 (May 13th 2017)
 

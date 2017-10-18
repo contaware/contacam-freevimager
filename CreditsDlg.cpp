@@ -71,6 +71,10 @@ BOOL CCreditsDlg::OnInitDialog()
 	sftp += CString(_T('\n')) + _T("http://lftp.yar.ru");
 #endif
 
+	// CMDITabs
+	CString smditabs(_T("CMDITabs by Christian Rodemeyer"));
+	smditabs += CString(_T('\n')) + _T("http://www.codeproject.com/articles/1438/cmditabs");
+
 	// CToasterWnd v1.18
 	CString stoaster(_T("CToasterWnd v1.18"));
 	stoaster += CString(_T('\n')) + _T("http://www.naughter.com");
@@ -121,6 +125,7 @@ BOOL CCreditsDlg::OnInitDialog()
 						ssmtp		+ _T("\n\n") +
 						sftp		+ _T("\n\n") +
 #endif
+						smditabs	+ _T("\n\n") +
 						stoaster	+ _T("\n\n") +
 						savir		+ _T("\n\n") +
 						slibjpeg	+ _T("\n\n") +
