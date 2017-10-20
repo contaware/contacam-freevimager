@@ -3,25 +3,25 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Dib", "Dib\Dibvs2015.vcxproj", "{3510B7CE-0804-4D79-95CD-CAA0983D2313}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Dib", "Dib\Dib.vcxproj", "{3510B7CE-0804-4D79-95CD-CAA0983D2313}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Zip", "zip\zipvs2015.vcxproj", "{28C8334F-E02A-44A8-B1B5-D81E1E11F5CA}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Zip", "zip\zip.vcxproj", "{28C8334F-E02A-44A8-B1B5-D81E1E11F5CA}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "directx_base", "directx_base\directx_basevs2015.vcxproj", "{41D79391-4BB7-450C-89EA-5A9AB5D166E6}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "directx_base", "directx_base\directx_base.vcxproj", "{41D79391-4BB7-450C-89EA-5A9AB5D166E6}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "giflib", "giflib\giflibvs2015.vcxproj", "{5FAAFB31-C3FD-404D-9272-0A17157E8304}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "giflib", "giflib\giflib.vcxproj", "{5FAAFB31-C3FD-404D-9272-0A17157E8304}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "icclib", "icclib\icclibvs2015.vcxproj", "{9FEF590D-A2C2-4219-8DD5-F0CD9E4E274B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "icclib", "icclib\icclib.vcxproj", "{9FEF590D-A2C2-4219-8DD5-F0CD9E4E274B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libjpeg", "libjpeg\libjpegvs2015.vcxproj", "{047EB7F2-222E-47EE-A83B-F68E3C0FC0E3}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libjpeg", "libjpeg\libjpeg.vcxproj", "{047EB7F2-222E-47EE-A83B-F68E3C0FC0E3}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libpng", "libpng\libpngvs2015.vcxproj", "{BBB92A7C-22CB-449A-BFD6-691B254F9803}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libpng", "libpng\libpng.vcxproj", "{BBB92A7C-22CB-449A-BFD6-691B254F9803}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libtiff", "libtiff\libtiffvs2015.vcxproj", "{68927A2E-9628-49FF-A825-45810DC6EDD1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libtiff", "libtiff\libtiff.vcxproj", "{68927A2E-9628-49FF-A825-45810DC6EDD1}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "uImager", "uImagervs2015.vcxproj", "{E605E7C7-B801-4234-AFF6-35DF6B233F76}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "uImager", "uImager.vcxproj", "{E605E7C7-B801-4234-AFF6-35DF6B233F76}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "zlib\zlibvs2015.vcxproj", "{968949F9-B4F2-4EBC-98CC-3C47E7909C19}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "zlib\zlib.vcxproj", "{968949F9-B4F2-4EBC-98CC-3C47E7909C19}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="ContaCam|Win32">
       <Configuration>ContaCam</Configuration>
@@ -23,7 +23,7 @@
     <ProjectGuid>{E605E7C7-B801-4234-AFF6-35DF6B233F76}</ProjectGuid>
     <RootNamespace>uImager</RootNamespace>
     <Keyword>MFCProj</Keyword>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'" Label="Configuration">
@@ -31,23 +31,23 @@
     <UseOfMfc>Static</UseOfMfc>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>Static</UseOfMfc>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>Static</UseOfMfc>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -94,12 +94,12 @@
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Template|Win32'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Template|Win32'" />
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">$(DXSDK_DIR)Lib\x86;$(LibraryPath)</LibraryPath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(DXSDK_DIR)Lib\x86;$(LibraryPath)</LibraryPath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">$(DXSDK_DIR)Lib\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">$(IncludePath)</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">$(LibraryPath)</LibraryPath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IncludePath)</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(LibraryPath)</LibraryPath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">$(IncludePath)</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">$(LibraryPath)</LibraryPath>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ContaCam</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">FreeVimager</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">ContaCam</TargetName>
@@ -1203,39 +1203,39 @@
     <None Include="res\ZoomPlus.cur" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="Dib\Dibvs2015.vcxproj">
+    <ProjectReference Include="Dib\Dib.vcxproj">
       <Project>{3510b7ce-0804-4d79-95cd-caa0983d2313}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="directx_base\directx_basevs2015.vcxproj">
+    <ProjectReference Include="directx_base\directx_base.vcxproj">
       <Project>{41d79391-4bb7-450c-89ea-5a9ab5d166e6}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="giflib\giflibvs2015.vcxproj">
+    <ProjectReference Include="giflib\giflib.vcxproj">
       <Project>{5faafb31-c3fd-404d-9272-0a17157e8304}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="icclib\icclibvs2015.vcxproj">
+    <ProjectReference Include="icclib\icclib.vcxproj">
       <Project>{9fef590d-a2c2-4219-8dd5-f0cd9e4e274b}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="libjpeg\libjpegvs2015.vcxproj">
+    <ProjectReference Include="libjpeg\libjpeg.vcxproj">
       <Project>{047eb7f2-222e-47ee-a83b-f68e3c0fc0e3}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="libpng\libpngvs2015.vcxproj">
+    <ProjectReference Include="libpng\libpng.vcxproj">
       <Project>{bbb92a7c-22cb-449a-bfd6-691b254f9803}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="libtiff\libtiffvs2015.vcxproj">
+    <ProjectReference Include="libtiff\libtiff.vcxproj">
       <Project>{68927a2e-9628-49ff-a825-45810dc6edd1}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="zip\zipvs2015.vcxproj">
+    <ProjectReference Include="zip\zip.vcxproj">
       <Project>{28c8334f-e02a-44a8-b1b5-d81e1e11f5ca}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="zlib\zlibvs2015.vcxproj">
+    <ProjectReference Include="zlib\zlib.vcxproj">
       <Project>{968949f9-b4f2-4ebc-98cc-3c47e7909c19}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
