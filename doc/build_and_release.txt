@@ -1,21 +1,10 @@
 Build system
 ------------
 
-uImagervs2010.sln and uImagervs2015.sln are the main solution files for 
-Visual Studio 2010 and 2015 which build exes for XP and higher. MFC is 
+uImager.sln is the main solution file for Visual Studio 2017. MFC is 
 necessary, the express editions are not supporting MFC natively but the 
 library can be obtained from alternative sources such as the 
 free-to-download Windows Driver Kit. 
-
-Additional requirements for Visual Studio 2010:
-- install sp1 or higher
-- Microsoft DirectX 9.0 SDK or higher
-  Note: if you have problems installing the latest DXSDK_Jun10.exe
-        (http://support.microsoft.com/kb/2728613)
-  1. MsiExec.exe /passive /X{F0C3E5D1-1ADE-321E-8167-68EF0DE699A5}
-     MsiExec.exe /passive /X{1D8E6291-B0D5-35EC-8441-6616F567A0F7}
-  2. Install DXSDK_Jun10.exe
-  3. Reinstall http://www.microsoft.com/en-us/download/details.aspx?id=26999
   
 Free tool to make the Unicode NSIS installers:
 - http://www.scratchpaper.com

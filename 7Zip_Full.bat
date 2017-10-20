@@ -7,4 +7,4 @@ REM Delete old version if existing
 del .\uimager_Full.7z >nul 2>&1
 
 REM 7-Zip it
-"%exedir%\7z.exe" a -r -mx9 -t7z uimager_Full.7z * -xr-!uImagervs2010.sdf -xr-!uImagervs2015.VC.db -xr-!?svn\ -xr-!.vs\ -xr-!bin\ -xr-!ipch\ -xr-!obj\
+"%exedir%\7z.exe" a -r -mx9 -t7z uimager_Full.7z * -xr-!?svn\ -xr-!.vs\ -xr-!bin\ -xr-!ipch\ -xr-!obj\
