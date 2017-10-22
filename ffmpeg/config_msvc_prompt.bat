@@ -1,7 +1,20 @@
 @echo off
 
 rem call Visual Studio Command Prompt
-if exist "%VS120COMNTOOLS%\..\..\VC\vcvarsall.bat" (
+if exist "%PROGRAMFILES(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" (
+	for /f "usebackq tokens=*" %%i in (`"%PROGRAMFILES(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath`) do (
+		set LatestVSInstallDir=%%i
+	)
+) else if exist "%PROGRAMFILES%\Microsoft Visual Studio\Installer\vswhere.exe" (
+	for /f "usebackq tokens=*" %%i in (`"%PROGRAMFILES%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath`) do (
+		set LatestVSInstallDir=%%i
+	)
+)
+if exist "%LatestVSInstallDir%\VC\Auxiliary\Build\vcvarsall.bat" (
+	call "%LatestVSInstallDir%\VC\Auxiliary\Build\vcvarsall.bat" x86
+) else if exist "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" (
+	call "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" x86
+) else if exist "%VS120COMNTOOLS%\..\..\VC\vcvarsall.bat" (
 	call "%VS120COMNTOOLS%\..\..\VC\vcvarsall.bat" x86
 ) else if exist "%VS110COMNTOOLS%\..\..\VC\vcvarsall.bat" (
 	call "%VS110COMNTOOLS%\..\..\VC\vcvarsall.bat" x86

@@ -13,7 +13,7 @@ FFMPEG
 2. Copy latest c:\mingw\lib\gcc\mingw32\6.3.0\libgcc.a to /c/uimager/ffmpeg/mingw
                c:\mingw\lib\libmingwex.a to /c/uimager/ffmpeg/mingw
    
-   In VS2015 to correctly link we have to remove pow.o, strtoimax.o, strtof.o, sinf.o and exp2f.o from libmingwex.a,
+   In VS2017 to correctly link we have to remove pow.o, strtoimax.o, strtof.o, sinf.o and exp2f.o from libmingwex.a,
    perform the following in visual studio command prompt:
    $ lib -remove:pow.o -remove:strtoimax.o -remove:strtoumax.o -remove:strtof.o -remove:sinf.o -remove:exp2f.o libmingwex.a
    $ rename libmingwex.lib libmingwex.a

@@ -1,11 +1,9 @@
 Build system
 ------------
 
-uImager.sln is the main solution file for Visual Studio 2017. MFC is 
-necessary, the express editions are not supporting MFC natively but the 
-library can be obtained from alternative sources such as the 
-free-to-download Windows Driver Kit. 
-  
+uImager.sln is the main solution file for Visual Studio 2017 (MFC 
+support is necessary). 
+
 Free tool to make the Unicode NSIS installers:
 - http://www.scratchpaper.com
   (needed also the nsisFirewall, KillProc and UAC unicode plugins)
