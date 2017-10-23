@@ -1297,7 +1297,6 @@
 #define IDS_MULTILANG_1267              1267
 #define IDC_SPIN_MAXCOLORS              1267
 #define IDS_MULTILANG_1268              1268
-#define IDC_BUTTON_ADVANCED             1268
 #define IDC_EDIT_PLAY_TIMES             1268
 #define IDS_MULTILANG_1269              1269
 #define IDC_SPIN_PLAY_TIMES             1269

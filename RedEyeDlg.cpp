@@ -49,9 +49,6 @@ CRedEyeDlg::CRedEyeDlg(CWnd* pParent, CPoint point)
 	m_ptOffset.x = m_ptRedEyeCenter.x - (REDEYE_REGION_MAXSIZE / 2);
 	m_ptOffset.y = m_ptRedEyeCenter.y - (REDEYE_REGION_MAXSIZE / 2);
 
-	// Do Not Show Advanced Commands at Start-up
-	m_bShowAdvanced = FALSE;
-
 	// Reset Vars
 	m_bInitialized = FALSE;
 	m_pMaskDib = NULL;
@@ -91,7 +88,6 @@ BEGIN_MESSAGE_MAP(CRedEyeDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_UNDO_COLOR, OnButtonUndoColor)
 	ON_BN_CLICKED(IDC_CHECK_SHOWMASK, OnCheckShowmask)
 	ON_BN_CLICKED(IDC_CHECK_SHOWORIGINAL, OnCheckShoworiginal)
-	ON_BN_CLICKED(IDC_BUTTON_ADVANCED, OnButtonAdvanced)
 	ON_EN_CHANGE(IDC_EDIT_HUE_START, OnChangeEditHueStart)
 	ON_EN_CHANGE(IDC_EDIT_HUE_END, OnChangeEditHueEnd)
 	//}}AFX_MSG_MAP
@@ -109,12 +105,6 @@ BOOL CRedEyeDlg::OnInitDialog()
 					pDoc->m_pDib;
 
 	CDialog::OnInitDialog();
-
-	// Store Initial Placement
-	GetWindowPlacement(&m_DlgPlacement);
-
-	// Show Not Advanced
-	ShowAdvanced(m_bShowAdvanced);
 
 	// Allocate 32 bpp Mask Dibs
 	m_pMaskDib = new CDib;
@@ -1944,36 +1934,5 @@ void CRedEyeDlg::OnChangeEditHueEnd()
 		UpdateData(TRUE);
 		if (!m_bShowOriginal)
 			AdjustRedEye(pSrcDib, m_bShowMask);
-	}
-}
-
-void CRedEyeDlg::OnButtonAdvanced() 
-{
-	m_bShowAdvanced = !m_bShowAdvanced;
-	ShowAdvanced(m_bShowAdvanced);
-}
-
-void CRedEyeDlg::ShowAdvanced(BOOL bShowAdvanced) 
-{
-	CButton* pButton = (CButton*)GetDlgItem(IDC_BUTTON_ADVANCED);
-	CRect rcNormalPos(m_DlgPlacement.rcNormalPosition);
-	CRect rcCurrent;
-	GetWindowRect(&rcCurrent);
-
-	if (bShowAdvanced)
-	{
-		pButton->SetWindowText(ML_STRING(1403, "Advanced <<"));
-		MoveWindow(	rcCurrent.left,
-					rcCurrent.top,
-					rcNormalPos.Width(),
-					rcNormalPos.Height());
-	}
-	else
-	{
-		pButton->SetWindowText(ML_STRING(898, "Advanced >>"));
-		MoveWindow(	rcCurrent.left,
-					rcCurrent.top,
-					rcNormalPos.Width(),
-					(int)(rcNormalPos.Height() / 7.0f));
 	}
 }

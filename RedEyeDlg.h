@@ -196,8 +196,6 @@ public:
 
 // Implementation
 protected:
-	void ShowAdvanced(BOOL bShowAdvanced);
-
 	CPoint m_ptRedEyeCenter;
 	CPoint m_ptOffset;
 	CDib* m_pMaskDib;
@@ -211,9 +209,7 @@ protected:
 	UINT m_uiHueStartFoundValue;
 	UINT m_uiHueEndFoundValue;
 	BOOL m_bInitialized;
-	BOOL m_bShowAdvanced;
 	BOOL m_bMaskManuallyModified;
-	WINDOWPLACEMENT m_DlgPlacement;
 	// Generated message map functions
 	//{{AFX_MSG(CRedEyeDlg)
 	virtual BOOL OnInitDialog();
@@ -222,7 +218,6 @@ protected:
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnCheckShowmask();
 	afx_msg void OnCheckShoworiginal();
-	afx_msg void OnButtonAdvanced();
 	afx_msg void OnChangeEditHueStart();
 	afx_msg void OnChangeEditHueEnd();
 	afx_msg void OnButtonUndoColor();
