@@ -3453,6 +3453,21 @@ void CUImagerApp::LoadSettings(UINT showCmd/*=SW_SHOWNORMAL*/)
 	m_sMicroApacheUsername = GetSecureProfileString(sSection, _T("MicroApacheUsernameExportable"));
 	m_sMicroApachePassword = GetSecureProfileString(sSection, _T("MicroApachePasswordExportable"));
 
+	// SSL certificate files
+	TCHAR szDrive[_MAX_DRIVE];
+	TCHAR szDir[_MAX_DIR];
+	TCHAR szProgramName[MAX_PATH];
+	CString sDefaultCertFileSSL;
+	CString sDefaultKeyFileSSL;
+	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
+	{
+		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+		sDefaultCertFileSSL = CString(szDrive) + CString(szDir) + MICROAPACHE_DEFAULT_CERTFILE_SSL;
+		sDefaultKeyFileSSL = CString(szDrive) + CString(szDir) + MICROAPACHE_DEFAULT_KEYFILE_SSL;
+	}
+	m_sMicroApacheCertFileSSL = GetProfileString(sSection, _T("MicroApacheCertFileSSL"), sDefaultCertFileSSL);
+	m_sMicroApacheKeyFileSSL = GetProfileString(sSection, _T("MicroApacheKeyFileSSL"), sDefaultKeyFileSSL);
+
 	// Load Schedulers
 	int nCount = GetProfileInt(sSection, _T("SchedulerCount"), 0);
 	for (int i = 0 ; i < nCount ; i++)

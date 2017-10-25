@@ -7,6 +7,7 @@
 #include "sinstance.h"
 #include "BrowseDlg.h"
 #include "SettingsDlgVideoDeviceDoc.h"
+#include "NoVistaFileDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -34,6 +35,8 @@ CSettingsDlgVideoDeviceDoc::CSettingsDlgVideoDeviceDoc(CWnd* pParent /*=NULL*/)
 	m_nMicroApachePortSSL = ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePortSSL;
 	m_sMicroApacheUsername = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheUsername;
 	m_sMicroApachePassword = ((CUImagerApp*)::AfxGetApp())->m_sMicroApachePassword;
+	m_sMicroApacheCertFileSSL = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheCertFileSSL;
+	m_sMicroApacheKeyFileSSL = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheKeyFileSSL;
 	m_sMicroApacheDocRootOld = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
 	m_sMicroApacheDocRootOld = ::UNCPath(m_sMicroApacheDocRootOld);
 	m_sMicroApacheDocRootOld.TrimRight(_T('\\'));
@@ -60,6 +63,8 @@ void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
 	DDV_MinMaxInt(pDX, m_nMicroApachePortSSL, 0, 65535);
 	DDX_Text(pDX, IDC_AUTH_USERNAME, m_sMicroApacheUsername);
 	DDX_Text(pDX, IDC_AUTH_PASSWORD, m_sMicroApachePassword);
+	DDX_Text(pDX, IDC_EDIT_CERT_SSL, m_sMicroApacheCertFileSSL);
+	DDX_Text(pDX, IDC_EDIT_KEY_SSL, m_sMicroApacheKeyFileSSL);
 	DDX_Text(pDX, IDC_EDIT_DOCROOT, m_sMicroApacheDocRoot);
 	DDX_Check(pDX, IDC_CHECK_BROWSER_AUTOSTART, m_bBrowserAutostart);
 	DDX_Check(pDX, IDC_CHECK_STARTFROM_SERVICE, m_bStartFromService);
@@ -71,6 +76,8 @@ void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CSettingsDlgVideoDeviceDoc, CDialog)
 	//{{AFX_MSG_MAP(CSettingsDlgVideoDeviceDoc)
 	ON_BN_CLICKED(IDC_BUTTON_DOCROOT, OnButtonDocRoot)
+	ON_BN_CLICKED(IDC_BUTTON_CERT_SSL, OnButtonCertSsl)
+	ON_BN_CLICKED(IDC_BUTTON_KEY_SSL, OnButtonKeySsl)
 	ON_WM_SETCURSOR()
 	ON_WM_TIMER()
 	ON_WM_DESTROY()
@@ -140,11 +147,13 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsInit()
 	pApp->m_dwFirstStartDelayMs = 1000 * m_nFirstStartDelay;
 
 	// Micro Apache
-	if (pApp->m_bStartMicroApache != m_bStartMicroApache			||
-		pApp->m_nMicroApachePort != m_nMicroApachePort				||
-		pApp->m_nMicroApachePortSSL != m_nMicroApachePortSSL		||
-		pApp->m_sMicroApacheUsername != m_sMicroApacheUsername		||
-		pApp->m_sMicroApachePassword != m_sMicroApachePassword		||
+	if (pApp->m_bStartMicroApache != m_bStartMicroApache				||
+		pApp->m_nMicroApachePort != m_nMicroApachePort					||
+		pApp->m_nMicroApachePortSSL != m_nMicroApachePortSSL			||
+		pApp->m_sMicroApacheUsername != m_sMicroApacheUsername			||
+		pApp->m_sMicroApachePassword != m_sMicroApachePassword			||
+		pApp->m_sMicroApacheCertFileSSL != m_sMicroApacheCertFileSSL	||
+		pApp->m_sMicroApacheKeyFileSSL != m_sMicroApacheKeyFileSSL		||
 		m_sMicroApacheDocRoot.CompareNoCase(m_sMicroApacheDocRootOld) != 0)
 	{
 		// Stop Micro Apache
@@ -185,11 +194,13 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsEnd()
 	CUImagerApp* pApp = (CUImagerApp*)::AfxGetApp();
 
 	// Micro Apache
-	if (pApp->m_bStartMicroApache != m_bStartMicroApache			||
-		pApp->m_nMicroApachePort != m_nMicroApachePort				||
-		pApp->m_nMicroApachePortSSL != m_nMicroApachePortSSL		||
-		pApp->m_sMicroApacheUsername != m_sMicroApacheUsername		||
-		pApp->m_sMicroApachePassword != m_sMicroApachePassword		||
+	if (pApp->m_bStartMicroApache != m_bStartMicroApache				||
+		pApp->m_nMicroApachePort != m_nMicroApachePort					||
+		pApp->m_nMicroApachePortSSL != m_nMicroApachePortSSL			||
+		pApp->m_sMicroApacheUsername != m_sMicroApacheUsername			||
+		pApp->m_sMicroApachePassword != m_sMicroApachePassword			||
+		pApp->m_sMicroApacheCertFileSSL != m_sMicroApacheCertFileSSL	||
+		pApp->m_sMicroApacheKeyFileSSL != m_sMicroApacheKeyFileSSL		||
 		m_sMicroApacheDocRoot.CompareNoCase(m_sMicroApacheDocRootOld) != 0)
 	{
 		// Document root changed?
@@ -210,6 +221,8 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsEnd()
 		pApp->m_nMicroApachePortSSL = m_nMicroApachePortSSL;
 		pApp->m_sMicroApacheUsername = m_sMicroApacheUsername;
 		pApp->m_sMicroApachePassword = m_sMicroApachePassword;
+		pApp->m_sMicroApacheCertFileSSL = m_sMicroApacheCertFileSSL;
+		pApp->m_sMicroApacheKeyFileSSL = m_sMicroApacheKeyFileSSL;
 		pApp->m_sMicroApacheDocRoot = m_sMicroApacheDocRoot;
 
 		// Update / create doc root index.php and config file for microapache
@@ -252,6 +265,12 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsEnd()
 	pApp->WriteSecureProfileString(	_T("GeneralApp"),
 									_T("MicroApachePasswordExportable"),
 									m_sMicroApachePassword);
+	pApp->WriteProfileString(		_T("GeneralApp"),
+									_T("MicroApacheCertFileSSL"),
+									m_sMicroApacheCertFileSSL);
+	pApp->WriteProfileString(		_T("GeneralApp"),
+									_T("MicroApacheKeyFileSSL"),
+									m_sMicroApacheKeyFileSSL);
 	pApp->WriteProfileString(		_T("GeneralApp"),
 									_T("MicroApacheDocRoot"),
 									m_sMicroApacheDocRoot);
@@ -408,6 +427,42 @@ void CSettingsDlgVideoDeviceDoc::OnButtonDocRoot()
 
 		// Update displayed path
 		m_sMicroApacheDocRoot = sNewMicroApacheDocRoot;
+		UpdateData(FALSE);
+	}
+}
+
+void CSettingsDlgVideoDeviceDoc::OnButtonCertSsl()
+{
+	// Validate entered data
+	if (!UpdateData(TRUE))
+		return;
+
+	CNoVistaFileDlg fd(	TRUE,
+						_T("crt"),
+						m_sMicroApacheCertFileSSL,
+						OFN_FILEMUSTEXIST | OFN_HIDEREADONLY,
+						_T("Cert Files (*.crt)|*.crt||"));
+	if (fd.DoModal() == IDOK)
+	{
+		m_sMicroApacheCertFileSSL = fd.GetPathName();
+		UpdateData(FALSE);
+	}
+}
+
+void CSettingsDlgVideoDeviceDoc::OnButtonKeySsl()
+{
+	// Validate entered data
+	if (!UpdateData(TRUE))
+		return;
+
+	CNoVistaFileDlg fd(	TRUE,
+						_T("key"),
+						m_sMicroApacheKeyFileSSL,
+						OFN_FILEMUSTEXIST | OFN_HIDEREADONLY,
+						_T("Key Files (*.key)|*.key||"));
+	if (fd.DoModal() == IDOK)
+	{
+		m_sMicroApacheKeyFileSSL = fd.GetPathName();
 		UpdateData(FALSE);
 	}
 }

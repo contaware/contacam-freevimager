@@ -1214,8 +1214,10 @@
 #define IDC_EDIT_DOCROOT                1222
 #define IDS_MULTILANG_1223              1223
 #define IDC_SUBJECT_LINE                1223
+#define IDC_EDIT_CERT_SSL               1223
 #define IDS_MULTILANG_1224              1224
 #define IDC_RECEIVER_MAIL               1224
+#define IDC_EDIT_KEY_SSL                1224
 #define IDS_MULTILANG_1225              1225
 #define IDS_MULTILANG_1226              1226
 #define IDS_MULTILANG_1227              1227
@@ -3055,7 +3057,9 @@
 #define IDC_VIDEO_COMPRESSION_QUALITY_INFO 2565
 #define IDC_STATIC_HTTP_PORTS           2565
 #define IDC_BUTTON_DOCROOT              2566
+#define IDC_BUTTON_CERT_SSL             2567
 #define IDC_EDIT_SENDMAIL_SEC_BETWEEN_MSG 2568
+#define IDC_BUTTON_KEY_SSL              2568
 #define IDC_SPIN_SENDMAIL_SEC_BETWEEN_MSG 2569
 #define IDC_BUTTON_ASSOCIATE            2570
 #define IDC_BUTTON_UNASSOCIATE          2571

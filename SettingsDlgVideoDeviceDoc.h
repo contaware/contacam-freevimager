@@ -56,6 +56,8 @@ public:
 	int		m_nMicroApachePortSSL;
 	CString	m_sMicroApacheUsername;
 	CString	m_sMicroApachePassword;
+	CString	m_sMicroApacheCertFileSSL;
+	CString	m_sMicroApacheKeyFileSSL;
 	CString m_sMicroApacheDocRoot;
 	BOOL	m_bBrowserAutostart;
 	BOOL	m_bStartFromService;
@@ -86,6 +88,8 @@ protected:
 	afx_msg void OnTimer(UINT nIDEvent);
 	afx_msg void OnDestroy();
 	afx_msg void OnButtonDocRoot();
+	afx_msg void OnButtonCertSsl();
+	afx_msg void OnButtonKeySsl();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

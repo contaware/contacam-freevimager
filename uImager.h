@@ -56,6 +56,8 @@
 #define MICROAPACHE_WAITTIME_MS							100U
 #define MICROAPACHE_DEFAULT_PORT						8800
 #define MICROAPACHE_DEFAULT_PORT_SSL					8443
+#define MICROAPACHE_DEFAULT_CERTFILE_SSL				_T("https.crt")
+#define MICROAPACHE_DEFAULT_KEYFILE_SSL					_T("https.key")
 #define MICROAPACHE_LOGNAME_EXT							_T("httpd_log.txt")
 #define MICROAPACHE_PIDNAME_EXT							_T("httpd_pid.txt")
 #define MICROAPACHE_CONFIGNAME_EXT						_T("httpd_conf.txt")
@@ -611,6 +613,10 @@ public:
 	// Authentication
 	CString m_sMicroApacheUsername;
 	CString m_sMicroApachePassword;
+
+	// SSL certificate files
+	CString	m_sMicroApacheCertFileSSL;
+	CString	m_sMicroApacheKeyFileSSL;
 
 	// Movement detection save reservation queue
 	typedef CList<DWORD,DWORD> MOVDETSAVERESERVATIONQUEUE;

@@ -5868,6 +5868,7 @@ void CVideoDeviceDoc::VideoFormatDialog()
 
 void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 {
+	// Copy index.php to Doc Root
 	CString sDocRoot = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
 	sDocRoot.TrimRight(_T('\\'));
 	TCHAR szDrive[_MAX_DRIVE];
@@ -5876,8 +5877,6 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
 		return;
 	_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-
-	// Copy index.php to Doc Root
 	::CopyFile(	CString(szDrive) + CString(szDir) + MICROAPACHE_HTDOCS + _T("\\") + PHP_INDEXROOTDIRNAME_EXT,
 				sDocRoot + _T("\\") + PHP_INDEXNAME_EXT,
 				FALSE); // overwrite if existing
@@ -5956,15 +5955,16 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	sConfig += _T("php_value session.gc_maxlifetime 1440\r\n");	// session maximum lifetime is 1440 seconds
 
 	// SSL
-	CString sSSLCertificateDir = CString(szDrive) + CString(szDir);
-	sSSLCertificateDir = ::GetASCIICompatiblePath(sSSLCertificateDir); // directory must exist!
-	sSSLCertificateDir.Replace(_T('\\'), _T('/')); // change path from \ to / (otherwise apache is not happy)
+	CString sMicroApacheCertFileSSL = ::GetASCIICompatiblePath(((CUImagerApp*)::AfxGetApp())->m_sMicroApacheCertFileSSL); // file must exist!
+	sMicroApacheCertFileSSL.Replace(_T('\\'), _T('/')); // change path from \ to / (otherwise apache is not happy)
+	CString sMicroApacheKeyFileSSL = ::GetASCIICompatiblePath(((CUImagerApp*)::AfxGetApp())->m_sMicroApacheKeyFileSSL); // file must exist!
+	sMicroApacheKeyFileSSL.Replace(_T('\\'), _T('/')); // change path from \ to / (otherwise apache is not happy)
 	sFormat.Format(_T("<VirtualHost *:%d>\r\n"), ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePortSSL);
 	sConfig += sFormat;
 	sConfig += _T("ServerName localhost\r\n");
 	sConfig += _T("SSLEngine on\r\n");
-	sConfig += _T("SSLCertificateFile \"") + sSSLCertificateDir + _T("https.crt") + _T("\"\r\n");
-	sConfig += _T("SSLCertificateKeyFile \"") + sSSLCertificateDir + _T("https.key") + _T("\"\r\n");
+	sConfig += _T("SSLCertificateFile \"") + sMicroApacheCertFileSSL + _T("\"\r\n");
+	sConfig += _T("SSLCertificateKeyFile \"") + sMicroApacheKeyFileSSL + _T("\"\r\n");
 	sConfig += _T("</VirtualHost>\r\n");
 
 	// Do not allow .htaccess files and setup the rewrite engine
