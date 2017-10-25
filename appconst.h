@@ -43,7 +43,7 @@
 
 // Log files
 #define LOGNAME_EXT										_T("log.txt")
-#define MAX_LOG_FILE_SIZE								268435456 /* 256MB */
+#define MAX_LOG_FILE_SIZE								33554432 /* 32MB */
 #define HEAP_LOGNAME_EXT								_T("heap_log.txt")
 #define HEAP_BIN_LOGNAME_EXT							_T("heap_log.bin")
 
