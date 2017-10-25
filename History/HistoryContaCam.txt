@@ -1,5 +1,9 @@
 CONTACAM HISTORY
 
+7.7.0 (Month XXth 2017)
+
+- Configurable web server SSL certificate files
+
 7.5.0 (October 18th 2017)
 
 - For network devices when starting try to connect infinitely

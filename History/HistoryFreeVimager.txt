@@ -1,5 +1,9 @@
 FREEVIMAGER HISTORY
 
+7.7.0 (Month XXth 2017)
+
+- ...
+
 7.5.0 (October 18th 2017)
 
 - Better brightness, contrast, saturation and hue adjustment
