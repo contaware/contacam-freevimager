@@ -328,7 +328,9 @@ BOOL CUImagerView::UpdateWindowSizes(BOOL bInvalidate,
 			wndpl.length = sizeof(wndpl);
 			GetParentFrame()->GetWindowPlacement(&wndpl);
 			wndpl.rcNormalPosition.right = wndpl.rcNormalPosition.left + szDoc.cx + szViewBorder.cx + szFrameBorder.cx;
-			wndpl.rcNormalPosition.bottom = wndpl.rcNormalPosition.top + szDoc.cy + szViewBorder.cy + szFrameBorder.cy + rcw_toolbar.Height();
+			wndpl.rcNormalPosition.bottom = wndpl.rcNormalPosition.top + szDoc.cy + szViewBorder.cy + szFrameBorder.cy;
+			if (((CToolBarChildFrame*)GetParentFrame())->GetToolBar()->IsVisible())
+				wndpl.rcNormalPosition.bottom += rcw_toolbar.Height();	
 			::AfxGetMainFrame()->ClipToMDIRect(&wndpl.rcNormalPosition);
 
 			// Frame Width and Height
