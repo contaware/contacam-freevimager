@@ -202,8 +202,9 @@ protected:
 	// Generated message map functions
 protected:
 	//{{AFX_MSG(CVideoDeviceChildFrame)
-	afx_msg void OnClose();
+	afx_msg void OnSizing(UINT fwSide, LPRECT pRect);
 	afx_msg void OnTimer(UINT nIDEvent);
+	afx_msg void OnClose();
 	//}}AFX_MSG
 	
 	DECLARE_MESSAGE_MAP()

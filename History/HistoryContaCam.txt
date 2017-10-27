@@ -3,6 +3,8 @@ CONTACAM HISTORY
 7.7.0 (Month XXth 2017)
 
 - Configurable web server SSL certificate files
+- Hold down the Ctrl key to keep the aspect ratio while resizing
+  a camera view
 
 7.5.0 (October 18th 2017)
 

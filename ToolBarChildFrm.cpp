@@ -921,10 +921,82 @@ CVideoDeviceChildFrame::CVideoDeviceChildFrame()
 
 BEGIN_MESSAGE_MAP(CVideoDeviceChildFrame, CToolBarChildFrame)
 	//{{AFX_MSG_MAP(CVideoDeviceChildFrame)
-	ON_WM_CLOSE()
+	ON_WM_SIZING()
 	ON_WM_TIMER()
+	ON_WM_CLOSE()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
+
+void CVideoDeviceChildFrame::OnSizing(UINT fwSide, LPRECT pRect)
+{
+	CToolBarChildFrame::OnSizing(fwSide, pRect);
+
+	if (::GetKeyState(VK_CONTROL) < 0)
+	{
+		CVideoDeviceView* pView = (CVideoDeviceView*)GetActiveView();
+		ASSERT_VALID(pView);
+		CVideoDeviceDoc* pDoc = pView->GetDocument();
+		ASSERT_VALID(pDoc);
+
+		// Get View Borders
+		CRect rcw;
+		pView->GetWindowRect(&rcw);
+		CRect rcc;
+		pView->GetClientRect(&rcc);
+		CSize szViewBorder;
+		szViewBorder.cx = rcw.Width() - rcc.Width();
+		szViewBorder.cy = rcw.Height() - rcc.Height();
+
+		// Get Frame Borders
+		CRect rcw_frame;
+		GetWindowRect(&rcw_frame);
+		CRect rcc_frame;
+		GetClientRect(&rcc_frame);
+		CSize szFrameBorder;
+		szFrameBorder.cx = rcw_frame.Width() - rcc_frame.Width();
+		szFrameBorder.cy = rcw_frame.Height() - rcc_frame.Height();
+
+		// Toolbar Rectangle
+		CRect rcw_toolbar(0, 0, 0, 0);
+		if (GetToolBar()->IsVisible())
+			GetToolBar()->GetWindowRect(&rcw_toolbar);
+
+		// Ratio
+		double dRatio = (double)pDoc->m_DocRect.Height() / (double)pDoc->m_DocRect.Width();
+
+		/*
+		Equations for the size calculation:
+
+		pRect->right = pRect->left + W + szViewBorder.cx + szFrameBorder.cx;
+		pRect->bottom = pRect->top + H + szViewBorder.cy + szFrameBorder.cy + rcw_toolbar.Height();
+
+		W = pRect->right - pRect->left - szViewBorder.cx - szFrameBorder.cx;
+		H = W * dRatio = pRect->bottom - pRect->top - szViewBorder.cy - szFrameBorder.cy - rcw_toolbar.Height();
+
+		pRect->bottom - pRect->top - szViewBorder.cy - szFrameBorder.cy - rcw_toolbar.Height() = (pRect->right - pRect->left - szViewBorder.cx - szFrameBorder.cx) * dRatio
+		pRect->right - pRect->left - szViewBorder.cx - szFrameBorder.cx = (pRect->bottom - pRect->top - szViewBorder.cy - szFrameBorder.cy - rcw_toolbar.Height()) / dRatio
+		*/
+		switch (fwSide)
+		{
+			case WMSZ_TOP:
+			case WMSZ_BOTTOM:
+				pRect->right = ::Round(pRect->left + szViewBorder.cx + szFrameBorder.cx + (pRect->bottom - pRect->top - szViewBorder.cy - szFrameBorder.cy - rcw_toolbar.Height()) / dRatio);
+				break;
+			case WMSZ_LEFT:
+			case WMSZ_RIGHT:
+			case WMSZ_BOTTOMLEFT:
+			case WMSZ_BOTTOMRIGHT:
+				pRect->bottom = ::Round(pRect->top + szViewBorder.cy + szFrameBorder.cy + rcw_toolbar.Height() + (pRect->right - pRect->left - szViewBorder.cx - szFrameBorder.cx) * dRatio);
+				break;
+			case WMSZ_TOPLEFT:
+			case WMSZ_TOPRIGHT:
+				pRect->top = ::Round(pRect->bottom - szViewBorder.cy - szFrameBorder.cy - rcw_toolbar.Height() - (pRect->right - pRect->left - szViewBorder.cx - szFrameBorder.cx) * dRatio);
+				break;
+			default:
+				break;
+		}
+	}
+}
 
 void CVideoDeviceChildFrame::OnTimer(UINT nIDEvent) 
 {
