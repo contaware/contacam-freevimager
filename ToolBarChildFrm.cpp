@@ -962,7 +962,9 @@ void CVideoDeviceChildFrame::OnSizing(UINT fwSide, LPRECT pRect)
 			GetToolBar()->GetWindowRect(&rcw_toolbar);
 
 		// Ratio
-		double dRatio = (double)pDoc->m_DocRect.Height() / (double)pDoc->m_DocRect.Width();
+		double dRatio = 0.75;
+		if (pDoc->m_DocRect.Height() > 0 && pDoc->m_DocRect.Width() > 0)
+			dRatio = (double)pDoc->m_DocRect.Height() / (double)pDoc->m_DocRect.Width();
 
 		/*
 		Equations for the size calculation:
