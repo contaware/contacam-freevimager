@@ -57,7 +57,8 @@ class CMovementDetectionPage;
 #define AUDIO_UNCOMPRESSED_BUFS_COUNT		16			// Number of audio buffers
 #define AUDIO_RECONNECTION_DELAY			1000U		// ms
 #define FRAME_USER_FLAG_MOTION				0x01		// mark the frame as a motion frame
-#define FRAME_USER_FLAG_LAST				0x02		// mark the frame as being the last frame of the detection sequence
+#define FRAME_USER_FLAG_START				0x02		// mark the frame as being the first frame of the detection sequence
+#define FRAME_USER_FLAG_END					0x04		// mark the frame as being the last frame of the detection sequence
 #define DEFAULT_DEL_RECS_OLDER_THAN_DAYS	31			// by default delete recordings older than a month
 #define MIN_DISK_FREE_PERMILLION			50000		// 5%
 #define DEFAULT_VIDEO_FILEEXT				_T(".mp4")	// default file extension
@@ -444,17 +445,20 @@ public:
 									const CString& sGIFFileName,
 									RGBQUAD* pGIFColors,
 									const CTime& RefTime,
-									DWORD dwRefUpTime);
+									DWORD dwRefUpTime,
+									const CString& sMovDetSavesCount);
 			void AnimatedGifInit(	RGBQUAD* pGIFColors,
 									double& dDelayMul,
 									double& dSpeedMul,
 									double dCalcFrameRate,
 									const CTime& RefTime,
-									DWORD dwRefUpTime);
+									DWORD dwRefUpTime,
+									const CString& sMovDetSavesCount);
 			__forceinline void To255Colors(	CDib* pDib,
 											RGBQUAD* pGIFColors,
 											const CTime& RefTime,
-											DWORD dwRefUpTime);
+											DWORD dwRefUpTime,
+											const CString& sMovDetSavesCount);
 			BOOL SaveAnimatedGif(	CDib* pGIFSaveDib,
 									CDib* pGIFDib,
 									CDib** ppGIFDibPrev,
@@ -466,7 +470,8 @@ public:
 									RGBQUAD* pGIFColors,
 									int nDiffMinLevel,
 									const CTime& RefTime,
-									DWORD dwRefUpTime);
+									DWORD dwRefUpTime,
+									const CString& sMovDetSavesCount);
 			void FTPUploadMovementDetection(const CTime& Time,
 											const CString& sVideoFileName,
 											const CString& sGIFFileName);
@@ -644,7 +649,7 @@ public:
 	// Frame Tags
 	static CTime CalcTime(DWORD dwUpTime, const CTime& RefTime, DWORD dwRefUpTime);
 	static void AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime, int nRefFontSize);
-	static void AddFrameCount(CDib* pDib, int nCount, int nRefFontSize);
+	static void AddFrameCount(CDib* pDib, const CString& sCount, int nRefFontSize);
 	
 	// Function called when the directx video grabbing format has been changed
 	void OnChangeDxVideoFormat();
@@ -665,7 +670,7 @@ public:
 	__forceinline void OneEmptyFrameList();							// One empty frame list
 	__forceinline void ClearMovementDetectionsList();				// Free and remove all lists
 	__forceinline void RemoveOldestMovementDetectionList();			// Free and remove oldest list
-	__forceinline void SaveFrameList(BOOL bDetectionSequenceDone);	// Add new empty list to tail
+	__forceinline void SaveFrameList(BOOL bMarkEnd);				// Add new empty list to tail
 
 	// Detection list handling
 	__forceinline void ClearFrameList(CDib::LIST* pFrameList);		// Free all frames in list
@@ -675,7 +680,7 @@ public:
 	__forceinline int GetNewestMovementDetectionsListCount();		// Get the newest list's count
 	__forceinline CDib* AllocDetFrame(CDib* pDib);					// Allocate a new detection buffering frame
 																	// (copies also audio samples)
-	__forceinline void AddNewFrameToNewestList(CDib* pDib);			// Add new frame to newest list
+	__forceinline void AddNewFrameToNewestList(BOOL bMarkStart, CDib* pDib);// Add new frame to newest list
 	__forceinline void AddNewFrameToNewestListAndShrink(CDib* pDib);// Add new frame to newest list leaving in the list
 																	// m_nMilliSecondsRecBeforeMovementBegin of frames
 																	
@@ -1013,10 +1018,6 @@ public:
 	BOOL m_bUnsupportedVideoSizeForMovDet;				// Flag indicating an unsupported resolution
 	volatile int m_nMovDetFreqDiv;						// Current frequency divider
 	volatile double m_dMovDetFrameRateFreqDivCalc;		// Framerate used to calculate the current frequency divider
-	volatile int m_nMovDetSavesCount;					// Detection sequences counter for current day
-	volatile int m_nMovDetSavesCountDay;				// Day of the above count
-	volatile int m_nMovDetSavesCountMonth;				// Month of the above count
-	volatile int m_nMovDetSavesCountYear;				// Year of the above count
 	volatile AttachmentType m_MovDetAttachmentType;		// The email attachment type
 	volatile int m_nMovDetSendMailSecBetweenMsg;		// Minimum seconds between detection emails
 	CTime m_MovDetLastMailTime;							// Time of last sent detection email with no attachment
