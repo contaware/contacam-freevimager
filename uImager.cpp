@@ -451,34 +451,20 @@ extern "C" void my_av_log_trace(void* ptr, int level, const char* fmt, va_list v
 		(g_nLogLevel >= 2 && level >= AV_LOG_DEBUG))
 		return;
 
-	// Fix Format
-	CString sFmt(fmt);
-	sFmt.Replace(_T("%td"), _T("%d"));	// %td not supported by vc++
-	sFmt.Replace(_T("%ti"), _T("%i"));	// %ti not supported by vc++
+	// Format
+	CStringA sMsg;
+	sMsg.FormatV(fmt, vl);
 	
-	// Convert fixed format to Ascii
-	char* asciifmt = new char[sFmt.GetLength() + 1];
-	if (!asciifmt)
-		return;
-	::wcstombs(asciifmt, (LPCTSTR)sFmt, sFmt.GetLength() + 1);
-	asciifmt[sFmt.GetLength()] = '\0';
-	
-	// Make message string
-	char s[1024];
-	_vsnprintf(s, 1024, asciifmt, vl);
-	delete [] asciifmt;
-	s[1023] = '\0';
-
 	// Avoid spamming users with api deprecated warnings
 #ifndef _DEBUG
-	CString sMsgLowerCase(s);
+	CStringA sMsgLowerCase(sMsg);
 	sMsgLowerCase.MakeLower();
-	if (sMsgLowerCase.Find(_T("deprecate")) >= 0)
+	if (sMsgLowerCase.Find("deprecate") >= 0)
 		return;
 #endif
 
 	// Output message string
-	::LogLine(_T("%s"), CString(s));
+	::LogLine(_T("%s"), CString(sMsg));
 }
 
 extern "C" int my_av_lock_callback(void **mutex, enum AVLockOp op)
