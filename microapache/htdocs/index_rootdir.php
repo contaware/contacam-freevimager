@@ -37,7 +37,7 @@ a:visited {
 a:active {
 	color: #33ccff;
 }
-a:hover {
+a:hover, a:focus {
 	color: #ffffff;
 	text-decoration: underline;
 }
@@ -47,11 +47,20 @@ span.previewscontainer {
 	padding: 0;
 	border: 0;
 }
+a.logout {
+	font-size: 26px;
+}
+a.logout:hover, a.logout:focus {
+	text-decoration: none;
+}
 /*]]>*/
 </style>
 </head>
 <body>
 <?php
+if (isset($_SESSION['username'])) {
+	echo "<p style=\"text-align: right\"><a class=\"logout\" href=\"authenticate.php\">&#x1f44b;</a>&nbsp;</p>\n";
+}
 $rel_path = dirname($_SERVER['PHP_SELF']);
 $rel_path = str_replace("\\", "/", $rel_path);
 $rel_path = rtrim($rel_path, "/");

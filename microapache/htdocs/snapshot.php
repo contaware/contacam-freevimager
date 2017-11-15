@@ -2,12 +2,12 @@
 require_once( 'configuration.php' );
 require_once( LANGUAGEFILEPATH ); // Must be here at the top of this file because it outputs the UTF8-BOM!
 if (!isset($_GET['thumb']) || $_GET['thumb'] == 'no') {
-	$pollfilename = "poll.php?dummy=";
+	$pollfilename = "poll.php?httpbasicauth=no&dummy=";
 	$width = WIDTH;
 	$height = HEIGHT;
 }
 else {
-	$pollfilename = "poll.php?thumb=yes&dummy=";
+	$pollfilename = "poll.php?httpbasicauth=no&thumb=yes&dummy=";
 	$width = THUMBWIDTH;
 	$height = THUMBHEIGHT;
 }
@@ -92,6 +92,9 @@ if (!isset($_GET['menu']) || $_GET['menu'] != 'no') {
 	echo "<div>\n";
 	echo "<span class=\"globalbuttons\">";
 	echo "<a class=\"homebuttons\" href=\"" . getParentUrl() . "\" target=\"_top\">&nbsp;</a>&nbsp;";
+	if (isset($_SESSION['username'])) {
+		echo "<a style=\"font-size: 16px;\" href=\"" . getParentUrl() . "authenticate.php\">&#x1f44b;</a>&nbsp;";
+	}
 	echo "<a class=\"reloadbuttons\" href=\"#\" onclick=\"window.location.reload(); return false;\">&nbsp;</a>\n";
 	echo "</span>\n";
 	echo "</div>\n";

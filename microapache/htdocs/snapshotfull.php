@@ -1,9 +1,9 @@
 <?php
 require_once( 'configuration.php' );
 if (!isset($_GET['thumb']) || $_GET['thumb'] == 'no')
-	$pollfilename = "poll.php?dummy=";
+	$pollfilename = "poll.php?httpbasicauth=no&dummy=";
 else
-	$pollfilename = "poll.php?thumb=yes&dummy=";
+	$pollfilename = "poll.php?httpbasicauth=no&thumb=yes&dummy=";
 ?>
 <!DOCTYPE html>
 <html>

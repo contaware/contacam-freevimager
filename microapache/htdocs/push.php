@@ -1,7 +1,15 @@
 <?php
-$httpbasicauth = 1;
+// Set the $httpbasicauth variable used in authenticate.php
+// file included by the below configuration.php
+if (!isset($_GET['httpbasicauth']) || $_GET['httpbasicauth'] == 'yes')
+	$httpbasicauth = 1;
+else
+	$httpbasicauth = 0;
 require_once( 'configuration.php' );
-session_write_close(); // end the current session and store session data otherwise other frames are not loading!
+
+// End the current session and store session data otherwise other frames are not loading!
+session_write_close();
+
 function doServerPush($file,$type,$poll) {
 	// With HTTP/1.1 the output will always be chunked if you don't specify
 	// a Content-Length header and a flush occurs. To avoid that we force
@@ -129,4 +137,6 @@ if ($doc_root == "")
 	$full_path = trim($filename,"\\/");
 else
 	$full_path = rtrim($doc_root,"\\/")."/".trim($filename,"\\/");
+
+// Start the server push streaming
 doServerPush($full_path, 'image/jpeg', SERVERPUSH_POLLRATE_MS);

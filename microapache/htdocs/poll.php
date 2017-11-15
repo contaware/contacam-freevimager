@@ -1,7 +1,15 @@
 <?php
-$httpbasicauth = 1;
+// Set the $httpbasicauth variable used in authenticate.php
+// file included by the below configuration.php
+if (!isset($_GET['httpbasicauth']) || $_GET['httpbasicauth'] == 'yes')
+	$httpbasicauth = 1;
+else
+	$httpbasicauth = 0;
 require_once( 'configuration.php' );
-session_write_close(); // end the current session and store session data otherwise other frames are not loading!
+
+// End the current session and store session data otherwise other frames are not loading!
+session_write_close();
+
 function doClientPoll($file,$type) {
 	// No Cache
 	header('Cache-Control: no-cache');
@@ -60,6 +68,8 @@ function doClientPoll($file,$type) {
 	// Output content data
 	echo $filecontent;
 }
+
+// Do a single client poll
 if (!isset($_GET['thumb']) || $_GET['thumb'] == 'no')
 	$filename = "$filesdirpath/".SNAPSHOTNAME;
 else
@@ -69,4 +79,4 @@ if ($doc_root == "")
 	$full_path = trim($filename,"\\/");
 else
 	$full_path = rtrim($doc_root,"\\/")."/".trim($filename,"\\/");
-doClientPoll($full_path,'image/jpeg');
+doClientPoll($full_path, 'image/jpeg');

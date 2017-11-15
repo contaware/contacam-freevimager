@@ -31,6 +31,11 @@ echo "<link rel=\"stylesheet\" href=\"" . STYLEFILEPATH . "\" type=\"text/css\" 
 <div>
 <span class="globalbuttons">
 <a class="homebuttons" href="<?php echo getParentUrl();?>" target="_top">&nbsp;</a>
+<?php
+if (isset($_SESSION['username'])) {
+	echo "<a style=\"font-size: 16px;\" href=\"" . getParentUrl() . "authenticate.php\">&#x1f44b;</a>\n";
+}
+?>
 </span>
 </div>
 <?php echo "<div style=\"text-align: center\"><h1>" . SNAPSHOTTITLE . "</h1></div>"; ?>
