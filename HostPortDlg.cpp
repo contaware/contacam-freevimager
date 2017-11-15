@@ -446,28 +446,44 @@ void CHostPortDlg::OnSelchangeComboDeviceTypeMode()
 	Load();
 }
 
+void CHostPortDlg::OnError()
+{
+	CComboBox* pComboBoxHost = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
+	::SetFocus(pComboBoxHost->GetSafeHwnd());
+	::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, ML_STRING(1867, "Enter an IP or a Hostname or an URL starting with rtsp:// or http:// (ATTENTION: User Name and Password must be provided under Camera Login, not in the URL)"), 0);
+	::MessageBeep(0xFFFFFFFF);
+}
+
 void CHostPortDlg::OnOK() 
 {
 	CString sHostLowerCase(m_sHost);
 	sHostLowerCase.Trim();
 	sHostLowerCase.MakeLower();
+	
+	// Empty?
 	if (sHostLowerCase.IsEmpty())
+		return OnError(); // empty!
+	// Url?
+	else if (sHostLowerCase.Find(_T("http://")) >= 0 || sHostLowerCase.Find(_T("rtsp://")) >= 0)
+		
 	{
-		CComboBox* pComboBoxHost = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
-		::SetFocus(pComboBoxHost->GetSafeHwnd());
-		::MessageBeep(0xFFFFFFFF);
-		return;
+		int nPos = sHostLowerCase.Find(_T("://"));
+		nPos += 3;
+		int nPosEnd = sHostLowerCase.Find(_T("/"), nPos);
+		if (nPosEnd < 0)
+			nPosEnd = sHostLowerCase.GetLength();
+		CString sHostOnly(sHostLowerCase.Mid(nPos, nPosEnd - nPos));
+		if (sHostOnly.Find(_T("@")) >= 0)
+			return OnError(); // no credentials in URL!
 	}
-	else if (sHostLowerCase.Find(_T("http://")) < 0 &&
-			sHostLowerCase.Find(_T("rtsp://")) < 0 &&
-			(sHostLowerCase.Find(_T(":")) >= 0 || sHostLowerCase.Find(_T("/")) >= 0))
+	// Not Url?
+	else
 	{
-		CComboBox* pComboBoxHost = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
-		::SetFocus(pComboBoxHost->GetSafeHwnd());
-		::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, ML_STRING(1867, "Custom URLs have to begin with rtsp:// or http://"), 0);
-		::MessageBeep(0xFFFFFFFF);
-		return;
+		if (sHostLowerCase.Find(_T(":")) >= 0 || sHostLowerCase.Find(_T("/")) >= 0)
+			return OnError(); // missing protocol!
 	}
+
+	// OK
 	SaveHistory(m_sHost, m_nPort, m_nDeviceTypeMode,
 				m_HostsHistory, m_PortsHistory, m_DeviceTypeModesHistory);
 	Save();

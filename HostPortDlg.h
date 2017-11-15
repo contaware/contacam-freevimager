@@ -52,6 +52,7 @@ protected:
 							CStringArray& HostsHistory,
 							CDWordArray& PortsHistory,
 							CDWordArray& DeviceTypeModesHistory);
+	void OnError();
 
 	CStringArray m_HostsHistory;
 	CDWordArray m_PortsHistory;

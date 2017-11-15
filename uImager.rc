@@ -4388,7 +4388,7 @@ BEGIN
     IDS_STRING1864          "JPEG Quality\n(0: worst, 100: best)"
     IDS_STRING1865          "HTTP motion jpeg"
     IDS_STRING1866          "HTTP jpeg snapshots"
-    IDS_STRING1867          "Custom URLs have to begin with rtsp:// or http://"
+    IDS_STRING1867          "Enter an IP or a Hostname or an URL starting with rtsp:// or http:// (ATTENTION: User Name and Password must be provided under Camera Login, not in the URL)"
     IDS_STRING1868          "or"
     IDS_STRING1869          "Choose a directory under the %s drive"
     IDS_STRING1870          "The new folder cannot be a subfolder of the old one"
