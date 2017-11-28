@@ -19,7 +19,8 @@ CMDIClientWnd::CMDIClientWnd()
 	m_sFontFace = _T("Verdana");
 	m_crFontColor = RGB(255,255,255);
 	m_crLinkColor = RGB(0x99,0xdd,0xff);
-	m_crVerboseDiagnosticLoggingColor = RGB(0xee,0xdd,0x20);
+	m_crVerboseLoggingColor = RGB(0xee,0xdd,0x20);
+	m_crDebugLoggingColor = RGB(0xff, 0xbb, 0x00);
 	m_nLeftMargin = 2;
 	m_nTopMargin = 0;
 	m_rcLinkComputer = CRect(0,0,0,0);
@@ -121,10 +122,17 @@ void CMDIClientWnd::OnPaint()
 	CRect rcLastText = DrawTAndCalcRect(memDC, s, rcDraw);
 	rcDraw.left = rcLastText.right;
 	COLORREF crPrevTextColor;
-	if (g_nLogLevel > 0)
+	if (g_nLogLevel == 1)
 	{
-		crPrevTextColor = memDC.SetTextColor(m_crVerboseDiagnosticLoggingColor);
-		s = ML_STRING(1810, "VERBOSE DIAGNOSTIC LOGGING");
+		crPrevTextColor = memDC.SetTextColor(m_crVerboseLoggingColor);
+		s = ML_STRING(1810, "VERBOSE LOGGING");
+		DrawT(memDC, s, rcDraw);
+		memDC.SetTextColor(crPrevTextColor);
+	}
+	else if (g_nLogLevel > 1)
+	{
+		crPrevTextColor = memDC.SetTextColor(m_crDebugLoggingColor);
+		s = ML_STRING(1811, "DEBUG LOGGING");
 		DrawT(memDC, s, rcDraw);
 		memDC.SetTextColor(crPrevTextColor);
 	}

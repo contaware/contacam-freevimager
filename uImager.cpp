@@ -105,6 +105,10 @@ BEGIN_MESSAGE_MAP(CUImagerApp, CWinApp)
 	ON_COMMAND(ID_APP_FAQ, OnAppFaq)
 	ON_COMMAND(ID_APP_MANUAL, OnAppManual)
 	ON_UPDATE_COMMAND_UI(ID_FILE_NEW, OnUpdateFileNew)
+	ON_COMMAND(ID_SETTINGS_LOG_NORMAL, OnSettingsLogNormal)
+	ON_UPDATE_COMMAND_UI(ID_SETTINGS_LOG_NORMAL, OnUpdateSettingsLogNormal)
+	ON_COMMAND(ID_SETTINGS_LOG_VERBOSE, OnSettingsLogVerbose)
+	ON_UPDATE_COMMAND_UI(ID_SETTINGS_LOG_VERBOSE, OnUpdateSettingsLogVerbose)
 	ON_COMMAND(ID_SETTINGS_LOG_ALL_MESSAGES, OnSettingsLogAllMessages)
 	ON_UPDATE_COMMAND_UI(ID_SETTINGS_LOG_ALL_MESSAGES, OnUpdateSettingsLogAllMessages)
 	ON_COMMAND(ID_SETTINGS_VIEW_LOGFILE, OnSettingsViewLogfile)
@@ -1131,7 +1135,8 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		sMsg.Format(ML_STRING(1569, "Cameras autostart delay %d sec"), (int)(m_dwFirstStartDelayMs / 1000));
 		if (!m_bServiceProcess)
 			::AfxGetMainFrame()->StatusText(sMsg);
-		::LogLine(_T("%s"), sMsg);
+		if (g_nLogLevel > 0)
+			::LogLine(_T("%s"), sMsg);
 
 		// Start Browser
 		if (m_bBrowserAutostart && !m_bServiceProcess)
@@ -3387,7 +3392,7 @@ void CUImagerApp::LoadSettings(UINT showCmd/*=SW_SHOWNORMAL*/)
 	CString sSection(_T("GeneralApp"));
 
 	// Log Level
-	g_nLogLevel = GetProfileInt(sSection, _T("LogLevel"), 0);
+	g_nLogLevel = MIN(2, MAX(0, GetProfileInt(sSection, _T("LogLevel"), 0)));
 
 	// MainFrame Placement
 	LoadPlacement(showCmd);
@@ -4490,19 +4495,40 @@ BOOL CUImagerApp::UnassociateFileType(CString sExt)
 	return TRUE;
 }
 
+void CUImagerApp::OnSettingsLogNormal()
+{
+	g_nLogLevel = 0;
+	WriteProfileInt(_T("GeneralApp"), _T("LogLevel"), g_nLogLevel);
+	::AfxGetMainFrame()->m_MDIClientWnd.Invalidate();
+}
+
+void CUImagerApp::OnUpdateSettingsLogNormal(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(g_nLogLevel == 0 ? 1 : 0);
+}
+
+void CUImagerApp::OnSettingsLogVerbose()
+{
+	g_nLogLevel = 1;
+	WriteProfileInt(_T("GeneralApp"), _T("LogLevel"), g_nLogLevel);
+	::AfxGetMainFrame()->m_MDIClientWnd.Invalidate();
+}
+
+void CUImagerApp::OnUpdateSettingsLogVerbose(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(g_nLogLevel == 1 ? 1 : 0);
+}
+
 void CUImagerApp::OnSettingsLogAllMessages()
 {
-	if (g_nLogLevel > 0)
-		g_nLogLevel = 0;
-	else
-		g_nLogLevel = 2;
+	g_nLogLevel = 2;
 	WriteProfileInt(_T("GeneralApp"), _T("LogLevel"), g_nLogLevel);
 	::AfxGetMainFrame()->m_MDIClientWnd.Invalidate();
 }
 
 void CUImagerApp::OnUpdateSettingsLogAllMessages(CCmdUI* pCmdUI) 
 {
-	pCmdUI->SetCheck(g_nLogLevel > 0 ? 1 : 0);
+	pCmdUI->SetCheck(g_nLogLevel == 2 ? 1 : 0);
 }
 
 void CUImagerApp::OnSettingsViewLogfile() 

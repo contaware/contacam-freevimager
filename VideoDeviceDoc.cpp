@@ -554,7 +554,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		DWORD dwFramesTimeMs = dwLastUpTime - dwFirstUpTime;
 		if (dwFramesTimeMs < dwSaveTimeMs)
 		{
-			if (m_pDoc->m_nDetectionLevel == 100 || g_nLogLevel > 0 || dwFramesTimeMs > MOVDET_MIN_FRAMES_TIME_CHECK_MSEC)
+			if (g_nLogLevel > 0 || dwFramesTimeMs > MOVDET_MIN_FRAMES_TIME_CHECK_MSEC)
 			{
 				::LogLine(	ML_STRING(1839, "%s, attention cannot realtime save the detections: SaveTime=%0.1fsec > FramesTime=%0.1fsec"),
 							m_pDoc->GetAssignedDeviceName(), (double)dwSaveTimeMs / 1000.0, (double)dwFramesTimeMs / 1000.0);
@@ -564,7 +564,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		}
 		else
 		{
-			if (m_pDoc->m_nDetectionLevel == 100 || g_nLogLevel > 1)
+			if (g_nLogLevel > 0)
 			{
 				::LogLine(	ML_STRING(1841, "%s, realtime saving the detections is ok: SaveTime=%0.1fsec < FramesTime=%0.1fsec"),
 							m_pDoc->GetAssignedDeviceName(), (double)dwSaveTimeMs / 1000.0, (double)dwFramesTimeMs / 1000.0);
@@ -4079,6 +4079,46 @@ CString CVideoDeviceDoc::GetDeviceName()
 	return sDevice;
 }
 
+CString CVideoDeviceDoc::GetDeviceFormat()
+{
+	CString sFormat;
+	if (m_pDxCapture)
+		sFormat = CDib::GetCompressionName((LPBITMAPINFO)&m_CaptureBMI).MakeLower();
+	else if (m_pVideoNetCom)
+	{
+		if (m_pHttpVideoParseProcess)
+		{
+			if (m_pHttpVideoParseProcess->m_FormatType == CHttpParseProcess::FORMATVIDEO_MJPEG)
+				sFormat = ML_STRING(1865, "HTTP motion jpeg");
+			else if (m_pHttpVideoParseProcess->m_FormatType == CHttpParseProcess::FORMATVIDEO_JPEG)
+				sFormat = ML_STRING(1866, "HTTP jpeg snapshots");
+		}
+	}
+	else
+	{
+		if (m_RtspThread.m_nVideoCodecID > AV_CODEC_ID_NONE)
+			sFormat += CString(avcodec_get_name((enum AVCodecID)m_RtspThread.m_nVideoCodecID));
+		if (m_RtspThread.m_nAudioCodecID > AV_CODEC_ID_NONE)
+			sFormat += _T("/") + CString(avcodec_get_name((enum AVCodecID)m_RtspThread.m_nAudioCodecID));
+		CString sProto(_T("RTSP"));
+		if (m_RtspThread.m_nUnderlyingTransport >= 0)
+		{
+			switch (m_RtspThread.m_nUnderlyingTransport)
+			{
+			case 0: sProto += _T(" (UDP)"); break;
+			case 1: sProto += _T(" (TCP)"); break;
+			case 2: sProto += _T(" (UDP Multicast)"); break;
+			default:sProto += _T(" (Unknown Transport)"); break;
+			}
+		}
+		if (!sFormat.IsEmpty())
+			sFormat = sProto + _T(" ") + sFormat;
+		else
+			sFormat = sProto;
+	}
+	return sFormat;
+}
+
 void CVideoDeviceDoc::SetDocumentTitle()
 {
 	CString sTitle;
@@ -4130,40 +4170,7 @@ void CVideoDeviceDoc::SetDocumentTitle()
 			}
 
 			// Format
-			if (m_pDxCapture)
-				sFormat = CDib::GetCompressionName((LPBITMAPINFO)&m_CaptureBMI).MakeLower();
-			else if (m_pVideoNetCom)
-			{
-				if (m_pHttpVideoParseProcess)
-				{
-					if (m_pHttpVideoParseProcess->m_FormatType == CHttpParseProcess::FORMATVIDEO_MJPEG)
-						sFormat = ML_STRING(1865, "HTTP motion jpeg");
-					else if (m_pHttpVideoParseProcess->m_FormatType == CHttpParseProcess::FORMATVIDEO_JPEG)
-						sFormat = ML_STRING(1866, "HTTP jpeg snapshots");
-				}
-			}
-			else
-			{
-				if (m_RtspThread.m_nVideoCodecID > AV_CODEC_ID_NONE)
-					sFormat += CString(avcodec_get_name((enum AVCodecID)m_RtspThread.m_nVideoCodecID));
-				if (m_RtspThread.m_nAudioCodecID > AV_CODEC_ID_NONE)
-					sFormat += _T("/") + CString(avcodec_get_name((enum AVCodecID)m_RtspThread.m_nAudioCodecID));
-				CString sProto(_T("RTSP"));
-				if (m_RtspThread.m_nUnderlyingTransport >= 0)
-				{
-					switch (m_RtspThread.m_nUnderlyingTransport)
-					{
-						case 0: sProto += _T(" (UDP)"); break;
-						case 1: sProto += _T(" (TCP)"); break;
-						case 2: sProto += _T(" (UDP Multicast)"); break;
-						default:sProto += _T(" (Unknown Transport)"); break;
-					}
-				}
-				if (!sFormat.IsEmpty())
-					sFormat = sProto + _T(" ") + sFormat;
-				else
-					sFormat = sProto;
-			}
+			sFormat = GetDeviceFormat();
 		}
 
 		// Update Property Sheet title
@@ -7664,7 +7671,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 								WM_THREADSAFE_CAPTURECAMERABASICSETTINGS,
 								0, 0);
 			}
-			::LogLine(_T("%s"), GetAssignedDeviceName() + _T(" starting"));
+			::LogLine(_T("%s starting, %dx%d, %s"), GetAssignedDeviceName(), m_DocRect.Width(), m_DocRect.Height(), GetDeviceFormat());
 		}
 	}
 
@@ -9099,7 +9106,7 @@ void CVideoDeviceDoc::ConnectRtsp()
 																::UrlEncode(m_sHttpGetFramePassword, TRUE),
 																sHost, m_nGetFrameVideoPort, sQuery);
 	}
-	if (g_nLogLevel > 0)
+	if (g_nLogLevel > 1)
 		::LogLine(_T("%s, rtsp://%s:%d%s"), GetAssignedDeviceName(), sHost, m_nGetFrameVideoPort, sQuery);
 	m_RtspThread.Start();
 }
@@ -9287,7 +9294,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRawRequest(CString sRequest)
 	}
 
 	// Send
-	if (g_nLogLevel > 0)
+	if (g_nLogLevel > 1)
 		::LogLine(_T("%s, %s"), m_pDoc->GetAssignedDeviceName(), ::SingleLine(sRequest + sHost + sMsg));
 	return (m_pNetCom->WriteStr(sRequest + sHost + sMsg) > 0);
 }
@@ -10212,7 +10219,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 				// Call mjpeg parser
 				res = ParseMultipart(pNetCom, nPosEndLine, nSize, pMsg, sMsg, sMsgLowerCase);
 				delete [] pMsg;
-				if (g_nLogLevel > 0 && res && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0))
+				if (g_nLogLevel > 1 && res && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0))
 					::LogLine(_T("%s, %s"), m_pDoc->GetAssignedDeviceName(), ::SingleLine(sMsg.Left(nPosEnd)));
 				return res;
 			}
@@ -10225,7 +10232,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 				// Call jpeg parser
 				res = ParseSingle(bLastCall, nSize, sMsg, sMsgLowerCase);
 				delete [] pMsg;
-				if (g_nLogLevel > 0 && res && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0))
+				if (g_nLogLevel > 1 && res && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0))
 					::LogLine(_T("%s, %s"), m_pDoc->GetAssignedDeviceName(), ::SingleLine(sMsg.Left(nPosEnd)));
 				return res;
 			}
@@ -10343,7 +10350,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 					pNetCom->Read();
 				}
 				delete [] pMsg;
-				if (g_nLogLevel > 0 && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0))
+				if (g_nLogLevel > 1 && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0))
 					::LogLine(_T("%s, %s"), m_pDoc->GetAssignedDeviceName(), ::SingleLine(sMsg.Left(nPosEnd)));
 				return FALSE; // Do not call Processor
 			}
@@ -10369,7 +10376,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 					pNetCom->Read();
 				}
 				delete [] pMsg;
-				if (g_nLogLevel > 0 && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0))
+				if (g_nLogLevel > 1 && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0))
 					::LogLine(_T("%s, %s"), m_pDoc->GetAssignedDeviceName(), ::SingleLine(sMsg.Left(nPosEnd)));
 				return FALSE; // Do not call Processor
 			}
@@ -10430,7 +10437,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 			m_pDoc->m_HttpThread.SetEventVideoConnect(sNewRequest);
 	
 			delete [] pMsg;
-			if (g_nLogLevel > 0 && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0))
+			if (g_nLogLevel > 1 && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0))
 				::LogLine(_T("%s, %s"), m_pDoc->GetAssignedDeviceName(), ::SingleLine(sMsg.Left(nPosEnd)));
 			return FALSE; // Do not call Processor
 		}
@@ -10540,7 +10547,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 			m_pDoc->m_HttpThread.SetEventVideoConnect(m_sLastRequest);
 	
 			delete [] pMsg;
-			if (g_nLogLevel > 0 && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0))
+			if (g_nLogLevel > 1 && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0))
 				::LogLine(_T("%s, %s"), m_pDoc->GetAssignedDeviceName(), ::SingleLine(sMsg.Left(nPosEnd)));
 			return FALSE; // Do not call Processor
 		}
@@ -10568,7 +10575,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 				pNetCom->Read();
 			}
 			delete [] pMsg;
-			if (g_nLogLevel > 0 && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0))
+			if (g_nLogLevel > 1 && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0))
 				::LogLine(_T("%s, %s"), m_pDoc->GetAssignedDeviceName(), ::SingleLine(sMsg.Left(nPosEnd)));
 			return FALSE; // Do not call Processor
 		}
@@ -10580,7 +10587,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 	{
 		res = ParseMultipart(pNetCom, 0, nSize, pMsg, sMsg, sMsgLowerCase);
 		delete [] pMsg;
-		if (g_nLogLevel > 0 && res && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0))
+		if (g_nLogLevel > 1 && res && ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0))
 			::LogLine(_T("%s, %s"), m_pDoc->GetAssignedDeviceName(), ::SingleLine(sMsg.Left(nPosEnd)));
 		return res;
 	}

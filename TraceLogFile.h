@@ -11,7 +11,6 @@
 // 0: normal
 // 1: verbose
 // 2: debug
-// ...
 extern volatile int g_nLogLevel;
 extern CString g_sLogFileName;
 extern volatile ULONGLONG g_ullMaxLogFileSize;

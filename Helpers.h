@@ -137,6 +137,9 @@ extern BOOL DeleteToRecycleBin(LPCTSTR szName); // delete file or directory
 // Format Integer Number
 extern CString FormatIntegerNumber(const CString& sNumber);
 
+// Format as GB, MB, KB or Bytes
+extern CString FormatBytes(ULONGLONG ullBytes);
+
 // Date / Time Handling
 extern int GetLastDayOfMonth(int nMonth, int nYear);
 extern CString MakeTimeLocalFormat(	const CTime& Time,
@@ -287,31 +290,14 @@ extern CString GetComputerName();
 extern double GetCPUUsage();
 
 // Get Memory Stats
-extern void GetMemoryStats(	DWORD* pRegions = NULL,
-							DWORD* pFreeMB = NULL,
-							DWORD* pReservedMB = NULL,
-							DWORD* pCommittedMB = NULL,
-							DWORD* pMaxFree = NULL,
-							DWORD* pMaxReserved = NULL,
-							DWORD* pMaxCommitted = NULL,
+extern void GetMemoryStats(	ULONGLONG* pRegions = NULL,
+							ULONGLONG* pFree = NULL,
+							ULONGLONG* pReserved = NULL,
+							ULONGLONG* pCommitted = NULL,
+							ULONGLONG* pMaxFree = NULL,
+							ULONGLONG* pMaxReserved = NULL,
+							ULONGLONG* pMaxCommitted = NULL,
 							double* pFragmentation = NULL);
-
-// Get the total allocated size (with overhead bytes) of the given heap
-extern SIZE_T HeapAllocatedSize(HANDLE heap);
-
-// Get Heap Stats
-// Heap Type
-// 0: regular heap
-// 1: look-asides fast heap
-// 2: LFH (low-fragmentation) heap
-extern void GetHeapStats(SIZE_T* pDefaultHeapSize = NULL,
-						SIZE_T* pCRTHeapSize = NULL,
-						SIZE_T* pOtherHeapsSize = NULL,
-						int* pDefaultHeapType = NULL,
-						int* pCRTHeapType = NULL);
-
-// Heap Check and Dump
-extern void HeapDump(HANDLE heap, CString sConfigFilesDir);
 
 // Private bytes (Commit Size or VM Size in Explorer / PrivateUsage or 
 // PagefileUsage of PROCESS_MEMORY_COUNTERS_EX) is the portion of a 

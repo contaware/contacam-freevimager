@@ -26,7 +26,8 @@ protected:
 	CString m_sFontFace;
 	COLORREF m_crFontColor;
 	COLORREF m_crLinkColor;
-	COLORREF m_crVerboseDiagnosticLoggingColor;
+	COLORREF m_crVerboseLoggingColor;
+	COLORREF m_crDebugLoggingColor;
 	int m_nLeftMargin;
 	int m_nTopMargin;
 	CRect m_rcLinkComputer;

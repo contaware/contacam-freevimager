@@ -228,6 +228,8 @@ protected:
 	void FullScreenModeOff();
 	void ChangeCoordinatesUnit();
 	static BOOL GetDiskStats(CString& sDiskStats, LPCTSTR lpszPath, int nMinDiskFreePermillion);
+	void PrintHeapBlocks(FILE* pf, WORD wFlags, __int64 Data, __int64 Overhead, __int64 Count);
+	void LogSysUsage();
 #ifdef VIDEODEVICEDOC
 	void CleanupFileMenu(CMenu* pPopupMenu);
 	void PopulateCaptureMenu(CMenu* pPopupMenu);

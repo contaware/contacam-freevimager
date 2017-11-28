@@ -2268,6 +2268,277 @@ BOOL CMainFrame::GetDiskStats(CString& sDiskStats, LPCTSTR lpszPath, int nMinDis
 	}
 }
 
+void CMainFrame::PrintHeapBlocks(FILE* pf, WORD wFlags, __int64 Data, __int64 Overhead, __int64 Count)
+{
+	if (pf)
+	{
+		CString sCount;
+		while (Count-- > 0)
+			sCount += _T(".");
+
+		if (wFlags & PROCESS_HEAP_UNCOMMITTED_RANGE)
+		{
+			::_ftprintf(pf, _T("  FREE %s %I64d+%I64d bytes uncommitted\n"), (LPCTSTR)sCount, Data, Overhead);
+		}
+		// Allocated heap block
+		// Note: big heap blocks which are not directly managed by the heap (allocated with VirtualAlloc)
+		// are also marked with PROCESS_HEAP_ENTRY_BUSY, but have a region index not used
+		// by normal/small size heap blocks (big blocks do not have an associated PROCESS_HEAP_REGION).
+		else if (wFlags & PROCESS_HEAP_ENTRY_BUSY)
+		{
+			::_ftprintf(pf, _T("  USED %s %I64d+%I64d bytes"), (LPCTSTR)sCount, Data, Overhead);
+
+			// Block can be moved because it has been allocated with
+			// LMEM_MOVEABLE (LocalAlloc) or GMEM_MOVEABLE (GlocalAlloc).
+			// Block.hMem is the handle of the movable memory block.
+			if (wFlags & PROCESS_HEAP_ENTRY_MOVEABLE)
+				::_ftprintf(pf, _T(", moveable"));
+
+			// Unlike Windows version 3.x, this memory is not shared globally.
+			// However, this flag is available for compatibility purposes.
+			// It may be used by some applications to enhance the performance
+			// of DDE operations and should, therefore, be specified if the memory
+			// is to be used for DDE.
+			if (wFlags & PROCESS_HEAP_ENTRY_DDESHARE)
+				::_ftprintf(pf, _T(", DDE share"));
+
+			::_ftprintf(pf, _T("\n"));
+		}
+		else if (wFlags == 0)
+		{
+			::_ftprintf(pf, _T("  FREE %s %I64d+%I64d bytes committed\n"), (LPCTSTR)sCount, Data, Overhead);
+		}
+	}
+}
+
+void CMainFrame::LogSysUsage()
+{
+	HANDLE heap = (HANDLE)::_get_heap_handle();
+	const __int64 AlignTolerance = 16;
+
+	// Heap walk to temp binary file
+	CString sConfigFilesDir(CUImagerApp::GetConfigFilesDir());
+	sConfigFilesDir.TrimRight(_T('\\'));
+	CString sHeapLogFileName(sConfigFilesDir + _T("\\") + HEAP_LOGNAME_EXT);
+	CString sHeapTempLogFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), sHeapLogFileName);
+	CString sHeapTempBinFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), ::GetFileNameNoExt(sHeapLogFileName) + _T(".bin"));
+	HANDLE hHeapTempBinFile = ::CreateFile(	sHeapTempBinFileName,
+											GENERIC_WRITE,
+											FILE_SHARE_READ, NULL, CREATE_ALWAYS,
+											FILE_ATTRIBUTE_NORMAL, NULL);
+	if (hHeapTempBinFile == INVALID_HANDLE_VALUE)
+		return;
+	PROCESS_HEAP_ENTRY HeapEntry;
+	::memset(&HeapEntry, 0, sizeof(HeapEntry));
+	if (::HeapLock(heap))
+	{
+		while (::HeapWalk(heap, &HeapEntry))
+		{
+			DWORD NumberOfBytesWritten;
+			::WriteFile(hHeapTempBinFile, &HeapEntry, sizeof(HeapEntry), &NumberOfBytesWritten, NULL);
+		}
+		::HeapUnlock(heap);
+	}
+	::CloseHandle(hHeapTempBinFile);
+
+	// Make a human readable temp log file
+	hHeapTempBinFile = ::CreateFile(sHeapTempBinFileName,
+									GENERIC_READ,
+									FILE_SHARE_READ, NULL, OPEN_EXISTING,
+									FILE_ATTRIBUTE_NORMAL, NULL);
+	if (hHeapTempBinFile == INVALID_HANDLE_VALUE)
+	{
+		::DeleteFile(sHeapTempBinFileName);
+		return;
+	}
+	FILE* pHeapTempLogFile = ::_tfopen(sHeapTempLogFileName, _T("w"));
+	if (!pHeapTempLogFile)
+	{
+		::CloseHandle(hHeapTempBinFile);
+		::DeleteFile(sHeapTempBinFileName);
+		return;
+	}
+	BOOL bHeapValid;
+	if (bHeapValid = ::HeapValidate(heap, 0, NULL))
+		::_ftprintf(pHeapTempLogFile, _T("HEAP IS VALID.\n"));
+	else
+		::_ftprintf(pHeapTempLogFile, _T("HEAP IS NOT VALID!\n"));
+	DWORD NumberOfBytesRead;
+	WORD wLastFlags = 0x8000; // unused flag value
+	__int64 LastData = 0;
+	__int64 LastOverhead = 0;
+	__int64 LastCount = 0;
+	__int64 NextAddr = 0;
+	ULONGLONG ullUncommittedFreeData = 0;
+	ULONGLONG ullUncommittedFreeOverhead = 0;
+	ULONGLONG ullAllocatedData = 0;
+	ULONGLONG ullAllocatedOverhead = 0;
+	ULONGLONG ullAllocatedMoveableData = 0;
+	ULONGLONG ullAllocatedMoveableOverhead = 0;
+	ULONGLONG ullAllocatedDDEShareData = 0;
+	ULONGLONG ullAllocatedDDEShareOverhead = 0;
+	ULONGLONG ullCommittedFreeData = 0;
+	ULONGLONG ullCommittedFreeOverhead = 0;
+	while (::ReadFile(hHeapTempBinFile, (LPVOID)&HeapEntry, sizeof(HeapEntry), &NumberOfBytesRead, NULL) && NumberOfBytesRead == sizeof(HeapEntry))
+	{
+		if ((HeapEntry.wFlags & PROCESS_HEAP_REGION) != PROCESS_HEAP_REGION)
+		{
+			// Address jump?
+			if ((__int64)HeapEntry.lpData > NextAddr + AlignTolerance)
+			{
+				PrintHeapBlocks(pHeapTempLogFile, wLastFlags, LastData, LastOverhead, LastCount);
+				::_ftprintf(pHeapTempLogFile, _T("\n* JUMP 0x%08X -> 0x%08X (%I64d bytes):\n"), (DWORD)NextAddr, (DWORD)HeapEntry.lpData, (__int64)HeapEntry.lpData - NextAddr);
+				wLastFlags = 0x8000;
+				LastData = 0;
+				LastOverhead = 0;
+				LastCount = 0;
+			}
+			else if ((__int64)HeapEntry.lpData < NextAddr - AlignTolerance)
+			{
+				PrintHeapBlocks(pHeapTempLogFile, wLastFlags, LastData, LastOverhead, LastCount);
+				::_ftprintf(pHeapTempLogFile, _T("\n* BACKJUMP 0x%08X -> 0x%08X:\n"), (DWORD)NextAddr, (DWORD)HeapEntry.lpData);
+				wLastFlags = 0x8000;
+				LastData = 0;
+				LastOverhead = 0;
+				LastCount = 0;
+			}
+			NextAddr = (__int64)HeapEntry.lpData + (__int64)HeapEntry.cbData + (__int64)HeapEntry.cbOverhead;
+
+			// Block type change?
+			if (HeapEntry.wFlags != wLastFlags)
+			{
+				PrintHeapBlocks(pHeapTempLogFile, wLastFlags, LastData, LastOverhead, LastCount);
+				wLastFlags = HeapEntry.wFlags;
+				LastData = HeapEntry.cbData;
+				LastOverhead = HeapEntry.cbOverhead;
+				LastCount = 1;
+			}
+			else
+			{
+				LastData += HeapEntry.cbData;
+				LastOverhead += HeapEntry.cbOverhead;
+				LastCount++;
+			}
+
+			// Overall statistics
+			if (HeapEntry.wFlags & PROCESS_HEAP_UNCOMMITTED_RANGE)
+			{
+				ullUncommittedFreeData += HeapEntry.cbData;
+				ullUncommittedFreeOverhead += HeapEntry.cbOverhead;
+			}
+			else if (HeapEntry.wFlags & PROCESS_HEAP_ENTRY_BUSY)
+			{
+				ullAllocatedData += HeapEntry.cbData;
+				ullAllocatedOverhead += HeapEntry.cbOverhead;
+				if (HeapEntry.wFlags & PROCESS_HEAP_ENTRY_MOVEABLE)
+				{
+					ullAllocatedMoveableData += HeapEntry.cbData;
+					ullAllocatedMoveableOverhead += HeapEntry.cbOverhead;
+				}
+				if (HeapEntry.wFlags & PROCESS_HEAP_ENTRY_DDESHARE)
+				{
+					ullAllocatedDDEShareData += HeapEntry.cbData;
+					ullAllocatedDDEShareOverhead += HeapEntry.cbOverhead;
+				}
+			}
+			else // if wFlags is 0
+			{
+				ullCommittedFreeData += HeapEntry.cbData;
+				ullCommittedFreeOverhead += HeapEntry.cbOverhead;
+			}
+		}
+		else
+		{
+			PrintHeapBlocks(pHeapTempLogFile, wLastFlags, LastData, LastOverhead, LastCount);
+			wLastFlags = 0x8000;
+			LastData = 0;
+			LastOverhead = 0;
+			LastCount = 0;
+		}
+	}
+	PrintHeapBlocks(pHeapTempLogFile, wLastFlags, LastData, LastOverhead, LastCount);
+	ULONG heap_info = 0;
+	CString sHeapType(_T("unknown"));
+	if (::HeapQueryInformation(heap, HeapCompatibilityInformation, &heap_info, sizeof(heap_info), NULL))
+	{
+		switch (heap_info)
+		{
+			case 0:		sHeapType = _T("regular"); break;
+			case 1:		sHeapType = _T("look-asides"); break;
+			case 2:		sHeapType = _T("LFH"); break;
+			default:	break;
+		}
+	}
+	::_ftprintf(pHeapTempLogFile, _T("\nOverall Data+Overhead:\n"));
+	::_ftprintf(pHeapTempLogFile, _T("USED %s+%s (total)\n"), (LPCTSTR)::FormatBytes(ullAllocatedData), (LPCTSTR)::FormatBytes(ullAllocatedOverhead));
+	::_ftprintf(pHeapTempLogFile, _T("     %s+%s (with moveable flag)\n"), (LPCTSTR)::FormatBytes(ullAllocatedMoveableData), (LPCTSTR)::FormatBytes(ullAllocatedMoveableOverhead));
+	::_ftprintf(pHeapTempLogFile, _T("     %s+%s (with DDE share flag)\n"), (LPCTSTR)::FormatBytes(ullAllocatedDDEShareData), (LPCTSTR)::FormatBytes(ullAllocatedDDEShareOverhead));
+	::_ftprintf(pHeapTempLogFile, _T("FREE %s+%s committed\n"), (LPCTSTR)::FormatBytes(ullCommittedFreeData), (LPCTSTR)::FormatBytes(ullCommittedFreeOverhead));
+	::_ftprintf(pHeapTempLogFile, _T("FREE %s+%s uncommitted\n"), (LPCTSTR)::FormatBytes(ullUncommittedFreeData), (LPCTSTR)::FormatBytes(ullUncommittedFreeOverhead));
+	::CloseHandle(hHeapTempBinFile);
+	::fclose(pHeapTempLogFile);
+	::DeleteFile(sHeapTempBinFileName);
+
+	// Update heap file
+	::DeleteFile(sHeapLogFileName);
+	::MoveFile(sHeapTempLogFileName, sHeapLogFileName);
+
+#ifdef VIDEODEVICEDOC
+	// Get overall movement detection buffers stats
+	CString sDetBufsStats;
+	GetDetBufsStats(sDetBufsStats);
+
+	// Get HD Usage
+	int nMinDiskFreePermillion = 0;
+	CString sSaveDir = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
+	CMDIChildWnd* pChild = MDIGetActive();
+	if (pChild)
+	{
+		CVideoDeviceDoc* pDoc = (CVideoDeviceDoc*)pChild->GetActiveDocument();
+		if (pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CVideoDeviceDoc)))
+		{
+			sSaveDir = pDoc->m_sRecordAutoSaveDir;
+			nMinDiskFreePermillion = pDoc->m_nMinDiskFreePermillion;
+		}
+	}
+	// Note: GetDiskStats() calcs the stats for directory symbolic link targets
+	CString sDiskStats;
+	GetDiskStats(sDiskStats, sSaveDir, nMinDiskFreePermillion);
+#else
+	CString sDiskStats;
+	GetDiskStats(sDiskStats, ((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), 0);
+#endif
+
+	// Get CPU Usage
+	CString sCPUUsage;
+	sCPUUsage.Format(_T("CPU: %0.1f%%"), ::GetCPUUsage());
+
+	// Get Virtual Memory Usage
+	ULONGLONG ullRegions; ULONGLONG ullFree; ULONGLONG ullReserved; ULONGLONG ullCommitted;
+	ULONGLONG ullMaxFree; ULONGLONG ullMaxReserved; ULONGLONG ullMaxCommitted; double dFragmentation;
+	::GetMemoryStats(	&ullRegions, &ullFree, &ullReserved, &ullCommitted,
+						&ullMaxFree, &ullMaxReserved, &ullMaxCommitted, &dFragmentation);
+
+	// Message
+	::LogLine(	_T("%s | ")
+				_T("VMEM: used=%s(max %s) res=%s(max %s) free=%s(max %s) frag=%0.1f%% regions=%I64u | ")
+				_T("HEAP(%s): used=%s (%s with moveable flag and %s with DDE share flag), free(committed)=%s, free(uncommitted)=%s"),
+#ifdef VIDEODEVICEDOC
+				sDetBufsStats + _T(" | ") +
+#endif
+				sDiskStats + _T(" | ") + sCPUUsage,
+				::FormatBytes(ullCommitted), ::FormatBytes(ullMaxCommitted),
+				::FormatBytes(ullReserved), ::FormatBytes(ullMaxReserved),
+				::FormatBytes(ullFree), ::FormatBytes(ullMaxFree),
+				dFragmentation, ullRegions,
+				bHeapValid ? sHeapType : _T("error"),
+				::FormatBytes(ullAllocatedData + ullAllocatedOverhead),
+				::FormatBytes(ullAllocatedMoveableData + ullAllocatedMoveableOverhead),
+				::FormatBytes(ullAllocatedDDEShareData + ullAllocatedDDEShareOverhead),
+				::FormatBytes(ullCommittedFreeData + ullCommittedFreeOverhead),
+				::FormatBytes(ullUncommittedFreeData + ullUncommittedFreeOverhead));
+}
+
 void CMainFrame::OnTimer(UINT nIDEvent) 
 {
 	CMDIFrameWnd::OnTimer(nIDEvent);
@@ -2394,78 +2665,8 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 #endif
 	else if (nIDEvent == ID_TIMER_15SEC)
 	{
-		// Verbose logging
-		if (g_nLogLevel > 1)
-		{
-#ifdef VIDEODEVICEDOC
-			// Get overall movement detection buffers stats
-			CString sDetBufsStats;
-			GetDetBufsStats(sDetBufsStats);
-
-			// Get HD Usage
-			int nMinDiskFreePermillion = 0;
-			CString sSaveDir = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
-			CMDIChildWnd* pChild = MDIGetActive();
-			if (pChild)
-			{
-				CVideoDeviceDoc* pDoc = (CVideoDeviceDoc*)pChild->GetActiveDocument();
-				if (pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CVideoDeviceDoc)))
-				{
-					sSaveDir = pDoc->m_sRecordAutoSaveDir;
-					nMinDiskFreePermillion = pDoc->m_nMinDiskFreePermillion;
-				}
-			}
-			// Note: GetDiskStats() calcs the stats for directory symbolic link targets
-			CString sDiskStats;
-			GetDiskStats(sDiskStats, sSaveDir, nMinDiskFreePermillion);
-#else
-			CString sDiskStats;
-			GetDiskStats(sDiskStats, ((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), 0);
-#endif
-
-			// Get CPU Usage
-			CString sCPUUsage;
-			sCPUUsage.Format(_T("CPU: %0.1f%%"), ::GetCPUUsage());
-
-			// Get virtual memory stats
-			DWORD dwRegions; DWORD dwFreeMB; DWORD dwReservedMB; DWORD dwCommittedMB;
-			DWORD dwMaxFree; DWORD dwMaxReserved; DWORD dwMaxCommitted; double dFragmentation;
-			::GetMemoryStats(	&dwRegions, &dwFreeMB, &dwReservedMB, &dwCommittedMB,
-								&dwMaxFree, &dwMaxReserved, &dwMaxCommitted, &dFragmentation);
-
-			// Get crt heap stats
-			SIZE_T CRTHeapSize = 0;
-			int nCRTHeapType = 0;
-			::GetHeapStats(NULL, &CRTHeapSize, NULL, NULL, &nCRTHeapType);
-			CString sCRTHeapType;
-			switch (nCRTHeapType)
-			{
-				case 0:		sCRTHeapType = _T("regular"); break;
-				case 1:		sCRTHeapType = _T("look-asides"); break;
-				case 2:		sCRTHeapType = _T("LFH"); break;
-				default:	sCRTHeapType = _T("unknown"); break;
-			}
-
-			// Message
-			::LogLine(_T("%s")
-					_T("HEAP(%s): %d") + ML_STRING(1825, "MB") + _T(" | ")
-					_T("ADDR: vmused=%u") + ML_STRING(1825, "MB") + _T("(max %u") + ML_STRING(1243, "KB") + _T(") ")
-					_T("vmres=%u") + ML_STRING(1825, "MB") + _T("(max %u") + ML_STRING(1243, "KB") + _T(") ")
-					_T("vmfree=%u") + ML_STRING(1825, "MB") + _T("(max %u") + ML_STRING(1243, "KB") + _T(") ")
-					_T("frag=%0.1f%% regions=%u"),
-#ifdef VIDEODEVICEDOC
-					sDetBufsStats + _T(" | ") +
-#endif
-					sDiskStats + _T(" | ") + sCPUUsage + _T(" | "),
-					sCRTHeapType, (int)(CRTHeapSize >> 20),
-					dwCommittedMB, dwMaxCommitted >> 10,
-					dwReservedMB, dwMaxReserved >> 10,
-					dwFreeMB, dwMaxFree >> 10,
-					dFragmentation, dwRegions);
-
-			// CRT Heap Check and Dump
-			::HeapDump((HANDLE)_get_heap_handle(), CUImagerApp::GetConfigFilesDir());
-		}
+		if (g_nLogLevel > 0)
+			LogSysUsage();
 	}
 }
 

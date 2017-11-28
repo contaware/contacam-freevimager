@@ -551,14 +551,15 @@ public:
 	// General Functions
 	void ClearConnectErr();														// Clear the connection error message
 	void ConnectErr(LPCTSTR lpszText, const CString& sDeviceName);				// Called when a device start fails
-	CString GetAssignedDeviceName();											// Get User Assigned Device Name
 	static CString GetHostFromDevicePathName(const CString& sDevicePathName);	// Returns host name or _T("") if it's not a network device
-	CString GetDeviceName();													// Friendly Device Name
-	CString GetDevicePathName();												// Used For Settings, Scheduler and Autorun
 	static CString GetNetworkDevicePathName(const CString& sGetFrameVideoHost,	// GetDevicePathName() calls this for network devices
 											int nGetFrameVideoPort,
 											const CString& sGetFrameLocation,
 											int nNetworkDeviceTypeMode);
+	CString GetDevicePathName();												// Used For Settings, Scheduler and Autorun
+	CString GetAssignedDeviceName();											// Get User Assigned Device Name
+	CString GetDeviceName();													// Friendly Device Name
+	CString GetDeviceFormat();													// Friendly Device Format
 	void SetDocumentTitle();
 	CVideoDeviceView* GetView() const {return m_pView;};
 	void SetView(CVideoDeviceView* pView) {m_pView = pView;};
