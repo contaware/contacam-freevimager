@@ -1062,7 +1062,7 @@ void CVideoDeviceView::OnEditZoneSensitivity100()
 
 void CVideoDeviceView::OnUpdateEditZoneSensitivity100(CCmdUI* pCmdUI) 
 {
-	pCmdUI->SetRadio(m_MovDetSingleZoneSensitivity == 1);
+	pCmdUI->SetCheck(m_MovDetSingleZoneSensitivity == 1 ? 1 : 0);
 }
 
 void CVideoDeviceView::OnEditZoneSensitivity50() 
@@ -1072,7 +1072,7 @@ void CVideoDeviceView::OnEditZoneSensitivity50()
 
 void CVideoDeviceView::OnUpdateEditZoneSensitivity50(CCmdUI* pCmdUI) 
 {
-	pCmdUI->SetRadio(m_MovDetSingleZoneSensitivity == 2);
+	pCmdUI->SetCheck(m_MovDetSingleZoneSensitivity == 2 ? 1 : 0);
 }
 
 void CVideoDeviceView::OnEditZoneSensitivity25() 
@@ -1082,7 +1082,7 @@ void CVideoDeviceView::OnEditZoneSensitivity25()
 
 void CVideoDeviceView::OnUpdateEditZoneSensitivity25(CCmdUI* pCmdUI) 
 {
-	pCmdUI->SetRadio(m_MovDetSingleZoneSensitivity == 4);
+	pCmdUI->SetCheck(m_MovDetSingleZoneSensitivity == 4 ? 1 : 0);
 }
 
 void CVideoDeviceView::OnEditZoneSensitivity10() 
@@ -1092,7 +1092,7 @@ void CVideoDeviceView::OnEditZoneSensitivity10()
 
 void CVideoDeviceView::OnUpdateEditZoneSensitivity10(CCmdUI* pCmdUI) 
 {
-	pCmdUI->SetRadio(m_MovDetSingleZoneSensitivity == 10);
+	pCmdUI->SetCheck(m_MovDetSingleZoneSensitivity == 10 ? 1 : 0);
 }
 
 BOOL CVideoDeviceView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt) 

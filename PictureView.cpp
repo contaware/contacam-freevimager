@@ -1025,10 +1025,7 @@ void CPictureView::OnUpdateViewZoomFit(CCmdUI* pCmdUI)
 {
 	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
 	if (pZoomCB)
-	{
-		pCmdUI->SetRadio(pZoomCB->GetCurSel() == 0 ||
-						(m_bFullScreenMode && (pZoomCB->GetCurSel() != 1)));
-	}
+		pCmdUI->SetCheck((pZoomCB->GetCurSel() == 0 || (m_bFullScreenMode && pZoomCB->GetCurSel() != 1)) ? 1 : 0);
 }
 
 void CPictureView::OnViewZoomFitbig() 
@@ -1050,7 +1047,7 @@ void CPictureView::OnUpdateViewZoomFitbig(CCmdUI* pCmdUI)
 {
 	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
 	if (pZoomCB)
-		pCmdUI->SetRadio(pZoomCB->GetCurSel() == 1);
+		pCmdUI->SetCheck(pZoomCB->GetCurSel() == 1 ? 1 : 0);
 }
 
 void CPictureView::OnViewZoom625() 
@@ -1072,7 +1069,7 @@ void CPictureView::OnUpdateViewZoom625(CCmdUI* pCmdUI)
 {
 	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
 	if (pZoomCB)
-		pCmdUI->SetRadio(pZoomCB->GetCurSel() == 2);
+		pCmdUI->SetCheck(pZoomCB->GetCurSel() == 2 ? 1 : 0);
 }
 
 void CPictureView::OnViewZoom125() 
@@ -1094,7 +1091,7 @@ void CPictureView::OnUpdateViewZoom125(CCmdUI* pCmdUI)
 {
 	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
 	if (pZoomCB)
-		pCmdUI->SetRadio(pZoomCB->GetCurSel() == 3);
+		pCmdUI->SetCheck(pZoomCB->GetCurSel() == 3 ? 1 : 0);
 }
 
 void CPictureView::OnViewZoom25() 
@@ -1116,7 +1113,7 @@ void CPictureView::OnUpdateViewZoom25(CCmdUI* pCmdUI)
 {
 	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
 	if (pZoomCB)
-		pCmdUI->SetRadio(pZoomCB->GetCurSel() == 4);
+		pCmdUI->SetCheck(pZoomCB->GetCurSel() == 4 ? 1 : 0);
 }
 
 void CPictureView::OnViewZoom50() 
@@ -1138,7 +1135,7 @@ void CPictureView::OnUpdateViewZoom50(CCmdUI* pCmdUI)
 {
 	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
 	if (pZoomCB)
-		pCmdUI->SetRadio(pZoomCB->GetCurSel() == 5);
+		pCmdUI->SetCheck(pZoomCB->GetCurSel() == 5 ? 1 : 0);
 }
 
 void CPictureView::OnViewZoom100() 
@@ -1160,7 +1157,7 @@ void CPictureView::OnUpdateViewZoom100(CCmdUI* pCmdUI)
 {
 	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
 	if (pZoomCB)
-		pCmdUI->SetRadio(pZoomCB->GetCurSel() == 6);
+		pCmdUI->SetCheck(pZoomCB->GetCurSel() == 6 ? 1 : 0);
 }
 
 void CPictureView::OnViewZoom200() 
@@ -1182,7 +1179,7 @@ void CPictureView::OnUpdateViewZoom200(CCmdUI* pCmdUI)
 {
 	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
 	if (pZoomCB)
-		pCmdUI->SetRadio(pZoomCB->GetCurSel() == 7);
+		pCmdUI->SetCheck(pZoomCB->GetCurSel() == 7 ? 1 : 0);
 }
 
 void CPictureView::OnViewZoom400() 
@@ -1204,7 +1201,7 @@ void CPictureView::OnUpdateViewZoom400(CCmdUI* pCmdUI)
 {
 	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
 	if (pZoomCB)
-		pCmdUI->SetRadio(pZoomCB->GetCurSel() == 8);
+		pCmdUI->SetCheck(pZoomCB->GetCurSel() == 8 ? 1 : 0);
 }
 
 void CPictureView::OnViewZoom800() 
@@ -1226,7 +1223,7 @@ void CPictureView::OnUpdateViewZoom800(CCmdUI* pCmdUI)
 {
 	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
 	if (pZoomCB)
-		pCmdUI->SetRadio(pZoomCB->GetCurSel() == 9);
+		pCmdUI->SetCheck(pZoomCB->GetCurSel() == 9 ? 1 : 0);
 }
 
 void CPictureView::OnViewZoom1600() 
@@ -1248,7 +1245,7 @@ void CPictureView::OnUpdateViewZoom1600(CCmdUI* pCmdUI)
 {
 	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
 	if (pZoomCB)
-		pCmdUI->SetRadio(pZoomCB->GetCurSel() == 10);
+		pCmdUI->SetCheck(pZoomCB->GetCurSel() == 10 ? 1 : 0);
 }
 
 void CPictureView::OnViewZoomTool() 

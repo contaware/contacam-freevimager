@@ -10125,7 +10125,7 @@ void CPictureDoc::OnOsdFontsizeSmall()
 void CPictureDoc::OnUpdateOsdFontsizeSmall(CCmdUI* pCmdUI) 
 {
 	if (m_pOsdDlg)
-		pCmdUI->SetRadio(m_pOsdDlg->GetFontSize() == COsdDlg::FONT_SMALL);
+		pCmdUI->SetCheck(m_pOsdDlg->GetFontSize() == COsdDlg::FONT_SMALL ? 1 : 0);
 	pCmdUI->Enable(m_bEnableOsd);
 }
 
@@ -10138,7 +10138,7 @@ void CPictureDoc::OnOsdFontsizeMedium()
 void CPictureDoc::OnUpdateOsdFontsizeMedium(CCmdUI* pCmdUI) 
 {
 	if (m_pOsdDlg)
-		pCmdUI->SetRadio(m_pOsdDlg->GetFontSize() == COsdDlg::FONT_MEDIUM);
+		pCmdUI->SetCheck(m_pOsdDlg->GetFontSize() == COsdDlg::FONT_MEDIUM ? 1 : 0);
 	pCmdUI->Enable(m_bEnableOsd);
 }
 
@@ -10151,7 +10151,7 @@ void CPictureDoc::OnOsdFontsizeBig()
 void CPictureDoc::OnUpdateOsdFontsizeBig(CCmdUI* pCmdUI) 
 {
 	if (m_pOsdDlg)
-		pCmdUI->SetRadio(m_pOsdDlg->GetFontSize() == COsdDlg::FONT_BIG);
+		pCmdUI->SetCheck(m_pOsdDlg->GetFontSize() == COsdDlg::FONT_BIG ? 1 : 0);
 	pCmdUI->Enable(m_bEnableOsd);
 }
 
@@ -10164,7 +10164,7 @@ void CPictureDoc::OnOsdOfftimeout3()
 void CPictureDoc::OnUpdateOsdOfftimeout3(CCmdUI* pCmdUI) 
 {
 	if (m_pOsdDlg)
-		pCmdUI->SetRadio(m_pOsdDlg->GetTimeout() == COsdDlg::TIMEOUT_3SEC);
+		pCmdUI->SetCheck(m_pOsdDlg->GetTimeout() == COsdDlg::TIMEOUT_3SEC ? 1 : 0);
 	pCmdUI->Enable(m_bEnableOsd);
 }
 
@@ -10177,7 +10177,7 @@ void CPictureDoc::OnOsdOfftimeout4()
 void CPictureDoc::OnUpdateOsdOfftimeout4(CCmdUI* pCmdUI) 
 {
 	if (m_pOsdDlg)
-		pCmdUI->SetRadio(m_pOsdDlg->GetTimeout() == COsdDlg::TIMEOUT_4SEC);
+		pCmdUI->SetCheck(m_pOsdDlg->GetTimeout() == COsdDlg::TIMEOUT_4SEC ? 1 : 0);
 	pCmdUI->Enable(m_bEnableOsd);
 }
 
@@ -10190,7 +10190,7 @@ void CPictureDoc::OnOsdOfftimeout5()
 void CPictureDoc::OnUpdateOsdOfftimeout5(CCmdUI* pCmdUI) 
 {
 	if (m_pOsdDlg)
-		pCmdUI->SetRadio(m_pOsdDlg->GetTimeout() == COsdDlg::TIMEOUT_5SEC);
+		pCmdUI->SetCheck(m_pOsdDlg->GetTimeout() == COsdDlg::TIMEOUT_5SEC ? 1 : 0);
 	pCmdUI->Enable(m_bEnableOsd);
 }
 
@@ -10203,7 +10203,7 @@ void CPictureDoc::OnOsdOfftimeout6()
 void CPictureDoc::OnUpdateOsdOfftimeout6(CCmdUI* pCmdUI) 
 {
 	if (m_pOsdDlg)
-		pCmdUI->SetRadio(m_pOsdDlg->GetTimeout() == COsdDlg::TIMEOUT_6SEC);
+		pCmdUI->SetCheck(m_pOsdDlg->GetTimeout() == COsdDlg::TIMEOUT_6SEC ? 1 : 0);
 	pCmdUI->Enable(m_bEnableOsd);
 }
 
@@ -10216,7 +10216,7 @@ void CPictureDoc::OnOsdOfftimeout7()
 void CPictureDoc::OnUpdateOsdOfftimeout7(CCmdUI* pCmdUI) 
 {
 	if (m_pOsdDlg)
-		pCmdUI->SetRadio(m_pOsdDlg->GetTimeout() == COsdDlg::TIMEOUT_7SEC);
+		pCmdUI->SetCheck(m_pOsdDlg->GetTimeout() == COsdDlg::TIMEOUT_7SEC ? 1 : 0);
 	pCmdUI->Enable(m_bEnableOsd);
 }
 
@@ -10229,7 +10229,7 @@ void CPictureDoc::OnOsdOfftimeoutInfinite()
 void CPictureDoc::OnUpdateOsdOfftimeoutInfinite(CCmdUI* pCmdUI) 
 {
 	if (m_pOsdDlg)
-		pCmdUI->SetRadio(m_pOsdDlg->GetTimeout() == COsdDlg::TIMEOUT_INFINITE);
+		pCmdUI->SetCheck(m_pOsdDlg->GetTimeout() == COsdDlg::TIMEOUT_INFINITE ? 1 : 0);
 	pCmdUI->Enable(m_bEnableOsd);
 }
 
@@ -10242,7 +10242,7 @@ void CPictureDoc::OnOsdFontfaceArial()
 void CPictureDoc::OnUpdateOsdFontfaceArial(CCmdUI* pCmdUI) 
 {
 	if (m_pOsdDlg)
-		pCmdUI->SetRadio(m_pOsdDlg->GetFontFace() == _T("Arial"));
+		pCmdUI->SetCheck(m_pOsdDlg->GetFontFace() == _T("Arial") ? 1 : 0);
 	pCmdUI->Enable(m_bEnableOsd);
 }
 
@@ -10255,7 +10255,7 @@ void CPictureDoc::OnOsdFontfaceTimesnewroman()
 void CPictureDoc::OnUpdateOsdFontfaceTimesnewroman(CCmdUI* pCmdUI) 
 {
 	if (m_pOsdDlg)
-		pCmdUI->SetRadio(m_pOsdDlg->GetFontFace() == _T("Times New Roman"));
+		pCmdUI->SetCheck(m_pOsdDlg->GetFontFace() == _T("Times New Roman") ? 1 : 0);
 	pCmdUI->Enable(m_bEnableOsd);
 }
 
@@ -10268,7 +10268,7 @@ void CPictureDoc::OnOsdFontfaceComicsansms()
 void CPictureDoc::OnUpdateOsdFontfaceComicsansms(CCmdUI* pCmdUI) 
 {
 	if (m_pOsdDlg)
-		pCmdUI->SetRadio(m_pOsdDlg->GetFontFace() == _T("Comic Sans MS"));
+		pCmdUI->SetCheck(m_pOsdDlg->GetFontFace() == _T("Comic Sans MS") ? 1 : 0);
 	pCmdUI->Enable(m_bEnableOsd);
 }
 
@@ -10281,7 +10281,7 @@ void CPictureDoc::OnOsdFontfaceVerdana()
 void CPictureDoc::OnUpdateOsdFontfaceVerdana(CCmdUI* pCmdUI) 
 {
 	if (m_pOsdDlg)
-		pCmdUI->SetRadio(m_pOsdDlg->GetFontFace() == _T("Verdana"));
+		pCmdUI->SetCheck(m_pOsdDlg->GetFontFace() == _T("Verdana") ? 1 : 0);
 	pCmdUI->Enable(m_bEnableOsd);
 }
 
@@ -10294,7 +10294,7 @@ void CPictureDoc::OnOsdFontfaceCouriernew()
 void CPictureDoc::OnUpdateOsdFontfaceCouriernew(CCmdUI* pCmdUI) 
 {
 	if (m_pOsdDlg)
-		pCmdUI->SetRadio(m_pOsdDlg->GetFontFace() == _T("Courier New"));
+		pCmdUI->SetCheck(m_pOsdDlg->GetFontFace() == _T("Courier New") ? 1 : 0);
 	pCmdUI->Enable(m_bEnableOsd);
 }
 
@@ -10307,7 +10307,7 @@ void CPictureDoc::OnOsdOpacity100()
 void CPictureDoc::OnUpdateOsdOpacity100(CCmdUI* pCmdUI) 
 {
 	if (m_pOsdDlg)
-		pCmdUI->SetRadio(m_pOsdDlg->GetMaxOpacity() == 100);
+		pCmdUI->SetCheck(m_pOsdDlg->GetMaxOpacity() == 100 ? 1 : 0);
 	pCmdUI->Enable(m_bEnableOsd);
 }
 
@@ -10320,7 +10320,7 @@ void CPictureDoc::OnOsdOpacity80()
 void CPictureDoc::OnUpdateOsdOpacity80(CCmdUI* pCmdUI) 
 {
 	if (m_pOsdDlg)
-		pCmdUI->SetRadio(m_pOsdDlg->GetMaxOpacity() == 80);
+		pCmdUI->SetCheck(m_pOsdDlg->GetMaxOpacity() == 80 ? 1 : 0);
 	pCmdUI->Enable(m_bEnableOsd);
 }
 
@@ -10333,7 +10333,7 @@ void CPictureDoc::OnOsdOpacity60()
 void CPictureDoc::OnUpdateOsdOpacity60(CCmdUI* pCmdUI) 
 {
 	if (m_pOsdDlg)
-		pCmdUI->SetRadio(m_pOsdDlg->GetMaxOpacity() == 60);
+		pCmdUI->SetCheck(m_pOsdDlg->GetMaxOpacity() == 60 ? 1 : 0);
 	pCmdUI->Enable(m_bEnableOsd);
 }
 
@@ -10346,7 +10346,7 @@ void CPictureDoc::OnOsdOpacity40()
 void CPictureDoc::OnUpdateOsdOpacity40(CCmdUI* pCmdUI) 
 {
 	if (m_pOsdDlg)
-		pCmdUI->SetRadio(m_pOsdDlg->GetMaxOpacity() == 40);
+		pCmdUI->SetCheck(m_pOsdDlg->GetMaxOpacity() == 40 ? 1 : 0);
 	pCmdUI->Enable(m_bEnableOsd);
 }
 
