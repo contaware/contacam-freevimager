@@ -1043,7 +1043,7 @@ void CVideoDeviceChildFrame::OnClose()
 				CString sMsg;
 				if (TimeSpan.GetDays() > 0)
 				{
-					sMsg.Format(_T("%s stopping (running for %I64dday%s, %dhour%s, %dmin and %dsec)"),
+					sMsg.Format(_T("%s stopping, running for %I64dday%s, %dhour%s, %dmin and %dsec"),
 						pDoc->GetAssignedDeviceName(),
 						TimeSpan.GetDays(),
 						(TimeSpan.GetDays() == 1) ? _T("") : _T("s"),
@@ -1054,7 +1054,7 @@ void CVideoDeviceChildFrame::OnClose()
 				}
 				else if (TimeSpan.GetTotalHours() > 0)
 				{
-					sMsg.Format(_T("%s stopping (running for %I64dhour%s, %dmin and %dsec)"),
+					sMsg.Format(_T("%s stopping, running for %I64dhour%s, %dmin and %dsec"),
 						pDoc->GetAssignedDeviceName(),
 						(LONGLONG)TimeSpan.GetTotalHours(),
 						(TimeSpan.GetTotalHours() == 1) ? _T("") : _T("s"),
@@ -1063,14 +1063,14 @@ void CVideoDeviceChildFrame::OnClose()
 				}
 				else if (TimeSpan.GetTotalMinutes() > 0)
 				{
-					sMsg.Format(_T("%s stopping (running for %I64dmin and %dsec)"),
+					sMsg.Format(_T("%s stopping, running for %I64dmin and %dsec"),
 						pDoc->GetAssignedDeviceName(),
 						(LONGLONG)TimeSpan.GetTotalMinutes(),
 						TimeSpan.GetSeconds());
 				}
 				else if (TimeSpan.GetTotalSeconds() > 0)
 				{
-					sMsg.Format(_T("%s stopping (running for %I64dsec)"),
+					sMsg.Format(_T("%s stopping, running for %I64dsec"),
 						pDoc->GetAssignedDeviceName(),
 						(LONGLONG)TimeSpan.GetTotalSeconds());
 				}
