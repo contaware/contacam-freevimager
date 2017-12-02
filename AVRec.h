@@ -81,7 +81,7 @@ public:
 						const LPWAVEFORMATEX pDstWaveFormat);
 
 	// Open
-	bool Open();
+	bool Open(const CString& sMetadataTitle);
 
 	// This function returns true if the above function has been execute successfully
 	bool IsOpen() const {return m_bOpen;};

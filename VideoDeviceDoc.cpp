@@ -395,7 +395,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 						AVRecVideo.AddAudioStream(	m_pDoc->m_pSrcWaveFormat,	// Src Wave Format
 													m_pDoc->m_pDstWaveFormat);	// Dst Wave Format
 					}
-					AVRecVideo.Open();
+					CString sTitle(m_pDoc->GetAssignedDeviceName() + _T(" ") + ::MakeDateLocalFormat(FirstTime) + _T(" ") + ::MakeTimeLocalFormat(FirstTime, TRUE));
+					AVRecVideo.Open(sTitle);
 				}
 
 				// If open add data to file
@@ -1032,7 +1033,8 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 															FrameRate.den,						// Scale				
 															m_fSnapshotVideoCompressorQuality,
 															((CUImagerApp*)::AfxGetApp())->m_nCoresCount);
-								pAVRecVideo->Open();
+								CString sTitle(m_pDoc->GetAssignedDeviceName() + _T(" ") + ::MakeDateLocalFormat(m_Time));
+								pAVRecVideo->Open(sTitle);
 							}
 
 							// Add Frame
@@ -1068,7 +1070,8 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 																FrameRate.den,						// Scale				
 																m_fSnapshotVideoCompressorQuality,
 																((CUImagerApp*)::AfxGetApp())->m_nCoresCount);
-								pAVRecThumbVideo->Open();
+								CString sTitle(m_pDoc->GetAssignedDeviceName() + _T(" ") + ::MakeDateLocalFormat(m_Time));
+								pAVRecThumbVideo->Open(sTitle);
 							}
 
 							// Add Frame
@@ -5435,7 +5438,8 @@ BOOL CVideoDeviceDoc::MakeAVRec(CAVRec** ppAVRec)
 	}
 
 	// Open
-	if (!(*ppAVRec)->Open())
+	CString sTitle(GetAssignedDeviceName() + _T(" ") + ::MakeDateLocalFormat(CurrentTime) + _T(" ") + ::MakeTimeLocalFormat(CurrentTime, TRUE));
+	if (!(*ppAVRec)->Open(sTitle))
 		return FALSE;
 	else
 		return TRUE;

@@ -544,7 +544,7 @@ int CAVRec::AddAudioStream(	const LPWAVEFORMATEX pSrcWaveFormat,
 	return dwStreamNum;
 }
 
-bool CAVRec::Open()
+bool CAVRec::Open(const CString& sMetadataTitle)
 {
 	int ret;
 
@@ -562,6 +562,18 @@ bool CAVRec::Open()
 		}
 		else
 			m_bFileOpened = true;
+	}
+
+	// Metadata
+	if (!sMetadataTitle.IsEmpty())
+	{
+		LPBYTE pMetadataTitle = NULL;
+		::ToUTF8(sMetadataTitle, &pMetadataTitle);
+		if (pMetadataTitle)
+		{
+			av_dict_set(&m_pFormatCtx->metadata, "title", (LPCSTR)pMetadataTitle, 0);
+			delete[] pMetadataTitle;
+		}
 	}
 
 	// Write the stream header, if any
