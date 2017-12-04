@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "uImager.h"
 #include "MainFrm.h"
 #include "LicenseDlg.h"
@@ -454,21 +454,27 @@ extern "C" void my_av_log_trace(void* ptr, int level, const char* fmt, va_list v
 		(g_nLogLevel == 1 && level >= AV_LOG_WARNING)	||
 		(g_nLogLevel >= 2 && level >= AV_LOG_DEBUG))
 		return;
-
-	// Format
-	CStringA sMsg;
-	sMsg.FormatV(fmt, vl);
 	
+	// Make the message string limiting its size
+	// Note: ffmpeg uses UTF8, I tested _vsnprintf() with
+	//       a UTF8 format string and it works well 
+	char sUtf8[1024];
+	memset(sUtf8, 0, 1024);
+	_vsnprintf(sUtf8, 1023, fmt, vl); // set buffer count to 1023 (and not 1024) so we are sure sUtf8[1023] stays NULL (from the above memset)
+	CString sMsg(::FromUTF8((const unsigned char *)sUtf8, strlen(sUtf8)));	// strlen() interprets the string as a single-byte character string,
+																			// so its return value is always equal to the number of bytes, even
+																			// if the string contains multibyte characters
+
 	// Avoid spamming users with api deprecated warnings
 #ifndef _DEBUG
-	CStringA sMsgLowerCase(sMsg);
+	CString sMsgLowerCase(sMsg);
 	sMsgLowerCase.MakeLower();
-	if (sMsgLowerCase.Find("deprecate") >= 0)
+	if (sMsgLowerCase.Find(_T("deprecate")) >= 0)
 		return;
 #endif
 
 	// Output message string
-	::LogLine(_T("%s"), CString(sMsg));
+	::LogLine(_T("%s"), sMsg);
 }
 
 extern "C" int my_av_lock_callback(void **mutex, enum AVLockOp op)
