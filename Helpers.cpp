@@ -2490,7 +2490,7 @@ BOOL IsANSIConvertible(const CString& s)
 		return !bUsedDefaultChar;
 }
 
-int ToANSI(const CString& s, LPSTR* ppAnsi, BOOL* pbUsedDefaultChar/*=NULL*/)
+int ToANSI(const CString& s, LPSTR* ppAnsi)
 {
 	// Check
 	if (!ppAnsi)
@@ -2518,8 +2518,8 @@ int ToANSI(const CString& s, LPSTR* ppAnsi, BOOL* pbUsedDefaultChar/*=NULL*/)
 											nUtf16Len,				// number of chars in string.
 											*ppAnsi,				// buffer for new string
 											2*nUtf16Len,			// size of allocated buffer minus null termination
-											NULL,					// default for unmappable chars given by system
-											pbUsedDefaultChar);		// set when default char used
+											NULL,
+											NULL);
 	if (nBytesWritten <= 0 && GetLastError() == ERROR_INVALID_FLAGS)
 	{
 		nBytesWritten = WideCharToMultiByte(CP_ACP,					// ANSI Code Page
@@ -2528,8 +2528,8 @@ int ToANSI(const CString& s, LPSTR* ppAnsi, BOOL* pbUsedDefaultChar/*=NULL*/)
 											nUtf16Len,				// number of chars in string
 											*ppAnsi,				// buffer for new string
 											2*nUtf16Len,			// size of allocated buffer minus null termination
-											NULL,					// default for unmappable chars
-											pbUsedDefaultChar);		// set when default char used
+											NULL,
+											NULL);
 	}
 	if (nBytesWritten > 0)
 	{
@@ -2538,8 +2538,8 @@ int ToANSI(const CString& s, LPSTR* ppAnsi, BOOL* pbUsedDefaultChar/*=NULL*/)
 	}
 	else
 	{
-		delete [] *ppAnsi;
-		*ppAnsi = NULL;
+		// return the empty ANSI string
+		(*ppAnsi)[0] = '\0';
 		return 0;
 	}
 }
@@ -2803,8 +2803,8 @@ int ToUTF8(const CString& s, LPBYTE* ppUtf8)
 	}
 	else
 	{
-		delete [] *ppUtf8;
-		*ppUtf8 = NULL;
+		// return the empty UTF8 string
+		(*ppUtf8)[0] = '\0';
 		return 0;
 	}
 }

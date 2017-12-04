@@ -375,11 +375,12 @@ extern BOOL IsValidFileName(const CString& s, BOOL bShowMessageBoxOnError = FALS
 // Is ANSI Convertible?
 extern BOOL IsANSIConvertible(const CString& s);
 
-// CString to ANSI Conversion
-// The allocated buffer is always NULL terminated and has to be freed with delete []
-// The function returns the number of written bytes
-// (the terminating NULL char is not included in this returned bytes count)
-extern int ToANSI(const CString& s, LPSTR* ppAnsi, BOOL* pbUsedDefaultChar = NULL);
+// CString to ANSI conversion
+// Allocates a NULL terminated buffer which has to be freed by delete []
+// returns the ANSI string size in bytes, NULL termination not included
+// (for the empty string a one byte buffer containing a single '\0'
+// is allocated)
+extern int ToANSI(const CString& s, LPSTR* ppAnsi);
 
 // Short <-> Long path names convertion
 extern CString GetLongPathName(const CString& sShortPath);
@@ -409,9 +410,11 @@ extern CString HtmlDecode(CString s);
 // not be included in this size, but it doesn't harm if it is)
 extern CString FromUTF8(const unsigned char* pUtf8, int nUtf8Len);
 
-// UTF16 -> UTF8 conversion
-// Allocates a NULL terminated buffer
-// returns the Utf8 string size in bytes (NULL termination not included)
+// CString to UTF8 conversion
+// Allocates a NULL terminated buffer which has to be freed by delete []
+// returns the UTF8 string size in bytes, NULL termination not included
+// (for the empty string a one byte buffer containing a single '\0'
+// is allocated)
 extern int ToUTF8(const CString& s, LPBYTE* ppUtf8);
 
 /*
