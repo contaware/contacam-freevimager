@@ -1,0 +1,11 @@
+{
+  "short_name": "ContaCam",
+  "name": " ContaCam",
+  "display": "standalone",
+  "background_color": "#333333",
+  "icons": [{
+    "src": "contaware_256x256.png",
+    "type": "image/png",
+    "sizes": "256x256"
+  }]
+}

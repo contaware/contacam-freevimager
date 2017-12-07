@@ -5886,7 +5886,7 @@ void CVideoDeviceDoc::VideoFormatDialog()
 
 void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 {
-	// Copy index.php to Doc Root
+	// Copy index_rootdir.php, favicon.ico, contaware_256x256.png and manifest.json to Doc Root
 	CString sDocRoot = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
 	sDocRoot.TrimRight(_T('\\'));
 	TCHAR szDrive[_MAX_DRIVE];
@@ -5897,6 +5897,15 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
 	::CopyFile(	CString(szDrive) + CString(szDir) + MICROAPACHE_HTDOCS + _T("\\") + PHP_INDEXROOTDIRNAME_EXT,
 				sDocRoot + _T("\\") + PHP_INDEXNAME_EXT,
+				FALSE); // overwrite if existing
+	::CopyFile(	CString(szDrive) + CString(szDir) + MICROAPACHE_HTDOCS + _T("\\") + IMAGE_FAVICONNAME_EXT,
+				sDocRoot + _T("\\") + IMAGE_FAVICONNAME_EXT,
+				FALSE); // overwrite if existing
+	::CopyFile(	CString(szDrive) + CString(szDir) + MICROAPACHE_HTDOCS + _T("\\") + IMAGE_CONTAWAREICONNAME_EXT,
+				sDocRoot + _T("\\") + IMAGE_CONTAWAREICONNAME_EXT,
+				FALSE); // overwrite if existing
+	::CopyFile(	CString(szDrive) + CString(szDir) + MICROAPACHE_HTDOCS + _T("\\") + JSON_MANIFESTNAME_EXT,
+				sDocRoot + _T("\\") + JSON_MANIFESTNAME_EXT,
 				FALSE); // overwrite if existing
 
 	// Warning
@@ -6247,7 +6256,10 @@ BOOL CVideoDeviceDoc::MicroApacheUpdateWebFiles(CString sAutoSaveDir)
 		CString sName = FileFind.GetFileName(pos);
 		CString sShortName = ::GetShortFileName(sName);
 		CString sRelName = sName.Mid(nRootDirNameSize);
-		if (sShortName.CompareNoCase(PHP_INDEXROOTDIRNAME_EXT) != 0 &&
+		if (sShortName.CompareNoCase(PHP_INDEXROOTDIRNAME_EXT) != 0		&&
+			sShortName.CompareNoCase(IMAGE_FAVICONNAME_EXT) != 0		&&
+			sShortName.CompareNoCase(IMAGE_CONTAWAREICONNAME_EXT) != 0	&&
+			sShortName.CompareNoCase(JSON_MANIFESTNAME_EXT) != 0		&&
 			sShortName.CompareNoCase(THUMBS_DB) != 0)
 		{
 			if (sShortName.CompareNoCase(PHP_CONFIGNAME_EXT) == 0)

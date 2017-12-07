@@ -11,7 +11,15 @@ if (file_exists(dirname(__FILE__).'/authenticate.php')) {
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="author" content="Oliver Pfister" />
-<title>Select Camera</title>
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="application-name" content="ContaCam" />
+<meta name="apple-mobile-web-app-title" content="ContaCam" />
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" type="image/x-icon" href="favicon.ico" sizes="16x16 32x32" />
+<link rel="icon" type="image/png" href="contaware_256x256.png" sizes="256x256" />
+<link rel="apple-touch-icon" type="image/png" href="contaware_256x256.png" sizes="256x256" />
+<title>ContaCam</title>
 <style type="text/css">
 /*<![CDATA[*/
 * {

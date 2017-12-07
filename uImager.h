@@ -76,10 +76,13 @@
 #define FTPPROG_TIMEOUT_SEC								10
 #define FTPPROG_JPEGUPLOAD_WAIT_TIMEOUT_MS				10000 /* FTPPROG_JPEGUPLOAD_WAIT_TIMEOUT_MS < NETCOM_BLOCKING_TIMEOUT, see CVideoDeviceChildFrame::OnClose() */
 
-// Php and Css
+// Php, Css and icons
 #define	PHP_CONFIGNAME_EXT								_T("configuration.php")
 #define PHP_INDEXROOTDIRNAME_EXT						_T("index_rootdir.php")
 #define PHP_INDEXNAME_EXT								_T("index.php")
+#define IMAGE_FAVICONNAME_EXT							_T("favicon.ico")
+#define IMAGE_CONTAWAREICONNAME_EXT						_T("contaware_256x256.png")
+#define JSON_MANIFESTNAME_EXT							_T("manifest.json")
 #define	PHP_AUTHENTICATENAME_EXT						_T("authenticate.php")
 #define PHP_LANGUAGES_DIR								_T("languages")
 #define CSS_STYLE_DIR									_T("styles")

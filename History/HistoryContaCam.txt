@@ -2,6 +2,9 @@ CONTACAM HISTORY
 
 7.7.0 (Month XXth 2017)
 
+- To start the ContaCam web interface as a Web App it's now
+  possible to create a home screen icon from your mobile browser's
+  menu (it should say something like "Add to Home")
 - Configurable web server SSL certificate files
 - Hold down the Ctrl key to keep the aspect ratio while resizing
   a camera view
