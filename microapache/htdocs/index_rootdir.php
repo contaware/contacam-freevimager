@@ -56,10 +56,18 @@ span.previewscontainer {
 	border: 0;
 }
 a.logout {
-	font-size: 26px;
+	line-height: 16px;
+	height: 16px;
+	color: #33ccff;
+	display: inline-block;
+	border: 1px solid #33ccff;
+	padding: 3px 5px 5px 5px;
+	margin: 5px 0 3px 0;
 }
 a.logout:hover, a.logout:focus {
+	color: #ffffff;
 	text-decoration: none;
+	border: 1px solid #ffffff;
 }
 /*]]>*/
 </style>
@@ -67,7 +75,7 @@ a.logout:hover, a.logout:focus {
 <body>
 <?php
 if (isset($_SESSION['username'])) {
-	echo "<p style=\"text-align: right\"><a class=\"logout\" href=\"authenticate.php\">&#x1f44b;</a>&nbsp;</p>\n";
+	echo "<p style=\"text-align: right\"><a class=\"logout\" href=\"authenticate.php\">[&#x2192;</a>&nbsp;</p>\n";
 }
 $rel_path = dirname($_SERVER['PHP_SELF']);
 $rel_path = str_replace("\\", "/", $rel_path);

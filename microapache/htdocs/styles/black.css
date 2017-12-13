@@ -135,9 +135,6 @@ span.globalbuttons a.highlight:link, span.globalbuttons a.highlight:visited, spa
 a.homebuttons {
 	background: transparent url('home_black.png') no-repeat center center;
 }
-a.reloadbuttons {
-	background: transparent url('reload_black.png') no-repeat center center;
-}
 a.camonbuttons {
 	background: transparent url('camon_black.png') no-repeat center center;
 }

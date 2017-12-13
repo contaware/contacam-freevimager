@@ -6285,6 +6285,10 @@ BOOL CVideoDeviceDoc::MicroApacheUpdateWebFiles(CString sAutoSaveDir)
 	::DeleteFile(sAutoSaveDir + _T("styles\\hide_darkgray.gif"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\show_gray.gif"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\hide_gray.gif"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\reload_black.png"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\reload_white.png"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\reload_darkgray.png"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\reload_gray.png"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\scaler_slider_black.gif"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\scaler_slider_track_black.gif"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\scaler_slider_white.gif"));

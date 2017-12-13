@@ -93,9 +93,9 @@ if (!isset($_GET['menu']) || $_GET['menu'] != 'no') {
 	echo "<span class=\"globalbuttons\">";
 	echo "<a class=\"homebuttons\" href=\"" . getParentUrl() . "\" target=\"_top\">&nbsp;</a>&nbsp;";
 	if (isset($_SESSION['username'])) {
-		echo "<a style=\"font-size: 16px;\" href=\"" . getParentUrl() . "authenticate.php\">&#x1f44b;</a>&nbsp;";
+		echo "<a href=\"" . getParentUrl() . "authenticate.php\">[&#x2192;</a>&nbsp;";
 	}
-	echo "<a class=\"reloadbuttons\" href=\"#\" onclick=\"window.location.reload(); return false;\">&nbsp;</a>\n";
+	echo "<a style=\"font-size: 16px;\" href=\"#\" onclick=\"window.location.reload(); return false;\">&#x21bb;</a>\n";
 	echo "</span>\n";
 	echo "</div>\n";
 }

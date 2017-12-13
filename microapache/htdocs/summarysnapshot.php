@@ -184,9 +184,9 @@ echo "<div>\n";
 echo "<span class=\"globalbuttons\">";
 echo "<a class=\"homebuttons\" href=\"" . getParentUrl() . "\" target=\"_top\">&nbsp;</a>&nbsp;";
 if (isset($_SESSION['username'])) {
-	echo "<a style=\"font-size: 16px;\" href=\"" . getParentUrl() . "authenticate.php\">&#x1f44b;</a>&nbsp;";
+	echo "<a href=\"" . getParentUrl() . "authenticate.php\">[&#x2192;</a>&nbsp;";
 }
-echo "<a class=\"reloadbuttons\" href=\"#\" onclick=\"window.location.reload(); return false;\">&nbsp;</a>&nbsp;";
+echo "<a style=\"font-size: 16px;\" href=\"#\" onclick=\"window.location.reload(); return false;\">&#x21bb;</a>&nbsp;";
 if ($show_camera_commands) {
 	echo "<a class=\"camonbuttons\" href=\"camera.php?source=on&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\">&nbsp;</a>&nbsp;";
 	echo "<a class=\"camoffbuttons\" href=\"camera.php?source=off&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\">&nbsp;</a>&nbsp;";

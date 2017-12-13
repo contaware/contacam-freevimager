@@ -33,7 +33,7 @@ echo "<link rel=\"stylesheet\" href=\"" . STYLEFILEPATH . "\" type=\"text/css\" 
 <a class="homebuttons" href="<?php echo getParentUrl();?>" target="_top">&nbsp;</a>
 <?php
 if (isset($_SESSION['username'])) {
-	echo "<a style=\"font-size: 16px;\" href=\"" . getParentUrl() . "authenticate.php\">&#x1f44b;</a>\n";
+	echo "<a href=\"" . getParentUrl() . "authenticate.php\">[&#x2192;</a>\n";
 }
 ?>
 </span>
