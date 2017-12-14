@@ -89,7 +89,7 @@ if ($prevkey >= 0) {
 	echo "<a href=\"javascript:;\" onclick=\"parent.window.name = '" . $_GET["$prevkey"] . "'; window.location.href = '" . $prevrequesturi . "'; return false;\">&lt;</a>&nbsp;";
 }
 if (isset($_GET['backuri']))
-	echo "<a class=\"backbuttons\" href=\"" . htmlspecialchars($_GET['backuri']) . "\">&nbsp;</a>&nbsp;";
+	echo "<a href=\"" . htmlspecialchars($_GET['backuri']) . "\">&#x274c;</a>&nbsp;";
 if ($nextkey <= $lastkey) {
 	$nextrequesturi = str_replace($currentmp4 . '.mp4', $_GET["$nextkey"] . '.mp4', $_SERVER['REQUEST_URI']);
 	$nextrequesturi = htmlspecialchars($nextrequesturi);
@@ -97,7 +97,7 @@ if ($nextkey <= $lastkey) {
 }
 echo "<a href=\"javascript:;\" onclick=\"playRate(0.25);\">0.25x</a>&nbsp;";
 echo "<a href=\"javascript:;\" onclick=\"playRate(1.0);\">1.0x</a>&nbsp;";
-echo "<a class=\"savebuttons\" href=\"download.php?file=" . urlencode($filename) . "\">&nbsp;</a>";
+echo "<a style=\"font-size: 16px;\" href=\"download.php?file=" . urlencode($filename) . "\">&#x1f4be;</a>";
 echo "</span>\n";
 echo "</div>\n";
 ?>

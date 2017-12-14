@@ -6289,6 +6289,18 @@ BOOL CVideoDeviceDoc::MicroApacheUpdateWebFiles(CString sAutoSaveDir)
 	::DeleteFile(sAutoSaveDir + _T("styles\\reload_white.png"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\reload_darkgray.png"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\reload_gray.png"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\back_black.png"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\back_white.png"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\back_darkgray.png"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\back_gray.png"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\home_black.png"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\home_white.png"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\home_darkgray.png"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\home_gray.png"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\save_black.png"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\save_white.png"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\save_darkgray.png"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\save_gray.png"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\scaler_slider_black.gif"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\scaler_slider_track_black.gif"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\scaler_slider_white.gif"));

@@ -132,20 +132,11 @@ span.globalbuttons a.highlight:link, span.globalbuttons a.highlight:visited, spa
 	text-decoration: underline;
 	border-color: #33ccff #039ccf #039ccf #33ccff;
 }
-a.homebuttons {
-	background: transparent url('home_black.png') no-repeat center center;
-}
 a.camonbuttons {
 	background: transparent url('camon_black.png') no-repeat center center;
 }
 a.camoffbuttons {
 	background: transparent url('camoff_black.png') no-repeat center center;
-}
-a.savebuttons {
-	background: transparent url('save_black.png') no-repeat center center;
-}
-a.backbuttons {
-	background: transparent url('back_black.png') no-repeat center center;
 }
 a.trashbuttons {
 	display: inline-block;
