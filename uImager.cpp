@@ -733,7 +733,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 #endif
 		if (
 #ifdef VIDEODEVICEDOC			
-			!m_bServiceProcess			&&
+			!m_bServiceProcess &&
 #endif
 			m_bSingleInstance)
 		{
@@ -1084,11 +1084,24 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			}
 
 			// Hibernation?
+			// Note: Windows 10 adds a hiber file type:
+			// - Full: Supports hibernate, hybrid sleep, fast startup (hiberboot)
+			//   (powercfg /h /type full)
+			// - Reduced: only supports fast startup (hiberboot)
+			//   (first run powercfg /h /size 0 and then powercfg /h /type reduced)
+#if (NTDDI_VERSION < NTDDI_WINTHRESHOLD)
+			BYTE HiberFileType = SystemPowerCapabilities.spare3[0];		// that's 0 in systems older than Windows 10
+#else
+			BYTE HiberFileType = SystemPowerCapabilities.HiberFileType;	// added in Windows 10
+#endif
 			activeGUID = GUID_HIBERNATE_TIMEOUT;
 			DWORD dwHibernateTimeout = 0;
-			if (SystemPowerCapabilities.SystemS4 && SystemPowerCapabilities.HiberFilePresent)
+			if (SystemPowerCapabilities.SystemS4 && SystemPowerCapabilities.HiberFilePresent && HiberFileType != HIBERFILE_TYPE_REDUCED)
 			{
-				// This function can return a value other than 0 also if SystemS4 or HiberFilePresent are FALSE!
+				// The above check is necessary because PowerReadACValueIndex can return a value other than 0 also if
+				// SystemS4 == FALSE or
+				// HiberFilePresent == FALSE or
+				// HiberFileType == HIBERFILE_TYPE_REDUCED
 				::PowerReadACValueIndex(NULL, pActivePolicyGuid, &subGUID, &activeGUID, &dwHibernateTimeout);
 			}
 
