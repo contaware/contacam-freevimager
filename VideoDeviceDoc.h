@@ -88,7 +88,6 @@ class CMovementDetectionPage;
 // Watch Dog
 #define WATCHDOG_CHECK_TIME					1000U		// ms
 #define WATCHDOG_THRESHOLD					30000U		// ms, make sure that: 1000 / MIN_FRAMERATE < WATCHDOG_THRESHOLD
-#define WATCHDOG_ALERT_SEND_TIMEOUT			900			// sec, 15 min
 
 // Snapshot
 #define MIN_SNAPSHOT_RATE					1			// one snapshot per second
@@ -976,8 +975,9 @@ public:
 	volatile int m_nDetectionMaxFrames;					// Maximum number of frames for a detection sequence
 	volatile BOOL m_bSaveVideoMovementDetection;		// Save Movement Detections as Video File
 	volatile BOOL m_bSaveAnimGIFMovementDetection;		// Save Movement Detections as Animated GIF
-	volatile BOOL m_bSendMailDeviceOK;					// Send Email when device Works Properly
-	volatile BOOL m_bSendMailMalfunction;				// Send Email on device Malfunction
+	volatile BOOL m_bSendMailMalfunction;				// Send Email on Device Malfunction
+	volatile BOOL m_bSendMailACLineMalfunction;			// Send Email on AC Line Malfunction
+	volatile BOOL m_bSendMailDeviceOK;					// Send Email when Device Works Properly
 	volatile BOOL m_bSendMailMovementDetection;			// Send Email on Movement Detections
 	volatile BOOL m_bFTPUploadMovementDetection;		// FTP Upload Movement Detections
 	volatile BOOL m_bExecCommandMovementDetection;		// Execute Command on Movement Detection

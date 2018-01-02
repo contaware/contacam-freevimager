@@ -39,8 +39,9 @@ public:
 	BOOL	m_bCheckFullStretch;
 	BOOL	m_bCheckTrashCommand;
 	BOOL	m_bCheckCameraCommands;
-	BOOL	m_bCheckSendMailDeviceOK;
 	BOOL	m_bCheckSendMailMalfunction;
+	BOOL	m_bCheckSendMailACLineMalfunction;
+	BOOL	m_bCheckSendMailDeviceOK;
 	BOOL	m_bCheckSendMailMovementDetection;
 	int		m_nComboSendMailMovementDetectionAttachment;
 	int		m_nSendMailSecBetweenMsg;

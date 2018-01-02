@@ -2593,11 +2593,37 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		// Show CPU Usage
 		GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_CPU_USAGE), _T(" ") + sCPUUsage + _T(" "));
 
-		// Current Time
-		CTime timedate = CTime::GetCurrentTime();
-		CTime timeonly(2000, 1, 1, timedate.GetHour(), timedate.GetMinute(), timedate.GetSecond());
+		// Power Status
+		SYSTEM_POWER_STATUS SystemPowerStatus;
+		memset(&SystemPowerStatus, 0, sizeof(SYSTEM_POWER_STATUS));
+		if (::GetSystemPowerStatus(&SystemPowerStatus))
+		{
+			// On Battery?
+			// - ACLineStatus: 0=Offline, 1=Online, 255=Unknown status
+			// - BatteryLifePercent: Charge remaining=0..100, 255=Unknown status (like when no battery or no UPS installed)
+			if (SystemPowerStatus.ACLineStatus == 0 && SystemPowerStatus.BatteryLifePercent <= 100)
+			{
+				if (((CUImagerApp*)::AfxGetApp())->m_nBatteryOrACLine == 255)
+				{
+					::LogLine(_T("%s"), _T("AC 100-240V OFF!"));
+					((CUImagerApp*)::AfxGetApp())->m_nBatteryOrACLine = SystemPowerStatus.BatteryLifePercent;
+				}
+			}
+			// On AC Line?
+			else
+			{
+				// Back to AC Line?
+				if (((CUImagerApp*)::AfxGetApp())->m_nBatteryOrACLine <= 100)
+				{
+					::LogLine(_T("%s"), _T("AC 100-240V ON"));
+					((CUImagerApp*)::AfxGetApp())->m_nBatteryOrACLine = 255;
+				}
+			}
+		}
 
 		// Iterate Through the Scheduler List
+		CTime timedate = CTime::GetCurrentTime();
+		CTime timeonly(2000, 1, 1, timedate.GetHour(), timedate.GetMinute(), timedate.GetSecond());
 		POSITION pos = ((CUImagerApp*)::AfxGetApp())->m_Scheduler.GetHeadPosition();
 		while (pos)
 		{

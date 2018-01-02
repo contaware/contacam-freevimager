@@ -637,6 +637,10 @@ public:
 
 	// Do start from service
 	BOOL m_bDoStartFromService;
+
+	// 0..100: On battery with the given charge remaining
+	// 255:    On AC line
+	volatile int m_nBatteryOrACLine;
 #endif
 
 // Overrides
