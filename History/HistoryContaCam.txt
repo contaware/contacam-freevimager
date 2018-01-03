@@ -1,6 +1,6 @@
 CONTACAM HISTORY
 
-7.7.0 (Month XXth 2017)
+7.7.0 (Month XXth 2018)
 
 - To start the ContaCam web interface as a Web App it's now
   possible to create a home screen icon from your mobile browser's

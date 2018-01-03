@@ -1,6 +1,6 @@
 FREEVIMAGER HISTORY
 
-7.7.0 (Month XXth 2017)
+7.7.0 (Month XXth 2018)
 
 - ...
 
