@@ -5790,7 +5790,7 @@ void CVideoDeviceDoc::OnCaptureCameraAdvancedSettings()
 		m_pCameraAdvancedSettingsPropertySheet = new CCameraAdvancedSettingsPropertySheet(this);
 		CRect rect(0, 0, 0, 0);
 		if (!m_pCameraAdvancedSettingsPropertySheet->Create(GetView(),
-			WS_POPUP | WS_CAPTION | WS_SYSMENU, WS_EX_TOOLWINDOW))
+			WS_POPUP | WS_CAPTION | WS_SYSMENU))
 		{
 			m_pCameraAdvancedSettingsPropertySheet = NULL;
 			return;
