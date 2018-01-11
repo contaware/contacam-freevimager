@@ -55,15 +55,6 @@
 // Maximum file path size for file dialog
 #define MAX_FILEDLG_PATH							1048576		// 1M
 
-// Default Font Face
-#define DEFAULT_FONTFACE							_T("Arial")
-
-// Vista and higher Shield Icon
-#ifndef BCM_SETSHIELD
-#define BCM_SETSHIELD								(BCM_FIRST + 0x000C)
-#endif
-
-
 #if(WINVER < 0x0601)
 /*
  * Gesture Message

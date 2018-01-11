@@ -777,7 +777,7 @@ void CDibStatic::PaintDib(BOOL bUseCS/*=TRUE*/)
 		int nOldBkMode = MemDC.SetBkMode(TRANSPARENT);
 		LOGFONT lf;
 		memset(&lf, 0, sizeof(lf));
-		_tcscpy(lf.lfFaceName, DEFAULT_FONTFACE);
+		_tcscpy(lf.lfFaceName, g_szDefaultFontFace);
 		lf.lfHeight = -MulDiv(10, GetDeviceCaps(MemDC.GetSafeHdc(), LOGPIXELSY), 72);
 		lf.lfWeight = FW_NORMAL;
 		lf.lfItalic = 0;

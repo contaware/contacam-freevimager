@@ -326,7 +326,8 @@ void CVideoDeviceView::DrawTextMsg(HDC hDC)
 	if (pDoc->m_bDetectingMinLengthMovement)
 	{
 		::DrawBigText(	hDC, CRect(0, 0, rcClient.Width(), rcClient.Height()),
-						ML_STRING(1844, "Detection"), DRAW_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT,
+						g_bDefaultFontFaceHasSymbols ? _T("((\U0001F3C3))") : ML_STRING(1844, "Detection"),
+						DRAW_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT,
 						OPAQUE, DRAW_BKG_COLOR);
 	}
 
@@ -575,7 +576,7 @@ void CVideoDeviceView::OnDraw(CDC* pDC)
 		{
 			LOGFONT lf;
 			memset(&lf, 0, sizeof(lf));
-			_tcscpy(lf.lfFaceName, DEFAULT_FONTFACE);
+			_tcscpy(lf.lfFaceName, g_szDefaultFontFace);
 			lf.lfHeight = -MulDiv(11, pDC->GetDeviceCaps(LOGPIXELSY), 72);
 			lf.lfWeight = FW_NORMAL;
 			lf.lfItalic = 0;
@@ -583,7 +584,7 @@ void CVideoDeviceView::OnDraw(CDC* pDC)
 			m_GDIDrawFont.CreateFontIndirect(&lf);
 		}
 
-		// Set colors
+		// Set colors and font
 		COLORREF crOldTextColor = MemDC.SetTextColor(DRAW_MESSAGE_COLOR);
 		int nOldBkMode = MemDC.SetBkMode(OPAQUE);
 		COLORREF crOldBkColor = MemDC.SetBkColor(DRAW_BKG_COLOR);

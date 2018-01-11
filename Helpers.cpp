@@ -39,15 +39,16 @@ static char THIS_FILE[] = __FILE__;
 #pragma comment(lib, "Wininet.lib")	// to support InternetGetLastResponseInfo()
 
 // If InitHelpers() is not called vars default to:
-// default DPI, no multimedia instructions,
-// 64K allocation granularity, 4096 page size and 2GB RAM
+// default DPI, default font, no multimedia instructions,
+// 64K allocation granularity and 2GB RAM
 int g_nSystemDPI = 96;
+TCHAR g_szDefaultFontFace[LF_FACESIZE] = _T("Segoe UI");
+BOOL g_bDefaultFontFaceHasSymbols = FALSE;
 BOOL g_bMMX = FALSE;
 BOOL g_bSSE = FALSE;
 BOOL g_bSSE2 = FALSE;
 BOOL g_b3DNOW = FALSE;
 DWORD g_dwAllocationGranularity = 65536;
-DWORD g_dwPageSize = 4096;
 int g_nInstalledPhysRamMB = 2048;
 int g_nAvailablePhysRamMB = 2048;
 static int g_nNumProcessors = 1;
@@ -71,6 +72,13 @@ void InitHelpers()
 		ReleaseDC(NULL, hDC);
 	}
 
+	// Check whether Segoe UI with Symbols is supported
+	if (IsFontSupported(_T("Segoe UI Symbol")))
+	{
+		_tcscpy(g_szDefaultFontFace, _T("Segoe UI Symbol")); // supported by Windows 7 or higher
+		g_bDefaultFontFaceHasSymbols = TRUE;
+	}
+
 	// Supported Instruction Sets
 	int nInstructionSets = GetCpuInstr();
 	if (nInstructionSets & CPU_FEATURE_MMX)
@@ -87,7 +95,6 @@ void InitHelpers()
 	memset(&sysInfo, 0, sizeof(sysInfo));
 	GetSystemInfo(&sysInfo);
 	g_dwAllocationGranularity = sysInfo.dwAllocationGranularity;
-	g_dwPageSize = sysInfo.dwPageSize;
 	g_nInstalledPhysRamMB = GetTotPhysMemMB(TRUE);
 	g_nAvailablePhysRamMB = GetTotPhysMemMB(FALSE);
 	g_nNumProcessors = sysInfo.dwNumberOfProcessors;
@@ -2902,6 +2909,25 @@ unsigned int makeseed(unsigned int a, unsigned int b, unsigned int c)
 	return c;
 }
 
+static int CALLBACK EnumFontFamExProc(const LOGFONT *lpelfe /*lpelfe*/, const TEXTMETRIC *lpntme /*lpntme*/, DWORD /*FontType*/, LPARAM lParam)
+{
+	LPARAM* p = (LPARAM*)lParam;
+	*p = 1;
+	return 0; // stop enumeration
+}
+
+BOOL IsFontSupported(LPCTSTR szFontFamily)
+{
+	HDC hDC = GetDC(NULL);
+	LOGFONT lf = { 0 };
+	lf.lfCharSet = DEFAULT_CHARSET;
+	_tcscpy(lf.lfFaceName, szFontFamily);
+	LPARAM lParam = 0;
+	EnumFontFamiliesEx(hDC, &lf, (FONTENUMPROC)EnumFontFamExProc, (LPARAM)&lParam, 0);
+	ReleaseDC(NULL, hDC);
+	return (BOOL)lParam;
+}
+
 int DrawBigText(HDC hDC,
 				CRect rc,
 				LPCTSTR szText,
@@ -2931,7 +2957,7 @@ int DrawBigText(HDC hDC,
 	while (TRUE)
 	{
 		memset(&lf, 0, sizeof(lf));
-		_tcscpy(lf.lfFaceName, DEFAULT_FONTFACE);
+		_tcscpy(lf.lfFaceName, g_szDefaultFontFace);
 		lf.lfHeight = -MulDiv(nMaxFontSize, GetDeviceCaps(hDC, LOGPIXELSY), 72);
 		lf.lfWeight = FW_MEDIUM;
 		lf.lfItalic = 0;

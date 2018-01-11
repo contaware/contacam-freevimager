@@ -981,7 +981,6 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 
 int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 {
-	ASSERT(m_pDoc);
 	HANDLE hFTP;
 
 	// Init
@@ -1033,8 +1032,7 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 															FrameRate.den,						// Scale				
 															m_fSnapshotVideoCompressorQuality,
 															((CUImagerApp*)::AfxGetApp())->m_nCoresCount);
-								CString sTitle(m_pDoc->GetAssignedDeviceName() + _T(" ") + ::MakeDateLocalFormat(m_Time));
-								pAVRecVideo->Open(sTitle);
+								pAVRecVideo->Open(m_sMetadataTitle);
 							}
 
 							// Add Frame
@@ -1070,8 +1068,7 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 																FrameRate.den,						// Scale				
 																m_fSnapshotVideoCompressorQuality,
 																((CUImagerApp*)::AfxGetApp())->m_nCoresCount);
-								CString sTitle(m_pDoc->GetAssignedDeviceName() + _T(" ") + ::MakeDateLocalFormat(m_Time));
-								pAVRecThumbVideo->Open(sTitle);
+								pAVRecThumbVideo->Open(m_sMetadataTitle);
 							}
 
 							// Add Frame
@@ -1143,7 +1140,6 @@ exit:
 // thumb version which links to the full-size in web interface
 int CVideoDeviceDoc::CSaveSnapshotThread::Work() 
 {
-	ASSERT(m_pDoc);
 	HANDLE hFTP;
 
 	// Get uptime
@@ -1176,12 +1172,19 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 		DibThumb.SetUpTime(m_Dib.GetUpTime());
 	}
 
-	// Save to temp location
+	// Add tags
 	if (m_bShowFrameTime)
 	{
 		AddFrameTime(&m_Dib, m_Time, dwUpTime, m_nRefFontSize);
 		AddFrameTime(&DibThumb, m_Time, dwUpTime, m_nRefFontSize);
 	}
+	if (m_bDetectingMinLengthMovement)
+	{
+		AddFrameText(&m_Dib, g_bDefaultFontFaceHasSymbols ? _T("((\U0001F3C3))") : ML_STRING(1844, "Detection"), m_nRefFontSize);
+		AddFrameText(&DibThumb, g_bDefaultFontFaceHasSymbols ? _T("((\U0001F3C3))") : ML_STRING(1844, "Detection"), m_nRefFontSize);
+	}
+
+	// Save to temp location
 	CVideoDeviceDoc::SaveJpegFast(&m_Dib, &m_MJPEGEncoder, sTempFileName, m_nSnapshotCompressionQuality);
 	CVideoDeviceDoc::SaveJpegFast(&DibThumb, &m_MJPEGThumbEncoder, sTempThumbFileName, m_nSnapshotCompressionQuality);
 	
@@ -3711,8 +3714,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_WatchdogThread.SetDoc(this);
 	m_DeleteThread.SetDoc(this);
 	m_SaveFrameListThread.SetDoc(this);
-	m_SaveSnapshotThread.SetDoc(this);
-	m_SaveSnapshotVideoThread.SetDoc(this);
 
 	// Recording
 	m_sRecordAutoSaveDir = _T("");
@@ -6968,8 +6969,8 @@ void CVideoDeviceDoc::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime,
 
 	CFont Font;
 	int nFontSize = ::ScaleFont(rcRect.right, rcRect.bottom, nRefFontSize, FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
-	Font.CreatePointFont(	nFontSize * 10,		// font height in tenths of a point
-							DEFAULT_FONTFACE);	// typeface name of the font
+	Font.CreatePointFont(	nFontSize * 10,			// font height in tenths of a point
+							g_szDefaultFontFace);	// typeface name of the font
 
 	CString sTime = ::MakeTimeLocalFormat(RefTime, TRUE);
 	pDib->AddSingleLineText(sTime,
@@ -7004,13 +7005,38 @@ void CVideoDeviceDoc::AddFrameCount(CDib* pDib, const CString& sCount, int nRefF
 
 	CFont Font;
 	int nFontSize = ::ScaleFont(rcRect.right, rcRect.bottom, nRefFontSize, FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
-	Font.CreatePointFont(nFontSize * 10, DEFAULT_FONTFACE);
+	Font.CreatePointFont(nFontSize * 10, g_szDefaultFontFace);
 
 	pDib->AddSingleLineText(sCount,
 							rcRect,
 							&Font,
 							(DT_RIGHT | DT_TOP),
 							FRAMECOUNT_COLOR,
+							OPAQUE,
+							DRAW_BKG_COLOR);
+}
+
+void CVideoDeviceDoc::AddFrameText(CDib* pDib, const CString& sText, int nRefFontSize)
+{
+	// Check
+	if (!pDib)
+		return;
+
+	CRect rcRect;
+	rcRect.left = 0;
+	rcRect.top = 0;
+	rcRect.right = pDib->GetWidth();
+	rcRect.bottom = pDib->GetHeight();
+
+	CFont Font;
+	int nFontSize = ::ScaleFont(rcRect.right, rcRect.bottom, nRefFontSize, FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
+	Font.CreatePointFont(nFontSize * 10, g_szDefaultFontFace);
+
+	pDib->AddSingleLineText(sText,
+							rcRect,
+							&Font,
+							(DT_RIGHT | DT_BOTTOM),
+							DRAW_MESSAGE_COLOR,
 							OPAQUE,
 							DRAW_BKG_COLOR);
 }
@@ -7928,6 +7954,7 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 			m_SaveSnapshotThread.m_bSnapshotHistoryJpeg = (m_bSnapshotHistoryJpeg || m_bSnapshotHistoryVideo);
 			m_SaveSnapshotThread.m_bSnapshotHistoryJpegFtp = m_bSnapshotHistoryJpegFtp;
 			m_SaveSnapshotThread.m_bShowFrameTime = m_bShowFrameTime;
+			m_SaveSnapshotThread.m_bDetectingMinLengthMovement = m_bDetectingMinLengthMovement;
 			m_SaveSnapshotThread.m_nRefFontSize = m_nRefFontSize;
 			m_SaveSnapshotThread.m_bSnapshotLiveJpegFtp = m_bSnapshotLiveJpegFtp;
 			m_SaveSnapshotThread.m_nSnapshotThumbWidth = m_nSnapshotThumbWidth;
@@ -7963,6 +7990,7 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 			m_SaveSnapshotVideoThread.m_sSnapshotVideoFileExt = m_sAVRecFileExt;
 			m_SaveSnapshotVideoThread.m_dSnapshotHistoryFrameRate = (double)m_nSnapshotHistoryFrameRate;
 			m_SaveSnapshotVideoThread.m_Time = Yesterday;
+			m_SaveSnapshotVideoThread.m_sMetadataTitle = GetAssignedDeviceName() + _T(" ") + ::MakeDateLocalFormat(Yesterday);
 			m_SaveSnapshotVideoThread.m_sSnapshotAutoSaveDir = m_sRecordAutoSaveDir;
 			::EnterCriticalSection(&m_csSnapshotConfiguration);
 			m_SaveSnapshotVideoThread.m_Config = m_SnapshotFTPUploadConfiguration;

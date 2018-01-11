@@ -487,9 +487,8 @@ public:
 	class CSaveSnapshotVideoThread : public CWorkerThread
 	{
 		public:
-			CSaveSnapshotVideoThread(){m_pDoc = NULL; m_ThreadExecutedForTime = CTime(0);};
+			CSaveSnapshotVideoThread(){m_ThreadExecutedForTime = CTime(0);};
 			virtual ~CSaveSnapshotVideoThread() {Kill();};
-			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
 
 			BOOL m_bSnapshotHistoryJpeg;
 			BOOL m_bSnapshotHistoryVideoFtp;
@@ -497,12 +496,12 @@ public:
 			CString m_sSnapshotVideoFileExt;
 			double m_dSnapshotHistoryFrameRate;
 			CTime m_Time;
+			CString m_sMetadataTitle;
 			CTime m_ThreadExecutedForTime;
 			CString m_sSnapshotAutoSaveDir;
 			FTPUploadConfigurationStruct m_Config;
 
 		protected:
-			CVideoDeviceDoc* m_pDoc;
 			int Work();
 			__forceinline CString MakeVideoHistoryFileName();
 	};
@@ -511,14 +510,14 @@ public:
 	class CSaveSnapshotThread : public CWorkerThread
 	{
 		public:
-			CSaveSnapshotThread(){m_pDoc = NULL;};
+			CSaveSnapshotThread(){;};
 			virtual ~CSaveSnapshotThread() {Kill();};
-			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
 
 			CDib m_Dib;
 			BOOL m_bSnapshotHistoryJpeg;
 			BOOL m_bSnapshotHistoryJpegFtp;
 			BOOL m_bShowFrameTime;
+			BOOL m_bDetectingMinLengthMovement;
 			int m_nRefFontSize;
 			BOOL m_bSnapshotLiveJpegFtp;
 			int m_nSnapshotThumbWidth;
@@ -531,7 +530,6 @@ public:
 			FTPUploadConfigurationStruct m_Config;
 
 		protected:
-			CVideoDeviceDoc* m_pDoc;
 			CMJPEGEncoder m_MJPEGEncoder;
 			CMJPEGEncoder m_MJPEGThumbEncoder;
 			int Work();
@@ -650,7 +648,8 @@ public:
 	static CTime CalcTime(DWORD dwUpTime, const CTime& RefTime, DWORD dwRefUpTime);
 	static void AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime, int nRefFontSize);
 	static void AddFrameCount(CDib* pDib, const CString& sCount, int nRefFontSize);
-	
+	static void AddFrameText(CDib* pDib, const CString& sText, int nRefFontSize);
+
 	// Function called when the directx video grabbing format has been changed
 	void OnChangeDxVideoFormat();
 

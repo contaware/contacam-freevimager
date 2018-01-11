@@ -18,12 +18,13 @@
 #define THUMBS_DB				_T("Thumbs.db")
 
 extern int g_nSystemDPI;
+extern TCHAR g_szDefaultFontFace[LF_FACESIZE];
+extern BOOL g_bDefaultFontFaceHasSymbols;
 extern BOOL g_bMMX;
 extern BOOL g_bSSE;
 extern BOOL g_bSSE2;
 extern BOOL g_b3DNOW;
 extern DWORD g_dwAllocationGranularity;
-extern DWORD g_dwPageSize;
 extern int g_nInstalledPhysRamMB;
 extern int g_nAvailablePhysRamMB;
 
@@ -478,6 +479,9 @@ __forceinline int ScaleFont(int nWidth, int nHeight,
 	else
 		return Round(nMinRefFontSize * dFactorY);
 }
+
+// Checks whether the given font is available in the system
+extern BOOL IsFontSupported(LPCTSTR szFontFamily);
 
 // Draw big single line Arial text, if text doesn't fit in given rc width
 // then a smaller font size is chosen (minimum used font size is 8 points)
