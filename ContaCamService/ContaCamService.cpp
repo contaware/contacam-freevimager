@@ -485,7 +485,7 @@ DWORD GetServiceStatus(LPCTSTR pName)
 
 // SERVICE_CONTROL_START_PROC
 // SERVICE_CONTROL_END_PROC
-DWORD CustomeMsg(LPCTSTR pName, int nMsg) 
+DWORD CustomMsg(LPCTSTR pName, int nMsg) 
 { 
 	DWORD dwError = ERROR_SUCCESS;
     SC_HANDLE schSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_CONNECT);
@@ -609,6 +609,8 @@ DWORD Install(LPCTSTR pPath, LPCTSTR pName, LPCTSTR pServiceStartName, LPCTSTR p
 		dwError = GetLastError();
 	else
 	{
+		// Service control manager (SCM) functions use the domain\username format
+		// and not the UPN format (username@domain) like CreateProcessWithLogonW()
 		SC_HANDLE schService = CreateService
 		( 
 			schSCManager,				// SCManager database
@@ -832,7 +834,7 @@ void FixServiceStartName(CString& sServiceStartName)
 		sServiceStartName = GetComputerName() + _T("\\") + sServiceStartName;
 }
 
-BOOL SwitchToUnicodeConsole()
+void SwitchToUnicodeConsole()
 {
 	// Change to unicode mode
 	_setmode(_fileno(stderr), _O_U16TEXT);
@@ -841,39 +843,28 @@ BOOL SwitchToUnicodeConsole()
 
 	// Change to unicode font
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-	typedef BOOL (WINAPI *PGETCURRENTCONSOLEFONTEX)(HANDLE, BOOL, PCONSOLE_FONT_INFOEX);
-	typedef BOOL (WINAPI *PSETCURRENTCONSOLEFONTEX)(HANDLE, BOOL, PCONSOLE_FONT_INFOEX);
-	HMODULE hMod = GetModuleHandle(_T("kernel32.dll"));
-	PGETCURRENTCONSOLEFONTEX pGetCurrentConsoleFontEx = (PGETCURRENTCONSOLEFONTEX)GetProcAddress(hMod, "GetCurrentConsoleFontEx");
-	PSETCURRENTCONSOLEFONTEX pSetCurrentConsoleFontEx = (PSETCURRENTCONSOLEFONTEX)GetProcAddress(hMod, "SetCurrentConsoleFontEx");
-	if (pGetCurrentConsoleFontEx && pSetCurrentConsoleFontEx) // Win Vista or later
+	CONSOLE_FONT_INFOEX cfix_current = { 0 };
+	cfix_current.cbSize = sizeof(cfix_current);
+	if (GetCurrentConsoleFontEx(hConsole, FALSE, &cfix_current))
 	{
-		CONSOLE_FONT_INFOEX cfix_current = { 0 };
-		cfix_current.cbSize = sizeof(cfix_current);
-		if (pGetCurrentConsoleFontEx(hConsole, FALSE, &cfix_current))
+		if (!(cfix_current.FontFamily & TMPF_TRUETYPE)) // if no unicode font configured
 		{
-			if (!(cfix_current.FontFamily & TMPF_TRUETYPE)) // if no unicode font configured
-			{
-				CONSOLE_FONT_INFOEX cfix_new = { 0 };
-				cfix_new.cbSize       = sizeof(cfix_new);
-				cfix_new.dwFontSize.X = 7;
-				cfix_new.dwFontSize.Y = 14;
-				cfix_new.FontFamily   = FF_DONTCARE;
-				cfix_new.FontWeight   = FW_NORMAL;
-				lstrcpy(cfix_new.FaceName, _T("Consolas")); // Consolas (unicode font) is present in Win Vista and later
-				return pSetCurrentConsoleFontEx(hConsole, FALSE, &cfix_new);
-			}
-			else
-				return TRUE;
+			CONSOLE_FONT_INFOEX cfix_new = { 0 };
+			cfix_new.cbSize       = sizeof(cfix_new);
+			cfix_new.dwFontSize.X = 7;
+			cfix_new.dwFontSize.Y = 14;
+			cfix_new.FontFamily   = FF_DONTCARE;
+			cfix_new.FontWeight   = FW_NORMAL;
+			lstrcpy(cfix_new.FaceName, _T("Consolas"));
+			SetCurrentConsoleFontEx(hConsole, FALSE, &cfix_new);
 		}
 	}
-	return FALSE;
 }
 
 void _tmain(int argc, TCHAR* argv[])
 {
 	// Unicode Console
-	BOOL bSureUnicode = SwitchToUnicodeConsole();
+	SwitchToUnicodeConsole();
 
 	// initialize critical section
 	InitializeCriticalSection(&g_WriteLogCS);
@@ -943,14 +934,6 @@ void _tmain(int argc, TCHAR* argv[])
 		// install service
 		else if (_tcsicmp(_T("-i"), argv[1]) == 0)
 		{
-			// For older systems the undocumented SetConsoleFont() API is not working
-			// to change the font face, the solution is to manually change FaceName in
-			// registry before starting us
-			if (!bSureUnicode)
-			{
-				_tprintf(	_T("NOTE: for unicode support run regedit.exe and set\n")
-							_T("HKEY_CURRENT_USER\\Console\\FaceName to Lucida Console\n\n"));
-			}
 			_tprintf(_T("Installing %s, please wait...\n\n"), g_pServiceName);
 			int nRet;
 			CString sServiceStartName(GetCurrentLoggedUser());
@@ -1032,7 +1015,7 @@ HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Lsa\n\n"));
 		else if (_tcsicmp(PROCESSES_START, argv[1]) == 0)
 		{
 			_tprintf(_T("Starting processes, please wait...\n"));
-			int nRet = CustomeMsg(g_pServiceName, SERVICE_CONTROL_START_PROC);
+			int nRet = CustomMsg(g_pServiceName, SERVICE_CONTROL_START_PROC);
 			if (nRet == ERROR_SUCCESS)
 				_tprintf(_T("Processes started"));
 			else
@@ -1042,7 +1025,7 @@ HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Lsa\n\n"));
 		else if (_tcsicmp(PROCESSES_STOP, argv[1]) == 0)
 		{
 			_tprintf(_T("Stopping processes, please wait...\n"));
-			int nRet = CustomeMsg(g_pServiceName, SERVICE_CONTROL_END_PROC);
+			int nRet = CustomMsg(g_pServiceName, SERVICE_CONTROL_END_PROC);
 			if (nRet == ERROR_SUCCESS)
 				_tprintf(_T("Processes stopped"));
 			else
