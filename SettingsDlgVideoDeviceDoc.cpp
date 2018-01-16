@@ -353,6 +353,10 @@ void CSettingsDlgVideoDeviceDoc::EnableDisableAllCtrls(BOOL bEnable)
 	pEdit->EnableWindow(bEnable);
 	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
 	pEdit->EnableWindow(bEnable);
+	pButton = (CButton*)GetDlgItem(IDC_BUTTON_CERT_SSL);
+	pButton->EnableWindow(bEnable);
+	pButton = (CButton*)GetDlgItem(IDC_BUTTON_KEY_SSL);
+	pButton->EnableWindow(bEnable);
 	pButton = (CButton*)GetDlgItem(IDOK);
 	pButton->EnableWindow(bEnable);
 	pButton = (CButton*)GetDlgItem(IDCANCEL);
