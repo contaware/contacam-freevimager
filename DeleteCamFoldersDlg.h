@@ -11,6 +11,9 @@
 #include "HScrollListBox.h"
 #include "SortableFileFind.h"
 
+// Window Message IDs
+#define WM_APPLY_CAMS_DELETION			WM_USER + 750
+
 /////////////////////////////////////////////////////////////////////////////
 // CDeleteCamFoldersDlg dialog
 
@@ -38,13 +41,18 @@ public:
 protected:
 	CStringArray m_DevicePathNames;
 	CSortableFileFind m_DirFind;
+	BOOL IsCamClosed(CString sFolderPath);
+	void CloseCam(CString sFolderPath);
+	void EnableDisableAllCtrls(BOOL bEnable);
 	// Generated message map functions
 	//{{AFX_MSG(CDeleteCamFoldersDlg)
 	virtual BOOL OnInitDialog();
+	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 	virtual void OnOK();
 	afx_msg void OnButtonListSelectall();
 	afx_msg void OnButtonListSelectnone();
 	//}}AFX_MSG
+	afx_msg LONG OnApplyDeletion(WPARAM wparam, LPARAM lparam);
 	DECLARE_MESSAGE_MAP()
 };
 

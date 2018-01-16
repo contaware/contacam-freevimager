@@ -3,9 +3,11 @@
 
 #include "stdafx.h"
 #include "uimager.h"
+#include "ToolBarChildFrm.h"
 #include "VideoDeviceDoc.h"
 #include "HostPortDlg.h"
 #include "DeleteCamFoldersDlg.h"
+#include "PostDelayedMessage.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -18,7 +20,6 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CDeleteCamFoldersDlg dialog
 
-
 CDeleteCamFoldersDlg::CDeleteCamFoldersDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CDeleteCamFoldersDlg::IDD, pParent)
 {
@@ -26,7 +27,6 @@ CDeleteCamFoldersDlg::CDeleteCamFoldersDlg(CWnd* pParent /*=NULL*/)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
 }
-
 
 void CDeleteCamFoldersDlg::DoDataExchange(CDataExchange* pDX)
 {
@@ -36,12 +36,68 @@ void CDeleteCamFoldersDlg::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP
 }
 
+BOOL CDeleteCamFoldersDlg::IsCamClosed(CString sFolderPath)
+{
+	// Note: if miss-configured there could be more than one camera
+	//       running per folder, this function checks all of them!
+	sFolderPath.TrimRight(_T('\\'));
+	CUImagerMultiDocTemplate* pVideoDeviceDocTemplate = ((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate();
+	POSITION posVideoDeviceDoc = pVideoDeviceDocTemplate->GetFirstDocPosition();
+	while (posVideoDeviceDoc)
+	{
+		CVideoDeviceDoc* pVideoDeviceDoc = (CVideoDeviceDoc*)(pVideoDeviceDocTemplate->GetNextDoc(posVideoDeviceDoc));
+		if (pVideoDeviceDoc)
+		{
+			CString sRecordAutoSaveDir = pVideoDeviceDoc->m_sRecordAutoSaveDir;
+			sRecordAutoSaveDir.TrimRight(_T('\\'));
+			if (sFolderPath.CompareNoCase(sRecordAutoSaveDir) == 0)
+				return FALSE;
+		}
+	}
+	return TRUE;
+}
+
+void CDeleteCamFoldersDlg::CloseCam(CString sFolderPath)
+{
+	// Note: if miss-configured there could be more than one camera
+	//       running per folder, this function closes all of them!
+	sFolderPath.TrimRight(_T('\\'));
+	CUImagerMultiDocTemplate* pVideoDeviceDocTemplate = ((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate();
+	POSITION posVideoDeviceDoc = pVideoDeviceDocTemplate->GetFirstDocPosition();
+	while (posVideoDeviceDoc)
+	{
+		CVideoDeviceDoc* pVideoDeviceDoc = (CVideoDeviceDoc*)(pVideoDeviceDocTemplate->GetNextDoc(posVideoDeviceDoc));
+		if (pVideoDeviceDoc)
+		{
+			CString sRecordAutoSaveDir = pVideoDeviceDoc->m_sRecordAutoSaveDir;
+			sRecordAutoSaveDir.TrimRight(_T('\\'));
+			if (sFolderPath.CompareNoCase(sRecordAutoSaveDir) == 0)
+				pVideoDeviceDoc->GetFrame()->PostMessage(WM_CLOSE, 0, 0);
+		}
+	}
+}
+
+void CDeleteCamFoldersDlg::EnableDisableAllCtrls(BOOL bEnable)
+{
+	CHScrollListBox* pListBox = (CHScrollListBox*)GetDlgItem(IDC_CAM_FOLDERS);
+	pListBox->EnableWindow(bEnable);
+	CButton* pButton = (CButton*)GetDlgItem(IDOK);
+	pButton->EnableWindow(bEnable);
+	pButton = (CButton*)GetDlgItem(IDCANCEL);
+	pButton->EnableWindow(bEnable);
+	pButton = (CButton*)GetDlgItem(IDC_BUTTON_LIST_SELECTALL);
+	pButton->EnableWindow(bEnable);
+	pButton = (CButton*)GetDlgItem(IDC_BUTTON_LIST_SELECTNONE);
+	pButton->EnableWindow(bEnable);
+}
 
 BEGIN_MESSAGE_MAP(CDeleteCamFoldersDlg, CDialog)
 	//{{AFX_MSG_MAP(CDeleteCamFoldersDlg)
+	ON_WM_SETCURSOR()
 	ON_BN_CLICKED(IDC_BUTTON_LIST_SELECTALL, OnButtonListSelectall)
 	ON_BN_CLICKED(IDC_BUTTON_LIST_SELECTNONE, OnButtonListSelectnone)
 	//}}AFX_MSG_MAP
+	ON_MESSAGE(WM_APPLY_CAMS_DELETION, OnApplyDeletion)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -49,6 +105,8 @@ END_MESSAGE_MAP()
 
 BOOL CDeleteCamFoldersDlg::OnInitDialog() 
 {
+	// This calls UpdateData(FALSE) which transfers data
+	// into the dialog window from the member variables
 	CDialog::OnInitDialog();
 	
 	// Enum all folders
@@ -72,9 +130,8 @@ BOOL CDeleteCamFoldersDlg::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CDeleteCamFoldersDlg::OnOK() 
+LONG CDeleteCamFoldersDlg::OnApplyDeletion(WPARAM wparam, LPARAM lparam)
 {
-	BeginWaitCursor();
 	for (int pos = 0 ; pos < m_DirFind.GetDirsCount() ; pos++)
 	{
 		if (m_CamFolders.GetSel(pos) > 0)
@@ -82,8 +139,20 @@ void CDeleteCamFoldersDlg::OnOK()
 			CString sDirName(m_DirFind.GetDirName(pos));
 			sDirName.TrimRight(_T('\\'));
 
+			// Make sure camera is not running
+			if (!IsCamClosed(sDirName))
+			{
+				// Note that's not a problem if we call CloseCam() many
+				// times, the device close logic itself is to call
+				// CVideoDeviceChildFrame::OnClose() many times
+				CloseCam(sDirName);
+				CPostDelayedMessageThread::PostDelayedMessage(GetSafeHwnd(), WM_APPLY_CAMS_DELETION, 1000U, 0, 0);
+				return 0;
+			}
+
 			// Delete folder
-			::DeleteToRecycleBin(sDirName);
+			if (::IsExistingDir(sDirName))
+				::DeleteToRecycleBin(sDirName);
 			
 			// Clear autorun, remove network dialog history and delete device configuration
 			if (!::IsExistingDir(sDirName)) // make sure dir has been deleted
@@ -109,7 +178,37 @@ void CDeleteCamFoldersDlg::OnOK()
 		}
 	}
 	EndWaitCursor();
-	CDialog::OnOK();
+	EndDialog(IDOK);
+	return 0;
+}
+
+BOOL CDeleteCamFoldersDlg::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
+{
+	// If Wait Cursor leave it!
+	if (((CUImagerApp*)::AfxGetApp())->IsWaitCursor())
+	{
+		RestoreWaitCursor();
+		return TRUE;
+	}
+	else
+		return CDialog::OnSetCursor(pWnd, nHitTest, message);
+}
+
+void CDeleteCamFoldersDlg::OnOK() 
+{
+	// This transfers data from the dialog window to
+	// the member variables validating it
+	if (!UpdateData(TRUE))
+		return;
+
+	// Begin wait cursor
+	BeginWaitCursor();
+
+	// Disable all
+	EnableDisableAllCtrls(FALSE);
+
+	// Start deletion
+	CPostDelayedMessageThread::PostDelayedMessage(GetSafeHwnd(), WM_APPLY_CAMS_DELETION, 500U, 0, 0);
 }
 
 void CDeleteCamFoldersDlg::OnButtonListSelectall() 
