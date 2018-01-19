@@ -605,6 +605,7 @@ public:
 		DAHUA_RTSP = 1090,		// Dahua RTSP
 		DIGOO_RTSP = 1100,		// Digoo RTSP
 		EDIMAX_RTSP = 1110,		// Edimax RTSP
+		FALCONEYE_RTSP = 1115,	// FalconEye RTSP
 		FOSCAM_RTSP = 1120,		// Foscam RTSP
 		GEMBIRD_RTSP = 1123,	// Gembird RTSP
 		GEOVISION_RTSP = 1125,	// GeoVision RTSP
