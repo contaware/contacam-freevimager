@@ -86,6 +86,7 @@ public:
 	// dwWaitTimeMs > 0  : Auto-close after the given amount of milliseconds
 	void PopupToaster(const CString& sTitle, const CString& sText, DWORD dwWaitTimeMs = 10000);	// call from any thread
 	void CloseToaster(BOOL bLastToasterDone = FALSE);											// call only from UI thread
+																								// (when exiting program in CMainFrame::OnDestroy() pass TRUE)
 
 	// Enable / Disable Tray Icon
 	void TrayIcon(BOOL bEnable);

@@ -1,8 +1,9 @@
 FREEVIMAGER HISTORY
 
-7.7.0 (Month XXth 2018)
+7.7.0 (January xxth 2018)
 
-- ...
+- Bigger close buttons for dialogs (handy for tablets)
+- Replaced menu circles with check marks
 
 7.5.0 (October 18th 2017)
 

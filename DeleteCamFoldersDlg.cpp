@@ -201,6 +201,22 @@ void CDeleteCamFoldersDlg::OnOK()
 	if (!UpdateData(TRUE))
 		return;
 
+	// Check
+	// Note: the following alert is the same as when
+	//       clicking outside a modal dialog
+	if (m_CamFolders.GetSelCount() < 1)
+	{
+		::MessageBeep(0xFFFFFFFF);
+		FLASHWINFO fwi;
+		fwi.cbSize = sizeof(fwi);
+		fwi.hwnd = GetSafeHwnd();
+		fwi.dwFlags = FLASHW_ALL;
+		fwi.dwTimeout = 70;
+		fwi.uCount = 7;
+		::FlashWindowEx(&fwi);
+		return;
+	}
+
 	// Begin wait cursor
 	BeginWaitCursor();
 
