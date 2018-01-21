@@ -2110,6 +2110,18 @@ CString ShowErrorMsg(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, CString sHe
 	return sText;
 }
 
+void AlertUser(HWND hWnd)
+{
+	MessageBeep(0xFFFFFFFF);
+	FLASHWINFO fwi;
+	fwi.cbSize = sizeof(fwi);
+	fwi.hwnd = hWnd;
+	fwi.dwFlags = FLASHW_ALL;
+	fwi.dwTimeout = 70;
+	fwi.uCount = 7;
+	FlashWindowEx(&fwi);
+}
+
 static BOOL HasCpuId()
 {
     __try

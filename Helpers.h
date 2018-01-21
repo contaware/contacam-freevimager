@@ -279,6 +279,9 @@ extern CString ShowErrorMsg(DWORD dwErrorCode,
 							CString sHeader = _T(""),
 							CString sFooter = _T(""));
 
+// Aler user with a beep and a flashing window
+extern void AlertUser(HWND hWnd);
+
 // Get the current user name
 extern CString GetUserName();
 

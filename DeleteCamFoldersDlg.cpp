@@ -206,14 +206,7 @@ void CDeleteCamFoldersDlg::OnOK()
 	//       clicking outside a modal dialog
 	if (m_CamFolders.GetSelCount() < 1)
 	{
-		::MessageBeep(0xFFFFFFFF);
-		FLASHWINFO fwi;
-		fwi.cbSize = sizeof(fwi);
-		fwi.hwnd = GetSafeHwnd();
-		fwi.dwFlags = FLASHW_ALL;
-		fwi.dwTimeout = 70;
-		fwi.uCount = 7;
-		::FlashWindowEx(&fwi);
+		::AlertUser(GetSafeHwnd());
 		return;
 	}
 
