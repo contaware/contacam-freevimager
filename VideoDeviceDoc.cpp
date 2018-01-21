@@ -3677,7 +3677,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_pVideoNetCom = NULL;
 	m_pHttpVideoParseProcess = NULL;
 	m_sGetFrameVideoHost = _T("");
-	m_nGetFrameVideoPort = DEFAULT_TCP_PORT;
+	m_nGetFrameVideoPort = DEFAULT_HTTP_PORT;
 	m_nNetworkDeviceTypeMode = OTHERONE_SP;
 	m_bPreferTcpforRtsp = FALSE;
 	m_nHttpVideoQuality = HTTP_DEFAULT_VIDEO_QUALITY;
@@ -5206,26 +5206,26 @@ void CVideoDeviceDoc::OpenNetVideoDevice(CString sAddress)
 				if (nPort > 0 && nPort <= 65535) // Port 0 is Reserved
 					m_nGetFrameVideoPort = nPort;
 				else
-					m_nGetFrameVideoPort = DEFAULT_TCP_PORT;
+					m_nGetFrameVideoPort = DEFAULT_HTTP_PORT;
 				m_sGetFrameVideoHost = sAddress.Left(i);
 			}
 			else
 			{
 				m_sGetFrameVideoHost = sAddress;
-				m_nGetFrameVideoPort = DEFAULT_TCP_PORT;
+				m_nGetFrameVideoPort = DEFAULT_HTTP_PORT;
 			}
 		}
 		else
 		{
 			m_sGetFrameVideoHost = sAddress;
-			m_nGetFrameVideoPort = DEFAULT_TCP_PORT;
+			m_nGetFrameVideoPort = DEFAULT_HTTP_PORT;
 			m_HttpGetFrameLocations[0] = _T("/");
 		}
 	}
 	else
 	{
 		m_sGetFrameVideoHost = sAddress;
-		m_nGetFrameVideoPort = DEFAULT_TCP_PORT;
+		m_nGetFrameVideoPort = DEFAULT_HTTP_PORT;
 		m_HttpGetFrameLocations[0] = _T("/");
 		m_nNetworkDeviceTypeMode = OTHERONE_SP;
 	}

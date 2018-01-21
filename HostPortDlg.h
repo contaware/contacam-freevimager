@@ -8,7 +8,7 @@
 
 #ifdef VIDEODEVICEDOC
 
-#define MAX_HOST_PORT_HISTORY_SIZE		8
+#define MAX_HOST_PORT_HISTORY_SIZE		24
 
 /////////////////////////////////////////////////////////////////////////////
 // CHostPortDlg dialog
@@ -37,12 +37,13 @@ public:
 
 // Implementation
 protected:
-	int GetCurDeviceTypeMode();
-	void SetCurDeviceTypeMode(int nDeviceTypeMode);
+	int SelectionToDeviceTypeMode();
+	void DeviceTypeModeToSelection(int nDeviceTypeMode);
 	void EnableDisableCtrls();
 	static CString MakeDevicePathName(const CString& sInHost, int nInPort, int nInDeviceTypeMode);
 	void Load(); // load settings for given m_sHost, m_nPort, m_nDeviceTypeMode
 	void Save(); // save settings for given m_sHost, m_nPort, m_nDeviceTypeMode
+	void LoadHistoryAndSel(int nSel);
 	static void LoadHistory(CStringArray& HostsHistory,
 							CDWordArray& PortsHistory,
 							CDWordArray& DeviceTypeModesHistory);

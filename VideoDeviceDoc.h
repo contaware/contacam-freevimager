@@ -164,7 +164,8 @@ class CMovementDetectionPage;
 #define PHPCONFIG_DEFAULT_THUMSPERPAGE		27
 
 // Networking
-#define DEFAULT_TCP_PORT					80
+#define DEFAULT_HTTP_PORT					80
+#define DEFAULT_RTSP_PORT					554
 #define DEFAULT_CONNECTION_TIMEOUT			60			// in sec
 #define HTTP_MAX_HEADER_SIZE				1400		// bytes
 #define HTTP_MAX_MULTIPART_BOUNDARY			128			// boundary string buffer size in bytes

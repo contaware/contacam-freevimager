@@ -22,8 +22,8 @@ CHostPortDlg::CHostPortDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CHostPortDlg::IDD, pParent)
 {
 	m_sHost = _T("");
-	m_nPort = DEFAULT_TCP_PORT;
-	m_nDeviceTypeMode = 0;
+	m_nPort = DEFAULT_RTSP_PORT;
+	m_nDeviceTypeMode = CVideoDeviceDoc::OTHERONE_RTSP;
 }
 
 BEGIN_MESSAGE_MAP(CHostPortDlg, CDialog)
@@ -102,46 +102,9 @@ BOOL CHostPortDlg::OnInitDialog()
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Zmodo (RTSP)")), (DWORD)CVideoDeviceDoc::ZMODO_RTSP);
 
 	CDialog::OnInitDialog();
-
-	// Load History
-	LoadHistory(m_HostsHistory, m_PortsHistory, m_DeviceTypeModesHistory);
 	
 	// Init
-	CComboBox* pComboBoxHost = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
-	if (m_HostsHistory.GetSize() <= 0) // if empty add an item!
-	{
-		m_HostsHistory.InsertAt(0, _T(""));
-		m_PortsHistory.InsertAt(0, (DWORD)DEFAULT_TCP_PORT);
-		m_DeviceTypeModesHistory.InsertAt(0, (DWORD)0);
-	}
-	for (int i = 0 ; i < m_HostsHistory.GetSize() ; i++)
-	{
-		// Add Hosts
-		pComboBoxHost->AddString(m_HostsHistory[i]);
-		
-		// Set Host, Port and Device Type Mode of first entry
-		if (i == 0)
-		{
-			// Host
-			m_sHost = m_HostsHistory[0];
-
-			// Port
-			m_nPort = m_PortsHistory[0];
-			CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PORT);
-			CString sPort;
-			sPort.Format(_T("%i"), m_nPort);
-			pEdit->SetWindowText(sPort);
-
-			// Device Type Mode
-			m_nDeviceTypeMode = m_DeviceTypeModesHistory[0];
-			SetCurDeviceTypeMode(m_nDeviceTypeMode);
-		}
-	}
-	pComboBoxHost->SetCurSel(0); // pComboBoxHost is never empty!
-
-	// Update Controls
-	EnableDisableCtrls();
-	Load();
+	LoadHistoryAndSel(0);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -169,7 +132,7 @@ void CHostPortDlg::ParseUrl(const CString& sInHost,
 	{
 		// Set flag
 		bUrlHttp = TRUE;
-		nUrlPort = 80; // default http port is always 80
+		nUrlPort = DEFAULT_HTTP_PORT;
 
 		// Remove leading http://[ from url
 		sOutGetFrameVideoHost = sOutGetFrameVideoHost.Right(sOutGetFrameVideoHost.GetLength() - 8 - nPos);
@@ -220,7 +183,7 @@ void CHostPortDlg::ParseUrl(const CString& sInHost,
 	{
 		// Set flag
 		bUrlHttp = TRUE;
-		nUrlPort = 80; // default http port is always 80
+		nUrlPort = DEFAULT_HTTP_PORT;
 
 		// Remove leading http:// from url
 		sOutGetFrameVideoHost = sOutGetFrameVideoHost.Right(sOutGetFrameVideoHost.GetLength() - 7 - nPos);
@@ -263,7 +226,7 @@ void CHostPortDlg::ParseUrl(const CString& sInHost,
 	{
 		// Set flags
 		bUrlRtsp = TRUE;
-		nUrlPort = 554; // default rtsp port is always 554
+		nUrlPort = DEFAULT_RTSP_PORT;
 
 		// Remove leading rtsp:// from url
 		sOutGetFrameVideoHost = sOutGetFrameVideoHost.Right(sOutGetFrameVideoHost.GetLength() - 7 - nPos);
@@ -317,7 +280,7 @@ void CHostPortDlg::ParseUrl(const CString& sInHost,
 		nOutDeviceTypeMode = nInDeviceTypeMode;
 }
 
-int CHostPortDlg::GetCurDeviceTypeMode()
+int CHostPortDlg::SelectionToDeviceTypeMode()
 {
 	CComboBox* pComboBoxDevTypeMode = (CComboBox*)GetDlgItem(IDC_COMBO_DEVICETYPEMODE);
 	int nCurSel = pComboBoxDevTypeMode->GetCurSel();
@@ -326,7 +289,7 @@ int CHostPortDlg::GetCurDeviceTypeMode()
 	return pComboBoxDevTypeMode->GetItemData(nCurSel);
 }
 
-void CHostPortDlg::SetCurDeviceTypeMode(int nDeviceTypeMode)
+void CHostPortDlg::DeviceTypeModeToSelection(int nDeviceTypeMode)
 {
 	CComboBox* pComboBoxDevTypeMode = (CComboBox*)GetDlgItem(IDC_COMBO_DEVICETYPEMODE);
 	for (int i = 0; i < pComboBoxDevTypeMode->GetCount(); i++)
@@ -419,7 +382,7 @@ void CHostPortDlg::OnSelchangeComboHost()
 	if (nSel >= 0 && nSel < m_DeviceTypeModesHistory.GetSize())
 	{
 		m_nDeviceTypeMode = m_DeviceTypeModesHistory[nSel];
-		SetCurDeviceTypeMode(m_nDeviceTypeMode);
+		DeviceTypeModeToSelection(m_nDeviceTypeMode);
 	}
 
 	// Update Controls
@@ -437,13 +400,13 @@ void CHostPortDlg::OnChangeEditPort()
 	if (nPort > 0 && nPort <= 65535) // Port 0 is Reserved
 		m_nPort = nPort;
 	else
-		m_nPort = DEFAULT_TCP_PORT;
+		m_nPort = DEFAULT_RTSP_PORT;
 	Load();
 }
 
 void CHostPortDlg::OnSelchangeComboDeviceTypeMode()
 {
-	m_nDeviceTypeMode = GetCurDeviceTypeMode();
+	m_nDeviceTypeMode = SelectionToDeviceTypeMode();
 	Load();
 }
 
@@ -451,8 +414,8 @@ void CHostPortDlg::OnError()
 {
 	CComboBox* pComboBoxHost = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
 	::SetFocus(pComboBoxHost->GetSafeHwnd());
+	::AlertUser(GetSafeHwnd());
 	::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, ML_STRING(1867, "Enter an IP or a Hostname or an URL starting with rtsp:// or http:// (ATTENTION: User Name and Password must be provided under Camera Login, not in the URL)"), 0);
-	::MessageBeep(0xFFFFFFFF);
 }
 
 void CHostPortDlg::OnOK() 
@@ -560,6 +523,54 @@ void CHostPortDlg::Save()
 	((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sDevicePathName, _T("PreferTcpforRtsp"), pCheck->GetCheck());
 }
 
+void CHostPortDlg::LoadHistoryAndSel(int nSel)
+{
+	// Load History
+	m_HostsHistory.RemoveAll();
+	m_PortsHistory.RemoveAll();
+	m_DeviceTypeModesHistory.RemoveAll();
+	LoadHistory(m_HostsHistory, m_PortsHistory, m_DeviceTypeModesHistory);
+
+	// If empty add an item!
+	if (m_HostsHistory.GetSize() <= 0)
+	{
+		m_HostsHistory.InsertAt(0, _T(""));
+		m_PortsHistory.InsertAt(0, (DWORD)DEFAULT_RTSP_PORT);
+		m_DeviceTypeModesHistory.InsertAt(0, (DWORD)CVideoDeviceDoc::OTHERONE_RTSP);
+	}
+
+	// Correct the selection
+	if (nSel < 0)
+		nSel = 0;
+	else if (nSel >= m_HostsHistory.GetSize())
+		nSel = m_HostsHistory.GetSize() - 1;
+
+	// Populate hosts and select current
+	CComboBox* pComboBoxHost = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
+	pComboBoxHost->ResetContent();
+	for (int i = 0; i < m_HostsHistory.GetSize(); i++)
+		pComboBoxHost->AddString(m_HostsHistory[i]);
+	pComboBoxHost->SetCurSel(nSel);
+
+	// Current Host
+	m_sHost = m_HostsHistory[nSel];
+
+	// Current Port
+	m_nPort = m_PortsHistory[nSel];
+	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PORT);
+	CString sPort;
+	sPort.Format(_T("%i"), m_nPort);
+	pEdit->SetWindowText(sPort);
+
+	// Current Device Type Mode
+	m_nDeviceTypeMode = m_DeviceTypeModesHistory[nSel];
+	DeviceTypeModeToSelection(m_nDeviceTypeMode);
+
+	// Update Controls
+	EnableDisableCtrls();
+	Load();
+}
+
 void CHostPortDlg::LoadHistory(	CStringArray& HostsHistory,
 								CDWordArray& PortsHistory,
 								CDWordArray& DeviceTypeModesHistory)
@@ -583,15 +594,15 @@ void CHostPortDlg::LoadHistory(	CStringArray& HostsHistory,
 			// Port
 			CString sPortEntry;
 			sPortEntry.Format(_T("PortHistory%d"), i);
-			dwPort = (DWORD) pApp->GetProfileInt(sSection, sPortEntry, 0xFFFFFFFF);
+			dwPort = (DWORD)pApp->GetProfileInt(sSection, sPortEntry, 0xFFFFFFFF);
 			if (dwPort == 0 || dwPort > 65535) // Port 0 is Reserved
-				dwPort = DEFAULT_TCP_PORT;
+				dwPort = DEFAULT_RTSP_PORT;
 			PortsHistory.Add(dwPort);
 
 			// Device Type and Mode
 			CString sDeviceTypeModeEntry;
 			sDeviceTypeModeEntry.Format(_T("DeviceTypeModeHistory%d"), i);
-			dwDeviceTypeMode = (DWORD) pApp->GetProfileInt(sSection, sDeviceTypeModeEntry, 0);
+			dwDeviceTypeMode = (DWORD)pApp->GetProfileInt(sSection, sDeviceTypeModeEntry, CVideoDeviceDoc::OTHERONE_RTSP);
 			DeviceTypeModesHistory.Add(dwDeviceTypeMode);
 		}
 	}
