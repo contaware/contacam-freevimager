@@ -3985,49 +3985,66 @@ void CVideoDeviceDoc::FreeMovementDetector()
 		memset(m_MovementDetections, 0, MOVDET_MAX_ZONES);
 }
 
-CString CVideoDeviceDoc::GetHostFromDevicePathName(const CString& sDevicePathName)
+BOOL CVideoDeviceDoc::ParseNetworkDevicePathName(	const CString& sDevicePathName,
+													CString& sOutGetFrameVideoHost,
+													volatile int& nOutGetFrameVideoPort,
+													CString& sOutGetFrameLocation,
+													volatile NetworkDeviceTypeMode& nOutNetworkDeviceTypeMode)
 {
-	// Network devices have the format:
+	// Network devices have the format
 	// Host:Port:FrameLocation:NetworkDeviceTypeMode
 	// (use reverse find because Host maybe a IP6 address with :)
-
-	// NetworkDeviceTypeMode
 	CString sAddress(sDevicePathName);
 	int i = sAddress.ReverseFind(_T(':'));
-	if (i < 0)
-		return _T("");
-	CString sNetworkDeviceTypeMode = sAddress.Right(sAddress.GetLength() - i - 1);
-	NetworkDeviceTypeMode nNetworkDeviceTypeMode = (NetworkDeviceTypeMode)_tcstol(sNetworkDeviceTypeMode.GetBuffer(0), NULL, 10);
-	sNetworkDeviceTypeMode.ReleaseBuffer();
-	if (nNetworkDeviceTypeMode < OTHERONE_SP || nNetworkDeviceTypeMode >= LAST_DEVICE)
-		return _T("");
-	
-	// FrameLocation
-	sAddress = sAddress.Left(i);
-	i = sAddress.ReverseFind(_T(':'));
-	if (i < 0)
-		return _T("");
-	CString sFrameLocation = sAddress.Right(sAddress.GetLength() - i - 1);
+	if (i >= 0)
+	{
+		// NetworkDeviceTypeMode
+		CString sNetworkDeviceTypeMode = sAddress.Right(sAddress.GetLength() - i - 1);
+		NetworkDeviceTypeMode nNetworkDeviceTypeMode = (NetworkDeviceTypeMode)_tcstol(sNetworkDeviceTypeMode.GetBuffer(0), NULL, 10);
+		sNetworkDeviceTypeMode.ReleaseBuffer();
+		if (nNetworkDeviceTypeMode >= OTHERONE_SP && nNetworkDeviceTypeMode < LAST_DEVICE)
+			nOutNetworkDeviceTypeMode = nNetworkDeviceTypeMode;
+		else
+			return FALSE;
 
-	// Port
-	sAddress = sAddress.Left(i);
-	i = sAddress.ReverseFind(_T(':'));
-	if (i < 0)
-		return _T("");
-	CString sPort = sAddress.Right(sAddress.GetLength() - i - 1);
-	int nPort = _tcstol(sPort.GetBuffer(0), NULL, 10);
-	sPort.ReleaseBuffer();
-	if (nPort <= 0 || nPort > 65535) // Port 0 is Reserved
-		return _T("");
+		// FrameLocation
+		sAddress = sAddress.Left(i);
+		i = sAddress.ReverseFind(_T(':'));
+		if (i >= 0)
+		{
+			sOutGetFrameLocation = sAddress.Right(sAddress.GetLength() - i - 1);
 
-	// Host
-	return sAddress.Left(i);
+			// Port
+			sAddress = sAddress.Left(i);
+			i = sAddress.ReverseFind(_T(':'));
+			if (i >= 0)
+			{
+				CString sPort = sAddress.Right(sAddress.GetLength() - i - 1);
+				int nPort = _tcstol(sPort.GetBuffer(0), NULL, 10);
+				sPort.ReleaseBuffer();
+				if (nPort > 0 && nPort <= 65535) // Port 0 is Reserved
+				{
+					sOutGetFrameVideoHost = sAddress.Left(i);
+					nOutGetFrameVideoPort = nPort;
+					return TRUE;
+				}
+				else
+					return FALSE;
+			}
+			else
+				return FALSE;
+		}
+		else
+			return FALSE;
+	}
+	else
+		return FALSE;
 }
 
-CString CVideoDeviceDoc::GetNetworkDevicePathName(	const CString& sGetFrameVideoHost,
+CString CVideoDeviceDoc::MakeNetworkDevicePathName(	const CString& sGetFrameVideoHost,
 													int nGetFrameVideoPort,
 													const CString& sGetFrameLocation,
-													int nNetworkDeviceTypeMode)
+													NetworkDeviceTypeMode nNetworkDeviceTypeMode)
 {
 	CString sDevicePathName;
 	sDevicePathName.Format(_T("%s:%d:%s:%d"), sGetFrameVideoHost, nGetFrameVideoPort, sGetFrameLocation, nNetworkDeviceTypeMode);
@@ -4051,7 +4068,7 @@ CString CVideoDeviceDoc::GetDevicePathName()
 		sDevicePathName.Replace(_T('\\'), _T('/'));
 	}
 	else
-		sDevicePathName = GetNetworkDevicePathName(m_sGetFrameVideoHost, m_nGetFrameVideoPort, m_HttpGetFrameLocations[0], m_nNetworkDeviceTypeMode);
+		sDevicePathName = MakeNetworkDevicePathName(m_sGetFrameVideoHost, m_nGetFrameVideoPort, m_HttpGetFrameLocations[0], m_nNetworkDeviceTypeMode);
 
 	return sDevicePathName;
 }
@@ -4405,9 +4422,6 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	// Update m_ZoomRect and show the Please wait... message
 	GetView()->UpdateWindowSizes(TRUE, FALSE, FALSE);
 
-	// Device First Run
-	m_bDeviceFirstRun = (pApp->GetProfileString(sSection, _T("DeviceName"), _T("")) == _T(""));
-
 	// Email Settings
 	m_MovDetAttachmentType = (AttachmentType) pApp->GetProfileInt(sSection, _T("AttachmentType"), ATTACHMENT_NONE);
 	if (m_MovDetAttachmentType < ATTACHMENT_NONE)
@@ -4458,7 +4472,19 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_bRecAutoOpen = (BOOL) pApp->GetProfileInt(sSection, _T("RecAutoOpen"), TRUE);
 	m_bRecTimeSegmentation = (BOOL) pApp->GetProfileInt(sSection, _T("RecTimeSegmentation"), FALSE);
 	m_nTimeSegmentationIndex = pApp->GetProfileInt(sSection, _T("TimeSegmentationIndex"), 0);
-	m_sRecordAutoSaveDir = pApp->GetProfileString(sSection, _T("RecordAutoSaveDir"), sDefaultAutoSaveDir);
+	m_sRecordAutoSaveDir = pApp->GetProfileString(sSection, _T("RecordAutoSaveDir"), _T(""));
+	if (m_sRecordAutoSaveDir.IsEmpty())
+	{
+		// First time we run this device
+		m_bDeviceFirstRun = TRUE;
+
+		// Set to default auto save folder
+		m_sRecordAutoSaveDir = sDefaultAutoSaveDir;
+
+		// It's important to write the auto save folder path into the registry right now
+		// because we want the mapping between the folder (created below) and the registry
+		pApp->WriteProfileString(sSection, _T("RecordAutoSaveDir"), m_sRecordAutoSaveDir);
+	}
 	CString sRecordAutoSaveDir = m_sRecordAutoSaveDir;
 	sRecordAutoSaveDir.TrimRight(_T('\\'));
 	m_bObscureSource = ::IsExistingFile(sRecordAutoSaveDir + _T("\\") + CAMERA_IS_OBSCURED_FILENAME);
@@ -4635,8 +4661,7 @@ void CVideoDeviceDoc::SaveSettings()
 	CUImagerApp* pApp = (CUImagerApp*)::AfxGetApp();
 	CString sSection(GetDevicePathName());
 
-	// Store the device name to identify the entry when manually looking the registry
-	// and to know that it is not the first run of the device
+	// Store the device name
 	pApp->WriteProfileString(sSection, _T("DeviceName"), GetDeviceName());
 
 	// Store Placement
@@ -5172,64 +5197,25 @@ double CVideoDeviceDoc::GetDefaultNetworkFrameRate(NetworkDeviceTypeMode nNetwor
 	}
 }
 
-// sAddress: Must have the IP:Port:FrameLocation:NetworkDeviceTypeMode or
-//           HostName:Port:FrameLocation:NetworkDeviceTypeMode Format
-// Note: FrameLocation is m_HttpGetFrameLocations[0]
-void CVideoDeviceDoc::OpenNetVideoDevice(CString sAddress)
+// sAddress format
+// IP:Port:FrameLocation:NetworkDeviceTypeMode
+// or
+// HostName:Port:FrameLocation:NetworkDeviceTypeMode
+BOOL CVideoDeviceDoc::OpenNetVideoDevice(CString sAddress)
 {
 	ASSERT(!m_pVideoNetCom);
 	ASSERT(!m_pHttpVideoParseProcess);
 
 	// Init Host, Port, FrameLocation and NetworkDeviceTypeMode
-	int i = sAddress.ReverseFind(_T(':'));
-	if (i >= 0)
-	{
-		CString sNetworkDeviceTypeMode = sAddress.Right(sAddress.GetLength() - i - 1);
-		NetworkDeviceTypeMode nNetworkDeviceTypeMode = (NetworkDeviceTypeMode)_tcstol(sNetworkDeviceTypeMode.GetBuffer(0), NULL, 10);
-		sNetworkDeviceTypeMode.ReleaseBuffer();
-		if (nNetworkDeviceTypeMode >= OTHERONE_SP && nNetworkDeviceTypeMode < LAST_DEVICE)
-			m_nNetworkDeviceTypeMode = nNetworkDeviceTypeMode;
-		else
-			m_nNetworkDeviceTypeMode = OTHERONE_SP;
-		sAddress = sAddress.Left(i);
-		i = sAddress.ReverseFind(_T(':'));
-		if (i >= 0)
-		{
-			m_HttpGetFrameLocations[0] = sAddress.Right(sAddress.GetLength() - i - 1);
-			sAddress = sAddress.Left(i);
-			i = sAddress.ReverseFind(_T(':'));
-			if (i >= 0)
-			{
-				CString sPort = sAddress.Right(sAddress.GetLength() - i - 1);
-				int nPort = _tcstol(sPort.GetBuffer(0), NULL, 10);
-				sPort.ReleaseBuffer();
-				if (nPort > 0 && nPort <= 65535) // Port 0 is Reserved
-					m_nGetFrameVideoPort = nPort;
-				else
-					m_nGetFrameVideoPort = DEFAULT_HTTP_PORT;
-				m_sGetFrameVideoHost = sAddress.Left(i);
-			}
-			else
-			{
-				m_sGetFrameVideoHost = sAddress;
-				m_nGetFrameVideoPort = DEFAULT_HTTP_PORT;
-			}
-		}
-		else
-		{
-			m_sGetFrameVideoHost = sAddress;
-			m_nGetFrameVideoPort = DEFAULT_HTTP_PORT;
-			m_HttpGetFrameLocations[0] = _T("/");
-		}
-	}
-	else
-	{
-		m_sGetFrameVideoHost = sAddress;
-		m_nGetFrameVideoPort = DEFAULT_HTTP_PORT;
-		m_HttpGetFrameLocations[0] = _T("/");
-		m_nNetworkDeviceTypeMode = OTHERONE_SP;
-	}
+	// Fail if sAddress has not the network device address format
+	if (!ParseNetworkDevicePathName(sAddress,
+									m_sGetFrameVideoHost,
+									m_nGetFrameVideoPort,
+									m_HttpGetFrameLocations[0],
+									m_nNetworkDeviceTypeMode))
+		return FALSE;
 
+	// Init http
 	if (m_nNetworkDeviceTypeMode < CVideoDeviceDoc::URL_RTSP)
 	{
 		// Init http get frame locations array
@@ -5261,6 +5247,8 @@ void CVideoDeviceDoc::OpenNetVideoDevice(CString sAddress)
 		ConnectHttp();
 	else
 		ConnectRtsp();
+
+	return TRUE;
 }
 
 void CVideoDeviceDoc::OpenNetVideoDevice(CHostPortDlg* pDlg)
@@ -5268,10 +5256,15 @@ void CVideoDeviceDoc::OpenNetVideoDevice(CHostPortDlg* pDlg)
 	ASSERT(!m_pVideoNetCom);
 	ASSERT(!m_pHttpVideoParseProcess);
 	ASSERT(pDlg);
-	CHostPortDlg::ParseUrl(	pDlg->m_sHost, pDlg->m_nPort, pDlg->m_nDeviceTypeMode,
-							m_sGetFrameVideoHost, (int&)m_nGetFrameVideoPort,
-							m_HttpGetFrameLocations[0], (int&)m_nNetworkDeviceTypeMode);
 
+	// Init Host, Port, FrameLocation and NetworkDeviceTypeMode
+	CHostPortDlg::ParseUrl(	pDlg->m_sHost, pDlg->m_nPort, pDlg->m_nDeviceTypeMode,
+							m_sGetFrameVideoHost,
+							(int&)m_nGetFrameVideoPort,
+							m_HttpGetFrameLocations[0],
+							(int&)m_nNetworkDeviceTypeMode);
+
+	// Init http
 	if (m_nNetworkDeviceTypeMode < CVideoDeviceDoc::URL_RTSP)
 	{
 		// Init http get frame locations array

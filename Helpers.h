@@ -439,7 +439,7 @@ extern CString UuidToCString(const UUID* pUuid); // uuid/guid struct to CString
 extern CString GetUuidCString(); // generate a uuid/guid CString
 
 // Natural order string comparision function
-extern int __cdecl CompareNatural(CString * pstr1, CString * pstr2);
+extern int __cdecl CompareNatural(const CString* pstr1, const CString* pstr2);
 
 // Is the given string in the supplied array (case insensitive)?
 extern BOOL InStringArray(const CString& s, const CStringArray& arr);

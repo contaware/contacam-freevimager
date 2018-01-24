@@ -1050,9 +1050,7 @@ LONG CMainFrame::OnAutorunVideoDevices(WPARAM wparam, LPARAM lparam)
 			CVideoDeviceDoc* pDoc = (CVideoDeviceDoc*)((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
 			if (pDoc)
 			{
-				if (CVideoDeviceDoc::GetHostFromDevicePathName(sDevRegistry) != _T(""))
-					pDoc->OpenNetVideoDevice(sDevRegistry);
-				else
+				if (!pDoc->OpenNetVideoDevice(sDevRegistry))
 					pDoc->OpenDxVideoDevice(-1, sDevRegistry, ::AfxGetApp()->GetProfileString(sDevRegistry, _T("DeviceName"), _T("")));
 			}
 		}

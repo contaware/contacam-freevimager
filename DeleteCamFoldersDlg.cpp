@@ -154,7 +154,7 @@ LONG CDeleteCamFoldersDlg::OnApplyDeletion(WPARAM wparam, LPARAM lparam)
 			if (::IsExistingDir(sDirName))
 				::DeleteToRecycleBin(sDirName);
 			
-			// Clear autorun, remove network dialog history and delete device configuration
+			// Clear autorun and delete device configuration
 			if (!::IsExistingDir(sDirName)) // make sure dir has been deleted
 			{
 				for (int i = 0 ; i < m_DevicePathNames.GetSize() ; i++)
@@ -164,7 +164,6 @@ LONG CDeleteCamFoldersDlg::OnApplyDeletion(WPARAM wparam, LPARAM lparam)
 					if (sDirName.CompareNoCase(sRecordAutoSaveDir) == 0)
 					{
 						CVideoDeviceDoc::AutorunRemoveDevice(m_DevicePathNames[i]);
-						CHostPortDlg::DeleteHistory(m_DevicePathNames[i]);
 						if (::AfxGetApp()->m_pszRegistryKey)
 							::DeleteRegistryKey(HKEY_CURRENT_USER,	_T("Software\\") +
 																	CString(MYCOMPANY) + CString(_T("\\")) +

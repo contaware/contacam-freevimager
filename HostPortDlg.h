@@ -8,7 +8,7 @@
 
 #ifdef VIDEODEVICEDOC
 
-#define MAX_HOST_PORT_HISTORY_SIZE		24
+#define MAX_HOST_PORT_HISTORY_SIZE		8
 
 /////////////////////////////////////////////////////////////////////////////
 // CHostPortDlg dialog
@@ -26,7 +26,13 @@ public:
 						int& nOutGetFrameVideoPort,
 						CString& sOutHttpGetFrameLocation,
 						int& nOutDeviceTypeMode);
-	static void DeleteHistory(const CString& sDevicePathName);
+	static void MakeUrl(const CString& sInGetFrameVideoHost,
+						int nInGetFrameVideoPort,
+						const CString& sInGetFrameLocation,
+						int nInDeviceTypeMode,
+						CString& sOutHost,
+						int& nOutPort,
+						int& nOutDeviceTypeMode);
 
 // Returned Data
 public:
@@ -41,23 +47,15 @@ protected:
 	void DeviceTypeModeToSelection(int nDeviceTypeMode);
 	void EnableDisableCtrls();
 	static CString MakeDevicePathName(const CString& sInHost, int nInPort, int nInDeviceTypeMode);
-	void Load(); // load settings for given m_sHost, m_nPort, m_nDeviceTypeMode
-	void Save(); // save settings for given m_sHost, m_nPort, m_nDeviceTypeMode
-	void LoadHistoryAndSel(int nSel);
-	static void LoadHistory(CStringArray& HostsHistory,
-							CDWordArray& PortsHistory,
-							CDWordArray& DeviceTypeModesHistory);
-	static void SaveHistory(const CString& sHost,
-							int nPort,
-							int nDeviceTypeMode,
-							CStringArray& HostsHistory,
-							CDWordArray& PortsHistory,
-							CDWordArray& DeviceTypeModesHistory);
+	void Load();		// load settings for given m_sHost, m_nPort, m_nDeviceTypeMode
+	void Save();		// save settings for given m_sHost, m_nPort, m_nDeviceTypeMode
+	void LoadHistory();	// load last selected m_sHost, m_nPort, m_nDeviceTypeMode
+	void SaveHistory();	// save last selected m_sHost, m_nPort, m_nDeviceTypeMode
 	void OnError();
 
-	CStringArray m_HostsHistory;
-	CDWordArray m_PortsHistory;
-	CDWordArray m_DeviceTypeModesHistory;
+	CStringArray m_Hosts;
+	CDWordArray m_Ports;
+	CDWordArray m_DeviceTypeModes;
 	CString m_sInitialDlgTitle;
 
 	// Generated message map functions

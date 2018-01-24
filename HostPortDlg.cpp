@@ -21,9 +21,8 @@ static char THIS_FILE[] = __FILE__;
 CHostPortDlg::CHostPortDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CHostPortDlg::IDD, pParent)
 {
-	m_sHost = _T("");
-	m_nPort = DEFAULT_RTSP_PORT;
-	m_nDeviceTypeMode = CVideoDeviceDoc::OTHERONE_RTSP;
+	// Init m_sHost, m_nPort and m_nDeviceTypeMode
+	LoadHistory();
 }
 
 BEGIN_MESSAGE_MAP(CHostPortDlg, CDialog)
@@ -103,8 +102,120 @@ BOOL CHostPortDlg::OnInitDialog()
 
 	CDialog::OnInitDialog();
 	
-	// Init
-	LoadHistoryAndSel(0);
+	// Loop through all devices configured in registry or ini file
+	CStringArray DevicePathNames;
+	((CUImagerApp*)::AfxGetApp())->EnumConfiguredDevicePathNames(DevicePathNames);
+	for (int nDeviceIndex = 0; nDeviceIndex < DevicePathNames.GetSize(); nDeviceIndex++)
+	{
+		CString sIntermediateGetFrameVideoHost;
+		int nIntermediateGetFrameVideoPort;
+		CString sIntermediateGetFrameLocation;
+		CVideoDeviceDoc::NetworkDeviceTypeMode nIntermediateDeviceTypeMode;
+		if (CVideoDeviceDoc::ParseNetworkDevicePathName(DevicePathNames[nDeviceIndex],
+														sIntermediateGetFrameVideoHost,
+														nIntermediateGetFrameVideoPort,
+														sIntermediateGetFrameLocation,
+														nIntermediateDeviceTypeMode))
+		{
+			CString sOutHost;
+			int nOutPort;
+			int nOutDeviceTypeMode;
+			MakeUrl(sIntermediateGetFrameVideoHost,
+					nIntermediateGetFrameVideoPort,
+					sIntermediateGetFrameLocation,
+					nIntermediateDeviceTypeMode,
+					sOutHost,
+					nOutPort,
+					nOutDeviceTypeMode);
+			if (!sOutHost.IsEmpty())
+			{
+				// Avoid duplicated hosts
+				// (the same IP/hostname may occur multiple times
+				//  with different port and/or device type/mode)
+				// Attention: CComboBox does not support duplicated items, moreover
+				//            a control with identical named items is not intuitive!
+				BOOL bDoInsert = TRUE;
+				for (int nHostIndex = 0; nHostIndex < m_Hosts.GetSize(); nHostIndex++)
+				{
+					if (m_Hosts[nHostIndex] == sOutHost)
+					{
+						// Prefer the one with the autorun flag set
+						if (CVideoDeviceDoc::AutorunGetDeviceKey(DevicePathNames[nDeviceIndex]) != _T(""))
+						{
+							m_Hosts[nHostIndex] = sOutHost;
+							m_Ports[nHostIndex] = nOutPort;
+							m_DeviceTypeModes[nHostIndex] = nOutDeviceTypeMode;
+						}
+						bDoInsert = FALSE; // no insertion for duplicated hosts
+						break;
+					}
+				}
+
+				// Insertion sort
+				if (bDoInsert)
+				{
+					for (int nHostIndex = 0; nHostIndex < m_Hosts.GetSize(); nHostIndex++)
+					{
+						if (::CompareNatural(&sOutHost, &m_Hosts[nHostIndex]) < 0)
+						{
+							m_Hosts.InsertAt(nHostIndex, sOutHost);
+							m_Ports.InsertAt(nHostIndex, (DWORD)nOutPort);
+							m_DeviceTypeModes.InsertAt(nHostIndex, (DWORD)nOutDeviceTypeMode);
+							bDoInsert = FALSE;
+							break;
+						}
+					}
+					if (bDoInsert)
+					{
+						m_Hosts.Add(sOutHost);
+						m_Ports.Add((DWORD)nOutPort);
+						m_DeviceTypeModes.Add((DWORD)nOutDeviceTypeMode);
+					}
+				}
+			}
+		}
+	}
+
+	// If empty add the default item
+	if (m_Hosts.GetSize() <= 0)
+	{
+		m_Hosts.InsertAt(0, _T(""));
+		m_Ports.InsertAt(0, (DWORD)DEFAULT_RTSP_PORT);
+		m_DeviceTypeModes.InsertAt(0, (DWORD)CVideoDeviceDoc::OTHERONE_RTSP);
+	}
+
+	// Find the last selected index and populate the hosts CComboBox
+	CComboBox* pComboBoxHost = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
+	int nLastSel = 0; // if not found default to first item
+	for (int nHostIndex = 0; nHostIndex < m_Hosts.GetSize(); nHostIndex++)
+	{
+		if (m_Hosts[nHostIndex] == m_sHost)
+		{
+			nLastSel = nHostIndex;
+			m_Ports[nHostIndex] = m_nPort;
+			m_DeviceTypeModes[nHostIndex] = m_nDeviceTypeMode;
+		}
+		pComboBoxHost->AddString(m_Hosts[nHostIndex]);
+	}
+
+	// Current Host
+	m_sHost = m_Hosts[nLastSel];
+	pComboBoxHost->SetCurSel(nLastSel);
+
+	// Current Port
+	m_nPort = m_Ports[nLastSel];
+	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PORT);
+	CString sPort;
+	sPort.Format(_T("%i"), m_nPort);
+	pEdit->SetWindowText(sPort);
+
+	// Current Device Type Mode
+	m_nDeviceTypeMode = m_DeviceTypeModes[nLastSel];
+	DeviceTypeModeToSelection(m_nDeviceTypeMode);
+
+	// Update Controls
+	EnableDisableCtrls();
+	Load();
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -224,6 +335,8 @@ void CHostPortDlg::ParseUrl(const CString& sInHost,
 	}
 	else if ((nPos = sGetFrameVideoHostLowerCase.Find(_T("rtsp://"))) >= 0)
 	{
+		// TODO: does ffmpeg support numeric IP6? -> If yes add IP6 handling here!
+
 		// Set flags
 		bUrlRtsp = TRUE;
 		nUrlPort = DEFAULT_RTSP_PORT;
@@ -278,6 +391,59 @@ void CHostPortDlg::ParseUrl(const CString& sInHost,
 		nOutDeviceTypeMode = CVideoDeviceDoc::URL_RTSP;
 	else
 		nOutDeviceTypeMode = nInDeviceTypeMode;
+}
+
+void CHostPortDlg::MakeUrl(	const CString& sInGetFrameVideoHost,
+							int nInGetFrameVideoPort,
+							const CString& sInGetFrameLocation,
+							int nInDeviceTypeMode,
+							CString& sOutHost,
+							int& nOutPort,
+							int& nOutDeviceTypeMode)
+{
+	// Url
+	if (sInGetFrameLocation != _T("/"))
+	{
+		// RTSP
+		if (nInDeviceTypeMode == CVideoDeviceDoc::URL_RTSP)
+		{
+			// TODO: does ffmpeg support numeric IP6? -> If yes add IP6 handling here!
+
+			if (nInGetFrameVideoPort != DEFAULT_RTSP_PORT)
+				sOutHost.Format(_T("rtsp://%s:%d%s"), sInGetFrameVideoHost, nInGetFrameVideoPort, sInGetFrameLocation);
+			else
+				sOutHost.Format(_T("rtsp://%s%s"), sInGetFrameVideoHost, sInGetFrameLocation);
+			nOutPort = nInGetFrameVideoPort;
+			nOutDeviceTypeMode = CVideoDeviceDoc::OTHERONE_RTSP;
+		}
+		// HTTP
+		else
+		{
+			// IP6
+			if (sInGetFrameVideoHost.Find(_T(':')) >= 0)
+			{
+				if (nInGetFrameVideoPort != DEFAULT_HTTP_PORT)
+					sOutHost.Format(_T("http://[%s]:%d%s"), sInGetFrameVideoHost, nInGetFrameVideoPort, sInGetFrameLocation);
+				else
+					sOutHost.Format(_T("http://[%s]%s"), sInGetFrameVideoHost, sInGetFrameLocation);
+			}
+			else
+			{
+				if (nInGetFrameVideoPort != DEFAULT_HTTP_PORT)
+					sOutHost.Format(_T("http://%s:%d%s"), sInGetFrameVideoHost, nInGetFrameVideoPort, sInGetFrameLocation);
+				else
+					sOutHost.Format(_T("http://%s%s"), sInGetFrameVideoHost, sInGetFrameLocation);
+			}
+			nOutPort = nInGetFrameVideoPort;
+			nOutDeviceTypeMode = CVideoDeviceDoc::OTHERONE_CP;
+		}
+	}
+	else
+	{
+		sOutHost = sInGetFrameVideoHost;
+		nOutPort = nInGetFrameVideoPort;
+		nOutDeviceTypeMode = nInDeviceTypeMode;
+	}
 }
 
 int CHostPortDlg::SelectionToDeviceTypeMode()
@@ -369,9 +535,9 @@ void CHostPortDlg::OnSelchangeComboHost()
 
 	// Port
 	int nSel = pComboBoxHost->GetCurSel();
-	if (nSel >= 0 && nSel < m_PortsHistory.GetSize())
+	if (nSel >= 0 && nSel < m_Ports.GetSize())
 	{
-		m_nPort = m_PortsHistory[nSel];
+		m_nPort = m_Ports[nSel];
 		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PORT);
 		CString sPort;
 		sPort.Format(_T("%i"), m_nPort);
@@ -379,9 +545,9 @@ void CHostPortDlg::OnSelchangeComboHost()
 	}
 
 	// Device Type Mode
-	if (nSel >= 0 && nSel < m_DeviceTypeModesHistory.GetSize())
+	if (nSel >= 0 && nSel < m_DeviceTypeModes.GetSize())
 	{
-		m_nDeviceTypeMode = m_DeviceTypeModesHistory[nSel];
+		m_nDeviceTypeMode = m_DeviceTypeModes[nSel];
 		DeviceTypeModeToSelection(m_nDeviceTypeMode);
 	}
 
@@ -448,9 +614,9 @@ void CHostPortDlg::OnOK()
 	}
 
 	// OK
-	SaveHistory(m_sHost, m_nPort, m_nDeviceTypeMode,
-				m_HostsHistory, m_PortsHistory, m_DeviceTypeModesHistory);
-	Save();
+	SaveHistory();	// save selected m_sHost, m_nPort and m_nDeviceTypeMode
+	Save();			// save Username, Password and PreferTcpforRtsp flag
+					// for the device given by m_sHost, m_nPort, m_nDeviceTypeMode
 	CDialog::OnOK();
 }
 
@@ -463,8 +629,8 @@ CString CHostPortDlg::MakeDevicePathName(const CString& sInHost, int nInPort, in
 	ParseUrl(sInHost, nInPort, nInDeviceTypeMode,
 			sOutGetFrameVideoHost, nOutGetFrameVideoPort,
 			sOutGetFrameLocation, nOutDeviceTypeMode);
-	return CVideoDeviceDoc::GetNetworkDevicePathName(	sOutGetFrameVideoHost, nOutGetFrameVideoPort,
-														sOutGetFrameLocation, nOutDeviceTypeMode);
+	return CVideoDeviceDoc::MakeNetworkDevicePathName(	sOutGetFrameVideoHost, nOutGetFrameVideoPort,
+														sOutGetFrameLocation, (CVideoDeviceDoc::NetworkDeviceTypeMode)nOutDeviceTypeMode);
 }
 
 void CHostPortDlg::Load()
@@ -523,135 +689,30 @@ void CHostPortDlg::Save()
 	((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sDevicePathName, _T("PreferTcpforRtsp"), pCheck->GetCheck());
 }
 
-void CHostPortDlg::LoadHistoryAndSel(int nSel)
-{
-	// Load History
-	m_HostsHistory.RemoveAll();
-	m_PortsHistory.RemoveAll();
-	m_DeviceTypeModesHistory.RemoveAll();
-	LoadHistory(m_HostsHistory, m_PortsHistory, m_DeviceTypeModesHistory);
-
-	// If empty add an item!
-	if (m_HostsHistory.GetSize() <= 0)
-	{
-		m_HostsHistory.InsertAt(0, _T(""));
-		m_PortsHistory.InsertAt(0, (DWORD)DEFAULT_RTSP_PORT);
-		m_DeviceTypeModesHistory.InsertAt(0, (DWORD)CVideoDeviceDoc::OTHERONE_RTSP);
-	}
-
-	// Correct the selection
-	if (nSel < 0)
-		nSel = 0;
-	else if (nSel >= m_HostsHistory.GetSize())
-		nSel = m_HostsHistory.GetSize() - 1;
-
-	// Populate hosts and select current
-	CComboBox* pComboBoxHost = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
-	pComboBoxHost->ResetContent();
-	for (int i = 0; i < m_HostsHistory.GetSize(); i++)
-		pComboBoxHost->AddString(m_HostsHistory[i]);
-	pComboBoxHost->SetCurSel(nSel);
-
-	// Current Host
-	m_sHost = m_HostsHistory[nSel];
-
-	// Current Port
-	m_nPort = m_PortsHistory[nSel];
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PORT);
-	CString sPort;
-	sPort.Format(_T("%i"), m_nPort);
-	pEdit->SetWindowText(sPort);
-
-	// Current Device Type Mode
-	m_nDeviceTypeMode = m_DeviceTypeModesHistory[nSel];
-	DeviceTypeModeToSelection(m_nDeviceTypeMode);
-
-	// Update Controls
-	EnableDisableCtrls();
-	Load();
-}
-
-void CHostPortDlg::LoadHistory(	CStringArray& HostsHistory,
-								CDWordArray& PortsHistory,
-								CDWordArray& DeviceTypeModesHistory)
+void CHostPortDlg::LoadHistory()
 {
 	CWinApp* pApp = ::AfxGetApp();
 	CString sSection(_T("HostPortDlg"));
 
-	CString sHost;
-	DWORD dwPort;
-	DWORD dwDeviceTypeMode;
-	for (int i = 0 ; i < MAX_HOST_PORT_HISTORY_SIZE ; i++)
-	{
-		CString sHostEntry;
-		sHostEntry.Format(_T("HostHistory%d"), i);
-		sHost = pApp->GetProfileString(sSection, sHostEntry, _T(""));
-		if (!sHost.IsEmpty())
-		{
-			// Host
-			HostsHistory.Add(sHost);
+	// Host
+	m_sHost = pApp->GetProfileString(sSection, _T("HostHistory0"), _T(""));
+	
+	// Port
+	DWORD dwPort = (DWORD)pApp->GetProfileInt(sSection, _T("PortHistory0"), 0xFFFFFFFF);
+	if (dwPort == 0 || dwPort > 65535) // Port 0 is Reserved
+		dwPort = DEFAULT_RTSP_PORT;
+	m_nPort = dwPort;
 
-			// Port
-			CString sPortEntry;
-			sPortEntry.Format(_T("PortHistory%d"), i);
-			dwPort = (DWORD)pApp->GetProfileInt(sSection, sPortEntry, 0xFFFFFFFF);
-			if (dwPort == 0 || dwPort > 65535) // Port 0 is Reserved
-				dwPort = DEFAULT_RTSP_PORT;
-			PortsHistory.Add(dwPort);
-
-			// Device Type and Mode
-			CString sDeviceTypeModeEntry;
-			sDeviceTypeModeEntry.Format(_T("DeviceTypeModeHistory%d"), i);
-			dwDeviceTypeMode = (DWORD)pApp->GetProfileInt(sSection, sDeviceTypeModeEntry, CVideoDeviceDoc::OTHERONE_RTSP);
-			DeviceTypeModesHistory.Add(dwDeviceTypeMode);
-		}
-	}
+	// Device Type and Mode
+	m_nDeviceTypeMode = (DWORD)pApp->GetProfileInt(sSection, _T("DeviceTypeModeHistory0"), CVideoDeviceDoc::OTHERONE_RTSP);
 }
 
-void CHostPortDlg::SaveHistory(	const CString& sHost,
-								int nPort,
-								int nDeviceTypeMode,
-								CStringArray& HostsHistory,
-								CDWordArray& PortsHistory,
-								CDWordArray& DeviceTypeModesHistory)
+void CHostPortDlg::SaveHistory()
 {
-	int i;
 	CWinApp* pApp = ::AfxGetApp();
 	CString sSection(_T("HostPortDlg"));
 
-	// Remove duplicates
-	i = 0;
-	while (i < HostsHistory.GetSize())
-	{
-		if (HostsHistory[i] == sHost)
-		{
-			HostsHistory.RemoveAt(i);
-			PortsHistory.RemoveAt(i);
-			DeviceTypeModesHistory.RemoveAt(i);
-			i = 0; // restart to check
-		}
-		else
-			i++;
-	}
-
-	// Insert new one at the beginning
-	if (!sHost.IsEmpty())
-	{
-		HostsHistory.InsertAt(0, sHost);
-		PortsHistory.InsertAt(0, (DWORD)nPort);
-		DeviceTypeModesHistory.InsertAt(0, (DWORD)nDeviceTypeMode);
-	}
-
-	// Shrink to MAX_HOST_PORT_HISTORY_SIZE
-	while (HostsHistory.GetSize() > MAX_HOST_PORT_HISTORY_SIZE)
-	{
-		HostsHistory.RemoveAt(HostsHistory.GetUpperBound());
-		PortsHistory.RemoveAt(PortsHistory.GetUpperBound());
-		DeviceTypeModesHistory.RemoveAt(DeviceTypeModesHistory.GetUpperBound());
-	}
-
-	// Write them
-	for (i = 0 ; i < MAX_HOST_PORT_HISTORY_SIZE ; i++)
+	for (int i = 0; i < MAX_HOST_PORT_HISTORY_SIZE; i++)
 	{
 		CString sHostEntry;
 		sHostEntry.Format(_T("HostHistory%d"), i);
@@ -659,14 +720,19 @@ void CHostPortDlg::SaveHistory(	const CString& sHost,
 		sPortEntry.Format(_T("PortHistory%d"), i);
 		CString sDeviceTypeModeEntry;
 		sDeviceTypeModeEntry.Format(_T("DeviceTypeModeHistory%d"), i);
-		if (i < HostsHistory.GetSize())
+		if (i == 0)
 		{
-			pApp->WriteProfileString(sSection, sHostEntry, HostsHistory[i]);
-			pApp->WriteProfileInt(sSection, sPortEntry, (int)PortsHistory[i]);
-			pApp->WriteProfileInt(sSection, sDeviceTypeModeEntry, (int)DeviceTypeModesHistory[i]);
+			// New ContaCam versions only use the first history
+			// entry to store the last selected item
+			pApp->WriteProfileString(sSection, sHostEntry, m_sHost);
+			pApp->WriteProfileInt(sSection, sPortEntry, m_nPort);
+			pApp->WriteProfileInt(sSection, sDeviceTypeModeEntry, m_nDeviceTypeMode);
 		}
 		else
 		{
+			// Delete all the remaining entries from old ContaCam versions
+			// (old ContaCams stored the list of entered hosts separately,
+			//  new ContaCams build that list from the registry/inifile settings)
 			if (::AfxGetApp()->m_pszRegistryKey)
 			{
 				::DeleteRegistryValue(HKEY_CURRENT_USER, CString(_T("Software\\")) + MYCOMPANY + _T("\\") + APPNAME_NOEXT + _T("\\") + sSection, sHostEntry);
@@ -681,33 +747,6 @@ void CHostPortDlg::SaveHistory(	const CString& sHost,
 			}
 		}
 	}
-}
-
-void CHostPortDlg::DeleteHistory(const CString& sDevicePathName)
-{
-	// Load History
-	CStringArray HostsHistory;
-	CDWordArray PortsHistory;
-	CDWordArray DeviceTypeModesHistory;
-	LoadHistory(HostsHistory, PortsHistory, DeviceTypeModesHistory);
-
-	// Remove given Device Path Name
-	int i = 0;
-	while (i < HostsHistory.GetSize())
-	{
-		if (MakeDevicePathName(HostsHistory[i], PortsHistory[i], DeviceTypeModesHistory[i]) == sDevicePathName)
-		{
-			HostsHistory.RemoveAt(i);
-			PortsHistory.RemoveAt(i);
-			DeviceTypeModesHistory.RemoveAt(i);
-			i = 0; // restart to check
-		}
-		else
-			i++;
-	}
-
-	// Save History
-	SaveHistory(_T(""), 0, 0, HostsHistory, PortsHistory, DeviceTypeModesHistory);
 }
 
 #endif

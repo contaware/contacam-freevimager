@@ -545,34 +545,6 @@ protected: // create from serialization only
 
 // Public Functions
 public:
-	
-	// General Functions
-	void ClearConnectErr();														// Clear the connection error message
-	void ConnectErr(LPCTSTR lpszText, const CString& sDeviceName);				// Called when a device start fails
-	static CString GetHostFromDevicePathName(const CString& sDevicePathName);	// Returns host name or _T("") if it's not a network device
-	static CString GetNetworkDevicePathName(const CString& sGetFrameVideoHost,	// GetDevicePathName() calls this for network devices
-											int nGetFrameVideoPort,
-											const CString& sGetFrameLocation,
-											int nNetworkDeviceTypeMode);
-	CString GetDevicePathName();												// Used For Settings, Scheduler and Autorun
-	CString GetAssignedDeviceName();											// Get User Assigned Device Name
-	CString GetDeviceName();													// Friendly Device Name
-	CString GetDeviceFormat();													// Friendly Device Format
-	void SetDocumentTitle();
-	CVideoDeviceView* GetView() const {return m_pView;};
-	void SetView(CVideoDeviceView* pView) {m_pView = pView;};
-	CVideoDeviceChildFrame* GetFrame() const {return m_pFrame;};
-	void SetFrame(CVideoDeviceChildFrame* pFrame) {m_pFrame = pFrame;};
-	static BOOL CreateCheckYearMonthDayDir(CTime Time, CString sBaseDir, CString& sYearMonthDayDir);
-
-	// Open Dx Video Device
-	void OpenDxVideoDevice(int nId, CString sDevicePathName, CString sDeviceName);
-
-	// Open Network Video Device
-	void OpenNetVideoDevice(CHostPortDlg* pDlg);
-	void OpenNetVideoDevice(CString sAddress);
-
-	// Connect to the chosen Networking Type and Mode
 	// ATTENTION: DO NOT CHANGE THE ASSOCIATED NUMBERS!
 	// (SP: Server Push, CP: Client Poll, RTSP: Realtime streaming protocol)
 	typedef enum {
@@ -639,6 +611,38 @@ public:
 		// Add more rtsp devices here...
 		LAST_DEVICE				// Placeholder for range check
 	} NetworkDeviceTypeMode;
+
+	// General Functions
+	void ClearConnectErr();														// Clear the connection error message
+	void ConnectErr(LPCTSTR lpszText, const CString& sDeviceName);				// Called when a device start fails	
+	static BOOL ParseNetworkDevicePathName(	const CString& sDevicePathName,		// Fails if it's not a network device
+											CString& sOutGetFrameVideoHost,
+											volatile int& nOutGetFrameVideoPort,
+											CString& sOutGetFrameLocation,
+											volatile NetworkDeviceTypeMode& nOutNetworkDeviceTypeMode);
+	static CString MakeNetworkDevicePathName(const CString& sGetFrameVideoHost,	// GetDevicePathName() calls this for network devices
+											int nGetFrameVideoPort,
+											const CString& sGetFrameLocation,
+											NetworkDeviceTypeMode nNetworkDeviceTypeMode);
+	CString GetDevicePathName();												// Used For Settings, Scheduler and Autorun
+	CString GetAssignedDeviceName();											// Get User Assigned Device Name
+	CString GetDeviceName();													// Friendly Device Name
+	CString GetDeviceFormat();													// Friendly Device Format
+	void SetDocumentTitle();
+	CVideoDeviceView* GetView() const {return m_pView;};
+	void SetView(CVideoDeviceView* pView) {m_pView = pView;};
+	CVideoDeviceChildFrame* GetFrame() const {return m_pFrame;};
+	void SetFrame(CVideoDeviceChildFrame* pFrame) {m_pFrame = pFrame;};
+	static BOOL CreateCheckYearMonthDayDir(CTime Time, CString sBaseDir, CString& sYearMonthDayDir);
+
+	// Open Dx Video Device
+	void OpenDxVideoDevice(int nId, CString sDevicePathName, CString sDeviceName);
+
+	// Open Network Video Device
+	void OpenNetVideoDevice(CHostPortDlg* pDlg);	// never fails
+	BOOL OpenNetVideoDevice(CString sAddress);		// only fails if sAddress has not the correct format
+
+	// Connect to the chosen Networking Type and Mode
 	void ConnectHttp();
 	void ConnectRtsp();
 

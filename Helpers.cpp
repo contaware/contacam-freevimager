@@ -2853,7 +2853,7 @@ CString GetUuidCString()
 		return _T("");
 }
 
-int __cdecl CompareNatural(CString * pstr1, CString * pstr2)
+int __cdecl CompareNatural(const CString* pstr1, const CString* pstr2)
 {
 	if (pstr1 == NULL || pstr2 == NULL)
 		return 0;
