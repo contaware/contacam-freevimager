@@ -548,68 +548,69 @@ public:
 	// ATTENTION: DO NOT CHANGE THE ASSOCIATED NUMBERS!
 	// (SP: Server Push, CP: Client Poll, RTSP: Realtime streaming protocol)
 	typedef enum {
-		OTHERONE_SP = 0,		// Other HTTP motion jpeg devices
-		OTHERONE_CP,			// Other HTTP jpeg snapshots devices
-		AXIS_SP,				// Axis HTTP motion jpeg
-		AXIS_CP,				// Axis HTTP jpeg snapshots
-		PANASONIC_SP,			// Panasonic HTTP motion jpeg
-		PANASONIC_CP,			// Panasonic HTTP jpeg snapshots
-		PIXORD_SP,				// Pixord HTTP motion jpeg
-		PIXORD_CP,				// Pixord HTTP jpeg snapshots
-		EDIMAX_SP,				// Edimax HTTP motion jpeg
-		EDIMAX_CP,				// Edimax HTTP jpeg snapshots
-		TPLINK_SP,				// TP-Link HTTP motion jpeg
-		TPLINK_CP,				// TP-Link HTTP jpeg snapshots
-		FOSCAM_SP,				// Foscam HTTP motion jpeg
-		FOSCAM_CP,				// Foscam HTTP jpeg snapshots
+		OTHERONE_SP = 0,				// Other HTTP motion jpeg devices
+		OTHERONE_CP,					// Other HTTP jpeg snapshots devices
+		AXIS_SP,						// Axis HTTP motion jpeg
+		AXIS_CP,						// Axis HTTP jpeg snapshots
+		PANASONIC_SP,					// Panasonic HTTP motion jpeg
+		PANASONIC_CP,					// Panasonic HTTP jpeg snapshots
+		PIXORD_SP,						// Pixord HTTP motion jpeg
+		PIXORD_CP,						// Pixord HTTP jpeg snapshots
+		EDIMAX_SP,						// Edimax HTTP motion jpeg
+		EDIMAX_CP,						// Edimax HTTP jpeg snapshots
+		TPLINK_SP,						// TP-Link HTTP motion jpeg
+		TPLINK_CP,						// TP-Link HTTP jpeg snapshots
+		FOSCAM_SP,						// Foscam HTTP motion jpeg
+		FOSCAM_CP,						// Foscam HTTP jpeg snapshots
 		// Add more http devices here...
-		URL_RTSP = 1000,		// URL RTSP
-		OTHERONE_RTSP = 1010,	// Other RTSP device
-		SEVENLINKS_RTSP = 1015,	// 7Links RTSP
-		ABUS_RTSP = 1020,		// Abus RTSP
-		ACTI_RTSP = 1030,		// ACTi RTSP
-		AMCREST_RTSP = 1035,	// Amcrest RTSP
-		ARECONT_RTSP = 1040,	// Arecont Vision RTSP
-		AXIS_RTSP = 1050,		// Axis RTSP
-		BOSCH_RTSP = 1060,		// Bosch RTSP
-		CANON_RTSP = 1070,		// Canon RTSP
-		DLINK_LIVE1_RTSP = 1080,// D-Link live1.sdp RTSP
-		DLINK_PLAY1_RTSP = 1081,// D-Link play1.sdp RTSP
-		DAHUA_RTSP = 1090,		// Dahua RTSP
-		DIGOO_RTSP = 1100,		// Digoo RTSP
-		EDIMAX_RTSP = 1110,		// Edimax RTSP
-		FALCONEYE_RTSP = 1115,	// FalconEye RTSP
-		FOSCAM_RTSP = 1120,		// Foscam RTSP
-		GEMBIRD_RTSP = 1123,	// Gembird RTSP
-		GEOVISION_RTSP = 1125,	// GeoVision RTSP
-		HIKAM_RTSP = 1128,		// HiKam RTSP
-		HIKVISION_RTSP = 1130,	// Hikvision RTSP
-		KUCAM_RTSP = 1135,		// Kucam RTSP
-		LINKSYS_RTSP = 1140,	// Linksys RTSP
-		LOGITECH_RTSP = 1150,	// Logitech RTSP
-		MONACOR_RTSP = 1154,	// Monacor 3MP/4MP/5MP/.. Series RTSP
-		MONACOR_2MP_RTSP = 1155,// Monacor 2MP Series RTSP
-		NEXGADGET_RTSP = 1157,	// NexGadget RTSP
-		PANASONIC_RTSP = 1160,	// Panasonic RTSP
-		PIXORD_RTSP = 1170,		// Pixord RTSP
-		PLANET_RTSP = 1180,		// Planet RTSP
-		SAMSUNG_RTSP = 1190,	// Samsung RTSP
-		SONY_RTSP = 1200,		// Sony RTSP
-		SRICAM_RTSP = 1205,		// Sricam RTSP
-		TOSHIBA_RTSP = 1210,	// Toshiba RTSP
-		TPLINK_RTSP = 1220,		// TP-Link RTSP
-		TRENDNET_RTSP = 1230,	// TrendNet RTSP
-		UBIQUITI_RTSP = 1235,	// Ubiquiti RTSP
-		UOKOO_RTSP = 1237,		// Uokoo RTSP
-		VIVOTEK_RTSP = 1240,	// Vivotek RTSP
-		VSTARCAM_RTSP = 1242,	// VStarCam RTSP
-		WANSVIEW_RTSP = 1244,	// Wansview RTSP
-		XIAOMI_RTSP = 1245,		// Xiaomi RTSP
-		YCAM_RTSP = 1250,		// Y-cam RTSP
-		ZAVIO_RTSP = 1255,		// Zavio RTSP
-		ZMODO_RTSP = 1260,		// Zmodo RTSP
+		URL_RTSP = 1000,				// URL RTSP
+		OTHERONE_RTSP = 1010,			// Other RTSP device
+		SEVENLINKS_RTSP = 1015,			// 7Links RTSP
+		ABUS_RTSP = 1020,				// Abus RTSP
+		ACTI_RTSP = 1030,				// ACTi RTSP
+		AMCREST_RTSP = 1035,			// Amcrest RTSP
+		ARECONT_RTSP = 1040,			// Arecont Vision RTSP
+		AXIS_RTSP = 1050,				// Axis RTSP
+		BOSCH_RTSP = 1060,				// Bosch RTSP
+		CANON_RTSP = 1070,				// Canon RTSP
+		DLINK_LIVE1_RTSP = 1080,		// D-Link live1.sdp RTSP
+		DLINK_PLAY1_RTSP = 1081,		// D-Link play1.sdp RTSP
+		DAHUA_RTSP = 1090,				// Dahua RTSP
+		DIGOO_RTSP = 1100,				// Digoo RTSP
+		EDIMAX_RTSP = 1110,				// Edimax RTSP
+		FALCONEYE_RTSP = 1115,			// FalconEye RTSP
+		FOSCAM_RTSP = 1120,				// Foscam RTSP
+		GEMBIRD_RTSP = 1123,			// Gembird RTSP
+		GEOVISION_RTSP = 1125,			// GeoVision RTSP
+		HIKAM_RTSP = 1128,				// HiKam RTSP
+		HIKVISION_RTSP = 1130,			// Hikvision RTSP
+		IPWEBCAM_ANDROID_RTSP = 1132,	// IP Webcam (Pro) for Android RTSP
+		KUCAM_RTSP = 1135,				// Kucam RTSP
+		LINKSYS_RTSP = 1140,			// Linksys RTSP
+		LOGITECH_RTSP = 1150,			// Logitech RTSP
+		MONACOR_RTSP = 1154,			// Monacor 3MP/4MP/5MP/.. Series RTSP
+		MONACOR_2MP_RTSP = 1155,		// Monacor 2MP Series RTSP
+		NEXGADGET_RTSP = 1157,			// NexGadget RTSP
+		PANASONIC_RTSP = 1160,			// Panasonic RTSP
+		PIXORD_RTSP = 1170,				// Pixord RTSP
+		PLANET_RTSP = 1180,				// Planet RTSP
+		SAMSUNG_RTSP = 1190,			// Samsung RTSP
+		SONY_RTSP = 1200,				// Sony RTSP
+		SRICAM_RTSP = 1205,				// Sricam RTSP
+		TOSHIBA_RTSP = 1210,			// Toshiba RTSP
+		TPLINK_RTSP = 1220,				// TP-Link RTSP
+		TRENDNET_RTSP = 1230,			// TrendNet RTSP
+		UBIQUITI_RTSP = 1235,			// Ubiquiti RTSP
+		UOKOO_RTSP = 1237,				// Uokoo RTSP
+		VIVOTEK_RTSP = 1240,			// Vivotek RTSP
+		VSTARCAM_RTSP = 1242,			// VStarCam RTSP
+		WANSVIEW_RTSP = 1244,			// Wansview RTSP
+		XIAOMI_RTSP = 1245,				// Xiaomi RTSP
+		YCAM_RTSP = 1250,				// Y-cam RTSP
+		ZAVIO_RTSP = 1255,				// Zavio RTSP
+		ZMODO_RTSP = 1260,				// Zmodo RTSP
 		// Add more rtsp devices here...
-		LAST_DEVICE				// Placeholder for range check
+		LAST_DEVICE						// Placeholder for range check
 	} NetworkDeviceTypeMode;
 
 	// General Functions
