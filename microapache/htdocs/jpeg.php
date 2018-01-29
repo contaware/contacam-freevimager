@@ -37,7 +37,7 @@ if (isset($_GET['backuri'])) {
 	echo "<br/>\n";
 	echo "<div style=\"text-align: center\">\n";
 	echo "<span class=\"globalbuttons\">";
-	echo "<a href=\"" . htmlspecialchars($_GET['backuri']) . "\">&#x274c;</a>";
+	echo "<a style=\"font-size: 18px;\" href=\"" . htmlspecialchars($_GET['backuri']) . "\">&#x2191;</a>";
 	echo "</span>\n";
 	echo "</div>\n";
 }

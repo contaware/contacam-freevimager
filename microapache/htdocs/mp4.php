@@ -88,13 +88,19 @@ if ($prevkey >= 0) {
 	$prevrequesturi = htmlspecialchars($prevrequesturi);
 	echo "<a href=\"javascript:;\" onclick=\"parent.window.name = '" . $_GET["$prevkey"] . "'; window.location.href = '" . $prevrequesturi . "'; return false;\">&lt;</a>&nbsp;";
 }
-if (isset($_GET['backuri']))
-	echo "<a href=\"" . htmlspecialchars($_GET['backuri']) . "\">&#x274c;</a>&nbsp;";
+else {
+	echo "<a style=\"color: #c0c0c0;\" href=\"javascript:;\" onclick=\"return false;\">&lt;</a>&nbsp;";
+}
 if ($nextkey <= $lastkey) {
 	$nextrequesturi = str_replace($currentmp4 . '.mp4', $_GET["$nextkey"] . '.mp4', $_SERVER['REQUEST_URI']);
 	$nextrequesturi = htmlspecialchars($nextrequesturi);
 	echo "<a href=\"javascript:;\" onclick=\"parent.window.name = '" . $_GET["$nextkey"] . "'; window.location.href = '" . $nextrequesturi . "'; return false;\">&gt;</a>&nbsp;";
 }
+else {
+	echo "<a style=\"color: #c0c0c0;\" href=\"javascript:;\" onclick=\"return false;\">&gt;</a>&nbsp;";
+}
+if (isset($_GET['backuri']))
+	echo "<a style=\"font-size: 18px;\" href=\"" . htmlspecialchars($_GET['backuri']) . "\">&#x2191;</a>&nbsp;";
 echo "<a href=\"javascript:;\" onclick=\"playRate(0.25);\">0.25x</a>&nbsp;";
 echo "<a href=\"javascript:;\" onclick=\"playRate(1.0);\">1.0x</a>&nbsp;";
 echo "<a style=\"font-size: 16px;\" href=\"download.php?file=" . urlencode($filename) . "\">&#x1f4be;</a>";
