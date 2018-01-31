@@ -238,8 +238,19 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		ASSERT(m_bWorking);
 
 		// First & Last Up-Times
-		DWORD dwFirstUpTime = m_pFrameList->GetHead()->GetUpTime();
-		DWORD dwLastUpTime = m_pFrameList->GetTail()->GetUpTime();
+		DWORD dwFirstUpTime;
+		DWORD dwLastUpTime;
+		if (m_pFrameList->GetHead() && m_pFrameList->GetTail())
+		{
+			dwFirstUpTime = m_pFrameList->GetHead()->GetUpTime();
+			dwLastUpTime = m_pFrameList->GetTail()->GetUpTime();
+		}
+		else if (m_pFrameList->GetHead() && !m_pFrameList->GetTail())
+			dwLastUpTime = dwFirstUpTime = m_pFrameList->GetHead()->GetUpTime();
+		else if (!m_pFrameList->GetHead() && m_pFrameList->GetTail())
+			dwFirstUpTime = dwLastUpTime = m_pFrameList->GetTail()->GetUpTime();
+		else
+			dwFirstUpTime = dwLastUpTime = ::timeGetTime();
 
 		// Find a good Reference Time and make the First Time string
 		// (if new first frame is older than last frame from previous detection
@@ -289,10 +300,16 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		}
 		CString sMovDetSavesCount;
 		sMovDetSavesCount.Format(_T("%d"), nMovDetSavesCount);
-		if ((m_pFrameList->GetHead()->GetUserFlag() & FRAME_USER_FLAG_START) == FRAME_USER_FLAG_START)
-			sMovDetSavesCount = _T("[") + sMovDetSavesCount;
-		if ((m_pFrameList->GetTail()->GetUserFlag() & FRAME_USER_FLAG_END) == FRAME_USER_FLAG_END)
-			sMovDetSavesCount = sMovDetSavesCount + _T("]");
+		if (m_pFrameList->GetHead())
+		{
+			if ((m_pFrameList->GetHead()->GetUserFlag() & FRAME_USER_FLAG_START) == FRAME_USER_FLAG_START)
+				sMovDetSavesCount = _T("[") + sMovDetSavesCount;
+		}
+		if (m_pFrameList->GetTail())
+		{
+			if ((m_pFrameList->GetTail()->GetUserFlag() & FRAME_USER_FLAG_END) == FRAME_USER_FLAG_END)
+				sMovDetSavesCount = sMovDetSavesCount + _T("]");
+		}
 
 		// Detection creation flags and File Names
 		BOOL bMakeVideo = m_pDoc->m_bSaveVideoMovementDetection;
@@ -330,8 +347,9 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		BOOL bFirstGIFSave;
 		RGBQUAD* pGIFColors = NULL;
 		double dCalcFrameRate = 1.0;
-		if (nFrames > 1)
-			dCalcFrameRate = (1000.0 * (nFrames - 1)) / (double)(dwLastUpTime - dwFirstUpTime);
+		DWORD dwFramesTimeMs = dwLastUpTime - dwFirstUpTime;
+		if (nFrames > 1 && dwFramesTimeMs > 0U)
+			dCalcFrameRate = (1000.0 * (nFrames - 1)) / (double)dwFramesTimeMs;
 		if (m_pDoc->m_dEffectiveFrameRate > 0.0)
 		{
 			if (dCalcFrameRate / m_pDoc->m_dEffectiveFrameRate < MOVDET_SAVE_MIN_FRAMERATE_RATIO)
@@ -364,7 +382,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			// Video
 			if (bMakeVideo)
 			{
-				VideoSaveDib = *pDib;
+				if (pDib)
+					VideoSaveDib = *pDib;
 
 				// Add Frame Tags
 				if (m_pDoc->m_bShowFrameTime)
@@ -407,7 +426,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 										false);	// No interleave
 
 					// Add Audio Samples
-					if (m_pDoc->m_bCaptureAudio)
+					if (m_pDoc->m_bCaptureAudio && pDib)
 					{
 						POSITION posUserBuf = pDib->m_UserList.GetHeadPosition();
 						while (posUserBuf)
@@ -462,14 +481,16 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				// Free unused memory
 				if (pDib != pDibPrev)
 				{
-					delete pDib;
+					if (pDib)
+						delete pDib;
 					m_pFrameList->SetAt(currentpos, NULL);
 				}
 			}
 			// Free memory
 			else
 			{
-				delete pDib;
+				if (pDib)
+					delete pDib;
 				m_pFrameList->SetAt(currentpos, NULL);
 			}
 
@@ -551,7 +572,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 
 		// Save time calculation
 		DWORD dwSaveTimeMs = ::timeGetTime() - dwStartUpTime;
-		DWORD dwFramesTimeMs = dwLastUpTime - dwFirstUpTime;
 		if (dwFramesTimeMs < dwSaveTimeMs)
 		{
 			if (g_nLogLevel > 0 || dwFramesTimeMs > MOVDET_MIN_FRAMES_TIME_CHECK_MSEC)
@@ -682,21 +702,24 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors
 	if (!pDibForPalette1)
 		pDibForPalette1 = m_pFrameList->GetHead();
 	LoadDetFrame(pDibForPalette1);
-	DibForPalette1 = *pDibForPalette1;
+	if (pDibForPalette1)
+		DibForPalette1 = *pDibForPalette1;
 	if (DibForPalette1.IsCompressed() || DibForPalette1.GetBitCount() <= 8)
 		DibForPalette1.Decompress(32);
 	DibForPalette1.StretchBits(m_pDoc->m_dwAnimatedGifWidth, m_pDoc->m_dwAnimatedGifHeight);
 	if (!pDibForPalette2)
 		pDibForPalette2 = m_pFrameList->GetHead();
 	LoadDetFrame(pDibForPalette2);
-	DibForPalette2 = *pDibForPalette2;
+	if (pDibForPalette2)
+		DibForPalette2 = *pDibForPalette2;
 	if (DibForPalette2.IsCompressed() || DibForPalette2.GetBitCount() <= 8)
 		DibForPalette2.Decompress(32);
 	DibForPalette2.StretchBits(m_pDoc->m_dwAnimatedGifWidth, m_pDoc->m_dwAnimatedGifHeight);
 	if (!pDibForPalette3)
 		pDibForPalette3 = m_pFrameList->GetHead();
 	LoadDetFrame(pDibForPalette3);
-	DibForPalette3 = *pDibForPalette3;
+	if (pDibForPalette3)
+		DibForPalette3 = *pDibForPalette3;
 	if (DibForPalette3.IsCompressed() || DibForPalette3.GetBitCount() <= 8)
 		DibForPalette3.Decompress(32);
 	DibForPalette3.StretchBits(m_pDoc->m_dwAnimatedGifWidth, m_pDoc->m_dwAnimatedGifHeight);
@@ -840,25 +863,28 @@ __forceinline void CVideoDeviceDoc::CSaveFrameListThread::To255Colors(	CDib* pDi
 																		DWORD dwRefUpTime,
 																		const CString& sMovDetSavesCount)
 {
-	// Make sure we have a true RGB format
-	if (pDib->IsCompressed() || pDib->GetBitCount() <= 8)
-		pDib->Decompress(32);
-
-	// Resize
-	pDib->StretchBits(m_pDoc->m_dwAnimatedGifWidth, m_pDoc->m_dwAnimatedGifHeight);
-
-	// Add Frame Tags
-	if (m_pDoc->m_bShowFrameTime)
+	if (pDib && pGIFColors)
 	{
-		AddFrameTime(pDib, RefTime, dwRefUpTime, m_pDoc->m_nRefFontSize);
-		AddFrameCount(pDib, sMovDetSavesCount, m_pDoc->m_nRefFontSize);
-	}
+		// Make sure we have a true RGB format
+		if (pDib->IsCompressed() || pDib->GetBitCount() <= 8)
+			pDib->Decompress(32);
 
-	// Convert to 8 bpp
-	if (pDib->GetBitCount() > 8)
-	{
-		pDib->CreatePaletteFromColors(255, pGIFColors); // One index for transparency!
-		pDib->ConvertTo8bitsErrDiff(pDib->GetPalette());
+		// Resize
+		pDib->StretchBits(m_pDoc->m_dwAnimatedGifWidth, m_pDoc->m_dwAnimatedGifHeight);
+
+		// Add Frame Tags
+		if (m_pDoc->m_bShowFrameTime)
+		{
+			AddFrameTime(pDib, RefTime, dwRefUpTime, m_pDoc->m_nRefFontSize);
+			AddFrameCount(pDib, sMovDetSavesCount, m_pDoc->m_nRefFontSize);
+		}
+
+		// Convert to 8 bpp
+		if (pDib->GetBitCount() > 8)
+		{
+			pDib->CreatePaletteFromColors(255, pGIFColors); // One index for transparency!
+			pDib->ConvertTo8bitsErrDiff(pDib->GetPalette());
+		}
 	}
 }
 
@@ -879,7 +905,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 	BOOL res = FALSE;
 
 	// Check
-	if (!pGIFColors)
+	if (!pGIFSaveDib || !pGIFDib || !ppGIFDibPrev || !(*ppGIFDibPrev) || !pbFirstGIFSave || !pGIFColors)
 		return FALSE;
 
 	// Is First Frame To Save?

@@ -534,12 +534,12 @@ extern "C" void my_handle_aborts(int signal)
 {
 	if (signal == SIGABRT)
 	{
-		::LogLine(_T("%s"), ML_STRING(1818, "Aborting") + _T(" ") + APPNAME_NOEXT);
+		LogLine(_T("%s"), ML_STRING(1818, "Aborting") + _T(" ") + APPNAME_NOEXT);
 #ifdef VIDEODEVICEDOC
-		if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
+		if (!((CUImagerApp*)AfxGetApp())->m_bServiceProcess)
 #endif
 		{
-			::ShellExecute(NULL, _T("open"), g_sLogFileName, NULL, NULL, SW_SHOWNORMAL);
+			ShellExecute(NULL, _T("open"), g_sLogFileName, NULL, NULL, SW_SHOWNORMAL);
 		}
 	}
 }
@@ -650,7 +650,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// Handle the abort() calls
 		signal(SIGABRT, &my_handle_aborts);
 
-		// Don't print the abort message and don't call Dr. Watson to make a crash dump
+		// Don't show the abort message box and don't call Dr. Watson to make a crash dump
 		_set_abort_behavior(0, _WRITE_ABORT_MSG | _CALL_REPORTFAULT);
 
 		// Use registry?
