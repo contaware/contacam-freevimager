@@ -20,6 +20,10 @@
 ////////////////////////////////////////////////////////////////////////////
 // Version History:
 //
+// Version 01.02.2018 by Oliver Pfister
+// ====================================
+// - Update a pane width only if the text is not empty, see AutoFitPane()
+//
 // Version 3.1 - 24 Jun 2004
 // =========================
 // - Updated to support Unicode builds
@@ -322,11 +326,16 @@ void CStatusBarACT::AutoFitPane(int nIndex)
       sText = sText.Left(nPos);
     dc.DrawText(sText, &rc, DT_CALCRECT | DT_SINGLELINE | DT_NOPREFIX);
     dc.SelectObject(pFontOld);
-    int nWidth;
-    UINT nID, nStyle;
-    GetPaneInfo(nIndex, nID, nStyle, nWidth);
-    nWidth = rc.Width();
-    SetPaneInfo(nIndex, nID, nStyle, nWidth);
+
+	// Update the width if the text is not empty
+	if (rc.Width() > 0)
+	{
+		int nWidth;
+		UINT nID, nStyle;
+		GetPaneInfo(nIndex, nID, nStyle, nWidth);
+		nWidth = rc.Width();
+		SetPaneInfo(nIndex, nID, nStyle, nWidth);
+	}
 
     // need to tell the tooltips that the 'tools' have moved
     UpdateTooltipRects();

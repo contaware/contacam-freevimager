@@ -20,6 +20,10 @@
 ////////////////////////////////////////////////////////////////////////////
 // Version History:
 //
+// Version 01.02.2018 by Oliver Pfister
+// ====================================
+// - Update a pane width only if the text is not empty, see AutoFitPane()
+//
 // Version 3.1 - 24 Jun 2004
 // =========================
 // - Updated to support Unicode builds

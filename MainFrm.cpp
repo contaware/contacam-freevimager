@@ -2549,7 +2549,7 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 	else if (nIDEvent == ID_TIMER_1SEC)
 	{
 		// Text flash state flag
-		static BOOL bFlashState = FALSE;
+		static int nFlashState = 0;
 
 		// Get overall movement detection buffers stats
 		CString sDetBufsStats;
@@ -2577,14 +2577,24 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		sCPUUsage.Format(_T("CPU: %0.1f%%"), ::GetCPUUsage());
 
 		// Show overall movement detection buffers stats
-		if (bDetBufsSizeAlert && bFlashState)
-			GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_DETBUFS_SIZE), _T(" ") + sDetBufsStats + _T("!"));
+		if (bDetBufsSizeAlert)
+		{
+			if (nFlashState == 2)
+				GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_DETBUFS_SIZE), _T(""));
+			else
+				GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_DETBUFS_SIZE), _T(" *** ") + sDetBufsStats + _T(" *** "));
+		}
 		else
 			GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_DETBUFS_SIZE), _T(" ") + sDetBufsStats + _T(" "));
-		
+
 		// Show HD Usage
-		if (bDiskStatsAlert && bFlashState)
-			GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_HD_USAGE), _T(" ") + sDiskStats + _T("!"));
+		if (bDiskStatsAlert)
+		{
+			if (nFlashState == 2)
+				GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_HD_USAGE), _T(""));
+			else
+				GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_HD_USAGE), _T(" *** ") + sDiskStats + _T(" *** "));
+		}
 		else
 			GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_HD_USAGE), _T(" ") + sDiskStats + _T(" "));
 
@@ -2684,7 +2694,7 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		}
 
 		// Toggle flash state
-		bFlashState = !bFlashState;
+		nFlashState = (nFlashState+1)%3;
 	}
 #endif
 	else if (nIDEvent == ID_TIMER_15SEC)
