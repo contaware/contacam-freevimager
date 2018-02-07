@@ -144,11 +144,9 @@ void CVideoDeviceDoc::CSaveFrameListThread::LoadDetFrame(CDib* pDib)
 		DWORD dwError;
 		if ((dwError = pDib->SharedMemoryToBits()) != ERROR_SUCCESS)
 		{
-			::LogLine(_T("SharedMemoryToBits() failed with error code: 0x%08X"), dwError);
-			CString sDetBufsStats;
-			::AfxGetMainFrame()->GetDetBufsStats(sDetBufsStats);
-			::LogLine(_T("%s"), sDetBufsStats);
-			abort();
+			// TODO: if it fails, it fails for hundreds of frames... think about a better handling here!!
+			::LogLine(_T("%s"), ML_STRING(1817, "OUT OF MEMORY: dropping movement detection frames (error code 0x%08X)"), dwError);
+			::AfxGetMainFrame()->LogSysUsage();
 		}
 	}
 }
@@ -352,6 +350,9 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			dCalcFrameRate = (1000.0 * (nFrames - 1)) / (double)dwFramesTimeMs;
 		if (m_pDoc->m_dEffectiveFrameRate > 0.0)
 		{
+			// When there are multiple frame drops one after the other or in case of reconnection
+			// the framerate calculated through time difference is a lot smaller than the
+			// effective framerate. If that happens we choose the effective framerate!
 			if (dCalcFrameRate / m_pDoc->m_dEffectiveFrameRate < MOVDET_SAVE_MIN_FRAMERATE_RATIO)
 				dCalcFrameRate = m_pDoc->m_dEffectiveFrameRate;
 		}
@@ -2153,10 +2154,6 @@ end_of_software_detection:
 			::GetFileTime(sDetectionTriggerFileName, NULL, NULL, &m_DetectionTriggerLastWriteTime);
 	}
 
-	// Store frames?
-	BOOL bStoreFrames =	dwVideoProcessorMode &&
-						(m_bSaveVideoMovementDetection || m_bSaveAnimGIFMovementDetection);
-
 	// If Movement
 	BOOL bMarkStart = FALSE;
 	if (bSoftwareDetectionMovement || bExternalFileTriggerMovement)
@@ -2218,11 +2215,14 @@ end_of_software_detection:
 	}
 
 	// If in detection state
+	BOOL bStoreFrame = dwVideoProcessorMode && (m_bSaveVideoMovementDetection || m_bSaveAnimGIFMovementDetection);
+	BOOL bDropFrame = ((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames;
+	DWORD dwError = ERROR_SUCCESS;
 	if (m_bDetectingMovement)
 	{
 		// Add new frame
-		if (bStoreFrames)
-			AddNewFrameToNewestList(bMarkStart, pDib);
+		if (bStoreFrame && !bDropFrame)
+			dwError = AddNewFrameToNewestList(bMarkStart, pDib);
 
 		// Check if end of detection period
 		if ((pDib->GetUpTime() - m_dwLastDetFrameUpTime) > (DWORD)m_nMilliSecondsRecAfterMovementEnd)
@@ -2243,12 +2243,27 @@ end_of_software_detection:
 				GetNewestMovementDetectionsListCount() >= m_nDetectionMaxFrames)
 			SaveFrameList(FALSE);
 	}
-	else if (bStoreFrames)
+	else if (bStoreFrame)
 	{
 		// Add new frame and shrink to a size of m_nMilliSecondsRecBeforeMovementBegin
-		AddNewFrameToNewestListAndShrink(pDib);
+		if (!bDropFrame)
+			dwError = AddNewFrameToNewestListAndShrink(pDib);
 	}
 	else
+		ClearNewestFrameList();
+
+	// Error: disable frames storing and save the frame list!
+	//        Frames storing is re-enabled in CMainFrame::OnTimer()
+	//        when the memory usage is normalized.
+	if (dwError != ERROR_SUCCESS)
+	{
+		((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = bDropFrame = TRUE;
+		::LogLine(_T("%s"), ML_STRING(1817, "OUT OF MEMORY: dropping movement detection frames (error code 0x%08X)"), dwError);
+		::AfxGetMainFrame()->LogSysUsage();
+	}
+
+	// Drop frames
+	if (bDropFrame)
 		ClearNewestFrameList();
 }
 
@@ -8472,14 +8487,45 @@ __forceinline int CVideoDeviceDoc::GetNewestMovementDetectionsListCount()
 	}
 }
 
+__forceinline void CVideoDeviceDoc::OneEmptyFrameList()
+{
+	::EnterCriticalSection(&m_csMovementDetectionsList);
+	if (m_MovementDetectionsList.IsEmpty())
+	{
+		CDib::LIST* pNewList = new CDib::LIST;
+		if (pNewList)
+			m_MovementDetectionsList.AddTail(pNewList);
+	}
+	else
+	{
+		while (m_MovementDetectionsList.GetCount() > 1)
+		{
+			CDib::LIST* pFrameList = m_MovementDetectionsList.GetTail();
+			if (pFrameList)
+			{
+				CDib::FreeList(*pFrameList);
+				delete pFrameList;
+			}
+			m_MovementDetectionsList.RemoveTail();
+		}
+		CDib::LIST* pFrameList = m_MovementDetectionsList.GetHead();
+		if (pFrameList)
+			CDib::FreeList(*pFrameList);
+	}
+	::LeaveCriticalSection(&m_csMovementDetectionsList);
+}
+
 __forceinline void CVideoDeviceDoc::ClearMovementDetectionsList()
 {
 	::EnterCriticalSection(&m_csMovementDetectionsList);
 	while (!m_MovementDetectionsList.IsEmpty())
 	{
 		CDib::LIST* pFrameList = m_MovementDetectionsList.GetTail();
-		ClearFrameList(pFrameList);
-		delete pFrameList;
+		if (pFrameList)
+		{
+			CDib::FreeList(*pFrameList);
+			delete pFrameList;
+		}
 		m_MovementDetectionsList.RemoveTail();
 	}
 	::LeaveCriticalSection(&m_csMovementDetectionsList);
@@ -8491,8 +8537,11 @@ __forceinline void CVideoDeviceDoc::RemoveOldestMovementDetectionList()
 	if (!m_MovementDetectionsList.IsEmpty())
 	{
 		CDib::LIST* pFrameList = m_MovementDetectionsList.GetHead();
-		ClearFrameList(pFrameList);
-		delete pFrameList;
+		if (pFrameList)
+		{
+			CDib::FreeList(*pFrameList);
+			delete pFrameList;
+		}
 		m_MovementDetectionsList.RemoveHead();
 	}
 	::LeaveCriticalSection(&m_csMovementDetectionsList);
@@ -8529,8 +8578,9 @@ __forceinline CDib* CVideoDeviceDoc::AllocDetFrame(CDib* pDib)
 	return pNewDib;
 }
 
-__forceinline void CVideoDeviceDoc::AddNewFrameToNewestList(BOOL bMarkStart, CDib* pDib)
+__forceinline DWORD CVideoDeviceDoc::AddNewFrameToNewestList(BOOL bMarkStart, CDib* pDib)
 {
+	DWORD dwError = 0x20000010;	// custom error code
 	if (pDib)
 	{
 		::EnterCriticalSection(&m_csMovementDetectionsList);
@@ -8554,17 +8604,10 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestList(BOOL bMarkStart, CDi
 				if (pNewDib)
 				{
 					// Add the new frame
-					DWORD dwError;
-					if ((dwError = pNewDib->BitsToSharedMemory()) != ERROR_SUCCESS)
-					{
-						::LogLine(_T("BitsToSharedMemory() failed with error code: 0x%08X"), dwError);
-						CString sDetBufsStats;
-						::AfxGetMainFrame()->GetDetBufsStats(sDetBufsStats);
-						::LogLine(_T("%s"), sDetBufsStats);
-						::LogLine(_T("%s"), ML_STRING(1817, "OUT OF MEMORY: increase the Page File size, add more RAM, lower the \"Split detection files longer than\" value for all cameras"));
-						abort();
-					}
-					pTail->AddTail(pNewDib);
+					if ((dwError = pNewDib->BitsToSharedMemory()) == ERROR_SUCCESS)
+						pTail->AddTail(pNewDib);
+					else
+						delete pNewDib;
 				}
 
 				// Mark start?
@@ -8581,10 +8624,12 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestList(BOOL bMarkStart, CDi
 		}
 		::LeaveCriticalSection(&m_csMovementDetectionsList);
 	}
+	return dwError;
 }
 
-__forceinline void CVideoDeviceDoc::AddNewFrameToNewestListAndShrink(CDib* pDib)
+__forceinline DWORD CVideoDeviceDoc::AddNewFrameToNewestListAndShrink(CDib* pDib)
 {
+	DWORD dwError = 0x20000011;	// custom error code
 	if (pDib)
 	{
 		::EnterCriticalSection(&m_csMovementDetectionsList);
@@ -8608,17 +8653,8 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestListAndShrink(CDib* pDib)
 				if (pNewDib)
 				{
 					// Add the new frame
-					DWORD dwError;
-					if ((dwError = pNewDib->BitsToSharedMemory()) != ERROR_SUCCESS)
-					{
-						::LogLine(_T("BitsToSharedMemory() failed with error code: 0x%08X"), dwError);
-						CString sDetBufsStats;
-						::AfxGetMainFrame()->GetDetBufsStats(sDetBufsStats);
-						::LogLine(_T("%s"), sDetBufsStats);
-						::LogLine(_T("%s"), ML_STRING(1817, "OUT OF MEMORY: increase the Page File size, add more RAM, lower the \"Split detection files longer than\" value for all cameras"));
-						abort();
-					}
-					pTail->AddTail(pNewDib);
+					if ((dwError = pNewDib->BitsToSharedMemory()) == ERROR_SUCCESS)
+						pTail->AddTail(pNewDib);
 
 					// Shrink to a size of m_nMilliSecondsRecBeforeMovementBegin
 					while (pTail->GetCount() > 1)
@@ -8632,11 +8668,16 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestListAndShrink(CDib* pDib)
 						}
 						pTail->RemoveHead();
 					}
+
+					// Free
+					if (dwError != ERROR_SUCCESS)
+						delete pNewDib;
 				}
 			}
 		}
 		::LeaveCriticalSection(&m_csMovementDetectionsList);
 	}
+	return dwError;
 }
 
 __forceinline void CVideoDeviceDoc::ShrinkNewestFrameList()

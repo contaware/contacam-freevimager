@@ -55,8 +55,10 @@ ContaCam Program
   recording. Like for the detection it would be easy to add the possibility
   to change that registry/ini file value from another program 
   (sambul7165@gmail.com)  
+- Snapshots with history always use the full size, never create thumbs history
+  (eginfo7@gruenefeld.de)
 
-
+  
 ContaCam Web Interface
 ----------------------
 - Number of detections in index.php at the bottom of each preview for

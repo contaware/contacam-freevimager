@@ -679,15 +679,14 @@ public:
 	__forceinline void SaveFrameList(BOOL bMarkEnd);				// Add new empty list to tail
 
 	// Detection list handling
-	__forceinline void ClearFrameList(CDib::LIST* pFrameList);		// Free all frames in list
 	__forceinline void ClearNewestFrameList();						// Free all frames in newest list
 	__forceinline void ShrinkNewestFrameList();						// Free oldest frames from newest frame list
 																	// making the list m_nMilliSecondsRecBeforeMovementBegin long
 	__forceinline int GetNewestMovementDetectionsListCount();		// Get the newest list's count
 	__forceinline CDib* AllocDetFrame(CDib* pDib);					// Allocate a new detection buffering frame
 																	// (copies also audio samples)
-	__forceinline void AddNewFrameToNewestList(BOOL bMarkStart, CDib* pDib);// Add new frame to newest list
-	__forceinline void AddNewFrameToNewestListAndShrink(CDib* pDib);// Add new frame to newest list leaving in the list
+	__forceinline DWORD AddNewFrameToNewestList(BOOL bMarkStart, CDib* pDib);// Add new frame to newest list
+	__forceinline DWORD AddNewFrameToNewestListAndShrink(CDib* pDib);// Add new frame to newest list leaving in the list
 																	// m_nMilliSecondsRecBeforeMovementBegin of frames
 																	
 	// Main Decode & Process Functions
@@ -1109,36 +1108,6 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
-
-__forceinline void CVideoDeviceDoc::ClearFrameList(CDib::LIST* pFrameList)
-{
-	if (pFrameList)
-		CDib::FreeList(*pFrameList);
-}
-
-__forceinline void CVideoDeviceDoc::OneEmptyFrameList()
-{
-	::EnterCriticalSection(&m_csMovementDetectionsList);
-	if (m_MovementDetectionsList.IsEmpty())
-	{
-		CDib::LIST* pNewList = new CDib::LIST;
-		if (pNewList)
-			m_MovementDetectionsList.AddTail(pNewList);
-	}
-	else
-	{
-		while (m_MovementDetectionsList.GetCount() > 1)
-		{
-			CDib::LIST* pFrameList = m_MovementDetectionsList.GetTail();
-			ClearFrameList(pFrameList);
-			delete pFrameList;
-			m_MovementDetectionsList.RemoveTail();
-		}
-		CDib::LIST* pFrameList = m_MovementDetectionsList.GetHead();
-		ClearFrameList(pFrameList);
-	}
-	::LeaveCriticalSection(&m_csMovementDetectionsList);
-}
 
 #endif
 

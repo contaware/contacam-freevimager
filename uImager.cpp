@@ -148,6 +148,7 @@ CUImagerApp::CUImagerApp()
 	m_bStartMicroApache = FALSE;
 	m_nMicroApachePort = MICROAPACHE_DEFAULT_PORT;
 	m_nMicroApachePortSSL = MICROAPACHE_DEFAULT_PORT_SSL;
+	m_bMovDetDropFrames = FALSE;
 	::InitializeCriticalSection(&m_csMovDetSaveReservation);
 	m_bSingleInstance = TRUE;
 	m_bServiceProcess = FALSE;

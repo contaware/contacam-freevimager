@@ -621,6 +621,10 @@ public:
 	CString	m_sMicroApacheCertFileSSL;
 	CString	m_sMicroApacheKeyFileSSL;
 
+	// Global flag indicating the necessity to drop
+	// movement detection frames in case of memory problems
+	volatile BOOL m_bMovDetDropFrames;
+
 	// Movement detection save reservation queue
 	typedef CList<DWORD,DWORD> MOVDETSAVERESERVATIONQUEUE;
 	MOVDETSAVERESERVATIONQUEUE m_MovDetSaveReservationQueue;

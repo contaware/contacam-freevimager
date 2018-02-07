@@ -147,10 +147,8 @@ public:
 	// Menu Positions
 	void InitMenuPositions(CDocument* pDoc = NULL);
 
-	// Overall movement detection buffers stats
-#ifdef VIDEODEVICEDOC
-	BOOL GetDetBufsStats(CString& sDetBufsStats);
-#endif
+	// Log system usage
+	void LogSysUsage();
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -230,8 +228,8 @@ protected:
 	void ChangeCoordinatesUnit();
 	static BOOL GetDiskStats(CString& sDiskStats, LPCTSTR lpszPath, int nMinDiskFreePermillion);
 	void PrintHeapBlocks(FILE* pf, WORD wFlags, __int64 Data, __int64 Overhead, __int64 Count);
-	void LogSysUsage();
 #ifdef VIDEODEVICEDOC
+	double GetMaxOverallDetectionQueueSizeGB();
 	void CleanupFileMenu(CMenu* pPopupMenu);
 	void PopulateCaptureMenu(CMenu* pPopupMenu);
 #endif
@@ -288,6 +286,7 @@ protected:
 	afx_msg LONG OnAutorunVideoDevices(WPARAM wparam, LPARAM lparam);
 	afx_msg void OnViewWeb();
 	afx_msg void OnViewFiles();
+	afx_msg void OnDetBufsUsageClick();
 	afx_msg void OnDetBufsSizeClick();
 #endif
 	DECLARE_MESSAGE_MAP()
