@@ -167,9 +167,9 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		m_pFrameList = NULL;
 		m_nNumFramesToSave = 0;
 		m_nSaveProgress = 100;
-		BOOL bPolling = TRUE;
-
+		
 		// Poll for work
+		BOOL bPolling = TRUE;
 		do
 		{
 			// Remove our old reservation
@@ -224,8 +224,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			::LeaveCriticalSection(&m_pDoc->m_csMovementDetectionsList);
 		}
 		while (bPolling);
-		ASSERT(m_pFrameList);
-		ASSERT(m_nNumFramesToSave > 0);
 
 		// First & Last Up-Times
 		DWORD dwFirstUpTime;
@@ -2244,8 +2242,7 @@ end_of_software_detection:
 				ShrinkNewestFrameList(); // shrink to a size of m_nMilliSecondsRecBeforeMovementBegin
 		}
 		// Maximum number of frames reached?
-		else if (m_SaveFrameListThread.IsAlive() &&
-				GetNewestMovementDetectionsListCount() >= m_nDetectionMaxFrames)
+		else if (GetNewestMovementDetectionsListCount() >= m_nDetectionMaxFrames)
 			SaveFrameList(FALSE);
 	}
 	else if (bStoreFrame)
@@ -3309,7 +3306,6 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 				if (m_pDoc->m_bWatchDogVideoAlarm						&&
 					m_pDoc->m_dwVideoProcessorMode						&&
 					m_pDoc->m_bDetectingMovement						&&
-					m_pDoc->m_SaveFrameListThread.IsAlive()				&&
 					m_pDoc->GetNewestMovementDetectionsListCount() > 0	&&
 					(m_pDoc->m_bSaveVideoMovementDetection				||
 					m_pDoc->m_bSaveAnimGIFMovementDetection))
