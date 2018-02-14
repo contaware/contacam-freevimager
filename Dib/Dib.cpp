@@ -462,6 +462,10 @@ DWORD CDib::SharedMemoryToBits()
 	LPBYTE p = (LPBYTE)region;
 	if (GetImageSize() > 0)
 	{
+		// Before allocating make sure nothing was left over
+		// from a previously failed SharedMemoryToBits() call
+		if (m_pBits)
+			BIGFREE(m_pBits);
 		m_pBits = (LPBYTE)BIGALLOC(GetImageSize());
 		if (!m_pBits)
 		{
@@ -479,6 +483,10 @@ DWORD CDib::SharedMemoryToBits()
 		CUserBuf& UserBuf = m_UserList.GetNext(pos);
 		if (UserBuf.m_dwSize > 0)
 		{
+			// Before allocating make sure nothing was left over
+			// from a previously failed SharedMemoryToBits() call
+			if (UserBuf.m_pBuf)
+				av_free(UserBuf.m_pBuf);
 			UserBuf.m_pBuf = (LPBYTE)av_malloc(UserBuf.m_dwSize);
 			if (!UserBuf.m_pBuf)
 			{
