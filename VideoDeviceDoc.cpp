@@ -136,18 +136,16 @@ BOOL CVideoDeviceDoc::CreateCheckYearMonthDayDir(CTime Time, CString sBaseDir, C
 	return TRUE;
 }
 
-void CVideoDeviceDoc::CSaveFrameListThread::LoadDetFrame(CDib* pDib)
+void CVideoDeviceDoc::CSaveFrameListThread::LoadDetFrame(CDib* pDib, DWORD& dwUpdatedIfErrorNoSuccess)
 {
 	// Move back the bits from shared memory
+	// Note: the CSaveFrameListThread::Work() code is robust and also if SharedMemoryToBits()
+	//       fails the program doesn't crash, it just drops the frame and the audio samples     
 	if (pDib && pDib->m_hBitsSharedMemory)
 	{
 		DWORD dwError;
 		if ((dwError = pDib->SharedMemoryToBits()) != ERROR_SUCCESS)
-		{
-			// TODO: if it fails, it fails for hundreds of frames... think about a better handling here!!
-			::LogLine(_T("%s"), ML_STRING(1817, "OUT OF MEMORY: dropping movement detection frames (error code 0x%08X)"), dwError);
-			::AfxGetMainFrame()->LogSysUsage();
-		}
+			dwUpdatedIfErrorNoSuccess = dwError;
 	}
 }
 
@@ -336,6 +334,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		POSITION nextpos = m_pFrameList->GetHeadPosition();
 		POSITION currentpos;
 		int nFrames = m_nNumFramesToSave;
+		DWORD dwLoadDetFrameErrorCode = ERROR_SUCCESS;
 		double dDelayMul = 1.0;
 		double dSpeedMul = 1.0;
 		CDib VideoSaveDib;
@@ -378,7 +377,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			// Get Frame
 			currentpos = nextpos;
 			pDib = m_pFrameList->GetNext(nextpos);
-			LoadDetFrame(pDib);
+			LoadDetFrame(pDib, dwLoadDetFrameErrorCode);
 
 			// Video
 			if (bMakeVideo)
@@ -422,9 +421,12 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				if (AVRecVideo.IsOpen())
 				{
 					// Add Frame
-					AVRecVideo.AddFrame(AVRecVideo.VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
-										&VideoSaveDib,
-										false);	// No interleave
+					if (VideoSaveDib.IsValid())
+					{
+						AVRecVideo.AddFrame(AVRecVideo.VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
+											&VideoSaveDib,
+											false);	// No interleave
+					}
 
 					// Add Audio Samples
 					if (m_pDoc->m_bCaptureAudio && pDib)
@@ -454,8 +456,9 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 					ASSERT(pGIFColors == NULL);
 					pGIFColors = (RGBQUAD*)new RGBQUAD[256];
 					AnimatedGifInit(pGIFColors,
-									dDelayMul,		// Sets this
-									dSpeedMul,		// Sets this
+									dDelayMul,				// sets this
+									dSpeedMul,				// sets this
+									dwLoadDetFrameErrorCode,// sets this
 									dCalcFrameRate,
 									RefTime,
 									dwRefUpTime,
@@ -571,7 +574,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCountMonth"), nMovDetSavesCountMonth);
 		::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCountYear"), nMovDetSavesCountYear);
 
-		// Save time calculation
+		// Logs
 		DWORD dwSaveTimeMs = ::timeGetTime() - dwStartUpTime;
 		if (dwFramesTimeMs < dwSaveTimeMs)
 		{
@@ -590,6 +593,11 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				::LogLine(	ML_STRING(1841, "%s, realtime saving the detections is ok: SaveTime=%0.1fsec < FramesTime=%0.1fsec"),
 							m_pDoc->GetAssignedDeviceName(), (double)dwSaveTimeMs / 1000.0, (double)dwFramesTimeMs / 1000.0);
 			}
+		}
+		if (dwLoadDetFrameErrorCode != ERROR_SUCCESS)
+		{
+			::LogLine(ML_STRING(1817, "OUT OF MEMORY: dropping movement detection frames (error code 0x%08X)"), dwLoadDetFrameErrorCode);
+			::AfxGetMainFrame()->LogSysUsage();
 		}
 	}
 	ASSERT(FALSE); // should never end up here...
@@ -639,6 +647,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::FTPUploadMovementDetection(	const CT
 void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors,
 																double& dDelayMul,
 																double& dSpeedMul,
+																DWORD& dwLoadDetFrameUpdatedIfErrorNoSuccess,
 																double dCalcFrameRate,
 																const CTime& RefTime,
 																DWORD dwRefUpTime,
@@ -699,10 +708,10 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors
 		nFrameCountDown--;
 	}
 	
-	// Make sure the 3 image pointers are ok
+	// Prepare the 3 dibs
 	if (!pDibForPalette1)
 		pDibForPalette1 = m_pFrameList->GetHead();
-	LoadDetFrame(pDibForPalette1);
+	LoadDetFrame(pDibForPalette1, dwLoadDetFrameUpdatedIfErrorNoSuccess);
 	if (pDibForPalette1)
 		DibForPalette1 = *pDibForPalette1;
 	if (DibForPalette1.IsCompressed() || DibForPalette1.GetBitCount() <= 8)
@@ -710,7 +719,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors
 	DibForPalette1.StretchBits(m_pDoc->m_dwAnimatedGifWidth, m_pDoc->m_dwAnimatedGifHeight);
 	if (!pDibForPalette2)
 		pDibForPalette2 = m_pFrameList->GetHead();
-	LoadDetFrame(pDibForPalette2);
+	LoadDetFrame(pDibForPalette2, dwLoadDetFrameUpdatedIfErrorNoSuccess);
 	if (pDibForPalette2)
 		DibForPalette2 = *pDibForPalette2;
 	if (DibForPalette2.IsCompressed() || DibForPalette2.GetBitCount() <= 8)
@@ -718,70 +727,77 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors
 	DibForPalette2.StretchBits(m_pDoc->m_dwAnimatedGifWidth, m_pDoc->m_dwAnimatedGifHeight);
 	if (!pDibForPalette3)
 		pDibForPalette3 = m_pFrameList->GetHead();
-	LoadDetFrame(pDibForPalette3);
+	LoadDetFrame(pDibForPalette3, dwLoadDetFrameUpdatedIfErrorNoSuccess);
 	if (pDibForPalette3)
 		DibForPalette3 = *pDibForPalette3;
 	if (DibForPalette3.IsCompressed() || DibForPalette3.GetBitCount() <= 8)
 		DibForPalette3.Decompress(32);
 	DibForPalette3.StretchBits(m_pDoc->m_dwAnimatedGifWidth, m_pDoc->m_dwAnimatedGifHeight);
 	
-	// Dib for Palette Calculation
-	DibForPalette.AllocateBitsFast(	DibForPalette1.GetBitCount(),
-									DibForPalette1.GetCompression(),
-									DibForPalette1.GetWidth(),
-									3 * DibForPalette1.GetHeight(),
-									DibForPalette1.GetCompression() == BI_BITFIELDS ?
-									(RGBQUAD*)((LPBYTE)(DibForPalette1.GetBMI()) + DibForPalette1.GetBMIH()->biSize) :
-									NULL);
-	LPBYTE pDstBits = DibForPalette.GetBits();
-	if (pDstBits)
+	// Generate the Palette
+	if (DibForPalette1.GetWidth() == DibForPalette2.GetWidth() && DibForPalette2.GetWidth() == DibForPalette3.GetWidth()							&&
+		DibForPalette1.GetHeight() == DibForPalette2.GetHeight() && DibForPalette2.GetHeight() == DibForPalette3.GetHeight()						&&
+		DibForPalette1.GetCompression() == DibForPalette2.GetCompression() && DibForPalette2.GetCompression() == DibForPalette3.GetCompression()	&&
+		(DibForPalette1.GetCompression() == BI_RGB || DibForPalette1.GetCompression() == BI_BITFIELDS))
 	{
-		int nScanLineSize = DWALIGNEDWIDTHBYTES(DibForPalette.GetWidth() * DibForPalette.GetBitCount());
-		LPBYTE pSrcBits = DibForPalette1.GetBits();
-		if (pSrcBits)
+		// Dib for Palette Calculation
+		DibForPalette.AllocateBitsFast(	DibForPalette1.GetBitCount(),
+										DibForPalette1.GetCompression(),
+										DibForPalette1.GetWidth(),
+										3 * DibForPalette1.GetHeight(),
+										DibForPalette1.GetCompression() == BI_BITFIELDS ?
+										(RGBQUAD*)((LPBYTE)(DibForPalette1.GetBMI()) + DibForPalette1.GetBMIH()->biSize) :
+										NULL);
+		LPBYTE pDstBits = DibForPalette.GetBits();
+		if (pDstBits)
 		{
-			for (line = 0 ; line < DibForPalette1.GetHeight() ; line++)
+			int nScanLineSize = DWALIGNEDWIDTHBYTES(DibForPalette.GetWidth() * DibForPalette.GetBitCount());
+			LPBYTE pSrcBits = DibForPalette1.GetBits();
+			if (pSrcBits)
 			{
-				memcpy(pDstBits, pSrcBits, nScanLineSize);
-				pDstBits += nScanLineSize;
-				pSrcBits += nScanLineSize;
+				for (line = 0; line < DibForPalette1.GetHeight(); line++)
+				{
+					memcpy(pDstBits, pSrcBits, nScanLineSize);
+					pDstBits += nScanLineSize;
+					pSrcBits += nScanLineSize;
+				}
+			}
+			pSrcBits = DibForPalette2.GetBits();
+			if (pSrcBits)
+			{
+				for (line = 0; line < DibForPalette2.GetHeight(); line++)
+				{
+					memcpy(pDstBits, pSrcBits, nScanLineSize);
+					pDstBits += nScanLineSize;
+					pSrcBits += nScanLineSize;
+				}
+			}
+			pSrcBits = DibForPalette3.GetBits();
+			if (pSrcBits)
+			{
+				for (line = 0; line < DibForPalette3.GetHeight(); line++)
+				{
+					memcpy(pDstBits, pSrcBits, nScanLineSize);
+					pDstBits += nScanLineSize;
+					pSrcBits += nScanLineSize;
+				}
 			}
 		}
-		pSrcBits = DibForPalette2.GetBits();
-		if (pSrcBits)
+
+		// Add frame tags to include its colors
+		if (m_pDoc->m_bShowFrameTime)
 		{
-			for (line = 0 ; line < DibForPalette2.GetHeight() ; line++)
-			{
-				memcpy(pDstBits, pSrcBits, nScanLineSize);
-				pDstBits += nScanLineSize;
-				pSrcBits += nScanLineSize;
-			}
+			AddFrameTime(&DibForPalette, RefTime, dwRefUpTime, m_pDoc->m_nRefFontSize);
+			AddFrameCount(&DibForPalette, sMovDetSavesCount, m_pDoc->m_nRefFontSize);
 		}
-		pSrcBits = DibForPalette3.GetBits();
-		if (pSrcBits)
-		{
-			for (line = 0 ; line < DibForPalette3.GetHeight() ; line++)
-			{
-				memcpy(pDstBits, pSrcBits, nScanLineSize);
-				pDstBits += nScanLineSize;
-				pSrcBits += nScanLineSize;
-			}
-		}
+
+		// Calc. Palette
+		CQuantizer Quantizer(239, 8); // 239 = 256 (8 bits colors) - 1 (transparency index) - 16 (vga palette)
+		Quantizer.ProcessImage(&DibForPalette);
+		Quantizer.SetColorTable(pGIFColors);
 	}
 
-	// Add frame tags to include its colors
-	if (m_pDoc->m_bShowFrameTime)
-	{
-		AddFrameTime(&DibForPalette, RefTime, dwRefUpTime, m_pDoc->m_nRefFontSize);
-		AddFrameCount(&DibForPalette, sMovDetSavesCount, m_pDoc->m_nRefFontSize);
-	}
-	
-	// Calc. Palette
-	CQuantizer Quantizer(239, 8); // 239 = 256 (8 bits colors) - 1 (transparency index) - 16 (vga palette)
-	Quantizer.ProcessImage(&DibForPalette);
-	Quantizer.SetColorTable(pGIFColors);
-	
-	// VGA Palette
+	// Append VGA Palette
 	// Note: palette Entry 255 is the Transparency Index!
 	int i;
 	for (i = 0; i < 8; i++)
@@ -2258,7 +2274,7 @@ end_of_software_detection:
 	if (dwError != ERROR_SUCCESS)
 	{
 		((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = bDropFrame = TRUE;
-		::LogLine(_T("%s"), ML_STRING(1817, "OUT OF MEMORY: dropping movement detection frames (error code 0x%08X)"), dwError);
+		::LogLine(ML_STRING(1817, "OUT OF MEMORY: dropping movement detection frames (error code 0x%08X)"), dwError);
 		::AfxGetMainFrame()->LogSysUsage();
 	}
 

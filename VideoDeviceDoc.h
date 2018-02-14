@@ -439,7 +439,7 @@ public:
 			__forceinline BOOL IsWorking() const {return m_bWorking;};
 
 		protected:
-			void LoadDetFrame(CDib* pDib);
+			void LoadDetFrame(CDib* pDib, DWORD& dwUpdatedIfErrorNoSuccess);
 			int Work();
 			BOOL SaveSingleGif(		CDib* pDib,
 									const CString& sGIFFileName,
@@ -450,6 +450,7 @@ public:
 			void AnimatedGifInit(	RGBQUAD* pGIFColors,
 									double& dDelayMul,
 									double& dSpeedMul,
+									DWORD& dwLoadDetFrameUpdatedIfErrorNoSuccess,
 									double dCalcFrameRate,
 									const CTime& RefTime,
 									DWORD dwRefUpTime,
