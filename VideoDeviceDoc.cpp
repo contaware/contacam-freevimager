@@ -153,7 +153,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 {
 	// Init vars
 	ASSERT(m_pDoc);
-	m_bWorking = FALSE;
 	CTime FirstTime(0);
 	CTime LastTime(0);
 	DWORD dwCurrentThreadId = ::GetCurrentThreadId();
@@ -162,7 +161,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 	sTempDetectionDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + sTempDetectionDir;
 
 	// Save loop
-	while (TRUE)
+	for (;;)
 	{
 		// Init vars for next saving
 		m_pFrameList = NULL;
@@ -185,9 +184,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 					((CUImagerApp*)::AfxGetApp())->MovDetSaveReservation(dwCurrentThreadId))
 					break;
 				::LeaveCriticalSection(&m_pDoc->m_csMovementDetectionsList);
-
-				// Set that we are not working
-				m_bWorking = FALSE;
 
 				// Shutdown?
 				if (::WaitForSingleObject(GetKillEvent(), MOVDET_SAVEFRAMES_POLL) == WAIT_OBJECT_0)
@@ -212,7 +208,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				if (m_nNumFramesToSave > 0)
 				{
 					bPolling = FALSE;
-					m_bWorking = TRUE;
 					break;
 				}
 				// We have an empty list, remove it!
@@ -231,7 +226,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		while (bPolling);
 		ASSERT(m_pFrameList);
 		ASSERT(m_nNumFramesToSave > 0);
-		ASSERT(m_bWorking);
 
 		// First & Last Up-Times
 		DWORD dwFirstUpTime;
@@ -263,7 +257,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			{
 				if (::WaitForSingleObject(GetKillEvent(), 10U) == WAIT_OBJECT_0)
 				{
-					m_bWorking = FALSE;
 					((CUImagerApp*)::AfxGetApp())->MovDetSaveReservationRemove(dwCurrentThreadId);
 					::DeleteDir(sTempDetectionDir);
 					return 0;
@@ -368,7 +361,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				::DeleteFile(sGIFTempFileName);
 				AVRecVideo.Close();
 				::DeleteFile(sVideoTempFileName);
-				m_bWorking = FALSE;
+				m_nSaveProgress = 100;
 				((CUImagerApp*)::AfxGetApp())->MovDetSaveReservationRemove(dwCurrentThreadId);
 				::DeleteDir(sTempDetectionDir);
 				return 0;
@@ -601,9 +594,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		}
 	}
 	ASSERT(FALSE); // should never end up here...
-	m_bWorking = FALSE;
-	((CUImagerApp*)::AfxGetApp())->MovDetSaveReservationRemove(dwCurrentThreadId);
-	::DeleteDir(sTempDetectionDir);
 	return 0;
 }
 
@@ -2254,8 +2244,7 @@ end_of_software_detection:
 				ShrinkNewestFrameList(); // shrink to a size of m_nMilliSecondsRecBeforeMovementBegin
 		}
 		// Maximum number of frames reached?
-		else if (m_SaveFrameListThread.IsAlive()	&&
-				!m_SaveFrameListThread.IsWorking()	&&
+		else if (m_SaveFrameListThread.IsAlive() &&
 				GetNewestMovementDetectionsListCount() >= m_nDetectionMaxFrames)
 			SaveFrameList(FALSE);
 	}
@@ -3313,15 +3302,14 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 				DWORD dwMsSinceLastProcessFrame = dwCurrentUpTime - (DWORD)m_pDoc->m_lCurrentInitUpTime;
 				m_pDoc->m_bWatchDogVideoAlarm = (dwMsSinceLastProcessFrame > WATCHDOG_THRESHOLD);
 
-				// Save Frame List may be called many times till
-				// CSaveFrameListThread::Work() reacts and starts working:
+				// SaveFrameList() may be called many times till
+				// CSaveFrameListThread::Work() reacts:
 				// it's not a problem because CSaveFrameListThread::Work()
 				// removes empty lists
 				if (m_pDoc->m_bWatchDogVideoAlarm						&&
 					m_pDoc->m_dwVideoProcessorMode						&&
 					m_pDoc->m_bDetectingMovement						&&
 					m_pDoc->m_SaveFrameListThread.IsAlive()				&&
-					!m_pDoc->m_SaveFrameListThread.IsWorking()			&&
 					m_pDoc->GetNewestMovementDetectionsListCount() > 0	&&
 					(m_pDoc->m_bSaveVideoMovementDetection				||
 					m_pDoc->m_bSaveAnimGIFMovementDetection))

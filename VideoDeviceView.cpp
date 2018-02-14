@@ -332,7 +332,7 @@ void CVideoDeviceView::DrawTextMsg(HDC hDC)
 	}
 
 	// Save progress display
-	if (pDoc->m_SaveFrameListThread.IsWorking() && pDoc->m_SaveFrameListThread.GetSaveProgress() < 100)
+	if (pDoc->m_SaveFrameListThread.GetSaveProgress() < 100)
 	{
 		CString sProgress;
 		sProgress.Format(ML_STRING(1877, "Save: %d%%"), pDoc->m_SaveFrameListThread.GetSaveProgress());
@@ -560,8 +560,7 @@ void CVideoDeviceView::OnDraw(CDC* pDC)
 			DrawZones(MemDC.GetSafeHdc());
 
 		// Draw Text
-		if (pDoc->m_bDetectingMinLengthMovement ||
-			(pDoc->m_SaveFrameListThread.IsWorking() && pDoc->m_SaveFrameListThread.GetSaveProgress() < 100))
+		if (pDoc->m_bDetectingMinLengthMovement || pDoc->m_SaveFrameListThread.GetSaveProgress() < 100)
 			DrawTextMsg(MemDC.GetSafeHdc());
 	}
 	else

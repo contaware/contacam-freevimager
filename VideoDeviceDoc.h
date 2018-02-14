@@ -431,12 +431,10 @@ public:
 	class CSaveFrameListThread : public CWorkerThread
 	{
 		public:
-			CSaveFrameListThread(){	m_pDoc = NULL; m_pFrameList = NULL; m_nNumFramesToSave = 0;
-									m_nSaveProgress = 100; m_bWorking = FALSE;};
+			CSaveFrameListThread(){m_pDoc = NULL; m_pFrameList = NULL; m_nNumFramesToSave = 0; m_nSaveProgress = 100;};
 			virtual ~CSaveFrameListThread() {Kill();};
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
 			__forceinline int GetSaveProgress() const {return m_nSaveProgress;};
-			__forceinline BOOL IsWorking() const {return m_bWorking;};
 
 		protected:
 			void LoadDetFrame(CDib* pDib, DWORD& dwUpdatedIfErrorNoSuccess);
@@ -482,7 +480,6 @@ public:
 			int m_nNumFramesToSave;
 			CAVDecoder m_AVDetDecoder;
 			volatile int m_nSaveProgress;
-			volatile BOOL m_bWorking;
 	};
 
 	// The Save Snapshot Video Thread Class
