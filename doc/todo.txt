@@ -54,7 +54,9 @@ ContaCam Program
   so that we have a single registry entry to enable/disable continuous 
   recording. Like for the detection it would be easy to add the possibility
   to change that registry/ini file value from another program 
-  (sambul7165@gmail.com)  
+  (sambul7165@gmail.com) 
+- Advanced motion scheduler with the possibility to configure times for each day
+  (g.frascarolo@tiscali.it)
 - Snapshots with history always use the full size, never create thumbs history
   (eginfo7@gruenefeld.de)
 

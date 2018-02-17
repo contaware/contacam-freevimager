@@ -587,8 +587,9 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		}
 		if (dwLoadDetFrameErrorCode != ERROR_SUCCESS)
 		{
-			::LogLine(ML_STRING(1817, "OUT OF MEMORY: dropping movement detection frames (error code 0x%08X)"), dwLoadDetFrameErrorCode);
-			::AfxGetMainFrame()->LogSysUsage();
+			if (g_nLogLevel > 0)
+				::ShowErrorMsg(dwLoadDetFrameErrorCode, FALSE, +_T("Shared Memory -> Frame: "));
+			::LogLine(_T("%s"), ML_STRING(1817, "OUT OF MEMORY / OVERLOAD: dropping movement detection frames"));
 		}
 	}
 	ASSERT(FALSE); // should never end up here...
@@ -2260,8 +2261,9 @@ end_of_software_detection:
 	if (dwError != ERROR_SUCCESS)
 	{
 		((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = bDropFrame = TRUE;
-		::LogLine(ML_STRING(1817, "OUT OF MEMORY: dropping movement detection frames (error code 0x%08X)"), dwError);
-		::AfxGetMainFrame()->LogSysUsage();
+		if (g_nLogLevel > 0)
+			::ShowErrorMsg(dwError, FALSE, +_T("Frame -> Shared Memory: "));
+		::LogLine(_T("%s"), ML_STRING(1817, "OUT OF MEMORY / OVERLOAD: dropping movement detection frames"));
 	}
 
 	// Drop frames

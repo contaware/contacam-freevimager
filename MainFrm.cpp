@@ -87,15 +87,14 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_MESSAGE(WM_AUTORUN_VIDEODEVICES, OnAutorunVideoDevices)
 	ON_COMMAND(ID_VIEW_WEB, OnViewWeb)
 	ON_COMMAND(ID_VIEW_FILES, OnViewFiles)
-	ON_COMMAND(ID_INDICATOR_DETBUFS_USAGE, OnDetBufsUsageClick)
 	ON_COMMAND(ID_INDICATOR_DETBUFS_SIZE, OnDetBufsSizeClick)
 #endif
 END_MESSAGE_MAP()
 
 #ifdef VIDEODEVICEDOC
-static TCHAR sba_DETBUFSUSAGEHelp[MAX_PATH];
 static TCHAR sba_DETBUFSSIZEHelp[MAX_PATH];
 static TCHAR sba_HDHelp[MAX_PATH];
+static TCHAR sba_CPUHelp[MAX_PATH];
 #endif
 static TCHAR sba_CoordinateHelp[MAX_PATH];
 static SBACTPANEINFO sba_indicators[] = 
@@ -103,9 +102,9 @@ static SBACTPANEINFO sba_indicators[] =
 	{ ID_SEPARATOR, _T(""), SBACTF_NORMAL },		// status line indicator
 	{ ID_INDICATOR_PROGRESS, _T(""), SBACTF_NORMAL },
 #ifdef VIDEODEVICEDOC
-	{ ID_INDICATOR_DETBUFS_USAGE, sba_DETBUFSUSAGEHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_SINGLECLICK | SBACTF_DOUBLECLICK | SBACTF_HANDCURSOR },
 	{ ID_INDICATOR_DETBUFS_SIZE, sba_DETBUFSSIZEHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_SINGLECLICK | SBACTF_DOUBLECLICK | SBACTF_HANDCURSOR },
 	{ ID_INDICATOR_HD_USAGE, sba_HDHelp, SBACTF_AUTOFIT },
+	{ ID_INDICATOR_CPU_USAGE, sba_CPUHelp, SBACTF_AUTOFIT },
 #endif
 	{ ID_INDICATOR_XCOORDINATE, sba_CoordinateHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_SINGLECLICK | SBACTF_DOUBLECLICK | SBACTF_HANDCURSOR },
 	{ ID_INDICATOR_YCOORDINATE, sba_CoordinateHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_SINGLECLICK | SBACTF_DOUBLECLICK | SBACTF_HANDCURSOR },
@@ -177,12 +176,12 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// Create Statusbar
 	((CUImagerApp*)::AfxGetApp())->m_bShowStatusbar = (BOOL)((CUImagerApp*)::AfxGetApp())->GetProfileInt(_T("GeneralApp"), _T("ShowStatusbar"), TRUE);
 #ifdef VIDEODEVICEDOC
-	_tcsncpy(sba_DETBUFSUSAGEHelp, ML_STRING(1762, "Overall movement detection buffers usage\n(click for more information)"), MAX_PATH);
-	sba_DETBUFSUSAGEHelp[MAX_PATH - 1] = _T('\0');
 	_tcsncpy(sba_DETBUFSSIZEHelp, ML_STRING(1763, "Maximum overall movement detection buffers size\n(click for more information)"), MAX_PATH);
 	sba_DETBUFSSIZEHelp[MAX_PATH - 1] = _T('\0');
 	_tcsncpy(sba_HDHelp, ML_STRING(1761, "HD usage"), MAX_PATH);
 	sba_HDHelp[MAX_PATH - 1] = _T('\0');
+	_tcsncpy(sba_CPUHelp, CString(APPNAME_NOEXT) + _T(": ") + ML_STRING(1762, "CPU usage"), MAX_PATH);
+	sba_CPUHelp[MAX_PATH - 1] = _T('\0');
 #endif
 	_tcsncpy(sba_CoordinateHelp, ML_STRING(1768, "Click to change unit"), MAX_PATH);
 	sba_CoordinateHelp[MAX_PATH - 1] = _T('\0');
@@ -1094,18 +1093,9 @@ void CMainFrame::OnViewFiles()
 					SW_SHOWNORMAL);
 }
 
-void CMainFrame::OnDetBufsUsageClick()
-{
-	PopupToaster(APPNAME_NOEXT, ML_STRING(1815, "Overall movement detection buffers usage should be less than the maximum overall movement detection buffers size. If that's not the case for each camera consider lowering the framerate and/or video resolution!"), 0);
-}
-
 void CMainFrame::OnDetBufsSizeClick()
 {
-	CString sRamGB;
-	sRamGB.Format(_T("%0.1f") + ML_STRING(1826, "GB"), (double)g_nAvailablePhysRamMB / 1024.0);
-	CString sMsg;
-	sMsg.Format(ML_STRING(1819, "Maximum overall movement detection buffers size should be less than the installed %s RAM. If that's not the case for each camera lower the 'Split detection files longer than' value under 'Camera Advanced Settings - Movement Detection' tab!"), sRamGB);
-	PopupToaster(APPNAME_NOEXT, sMsg, 0);
+	PopupToaster(APPNAME_NOEXT, ML_STRING(1819, "To limit the movement detection buffer size lower the \"Split detection files longer than\" value under \"Camera Advanced Settings - Movement Detection\" tab"), 0);
 }
 
 #endif
@@ -2509,8 +2499,8 @@ void CMainFrame::LogSysUsage()
 	// Message
 	::LogLine(	
 #ifdef VIDEODEVICEDOC
-		_T("BUF: %0.1f%s | ")
-		_T("MAX: %0.1f%s | ")
+		_T("BUF USAGE: %0.1f%s | ")
+		_T("BUF SIZE: %0.1f%s | ")
 		_T("RAM: %0.1f%s | ")
 #endif
 		_T("%s | ")
@@ -2550,12 +2540,34 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		// Text flash state flag
 		static int nFlashState = 0;
 
-		// Get Movement Detection Buffers Usage
-		double dOverallSharedMemoryGB = (double)(CDib::m_llOverallSharedMemoryBytes >> 20) / 1024.0;
+		// Restore Movement Detection Buffering?
+		if (((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames && CDib::m_llOverallSharedMemoryBytes == 0)
+			((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = FALSE;
+
+		// Show Maximum Overall Movement Detection Buffers Size
 		double dMaxOverallDetectionQueueSizeGB = GetMaxOverallDetectionQueueSizeGB();
 		double dRamGB = (double)g_nAvailablePhysRamMB / 1024.0;
+		if (dMaxOverallDetectionQueueSizeGB > dRamGB)
+		{
+			if (nFlashState == 2)
+				GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_DETBUFS_SIZE), _T(""));
+			else
+			{
+				CString sDetBufsSize;
+				sDetBufsSize.Format(_T(" *** BUF: %0.1f") + ML_STRING(1826, "GB") + _T(" > RAM: %0.1f") + ML_STRING(1826, "GB") + _T(" *** "),
+									dMaxOverallDetectionQueueSizeGB, dRamGB);
+				GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_DETBUFS_SIZE), sDetBufsSize);
+			}
+		}
+		else
+		{
+			CString sDetBufsSize;
+			sDetBufsSize.Format(_T(" BUF: %0.1f") + ML_STRING(1826, "GB") + _T(" "),
+								dMaxOverallDetectionQueueSizeGB);
+			GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_DETBUFS_SIZE), sDetBufsSize);
+		}
 
-		// Get HD Usage
+		// Show HD Usage
 		CString sSaveDir = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
 		int nMinDiskFreePermillion = 0;
 		CMDIChildWnd* pChild = MDIGetActive();
@@ -2571,38 +2583,6 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		// Note: GetDiskStats() calcs the stats for directory symbolic link targets
 		CString sDiskStats;
 		BOOL bDiskStatsAlert = GetDiskStats(sDiskStats, sSaveDir, nMinDiskFreePermillion);
-
-		// Restore Movement Detection Buffering?
-		if (((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames && CDib::m_llOverallSharedMemoryBytes == 0)
-			((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = FALSE;
-
-		// Show Detection Buffer Usage
-		CString sDetBufUsage;
-		sDetBufUsage.Format(_T("BUF: %0.1f") + ML_STRING(1826, "GB"), dOverallSharedMemoryGB);
-		if (dOverallSharedMemoryGB > dMaxOverallDetectionQueueSizeGB)
-		{
-			if (nFlashState == 2)
-				GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_DETBUFS_USAGE), _T(""));
-			else
-				GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_DETBUFS_USAGE), _T(" *** ") + sDetBufUsage + _T(" *** "));
-		}
-		else
-			GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_DETBUFS_USAGE), _T(" ") + sDetBufUsage + _T(" "));
-
-		// Show Detection Buffer Size
-		CString sDetBufSize;
-		sDetBufSize.Format(_T("MAX: %0.1f") + ML_STRING(1826, "GB"), dMaxOverallDetectionQueueSizeGB);
-		if (dMaxOverallDetectionQueueSizeGB > dRamGB)
-		{
-			if (nFlashState == 2)
-				GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_DETBUFS_SIZE), _T(""));
-			else
-				GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_DETBUFS_SIZE), _T(" *** ") + sDetBufSize + _T(" *** "));
-		}
-		else
-			GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_DETBUFS_SIZE), _T(" ") + sDetBufSize + _T(" "));
-
-		// Show HD Usage
 		if (bDiskStatsAlert)
 		{
 			if (nFlashState == 2)
@@ -2612,6 +2592,11 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		}
 		else
 			GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_HD_USAGE), _T(" ") + sDiskStats + _T(" "));
+
+		// Show CPU Usage
+		CString sCPUUsage;
+		sCPUUsage.Format(_T(" CPU: %0.1f%% "), ::GetCPUUsage());
+		GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_CPU_USAGE), sCPUUsage);
 
 		// Power Status
 		SYSTEM_POWER_STATUS SystemPowerStatus;
@@ -2788,13 +2773,13 @@ void CMainFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 void CMainFrame::OnUpdateIndicatorXCoordinate(CCmdUI* pCmdUI)
 {
 	if (!((CUImagerApp*)::AfxGetApp())->AreDocsOpen())
-		pCmdUI->SetText(_T("X:         "));
+		pCmdUI->SetText(_T(" X:        "));
 }
 
 void CMainFrame::OnUpdateIndicatorYCoordinate(CCmdUI* pCmdUI)
 {
 	if (!((CUImagerApp*)::AfxGetApp())->AreDocsOpen())
-		pCmdUI->SetText(_T("Y:         "));
+		pCmdUI->SetText(_T(" Y:        "));
 }
 
 LONG CMainFrame::OnProgress(WPARAM wparam, LPARAM lparam)

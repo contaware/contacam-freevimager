@@ -3784,11 +3784,11 @@ END
 STRINGTABLE
 BEGIN
     ID_INDICATOR_PROGRESS   "                                   "
-    ID_INDICATOR_DETBUFS_USAGE "BUF:             "
-    ID_INDICATOR_DETBUFS_SIZE "MAX:             "
-    ID_INDICATOR_HD_USAGE   "HD:              "
-    ID_INDICATOR_XCOORDINATE "X:               "
-    ID_INDICATOR_YCOORDINATE "Y:               "
+    ID_INDICATOR_DETBUFS_SIZE " BUF:            "
+    ID_INDICATOR_HD_USAGE   " HD:             "
+    ID_INDICATOR_CPU_USAGE  " CPU:            "
+    ID_INDICATOR_XCOORDINATE " X:        "
+    ID_INDICATOR_YCOORDINATE " Y:        "
     ID_SETTINGS_LOG_ALL_MESSAGES 
                             "Enable highly verbose diagnostic logging\nDebug Log"
     ID_CAPTURE_OBSCURESOURCE "Obscure / show source\nObscure Source"
@@ -4384,7 +4384,7 @@ STRINGTABLE
 BEGIN
     IDS_STRING1760          "Application Log File has not yet been created"
     IDS_STRING1761          "HD usage"
-    IDS_STRING1762          "Overall movement detection buffers usage\n(click for more information)"
+    IDS_STRING1762          "CPU usage"
     IDS_STRING1763          "Maximum overall movement detection buffers size\n(click for more information)"
     IDS_STRING1764          "Starting"
     IDS_STRING1765          "%s already exists.\nDo you want to proceed and merge the files?"
@@ -4422,11 +4422,10 @@ STRINGTABLE
 BEGIN
     IDS_STRING1810          "VERBOSE LOGGING"
     IDS_STRING1811          "DEBUG LOGGING"
-    IDS_STRING1815          "Overall movement detection buffers usage should be less than the maximum overall movement detection buffers size. If that's not the case for each camera consider lowering the framerate and/or video resolution!"
     IDS_STRING1816          "Create a text file where each line represents a Paste\ncommand at the given position:\n  1. Origin: top left, top right, bottom left, bottom right\n  2. horizontal and vertical positions with sign and unit\n      (px, in, cm, mm)\n\nExample:\n\ntop left 1.57cm -1.32cm\nbottom right 12.1mm 5.5mm"
-    IDS_STRING1817          "OUT OF MEMORY: dropping movement detection frames (error code 0x%08X)"
+    IDS_STRING1817          "OUT OF MEMORY / OVERLOAD: dropping movement detection frames"
     IDS_STRING1818          "Aborting"
-    IDS_STRING1819          "Maximum overall movement detection buffers size should be less than the installed %s RAM. If that's not the case for each camera lower the 'Split detection files longer than' value under 'Camera Advanced Settings - Movement Detection' tab!"
+    IDS_STRING1819          "To limit the movement detection buffer size lower the ""Split detection files longer than"" value under ""Camera Advanced Settings - Movement Detection"" tab"
     IDS_STRING1820          "usable"
     IDS_STRING1822          "Fit"
     IDS_STRING1823          "Fit Big"
