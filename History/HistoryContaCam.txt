@@ -1,6 +1,6 @@
 CONTACAM HISTORY
 
-7.7.0 (January xxth 2018)
+7.7.0 (February 18th 2018)
 
 - To start the ContaCam web interface as a Web App it's now
   possible to create a home screen icon from your mobile browser's
@@ -10,6 +10,7 @@ CONTACAM HISTORY
 - Logout button for the web interface
 - Option to get an email alert when AC 100-240V goes OFF
 - Configurable web server SSL certificate files
+- The delete cameras dialog is closing open devices automatically
 - Added metadata title to created video files
 - Hold down the Ctrl key to keep the aspect ratio while resizing
   a camera view

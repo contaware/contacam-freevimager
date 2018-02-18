@@ -59,7 +59,9 @@ ContaCam Program
   (g.frascarolo@tiscali.it)
 - Snapshots with history always use the full size, never create thumbs history
   (eginfo7@gruenefeld.de)
-
+- Remove manual record + scheduler as the motion detection with 100% sensitivity 
+  can be used for that!
+  
   
 ContaCam Web Interface
 ----------------------

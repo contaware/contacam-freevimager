@@ -1,6 +1,6 @@
 TRANSLATIONS HISTORY
 
-7.7.0 (January xxth 2018)
+7.7.0 (February 18th 2018)
 
 - Minor changes
 
