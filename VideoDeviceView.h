@@ -73,6 +73,28 @@ protected:
 	afx_msg void OnUpdateEditZoneSensitivity50(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateEditZoneSensitivity25(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateEditZoneSensitivity10(CCmdUI* pCmdUI);
+	afx_msg void OnFrameTimeFontSize4();
+	afx_msg void OnUpdateFrameTimeFontSize4(CCmdUI* pCmdUI);
+	afx_msg void OnFrameTimeFontSize5();
+	afx_msg void OnUpdateFrameTimeFontSize5(CCmdUI* pCmdUI);
+	afx_msg void OnFrameTimeFontSize6();
+	afx_msg void OnUpdateFrameTimeFontSize6(CCmdUI* pCmdUI);
+	afx_msg void OnFrameTimeFontSize7();
+	afx_msg void OnUpdateFrameTimeFontSize7(CCmdUI* pCmdUI);
+	afx_msg void OnFrameTimeFontSize8();
+	afx_msg void OnUpdateFrameTimeFontSize8(CCmdUI* pCmdUI);
+	afx_msg void OnFrameTimeFontSize9();
+	afx_msg void OnUpdateFrameTimeFontSize9(CCmdUI* pCmdUI);
+	afx_msg void OnFrameTimeFontSize10();
+	afx_msg void OnUpdateFrameTimeFontSize10(CCmdUI* pCmdUI);
+	afx_msg void OnFrameTimeFontSize11();
+	afx_msg void OnUpdateFrameTimeFontSize11(CCmdUI* pCmdUI);
+	afx_msg void OnFrameTimeFontSize12();
+	afx_msg void OnUpdateFrameTimeFontSize12(CCmdUI* pCmdUI);
+	afx_msg void OnFrameTimeFontSize14();
+	afx_msg void OnUpdateFrameTimeFontSize14(CCmdUI* pCmdUI);
+	afx_msg void OnFrameTimeFontSize16();
+	afx_msg void OnUpdateFrameTimeFontSize16(CCmdUI* pCmdUI);
 	afx_msg void OnViewFullscreen();
 	afx_msg void OnUpdateViewFullscreen(CCmdUI* pCmdUI);
 	//}}AFX_MSG

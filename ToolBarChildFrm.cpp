@@ -208,6 +208,12 @@ BOOL CVideoDeviceToolBar::Create(CWnd* pParentWnd)
 	if (!SwitchToolBar(g_nSystemDPI, FALSE))
 		return FALSE;
 
+	// Add toolbar button dropdown arrows
+	GetToolBarCtrl().SetExtendedStyle(TBSTYLE_EX_DRAWDDARROWS);
+	DWORD dwStyle = GetButtonStyle(CommandToIndex(ID_VIEW_FRAMETIME));
+	dwStyle |= TBSTYLE_DROPDOWN;
+	SetButtonStyle(CommandToIndex(ID_VIEW_FRAMETIME), dwStyle);
+	
 	return TRUE;
 }
 
@@ -922,6 +928,7 @@ CVideoDeviceChildFrame::CVideoDeviceChildFrame()
 BEGIN_MESSAGE_MAP(CVideoDeviceChildFrame, CToolBarChildFrame)
 	//{{AFX_MSG_MAP(CVideoDeviceChildFrame)
 	ON_WM_SIZING()
+	ON_NOTIFY(TBN_DROPDOWN, AFX_IDW_TOOLBAR, OnToolbarDropDown)
 	ON_WM_TIMER()
 	ON_WM_CLOSE()
 	//}}AFX_MSG_MAP
@@ -997,6 +1004,26 @@ void CVideoDeviceChildFrame::OnSizing(UINT fwSide, LPRECT pRect)
 			default:
 				break;
 		}
+	}
+}
+
+void CVideoDeviceChildFrame::OnToolbarDropDown(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	LPNMTOOLBAR pNMToolBar = reinterpret_cast<LPNMTOOLBAR>(pNMHDR);
+	switch (pNMToolBar->iItem)
+	{
+		case ID_VIEW_FRAMETIME:
+		{
+			CMenu menu;
+			VERIFY(menu.LoadMenu(IDR_CONTEXT_FONTSIZE));
+			CMenu* pPopup = menu.GetSubMenu(0);
+			ASSERT(pPopup != NULL);
+			GetToolBar()->ClientToScreen(&(pNMToolBar->rcButton));
+			pPopup->TrackPopupMenu(TPM_LEFTBUTTON | TPM_RIGHTBUTTON, pNMToolBar->rcButton.left, pNMToolBar->rcButton.bottom, this);
+			break;
+		}
+		default:
+			return;
 	}
 }
 

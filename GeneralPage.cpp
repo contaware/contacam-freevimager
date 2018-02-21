@@ -91,7 +91,6 @@ BEGIN_MESSAGE_MAP(CGeneralPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_AUTOOPEN, OnCheckAutoopen)
 	ON_BN_CLICKED(IDC_CHECK_LIVE_ROTATE180, OnCheckLiveRotate180)
 	ON_BN_CLICKED(IDC_CHECK_AUDIO_LISTEN, OnCheckAudioListen)
-	ON_CBN_SELCHANGE(IDC_REF_FONTSIZE, OnSelchangeRefFontsize)
 	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_ONCE_START, OnDatetimechangeTimeOnceStart)
 	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_ONCE_STOP, OnDatetimechangeTimeOnceStop)
 	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_DATE_ONCE_START, OnDatetimechangeDateOnceStart)
@@ -268,26 +267,6 @@ BOOL CGeneralPage::OnInitDialog()
 		pComboBoxTimeSeg->AddString(ML_STRING(1562, "12 hours"));
 		pComboBoxTimeSeg->AddString(ML_STRING(1563, "24 hours"));
 	}
-	CComboBox* pComboBoxRefFontSize = (CComboBox*)GetDlgItem(IDC_REF_FONTSIZE);
-	if (pComboBoxRefFontSize)
-	{
-		pComboBoxRefFontSize->AddString(_T("1"));
-		pComboBoxRefFontSize->AddString(_T("2"));
-		pComboBoxRefFontSize->AddString(_T("3"));
-		pComboBoxRefFontSize->AddString(_T("4"));
-		pComboBoxRefFontSize->AddString(_T("5"));
-		pComboBoxRefFontSize->AddString(_T("6"));
-		pComboBoxRefFontSize->AddString(_T("7"));
-		pComboBoxRefFontSize->AddString(_T("8"));
-		pComboBoxRefFontSize->AddString(_T("9"));
-		pComboBoxRefFontSize->AddString(_T("10"));
-		pComboBoxRefFontSize->AddString(_T("11"));
-		pComboBoxRefFontSize->AddString(_T("12"));
-		pComboBoxRefFontSize->AddString(_T("13"));
-		pComboBoxRefFontSize->AddString(_T("14"));
-		pComboBoxRefFontSize->AddString(_T("15"));
-		pComboBoxRefFontSize->AddString(_T("16"));
-	}
 
 	// Init Codec's Supports
 
@@ -379,9 +358,6 @@ BOOL CGeneralPage::OnInitDialog()
 		pCheckAudioFromStream->SetCheck(0);
 		pCheckAudioFromSource->SetCheck(1);
 	}
-
-	// Set reference font size
-	pComboBoxRefFontSize->SetCurSel(m_pDoc->m_nRefFontSize - 1);
 
 	// Video Compressor Quality
 	m_VideoRecQuality.SetRange((int)VIDEO_QUALITY_BEST, (int)VIDEO_QUALITY_LOW);
@@ -734,12 +710,6 @@ void CGeneralPage::OnCheckAutorun()
 void CGeneralPage::OnAudioInput() 
 {
 	m_pDoc->m_CaptureAudioThread.AudioInSourceDialog();	
-}
-
-void CGeneralPage::OnSelchangeRefFontsize()
-{
-	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_REF_FONTSIZE);
-	m_pDoc->m_nRefFontSize = pComboBox->GetCurSel() + 1;
 }
 
 /*

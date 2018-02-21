@@ -43,6 +43,28 @@ BEGIN_MESSAGE_MAP(CVideoDeviceView, CUImagerView)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_SENSITIVITY_50, OnUpdateEditZoneSensitivity50)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_SENSITIVITY_25, OnUpdateEditZoneSensitivity25)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_SENSITIVITY_10, OnUpdateEditZoneSensitivity10)
+	ON_COMMAND(ID_FONTSIZE_4, OnFrameTimeFontSize4)
+	ON_UPDATE_COMMAND_UI(ID_FONTSIZE_4, OnUpdateFrameTimeFontSize4)
+	ON_COMMAND(ID_FONTSIZE_5, OnFrameTimeFontSize5)
+	ON_UPDATE_COMMAND_UI(ID_FONTSIZE_5, OnUpdateFrameTimeFontSize5)
+	ON_COMMAND(ID_FONTSIZE_6, OnFrameTimeFontSize6)
+	ON_UPDATE_COMMAND_UI(ID_FONTSIZE_6, OnUpdateFrameTimeFontSize6)
+	ON_COMMAND(ID_FONTSIZE_7, OnFrameTimeFontSize7)
+	ON_UPDATE_COMMAND_UI(ID_FONTSIZE_7, OnUpdateFrameTimeFontSize7)
+	ON_COMMAND(ID_FONTSIZE_8, OnFrameTimeFontSize8)
+	ON_UPDATE_COMMAND_UI(ID_FONTSIZE_8, OnUpdateFrameTimeFontSize8)
+	ON_COMMAND(ID_FONTSIZE_9, OnFrameTimeFontSize9)
+	ON_UPDATE_COMMAND_UI(ID_FONTSIZE_9, OnUpdateFrameTimeFontSize9)
+	ON_COMMAND(ID_FONTSIZE_10, OnFrameTimeFontSize10)
+	ON_UPDATE_COMMAND_UI(ID_FONTSIZE_10, OnUpdateFrameTimeFontSize10)
+	ON_COMMAND(ID_FONTSIZE_11, OnFrameTimeFontSize11)
+	ON_UPDATE_COMMAND_UI(ID_FONTSIZE_11, OnUpdateFrameTimeFontSize11)
+	ON_COMMAND(ID_FONTSIZE_12, OnFrameTimeFontSize12)
+	ON_UPDATE_COMMAND_UI(ID_FONTSIZE_12, OnUpdateFrameTimeFontSize12)
+	ON_COMMAND(ID_FONTSIZE_14, OnFrameTimeFontSize14)
+	ON_UPDATE_COMMAND_UI(ID_FONTSIZE_14, OnUpdateFrameTimeFontSize14)
+	ON_COMMAND(ID_FONTSIZE_16, OnFrameTimeFontSize16)
+	ON_UPDATE_COMMAND_UI(ID_FONTSIZE_16, OnUpdateFrameTimeFontSize16)
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_THREADSAFE_CAPTURECAMERABASICSETTINGS, OnThreadSafeCaptureCameraBasicSettings)
 	ON_MESSAGE(WM_THREADSAFE_UPDATE_PHPPARAMS, OnThreadSafeUpdatePhpParams)
@@ -1093,6 +1115,160 @@ void CVideoDeviceView::OnEditZoneSensitivity10()
 void CVideoDeviceView::OnUpdateEditZoneSensitivity10(CCmdUI* pCmdUI) 
 {
 	pCmdUI->SetCheck(m_MovDetSingleZoneSensitivity == 10 ? 1 : 0);
+}
+
+void CVideoDeviceView::OnFrameTimeFontSize4()
+{
+	CVideoDeviceDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	pDoc->m_nRefFontSize = 4;
+}
+
+void CVideoDeviceView::OnUpdateFrameTimeFontSize4(CCmdUI* pCmdUI)
+{
+	CVideoDeviceDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	pCmdUI->SetCheck(pDoc->m_nRefFontSize == 4 ? 1 : 0);
+}
+
+void CVideoDeviceView::OnFrameTimeFontSize5()
+{
+	CVideoDeviceDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	pDoc->m_nRefFontSize = 5;
+}
+
+void CVideoDeviceView::OnUpdateFrameTimeFontSize5(CCmdUI* pCmdUI)
+{
+	CVideoDeviceDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	pCmdUI->SetCheck(pDoc->m_nRefFontSize == 5 ? 1 : 0);
+}
+
+void CVideoDeviceView::OnFrameTimeFontSize6()
+{
+	CVideoDeviceDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	pDoc->m_nRefFontSize = 6;
+}
+
+void CVideoDeviceView::OnUpdateFrameTimeFontSize6(CCmdUI* pCmdUI)
+{
+	CVideoDeviceDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	pCmdUI->SetCheck(pDoc->m_nRefFontSize == 6 ? 1 : 0);
+}
+
+void CVideoDeviceView::OnFrameTimeFontSize7()
+{
+	CVideoDeviceDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	pDoc->m_nRefFontSize = 7;
+}
+
+void CVideoDeviceView::OnUpdateFrameTimeFontSize7(CCmdUI* pCmdUI)
+{
+	CVideoDeviceDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	pCmdUI->SetCheck(pDoc->m_nRefFontSize == 7 ? 1 : 0);
+}
+
+void CVideoDeviceView::OnFrameTimeFontSize8()
+{
+	CVideoDeviceDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	pDoc->m_nRefFontSize = 8;
+}
+
+void CVideoDeviceView::OnUpdateFrameTimeFontSize8(CCmdUI* pCmdUI)
+{
+	CVideoDeviceDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	pCmdUI->SetCheck(pDoc->m_nRefFontSize == 8 ? 1 : 0);
+}
+
+void CVideoDeviceView::OnFrameTimeFontSize9()
+{
+	CVideoDeviceDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	pDoc->m_nRefFontSize = 9;
+}
+
+void CVideoDeviceView::OnUpdateFrameTimeFontSize9(CCmdUI* pCmdUI)
+{
+	CVideoDeviceDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	pCmdUI->SetCheck(pDoc->m_nRefFontSize == 9 ? 1 : 0);
+}
+
+void CVideoDeviceView::OnFrameTimeFontSize10()
+{
+	CVideoDeviceDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	pDoc->m_nRefFontSize = 10;
+}
+
+void CVideoDeviceView::OnUpdateFrameTimeFontSize10(CCmdUI* pCmdUI)
+{
+	CVideoDeviceDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	pCmdUI->SetCheck(pDoc->m_nRefFontSize == 10 ? 1 : 0);
+}
+
+void CVideoDeviceView::OnFrameTimeFontSize11()
+{
+	CVideoDeviceDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	pDoc->m_nRefFontSize = 11;
+}
+
+void CVideoDeviceView::OnUpdateFrameTimeFontSize11(CCmdUI* pCmdUI)
+{
+	CVideoDeviceDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	pCmdUI->SetCheck(pDoc->m_nRefFontSize == 11 ? 1 : 0);
+}
+
+void CVideoDeviceView::OnFrameTimeFontSize12()
+{
+	CVideoDeviceDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	pDoc->m_nRefFontSize = 12;
+}
+
+void CVideoDeviceView::OnUpdateFrameTimeFontSize12(CCmdUI* pCmdUI)
+{
+	CVideoDeviceDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	pCmdUI->SetCheck(pDoc->m_nRefFontSize == 12 ? 1 : 0);
+}
+
+void CVideoDeviceView::OnFrameTimeFontSize14()
+{
+	CVideoDeviceDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	pDoc->m_nRefFontSize = 14;
+}
+
+void CVideoDeviceView::OnUpdateFrameTimeFontSize14(CCmdUI* pCmdUI)
+{
+	CVideoDeviceDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	pCmdUI->SetCheck(pDoc->m_nRefFontSize == 14 ? 1 : 0);
+}
+
+void CVideoDeviceView::OnFrameTimeFontSize16()
+{
+	CVideoDeviceDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	pDoc->m_nRefFontSize = 16;
+}
+
+void CVideoDeviceView::OnUpdateFrameTimeFontSize16(CCmdUI* pCmdUI)
+{
+	CVideoDeviceDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	pCmdUI->SetCheck(pDoc->m_nRefFontSize == 16 ? 1 : 0);
 }
 
 BOOL CVideoDeviceView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt) 

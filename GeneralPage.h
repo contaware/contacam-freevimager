@@ -89,7 +89,6 @@ protected:
 	afx_msg void OnCheckLiveRotate180();
 	afx_msg void OnCheckAutoopen();
 	afx_msg void OnCheckAudioListen();
-	afx_msg void OnSelchangeRefFontsize();
 	afx_msg void OnDatetimechangeTimeOnceStart(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnDatetimechangeTimeOnceStop(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnDatetimechangeDateOnceStart(NMHDR *pNMHDR, LRESULT *pResult);

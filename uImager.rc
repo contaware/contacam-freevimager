@@ -842,6 +842,24 @@ BEGIN
     END
 END
 
+IDR_CONTEXT_FONTSIZE MENU
+BEGIN
+    POPUP "_Context Menu_"
+    BEGIN
+        MENUITEM "4",                           ID_FONTSIZE_4
+        MENUITEM "5",                           ID_FONTSIZE_5
+        MENUITEM "6",                           ID_FONTSIZE_6
+        MENUITEM "7",                           ID_FONTSIZE_7
+        MENUITEM "8",                           ID_FONTSIZE_8
+        MENUITEM "9",                           ID_FONTSIZE_9
+        MENUITEM "10",                          ID_FONTSIZE_10
+        MENUITEM "11",                          ID_FONTSIZE_11
+        MENUITEM "12",                          ID_FONTSIZE_12
+        MENUITEM "14",                          ID_FONTSIZE_14
+        MENUITEM "16",                          ID_FONTSIZE_16
+    END
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -932,7 +950,6 @@ BEGIN
     CONTROL         "Slider1",IDC_VIDEO_COMPRESSION_QUALITY,
                     "msctls_trackbar32",TBS_TOP | TBS_NOTICKS | WS_TABSTOP,56,150,85,18
     CONTROL         "Rotate 180°",IDC_CHECK_LIVE_ROTATE180,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,173,56,10
-    COMBOBOX        IDC_REF_FONTSIZE,152,193,33,156,CBS_DROPDOWNLIST | WS_TABSTOP
     PUSHBUTTON      "General Settings",IDC_VIDEO_SOURCE,13,214,82,19
     PUSHBUTTON      "Video Size && Format",IDC_VIDEO_FORMAT,98,214,87,19
     PUSHBUTTON      "TV Tuner",IDC_VIDEO_TUNER,13,236,82,19
@@ -964,7 +981,6 @@ BEGIN
     LTEXT           "Stop",IDC_STATIC2164,205,190,25,8
     LTEXT           "Start",IDC_STATIC2165,205,242,25,8
     LTEXT           "Stop",IDC_STATIC2166,316,242,25,8
-    LTEXT           "Minimum Font Size for Frame Time",IDC_STATIC2287,13,195,113,8
     LTEXT           "frames/sec",IDC_STATIC2183,145,69,40,8
     LTEXT           "Set Framerate",IDC_STATIC2155,13,69,57,8
     GROUPBOX        "Video",IDC_STATIC2156,7,53,183,209

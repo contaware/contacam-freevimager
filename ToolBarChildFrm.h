@@ -203,6 +203,7 @@ protected:
 protected:
 	//{{AFX_MSG(CVideoDeviceChildFrame)
 	afx_msg void OnSizing(UINT fwSide, LPRECT pRect);
+	afx_msg void OnToolbarDropDown(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnTimer(UINT nIDEvent);
 	afx_msg void OnClose();
 	//}}AFX_MSG

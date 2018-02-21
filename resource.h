@@ -72,6 +72,7 @@
 #define IDD_YESNOALLCANCEL              226
 #define IDD_SHRINK_CURRENT_PICTUREDOC   228
 #define IDD_BATCH_PROC                  229
+#define IDR_CONTEXT_FONTSIZE            239
 #define IDR_CONTEXT_PICTURE_FULLSCREEN  240
 #define IDR_CONTEXT_OSD                 242
 #define IDB_BITMAP_DRAGDROP_SINGLE      243
@@ -3047,7 +3048,6 @@
 #define IDC_BUTTON_PARENT_DIR           2557
 #define IDC_EDIT_DETECTION_MIN_LENGTH   2558
 #define IDC_SPIN_DETECTION_MIN_LENGTH   2559
-#define IDC_REF_FONTSIZE                2560
 #define IDC_EDIT_DETECTION_MAX_FRAMES   2560
 #define IDC_STATIC_SERVERPUSH           2561
 #define IDC_STATIC_CLIENTPOLL           2562
@@ -3285,6 +3285,22 @@
 #define ID_CAPTURE_OBSCURESOURCE        33511
 #define ID_SETTINGS_LOG_NORMAL          33512
 #define ID_SETTINGS_LOG_VERBOSE         33513
+#define ID_FONTSIZE_1                   33514
+#define ID_FONTSIZE_2                   33515
+#define ID_FONTSIZE_3                   33516
+#define ID_FONTSIZE_4                   33517
+#define ID_FONTSIZE_5                   33518
+#define ID_FONTSIZE_6                   33519
+#define ID_FONTSIZE_7                   33520
+#define ID_FONTSIZE_8                   33521
+#define ID_FONTSIZE_9                   33522
+#define ID_FONTSIZE_10                  33523
+#define ID_FONTSIZE_11                  33524
+#define ID_FONTSIZE_12                  33525
+#define ID_FONTSIZE_13                  33526
+#define ID_FONTSIZE_14                  33527
+#define ID_FONTSIZE_15                  33528
+#define ID_FONTSIZE_16                  33529
 #define ID_BUTTON_PRINT_SETUP           58120
 
 // Next default values for new objects
@@ -3293,7 +3309,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1502
-#define _APS_NEXT_COMMAND_VALUE         33514
+#define _APS_NEXT_COMMAND_VALUE         33530
 #define _APS_NEXT_CONTROL_VALUE         2574
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
