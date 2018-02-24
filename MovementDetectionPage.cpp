@@ -54,7 +54,6 @@ void CMovementDetectionPage::DoDataExchange(CDataExchange* pDX)
 	DDV_MinMaxInt(pDX, m_nSecondsBeforeMovementBegin, 1, 99);
 	DDX_Control(pDX, IDC_SPIN_SECONDS_BEFORE_MOVEMENT_BEGIN, m_SpinSecondsBeforeMovementBegin);
 	DDX_Control(pDX, IDC_SPIN_SECONDS_AFTER_MOVEMENT_END, m_SpinSecondsAfterMovementEnd);
-	DDX_Control(pDX, IDC_DETECTION_LEVEL, m_DetectionLevel);
 	DDX_DateTimeCtrl(pDX, IDC_TIME_DAILY_START, m_DetectionStartTime);
 	DDX_DateTimeCtrl(pDX, IDC_TIME_DAILY_STOP, m_DetectionStopTime);
 	DDX_Text(pDX, IDC_EDIT_DETECTION_MIN_LENGTH, m_nDetectionMinLengthSeconds);
@@ -72,8 +71,6 @@ BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	ON_EN_CHANGE(IDC_SECONDS_AFTER_MOVEMENT_END, OnChangeSecondsAfterMovementEnd)
 	ON_EN_CHANGE(IDC_SECONDS_BEFORE_MOVEMENT_BEGIN, OnChangeSecondsBeforeMovementBegin)
 	ON_WM_TIMER()
-	ON_WM_HSCROLL()
-	ON_NOTIFY(NM_RELEASEDCAPTURE, IDC_DETECTION_LEVEL, OnReleasedcaptureDetectionLevel)
 	ON_BN_CLICKED(IDC_ANIMATEDGIF_SIZE, OnAnimatedgifSize)
 	ON_BN_CLICKED(IDC_SAVE_ANIMATEDGIF_MOVEMENT_DETECTION, OnSaveAnimGifMovementDetection)
 	ON_BN_CLICKED(IDC_FTP_MOVEMENT_DETECTION, OnFtpMovementDetection)
@@ -137,14 +134,6 @@ BOOL CMovementDetectionPage::OnInitDialog()
 
 	// Movement Detection minimum detection length in seconds, below this value SaveFrameList() is not called
 	m_SpinDetectionMinLengthSeconds.SetRange(0, 99);
-
-	// Detection Level Slider & Edit Controls
-	m_DetectionLevel.SetRange(0, 100, TRUE);
-	m_DetectionLevel.SetPos(m_pDoc->m_nDetectionLevel);
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_DETECTION_LEVEL_NUM);
-	CString sLevel;
-	sLevel.Format(_T("%i"), m_pDoc->m_nDetectionLevel);
-	pEdit->SetWindowText(sLevel);
 
 	// Detection Zone Size
 	pComboBoxZoneSize->SetCurSel(m_pDoc->m_nDetectionZoneSize);
@@ -395,36 +384,6 @@ void CMovementDetectionPage::OnTimer(UINT nIDEvent)
 	CPropertyPage::OnTimer(nIDEvent);
 }
 
-void CMovementDetectionPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) 
-{
-	if (pScrollBar)
-	{
-		CSliderCtrl* pSlider = (CSliderCtrl*)pScrollBar;
-
-		if ((SB_THUMBTRACK == nSBCode)		||	// Dragging Slider
-			(SB_THUMBPOSITION == nSBCode)	||	// Wheel On Mouse And End Of Dragging Slider
-			(SB_LINEUP  == nSBCode)			||	// Keyboard Arrow
-			(SB_LINEDOWN  == nSBCode)		||	// Keyboard Arrow
-			(SB_PAGEUP == nSBCode)			||	// Mouse Press Above Slider
-			(SB_PAGEDOWN == nSBCode)		||	// Mouse Press Below Slider
-			(SB_LEFT == nSBCode)			||	// Home Button
-			(SB_RIGHT == nSBCode))				// End Button  
-		{
-			if (pSlider->GetDlgCtrlID() == IDC_DETECTION_LEVEL)
-			{
-				m_pDoc->m_nDetectionLevel = m_DetectionLevel.GetPos();
-				m_pDoc->m_nMovementDetectorIntensityLimit = 50 - m_pDoc->m_nDetectionLevel / 2;
-				CEdit* pEdit = (CEdit*)GetDlgItem(IDC_DETECTION_LEVEL_NUM);
-				CString sLevel;
-				sLevel.Format(_T("%i"), m_DetectionLevel.GetPos());
-				pEdit->SetWindowText(sLevel);
-			}
-		}
-	}
-
-	CPropertyPage::OnHScroll(nSBCode, nPos, pScrollBar);
-}
-
 void CMovementDetectionPage::OnSelchangeDetectionZoneSize() 
 {
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_DETECTION_ZONE_SIZE);
@@ -447,12 +406,6 @@ void CMovementDetectionPage::OnSelchangeExecmodeMovementDetection()
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_EXECMODE_MOVEMENT_DETECTION);
 	m_pDoc->m_nExecModeMovementDetection = pComboBox->GetCurSel();
 	UpdateExecHelp();
-}
-
-void CMovementDetectionPage::OnReleasedcaptureDetectionLevel(NMHDR* pNMHDR, LRESULT* pResult) 
-{
-	UpdateData(TRUE);
-	*pResult = 0;
 }
 
 void CMovementDetectionPage::OnSaveVideoMovementDetection() 

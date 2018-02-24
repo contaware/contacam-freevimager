@@ -34,7 +34,6 @@ public:
 	int	m_nDetectionMinLengthSeconds;
 	int m_nDetectionMaxFrames;
 	CSpinButtonCtrl	m_SpinDetectionMinLengthSeconds;
-	CSliderCtrl	m_DetectionLevel;
 	CTime m_DetectionStartTime;
 	CTime m_DetectionStopTime;
 	//}}AFX_DATA
@@ -60,8 +59,6 @@ protected:
 	afx_msg void OnChangeSecondsAfterMovementEnd();
 	afx_msg void OnChangeSecondsBeforeMovementBegin();
 	afx_msg void OnTimer(UINT nIDEvent);
-	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
-	afx_msg void OnReleasedcaptureDetectionLevel(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnAnimatedgifSize();
 	afx_msg void OnSaveAnimGifMovementDetection();
 	afx_msg void OnFtpMovementDetection();

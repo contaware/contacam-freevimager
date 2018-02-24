@@ -559,24 +559,6 @@ void CGeneralPage::OnTimer(UINT nIDEvent)
 		sEffectiveFrameRate.Format(_T("%0.1f"), dEffectiveFrameRate);
 		pEdit->SetWindowText(sEffectiveFrameRate);
 
-		// Show Dropped Frames
-		pEdit = (CEdit*)GetDlgItem(IDC_DROPPED_FRAMES);
-		if (pEdit)
-		{
-			CString sDroppedFrames;
-			if (m_pDoc->m_pDxCapture)
-			{
-				LONG lDroppedFrames = m_pDoc->m_pDxCapture->GetDroppedFrames();
-				if (lDroppedFrames >= 0)
-					sDroppedFrames.Format(_T("%d"), lDroppedFrames);
-				else
-					sDroppedFrames = _T("0");	// Unsupported
-			}
-			else
-				sDroppedFrames = _T("0");	// Unsupported
-			pEdit->SetWindowText(sDroppedFrames);
-		}
-
 		// Show Process Frame Time
 		pEdit = (CEdit*)GetDlgItem(IDC_PROCESS_TIME);
 		if (pEdit)

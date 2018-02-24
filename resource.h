@@ -72,6 +72,7 @@
 #define IDD_YESNOALLCANCEL              226
 #define IDD_SHRINK_CURRENT_PICTUREDOC   228
 #define IDD_BATCH_PROC                  229
+#define IDR_CONTEXT_SENSITIVITY         238
 #define IDR_CONTEXT_FONTSIZE            239
 #define IDR_CONTEXT_PICTURE_FULLSCREEN  240
 #define IDR_CONTEXT_OSD                 242
@@ -882,7 +883,6 @@
 #define IDS_MULTILANG_1035              1035
 #define IDC_SPIN_FRAMERATE              1035
 #define IDS_MULTILANG_1036              1036
-#define IDC_DETECTION_LEVEL             1036
 #define IDS_MULTILANG_1037              1037
 #define IDC_CHECK_LOSSLESSTRANS         1037
 #define IDC_VIDEO_TUNER                 1037
@@ -985,7 +985,6 @@
 #define IDS_MULTILANG_1094              1094
 #define IDS_MULTILANG_1095              1095
 #define IDS_MULTILANG_1096              1096
-#define IDC_DETECTION_LEVEL_NUM         1096
 #define IDS_MULTILANG_1097              1097
 #define IDC_COMPRESSION_QUALITY_SLIDER  1097
 #define IDS_MULTILANG_1098              1098
@@ -1197,7 +1196,6 @@
 #define IDC_EFFECTIVE_FRAMERATE         1215
 #define IDS_MULTILANG_1216              1216
 #define IDC_SENDER_NAME                 1216
-#define IDC_DROPPED_FRAMES              1216
 #define IDS_MULTILANG_1217              1217
 #define IDC_SENDER_MAIL                 1217
 #define IDS_MULTILANG_1218              1218
@@ -3301,6 +3299,27 @@
 #define ID_FONTSIZE_14                  33527
 #define ID_FONTSIZE_15                  33528
 #define ID_FONTSIZE_16                  33529
+#define ID_SENSITIVITY_0                33530
+#define ID_SENSITIVITY_5                33531
+#define ID_SENSITIVITY_10               33532
+#define ID_SENSITIVITY_15               33533
+#define ID_SENSITIVITY_20               33534
+#define ID_SENSITIVITY_25               33535
+#define ID_SENSITIVITY_30               33536
+#define ID_SENSITIVITY_35               33537
+#define ID_SENSITIVITY_40               33538
+#define ID_SENSITIVITY_45               33539
+#define ID_SENSITIVITY_50               33540
+#define ID_SENSITIVITY_55               33541
+#define ID_SENSITIVITY_60               33542
+#define ID_SENSITIVITY_65               33543
+#define ID_SENSITIVITY_70               33544
+#define ID_SENSITIVITY_75               33545
+#define ID_SENSITIVITY_80               33546
+#define ID_SENSITIVITY_85               33547
+#define ID_SENSITIVITY_90               33548
+#define ID_SENSITIVITY_95               33549
+#define ID_SENSITIVITY_100              33550
 #define ID_BUTTON_PRINT_SETUP           58120
 
 // Next default values for new objects
@@ -3309,7 +3328,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1502
-#define _APS_NEXT_COMMAND_VALUE         33530
+#define _APS_NEXT_COMMAND_VALUE         33551
 #define _APS_NEXT_CONTROL_VALUE         2574
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

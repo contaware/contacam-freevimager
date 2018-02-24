@@ -213,6 +213,9 @@ BOOL CVideoDeviceToolBar::Create(CWnd* pParentWnd)
 	DWORD dwStyle = GetButtonStyle(CommandToIndex(ID_VIEW_FRAMETIME));
 	dwStyle |= TBSTYLE_DROPDOWN;
 	SetButtonStyle(CommandToIndex(ID_VIEW_FRAMETIME), dwStyle);
+	dwStyle = GetButtonStyle(CommandToIndex(ID_CAPTURE_MOVDET));
+	dwStyle |= TBSTYLE_DROPDOWN;
+	SetButtonStyle(CommandToIndex(ID_CAPTURE_MOVDET), dwStyle);
 	
 	return TRUE;
 }
@@ -1016,6 +1019,16 @@ void CVideoDeviceChildFrame::OnToolbarDropDown(NMHDR* pNMHDR, LRESULT* pResult)
 		{
 			CMenu menu;
 			VERIFY(menu.LoadMenu(IDR_CONTEXT_FONTSIZE));
+			CMenu* pPopup = menu.GetSubMenu(0);
+			ASSERT(pPopup != NULL);
+			GetToolBar()->ClientToScreen(&(pNMToolBar->rcButton));
+			pPopup->TrackPopupMenu(TPM_LEFTBUTTON | TPM_RIGHTBUTTON, pNMToolBar->rcButton.left, pNMToolBar->rcButton.bottom, this);
+			break;
+		}
+		case ID_CAPTURE_MOVDET:
+		{
+			CMenu menu;
+			VERIFY(menu.LoadMenu(IDR_CONTEXT_SENSITIVITY));
 			CMenu* pPopup = menu.GetSubMenu(0);
 			ASSERT(pPopup != NULL);
 			GetToolBar()->ClientToScreen(&(pNMToolBar->rcButton));

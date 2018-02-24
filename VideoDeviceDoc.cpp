@@ -54,6 +54,28 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_UPDATE_COMMAND_UI(ID_CAPTURE_RECORD, OnUpdateCaptureRecord)
 	ON_COMMAND(ID_CAPTURE_MOVDET, OnCaptureMovDet)
 	ON_UPDATE_COMMAND_UI(ID_CAPTURE_MOVDET, OnUpdateCaptureMovDet)
+	ON_COMMAND(ID_SENSITIVITY_0, OnMovDetSensitivity0)
+	ON_UPDATE_COMMAND_UI(ID_SENSITIVITY_0, OnUpdateMovDetSensitivity0)
+	ON_COMMAND(ID_SENSITIVITY_10, OnMovDetSensitivity10)
+	ON_UPDATE_COMMAND_UI(ID_SENSITIVITY_10, OnUpdateMovDetSensitivity10)
+	ON_COMMAND(ID_SENSITIVITY_20, OnMovDetSensitivity20)
+	ON_UPDATE_COMMAND_UI(ID_SENSITIVITY_20, OnUpdateMovDetSensitivity20)
+	ON_COMMAND(ID_SENSITIVITY_30, OnMovDetSensitivity30)
+	ON_UPDATE_COMMAND_UI(ID_SENSITIVITY_30, OnUpdateMovDetSensitivity30)
+	ON_COMMAND(ID_SENSITIVITY_40, OnMovDetSensitivity40)
+	ON_UPDATE_COMMAND_UI(ID_SENSITIVITY_40, OnUpdateMovDetSensitivity40)
+	ON_COMMAND(ID_SENSITIVITY_50, OnMovDetSensitivity50)
+	ON_UPDATE_COMMAND_UI(ID_SENSITIVITY_50, OnUpdateMovDetSensitivity50)
+	ON_COMMAND(ID_SENSITIVITY_60, OnMovDetSensitivity60)
+	ON_UPDATE_COMMAND_UI(ID_SENSITIVITY_60, OnUpdateMovDetSensitivity60)
+	ON_COMMAND(ID_SENSITIVITY_70, OnMovDetSensitivity70)
+	ON_UPDATE_COMMAND_UI(ID_SENSITIVITY_70, OnUpdateMovDetSensitivity70)
+	ON_COMMAND(ID_SENSITIVITY_80, OnMovDetSensitivity80)
+	ON_UPDATE_COMMAND_UI(ID_SENSITIVITY_80, OnUpdateMovDetSensitivity80)
+	ON_COMMAND(ID_SENSITIVITY_90, OnMovDetSensitivity90)
+	ON_UPDATE_COMMAND_UI(ID_SENSITIVITY_90, OnUpdateMovDetSensitivity90)
+	ON_COMMAND(ID_SENSITIVITY_100, OnMovDetSensitivity100)
+	ON_UPDATE_COMMAND_UI(ID_SENSITIVITY_100, OnUpdateMovDetSensitivity100)
 	ON_COMMAND(ID_CAPTURE_OBSCURESOURCE, OnCaptureObscureSource)
 	ON_UPDATE_COMMAND_UI(ID_CAPTURE_OBSCURESOURCE, OnUpdateCaptureObscureSource)
 	ON_COMMAND(ID_CAPTURE_CAMERAADVANCEDSETTINGS, OnCaptureCameraAdvancedSettings)
@@ -5615,6 +5637,127 @@ void CVideoDeviceDoc::OnCaptureMovDet()
 void CVideoDeviceDoc::OnUpdateCaptureMovDet(CCmdUI* pCmdUI) 
 {	
 	pCmdUI->SetCheck(m_dwVideoProcessorMode ? 1 : 0);
+}
+
+void CVideoDeviceDoc::OnMovDetSensitivity0()
+{
+	m_nDetectionLevel = 0;
+	m_nMovementDetectorIntensityLimit = 50 - m_nDetectionLevel / 2;
+}
+
+void CVideoDeviceDoc::OnUpdateMovDetSensitivity0(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(m_nDetectionLevel == 0 ? 1 : 0);
+}
+
+void CVideoDeviceDoc::OnMovDetSensitivity10()
+{
+	m_nDetectionLevel = 10;
+	m_nMovementDetectorIntensityLimit = 50 - m_nDetectionLevel / 2;
+}
+
+void CVideoDeviceDoc::OnUpdateMovDetSensitivity10(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(m_nDetectionLevel == 10 ? 1 : 0);
+}
+
+void CVideoDeviceDoc::OnMovDetSensitivity20()
+{
+	m_nDetectionLevel = 20;
+	m_nMovementDetectorIntensityLimit = 50 - m_nDetectionLevel / 2;
+}
+
+void CVideoDeviceDoc::OnUpdateMovDetSensitivity20(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(m_nDetectionLevel == 20 ? 1 : 0);
+}
+
+void CVideoDeviceDoc::OnMovDetSensitivity30()
+{
+	m_nDetectionLevel = 30;
+	m_nMovementDetectorIntensityLimit = 50 - m_nDetectionLevel / 2;
+}
+
+void CVideoDeviceDoc::OnUpdateMovDetSensitivity30(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(m_nDetectionLevel == 30 ? 1 : 0);
+}
+
+void CVideoDeviceDoc::OnMovDetSensitivity40()
+{
+	m_nDetectionLevel = 40;
+	m_nMovementDetectorIntensityLimit = 50 - m_nDetectionLevel / 2;
+}
+
+void CVideoDeviceDoc::OnUpdateMovDetSensitivity40(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(m_nDetectionLevel == 40 ? 1 : 0);
+}
+
+void CVideoDeviceDoc::OnMovDetSensitivity50()
+{
+	m_nDetectionLevel = 50;
+	m_nMovementDetectorIntensityLimit = 50 - m_nDetectionLevel / 2;
+}
+
+void CVideoDeviceDoc::OnUpdateMovDetSensitivity50(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(m_nDetectionLevel == 50 ? 1 : 0);
+}
+
+void CVideoDeviceDoc::OnMovDetSensitivity60()
+{
+	m_nDetectionLevel = 60;
+	m_nMovementDetectorIntensityLimit = 50 - m_nDetectionLevel / 2;
+}
+
+void CVideoDeviceDoc::OnUpdateMovDetSensitivity60(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(m_nDetectionLevel == 60 ? 1 : 0);
+}
+
+void CVideoDeviceDoc::OnMovDetSensitivity70()
+{
+	m_nDetectionLevel = 70;
+	m_nMovementDetectorIntensityLimit = 50 - m_nDetectionLevel / 2;
+}
+
+void CVideoDeviceDoc::OnUpdateMovDetSensitivity70(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(m_nDetectionLevel == 70 ? 1 : 0);
+}
+
+void CVideoDeviceDoc::OnMovDetSensitivity80()
+{
+	m_nDetectionLevel = 80;
+	m_nMovementDetectorIntensityLimit = 50 - m_nDetectionLevel / 2;
+}
+
+void CVideoDeviceDoc::OnUpdateMovDetSensitivity80(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(m_nDetectionLevel == 80 ? 1 : 0);
+}
+
+void CVideoDeviceDoc::OnMovDetSensitivity90()
+{
+	m_nDetectionLevel = 90;
+	m_nMovementDetectorIntensityLimit = 50 - m_nDetectionLevel / 2;
+}
+
+void CVideoDeviceDoc::OnUpdateMovDetSensitivity90(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(m_nDetectionLevel == 90 ? 1 : 0);
+}
+
+void CVideoDeviceDoc::OnMovDetSensitivity100()
+{
+	m_nDetectionLevel = 100;
+	m_nMovementDetectorIntensityLimit = 50 - m_nDetectionLevel / 2;
+}
+
+void CVideoDeviceDoc::OnUpdateMovDetSensitivity100(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(m_nDetectionLevel == 100 ? 1 : 0);
 }
 
 void CVideoDeviceDoc::OnCaptureObscureSource()
