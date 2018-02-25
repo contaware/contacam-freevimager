@@ -821,6 +821,8 @@ public:
 
 // Protected Functions
 protected:
+	int ValidateRefFontSize(int nRefFontSize);
+	int ValidateDetectionLevel(int nDetectionLevel);
 	void Snapshot(CDib* pDib, const CTime& Time);
 	BOOL EditCopy(CDib* pDib, const CTime& Time);
 	void EditSnapshot(CDib* pDib, const CTime& Time);

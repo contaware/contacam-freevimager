@@ -4440,6 +4440,30 @@ void CVideoDeviceDoc::SaveZonesSettings()
 	}
 }
 
+// Valid values: 4,5,6,7,8,9,10,11,12,14,16
+int CVideoDeviceDoc::ValidateRefFontSize(int nRefFontSize)
+{
+	if (nRefFontSize < 4)
+		nRefFontSize = 4;
+	else if (nRefFontSize > 16)
+		nRefFontSize = 16;
+	else if (nRefFontSize == 15)
+		nRefFontSize = 14;
+	else if (nRefFontSize == 13)
+		nRefFontSize = 12;
+	return nRefFontSize;
+}
+
+// Valid values: 0,10,20,30,40,50,60,70,80,90,100
+int CVideoDeviceDoc::ValidateDetectionLevel(int nDetectionLevel)
+{
+	if (nDetectionLevel < 0)
+		nDetectionLevel = 0;
+	else if (nDetectionLevel > 100)
+		nDetectionLevel = 100;
+	return (nDetectionLevel / 10) * 10;
+}
+
 void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 									BOOL bDefaultCaptureAudioFromStream,
 									CString sSection,
@@ -4618,7 +4642,8 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 		m_nDetectionMaxFrames = nDetectionMaxFrames;
 	else
 		m_nDetectionMaxFrames = MOVDET_DEFAULT_MAX_FRAMES_IN_LIST; // restore the default if a strange value is set
-	m_nDetectionLevel = (int) pApp->GetProfileInt(sSection, _T("DetectionLevel"), DEFAULT_MOVDET_LEVEL);
+	m_nDetectionLevel = ValidateDetectionLevel(pApp->GetProfileInt(sSection, _T("DetectionLevel"), DEFAULT_MOVDET_LEVEL));
+	m_nMovementDetectorIntensityLimit = (int)pApp->GetProfileInt(sSection, _T("IntensityLimit"), DEFAULT_MOVDET_INTENSITY_LIMIT);
 	m_nCurrentDetectionZoneSize = m_nDetectionZoneSize = (int) pApp->GetProfileInt(sSection, _T("DetectionZoneSize"), 0);
 	m_bSaveVideoMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveVideoMovementDetection"), TRUE);
 	m_bSaveAnimGIFMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), TRUE);
@@ -4659,9 +4684,8 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 												pApp->GetProfileInt(sSection, _T("DetectionStopMin"), t.GetMinute()),
 												pApp->GetProfileInt(sSection, _T("DetectionStopSec"), t.GetSecond()));
 	m_bShowFrameTime = (BOOL) pApp->GetProfileInt(sSection, _T("ShowFrameTime"), TRUE);
-	m_nRefFontSize = (int) pApp->GetProfileInt(sSection, _T("RefFontSize"), 9);
+	m_nRefFontSize = ValidateRefFontSize(pApp->GetProfileInt(sSection, _T("RefFontSize"), 9));
 	m_bShowMovementDetections = (BOOL) pApp->GetProfileInt(sSection, _T("ShowMovementDetections"), FALSE);
-	m_nMovementDetectorIntensityLimit = (int) pApp->GetProfileInt(sSection, _T("IntensityLimit"), DEFAULT_MOVDET_INTENSITY_LIMIT);
 	m_dwAnimatedGifWidth = (DWORD) pApp->GetProfileInt(sSection, _T("AnimatedGifWidth"), MOVDET_ANIMGIF_DEFAULT_WIDTH);
 	m_dwAnimatedGifHeight = (DWORD) pApp->GetProfileInt(sSection, _T("AnimatedGifHeight"), MOVDET_ANIMGIF_DEFAULT_HEIGHT);
 	m_nDeleteRecordingsOlderThanDays = (int) pApp->GetProfileInt(sSection, _T("DeleteRecordingsOlderThanDays"), DEFAULT_DEL_RECS_OLDER_THAN_DAYS);
@@ -4809,6 +4833,7 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("DetectionMinLengthMilliSeconds"), m_nDetectionMinLengthMilliSeconds);
 	pApp->WriteProfileInt(sSection, _T("DetectionMaxFrames"), m_nDetectionMaxFrames);
 	pApp->WriteProfileInt(sSection, _T("DetectionLevel"), m_nDetectionLevel);
+	pApp->WriteProfileInt(sSection, _T("IntensityLimit"), m_nMovementDetectorIntensityLimit);
 	pApp->WriteProfileInt(sSection, _T("DetectionZoneSize"), m_nDetectionZoneSize);
 	pApp->WriteProfileInt(sSection, _T("SaveVideoMovementDetection"), m_bSaveVideoMovementDetection);
 	pApp->WriteProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), m_bSaveAnimGIFMovementDetection);
@@ -4850,7 +4875,6 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("DetectionStopMin"), m_DetectionStopTime.GetMinute());
 	pApp->WriteProfileInt(sSection, _T("DetectionStopSec"), m_DetectionStopTime.GetSecond());
 	pApp->WriteProfileInt(sSection, _T("RefFontSize"), m_nRefFontSize);
-	pApp->WriteProfileInt(sSection, _T("IntensityLimit"), m_nMovementDetectorIntensityLimit);
 	pApp->WriteProfileInt(sSection, _T("AnimatedGifWidth"), m_dwAnimatedGifWidth);
 	pApp->WriteProfileInt(sSection, _T("AnimatedGifHeight"), m_dwAnimatedGifHeight);
 	pApp->WriteProfileInt(sSection, _T("DeleteRecordingsOlderThanDays"), m_nDeleteRecordingsOlderThanDays);
