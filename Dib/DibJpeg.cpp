@@ -40,7 +40,6 @@ static void jpeg_error_load(j_common_ptr pcinfo)
 	// Be a bit error tolerant and ignore the following
 	if (myerr->pub.msg_code == JERR_SOF_DUPLICATE	||
 		myerr->pub.msg_code == JERR_SOI_DUPLICATE	||
-		myerr->pub.msg_code == JERR_NO_SOI			||
 		myerr->pub.msg_code == JERR_EOI_EXPECTED)
 	    return;
 
@@ -3243,10 +3242,15 @@ BOOL CDib::LoadEXIFThumbnail()
 		BOOL res = FALSE;
 		if (GetMetadata()->m_ExifInfo.ThumbnailCompression == 6) // Jpeg
 		{
-			if (m_pThumbnailDib == NULL)
-				m_pThumbnailDib = (CDib*)new CDib;
-			res = m_pThumbnailDib->LoadJPEG(GetMetadata()->m_ExifInfo.ThumbnailPointer, 
-											GetMetadata()->m_ExifInfo.ThumbnailSize);
+			if (GetMetadata()->m_ExifInfo.ThumbnailSize >= 2			&&
+				GetMetadata()->m_ExifInfo.ThumbnailPointer[0] == 0xFF	&&
+				GetMetadata()->m_ExifInfo.ThumbnailPointer[1] == 0xD8)
+			{
+				if (m_pThumbnailDib == NULL)
+					m_pThumbnailDib = (CDib*)new CDib;
+				res = m_pThumbnailDib->LoadJPEG(GetMetadata()->m_ExifInfo.ThumbnailPointer,
+												GetMetadata()->m_ExifInfo.ThumbnailSize);
+			}
 		}
 		else if (GetMetadata()->m_ExifInfo.ThumbnailCompression == 1) // TIFF
 		{
