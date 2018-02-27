@@ -107,6 +107,10 @@ BOOL CImageInfoDlg::OnInitDialog()
 	AddSzControl(IDC_BUTTON_SAVE_METADATA, mdRepos, mdRepos);
 	AddSzControl(IDC_COMBO_METADATA, mdResize, mdRepos);
 
+	// Set tab stop
+	CEdit* pMetadataBox = (CEdit*)GetDlgItem(IDC_METADATA);
+	pMetadataBox->SetTabStops(110); // in dialog units, which are based on the current system font
+
 	// File Comment
 	m_cbMetadata.AddString(ML_STRING(1581, "File: Comment (Not part of Iptc or Xmp)"));
 
@@ -1386,7 +1390,7 @@ void CImageInfoDlg::DisplayMetadata()
 			t.Format(ML_STRING(1656, "%s comment:\t%s"),
 				::GetFileExt(m_pDoc->m_sFileName) == _T(".gif") ? _T("Gif") : _T("Jpeg"),
 				m_sOrigComment);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -1397,7 +1401,7 @@ void CImageInfoDlg::DisplayMetadata()
 		{
 			t.Format(ML_STRING(1657, "Camera make:\t%s"), CString(m_pDoc->m_pDib->GetExifInfo()->CameraMake));
 			::MakeLineBreakCRLF(t);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -1406,7 +1410,7 @@ void CImageInfoDlg::DisplayMetadata()
 		{
 			t.Format(ML_STRING(1658, "Camera model:\t%s"), CString(m_pDoc->m_pDib->GetExifInfo()->CameraModel));
 			::MakeLineBreakCRLF(t);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -1415,7 +1419,7 @@ void CImageInfoDlg::DisplayMetadata()
 		{
 			t.Format(ML_STRING(1660, "Image description:\t%s"), CString(m_pDoc->m_pDib->GetExifInfo()->ImageDescription));
 			::MakeLineBreakCRLF(t);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -1424,7 +1428,7 @@ void CImageInfoDlg::DisplayMetadata()
 		{
 			t.Format(ML_STRING(1661, "User comment:\t%s"), CString(m_pDoc->m_pDib->GetExifInfo()->UserComment));
 			::MakeLineBreakCRLF(t);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -1433,16 +1437,16 @@ void CImageInfoDlg::DisplayMetadata()
 		{
 			t.Format(ML_STRING(1662, "Software:\t%s"), CString(m_pDoc->m_pDib->GetExifInfo()->Software));
 			::MakeLineBreakCRLF(t);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
 
 		if (m_pDoc->m_pDib->GetExifInfo()->Artist[0])
 		{
-			t.Format(ML_STRING(1663, "Artist:\t\t%s"), CString(m_pDoc->m_pDib->GetExifInfo()->Artist));
+			t.Format(ML_STRING(1663, "Artist:\t%s"), CString(m_pDoc->m_pDib->GetExifInfo()->Artist));
 			::MakeLineBreakCRLF(t);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -1456,7 +1460,7 @@ void CImageInfoDlg::DisplayMetadata()
 			{
 				t.Format(ML_STRING(1664, "Photographer©:\t%s"), sCopyrightPhotographer);
 				::MakeLineBreakCRLF(t);
-				t.Replace(_T("\n"), _T("\n\t\t"));
+				t.Replace(_T("\n"), _T("\n\t"));
 				t += _T("\r\n");
 				s+=t;
 			}
@@ -1469,9 +1473,9 @@ void CImageInfoDlg::DisplayMetadata()
 			sCopyrightEditor.TrimLeft(_T(' '));
 			if (sCopyrightEditor != _T(""))
 			{
-				t.Format(ML_STRING(1665, "Editor©:\t\t%s"), sCopyrightEditor);
+				t.Format(ML_STRING(1665, "Editor©:\t%s"), sCopyrightEditor);
 				::MakeLineBreakCRLF(t);
-				t.Replace(_T("\n"), _T("\n\t\t"));
+				t.Replace(_T("\n"), _T("\n\t"));
 				t += _T("\r\n");
 				s+=t;
 			}
@@ -1591,7 +1595,7 @@ void CImageInfoDlg::DisplayMetadata()
 		
 		if (m_pDoc->m_pDib->GetExifInfo()->ApertureFNumber)
 		{
-			t.Format(ML_STRING(1676, "Aperture:\t\tf/%.1f\r\n"), (double)m_pDoc->m_pDib->GetExifInfo()->ApertureFNumber); s+=t;
+			t.Format(ML_STRING(1676, "Aperture:\tf/%.1f\r\n"), (double)m_pDoc->m_pDib->GetExifInfo()->ApertureFNumber); s+=t;
 		}
 		
 		if (m_pDoc->m_pDib->GetExifInfo()->Distance)
@@ -1849,9 +1853,9 @@ void CImageInfoDlg::DisplayMetadata()
 		
 		if (m_pDoc->m_pDib->GetIptcFromXmpInfo()->Byline != _T(""))
 		{
-			t.Format(ML_STRING(1621, "Creator:\t\t%s"),
+			t.Format(ML_STRING(1621, "Creator:\t%s"),
 					m_pDoc->m_pDib->GetIptcFromXmpInfo()->Byline);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -1860,24 +1864,24 @@ void CImageInfoDlg::DisplayMetadata()
 		{
 			t.Format(ML_STRING(1622, "Creator's job title:\t%s"),
 					m_pDoc->m_pDib->GetIptcFromXmpInfo()->BylineTitle);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
 		if (m_pDoc->m_pDib->GetXmpInfo()->CiAdrExtadr != _T(""))
 		{
-			t.Format(ML_STRING(1623, "Address:\t\t%s"),
+			t.Format(ML_STRING(1623, "Address:\t%s"),
 					m_pDoc->m_pDib->GetXmpInfo()->CiAdrExtadr);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
 
 		if (m_pDoc->m_pDib->GetXmpInfo()->CiAdrCity != _T(""))
 		{
-			t.Format(ML_STRING(1624, "City:\t\t%s"),
+			t.Format(ML_STRING(1624, "City:\t%s"),
 					m_pDoc->m_pDib->GetXmpInfo()->CiAdrCity);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -1886,7 +1890,7 @@ void CImageInfoDlg::DisplayMetadata()
 		{
 			t.Format(ML_STRING(1625, "State/Province:\t%s"),
 					m_pDoc->m_pDib->GetXmpInfo()->CiAdrRegion);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -1895,34 +1899,34 @@ void CImageInfoDlg::DisplayMetadata()
 		{
 			t.Format(ML_STRING(1626, "Postal code:\t%s"),
 					m_pDoc->m_pDib->GetXmpInfo()->CiAdrPcode);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
 
 		if (m_pDoc->m_pDib->GetXmpInfo()->CiAdrCtry != _T(""))
 		{
-			t.Format(ML_STRING(1627, "Country:\t\t%s"),
+			t.Format(ML_STRING(1627, "Country:\t%s"),
 					m_pDoc->m_pDib->GetXmpInfo()->CiAdrCtry);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
 
 		if (m_pDoc->m_pDib->GetXmpInfo()->CiTelWork != _T(""))
 		{
-			t.Format(ML_STRING(1628, "Phone(s):\t\t%s"),
+			t.Format(ML_STRING(1628, "Phone(s):\t%s"),
 					m_pDoc->m_pDib->GetXmpInfo()->CiTelWork);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
 
 		if (m_pDoc->m_pDib->GetXmpInfo()->CiEmailWork != _T(""))
 		{
-			t.Format(ML_STRING(1629, "E-Mail(s):\t\t%s"),
+			t.Format(ML_STRING(1629, "E-Mail(s):\t%s"),
 					m_pDoc->m_pDib->GetXmpInfo()->CiEmailWork);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -1931,7 +1935,7 @@ void CImageInfoDlg::DisplayMetadata()
 		{
 			t.Format(ML_STRING(1630, "Website(s):\t%s"),
 					m_pDoc->m_pDib->GetXmpInfo()->CiUrlWork);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -1942,9 +1946,9 @@ void CImageInfoDlg::DisplayMetadata()
 		
 		if (m_pDoc->m_pDib->GetIptcFromXmpInfo()->Headline != _T(""))
 		{
-			t.Format(ML_STRING(1631, "Headline:\t\t%s"),
+			t.Format(ML_STRING(1631, "Headline:\t%s"),
 					m_pDoc->m_pDib->GetIptcFromXmpInfo()->Headline);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -1953,7 +1957,7 @@ void CImageInfoDlg::DisplayMetadata()
 		{
 			t.Format(ML_STRING(1632, "Description:\t%s"),
 					m_pDoc->m_pDib->GetIptcFromXmpInfo()->Caption);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -2004,7 +2008,7 @@ void CImageInfoDlg::DisplayMetadata()
 		{
 			t.Format(ML_STRING(1635, "Category:\t%s"),
 					m_pDoc->m_pDib->GetIptcFromXmpInfo()->Category);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -2034,7 +2038,7 @@ void CImageInfoDlg::DisplayMetadata()
 		{
 			t.Format(ML_STRING(1637, "Description writer:\t%s"),
 					m_pDoc->m_pDib->GetIptcFromXmpInfo()->CaptionWriter);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -2047,7 +2051,7 @@ void CImageInfoDlg::DisplayMetadata()
 		{
 			CTime Time = CMetadata::GetDateFromIptcLegacyString(m_pDoc->m_pDib->GetIptcFromXmpInfo()->DateCreated);
 			t.Format(ML_STRING(1638, "Date created:\t%s"), ::MakeDateLocalFormat(Time, TRUE));
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -2056,7 +2060,7 @@ void CImageInfoDlg::DisplayMetadata()
 		{
 			t.Format(ML_STRING(1639, "Intellectual genre:\t%s"),
 					m_pDoc->m_pDib->GetXmpInfo()->IntellectualGenre);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -2084,18 +2088,18 @@ void CImageInfoDlg::DisplayMetadata()
 
 		if (m_pDoc->m_pDib->GetXmpInfo()->Location != _T(""))
 		{
-			t.Format(ML_STRING(1641, "Location:\t\t%s"),
+			t.Format(ML_STRING(1641, "Location:\t%s"),
 					m_pDoc->m_pDib->GetXmpInfo()->Location);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
 		
 		if (m_pDoc->m_pDib->GetIptcFromXmpInfo()->City != _T(""))
 		{
-			t.Format(ML_STRING(1624, "City:\t\t%s"),
+			t.Format(ML_STRING(1624, "City:\t%s"),
 					m_pDoc->m_pDib->GetIptcFromXmpInfo()->City);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -2104,16 +2108,16 @@ void CImageInfoDlg::DisplayMetadata()
 		{
 			t.Format(ML_STRING(1625, "State/Province:\t%s"),
 					m_pDoc->m_pDib->GetIptcFromXmpInfo()->ProvinceState);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
 
 		if (m_pDoc->m_pDib->GetIptcFromXmpInfo()->Country != _T(""))
 		{
-			t.Format(ML_STRING(1627, "Country:\t\t%s"),
+			t.Format(ML_STRING(1627, "Country:\t%s"),
 					m_pDoc->m_pDib->GetIptcFromXmpInfo()->Country);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -2122,7 +2126,7 @@ void CImageInfoDlg::DisplayMetadata()
 		{
 			t.Format(ML_STRING(1642, "ISO country code:\t%s"),
 					m_pDoc->m_pDib->GetXmpInfo()->CountryCode);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -2133,9 +2137,9 @@ void CImageInfoDlg::DisplayMetadata()
 
 		if (m_pDoc->m_pDib->GetIptcFromXmpInfo()->ObjectName != _T(""))
 		{
-			t.Format(ML_STRING(1643, "Title:\t\t%s"),
+			t.Format(ML_STRING(1643, "Title:\t%s"),
 					m_pDoc->m_pDib->GetIptcFromXmpInfo()->ObjectName);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -2144,7 +2148,7 @@ void CImageInfoDlg::DisplayMetadata()
 		{
 			t.Format(ML_STRING(1644, "Job identifier:\t%s"),
 					m_pDoc->m_pDib->GetIptcFromXmpInfo()->OriginalTransmissionReference);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -2153,25 +2157,25 @@ void CImageInfoDlg::DisplayMetadata()
 		{
 			t.Format(ML_STRING(1645, "Instructions:\t%s"),
 					m_pDoc->m_pDib->GetIptcFromXmpInfo()->SpecialInstructions);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
 
 		if (m_pDoc->m_pDib->GetIptcFromXmpInfo()->Credits != _T(""))
 		{
-			t.Format(ML_STRING(1646, "Provider:\t\t%s"),
+			t.Format(ML_STRING(1646, "Provider:\t%s"),
 					m_pDoc->m_pDib->GetIptcFromXmpInfo()->Credits);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
 
 		if (m_pDoc->m_pDib->GetIptcFromXmpInfo()->Source != _T(""))
 		{
-			t.Format(ML_STRING(1647, "Source:\t\t%s"),
+			t.Format(ML_STRING(1647, "Source:\t%s"),
 					m_pDoc->m_pDib->GetIptcFromXmpInfo()->Source);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -2180,7 +2184,7 @@ void CImageInfoDlg::DisplayMetadata()
 		{
 			t.Format(ML_STRING(1648, "Copyright notice:\t%s"),
 					m_pDoc->m_pDib->GetIptcFromXmpInfo()->CopyrightNotice);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -2189,7 +2193,7 @@ void CImageInfoDlg::DisplayMetadata()
 		{
 			t.Format(ML_STRING(1649, "RightsUsageTerms:\t%s"),
 					m_pDoc->m_pDib->GetXmpInfo()->UsageTerms);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -2198,7 +2202,7 @@ void CImageInfoDlg::DisplayMetadata()
 		{
 			t.Format(ML_STRING(1650, "Copyright URL:\t%s"),
 					m_pDoc->m_pDib->GetXmpInfo()->CopyrightUrl);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -2206,15 +2210,15 @@ void CImageInfoDlg::DisplayMetadata()
 		t.Format(ML_STRING(1651, "Copyright status:\t%s"),
 			m_pDoc->m_pDib->GetXmpInfo()->CopyrightMarked == _T("True") ?
 			_T("Copyrighted") : _T("Public Domain"));
-		t.Replace(_T("\n"), _T("\n\t\t"));
+		t.Replace(_T("\n"), _T("\n\t"));
 		t += _T("\r\n");
 		s+=t;
 
 		if (m_pDoc->m_pDib->GetIptcFromXmpInfo()->Urgency != _T(""))
 		{
-			t.Format(ML_STRING(1652, "Urgency:\t\t%s"),
+			t.Format(ML_STRING(1652, "Urgency:\t%s"),
 					m_pDoc->m_pDib->GetIptcFromXmpInfo()->Urgency);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -2228,9 +2232,9 @@ void CImageInfoDlg::DisplayMetadata()
 
 		if (m_pDoc->m_pDib->GetIptcLegacyInfo()->Byline != _T(""))
 		{
-			t.Format(ML_STRING(1621, "Creator:\t\t%s"),
+			t.Format(ML_STRING(1621, "Creator:\t%s"),
 					m_pDoc->m_pDib->GetIptcLegacyInfo()->Byline);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -2239,7 +2243,7 @@ void CImageInfoDlg::DisplayMetadata()
 		{
 			t.Format(ML_STRING(1622, "Creator's job title:\t%s"),
 					m_pDoc->m_pDib->GetIptcLegacyInfo()->BylineTitle);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -2250,9 +2254,9 @@ void CImageInfoDlg::DisplayMetadata()
 
 		if (m_pDoc->m_pDib->GetIptcLegacyInfo()->Headline != _T(""))
 		{
-			t.Format(ML_STRING(1631, "Headline:\t\t%s"),
+			t.Format(ML_STRING(1631, "Headline:\t%s"),
 					m_pDoc->m_pDib->GetIptcLegacyInfo()->Headline);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -2261,7 +2265,7 @@ void CImageInfoDlg::DisplayMetadata()
 		{
 			t.Format(ML_STRING(1632, "Description:\t%s"),
 					m_pDoc->m_pDib->GetIptcLegacyInfo()->Caption);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -2291,7 +2295,7 @@ void CImageInfoDlg::DisplayMetadata()
 		{
 			t.Format(ML_STRING(1635, "Category:\t%s"),
 					m_pDoc->m_pDib->GetIptcLegacyInfo()->Category);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -2321,7 +2325,7 @@ void CImageInfoDlg::DisplayMetadata()
 		{
 			t.Format(ML_STRING(1637, "Description writer:\t%s"),
 					m_pDoc->m_pDib->GetIptcLegacyInfo()->CaptionWriter);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -2334,16 +2338,16 @@ void CImageInfoDlg::DisplayMetadata()
 		{
 			CTime Time = CMetadata::GetDateFromIptcLegacyString(m_pDoc->m_pDib->GetIptcLegacyInfo()->DateCreated);
 			t.Format(ML_STRING(1638, "Date created:\t%s"), ::MakeDateLocalFormat(Time, TRUE));
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
 
 		if (m_pDoc->m_pDib->GetIptcLegacyInfo()->City != _T(""))
 		{
-			t.Format(ML_STRING(1624, "City:\t\t%s"),
+			t.Format(ML_STRING(1624, "City:\t%s"),
 					m_pDoc->m_pDib->GetIptcLegacyInfo()->City);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -2352,16 +2356,16 @@ void CImageInfoDlg::DisplayMetadata()
 		{
 			t.Format(ML_STRING(1625, "State/Province:\t%s"),
 					m_pDoc->m_pDib->GetIptcLegacyInfo()->ProvinceState);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
 
 		if (m_pDoc->m_pDib->GetIptcLegacyInfo()->Country != _T(""))
 		{
-			t.Format(ML_STRING(1627, "Country:\t\t%s"),
+			t.Format(ML_STRING(1627, "Country:\t%s"),
 					m_pDoc->m_pDib->GetIptcLegacyInfo()->Country);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -2372,9 +2376,9 @@ void CImageInfoDlg::DisplayMetadata()
 
 		if (m_pDoc->m_pDib->GetIptcLegacyInfo()->ObjectName != _T(""))
 		{
-			t.Format(ML_STRING(1643, "Title:\t\t%s"),
+			t.Format(ML_STRING(1643, "Title:\t%s"),
 					m_pDoc->m_pDib->GetIptcLegacyInfo()->ObjectName);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -2383,7 +2387,7 @@ void CImageInfoDlg::DisplayMetadata()
 		{
 			t.Format(ML_STRING(1644, "Job identifier:\t%s"),
 					m_pDoc->m_pDib->GetIptcLegacyInfo()->OriginalTransmissionReference);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -2392,25 +2396,25 @@ void CImageInfoDlg::DisplayMetadata()
 		{
 			t.Format(ML_STRING(1645, "Instructions:\t%s"),
 					m_pDoc->m_pDib->GetIptcLegacyInfo()->SpecialInstructions);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
 
 		if (m_pDoc->m_pDib->GetIptcLegacyInfo()->Credits != _T(""))
 		{
-			t.Format(ML_STRING(1646, "Provider:\t\t%s"),
+			t.Format(ML_STRING(1646, "Provider:\t%s"),
 					m_pDoc->m_pDib->GetIptcLegacyInfo()->Credits);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
 
 		if (m_pDoc->m_pDib->GetIptcLegacyInfo()->Source != _T(""))
 		{
-			t.Format(ML_STRING(1647, "Source:\t\t%s"),
+			t.Format(ML_STRING(1647, "Source:\t%s"),
 					m_pDoc->m_pDib->GetIptcLegacyInfo()->Source);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
@@ -2419,16 +2423,16 @@ void CImageInfoDlg::DisplayMetadata()
 		{
 			t.Format(ML_STRING(1648, "Copyright notice:\t%s"),
 					m_pDoc->m_pDib->GetIptcLegacyInfo()->CopyrightNotice);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}
 
 		if (m_pDoc->m_pDib->GetIptcLegacyInfo()->Urgency != _T(""))
 		{
-			t.Format(ML_STRING(1652, "Urgency:\t\t%s"),
+			t.Format(ML_STRING(1652, "Urgency:\t%s"),
 					m_pDoc->m_pDib->GetIptcLegacyInfo()->Urgency);
-			t.Replace(_T("\n"), _T("\n\t\t"));
+			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
 			s+=t;
 		}

@@ -1115,18 +1115,18 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_FILEINFO,10,13,167,78,ES_MULTILINE | ES_READONLY | WS_HSCROLL
     CONTROL         "Others",IDC_RADIO_METADATA,"Button",BS_AUTORADIOBUTTON | WS_GROUP,10,106,35,10
-    CONTROL         "Exif",IDC_RADIO_EXIF,"Button",BS_AUTORADIOBUTTON,47,106,27,10
-    CONTROL         "Iptc Leg.",IDC_RADIO_IPTC_LEGACY,"Button",BS_AUTORADIOBUTTON,78,106,43,10
-    CONTROL         "Xmp",IDC_RADIO_XMP,"Button",BS_AUTORADIOBUTTON,121,106,30,10
-    CONTROL         "Icc",IDC_RADIO_ICC,"Button",BS_AUTORADIOBUTTON,153,106,26,10
+    CONTROL         "Exif",IDC_RADIO_EXIF,"Button",BS_AUTORADIOBUTTON,49,106,27,10
+    CONTROL         "Iptc Leg.",IDC_RADIO_IPTC_LEGACY,"Button",BS_AUTORADIOBUTTON,79,106,43,10
+    CONTROL         "Xmp",IDC_RADIO_XMP,"Button",BS_AUTORADIOBUTTON,125,106,30,10
+    CONTROL         "Icc",IDC_RADIO_ICC,"Button",BS_AUTORADIOBUTTON,157,106,26,10
     EDITTEXT        IDC_METADATA,10,117,167,51,ES_MULTILINE | ES_READONLY | WS_VSCROLL | WS_HSCROLL
     COMBOBOX        IDC_COMBO_METADATA,10,184,167,416,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_EDIT_METADATA,10,198,129,51,ES_MULTILINE | ES_WANTRETURN | WS_VSCROLL | WS_HSCROLL
-    PUSHBUTTON      "<-",IDC_BUTTON_PREV_METADATA,142,198,16,11
-    PUSHBUTTON      "->",IDC_BUTTON_NEXT_METADATA,161,198,16,11
-    PUSHBUTTON      "Export...",IDC_BUTTON_EXPORT_METADATA,142,211,35,11
-    PUSHBUTTON      "Import...",IDC_BUTTON_IMPORT_METADATA,142,222,35,11
-    PUSHBUTTON      "Save",IDC_BUTTON_SAVE_METADATA,142,235,35,13,BS_CENTER | BS_VCENTER
+    EDITTEXT        IDC_EDIT_METADATA,10,198,120,51,ES_MULTILINE | ES_WANTRETURN | WS_VSCROLL | WS_HSCROLL
+    PUSHBUTTON      "<-",IDC_BUTTON_PREV_METADATA,133,198,20,11
+    PUSHBUTTON      "->",IDC_BUTTON_NEXT_METADATA,157,198,20,11
+    PUSHBUTTON      "Export",IDC_BUTTON_EXPORT_METADATA,133,211,44,11
+    PUSHBUTTON      "Import",IDC_BUTTON_IMPORT_METADATA,133,223,44,11
+    PUSHBUTTON      "Save",IDC_BUTTON_SAVE_METADATA,133,236,44,13,BS_CENTER | BS_VCENTER
     GROUPBOX        "Image Information",IDC_FILEINFO_BORDER,5,3,176,91,0,WS_EX_TRANSPARENT
     GROUPBOX        "Metadata Stored in Current File",IDC_METADATA_BORDER,5,97,176,74,0,WS_EX_TRANSPARENT
     GROUPBOX        "Metadata Edit",IDC_EDIT_METADATA_BORDER,5,174,176,78,0,WS_EX_TRANSPARENT
@@ -2579,13 +2579,10 @@ BEGIN
         LEFTMARGIN, 5
         RIGHTMARGIN, 181
         VERTGUIDE, 10
-        VERTGUIDE, 139
-        VERTGUIDE, 142
+        VERTGUIDE, 133
         VERTGUIDE, 177
         BOTTOMMARGIN, 254
         HORZGUIDE, 122
-        HORZGUIDE, 201
-        HORZGUIDE, 214
     END
 
     IDD_MONOCHROME, DIALOG
@@ -4242,17 +4239,17 @@ BEGIN
     IDS_STRING1618          "_____________ Content ______________"
     IDS_STRING1619          "_____________ Image ________________"
     IDS_STRING1620          "_____________ Status _______________"
-    IDS_STRING1621          "Creator:\t\t%s"
+    IDS_STRING1621          "Creator:\t%s"
     IDS_STRING1622          "Creator's job title:\t%s"
-    IDS_STRING1623          "Address:\t\t%s"
-    IDS_STRING1624          "City:\t\t%s"
+    IDS_STRING1623          "Address:\t%s"
+    IDS_STRING1624          "City:\t%s"
     IDS_STRING1625          "State/Province:\t%s"
     IDS_STRING1626          "Postal code:\t%s"
-    IDS_STRING1627          "Country:\t\t%s"
-    IDS_STRING1628          "Phone(s):\t\t%s"
-    IDS_STRING1629          "E-Mail(s):\t\t%s"
+    IDS_STRING1627          "Country:\t%s"
+    IDS_STRING1628          "Phone(s):\t%s"
+    IDS_STRING1629          "E-Mail(s):\t%s"
     IDS_STRING1630          "Website(s):\t%s"
-    IDS_STRING1631          "Headline:\t\t%s"
+    IDS_STRING1631          "Headline:\t%s"
 END
 
 STRINGTABLE
@@ -4266,13 +4263,13 @@ BEGIN
     IDS_STRING1638          "Date created:\t%s"
     IDS_STRING1639          "Intellectual genre:\t%s"
     IDS_STRING1640          "IPTC scene:\t%s"
-    IDS_STRING1641          "Location:\t\t%s"
+    IDS_STRING1641          "Location:\t%s"
     IDS_STRING1642          "ISO country code:\t%s"
-    IDS_STRING1643          "Title:\t\t%s"
+    IDS_STRING1643          "Title:\t%s"
     IDS_STRING1644          "Job identifier:\t%s"
     IDS_STRING1645          "Instructions:\t%s"
-    IDS_STRING1646          "Provider:\t\t%s"
-    IDS_STRING1647          "Source:\t\t%s"
+    IDS_STRING1646          "Provider:\t%s"
+    IDS_STRING1647          "Source:\t%s"
 END
 
 STRINGTABLE
@@ -4281,7 +4278,7 @@ BEGIN
     IDS_STRING1649          "RightsUsageTerms:\t%s"
     IDS_STRING1650          "Copyright URL:\t%s"
     IDS_STRING1651          "Copyright status:\t%s"
-    IDS_STRING1652          "Urgency:\t\t%s"
+    IDS_STRING1652          "Urgency:\t%s"
     IDS_STRING1653          "File Info"
     IDS_STRING1654          "File Info of %s"
     IDS_STRING1656          "%s comment:\t%s"
@@ -4291,13 +4288,13 @@ BEGIN
     IDS_STRING1660          "Image description:\t%s"
     IDS_STRING1661          "User comment:\t%s"
     IDS_STRING1662          "Software:\t%s"
-    IDS_STRING1663          "Artist:\t\t%s"
+    IDS_STRING1663          "Artist:\t%s"
 END
 
 STRINGTABLE
 BEGIN
     IDS_STRING1664          "Photographer©:\t%s"
-    IDS_STRING1665          "Editor©:\t\t%s"
+    IDS_STRING1665          "Editor©:\t%s"
     IDS_STRING1666          "Taken on:\t%s\r\n"
     IDS_STRING1667          "Orientation:\t%s\r\n"
     IDS_STRING1668          "Flash used:\tyes"
@@ -4308,7 +4305,7 @@ BEGIN
     IDS_STRING1673          "Exposure time:\t%.4f s"
     IDS_STRING1674          "Exposure time:\t%.3f s"
     IDS_STRING1675          "Brightness:\t%.3f\r\n"
-    IDS_STRING1676          "Aperture:\t\tf/%.1f\r\n"
+    IDS_STRING1676          "Aperture:\tf/%.1f\r\n"
     IDS_STRING1677          "Focus dist.:\tinfinite\r\n"
     IDS_STRING1678          "Focus dist.:\t%.2fm\r\n"
     IDS_STRING1679          "ISO equiv.:\t%2d\r\n"

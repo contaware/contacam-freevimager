@@ -10634,33 +10634,33 @@ static void icmHeader_dump(
 
 	// Oli Changed to Tabs
 	//op->gprintf(op,"Header:\n");
-	op->gprintf(op,"Size:\t\t%d bytes\n",p->size);
-	op->gprintf(op,"CMM:\t\t%s\n",tag2str(p->cmmId));
-	op->gprintf(op,"Version:\t\t%d.%d.%d\n",p->majv, p->minv, p->bfv);
+	op->gprintf(op,"Size:\t%d bytes\n",p->size);
+	op->gprintf(op,"CMM:\t%s\n",tag2str(p->cmmId));
+	op->gprintf(op,"Version:\t%d.%d.%d\n",p->majv, p->minv, p->bfv);
 	op->gprintf(op,"Device Class:\t%s\n", string_ProfileClassSignature(p->deviceClass));
 	op->gprintf(op,"Color Space:\t%s\n", string_ColorSpaceSignature(p->colorSpace));
 	op->gprintf(op,"Conn. Space:\t%s\n", string_ColorSpaceSignature(p->pcs));
 	op->gprintf(op,"Date, Time:\t%s\n", string_DateTimeNumber(&p->date));
-	op->gprintf(op,"Platform:\t\t%s\n", string_PlatformSignature(p->platform));
-	op->gprintf(op,"Flags:\t\t%s\n", string_ProfileHeaderFlags(p->flags));
+	op->gprintf(op,"Platform:\t%s\n", string_PlatformSignature(p->platform));
+	op->gprintf(op,"Flags:\t%s\n", string_ProfileHeaderFlags(p->flags));
 	op->gprintf(op,"Dev. Mnfctr.:\t%s\n", tag2str(p->manufacturer));	/* ~~~ */
 	op->gprintf(op,"Dev. Model:\t%s\n", tag2str(p->model));	/* ~~~ */
 	op->gprintf(op,"Dev. Attrbts:\t%s\n", string_DeviceAttributes(p->attributes.l));
 	op->gprintf(op,"Rndrng Intnt:\t%s\n", string_RenderingIntent(p->renderingIntent));
 	op->gprintf(op,"Illuminant:\t%s\n", string_XYZNumber_and_Lab(&p->illuminant));
-	op->gprintf(op,"Creator:\t\t%s\n", tag2str(p->creator));	/* ~~~ */
+	op->gprintf(op,"Creator:\t%s\n", tag2str(p->creator));	/* ~~~ */
 	if (p->icp->ver) {	/* V4.0+ feature */
 		for (i = 0; i < 16; i++) {		/* Check if ID has been set */
 			if (p->id[i] != 0)
 				break;
 		}
 		if (i < 16)
-			op->gprintf(op,"ID:\t\t%02X%02X%02X%02X%02X%02X%02X%02X"
-			                      "%02X%02X%02X%02X%02X%02X%02X%02X\n",
+			op->gprintf(op,"ID:\t%02X%02X%02X%02X%02X%02X%02X%02X"
+			                    "%02X%02X%02X%02X%02X%02X%02X%02X\n",
 				p->id[0], p->id[1], p->id[2], p->id[3], p->id[4], p->id[5], p->id[6], p->id[7],
 				p->id[8], p->id[9], p->id[10], p->id[11], p->id[12], p->id[13], p->id[14], p->id[15]);
 		else
-			op->gprintf(op,"ID:\t\t<Not set>\n");
+			op->gprintf(op,"ID:\t<Not set>\n");
 	}
 	op->gprintf(op,"\n");
 }

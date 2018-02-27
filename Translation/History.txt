@@ -2,7 +2,8 @@ TRANSLATIONS HISTORY
 
 7.9.0 (Month XXth 2018)
 
-- ...
+- Updated Xmp, Iptc and Exif strings to have only one \t
+  (1621 - 1715)
 
 7.7.0 (February 18th 2018)
 
