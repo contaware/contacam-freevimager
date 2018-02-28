@@ -6156,7 +6156,11 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	sConfig += _T("LoadFile php/libeay32.dll\r\n");				// for PHP but also for mod_ssl.so
 	sConfig += _T("LoadFile php/ssleay32.dll\r\n");				// for PHP but also for mod_ssl.so
 	sConfig += _T("LoadModule access_compat_module modules/mod_access_compat.so\r\n");
+	sConfig += _T("LoadModule auth_basic_module modules/mod_auth_basic.so\r\n");
+	sConfig += _T("LoadModule authn_core_module modules/mod_authn_core.so\r\n");
+	sConfig += _T("LoadModule authn_file_module modules/mod_authn_file.so\r\n");
 	sConfig += _T("LoadModule authz_core_module modules/mod_authz_core.so\r\n");
+	sConfig += _T("LoadModule authz_user_module modules/mod_authz_user.so\r\n");
 	sConfig += _T("LoadModule dir_module modules/mod_dir.so\r\n");
 	sConfig += _T("LoadModule mime_module modules/mod_mime.so\r\n");
 	sConfig += _T("LoadModule rewrite_module modules/mod_rewrite.so\r\n");
