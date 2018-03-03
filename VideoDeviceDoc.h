@@ -1116,6 +1116,12 @@ protected:
 	afx_msg void OnUpdateEditZoneSensitivity10(CCmdUI* pCmdUI);
 	afx_msg void OnEditZoneRemove();
 	afx_msg void OnUpdateEditZoneRemove(CCmdUI* pCmdUI);
+	afx_msg void OnEditZoneBig();
+	afx_msg void OnUpdateEditZoneBig(CCmdUI* pCmdUI);
+	afx_msg void OnEditZoneMedium();
+	afx_msg void OnUpdateEditZoneMedium(CCmdUI* pCmdUI);
+	afx_msg void OnEditZoneSmall();
+	afx_msg void OnUpdateEditZoneSmall(CCmdUI* pCmdUI);
 	afx_msg void OnEditCopy();
 	afx_msg void OnFileSave();
 	afx_msg void OnUpdateFileSave(CCmdUI* pCmdUI);

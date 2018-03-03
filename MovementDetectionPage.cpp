@@ -85,7 +85,6 @@ BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_HIDE_EXEC_COMMAND, OnCheckHideExecCommand)
 	ON_BN_CLICKED(IDC_CHECK_WAIT_EXEC_COMMAND, OnCheckWaitExecCommand)
 	ON_WM_CTLCOLOR()
-	ON_CBN_SELCHANGE(IDC_DETECTION_ZONE_SIZE, OnSelchangeDetectionZoneSize)
 	ON_CBN_SELCHANGE(IDC_EXECMODE_MOVEMENT_DETECTION, OnSelchangeExecmodeMovementDetection)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_SUNDAY, OnCheckSchedulerSunday)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_MONDAY, OnCheckSchedulerMonday)
@@ -113,10 +112,6 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	m_DetectionStopTime = m_pDoc->m_DetectionStopTime;
 
 	// Init Combo Boxes
-	CComboBox* pComboBoxZoneSize = (CComboBox*)GetDlgItem(IDC_DETECTION_ZONE_SIZE);
-	pComboBoxZoneSize->AddString(ML_STRING(1836, "Big"));
-	pComboBoxZoneSize->AddString(ML_STRING(1837, "Medium"));
-	pComboBoxZoneSize->AddString(ML_STRING(1838, "Small"));
 	CComboBox* pComboBoxDetectionScheduler = (CComboBox*)GetDlgItem(IDC_COMBOBOX_DETECTION_SCHEDULER);
 	pComboBoxDetectionScheduler->AddString(ML_STRING(1874, "Detection always enabled (scheduler is off)"));
 	pComboBoxDetectionScheduler->AddString(ML_STRING(1875, "Detection enabled:"));
@@ -134,9 +129,6 @@ BOOL CMovementDetectionPage::OnInitDialog()
 
 	// Movement Detection minimum detection length in seconds, below this value SaveFrameList() is not called
 	m_SpinDetectionMinLengthSeconds.SetRange(0, 99);
-
-	// Detection Zone Size
-	pComboBoxZoneSize->SetCurSel(m_pDoc->m_nDetectionZoneSize);
 
 	// Detection Scheduler
 	pComboBoxDetectionScheduler->SetCurSel(m_pDoc->m_nDetectionStartStop);
@@ -382,12 +374,6 @@ void CMovementDetectionPage::OnTimer(UINT nIDEvent)
 		}
 	}
 	CPropertyPage::OnTimer(nIDEvent);
-}
-
-void CMovementDetectionPage::OnSelchangeDetectionZoneSize() 
-{
-	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_DETECTION_ZONE_SIZE);
-	m_pDoc->m_nDetectionZoneSize = pComboBox->GetCurSel();
 }
 
 void CMovementDetectionPage::UpdateExecHelp() 

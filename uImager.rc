@@ -549,7 +549,7 @@ BEGIN
     BEGIN
         MENUITEM "Select All",                  ID_EDIT_SELECTALL
         MENUITEM "Select None",                 ID_EDIT_SELECTNONE
-		MENUITEM SEPARATOR
+        MENUITEM SEPARATOR
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
     END
 END
@@ -864,6 +864,10 @@ BEGIN
         MENUITEM "Add Zones (25%)",             ID_EDIT_ZONE_SENSITIVITY_25
         MENUITEM "Add Zones (10%)",             ID_EDIT_ZONE_SENSITIVITY_10
         MENUITEM "Remove Zones",                ID_EDIT_ZONE_REMOVE
+        MENUITEM SEPARATOR
+        MENUITEM "Big Zones",                   ID_EDIT_ZONE_BIG
+        MENUITEM "Medium Zones",                ID_EDIT_ZONE_MEDIUM
+        MENUITEM "Small Zones",                 ID_EDIT_ZONE_SMALL
     END
 END
 
@@ -1268,7 +1272,6 @@ BEGIN
     EDITTEXT        IDC_SECONDS_AFTER_MOVEMENT_END,33,55,29,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Spin2",IDC_SPIN_SECONDS_AFTER_MOVEMENT_END,
                     "msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,50,55,11,12
-    COMBOBOX        IDC_DETECTION_ZONE_SIZE,101,84,99,72,CBS_DROPDOWNLIST | WS_TABSTOP
     EDITTEXT        IDC_EDIT_DETECTION_MIN_LENGTH,134,128,38,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Spin2",IDC_SPIN_DETECTION_MIN_LENGTH,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,160,128,11,12
     EDITTEXT        IDC_EDIT_DETECTION_MAX_FRAMES,134,145,38,12,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
@@ -1310,7 +1313,6 @@ BEGIN
     LTEXT           "Store",IDC_STATIC,13,38,18,8
     LTEXT           "Store",IDC_STATIC,13,57,18,8
     GROUPBOX        "Detection Limits",IDC_STATIC,7,117,202,67
-    LTEXT           "Detection Zones Size",IDC_STATIC2287,13,86,84,8
     LTEXT           "Detection",IDC_STATIC2544,7,4,36,11,SS_CENTERIMAGE
     LTEXT           "Off",IDC_DETECTION_MODE,46,4,104,11,SS_CENTERIMAGE | SS_SUNKEN
     LTEXT           "Drop detections shorter than",IDC_STATIC,13,130,118,11
@@ -3778,8 +3780,7 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_EDIT_ZONE_REMOVE 
-                            "Remove detection zones\nRemove Detection Zones"
+    ID_EDIT_ZONE_REMOVE     "Remove detection zones\nRemove Detection Zones"
     ID_EDIT_SELECTALL       "Select all detection zones\nSelect All"
     ID_EDIT_SELECTNONE      "Clear all detection zones\nSelect None"
     ID_CAPTURE_NETWORK      "Capture frames from the network\nCapture From Network"
@@ -4451,9 +4452,6 @@ BEGIN
     IDS_STRING1833          "Plain Text (Port 25 or 587)"
     IDS_STRING1834          "SSL/TLS (Port 465)"
     IDS_STRING1835          "STARTTLS (Port 25 or 587)"
-    IDS_STRING1836          "Big"
-    IDS_STRING1837          "Medium"
-    IDS_STRING1838          "Small"
     IDS_STRING1839          "%s, attention cannot realtime save the detections: SaveTime=%0.1fsec > FramesTime=%0.1fsec"
 END
 
@@ -4533,6 +4531,17 @@ BEGIN
     IDS_STRING1881          "Snapshot"
     IDS_STRING1882          "Saved Small Video"
     IDS_STRING1883          "Saved Full Video"
+END
+
+STRINGTABLE
+BEGIN
+    ID_EDIT_ZONE_BIG        "Big zones size\nBig Zones Size"
+END
+
+STRINGTABLE
+BEGIN
+    ID_EDIT_ZONE_MEDIUM     "Medium zones size\nMedium Zones Size"
+    ID_EDIT_ZONE_SMALL      "Small zones size\nSmall Zones Size"
 END
 
 #endif    // English (United States) resources

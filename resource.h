@@ -3026,7 +3026,6 @@
 #define IDC_CONNECTIONTYPE              2538
 #define IDC_STATIC2539                  2539
 #define IDC_CHECK_TRASHCOMMAND          2540
-#define IDC_DETECTION_ZONE_SIZE         2541
 #define IDC_CHECK_CAMERACOMMANDS        2542
 #define IDC_CHECK_MANUALSHOT_AUTOOPEN   2542
 #define IDC_EXECMODE_MOVEMENT_DETECTION 2542
@@ -3318,6 +3317,9 @@
 #define ID_SENSITIVITY_90               33548
 #define ID_SENSITIVITY_95               33549
 #define ID_SENSITIVITY_100              33550
+#define ID_EDIT_ZONE_BIG                33551
+#define ID_EDIT_ZONE_MEDIUM             33552
+#define ID_EDIT_ZONE_SMALL              33553
 #define ID_BUTTON_PRINT_SETUP           58120
 
 // Next default values for new objects
@@ -3326,7 +3328,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1502
-#define _APS_NEXT_COMMAND_VALUE         33551
+#define _APS_NEXT_COMMAND_VALUE         33554
 #define _APS_NEXT_CONTROL_VALUE         2574
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

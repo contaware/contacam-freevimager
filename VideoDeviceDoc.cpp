@@ -95,6 +95,12 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_SENSITIVITY_10, OnUpdateEditZoneSensitivity10)
 	ON_COMMAND(ID_EDIT_ZONE_REMOVE, OnEditZoneRemove)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_REMOVE, OnUpdateEditZoneRemove)
+	ON_COMMAND(ID_EDIT_ZONE_BIG, OnEditZoneBig)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_BIG, OnUpdateEditZoneBig)
+	ON_COMMAND(ID_EDIT_ZONE_MEDIUM, OnEditZoneMedium)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_MEDIUM, OnUpdateEditZoneMedium)
+	ON_COMMAND(ID_EDIT_ZONE_SMALL, OnEditZoneSmall)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_SMALL, OnUpdateEditZoneSmall)
 	ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
 	ON_COMMAND(ID_FILE_SAVE, OnFileSave)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SAVE, OnUpdateFileSave)
@@ -8996,6 +9002,36 @@ void CVideoDeviceDoc::OnEditZoneRemove()
 void CVideoDeviceDoc::OnUpdateEditZoneRemove(CCmdUI* pCmdUI)
 {
 	pCmdUI->SetCheck(m_nShowEditDetectionZones == 2 ? 1 : 0);
+}
+
+void CVideoDeviceDoc::OnEditZoneBig()
+{
+	m_nDetectionZoneSize = 0;
+}
+
+void CVideoDeviceDoc::OnUpdateEditZoneBig(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(m_nDetectionZoneSize == 0 ? 1 : 0);
+}
+
+void CVideoDeviceDoc::OnEditZoneMedium()
+{
+	m_nDetectionZoneSize = 1;
+}
+
+void CVideoDeviceDoc::OnUpdateEditZoneMedium(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(m_nDetectionZoneSize == 1 ? 1 : 0);
+}
+
+void CVideoDeviceDoc::OnEditZoneSmall()
+{
+	m_nDetectionZoneSize = 2;
+}
+
+void CVideoDeviceDoc::OnUpdateEditZoneSmall(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(m_nDetectionZoneSize == 2 ? 1 : 0);
 }
 
 void CVideoDeviceDoc::OnViewFit() 
