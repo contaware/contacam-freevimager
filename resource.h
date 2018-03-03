@@ -28,7 +28,7 @@
 #define IDR_CONTEXT_CROP                150
 #define IDD_HLS                         150
 #define IDD_AUDIOIN_SOURCE              151
-#define IDR_CONTEXT_VIDEO_DEVICE_ZONES  151
+#define IDR_CONTEXT_ZONES               151
 #define IDR_EMPTY_TOOLBAR               154
 #define IDC_HAND_CURSOR                 157
 #define IDR_MAINFRAME2X                 158
@@ -95,6 +95,7 @@
 #define IDD_HTTP_VIDEOFORMAT            281
 #define IDR_TRAYICON                    283
 #define IDR_CONTEXT_LAYERED_DLG         284
+#define IDR_CONTEXT_ADD_REMOVE_ZONES    285
 #define IDI_PLAY                        291
 #define IDI_STOP                        292
 #define IDI_PAUSE                       293
@@ -3114,9 +3115,8 @@
 #define ID_EDIT_TO8BITS                 32883
 #define ID_EDIT_TO1BIT_DITHER_ERRDIFF   32884
 #define ID_FILE_SETTINGS                32889
-#define ID_VIEW_DETECTIONS              32910
-#define ID_VIEW_DETECTION_ZONES_ADD     32911
-#define ID_VIEW_DETECTION_ZONES_REMOVE  32912
+#define ID_EDIT_ZONE_ADD                32910
+#define ID_EDIT_ZONE_REMOVE             32912
 #define ID_EDIT_SELECTALL               32913
 #define ID_EDIT_SELECTNONE              32914
 #define ID_CAPTURE_NETWORK              32915

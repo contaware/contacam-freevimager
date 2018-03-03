@@ -65,14 +65,6 @@ protected:
 	afx_msg void OnEditSelectall();
 	afx_msg void OnEditSelectnone();
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
-	afx_msg void OnEditZoneSensitivity100();
-	afx_msg void OnEditZoneSensitivity50();
-	afx_msg void OnEditZoneSensitivity25();
-	afx_msg void OnEditZoneSensitivity10();
-	afx_msg void OnUpdateEditZoneSensitivity100(CCmdUI* pCmdUI);
-	afx_msg void OnUpdateEditZoneSensitivity50(CCmdUI* pCmdUI);
-	afx_msg void OnUpdateEditZoneSensitivity25(CCmdUI* pCmdUI);
-	afx_msg void OnUpdateEditZoneSensitivity10(CCmdUI* pCmdUI);
 	afx_msg void OnFrameTimeFontSize4();
 	afx_msg void OnUpdateFrameTimeFontSize4(CCmdUI* pCmdUI);
 	afx_msg void OnFrameTimeFontSize5();

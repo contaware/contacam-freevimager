@@ -197,7 +197,6 @@ BEGIN
     POPUP "_Context Menu_"
     BEGIN
         MENUITEM "Record\tEnter",               ID_CAPTURE_RECORD
-        MENUITEM "Movement Detection",          ID_CAPTURE_MOVDET
         MENUITEM "Obscure Source",              ID_CAPTURE_OBSCURESOURCE
         MENUITEM SEPARATOR
         MENUITEM "Global Settings...",          ID_FILE_SETTINGS
@@ -205,10 +204,6 @@ BEGIN
         MENUITEM "Camera Advanced Settings...", ID_CAPTURE_CAMERAADVANCEDSETTINGS
         MENUITEM SEPARATOR
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
-        MENUITEM SEPARATOR
-        MENUITEM "Show Detections",             ID_VIEW_DETECTIONS
-        MENUITEM "Add Detection Zones",         ID_VIEW_DETECTION_ZONES_ADD
-        MENUITEM "Remove Detection Zones",      ID_VIEW_DETECTION_ZONES_REMOVE
     END
 END
 
@@ -256,12 +251,6 @@ BEGIN
         MENUITEM "Fit",                         ID_VIEW_FIT
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
         MENUITEM SEPARATOR
-        MENUITEM "Show Frame Time",             ID_VIEW_FRAMETIME
-        MENUITEM SEPARATOR
-        MENUITEM "Show Detections",             ID_VIEW_DETECTIONS
-        MENUITEM "Add Detection Zones",         ID_VIEW_DETECTION_ZONES_ADD
-        MENUITEM "Remove Detection Zones",      ID_VIEW_DETECTION_ZONES_REMOVE
-        MENUITEM SEPARATOR
         MENUITEM "Browse",                      ID_VIEW_WEB
         MENUITEM "Browse Files",                ID_VIEW_FILES
     END
@@ -270,7 +259,6 @@ BEGIN
         MENUITEM "&Network",                    ID_CAPTURE_NETWORK
         MENUITEM SEPARATOR
         MENUITEM "Record\tEnter",               ID_CAPTURE_RECORD
-        MENUITEM "Movement Detection",          ID_CAPTURE_MOVDET
         MENUITEM "Obscure Source",              ID_CAPTURE_OBSCURESOURCE
     END
     POPUP "&Settings"
@@ -555,26 +543,14 @@ BEGIN
     END
 END
 
-IDR_CONTEXT_VIDEO_DEVICE_ZONES MENU
+IDR_CONTEXT_ZONES MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
         MENUITEM "Select All",                  ID_EDIT_SELECTALL
         MENUITEM "Select None",                 ID_EDIT_SELECTNONE
-        MENUITEM SEPARATOR
-        MENUITEM "Import...",                   ID_EDIT_IMPORT_ZONES
-        MENUITEM "Export...",                   ID_EDIT_EXPORT_ZONES
-        MENUITEM SEPARATOR
-        MENUITEM "Sensitivity 100 %",           ID_EDIT_ZONE_SENSITIVITY_100
-        MENUITEM "Sensitivity 50 %",            ID_EDIT_ZONE_SENSITIVITY_50
-        MENUITEM "Sensitivity 25 %",            ID_EDIT_ZONE_SENSITIVITY_25
-        MENUITEM "Sensitivity 10 %",            ID_EDIT_ZONE_SENSITIVITY_10
-        MENUITEM SEPARATOR
+		MENUITEM SEPARATOR
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
-        MENUITEM SEPARATOR
-        MENUITEM "Show Detections",             ID_VIEW_DETECTIONS
-        MENUITEM "Add Detection Zones",         ID_VIEW_DETECTION_ZONES_ADD
-        MENUITEM "Remove Detection Zones",      ID_VIEW_DETECTION_ZONES_REMOVE
     END
 END
 
@@ -875,6 +851,22 @@ BEGIN
         MENUITEM "12",                          ID_FONTSIZE_12
         MENUITEM "14",                          ID_FONTSIZE_14
         MENUITEM "16",                          ID_FONTSIZE_16
+    END
+END
+
+IDR_CONTEXT_ADD_REMOVE_ZONES MENU
+BEGIN
+    POPUP "_Context Menu_"
+    BEGIN
+        MENUITEM SEPARATOR
+        MENUITEM "Add Zones (100%)",            ID_EDIT_ZONE_SENSITIVITY_100
+        MENUITEM "Add Zones (50%)",             ID_EDIT_ZONE_SENSITIVITY_50
+        MENUITEM "Add Zones (25%)",             ID_EDIT_ZONE_SENSITIVITY_25
+        MENUITEM "Add Zones (10%)",             ID_EDIT_ZONE_SENSITIVITY_10
+        MENUITEM "Remove Zones",                ID_EDIT_ZONE_REMOVE
+        MENUITEM SEPARATOR
+        MENUITEM "Import...",                   ID_EDIT_IMPORT_ZONES
+        MENUITEM "Export...",                   ID_EDIT_EXPORT_ZONES
     END
 END
 
@@ -3784,13 +3776,12 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_VIEW_DETECTIONS      "Enable / disable detections display\nShow / Hide Detections"
-    ID_VIEW_DETECTION_ZONES_ADD "Add detection zones\nAdd Detection Zones"
+    ID_EDIT_ZONE_ADD        "Add / remove / show detection zones\nDetection Zones"
 END
 
 STRINGTABLE
 BEGIN
-    ID_VIEW_DETECTION_ZONES_REMOVE 
+    ID_EDIT_ZONE_REMOVE 
                             "Remove detection zones\nRemove Detection Zones"
     ID_EDIT_SELECTALL       "Select all detection zones\nSelect All"
     ID_EDIT_SELECTNONE      "Clear all detection zones\nSelect None"

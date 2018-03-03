@@ -965,7 +965,6 @@ public:
 	volatile DWORD m_dwVideoProcessorMode;				// 0 = Off, 1 = software + file trigger detectors On
 	CString m_sDetectionTriggerFileName;				// The external detection trigger file name
 	FILETIME m_DetectionTriggerLastWriteTime;			// Last known write time of detection trigger file
-	BOOL m_bShowMovementDetections;						// Show / Hide Movement Detection Zones
 	int m_nShowEditDetectionZones;						// Edit Detection zones, 0: disabled, 1: add, 2: remove
 	volatile BOOL m_bDetectingMovement;					// Flag indicating a Detection
 	volatile BOOL m_bDetectingMinLengthMovement;		// Flag indicating a Movement of at least m_nDetectionMinLengthMilliSeconds
@@ -1106,13 +1105,19 @@ protected:
 	afx_msg void OnViewFrametime();
 	afx_msg void OnUpdateViewFrametime(CCmdUI* pCmdUI);
 	afx_msg void OnFileClose();
-	afx_msg void OnViewDetections();
-	afx_msg void OnUpdateViewDetections(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateCaptureCameraAdvancedSettings(CCmdUI* pCmdUI);
-	afx_msg void OnViewDetectionZonesAdd();
-	afx_msg void OnUpdateViewDetectionZonesAdd(CCmdUI* pCmdUI);
-	afx_msg void OnViewDetectionZonesRemove();
-	afx_msg void OnUpdateViewDetectionZonesRemove(CCmdUI* pCmdUI);
+	afx_msg void OnEditZoneAdd();
+	afx_msg void OnUpdateEditZoneAdd(CCmdUI* pCmdUI);
+	afx_msg void OnEditZoneSensitivity100();
+	afx_msg void OnUpdateEditZoneSensitivity100(CCmdUI* pCmdUI);
+	afx_msg void OnEditZoneSensitivity50();
+	afx_msg void OnUpdateEditZoneSensitivity50(CCmdUI* pCmdUI);
+	afx_msg void OnEditZoneSensitivity25();
+	afx_msg void OnUpdateEditZoneSensitivity25(CCmdUI* pCmdUI);
+	afx_msg void OnEditZoneSensitivity10();
+	afx_msg void OnUpdateEditZoneSensitivity10(CCmdUI* pCmdUI);
+	afx_msg void OnEditZoneRemove();
+	afx_msg void OnUpdateEditZoneRemove(CCmdUI* pCmdUI);
 	afx_msg void OnEditCopy();
 	afx_msg void OnFileSave();
 	afx_msg void OnUpdateFileSave(CCmdUI* pCmdUI);

@@ -216,6 +216,9 @@ BOOL CVideoDeviceToolBar::Create(CWnd* pParentWnd)
 	dwStyle = GetButtonStyle(CommandToIndex(ID_CAPTURE_MOVDET));
 	dwStyle |= TBSTYLE_DROPDOWN;
 	SetButtonStyle(CommandToIndex(ID_CAPTURE_MOVDET), dwStyle);
+	dwStyle = GetButtonStyle(CommandToIndex(ID_EDIT_ZONE_ADD));
+	dwStyle |= TBSTYLE_DROPDOWN;
+	SetButtonStyle(CommandToIndex(ID_EDIT_ZONE_ADD), dwStyle);
 	
 	return TRUE;
 }
@@ -1029,6 +1032,16 @@ void CVideoDeviceChildFrame::OnToolbarDropDown(NMHDR* pNMHDR, LRESULT* pResult)
 		{
 			CMenu menu;
 			VERIFY(menu.LoadMenu(IDR_CONTEXT_SENSITIVITY));
+			CMenu* pPopup = menu.GetSubMenu(0);
+			ASSERT(pPopup != NULL);
+			GetToolBar()->ClientToScreen(&(pNMToolBar->rcButton));
+			pPopup->TrackPopupMenu(TPM_LEFTBUTTON | TPM_RIGHTBUTTON, pNMToolBar->rcButton.left, pNMToolBar->rcButton.bottom, this);
+			break;
+		}
+		case ID_EDIT_ZONE_ADD:
+		{
+			CMenu menu;
+			VERIFY(menu.LoadMenu(IDR_CONTEXT_ADD_REMOVE_ZONES));
 			CMenu* pPopup = menu.GetSubMenu(0);
 			ASSERT(pPopup != NULL);
 			GetToolBar()->ClientToScreen(&(pNMToolBar->rcButton));
