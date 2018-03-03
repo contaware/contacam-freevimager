@@ -1104,8 +1104,8 @@ protected:
 	afx_msg void OnUpdateViewFrametime(CCmdUI* pCmdUI);
 	afx_msg void OnFileClose();
 	afx_msg void OnUpdateCaptureCameraAdvancedSettings(CCmdUI* pCmdUI);
-	afx_msg void OnEditZoneAdd();
-	afx_msg void OnUpdateEditZoneAdd(CCmdUI* pCmdUI);
+	afx_msg void OnEditZone();
+	afx_msg void OnUpdateEditZone(CCmdUI* pCmdUI);
 	afx_msg void OnEditZoneSensitivity100();
 	afx_msg void OnUpdateEditZoneSensitivity100(CCmdUI* pCmdUI);
 	afx_msg void OnEditZoneSensitivity50();

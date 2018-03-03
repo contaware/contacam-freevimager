@@ -3775,7 +3775,7 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_EDIT_ZONE_ADD        "Add / remove / show detection zones\nDetection Zones"
+    ID_EDIT_ZONE            "Add / remove / show detection zones\nDetection Zones"
 END
 
 STRINGTABLE
@@ -4461,13 +4461,13 @@ BEGIN
     ID_CAPTURE_CAMERABASICSETTINGS 
                             "Camera basic settings\nCamera Basic Settings"
     ID_EDIT_ZONE_SENSITIVITY_100 
-                            "Set detection zone sensitivity to 100 %\nZone Sensitivity 100 %"
+                            "Add detection zones with 100% sensitivity\nAdd Detection Zones with 100% Sensitivity"
     ID_EDIT_ZONE_SENSITIVITY_50 
-                            "Set detection zone sensitivity to 50 %\nZone Sensitivity 50 %"
+                            "Add detection zones with 50% sensitivity\nAdd Detection Zones with 50% Sensitivity"
     ID_EDIT_ZONE_SENSITIVITY_25 
-                            "Set detection zone sensitivity to 25 %\nZone Sensitivity 25 %"
+                            "Add detection zones with 25% sensitivity\nAdd Detection Zones with 25% Sensitivity"
     ID_EDIT_ZONE_SENSITIVITY_10 
-                            "Set detection zone sensitivity to 10 %\nZone Sensitivity 10 %"
+                            "Add detection zones with 10% sensitivity\nAdd Detection Zones with 10% Sensitivity"
     ID_FILE_EXTRACT         "Extract all pages/frames\nExtract Pages/Frames"
     ID_EDIT_SCREENSHOT      "Take a screenshot\nScreenshot"
 END

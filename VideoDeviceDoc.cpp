@@ -83,8 +83,8 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FRAMETIME, OnUpdateViewFrametime)
 	ON_COMMAND(ID_FILE_CLOSE, OnFileClose)
 	ON_UPDATE_COMMAND_UI(ID_CAPTURE_CAMERAADVANCEDSETTINGS, OnUpdateCaptureCameraAdvancedSettings)
-	ON_COMMAND(ID_EDIT_ZONE_ADD, OnEditZoneAdd)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_ADD, OnUpdateEditZoneAdd)
+	ON_COMMAND(ID_EDIT_ZONE, OnEditZone)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE, OnUpdateEditZone)
 	ON_COMMAND(ID_EDIT_ZONE_SENSITIVITY_100, OnEditZoneSensitivity100)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_SENSITIVITY_100, OnUpdateEditZoneSensitivity100)
 	ON_COMMAND(ID_EDIT_ZONE_SENSITIVITY_50, OnEditZoneSensitivity50)
@@ -8856,14 +8856,12 @@ void CVideoDeviceDoc::HideDetectionZones()
 	}
 }
 
-void CVideoDeviceDoc::OnEditZoneAdd() 
+void CVideoDeviceDoc::OnEditZone() 
 {
-	GetView()->m_MovDetSingleZoneSensitivity = 1;
-
-	// Enable Add
+	// Enable Remove
 	if (m_nShowEditDetectionZones == 0)
 	{
-		m_nShowEditDetectionZones = 1;
+		m_nShowEditDetectionZones = 2;
 		GetView()->ForceCursor();
 		GetView()->Invalidate(FALSE);
 		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** Ctrl: Add <-> Remove Zones ***"));
@@ -8876,7 +8874,7 @@ void CVideoDeviceDoc::OnEditZoneAdd()
 	}
 }
 
-void CVideoDeviceDoc::OnUpdateEditZoneAdd(CCmdUI* pCmdUI)
+void CVideoDeviceDoc::OnUpdateEditZone(CCmdUI* pCmdUI)
 {
 	pCmdUI->SetCheck(m_nShowEditDetectionZones > 0 ? 1 : 0);
 }
@@ -9007,6 +9005,7 @@ void CVideoDeviceDoc::OnUpdateEditZoneRemove(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnEditZoneBig()
 {
 	m_nDetectionZoneSize = 0;
+	OnEditZoneRemove();
 }
 
 void CVideoDeviceDoc::OnUpdateEditZoneBig(CCmdUI* pCmdUI)
@@ -9017,6 +9016,7 @@ void CVideoDeviceDoc::OnUpdateEditZoneBig(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnEditZoneMedium()
 {
 	m_nDetectionZoneSize = 1;
+	OnEditZoneRemove();
 }
 
 void CVideoDeviceDoc::OnUpdateEditZoneMedium(CCmdUI* pCmdUI)
@@ -9027,6 +9027,7 @@ void CVideoDeviceDoc::OnUpdateEditZoneMedium(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnEditZoneSmall()
 {
 	m_nDetectionZoneSize = 2;
+	OnEditZoneRemove();
 }
 
 void CVideoDeviceDoc::OnUpdateEditZoneSmall(CCmdUI* pCmdUI)
