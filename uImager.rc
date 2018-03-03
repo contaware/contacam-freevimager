@@ -864,9 +864,6 @@ BEGIN
         MENUITEM "Add Zones (25%)",             ID_EDIT_ZONE_SENSITIVITY_25
         MENUITEM "Add Zones (10%)",             ID_EDIT_ZONE_SENSITIVITY_10
         MENUITEM "Remove Zones",                ID_EDIT_ZONE_REMOVE
-        MENUITEM SEPARATOR
-        MENUITEM "Import...",                   ID_EDIT_IMPORT_ZONES
-        MENUITEM "Export...",                   ID_EDIT_EXPORT_ZONES
     END
 END
 
@@ -4462,8 +4459,6 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_EDIT_EXPORT_ZONES    "Export detection zones to a ini file\nExport Detection Zones"
-    ID_EDIT_IMPORT_ZONES    "Import detection zones from a ini file\nImport Detection Zones"
     ID_CAPTURE_MOVDET       "Enable / disable movement detection\nMovement Detection"
     ID_CAPTURE_CAMERABASICSETTINGS 
                             "Camera basic settings\nCamera Basic Settings"

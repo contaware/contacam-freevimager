@@ -769,8 +769,6 @@ public:
 						CString sDeviceName);
 	void SavePlacement();
 	void SaveSettings();
-	void ExportDetectionZones(const CString& sFileName);
-	void ImportDetectionZones(const CString& sFileName);
 
 	// Autorun
 	static CString AutorunGetDeviceKey(const CString& sDevicePathName);
@@ -1128,8 +1126,6 @@ protected:
 	afx_msg void OnUpdateFileSaveAs(CCmdUI* pCmdUI);
 	afx_msg void OnEditSnapshot();
 	afx_msg void OnUpdateEditSnapshot(CCmdUI* pCmdUI);
-	afx_msg void OnEditExportZones();
-	afx_msg void OnEditImportZones();
 	afx_msg void OnCaptureCameraBasicSettings();
 	afx_msg void OnUpdateCaptureCameraBasicSettings(CCmdUI* pCmdUI);
 	//}}AFX_MSG

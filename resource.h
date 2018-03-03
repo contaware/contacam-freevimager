@@ -3258,8 +3258,6 @@
 #define ID_PLAY_RANDOM                  33165
 #define ID_VIEW_MAP                     33166
 #define ID_EDIT_RENAME                  33167
-#define ID_EDIT_EXPORT_ZONES            33168
-#define ID_EDIT_IMPORT_ZONES            33169
 #define ID_CAPTURE_MOVDET               33171
 #define ID_CAPTURE_CAMERABASICSETTINGS  33172
 #define ID_EDIT_ZONE_SENSITIVITY_100    33173
