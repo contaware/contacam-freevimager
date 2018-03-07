@@ -239,53 +239,6 @@ public:
 
 
 #ifdef VIDEODEVICEDOC
-	// Scheduler Entry Class
-	class CSchedulerEntry
-	{
-		public:
-			enum SchedulerEntryType {NONE, ONCE, DAILY, WEEKLY};
-
-			CSchedulerEntry();
-			virtual ~CSchedulerEntry(){;};
-
-			// Start
-			void Start();
-
-			// Stop
-			BOOL Stop();
-
-			// The Scheduler Entry Type
-			SchedulerEntryType m_Type;
-
-			// Device Path Name Identifier
-			CString m_sDevicePathName;
-
-			// The Document
-			CVideoDeviceDoc* m_pDoc;
-
-			// Are we Running?
-			BOOL m_bRunning;
-
-			// The Times
-			CTime m_StartTime;
-			CTime m_StopTime;
-
-		protected:
-			BOOL m_bInsideStart;
-			BOOL m_bInsideStop;
-	};
-
-	// Scheduler List Type
-	typedef CList<CSchedulerEntry*,CSchedulerEntry*> SCHEDULERLIST;
-
-	// Scheduler
-	SCHEDULERLIST m_Scheduler;
-	void AddSchedulerEntry(CSchedulerEntry* pSchedulerEntry);
-	CSchedulerEntry* GetOnceSchedulerEntry(CString sDevicePathName);
-	CSchedulerEntry* GetDailySchedulerEntry(CString sDevicePathName);
-	void DeleteOnceSchedulerEntry(CString sDevicePathName);
-	void DeleteDailySchedulerEntry(CString sDevicePathName);
-
 	//  Service Control End Process Thread
 	class CServiceControlEndProcThread : public CWorkerThread
 	{

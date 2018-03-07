@@ -196,10 +196,8 @@ IDR_CONTEXT_VIDEO_DEVICE MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
-        MENUITEM "Record\tEnter",               ID_CAPTURE_RECORD
         MENUITEM "Obscure Source",              ID_CAPTURE_OBSCURESOURCE
         MENUITEM SEPARATOR
-        MENUITEM "Global Settings...",          ID_FILE_SETTINGS
         MENUITEM "Camera Basic Settings...",    ID_CAPTURE_CAMERABASICSETTINGS
         MENUITEM "Camera Advanced Settings...", ID_CAPTURE_CAMERAADVANCEDSETTINGS
         MENUITEM SEPARATOR
@@ -258,7 +256,6 @@ BEGIN
     BEGIN
         MENUITEM "&Network",                    ID_CAPTURE_NETWORK
         MENUITEM SEPARATOR
-        MENUITEM "Record\tEnter",               ID_CAPTURE_RECORD
         MENUITEM "Obscure Source",              ID_CAPTURE_OBSCURESOURCE
     END
     POPUP "&Settings"
@@ -832,7 +829,7 @@ BEGIN
         MENUITEM "Sensitivity 70",              ID_SENSITIVITY_70
         MENUITEM "Sensitivity 80",              ID_SENSITIVITY_80
         MENUITEM "Sensitivity 90",              ID_SENSITIVITY_90
-        MENUITEM "Continuous Rec",              ID_SENSITIVITY_100
+        MENUITEM "Continuous / Manual Rec",     ID_SENSITIVITY_100
     END
 END
 
@@ -858,7 +855,6 @@ IDR_CONTEXT_ADD_REMOVE_ZONES MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
-        MENUITEM SEPARATOR
         MENUITEM "Add Zones (100%)",            ID_EDIT_ZONE_SENSITIVITY_100
         MENUITEM "Add Zones (50%)",             ID_EDIT_ZONE_SENSITIVITY_50
         MENUITEM "Add Zones (25%)",             ID_EDIT_ZONE_SENSITIVITY_25
@@ -972,26 +968,8 @@ BEGIN
     CONTROL         "Audio from:",IDC_REC_AUDIO_FROM_SOURCE,"Button",BS_AUTORADIOBUTTON,203,54,52,10
     PUSHBUTTON      "Source",IDC_AUDIO_INPUT,261,53,65,12
     PUSHBUTTON      "Mixer",IDC_AUDIO_MIXER,338,53,65,12
-    CONTROL         "Start a new file each",IDC_CHECK_TIME_SEGMENTATION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,203,99,81,10
-    COMBOBOX        IDC_TIME_SEGMENTATION,310,98,94,83,CBS_DROPDOWNLIST | WS_TABSTOP
-    CONTROL         "Open file when done",IDC_CHECK_AUTOOPEN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,203,124,82,10
-    CONTROL         "Once Scheduler (camera must be running)",IDC_CHECK_SCHEDULER_ONCE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,203,150,150,10
-    CONTROL         "DateTimePicker1",IDC_TIME_ONCE_START,"SysDateTimePick32",DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,233,168,58,15
-    CONTROL         "DateTimePicker2",IDC_DATE_ONCE_START,"SysDateTimePick32",DTS_RIGHTALIGN | DTS_LONGDATEFORMAT | WS_TABSTOP,292,168,112,15
-    CONTROL         "DateTimePicker1",IDC_TIME_ONCE_STOP,"SysDateTimePick32",DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,233,187,58,15
-    CONTROL         "DateTimePicker2",IDC_DATE_ONCE_STOP,"SysDateTimePick32",DTS_RIGHTALIGN | DTS_LONGDATEFORMAT | WS_TABSTOP,292,187,112,15
-    CONTROL         "Daily Scheduler (camera must be running)",IDC_CHECK_SCHEDULER_DAILY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,203,220,149,10
-    CONTROL         "DateTimePicker1",IDC_TIME_DAILY_START,"SysDateTimePick32",DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,233,238,59,15
-    CONTROL         "DateTimePicker1",IDC_TIME_DAILY_STOP,"SysDateTimePick32",DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,344,238,59,15
     LTEXT           "Rec Quality",IDC_LABEL_QUALITY,13,152,39,8
     LTEXT           "qual.",IDC_VIDEO_COMPRESSION_QUALITY_INFO,145,152,40,11
-    LTEXT           "Start",IDC_STATIC2163,205,171,25,8
-    LTEXT           "Stop",IDC_STATIC2164,205,190,25,8
-    LTEXT           "Start",IDC_STATIC2165,205,242,25,8
-    LTEXT           "Stop",IDC_STATIC2166,316,242,25,8
     LTEXT           "frames/sec",IDC_STATIC2183,145,69,40,8
     LTEXT           "Set Framerate",IDC_STATIC2155,13,69,57,8
     GROUPBOX        "Video",IDC_STATIC2156,7,53,183,209
@@ -1002,7 +980,6 @@ BEGIN
     LTEXT           "Process Frame Time",IDC_STATIC2172,13,120,73,8
     RTEXT           "",IDC_PROCESS_TIME,105,120,37,8
     LTEXT           "ms",IDC_STATIC2173,145,120,10,8
-    GROUPBOX        "Continuous Recording",IDC_STATIC2174,196,83,214,179
     GROUPBOX        "Autostart",IDC_STATIC2158,7,5,183,40
 END
 
@@ -1266,14 +1243,9 @@ STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Movement Detection"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    EDITTEXT        IDC_SECONDS_BEFORE_MOVEMENT_BEGIN,33,37,29,12,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "Spin1",IDC_SPIN_SECONDS_BEFORE_MOVEMENT_BEGIN,
-                    "msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,50,37,11,12
-    EDITTEXT        IDC_SECONDS_AFTER_MOVEMENT_END,33,55,29,12,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "Spin2",IDC_SPIN_SECONDS_AFTER_MOVEMENT_END,
-                    "msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,50,55,11,12
-    EDITTEXT        IDC_EDIT_DETECTION_MIN_LENGTH,134,128,38,12,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "Spin2",IDC_SPIN_DETECTION_MIN_LENGTH,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,160,128,11,12
+    EDITTEXT        IDC_SECONDS_BEFORE_MOVEMENT_BEGIN,53,37,29,12,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_SECONDS_AFTER_MOVEMENT_END,53,55,29,12,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_EDIT_DETECTION_MIN_LENGTH,134,128,38,12,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
     EDITTEXT        IDC_EDIT_DETECTION_MAX_FRAMES,134,145,38,12,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
     COMBOBOX        IDC_COMBOBOX_DETECTION_SCHEDULER,13,207,188,72,CBS_DROPDOWNLIST | WS_TABSTOP
     CONTROL         "DateTimePicker1",IDC_TIME_DAILY_START,"SysDateTimePick32",DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,37,226,66,14
@@ -1301,8 +1273,8 @@ BEGIN
     CONTROL         "Only one instance of executed command",IDC_CHECK_WAIT_EXEC_COMMAND,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,231,192,145,10
     EDITTEXT        IDC_EDIT_EXEC_HELP,231,205,174,51,ES_MULTILINE | ES_READONLY | NOT WS_TABSTOP
-    LTEXT           "sec of frames before detection begin",IDC_STATIC2283,65,38,132,8
-    LTEXT           "sec of frames after detection end",IDC_STATIC2284,65,57,137,8
+    LTEXT           "sec",IDC_STATIC2283,85,38,11,8
+    LTEXT           "sec",IDC_STATIC2284,85,57,11,8
     GROUPBOX        "Detection Parameters",IDC_STATIC2286,7,19,202,91
     LTEXT           "From",IDC_STATIC2289,13,229,16,8
     LTEXT           "To",IDC_STATIC2290,120,229,10,8
@@ -1310,11 +1282,7 @@ BEGIN
     LTEXT           "Cmd",IDC_STATIC2299,231,116,15,8
     LTEXT           "Params",IDC_STATIC2300,231,147,24,8
     RTEXT           "Warning: Unsupported Video or Zones Size for Movement Detection",IDC_WARNING,154,4,256,11,SS_CENTERIMAGE
-    LTEXT           "Store",IDC_STATIC,13,38,18,8
-    LTEXT           "Store",IDC_STATIC,13,57,18,8
     GROUPBOX        "Detection Limits",IDC_STATIC,7,117,202,67
-    LTEXT           "Detection",IDC_STATIC2544,7,4,36,11,SS_CENTERIMAGE
-    LTEXT           "Off",IDC_DETECTION_MODE,46,4,104,11,SS_CENTERIMAGE | SS_SUNKEN
     LTEXT           "Drop detections shorter than",IDC_STATIC,13,130,118,11
     LTEXT           "sec",IDC_STATIC2292,176,130,29,8
     LTEXT           "Split detection files longer than",IDC_STATIC,13,147,118,11
@@ -1326,6 +1294,8 @@ BEGIN
     RTEXT           "",IDC_MAX_MOVDET_VIDEOLENGTH,134,159,38,11,SS_CENTERIMAGE
     RTEXT           "-> max video length",IDC_STATIC,13,159,99,11
     LTEXT           "sec",IDC_STATIC2295,175,159,11,11,SS_CENTERIMAGE
+    LTEXT           "Post-buffer",IDC_STATIC,14,57,36,8
+    LTEXT           "Pre-buffer",IDC_STATIC,14,38,33,8
 END
 
 IDD_REDEYE DIALOGEX 0, 0, 223, 268
@@ -2400,9 +2370,7 @@ BEGIN
     CONTROL         "Snapshots with history",IDC_RADIO_SNAPSHOTHISTORY,
                     "Button",BS_AUTORADIOBUTTON,16,27,89,10
     CONTROL         "Snapshots without History",IDC_RADIO_SNAPSHOT,"Button",BS_AUTORADIOBUTTON,16,41,100,10
-    CONTROL         "Manual record",IDC_RADIO_MANUAL,"Button",BS_AUTORADIOBUTTON,16,54,61,10
-    LTEXT           "+",IDC_LABEL_PLUS_SIGN,139,15,8,8
-    CONTROL         "24h continuous recording",IDC_CHECK_24H_REC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,14,97,10
+    CONTROL         "Continuous / manual recording",IDC_RADIO_MANUAL,"Button",BS_AUTORADIOBUTTON,16,54,113,10
     COMBOBOX        IDC_COMBO_SNAPSHOTHISTORY_RATE,152,26,114,222,CBS_DROPDOWNLIST | WS_TABSTOP
     LTEXT           "History video size",IDC_LABEL_SNAPSHOTHISTORY_SIZE,280,28,57,8
     COMBOBOX        IDC_COMBO_SNAPSHOTHISTORY_SIZE,362,26,44,72,CBS_DROPDOWNLIST | WS_TABSTOP
@@ -3784,7 +3752,7 @@ BEGIN
     ID_EDIT_SELECTALL       "Select all detection zones\nSelect All"
     ID_EDIT_SELECTNONE      "Clear all detection zones\nSelect None"
     ID_CAPTURE_NETWORK      "Capture frames from the network\nCapture From Network"
-    ID_CAPTURE_RECORD       "Record video and audio to a file\nRecord to a File"
+    ID_CAPTURE_RECORD       "Enable / disable recording\nEnable / Disable Record"
     ID_VIEW_ALL_NEXT_PICTURE 
                             "Show next image of all open documents\nAll Next Image"
     ID_VIEW_ALL_PREVIOUS_PICTURE 
@@ -4152,14 +4120,6 @@ END
 STRINGTABLE
 BEGIN
     IDS_STRING1555          "Full"
-    IDS_STRING1556          "15 minutes"
-    IDS_STRING1557          "30 minutes"
-    IDS_STRING1558          "1 hour"
-    IDS_STRING1559          "2 hours"
-    IDS_STRING1560          "3 hours"
-    IDS_STRING1561          "6 hours"
-    IDS_STRING1562          "12 hours"
-    IDS_STRING1563          "24 hours"
     IDS_STRING1564          "Custom"
     IDS_STRING1565          "Please wait..."
     IDS_STRING1566          "Closing"
@@ -4428,8 +4388,7 @@ STRINGTABLE
 BEGIN
     IDS_STRING1800          "or type in Web Browser's address bar"
     IDS_STRING1801          "REMOVE CAMERAS"
-    IDS_STRING1802          "1. Close all running cameras"
-    IDS_STRING1803          "2. Choose Delete from the Edit menu"
+    IDS_STRING1803          "1. Choose Delete from the Edit menu"
 END
 
 STRINGTABLE
@@ -4457,7 +4416,6 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_CAPTURE_MOVDET       "Enable / disable movement detection\nMovement Detection"
     ID_CAPTURE_CAMERABASICSETTINGS 
                             "Camera basic settings\nCamera Basic Settings"
     ID_EDIT_ZONE_SENSITIVITY_100 
@@ -4478,11 +4436,6 @@ BEGIN
     IDS_STRING1841          "%s, realtime saving the detections is ok: SaveTime=%0.1fsec < FramesTime=%0.1fsec"
     IDS_STRING1842          "After Detection Filter OK"
     IDS_STRING1843          "After Saving Done"
-    IDS_STRING1844          "Detection"
-    IDS_STRING1845          "OFF"
-    IDS_STRING1846          "Trigger File"
-    IDS_STRING1847          "Software"
-    IDS_STRING1848          "Software + Trigger File"
     IDS_STRING1849          "Saved"
     IDS_STRING1850          "Save Failed!"
     IDS_STRING1852          "Name"

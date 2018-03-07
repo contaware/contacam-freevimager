@@ -74,6 +74,7 @@ class CMovementDetectionPage;
 #define THUMBMESSAGE_FONTSIZE				8
 #define DRAW_BKG_COLOR						RGB(0,0,0)
 #define DRAW_MESSAGE_COLOR					RGB(0xFF,0xFF,0xFF)
+#define REC_MESSAGE_COLOR					RGB(0xFF,0,0)
 
 // Process Frame Stop Engine
 #define PROCESSFRAME_MAX_RETRY_TIME			3500		// maximum retry time in ms for Process Frame Stop Engine
@@ -623,7 +624,7 @@ public:
 											int nGetFrameVideoPort,
 											const CString& sGetFrameLocation,
 											NetworkDeviceTypeMode nNetworkDeviceTypeMode);
-	CString GetDevicePathName();												// Used For Settings, Scheduler and Autorun
+	CString GetDevicePathName();												// Used For Settings and Autorun
 	CString GetAssignedDeviceName();											// Get User Assigned Device Name
 	CString GetDeviceName();													// Friendly Device Name
 	CString GetDeviceFormat();													// Friendly Device Format
@@ -653,7 +654,7 @@ public:
 	static CTime CalcTime(DWORD dwUpTime, const CTime& RefTime, DWORD dwRefUpTime);
 	static void AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime, int nRefFontSize);
 	static void AddFrameCount(CDib* pDib, const CString& sCount, int nRefFontSize);
-	static void AddFrameText(CDib* pDib, const CString& sText, int nRefFontSize);
+	static void AddRecSymbol(CDib* pDib, int nRefFontSize);
 
 	// Function called when the directx video grabbing format has been changed
 	void OnChangeDxVideoFormat();
@@ -707,18 +708,9 @@ public:
 															::LeaveCriticalSection(&m_csProcessFrameStop);
 															return res;};
 	
-	// Audio listen
+	// Audio
 	BOOL AudioListen(	LPBYTE pData, DWORD dwSizeInBytes,
 						CAudioTools* pAudioTools, CAudioPlay* pAudioPlay);
-
-	// Video / Audio Recording
-	BOOL MakeAVRec(CAVRec** ppAVRec);
-	void OpenVideoFile(const CString& sFileName);
-	BOOL CaptureRecord();
-	BOOL NextVideoFile();
-	void NextRecTime(CTime t);
-	void CloseAndShowVideoFile();
-	void FreeVideoFile();
 	static void WaveInitFormat(WORD wCh, DWORD dwSampleRate, WORD wBitsPerSample, LPWAVEFORMATEX pWaveFormat);
 	void UpdateDstWaveFormat();
 	UINT EffectiveCaptureAudioDeviceID();
@@ -734,6 +726,7 @@ public:
 	static BOOL SaveJpegFast(CDib* pDib, CMJPEGEncoder* pMJPEGEncoder, const CString& sFileName, int quality);
 
 	// Movement Detection
+	void CaptureRecord();
 	void MovementDetectionProcessing(	CDib* pDib,
 										DWORD dwVideoProcessorMode,
 										BOOL b1SecTick);
@@ -839,8 +832,6 @@ protected:
 // Public Variables
 public:
 	// General Vars
-	CAVRec* volatile m_pAVRec;							// Pointer to the currently recording file
-	CRITICAL_SECTION m_csAVRec;							// Critical section for the recording file
 	volatile BOOL m_bRotate180;							// Rotate Video by 180°
 	volatile double m_dFrameRate;						// Set Capture Frame Rate
 	volatile double m_dEffectiveFrameRate;				// Current calculated Frame Rate
@@ -904,13 +895,6 @@ public:
 	CRITICAL_SECTION m_csAudioList;						// Critical section to access the audio buffers
 
 	// Audio / Video Rec
-	volatile DWORD m_dwRecFirstUpTime;					// Up-Time of First Recorded Frame
-	volatile DWORD m_dwRecLastUpTime;					// Up-Time of Last Recorded Frame
-	volatile BOOL m_bRecFirstFrame;						// Recording Just Started
-	volatile BOOL m_bRecAutoOpen;						// Auto open video file after recording
-	volatile BOOL m_bRecTimeSegmentation;				// Enable / Disable Time Segmentation
-	volatile int m_nTimeSegmentationIndex;				// Time segmentation combo box index
-	CTime m_NextRecTime;								// Next Rec Time for segmentation
 	CString m_sRecordAutoSaveDir;						// The Record Directory
 	CString m_sAVRecFileExt;							// Extension of video file (lowercase with dot)
 	volatile float m_fVideoRecQuality;					// 2.0f best quality, 31.0f worst quality, for H.264 clamped to [VIDEO_QUALITY_BEST, VIDEO_QUALITY_LOW]
@@ -1073,8 +1057,6 @@ protected:
 	//{{AFX_MSG(CVideoDeviceDoc)
 	afx_msg void OnCaptureRecord();
 	afx_msg void OnUpdateCaptureRecord(CCmdUI* pCmdUI);
-	afx_msg void OnCaptureMovDet();
-	afx_msg void OnUpdateCaptureMovDet(CCmdUI* pCmdUI);
 	afx_msg void OnMovDetSensitivity0();
 	afx_msg void OnUpdateMovDetSensitivity0(CCmdUI* pCmdUI);
 	afx_msg void OnMovDetSensitivity10();

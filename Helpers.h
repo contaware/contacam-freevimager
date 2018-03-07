@@ -19,7 +19,6 @@
 
 extern int g_nSystemDPI;
 extern TCHAR g_szDefaultFontFace[LF_FACESIZE];
-extern BOOL g_bDefaultFontFaceHasSymbols;
 extern BOOL g_bMMX;
 extern BOOL g_bSSE;
 extern BOOL g_bSSE2;

@@ -336,13 +336,12 @@ void CVideoDeviceView::DrawTextMsg(HDC hDC)
 	int nMaxFontSize = ::ScaleFont(	rcClient.Width(), rcClient.Height(),
 									pDoc->m_nRefFontSize, FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
 
-	// Motion Detection
+	// REC dot symbol
 	if (pDoc->m_bDetectingMinLengthMovement)
 	{
 		::DrawBigText(	hDC, CRect(0, 0, rcClient.Width(), rcClient.Height()),
-						g_bDefaultFontFaceHasSymbols ? _T("((\U0001F3C3))") : ML_STRING(1844, "Detection"),
-						DRAW_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT,
-						OPAQUE, DRAW_BKG_COLOR);
+						_T("\u25cf"), // note: if using more than 16 bits, use a uppercase U (for example \U0001F3C3)
+						REC_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT);
 	}
 
 	// Save progress display

@@ -52,13 +52,10 @@ void CMovementDetectionPage::DoDataExchange(CDataExchange* pDX)
 	DDV_MinMaxInt(pDX, m_nSecondsAfterMovementEnd, 1, 99);
 	DDX_Text(pDX, IDC_SECONDS_BEFORE_MOVEMENT_BEGIN, m_nSecondsBeforeMovementBegin);
 	DDV_MinMaxInt(pDX, m_nSecondsBeforeMovementBegin, 1, 99);
-	DDX_Control(pDX, IDC_SPIN_SECONDS_BEFORE_MOVEMENT_BEGIN, m_SpinSecondsBeforeMovementBegin);
-	DDX_Control(pDX, IDC_SPIN_SECONDS_AFTER_MOVEMENT_END, m_SpinSecondsAfterMovementEnd);
 	DDX_DateTimeCtrl(pDX, IDC_TIME_DAILY_START, m_DetectionStartTime);
 	DDX_DateTimeCtrl(pDX, IDC_TIME_DAILY_STOP, m_DetectionStopTime);
 	DDX_Text(pDX, IDC_EDIT_DETECTION_MIN_LENGTH, m_nDetectionMinLengthSeconds);
 	DDV_MinMaxInt(pDX, m_nDetectionMinLengthSeconds, 0, 99);
-	DDX_Control(pDX, IDC_SPIN_DETECTION_MIN_LENGTH, m_SpinDetectionMinLengthSeconds);
 	DDX_Text(pDX, IDC_EDIT_DETECTION_MAX_FRAMES, m_nDetectionMaxFrames);
 	DDV_MinMaxInt(pDX, m_nDetectionMaxFrames, 1, MOVDET_MAX_MAX_FRAMES_IN_LIST);
 	//}}AFX_DATA_MAP
@@ -122,13 +119,6 @@ BOOL CMovementDetectionPage::OnInitDialog()
 
 	// This calls UpdateData(FALSE)
 	CPropertyPage::OnInitDialog();
-	
-	// Movement Detection Save Seconds Before & After Detection Spin Controls
-	m_SpinSecondsBeforeMovementBegin.SetRange(1, 99);
-	m_SpinSecondsAfterMovementEnd.SetRange(1, 99);
-
-	// Movement Detection minimum detection length in seconds, below this value SaveFrameList() is not called
-	m_SpinDetectionMinLengthSeconds.SetRange(0, 99);
 
 	// Detection Scheduler
 	pComboBoxDetectionScheduler->SetCurSel(m_pDoc->m_nDetectionStartStop);
@@ -268,29 +258,20 @@ HBRUSH CMovementDetectionPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 
 void CMovementDetectionPage::OnChangeSecondsAfterMovementEnd() 
 {
-	if (::IsWindow(m_SpinSecondsAfterMovementEnd.GetSafeHwnd()))
-	{
-		if (UpdateData(TRUE))
-			m_pDoc->m_nMilliSecondsRecAfterMovementEnd = m_nSecondsAfterMovementEnd * 1000;
-	}
+	if (UpdateData(TRUE))
+		m_pDoc->m_nMilliSecondsRecAfterMovementEnd = m_nSecondsAfterMovementEnd * 1000;
 }
 
 void CMovementDetectionPage::OnChangeSecondsBeforeMovementBegin() 
 {
-	if (::IsWindow(m_SpinSecondsBeforeMovementBegin.GetSafeHwnd()))
-	{
-		if (UpdateData(TRUE))
-			m_pDoc->m_nMilliSecondsRecBeforeMovementBegin = m_nSecondsBeforeMovementBegin * 1000;
-	}
+	if (UpdateData(TRUE))
+		m_pDoc->m_nMilliSecondsRecBeforeMovementBegin = m_nSecondsBeforeMovementBegin * 1000;
 }
 
 void CMovementDetectionPage::OnChangeEditDetectionMinLength() 
 {
-	if (::IsWindow(m_SpinDetectionMinLengthSeconds.GetSafeHwnd()))
-	{
-		if (UpdateData(TRUE))
-			m_pDoc->m_nDetectionMinLengthMilliSeconds = m_nDetectionMinLengthSeconds * 1000;
-	}
+	if (UpdateData(TRUE))
+		m_pDoc->m_nDetectionMinLengthMilliSeconds = m_nDetectionMinLengthSeconds * 1000;
 }
 
 void CMovementDetectionPage::OnChangeEditDetectionMaxFrames()
@@ -303,46 +284,8 @@ void CMovementDetectionPage::OnTimer(UINT nIDEvent)
 {
 	if (!m_pDoc->m_bClosing)
 	{
-		// Detection Mode
-		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_DETECTION_MODE);
-		if (pEdit)
-		{
-			CString sDetectionMode(ML_STRING(1845, "OFF"));
-			if (m_pDoc->m_dwVideoProcessorMode)
-			{
-				// Show current set detection mode(s)
-				if (!m_pDoc->m_sDetectionTriggerFileName.IsEmpty() && m_pDoc->m_nDetectionLevel > 0)
-					sDetectionMode = ML_STRING(1848, "Software + Trigger File");
-				else if (!m_pDoc->m_sDetectionTriggerFileName.IsEmpty())
-					sDetectionMode = ML_STRING(1846, "Trigger File");
-				else if (m_pDoc->m_nDetectionLevel > 0)
-					sDetectionMode = ML_STRING(1847, "Software");
-
-				// If scheduler set
-				if (m_pDoc->m_nDetectionStartStop > 0)
-				{
-					// Is current time in schedule?
-					BOOL bInSchedule = m_pDoc->IsInMovDetSchedule(CTime::GetCurrentTime());
-
-					// 1 -> Enable detection on specified schedule
-					if (m_pDoc->m_nDetectionStartStop == 1)
-					{
-						if (!bInSchedule)
-							sDetectionMode = ML_STRING(1845, "OFF");
-					}
-					// 2 -> Disable detection on specified schedule
-					else
-					{
-						if (bInSchedule)
-							sDetectionMode = ML_STRING(1845, "OFF");
-					}
-				}
-			}
-			pEdit->SetWindowText(sDetectionMode);
-		}
-
 		// Warning
-		pEdit = (CEdit*)GetDlgItem(IDC_WARNING);
+		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_WARNING);
 		if (pEdit)
 		{
 			if (m_pDoc->m_bUnsupportedVideoSizeForMovDet)

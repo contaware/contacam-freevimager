@@ -26,7 +26,6 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CCameraBasicSettingsDlg)
 	enum { IDD = IDD_CAMERABASICSETTINGS };
-	BOOL	m_bCheck24hRec;
 	int		m_nComboKeepFor;
 	int		m_nComboFileExt;
 	CString	m_sName;
@@ -65,8 +64,6 @@ protected:
 	void EnableDisableCtrls();
 	void EnableDisableAllCtrls(BOOL bEnable);
 	void Rename();
-	void EnableDisable24hRec(BOOL bEnable);
-	BOOL Is24hRec();
 	void ApplySettingsSnapshot(int nThumbWidth, int nThumbHeight, double dSnapshotRate);
 	void ApplySettings();
 	// Generated message map functions

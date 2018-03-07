@@ -52,8 +52,6 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	//{{AFX_MSG_MAP(CVideoDeviceDoc)
 	ON_COMMAND(ID_CAPTURE_RECORD, OnCaptureRecord)
 	ON_UPDATE_COMMAND_UI(ID_CAPTURE_RECORD, OnUpdateCaptureRecord)
-	ON_COMMAND(ID_CAPTURE_MOVDET, OnCaptureMovDet)
-	ON_UPDATE_COMMAND_UI(ID_CAPTURE_MOVDET, OnUpdateCaptureMovDet)
 	ON_COMMAND(ID_SENSITIVITY_0, OnMovDetSensitivity0)
 	ON_UPDATE_COMMAND_UI(ID_SENSITIVITY_0, OnUpdateMovDetSensitivity0)
 	ON_COMMAND(ID_SENSITIVITY_10, OnMovDetSensitivity10)
@@ -338,8 +336,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		if (!sVideoFileName.IsEmpty())
 			sVideoFileName += _T("\\");
 		CString sGIFFileName(sVideoFileName);
-		sVideoFileName += _T("det_") + sFirstTime + m_pDoc->m_sAVRecFileExt;
-		sGIFFileName += _T("det_") + sFirstTime + _T(".gif");
+		sVideoFileName += _T("rec_") + sFirstTime + m_pDoc->m_sAVRecFileExt;
+		sGIFFileName += _T("rec_") + sFirstTime + _T(".gif");
 		CString sVideoTempFileName(sTempDetectionDir + _T("\\") + ::GetShortFileName(sVideoFileName));
 		CString sGIFTempFileName(sTempDetectionDir + _T("\\") + ::GetShortFileName(sGIFFileName));
 
@@ -564,7 +562,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			{
 				CTimeSpan TimeDiff = FirstTime - m_pDoc->m_MovDetLastVideoMailTime;
 				if (TimeDiff.GetTotalSeconds() >= (LONGLONG)m_pDoc->m_nMovDetSendMailSecBetweenMsg &&
-					CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), FirstTime, ML_STRING(1844, "Detection"), _T(""), sVideoFileName))
+					CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), FirstTime, _T("REC"), _T(""), sVideoFileName))
 					m_pDoc->m_MovDetLastVideoMailTime = FirstTime;
 			}
 			else if (	::GetFileSize64(sGIFFileName).QuadPart > 0							&&
@@ -573,7 +571,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			{
 				CTimeSpan TimeDiff = FirstTime - m_pDoc->m_MovDetLastGIFMailTime;
 				if (TimeDiff.GetTotalSeconds() >= (LONGLONG)m_pDoc->m_nMovDetSendMailSecBetweenMsg &&
-					CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), FirstTime, ML_STRING(1844, "Detection"), _T(""), sGIFFileName))
+					CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), FirstTime, _T("REC"), _T(""), sGIFFileName))
 					m_pDoc->m_MovDetLastGIFMailTime = FirstTime;
 			}
 		}
@@ -1243,8 +1241,8 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	}
 	if (m_bDetectingMinLengthMovement)
 	{
-		AddFrameText(&m_Dib, g_bDefaultFontFaceHasSymbols ? _T("((\U0001F3C3))") : ML_STRING(1844, "Detection"), m_nRefFontSize);
-		AddFrameText(&DibThumb, g_bDefaultFontFaceHasSymbols ? _T("((\U0001F3C3))") : ML_STRING(1844, "Detection"), m_nRefFontSize);
+		AddRecSymbol(&m_Dib, m_nRefFontSize);
+		AddRecSymbol(&DibThumb, m_nRefFontSize);
 	}
 
 	// Save to temp location
@@ -1684,10 +1682,6 @@ void CVideoDeviceDoc::CCaptureAudioThread::AudioInSourceDialog()
 	{
 		// Stop Save Frame List Thread
 		m_pDoc->m_SaveFrameListThread.Kill();
-
-		// Stop Rec
-		if (m_pDoc->m_pAVRec)
-			m_pDoc->CaptureRecord();
 
 		// Set new ID
 		if (m_pDoc->m_bCaptureAudio && !m_pDoc->m_bCaptureAudioFromStream)
@@ -2228,7 +2222,7 @@ end_of_software_detection:
 					CTime Time = CalcTime(pDib->GetUpTime(), RefTime, dwRefUpTime);
 					CTimeSpan TimeDiff = Time - m_MovDetLastMailTime;
 					if (TimeDiff.GetTotalSeconds() >= (LONGLONG)m_nMovDetSendMailSecBetweenMsg &&
-						CVideoDeviceDoc::SendMail(m_SendMailConfiguration, GetAssignedDeviceName(), Time, ML_STRING(1844, "Detection")))
+						CVideoDeviceDoc::SendMail(m_SendMailConfiguration, GetAssignedDeviceName(), Time, _T("REC")))
 						m_MovDetLastMailTime = Time;
 				}
 				else if (	m_MovDetAttachmentType == ATTACHMENT_JPG		||
@@ -2240,7 +2234,7 @@ end_of_software_detection:
 					CTime Time = CalcTime(pDib->GetUpTime(), RefTime, dwRefUpTime);
 					CTimeSpan TimeDiff = Time - m_MovDetLastJPGMailTime;
 					if (TimeDiff.GetTotalSeconds() >= (LONGLONG)m_nMovDetSendMailSecBetweenMsg &&
-						CVideoDeviceDoc::SendMail(m_SendMailConfiguration, GetAssignedDeviceName(), Time, ML_STRING(1844, "Detection"), _T(""), SaveJpegMail(pDib, RefTime, dwRefUpTime)))
+						CVideoDeviceDoc::SendMail(m_SendMailConfiguration, GetAssignedDeviceName(), Time, _T("REC"), _T(""), SaveJpegMail(pDib, RefTime, dwRefUpTime)))
 						m_MovDetLastJPGMailTime = Time;
 				}
 			}
@@ -2262,6 +2256,7 @@ end_of_software_detection:
 			dwError = AddNewFrameToNewestList(bMarkStart, pDib);
 
 		// Check if end of detection period
+		// Attention: m_nMilliSecondsRecAfterMovementEnd must be at least 1 sec!
 		if ((pDib->GetUpTime() - m_dwLastDetFrameUpTime) > (DWORD)m_nMilliSecondsRecAfterMovementEnd)
 		{
 			// Reset vars
@@ -3712,7 +3707,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_pFrame = NULL;
 	m_dwStopProcessFrame = 0U;
 	m_dwProcessFrameStopped = 0U;
-	m_pAVRec = NULL;
 	m_bRotate180 = FALSE;
 	memset(&m_CaptureBMI, 0, sizeof(BITMAPINFOFULL));
 	memset(&m_ProcessFrameBMI, 0, sizeof(BITMAPINFOFULL));
@@ -3791,12 +3785,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 
 	// Recording
 	m_sRecordAutoSaveDir = _T("");
-	m_bRecAutoOpen = TRUE;
-	m_bRecTimeSegmentation = FALSE;
-	m_nTimeSegmentationIndex = 0;
-	m_dwRecFirstUpTime = 0;
-	m_dwRecLastUpTime = 0;
-	m_bRecFirstFrame = FALSE;
 	m_sAVRecFileExt = DEFAULT_VIDEO_FILEEXT;
 	m_fVideoRecQuality = DEFAULT_VIDEO_QUALITY;
 	m_nDeleteRecordingsOlderThanDays = DEFAULT_DEL_RECS_OLDER_THAN_DAYS;
@@ -3907,9 +3895,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	// Init Command Execution on Detection Critical Section
 	::InitializeCriticalSection(&m_csExecCommandMovementDetection);
 
-	// Init Video File Critical Section
-	::InitializeCriticalSection(&m_csAVRec);
-
 	// Init Movement Detections List Critical Section
 	::InitializeCriticalSection(&m_csMovementDetectionsList);
 
@@ -3944,7 +3929,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 
 CVideoDeviceDoc::~CVideoDeviceDoc()
 {
-	FreeVideoFile();
 	// Parsers always deleted after the related CNetCom objects!
 	if (m_pHttpVideoParseProcess)
 	{
@@ -3980,7 +3964,6 @@ CVideoDeviceDoc::~CVideoDeviceDoc()
 	::DeleteCriticalSection(&m_csHttpProcess);
 	::DeleteCriticalSection(&m_csHttpParams);
 	::DeleteCriticalSection(&m_csMovementDetectionsList);
-	::DeleteCriticalSection(&m_csAVRec);
 	::DeleteCriticalSection(&m_csExecCommandMovementDetection);
 	if (m_hExecCommandMovementDetection)
 	{
@@ -4567,9 +4550,6 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 
 	// All other
 	m_bRotate180 = (BOOL) pApp->GetProfileInt(sSection, _T("Rotate180"), FALSE);
-	m_bRecAutoOpen = (BOOL) pApp->GetProfileInt(sSection, _T("RecAutoOpen"), TRUE);
-	m_bRecTimeSegmentation = (BOOL) pApp->GetProfileInt(sSection, _T("RecTimeSegmentation"), FALSE);
-	m_nTimeSegmentationIndex = pApp->GetProfileInt(sSection, _T("TimeSegmentationIndex"), 0);
 	m_sRecordAutoSaveDir = pApp->GetProfileString(sSection, _T("RecordAutoSaveDir"), _T(""));
 	if (m_sRecordAutoSaveDir.IsEmpty())
 	{
@@ -4801,9 +4781,6 @@ void CVideoDeviceDoc::SaveSettings()
 
 	// All other
 	pApp->WriteProfileInt(sSection, _T("Rotate180"), (int)m_bRotate180);
-	pApp->WriteProfileInt(sSection, _T("RecAutoOpen"), m_bRecAutoOpen);
-	pApp->WriteProfileInt(sSection, _T("RecTimeSegmentation"), m_bRecTimeSegmentation);
-	pApp->WriteProfileInt(sSection, _T("TimeSegmentationIndex"), m_nTimeSegmentationIndex);
 	pApp->WriteProfileString(sSection, _T("RecordAutoSaveDir"), m_sRecordAutoSaveDir);
 	pApp->WriteProfileString(sSection, _T("DetectionTriggerFileName"), m_sDetectionTriggerFileName);
 	pApp->WriteProfileInt(sSection, _T("SnapshotHistoryJpeg"), (int)m_bSnapshotHistoryJpeg);
@@ -5372,97 +5349,6 @@ CString CVideoDeviceDoc::MakeJpegMailSnapshotFileName(const CTime& Time)
 		return sYearMonthDayDir + _T("\\") + _T("mailshot_") + sTime + _T(".jpg");
 }
 
-void CVideoDeviceDoc::FreeVideoFile()
-{
-	if (m_pAVRec)
-	{
-		if (m_pAVRec->GetFrameCount(m_pAVRec->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM)) == 0)
-		{
-			CString sFileName = m_pAVRec->GetFileName();
-			delete m_pAVRec;
-			::DeleteFile(sFileName);
-		}
-		else
-			delete m_pAVRec;
-		m_pAVRec = NULL;
-	}
-}
-
-BOOL CVideoDeviceDoc::MakeAVRec(CAVRec** ppAVRec)
-{
-	// Check
-	if (!ppAVRec)
-		return FALSE;
-
-	// Record time and file name
-	CString sFileName;
-	CString sYearMonthDayDir;
-	CTime CurrentTime = CTime::GetCurrentTime();
-	CString sCurrentTime = CurrentTime.Format(_T("%Y_%m_%d_%H_%M_%S"));
-	CString sRecordAutoSaveDir = m_sRecordAutoSaveDir;
-	sRecordAutoSaveDir.TrimRight(_T('\\'));
-	if (sRecordAutoSaveDir != _T(""))
-	{
-		DWORD dwAttrib = ::GetFileAttributes(sRecordAutoSaveDir);
-		if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
-			::CreateDir(sRecordAutoSaveDir);
-		if (!CVideoDeviceDoc::CreateCheckYearMonthDayDir(CurrentTime, sRecordAutoSaveDir, sYearMonthDayDir))
-			return FALSE;
-	}
-	if (sYearMonthDayDir == _T(""))
-		sFileName = _T("rec_") + sCurrentTime + m_sAVRecFileExt;
-	else
-		sFileName = sYearMonthDayDir + _T("\\") + _T("rec_") + sCurrentTime + m_sAVRecFileExt;
-
-	// Allocate
-	*ppAVRec = new CAVRec;
-	if (!(*ppAVRec))
-		return FALSE;
-
-	// Init the Video File
-	if (!(*ppAVRec)->Init(sFileName, ((CUImagerApp*)::AfxGetApp())->m_bMovFragmented))
-		return FALSE;
-
-	// Add Video Stream
-	BITMAPINFOFULL SrcBmi;
-	BITMAPINFOFULL DstBmi;
-	memset(&SrcBmi, 0, sizeof(BITMAPINFOFULL));
-	memset(&DstBmi, 0, sizeof(BITMAPINFOFULL));
-	memcpy(&SrcBmi, &m_ProcessFrameBMI, CDib::GetBMISize((LPBITMAPINFO)&m_ProcessFrameBMI));
-	DstBmi.bmiHeader.biSize = SrcBmi.bmiHeader.biSize;
-	DstBmi.bmiHeader.biWidth = SrcBmi.bmiHeader.biWidth;
-	DstBmi.bmiHeader.biHeight = SrcBmi.bmiHeader.biHeight;
-	DstBmi.bmiHeader.biPlanes = SrcBmi.bmiHeader.biPlanes;
-	DstBmi.bmiHeader.biCompression = ::GetFileExt((*ppAVRec)->GetFileName()) == _T(".mp4") ? DEFAULT_MP4_VIDEO_FOURCC : DEFAULT_VIDEO_FOURCC;
-	AVRational FrameRate;
-	if (m_dEffectiveFrameRate > 0.0)
-		FrameRate = av_d2q(m_dEffectiveFrameRate, MAX_SIZE_FOR_RATIONAL);
-	else
-		FrameRate = av_d2q(m_dFrameRate, MAX_SIZE_FOR_RATIONAL);
-	if ((*ppAVRec)->AddVideoStream(	(LPBITMAPINFO)(&SrcBmi),		// Source Video Format
-									(LPBITMAPINFO)(&DstBmi),		// Destination Video Format
-									FrameRate.num,					// Rate
-									FrameRate.den,					// Scale
-									m_fVideoRecQuality,
-									((CUImagerApp*)::AfxGetApp())->m_nCoresCount) < 0)	
-		return FALSE;
-
-	// Add Audio Stream
-	if (m_bCaptureAudio)
-	{
-		if ((*ppAVRec)->AddAudioStream(	m_pSrcWaveFormat,		// Src Wave Format
-										m_pDstWaveFormat) < 0)	// Dst Wave Format
-			return FALSE;
-	}
-
-	// Open
-	CString sTitle(GetAssignedDeviceName() + _T(" ") + ::MakeDateLocalFormat(CurrentTime) + _T(" ") + ::MakeTimeLocalFormat(CurrentTime, TRUE));
-	if (!(*ppAVRec)->Open(sTitle))
-		return FALSE;
-	else
-		return TRUE;
-}
-
 void CVideoDeviceDoc::WaveInitFormat(WORD wCh, DWORD dwSampleRate, WORD wBitsPerSample, LPWAVEFORMATEX pWaveFormat)
 {
 	if (pWaveFormat)
@@ -5510,86 +5396,20 @@ void CVideoDeviceDoc::UpdateDstWaveFormat()
 	}
 }
 
-void CVideoDeviceDoc::OnCaptureRecord() 
+void CVideoDeviceDoc::OnCaptureRecord()
 {
 	CaptureRecord();
 }
 
-void CVideoDeviceDoc::OnUpdateCaptureRecord(CCmdUI* pCmdUI) 
-{	
-	pCmdUI->SetCheck(m_pAVRec != NULL ? 1 : 0);
-}
-
-BOOL CVideoDeviceDoc::CaptureRecord() 
+void CVideoDeviceDoc::OnUpdateCaptureRecord(CCmdUI* pCmdUI)
 {
-	// Enter CS
-	::EnterCriticalSection(&m_csAVRec);
-
-	// Stop Recording
-	if (m_pAVRec)
-	{
-		// Close and show it (if set so by user)
-		CloseAndShowVideoFile();
-
-		// Leave CS
-		::LeaveCriticalSection(&m_csAVRec);
-
-		return TRUE;
-	}
-	// Start Recording
-	else
-	{
-		// Set next rec time for time segmentation
-		if (m_bRecTimeSegmentation)
-			NextRecTime(CTime::GetCurrentTime());
-
-		// Free
-		FreeVideoFile();
-		
-		// Allocate & Init pAVRec
-		CAVRec* pAVRec = NULL;
-		if (!MakeAVRec(&pAVRec))
-		{
-			// Free
-			if (pAVRec)
-			{
-				delete pAVRec;
-				pAVRec = NULL;
-			}
-
-			// Leave CS
-			::LeaveCriticalSection(&m_csAVRec);
-			
-			// Error message
-			if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
-				::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, ML_STRING(1850, "Save Failed!"), 0);
-			::LogLine(_T("%s, %s"), GetAssignedDeviceName(), ML_STRING(1850, "Save Failed!"));
-			
-			return FALSE;
-		}
-
-		// Set AV Rec Pointer
-		m_pAVRec = pAVRec;
-
-		// Start Recording
-		m_bRecFirstFrame = TRUE;
-
-		// Leave CS
-		::LeaveCriticalSection(&m_csAVRec);
-
-		return TRUE;
-	}
+	pCmdUI->SetCheck(m_dwVideoProcessorMode ? 1 : 0);
 }
 
-void CVideoDeviceDoc::OnCaptureMovDet()
+void CVideoDeviceDoc::CaptureRecord()
 {
 	m_dwVideoProcessorMode = !m_dwVideoProcessorMode;
 	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("VideoProcessorMode"), m_dwVideoProcessorMode);
-}
-
-void CVideoDeviceDoc::OnUpdateCaptureMovDet(CCmdUI* pCmdUI) 
-{	
-	pCmdUI->SetCheck(m_dwVideoProcessorMode ? 1 : 0);
 }
 
 void CVideoDeviceDoc::OnMovDetSensitivity0()
@@ -7151,7 +6971,7 @@ void CVideoDeviceDoc::AddFrameCount(CDib* pDib, const CString& sCount, int nRefF
 							DRAW_BKG_COLOR);
 }
 
-void CVideoDeviceDoc::AddFrameText(CDib* pDib, const CString& sText, int nRefFontSize)
+void CVideoDeviceDoc::AddRecSymbol(CDib* pDib, int nRefFontSize)
 {
 	// Check
 	if (!pDib)
@@ -7167,12 +6987,12 @@ void CVideoDeviceDoc::AddFrameText(CDib* pDib, const CString& sText, int nRefFon
 	int nFontSize = ::ScaleFont(rcRect.right, rcRect.bottom, nRefFontSize, FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
 	Font.CreatePointFont(nFontSize * 10, g_szDefaultFontFace);
 
-	pDib->AddSingleLineText(sText,
+	pDib->AddSingleLineText(_T("\u25cf"),
 							rcRect,
 							&Font,
 							(DT_RIGHT | DT_BOTTOM),
-							DRAW_MESSAGE_COLOR,
-							OPAQUE,
+							REC_MESSAGE_COLOR,
+							TRANSPARENT,
 							DRAW_BKG_COLOR);
 }
 
@@ -7763,70 +7583,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 
 		// Add Frame Time if User Wants it
 		if (m_bShowFrameTime)
-			AddFrameTime(pDib, CurrentTime, dwCurrentInitUpTime, m_nRefFontSize);
-
-		// Record Video only when start-up settled
-		// (especially for audio/video synchronization)
-		if (bStartupSettled)
-		{
-			::EnterCriticalSection(&m_csAVRec);
-			if (m_pAVRec)
-			{
-				// Add Frame
-				int64_t pts;
-				if (m_bRecFirstFrame)
-					pts = 0;
-				else
-				{
-					int64_t TimeBaseDenominator = m_pAVRec->GetTimeBaseDenominator(m_pAVRec->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM));
-					int64_t TimeBaseNumerator = m_pAVRec->GetTimeBaseNumerator(m_pAVRec->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM));
-					DWORD dwDiffMS = dwCurrentInitUpTime - m_dwRecFirstUpTime;
-					pts = (int64_t)dwDiffMS * TimeBaseDenominator / TimeBaseNumerator / 1000;
-				}
-				BOOL bOk = m_pAVRec->AddFrame(	m_pAVRec->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
-												pDib,
-												false, // No interleave
-												pts);
-
-				// Add Audio Samples
-				if (m_bCaptureAudio)
-				{
-					POSITION posUserBuf = pDib->m_UserList.GetHeadPosition();
-					while (posUserBuf)
-					{
-						CUserBuf UserBuf = pDib->m_UserList.GetNext(posUserBuf);
-						int nNumOfSrcSamples = (m_pSrcWaveFormat && (m_pSrcWaveFormat->nBlockAlign > 0)) ? UserBuf.m_dwSize / m_pSrcWaveFormat->nBlockAlign : 0;
-						m_pAVRec->AddAudioSamples(	m_pAVRec->AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM),
-													nNumOfSrcSamples,
-													UserBuf.m_pBuf,
-													false); // No interleave
-					}
-				}
-
-				// Recording Up-Time Init
-				if (m_bRecFirstFrame)
-				{
-					m_dwRecLastUpTime  = m_dwRecFirstUpTime = dwCurrentInitUpTime;
-					m_bRecFirstFrame = FALSE;
-				}
-				// Recording Up-Time Update
-				else
-					m_dwRecLastUpTime = dwCurrentInitUpTime;
-					
-				// Every second check for segmentation
-				if (bOk && b1SecTick && m_bRecTimeSegmentation &&
-					CurrentTime >= m_NextRecTime)
-				{
-					NextRecTime(CurrentTime);
-					bOk = NextVideoFile();
-				}
-
-				// If not OK -> Stop Recording
-				if (!bOk)
-					CloseAndShowVideoFile();
-			}
-			::LeaveCriticalSection(&m_csAVRec);
-		}
+			AddFrameTime(pDib, CurrentTime, dwCurrentInitUpTime, m_nRefFontSize);				
 
 		// Swap Dib pointers, convert to RGB32 and invalidate to draw
 		::EnterCriticalSection(&m_csDib);
@@ -8280,153 +8037,6 @@ CString CVideoDeviceDoc::SaveJpegMail(CDib* pDib, const CTime& RefTime, DWORD dw
 		return sFileName;
 	else
 		return _T("");
-}
-
-void CVideoDeviceDoc::OpenVideoFile(const CString& sFileName)
-{
-	if (m_bRecAutoOpen)
-	{
-		::PostMessage(	::AfxGetMainFrame()->GetSafeHwnd(),
-						WM_THREADSAFE_OPEN_DOC,
-						(WPARAM)(new CString(sFileName)),
-						(LPARAM)NULL);
-	}
-}
-
-void CVideoDeviceDoc::CloseAndShowVideoFile()
-{
-	// Store old rec file name
-	CString sOldRecFileName;
-	if (m_pAVRec)
-		sOldRecFileName = m_pAVRec->GetFileName();
-
-	// Free
-	FreeVideoFile();
-
-	// Open the video file
-	OpenVideoFile(sOldRecFileName);
-}
-
-void CVideoDeviceDoc::NextRecTime(CTime t)
-{
-	int minutes, hours;
-	switch (m_nTimeSegmentationIndex)
-	{
-		case 0 :	// 15 minutes
-			minutes = 15;
-			minutes -= (t.GetMinute()%15);
-			t = t + CTimeSpan(0, 0, minutes, 0);	// + minutes
-			m_NextRecTime = CTime(	t.GetYear(),
-									t.GetMonth(),
-									t.GetDay(),
-									t.GetHour(),
-									t.GetMinute(),
-									0);		// Back to 0 sec
-			break;
-		case 1 :	// 30 minutes
-			minutes = 30;
-			minutes -= (t.GetMinute()%30);
-			t = t + CTimeSpan(0, 0, minutes, 0);	// + minutes
-			m_NextRecTime = CTime(	t.GetYear(),
-									t.GetMonth(),
-									t.GetDay(),
-									t.GetHour(),
-									t.GetMinute(),
-									0);		// Back to 0 sec
-			break;
-		case 2 :	// 1 hour
-			t = t + CTimeSpan(0, 1, 0, 0);			// + 1 hour
-			m_NextRecTime = CTime(	t.GetYear(),
-									t.GetMonth(),
-									t.GetDay(),
-									t.GetHour(),
-									0, 0);	// Back to 0 min and 0 sec
-			break;
-		case 3 :	// 2 hours
-			hours = 2;
-			hours -= (t.GetHour()%2);
-			t = t + CTimeSpan(0, hours, 0, 0);		// + hours
-			m_NextRecTime = CTime(	t.GetYear(),
-									t.GetMonth(),
-									t.GetDay(),
-									t.GetHour(),
-									0, 0);	// Back to 0 min and 0 sec
-			break;
-		case 4 :	// 3 hours
-			hours = 3;
-			hours -= (t.GetHour()%3);
-			t = t + CTimeSpan(0, hours, 0, 0);		// + hours
-			m_NextRecTime = CTime(	t.GetYear(),
-									t.GetMonth(),
-									t.GetDay(),
-									t.GetHour(),
-									0, 0);	// Back to 0 min and 0 sec
-			break;
-		case 5 :	// 6 hours
-			hours = 6;
-			hours -= (t.GetHour()%6);
-			t = t + CTimeSpan(0, hours, 0, 0);		// + hours
-			m_NextRecTime = CTime(	t.GetYear(),
-									t.GetMonth(),
-									t.GetDay(),
-									t.GetHour(),
-									0, 0);	// Back to 0 min and 0 sec
-			break;
-		case 6 :	// 12 hours
-			hours = 12;
-			hours -= (t.GetHour()%12);
-			t = t + CTimeSpan(0, hours, 0, 0);		// + hours
-			m_NextRecTime = CTime(	t.GetYear(),
-									t.GetMonth(),
-									t.GetDay(),
-									t.GetHour(),
-									0, 0);	// Back to 0 min and 0 sec
-			break;
-		case 7 :	// 24 hours
-		default:
-			t = t + CTimeSpan(1, 0, 0, 0);			// + 1 day
-			m_NextRecTime = CTime(	t.GetYear(),
-									t.GetMonth(),
-									t.GetDay(),
-									0, 0, 0);// Back to midnight
-			break;
-	}
-}
-
-BOOL CVideoDeviceDoc::NextVideoFile()
-{
-	// Allocate & Init pNextAVRec
-	CAVRec* pNextAVRec = NULL;
-	if (!MakeAVRec(&pNextAVRec))
-	{
-		if (pNextAVRec)
-			delete pNextAVRec;
-		if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
-			::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, ML_STRING(1850, "Save Failed!"), 0);
-		::LogLine(_T("%s, %s"), GetAssignedDeviceName(), ML_STRING(1850, "Save Failed!"));
-		return FALSE;
-	}
-
-	// Close old file and open it
-	if (m_pAVRec)
-	{
-		// Store old rec file name
-		CString sOldRecFileName = m_pAVRec->GetFileName();
-
-		// Free
-		delete m_pAVRec;
-
-		// Open the video file
-		OpenVideoFile(sOldRecFileName);
-	}
-
-	// Change Pointer
-	m_pAVRec = pNextAVRec;
-
-	// Restart with frame counting and time measuring
-	m_bRecFirstFrame = TRUE;
-
-	return TRUE;
 }
 
 // pDib    : the frame pointer

@@ -210,11 +210,7 @@ void CMDIClientWnd::OnPaint()
 
 	// Draw point 1.
 	rcDraw.top += nLineHeight;
-	DrawT(memDC, ML_STRING(1802, "1. Close all running cameras"), rcDraw);
-
-	// Draw point 2.
-	rcDraw.top += nLineHeight;
-	DrawT(memDC, ML_STRING(1803, "2. Choose Delete from the Edit menu"), rcDraw);
+	DrawT(memDC, ML_STRING(1803, "1. Choose Delete from the Edit menu"), rcDraw);
 #endif
 
 	// Clean-Up

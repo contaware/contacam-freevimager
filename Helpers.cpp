@@ -43,7 +43,6 @@ static char THIS_FILE[] = __FILE__;
 // 64K allocation granularity and 2GB RAM
 int g_nSystemDPI = 96;
 TCHAR g_szDefaultFontFace[LF_FACESIZE] = _T("Segoe UI");
-BOOL g_bDefaultFontFaceHasSymbols = FALSE;
 BOOL g_bMMX = FALSE;
 BOOL g_bSSE = FALSE;
 BOOL g_bSSE2 = FALSE;
@@ -74,10 +73,7 @@ void InitHelpers()
 
 	// Check whether Segoe UI with Symbols is supported
 	if (IsFontSupported(_T("Segoe UI Symbol")))
-	{
 		_tcscpy(g_szDefaultFontFace, _T("Segoe UI Symbol")); // supported by Windows 7 or higher
-		g_bDefaultFontFaceHasSymbols = TRUE;
-	}
 
 	// Supported Instruction Sets
 	int nInstructionSets = GetCpuInstr();

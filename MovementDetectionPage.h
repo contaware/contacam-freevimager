@@ -29,11 +29,8 @@ public:
 	enum { IDD = IDD_MOVDET };
 	int	m_nSecondsAfterMovementEnd;
 	int	m_nSecondsBeforeMovementBegin;
-	CSpinButtonCtrl	m_SpinSecondsBeforeMovementBegin;
-	CSpinButtonCtrl	m_SpinSecondsAfterMovementEnd;
 	int	m_nDetectionMinLengthSeconds;
 	int m_nDetectionMaxFrames;
-	CSpinButtonCtrl	m_SpinDetectionMinLengthSeconds;
 	CTime m_DetectionStartTime;
 	CTime m_DetectionStopTime;
 	//}}AFX_DATA

@@ -52,17 +52,8 @@ void CGeneralPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_VIDEO_COMPRESSION_QUALITY, m_VideoRecQuality);
 	DDX_Control(pDX, IDC_FRAMERATE, m_FrameRate);
 	DDX_Control(pDX, IDC_SPIN_FRAMERATE, m_SpinFrameRate);
-	DDX_DateTimeCtrl(pDX, IDC_DATE_ONCE_START, m_SchedulerOnceDateStart);
-	DDX_DateTimeCtrl(pDX, IDC_TIME_ONCE_START, m_SchedulerOnceTimeStart);
-	DDX_DateTimeCtrl(pDX, IDC_TIME_ONCE_STOP, m_SchedulerOnceTimeStop);
-	DDX_DateTimeCtrl(pDX, IDC_DATE_ONCE_STOP, m_SchedulerOnceDateStop);
-	DDX_DateTimeCtrl(pDX, IDC_TIME_DAILY_START, m_SchedulerDailyTimeStart);
-	DDX_DateTimeCtrl(pDX, IDC_TIME_DAILY_STOP, m_SchedulerDailyTimeStop);
-	DDX_Check(pDX, IDC_CHECK_TIME_SEGMENTATION, m_bRecTimeSegmentation);
 	DDX_Check(pDX, IDC_CHECK_AUTORUN, m_bAutorun);
-	DDX_CBIndex(pDX, IDC_TIME_SEGMENTATION, m_nTimeSegmentationIndex);
 	DDX_Check(pDX, IDC_CHECK_LIVE_ROTATE180, m_bRotate180);
-	DDX_Check(pDX, IDC_CHECK_AUTOOPEN, m_bRecAutoOpen);
 	DDX_Check(pDX, IDC_CHECK_AUDIO_LISTEN, m_bAudioListen);
 	//}}AFX_DATA_MAP
 }
@@ -83,20 +74,9 @@ BEGIN_MESSAGE_MAP(CGeneralPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_AUDIO_MIXER, OnAudioMixer)
 	ON_BN_CLICKED(IDC_VIDEO_INPUT, OnVideoInput)
 	ON_BN_CLICKED(IDC_VIDEO_TUNER, OnVideoTuner)
-	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_ONCE, OnCheckSchedulerOnce)
-	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_DAILY, OnCheckSchedulerDaily)
-	ON_BN_CLICKED(IDC_CHECK_TIME_SEGMENTATION, OnCheckTimeSegmentation)
 	ON_BN_CLICKED(IDC_CHECK_AUTORUN, OnCheckAutorun)
-	ON_CBN_SELCHANGE(IDC_TIME_SEGMENTATION, OnSelchangeTimeSegmentation)
-	ON_BN_CLICKED(IDC_CHECK_AUTOOPEN, OnCheckAutoopen)
 	ON_BN_CLICKED(IDC_CHECK_LIVE_ROTATE180, OnCheckLiveRotate180)
 	ON_BN_CLICKED(IDC_CHECK_AUDIO_LISTEN, OnCheckAudioListen)
-	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_ONCE_START, OnDatetimechangeTimeOnceStart)
-	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_ONCE_STOP, OnDatetimechangeTimeOnceStop)
-	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_DATE_ONCE_START, OnDatetimechangeDateOnceStart)
-	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_DATE_ONCE_STOP, OnDatetimechangeDateOnceStop)
-	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_DAILY_START, OnDatetimechangeTimeDailyStart)
-	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_DAILY_STOP, OnDatetimechangeTimeDailyStop)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -185,88 +165,8 @@ BOOL CGeneralPage::OnInitDialog()
 	// Init Live Rotate 180° Var
 	m_bRotate180 = m_pDoc->m_bRotate180;
 
-	// Init Rec Auto Open Var
-	m_bRecAutoOpen = m_pDoc->m_bRecAutoOpen;
-
-	// Init Segmentation Vars
-	m_bRecTimeSegmentation = m_pDoc->m_bRecTimeSegmentation;
-	m_nTimeSegmentationIndex = m_pDoc->m_nTimeSegmentationIndex;
-
 	// Init Audio Listen Var
 	m_bAudioListen = m_pDoc->m_bAudioListen;
-
-	// Init Scheduler Values
-	CUImagerApp::CSchedulerEntry* pOnceSchedulerEntry =
-		((CUImagerApp*)::AfxGetApp())->GetOnceSchedulerEntry(m_pDoc->GetDevicePathName());
-
-	CUImagerApp::CSchedulerEntry* pDailySchedulerEntry =
-		((CUImagerApp*)::AfxGetApp())->GetDailySchedulerEntry(m_pDoc->GetDevicePathName());
-
-	if (pOnceSchedulerEntry)
-	{
-		// Start Time & Date
-		m_SchedulerOnceDateStart = CTime(pOnceSchedulerEntry->m_StartTime.GetYear(),
-										pOnceSchedulerEntry->m_StartTime.GetMonth(),
-										pOnceSchedulerEntry->m_StartTime.GetDay(),
-										12, 0, 0);
-		m_SchedulerOnceTimeStart = CTime(2000, 1, 1,
-										pOnceSchedulerEntry->m_StartTime.GetHour(),
-										pOnceSchedulerEntry->m_StartTime.GetMinute(),
-										pOnceSchedulerEntry->m_StartTime.GetSecond());
-
-		// Stop Time & Date
-		m_SchedulerOnceDateStop = CTime(pOnceSchedulerEntry->m_StopTime.GetYear(),
-										pOnceSchedulerEntry->m_StopTime.GetMonth(),
-										pOnceSchedulerEntry->m_StopTime.GetDay(),
-										12, 0, 0);
-		m_SchedulerOnceTimeStop = CTime(2000, 1, 1,
-										pOnceSchedulerEntry->m_StopTime.GetHour(),
-										pOnceSchedulerEntry->m_StopTime.GetMinute(),
-										pOnceSchedulerEntry->m_StopTime.GetSecond());
-	}
-	else
-	{
-		CTime t = CTime::GetCurrentTime();
-		m_SchedulerOnceDateStart = t;
-		m_SchedulerOnceTimeStart = t;
-		m_SchedulerOnceDateStop = t;
-		m_SchedulerOnceTimeStop = t;
-	}
-	
-	if (pDailySchedulerEntry)
-	{
-		// Start Time
-		m_SchedulerDailyTimeStart = CTime(2000, 1, 1,
-										pDailySchedulerEntry->m_StartTime.GetHour(),
-										pDailySchedulerEntry->m_StartTime.GetMinute(),
-										pDailySchedulerEntry->m_StartTime.GetSecond());
-
-		// Stop Time
-		m_SchedulerDailyTimeStop = CTime(2000, 1, 1,
-										pDailySchedulerEntry->m_StopTime.GetHour(),
-										pDailySchedulerEntry->m_StopTime.GetMinute(),
-										pDailySchedulerEntry->m_StopTime.GetSecond());
-	}
-	else
-	{
-		CTime t = CTime::GetCurrentTime();
-		m_SchedulerDailyTimeStart = t;
-		m_SchedulerDailyTimeStop = t;
-	}
-
-	// Init Combo Boxes
-	CComboBox* pComboBoxTimeSeg = (CComboBox*)GetDlgItem(IDC_TIME_SEGMENTATION);
-	if (pComboBoxTimeSeg)
-	{
-		pComboBoxTimeSeg->AddString(ML_STRING(1556, "15 minutes"));
-		pComboBoxTimeSeg->AddString(ML_STRING(1557, "30 minutes"));
-		pComboBoxTimeSeg->AddString(ML_STRING(1558, "1 hour"));
-		pComboBoxTimeSeg->AddString(ML_STRING(1559, "2 hours"));
-		pComboBoxTimeSeg->AddString(ML_STRING(1560, "3 hours"));
-		pComboBoxTimeSeg->AddString(ML_STRING(1561, "6 hours"));
-		pComboBoxTimeSeg->AddString(ML_STRING(1562, "12 hours"));
-		pComboBoxTimeSeg->AddString(ML_STRING(1563, "24 hours"));
-	}
 
 	// Init Codec's Supports
 
@@ -413,28 +313,6 @@ BOOL CGeneralPage::OnInitDialog()
 	else
 		pButton->EnableWindow(FALSE);
 
-	// Set scheduler date range
-	CDateTimeCtrl* pDateTimeCtrl = (CDateTimeCtrl*)GetDlgItem(IDC_DATE_ONCE_START);
-	CTime t1(CTime::GetCurrentTime());
-	CTime t2(3000, 12, 31, 12, 0, 0); // do not set time to 23:59:59 as that crashes if time zone is UTC-09:00 or less
-	pDateTimeCtrl->SetRange(&t1, &t2);
-	pDateTimeCtrl = (CDateTimeCtrl*)GetDlgItem(IDC_DATE_ONCE_STOP);
-	pDateTimeCtrl->SetRange(&t1, &t2);
-	
-	// Init Once Scheduler's Check-Box
-	if (pOnceSchedulerEntry)
-	{
-		pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_ONCE);
-		pCheck->SetCheck(1);
-	}
-
-	// Init Daily Scheduler's Check-Box
-	if (pDailySchedulerEntry)
-	{
-		pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_DAILY);
-		pCheck->SetCheck(1);
-	}
-
 	// OnInitDialog() has been called
 	m_bDlgInitialized = TRUE;
 
@@ -486,10 +364,6 @@ void CGeneralPage::OnRecAudio()
 	// Stop Save Frame List Thread
 	m_pDoc->m_SaveFrameListThread.Kill();
 
-	// Stop Rec
-	if (m_pDoc->m_pAVRec)
-		m_pDoc->CaptureRecord();
-
 	// Start/Stop Capture Audio Thread
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_REC_AUDIO);
 	BOOL bDoCaptureAudio = (pCheck->GetCheck() == 1);
@@ -515,10 +389,6 @@ void CGeneralPage::OnRecAudioFromStream()
 	// Stop Save Frame List Thread
 	m_pDoc->m_SaveFrameListThread.Kill();
 
-	// Stop Rec
-	if (m_pDoc->m_pAVRec)
-		m_pDoc->CaptureRecord();
-
 	// Stop the Capture Audio Thread (if audio enabled)
 	// and set the Capture Audio from Stream flag
 	if (m_pDoc->m_bCaptureAudio)
@@ -533,10 +403,6 @@ void CGeneralPage::OnRecAudioFromSource()
 {
 	// Stop Save Frame List Thread
 	m_pDoc->m_SaveFrameListThread.Kill();
-
-	// Stop Rec
-	if (m_pDoc->m_pAVRec)
-		m_pDoc->CaptureRecord();
 
 	// Clear the Capture Audio from Stream flag
 	// and start the Capture Audio Thread (if audio enabled)
@@ -656,28 +522,10 @@ void CGeneralPage::OnCheckLiveRotate180()
 	m_pDoc->m_bRotate180 = m_bRotate180;
 }
 
-void CGeneralPage::OnCheckAutoopen() 
-{
-	UpdateData(TRUE);
-	m_pDoc->m_bRecAutoOpen = m_bRecAutoOpen;
-}
-
-void CGeneralPage::OnCheckTimeSegmentation() 
-{
-	UpdateData(TRUE);
-	m_pDoc->m_bRecTimeSegmentation = m_bRecTimeSegmentation;
-}
-
 void CGeneralPage::OnCheckAudioListen()
 {
 	UpdateData(TRUE);
 	m_pDoc->m_bAudioListen = m_bAudioListen;
-}
-
-void CGeneralPage::OnSelchangeTimeSegmentation() 
-{
-	UpdateData(TRUE);
-	m_pDoc->m_nTimeSegmentationIndex = m_nTimeSegmentationIndex;
 }
 
 void CGeneralPage::OnCheckAutorun() 
@@ -719,204 +567,6 @@ void CGeneralPage::OnAudioMixer()
 {
 	::ShellExecute(	NULL, NULL,
 					_T("control.exe"), _T("mmsys.cpl,,1"), NULL, SW_SHOWNORMAL);
-}
-
-void CGeneralPage::SetCheckSchedulerOnce(BOOL bCheck) 
-{
-	CButton* pCheckOnce = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_ONCE);
-	if (pCheckOnce->GetCheck())
-	{
-		if (!bCheck)
-		{
-			pCheckOnce->SetCheck(0);
-			ApplySchedulerOnce();
-		}
-	}
-	else
-	{
-		if (bCheck)
-		{
-			pCheckOnce->SetCheck(1);
-			ApplySchedulerOnce();
-		}
-	}
-}
-
-void CGeneralPage::ApplySchedulerOnce()
-{
-	CButton* pCheckOnce = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_ONCE);
-	CButton* pCheckDaily = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_DAILY);
-	if (pCheckOnce->GetCheck())
-	{
-		// Clear daily
-		SetCheckSchedulerDaily(FALSE);
-
-		// Scheduler Entry Init
-		CUImagerApp::CSchedulerEntry* pSchedulerEntry = new CUImagerApp::CSchedulerEntry;
-		if (!pSchedulerEntry)
-			return;
-		pSchedulerEntry->m_Type = CUImagerApp::CSchedulerEntry::ONCE;
-		pSchedulerEntry->m_sDevicePathName = m_pDoc->GetDevicePathName();
-
-		// Update Data From Dialog to Vars
-		UpdateData(TRUE);
-
-		// Start Time
-		pSchedulerEntry->m_StartTime = CTime(	m_SchedulerOnceDateStart.GetYear(),
-												m_SchedulerOnceDateStart.GetMonth(),
-												m_SchedulerOnceDateStart.GetDay(),
-												m_SchedulerOnceTimeStart.GetHour(),
-												m_SchedulerOnceTimeStart.GetMinute(),
-												m_SchedulerOnceTimeStart.GetSecond());
-
-		// Stop Time
-		pSchedulerEntry->m_StopTime = CTime(	m_SchedulerOnceDateStop.GetYear(),
-												m_SchedulerOnceDateStop.GetMonth(),
-												m_SchedulerOnceDateStop.GetDay(),
-												m_SchedulerOnceTimeStop.GetHour(),
-												m_SchedulerOnceTimeStop.GetMinute(),
-												m_SchedulerOnceTimeStop.GetSecond());
-
-		// Add Scheduler Entry
-		((CUImagerApp*)::AfxGetApp())->AddSchedulerEntry(pSchedulerEntry);
-	}
-	else
-	{
-		// Delete Once Scheduler Entry
-		((CUImagerApp*)::AfxGetApp())->DeleteOnceSchedulerEntry(m_pDoc->GetDevicePathName());
-	}
-}
-
-void CGeneralPage::OnCheckSchedulerOnce() 
-{
-	ApplySchedulerOnce();
-}
-
-void CGeneralPage::OnDatetimechangeTimeOnceStart(NMHDR *pNMHDR, LRESULT *pResult)
-{
-	LPNMDATETIMECHANGE pDTChange = reinterpret_cast<LPNMDATETIMECHANGE>(pNMHDR);
-	ApplySchedulerOnce();
-	*pResult = 0;
-}
-
-void CGeneralPage::OnDatetimechangeTimeOnceStop(NMHDR *pNMHDR, LRESULT *pResult)
-{
-	LPNMDATETIMECHANGE pDTChange = reinterpret_cast<LPNMDATETIMECHANGE>(pNMHDR);
-	ApplySchedulerOnce();
-	*pResult = 0;
-}
-
-void CGeneralPage::OnDatetimechangeDateOnceStart(NMHDR *pNMHDR, LRESULT *pResult)
-{
-	LPNMDATETIMECHANGE pDTChange = reinterpret_cast<LPNMDATETIMECHANGE>(pNMHDR);
-	ApplySchedulerOnce();
-	*pResult = 0;
-}
-
-void CGeneralPage::OnDatetimechangeDateOnceStop(NMHDR *pNMHDR, LRESULT *pResult)
-{
-	LPNMDATETIMECHANGE pDTChange = reinterpret_cast<LPNMDATETIMECHANGE>(pNMHDR);
-	ApplySchedulerOnce();
-	*pResult = 0;
-}
-
-void CGeneralPage::ClearOnceScheduler()
-{
-	CTime t = CTime::GetCurrentTime();
-	m_SchedulerOnceDateStart = t;
-	m_SchedulerOnceTimeStart = t;
-	m_SchedulerOnceDateStop = t;
-	m_SchedulerOnceTimeStop = t;
-	UpdateData(FALSE);
-
-	// Uncheck
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_ONCE);
-	pCheck->SetCheck(0);
-}
-
-void CGeneralPage::SetCheckSchedulerDaily(BOOL bCheck) 
-{
-	CButton* pCheckDaily = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_DAILY);
-	if (pCheckDaily->GetCheck())
-	{
-		if (!bCheck)
-		{
-			pCheckDaily->SetCheck(0);
-			ApplySchedulerDaily();
-		}
-	}
-	else
-	{
-		if (bCheck)
-		{
-			pCheckDaily->SetCheck(1);
-			ApplySchedulerDaily();
-		}
-	}
-}
-
-void CGeneralPage::ApplySchedulerDaily()
-{
-	CButton* pCheckOnce = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_ONCE);
-	CButton* pCheckDaily = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_DAILY);	
-	if (pCheckDaily->GetCheck())
-	{
-		// Clear once
-		SetCheckSchedulerOnce(FALSE);
-
-		// Scheduler Entry Init
-		CUImagerApp::CSchedulerEntry* pSchedulerEntry = new CUImagerApp::CSchedulerEntry;
-		if (!pSchedulerEntry)
-			return;
-		pSchedulerEntry->m_Type = CUImagerApp::CSchedulerEntry::DAILY;
-		pSchedulerEntry->m_sDevicePathName = m_pDoc->GetDevicePathName();
-
-		// Update Data From Dialog to Vars
-		UpdateData(TRUE);
-
-		// Start Time
-		pSchedulerEntry->m_StartTime = CTime(	2000,
-												1,
-												1,
-												m_SchedulerDailyTimeStart.GetHour(),
-												m_SchedulerDailyTimeStart.GetMinute(),
-												m_SchedulerDailyTimeStart.GetSecond());
-
-		// Stop Time
-		pSchedulerEntry->m_StopTime = CTime(	2000,
-												1,
-												1,
-												m_SchedulerDailyTimeStop.GetHour(),
-												m_SchedulerDailyTimeStop.GetMinute(),
-												m_SchedulerDailyTimeStop.GetSecond());
-
-		// Add Scheduler Entry
-		((CUImagerApp*)::AfxGetApp())->AddSchedulerEntry(pSchedulerEntry);
-	}
-	else
-	{
-		// Delete Daily Scheduler Entry
-		((CUImagerApp*)::AfxGetApp())->DeleteDailySchedulerEntry(m_pDoc->GetDevicePathName());
-	}
-}
-
-void CGeneralPage::OnCheckSchedulerDaily() 
-{
-	ApplySchedulerDaily();
-}
-
-void CGeneralPage::OnDatetimechangeTimeDailyStart(NMHDR *pNMHDR, LRESULT *pResult)
-{
-	LPNMDATETIMECHANGE pDTChange = reinterpret_cast<LPNMDATETIMECHANGE>(pNMHDR);
-	ApplySchedulerDaily();
-	*pResult = 0;
-}
-
-void CGeneralPage::OnDatetimechangeTimeDailyStop(NMHDR *pNMHDR, LRESULT *pResult)
-{
-	LPNMDATETIMECHANGE pDTChange = reinterpret_cast<LPNMDATETIMECHANGE>(pNMHDR);
-	ApplySchedulerDaily();
-	*pResult = 0;
 }
 
 #endif

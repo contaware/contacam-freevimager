@@ -27,9 +27,6 @@ public:
 	CGeneralPage();
 	void SetDoc(CVideoDeviceDoc* pDoc);
 	~CGeneralPage();
-	void ClearOnceScheduler();
-	void SetCheckSchedulerOnce(BOOL bCheck);
-	void SetCheckSchedulerDaily(BOOL bCheck);
 
 // Dialog Data
 	//{{AFX_DATA(CGeneralPage)
@@ -37,16 +34,7 @@ public:
 	CSliderCtrl	m_VideoRecQuality;
 	CNumEdit	m_FrameRate;
 	CNumSpinCtrl m_SpinFrameRate;
-	CTime	m_SchedulerOnceDateStart;
-	CTime	m_SchedulerOnceTimeStart;
-	CTime	m_SchedulerOnceTimeStop;
-	CTime	m_SchedulerOnceDateStop;
-	CTime	m_SchedulerDailyTimeStart;
-	CTime	m_SchedulerDailyTimeStop;
-	BOOL	m_bRecTimeSegmentation;
 	BOOL	m_bAutorun;
-	int		m_nTimeSegmentationIndex;
-	BOOL	m_bRecAutoOpen;
 	BOOL	m_bRotate180;
 	BOOL	m_bAudioListen;
 	//}}AFX_DATA
@@ -62,8 +50,6 @@ public:
 // Implementation
 protected:
 	void UpdateVideoQualityInfo();
-	void ApplySchedulerOnce();
-	void ApplySchedulerDaily();
 
 	// Generated message map functions
 	//{{AFX_MSG(CGeneralPage)
@@ -81,20 +67,9 @@ protected:
 	afx_msg void OnAudioMixer();
 	afx_msg void OnVideoInput();
 	afx_msg void OnVideoTuner();
-	afx_msg void OnCheckSchedulerOnce();
-	afx_msg void OnCheckSchedulerDaily();
-	afx_msg void OnCheckTimeSegmentation();
 	afx_msg void OnCheckAutorun();
-	afx_msg void OnSelchangeTimeSegmentation();
 	afx_msg void OnCheckLiveRotate180();
-	afx_msg void OnCheckAutoopen();
 	afx_msg void OnCheckAudioListen();
-	afx_msg void OnDatetimechangeTimeOnceStart(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnDatetimechangeTimeOnceStop(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnDatetimechangeDateOnceStart(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnDatetimechangeDateOnceStop(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnDatetimechangeTimeDailyStart(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnDatetimechangeTimeDailyStop(NMHDR *pNMHDR, LRESULT *pResult);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

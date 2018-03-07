@@ -36,7 +36,6 @@ void CCameraBasicSettingsDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CCameraBasicSettingsDlg)
-	DDX_Check(pDX, IDC_CHECK_24H_REC, m_bCheck24hRec);
 	DDX_CBIndex(pDX, IDC_COMBO_KEEPFOR, m_nComboKeepFor);
 	DDX_CBIndex(pDX, IDC_COMBO_FILEEXT, m_nComboFileExt);
 	DDX_Text(pDX, IDC_EDIT_NAME, m_sName);
@@ -198,7 +197,6 @@ BOOL CCameraBasicSettingsDlg::OnInitDialog()
 	// Init vars
 	m_bDoApplySettings = FALSE;
 	m_nRetryTimeMs = 0;
-	m_bCheck24hRec = Is24hRec();
 	m_bCheckFullStretch = FALSE;
 	m_sName = m_pDoc->GetAssignedDeviceName();
 	m_bCheckTrashCommand = (m_pDoc->PhpConfigFileGetParam(PHPCONFIG_SHOW_TRASH_COMMAND) == _T("1"));
@@ -376,10 +374,6 @@ void CCameraBasicSettingsDlg::EnableDisableCtrls()
 		pComboBox->EnableWindow(FALSE);
 		CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_FULLSTRETCH);
 		pCheck->EnableWindow(FALSE);
-		pCheck = (CButton*)GetDlgItem(IDC_CHECK_24H_REC);
-		pCheck->EnableWindow(TRUE);
-		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_PLUS_SIGN);
-		pEdit->EnableWindow(TRUE);
 	}
 	else if (pCheckSnapshotHistory->GetCheck())
 	{
@@ -393,10 +387,6 @@ void CCameraBasicSettingsDlg::EnableDisableCtrls()
 		pComboBox->EnableWindow(FALSE);
 		CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_FULLSTRETCH);
 		pCheck->EnableWindow(FALSE);
-		pCheck = (CButton*)GetDlgItem(IDC_CHECK_24H_REC);
-		pCheck->EnableWindow(FALSE);
-		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_PLUS_SIGN);
-		pEdit->EnableWindow(FALSE);
 	}
 	else if (pCheckSnapshot->GetCheck())
 	{
@@ -410,10 +400,6 @@ void CCameraBasicSettingsDlg::EnableDisableCtrls()
 		pComboBox->EnableWindow(TRUE);
 		CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_FULLSTRETCH);
 		pCheck->EnableWindow(TRUE);
-		pCheck = (CButton*)GetDlgItem(IDC_CHECK_24H_REC);
-		pCheck->EnableWindow(FALSE);
-		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_PLUS_SIGN);
-		pEdit->EnableWindow(FALSE);
 	}
 	else
 	{
@@ -427,10 +413,6 @@ void CCameraBasicSettingsDlg::EnableDisableCtrls()
 		pComboBox->EnableWindow(FALSE);
 		CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_FULLSTRETCH);
 		pCheck->EnableWindow(FALSE);
-		pCheck = (CButton*)GetDlgItem(IDC_CHECK_24H_REC);
-		pCheck->EnableWindow(FALSE);
-		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_PLUS_SIGN);
-		pEdit->EnableWindow(FALSE);
 	}
 }
 
@@ -450,10 +432,6 @@ void CCameraBasicSettingsDlg::EnableDisableAllCtrls(BOOL bEnable)
 		pComboBox->EnableWindow(FALSE);
 		CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_FULLSTRETCH);
 		pCheck->EnableWindow(FALSE);
-		pCheck = (CButton*)GetDlgItem(IDC_CHECK_24H_REC);
-		pCheck->EnableWindow(FALSE);
-		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_PLUS_SIGN);
-		pEdit->EnableWindow(FALSE);
 	}
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_RADIO_MOVDET);
 	pCheck->EnableWindow(bEnable);
@@ -525,126 +503,16 @@ void CCameraBasicSettingsDlg::OnRadioManual()
 	EnableDisableCtrls();
 }
 
-void CCameraBasicSettingsDlg::EnableDisable24hRec(BOOL bEnable)
-{
-	if (m_pDoc->m_pGeneralPage)
-	{
-		CButton* pCheckOnce = (CButton*)m_pDoc->m_pGeneralPage->GetDlgItem(IDC_CHECK_SCHEDULER_ONCE);
-		if (pCheckOnce->GetCheck())
-			m_pDoc->m_pGeneralPage->SetCheckSchedulerOnce(FALSE);
-		if (bEnable)
-		{
-			// Start Time
-			CTime CurrentTime = CTime::GetCurrentTime();
-			m_pDoc->m_pGeneralPage->m_SchedulerOnceDateStart = CTime(	CurrentTime.GetYear(),
-																		CurrentTime.GetMonth(),
-																		CurrentTime.GetDay(),
-																		12, 0, 0);
-			m_pDoc->m_pGeneralPage->m_SchedulerOnceTimeStart = CTime(	2000, 1, 1,
-																		CurrentTime.GetHour(),
-																		CurrentTime.GetMinute(),
-																		CurrentTime.GetSecond());
-
-			// Stop Time
-			CTime MaxTime(3000, 12, 31, 12, 0, 0); // do not set time to 23:59:59 as that crashes if time zone is UTC-09:00 or less
-			m_pDoc->m_pGeneralPage->m_SchedulerOnceDateStop = CTime(	MaxTime.GetYear(),
-																		MaxTime.GetMonth(),
-																		MaxTime.GetDay(),
-																		12, 0, 0);
-			m_pDoc->m_pGeneralPage->m_SchedulerOnceTimeStop = CTime(	2000, 1, 1,
-																		MaxTime.GetHour(),
-																		MaxTime.GetMinute(),
-																		MaxTime.GetSecond());
-
-			// 6 Hours Segmentation
-			m_pDoc->m_bRecTimeSegmentation = m_pDoc->m_pGeneralPage->m_bRecTimeSegmentation = TRUE;
-			m_pDoc->m_nTimeSegmentationIndex = m_pDoc->m_pGeneralPage->m_nTimeSegmentationIndex = 5;
-			m_pDoc->m_bRecAutoOpen = m_pDoc->m_pGeneralPage->m_bRecAutoOpen = FALSE;
-
-			// Update Data from vars to view
-			m_pDoc->m_pGeneralPage->UpdateData(FALSE);
-
-			// Enable Scheduler
-			m_pDoc->m_pGeneralPage->SetCheckSchedulerOnce(TRUE);
-		}
-		else
-		{
-			// No Segmentation
-			m_pDoc->m_bRecTimeSegmentation = m_pDoc->m_pGeneralPage->m_bRecTimeSegmentation = FALSE;
-			m_pDoc->m_nTimeSegmentationIndex = m_pDoc->m_pGeneralPage->m_nTimeSegmentationIndex = 0;
-			m_pDoc->m_bRecAutoOpen = m_pDoc->m_pGeneralPage->m_bRecAutoOpen = TRUE;
-
-			// Update Data from vars to view
-			m_pDoc->m_pGeneralPage->UpdateData(FALSE);
-		}
-	}
-	else
-	{
-		CUImagerApp::CSchedulerEntry* pOnceSchedulerEntry =
-			((CUImagerApp*)::AfxGetApp())->GetOnceSchedulerEntry(m_pDoc->GetDevicePathName());
-		if (pOnceSchedulerEntry)
-			((CUImagerApp*)::AfxGetApp())->DeleteOnceSchedulerEntry(m_pDoc->GetDevicePathName());
-		if (bEnable)
-		{
-			// Scheduler Entry Init
-			CUImagerApp::CSchedulerEntry* pSchedulerEntry = new CUImagerApp::CSchedulerEntry;
-			if (!pSchedulerEntry)
-				return;
-			pSchedulerEntry->m_Type = CUImagerApp::CSchedulerEntry::ONCE;
-			pSchedulerEntry->m_sDevicePathName = m_pDoc->GetDevicePathName();
-
-			// Start Time
-			pSchedulerEntry->m_StartTime = CTime::GetCurrentTime();
-
-			// Stop Time
-			pSchedulerEntry->m_StopTime = CTime(3000, 12, 31, 12, 0, 0); // do not set time to 23:59:59 as that crashes if time zone is UTC-09:00 or less
-			
-			// 6 Hours Segmentation
-			m_pDoc->m_bRecTimeSegmentation = TRUE;
-			m_pDoc->m_nTimeSegmentationIndex = 5;
-			m_pDoc->m_bRecAutoOpen = FALSE;
-
-			// Add Scheduler Entry
-			((CUImagerApp*)::AfxGetApp())->AddSchedulerEntry(pSchedulerEntry);
-		}
-		else
-		{
-			// No Segmentation
-			m_pDoc->m_bRecTimeSegmentation = FALSE;
-			m_pDoc->m_nTimeSegmentationIndex = 0;
-			m_pDoc->m_bRecAutoOpen = TRUE;
-		}
-	}
-}
-
-BOOL CCameraBasicSettingsDlg::Is24hRec() 
-{
-	CUImagerApp::CSchedulerEntry* pOnceSchedulerEntry =
-		((CUImagerApp*)::AfxGetApp())->GetOnceSchedulerEntry(m_pDoc->GetDevicePathName());
-	if (pOnceSchedulerEntry											&&
-		pOnceSchedulerEntry->m_StartTime <= CTime::GetCurrentTime()	&&
-		pOnceSchedulerEntry->m_StopTime.GetYear() >= 3000)
-		return TRUE;
-	else
-		return FALSE;
-}
-
 void CCameraBasicSettingsDlg::OnTimer(UINT nIDEvent) 
 {
 	if (m_bDoApplySettings)
 	{
-		// Stop Rec
-		if (m_pDoc->m_pAVRec)
-			m_pDoc->CaptureRecord();
+		// Apply settings if we are not inside the processing function
+		m_pDoc->StopProcessFrame(PROCESSFRAME_CAMERABASICSETTINGS);
+		if (m_nRetryTimeMs > PROCESSFRAME_MAX_RETRY_TIME || m_pDoc->IsProcessFrameStopped(PROCESSFRAME_CAMERABASICSETTINGS))
+			ApplySettings();
 		else
-		{
-			// Apply settings if we are not inside the processing function
-			m_pDoc->StopProcessFrame(PROCESSFRAME_CAMERABASICSETTINGS);
-			if (m_nRetryTimeMs > PROCESSFRAME_MAX_RETRY_TIME || m_pDoc->IsProcessFrameStopped(PROCESSFRAME_CAMERABASICSETTINGS))
-				ApplySettings();
-			else
-				m_nRetryTimeMs += CAMERABASICSETTINGSDLG_TIMER_MS;
-		}
+			m_nRetryTimeMs += CAMERABASICSETTINGSDLG_TIMER_MS;
 	}
 	CDialog::OnTimer(nIDEvent);
 }
@@ -826,9 +694,6 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	m_pDoc->OneEmptyFrameList();
 	m_pDoc->FreeMovementDetector();
 
-	// Is 24h rec.?
-	BOOL bDo24hRec = Is24hRec();
-
 	// Stop watchdog thread
 	m_pDoc->m_WatchdogThread.Kill();
 
@@ -905,10 +770,27 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	{
 		case 0 :
 		{
-			// Set enable mov. det. flag and set/reset 24h rec. flag
+			// Enable movement detection
 			bDoMovDet = TRUE;
-			bDo24hRec = m_bCheck24hRec;
-			
+			if (m_pDoc->m_nDetectionLevel == 100)
+			{
+				m_pDoc->m_nDetectionLevel = DEFAULT_MOVDET_LEVEL;
+				m_pDoc->m_nMovementDetectorIntensityLimit = 50 - m_pDoc->m_nDetectionLevel / 2;
+			}
+			if (m_pDoc->m_nMilliSecondsRecBeforeMovementBegin == 1000)
+				m_pDoc->m_nMilliSecondsRecBeforeMovementBegin = DEFAULT_PRE_BUFFER_MSEC;
+			if (m_pDoc->m_nMilliSecondsRecAfterMovementEnd == 1000)
+				m_pDoc->m_nMilliSecondsRecAfterMovementEnd = DEFAULT_POST_BUFFER_MSEC;
+			if (m_pDoc->m_nDetectionMinLengthMilliSeconds == 0)
+				m_pDoc->m_nDetectionMinLengthMilliSeconds = MOVDET_MIN_LENGTH_MSEC;
+			if (m_pDoc->m_pMovementDetectionPage)
+			{
+				m_pDoc->m_pMovementDetectionPage->m_nSecondsBeforeMovementBegin = m_pDoc->m_nMilliSecondsRecBeforeMovementBegin / 1000;
+				m_pDoc->m_pMovementDetectionPage->m_nSecondsAfterMovementEnd = m_pDoc->m_nMilliSecondsRecAfterMovementEnd / 1000;
+				m_pDoc->m_pMovementDetectionPage->m_nDetectionMinLengthSeconds = m_pDoc->m_nDetectionMinLengthMilliSeconds / 1000;
+				m_pDoc->m_pMovementDetectionPage->UpdateData(FALSE); // update data from vars to view
+			}
+
 			// Init size vars
 			CString sWidth, sHeight;
 			sWidth.Format(_T("%d"), m_pDoc->m_DocRect.right);
@@ -948,9 +830,26 @@ void CCameraBasicSettingsDlg::ApplySettings()
 		}
 		case 1 :
 		{
-			// Reset mov. det. and 24h rec. flags
+			// Disable movement detection
 			bDoMovDet = FALSE;
-			bDo24hRec = FALSE;
+			if (m_pDoc->m_nDetectionLevel != 100)
+			{
+				m_pDoc->m_nDetectionLevel = 100;
+				m_pDoc->m_nMovementDetectorIntensityLimit = 50 - m_pDoc->m_nDetectionLevel / 2;
+			}
+			if (m_pDoc->m_nMilliSecondsRecBeforeMovementBegin != 1000)
+				m_pDoc->m_nMilliSecondsRecBeforeMovementBegin = 1000;
+			if (m_pDoc->m_nMilliSecondsRecAfterMovementEnd != 1000)
+				m_pDoc->m_nMilliSecondsRecAfterMovementEnd = 1000;
+			if (m_pDoc->m_nDetectionMinLengthMilliSeconds != 0)
+				m_pDoc->m_nDetectionMinLengthMilliSeconds = 0;
+			if (m_pDoc->m_pMovementDetectionPage)
+			{
+				m_pDoc->m_pMovementDetectionPage->m_nSecondsBeforeMovementBegin = m_pDoc->m_nMilliSecondsRecBeforeMovementBegin / 1000;
+				m_pDoc->m_pMovementDetectionPage->m_nSecondsAfterMovementEnd = m_pDoc->m_nMilliSecondsRecAfterMovementEnd / 1000;
+				m_pDoc->m_pMovementDetectionPage->m_nDetectionMinLengthSeconds = m_pDoc->m_nDetectionMinLengthMilliSeconds / 1000;
+				m_pDoc->m_pMovementDetectionPage->UpdateData(FALSE); // update data from vars to view
+			}
 
 			// Init size vars
 			CString sWidth, sHeight;
@@ -1016,9 +915,26 @@ void CCameraBasicSettingsDlg::ApplySettings()
 		}
 		case 2 :
 		{
-			// Reset mov. det. and 24h rec. flags
+			// Disable movement detection
 			bDoMovDet = FALSE;
-			bDo24hRec = FALSE;
+			if (m_pDoc->m_nDetectionLevel != 100)
+			{
+				m_pDoc->m_nDetectionLevel = 100;
+				m_pDoc->m_nMovementDetectorIntensityLimit = 50 - m_pDoc->m_nDetectionLevel / 2;
+			}
+			if (m_pDoc->m_nMilliSecondsRecBeforeMovementBegin != 1000)
+				m_pDoc->m_nMilliSecondsRecBeforeMovementBegin = 1000;
+			if (m_pDoc->m_nMilliSecondsRecAfterMovementEnd != 1000)
+				m_pDoc->m_nMilliSecondsRecAfterMovementEnd = 1000;
+			if (m_pDoc->m_nDetectionMinLengthMilliSeconds != 0)
+				m_pDoc->m_nDetectionMinLengthMilliSeconds = 0;
+			if (m_pDoc->m_pMovementDetectionPage)
+			{
+				m_pDoc->m_pMovementDetectionPage->m_nSecondsBeforeMovementBegin = m_pDoc->m_nMilliSecondsRecBeforeMovementBegin / 1000;
+				m_pDoc->m_pMovementDetectionPage->m_nSecondsAfterMovementEnd = m_pDoc->m_nMilliSecondsRecAfterMovementEnd / 1000;
+				m_pDoc->m_pMovementDetectionPage->m_nDetectionMinLengthSeconds = m_pDoc->m_nDetectionMinLengthMilliSeconds / 1000;
+				m_pDoc->m_pMovementDetectionPage->UpdateData(FALSE); // update data from vars to view
+			}
 
 			// Init size vars
 			CString sWidth, sHeight;
@@ -1078,9 +994,26 @@ void CCameraBasicSettingsDlg::ApplySettings()
 		}
 		case 3 :
 		{
-			// Reset mov. det. and 24h rec. flags
+			// Disable movement detection
 			bDoMovDet = FALSE;
-			bDo24hRec = FALSE;
+			if (m_pDoc->m_nDetectionLevel != 100)
+			{
+				m_pDoc->m_nDetectionLevel = 100;
+				m_pDoc->m_nMovementDetectorIntensityLimit = 50 - m_pDoc->m_nDetectionLevel / 2;
+			}
+			if (m_pDoc->m_nMilliSecondsRecBeforeMovementBegin != 1000)
+				m_pDoc->m_nMilliSecondsRecBeforeMovementBegin = 1000;
+			if (m_pDoc->m_nMilliSecondsRecAfterMovementEnd != 1000)
+				m_pDoc->m_nMilliSecondsRecAfterMovementEnd = 1000;
+			if (m_pDoc->m_nDetectionMinLengthMilliSeconds != 0)
+				m_pDoc->m_nDetectionMinLengthMilliSeconds = 0;
+			if (m_pDoc->m_pMovementDetectionPage)
+			{
+				m_pDoc->m_pMovementDetectionPage->m_nSecondsBeforeMovementBegin = m_pDoc->m_nMilliSecondsRecBeforeMovementBegin / 1000;
+				m_pDoc->m_pMovementDetectionPage->m_nSecondsAfterMovementEnd = m_pDoc->m_nMilliSecondsRecAfterMovementEnd / 1000;
+				m_pDoc->m_pMovementDetectionPage->m_nDetectionMinLengthSeconds = m_pDoc->m_nDetectionMinLengthMilliSeconds / 1000;
+				m_pDoc->m_pMovementDetectionPage->UpdateData(FALSE); // update data from vars to view
+			}
 
 			// Init size vars
 			CString sWidth, sHeight;
@@ -1194,9 +1127,6 @@ void CCameraBasicSettingsDlg::ApplySettings()
 		::AfxGetApp()->WriteProfileInt(m_pDoc->GetDevicePathName(), _T("VideoProcessorMode"), m_pDoc->m_dwVideoProcessorMode);
 	}
 	m_pDoc->m_SaveFrameListThread.Start();
-
-	// Enable/disable 24h rec.
-	EnableDisable24hRec(bDo24hRec);
 
 	// Restart process frame
 	m_pDoc->StartProcessFrame(PROCESSFRAME_CAMERABASICSETTINGS);
