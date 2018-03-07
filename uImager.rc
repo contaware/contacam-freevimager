@@ -2359,64 +2359,56 @@ BEGIN
     LTEXT           "SSL Key",IDC_STATIC,11,197,43,8
 END
 
-IDD_CAMERABASICSETTINGS DIALOGEX 0, 0, 418, 325
+IDD_CAMERABASICSETTINGS DIALOGEX 0, 0, 418, 310
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Camera Basic Settings"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "1. Usage",IDC_STATIC,5,3,407,65
+    GROUPBOX        "1. Usage",IDC_STATIC,5,3,407,53
     CONTROL         "Movement detection surveillance",IDC_RADIO_MOVDET,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP,16,14,121,10
-    CONTROL         "Snapshots with history",IDC_RADIO_SNAPSHOTHISTORY,
-                    "Button",BS_AUTORADIOBUTTON,16,27,89,10
-    CONTROL         "Snapshots without History",IDC_RADIO_SNAPSHOT,"Button",BS_AUTORADIOBUTTON,16,41,100,10
-    CONTROL         "Continuous / manual recording",IDC_RADIO_MANUAL,"Button",BS_AUTORADIOBUTTON,16,54,113,10
-    COMBOBOX        IDC_COMBO_SNAPSHOTHISTORY_RATE,152,26,114,222,CBS_DROPDOWNLIST | WS_TABSTOP
-    LTEXT           "History video size",IDC_LABEL_SNAPSHOTHISTORY_SIZE,280,28,57,8
-    COMBOBOX        IDC_COMBO_SNAPSHOTHISTORY_SIZE,362,26,44,72,CBS_DROPDOWNLIST | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_SNAPSHOT_RATE,152,40,114,198,CBS_DROPDOWNLIST | WS_TABSTOP
-    CONTROL         "Full stretch (for mobile applications)",IDC_CHECK_FULLSTRETCH,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,279,42,129,10
-    GROUPBOX        "2. Name",IDC_STATIC,5,72,407,33
-    LTEXT           "Enter a friendly name for your camera",IDC_STATIC,16,83,123,8
-    LTEXT           "(that's also the camera folder name)",IDC_STATIC,16,92,117,8
-    EDITTEXT        IDC_EDIT_NAME,152,85,254,13,ES_AUTOHSCROLL
-    GROUPBOX        "3. Web interface",IDC_STATIC,5,110,407,43
-    LTEXT           "Language",IDC_STATIC,16,122,32,8
-    COMBOBOX        IDC_COMBO_LANGUAGE,152,120,114,222,CBS_DROPDOWNLIST | WS_TABSTOP
-    LTEXT           "Style / color",IDC_STATIC,16,137,39,8
-    COMBOBOX        IDC_COMBO_STYLE,152,136,114,222,CBS_DROPDOWNLIST | WS_TABSTOP
-    LTEXT           "Thumbnails per page",IDC_LABEL_THUMBSPERPAGE,280,118,72,8
-    COMBOBOX        IDC_COMBO_THUMBSPERPAGE,362,117,44,288,CBS_DROPDOWNLIST | WS_TABSTOP
-    CONTROL         "Allow deleting files",IDC_CHECK_TRASHCOMMAND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,279,131,75,10
-    CONTROL         "Allow obscuring source",IDC_CHECK_CAMERACOMMANDS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,279,141,89,10
-    GROUPBOX        "4. Storage",IDC_STATIC,5,158,407,56
-    LTEXT           "Keep files for",IDC_STATIC,16,170,133,8
-    COMBOBOX        IDC_COMBO_KEEPFOR,152,167,254,116,CBS_DROPDOWNLIST | WS_TABSTOP
-    LTEXT           "Minimum disk free space",IDC_STATIC,16,183,132,8
-    EDITTEXT        IDC_EDIT_MIN_DISK_FREE_PERCENT,152,182,35,13,ES_RIGHT
-    LTEXT           "%",IDC_STATIC,190,185,8,8
-    LTEXT           "Maximum camera folder size\n(0.0: unlimited)",IDC_STATIC,16,194,133,16
-    EDITTEXT        IDC_EDIT_MAX_CAMERA_FOLDER_SIZE,152,196,35,13,ES_RIGHT
-    LTEXT           "GB",IDC_STATIC,190,198,10,8
-    LTEXT           "NOTE: if the free disk space becomes low or the maximum camera folder size is reached the oldest files are deleted",IDC_STATIC,211,188,195,20
-    GROUPBOX        "5. Notification",IDC_STATIC,5,219,407,77
+    CONTROL         "Snapshots with history",IDC_RADIO_SNAPSHOT,"Button",BS_AUTORADIOBUTTON,16,27,89,10
+    CONTROL         "Continuous / manual recording",IDC_RADIO_MANUAL,"Button",BS_AUTORADIOBUTTON,16,40,113,10
+    GROUPBOX        "2. Name",IDC_STATIC,5,61,407,33
+    LTEXT           "Enter a friendly name for your camera",IDC_STATIC,16,72,123,8
+    LTEXT           "(that's also the camera folder name)",IDC_STATIC,16,81,117,8
+    EDITTEXT        IDC_EDIT_NAME,152,74,254,13,ES_AUTOHSCROLL
+    GROUPBOX        "3. Web interface",IDC_STATIC,5,99,407,43
+    LTEXT           "Language",IDC_STATIC,16,111,32,8
+    COMBOBOX        IDC_COMBO_LANGUAGE,152,109,114,222,CBS_DROPDOWNLIST | WS_TABSTOP
+    LTEXT           "Style / color",IDC_STATIC,16,126,39,8
+    COMBOBOX        IDC_COMBO_STYLE,152,125,114,222,CBS_DROPDOWNLIST | WS_TABSTOP
+    LTEXT           "Thumbnails per page",IDC_LABEL_THUMBSPERPAGE,280,107,72,8
+    COMBOBOX        IDC_COMBO_THUMBSPERPAGE,362,106,44,288,CBS_DROPDOWNLIST | WS_TABSTOP
+    CONTROL         "Allow deleting files",IDC_CHECK_TRASHCOMMAND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,279,120,75,10
+    CONTROL         "Allow obscuring source",IDC_CHECK_CAMERACOMMANDS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,279,130,89,10
+    GROUPBOX        "4. Storage",IDC_STATIC,5,147,407,56
+    LTEXT           "Keep files for",IDC_STATIC,16,159,133,8
+    COMBOBOX        IDC_COMBO_KEEPFOR,152,156,254,116,CBS_DROPDOWNLIST | WS_TABSTOP
+    LTEXT           "Minimum disk free space",IDC_STATIC,16,172,132,8
+    EDITTEXT        IDC_EDIT_MIN_DISK_FREE_PERCENT,152,171,35,13,ES_RIGHT
+    LTEXT           "%",IDC_STATIC,190,174,8,8
+    LTEXT           "Maximum camera folder size\n(0.0: unlimited)",IDC_STATIC,16,183,133,16
+    EDITTEXT        IDC_EDIT_MAX_CAMERA_FOLDER_SIZE,152,185,35,13,ES_RIGHT
+    LTEXT           "GB",IDC_STATIC,190,187,10,8
+    LTEXT           "NOTE: if the free disk space becomes low or the maximum camera folder size is reached the oldest files are deleted",IDC_STATIC,211,177,195,20
+    GROUPBOX        "5. Notification",IDC_STATIC,5,208,407,77
     CONTROL         "Send email when camera fails",IDC_CHECK_SENDMAIL_MALFUNCTION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,231,115,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,220,115,10
     CONTROL         "Send email when AC 100-240V fails",IDC_CHECK_SENDMAIL_ACLINE_MALFUNCTION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,243,135,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,232,135,10
     CONTROL         "Send daily camera OK email",IDC_CHECK_SENDMAIL_DEVICE_OK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,255,110,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,244,110,10
     CONTROL         "Send email(s) on Motion Detection",IDC_CHECK_SENDMAIL_MOVEMENT_DETECTION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,267,129,10
-    COMBOBOX        IDC_ATTACHMENT,185,265,138,124,CBS_DROPDOWNLIST | WS_TABSTOP
-    LTEXT           "minimum time between motion detection emails",IDC_STATIC,27,279,156,8
-    EDITTEXT        IDC_EDIT_SENDMAIL_SEC_BETWEEN_MSG,268,279,39,12,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_SPIN_SENDMAIL_SEC_BETWEEN_MSG,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,296,279,11,12
-    LTEXT           "sec",IDC_STATIC2295,313,281,15,8
-    PUSHBUTTON      "Email Settings",IDC_SENDMAIL_CONFIGURE,331,245,75,32
-    PUSHBUTTON      "OK",IDOK,152,300,58,16,BS_MULTILINE
-    PUSHBUTTON      "Cancel",IDCANCEL,221,300,58,16
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,256,129,10
+    COMBOBOX        IDC_ATTACHMENT,185,254,138,124,CBS_DROPDOWNLIST | WS_TABSTOP
+    LTEXT           "minimum time between motion detection emails",IDC_STATIC,27,268,156,8
+    EDITTEXT        IDC_EDIT_SENDMAIL_SEC_BETWEEN_MSG,268,268,39,12,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_SPIN_SENDMAIL_SEC_BETWEEN_MSG,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,296,268,11,12
+    LTEXT           "sec",IDC_STATIC2295,313,270,15,8
+    PUSHBUTTON      "Email Settings",IDC_SENDMAIL_CONFIGURE,331,234,75,32
+    PUSHBUTTON      "OK",IDOK,152,289,58,16,BS_MULTILINE
+    PUSHBUTTON      "Cancel",IDCANCEL,221,289,58,16
 END
 
 IDD_RENAME DIALOG 0, 0, 186, 47
@@ -3022,7 +3014,7 @@ BEGIN
         VERTGUIDE, 279
         VERTGUIDE, 406
         TOPMARGIN, 2
-        BOTTOMMARGIN, 321
+        BOTTOMMARGIN, 306
     END
 
     IDD_RENAME, DIALOG
@@ -4117,7 +4109,6 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_STRING1555          "Full"
     IDS_STRING1564          "Custom"
     IDS_STRING1565          "Please wait..."
     IDS_STRING1566          "Closing"
@@ -4321,23 +4312,10 @@ BEGIN
     IDS_STRING1730          "Half Year"
     IDS_STRING1731          "1 Year"
     IDS_STRING1732          "Unlimited"
-    IDS_STRING1733          "15 Seconds Rate"
-    IDS_STRING1734          "30 Seconds Rate"
-    IDS_STRING1735          "1 Minute Rate"
-    IDS_STRING1736          "2 Minutes Rate"
-    IDS_STRING1737          "3 Minutes Rate"
-    IDS_STRING1738          "4 Minutes Rate"
-    IDS_STRING1739          "5 Minutes Rate"
-    IDS_STRING1741          "1 Second Rate"
-    IDS_STRING1742          "2 Seconds Rate"
-    IDS_STRING1743          "3 Seconds Rate"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_STRING1744          "4 Seconds Rate"
-    IDS_STRING1745          "5 Seconds Rate"
-    IDS_STRING1746          "10 Seconds Rate"
     IDS_STRING1750          "ADD CAMERA"
     IDS_STRING1751          "1. Make sure your video capture device is plugged-in and drivers are installed"
     IDS_STRING1752          "(network and DV cameras do not need specific drivers)"
@@ -4449,7 +4427,6 @@ BEGIN
     IDS_STRING1860          "Path"
     IDS_STRING1861          "Scan more pages?"
     IDS_STRING1862          "Params can include case sensitive variables\r\n%sec% %min% %hour%\r\n%day% %month% %year%\r\n%fullvideo% %smallvideo% %counter%"
-    IDS_STRING1863          "Fast Rate"
     IDS_STRING1864          "JPEG Quality\n(0: worst, 100: best)"
     IDS_STRING1865          "HTTP motion jpeg"
     IDS_STRING1866          "HTTP jpeg snapshots"

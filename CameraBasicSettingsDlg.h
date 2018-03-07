@@ -31,10 +31,6 @@ public:
 	CString m_sMaxCameraFolderSizeGB;
 	CString m_sMinDiskFreePercent;
 	int		m_nUsage;
-	int		m_nComboSnapshotRate;
-	int		m_nComboSnapshotHistoryRate;
-	int		m_nComboSnapshotHistorySize;
-	BOOL	m_bCheckFullStretch;
 	BOOL	m_bCheckTrashCommand;
 	BOOL	m_bCheckCameraCommands;
 	BOOL	m_bCheckSendMailMalfunction;
@@ -60,7 +56,6 @@ protected:
 	SendMailConfigurationStruct m_CurrentSendMailConfiguration;
 	BOOL m_bDoApplySettings;
 	int m_nRetryTimeMs;
-	void EnableDisableCtrls();
 	void EnableDisableAllCtrls(BOOL bEnable);
 	void Rename();
 	void ApplySettingsSnapshot(int nThumbWidth, int nThumbHeight, double dSnapshotRate);
@@ -69,10 +64,6 @@ protected:
 	//{{AFX_MSG(CCameraBasicSettingsDlg)
 	virtual BOOL OnInitDialog();
 	afx_msg void OnDestroy();
-	afx_msg void OnRadioMovdet();
-	afx_msg void OnRadioSnapshothistory();
-	afx_msg void OnRadioSnapshot();
-	afx_msg void OnRadioManual();
 	afx_msg void OnTimer(UINT nIDEvent);
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 	afx_msg void OnSendmailConfigure();
