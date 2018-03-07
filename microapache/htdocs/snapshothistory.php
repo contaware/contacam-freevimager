@@ -62,12 +62,6 @@ echo "</div>\n";
 ?>
 <script type="text/javascript">
 //<![CDATA[
-function urlExists(url) {
-	var ajax = new XMLHttpRequest(); 
-	ajax.open('HEAD', url, false); // sync. call
-	ajax.send(null);
-	return ajax.status != 404;
-}
 function loadIFrame(y,m,d) {
 	// Update the now variable
 	now = new Date();
@@ -95,16 +89,9 @@ function loadIFrame(y,m,d) {
 		var filename = 'shot' + '_' + y + '_' + LZ(m) + '_' + LZ(d);
 		var videouri = filesdirpath + '/' + y + '/' + LZ(m) + '/' + LZ(d) + '/' + filename;
 		var videouri_get = new String(videouri);
-		if (urlExists(videouri_get + '.mp4')) {
-			videouri_get += '.mp4';
-			videouri_get = videouri_get.replace(/\//g, "%2F");
-			srcuri = 'mp4.php' + srcuri + videouri_get;
-		}
-		else {
-			videouri_get += '.avi';
-			videouri_get = videouri_get.replace(/\//g, "%2F");
-			srcuri = 'avi.php' + srcuri + videouri_get;
-		}
+		videouri_get += '.mp4';
+		videouri_get = videouri_get.replace(/\//g, "%2F");
+		srcuri = 'mp4.php' + srcuri + videouri_get;
 	}
 	document.getElementById('myiframe').src = srcuri;
 }

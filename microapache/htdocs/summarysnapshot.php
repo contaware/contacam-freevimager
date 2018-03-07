@@ -254,7 +254,6 @@ if ($handle = @opendir($dir)) {
 			$hasgif = is_file($dir."/".basename($file, ".".$path_parts['extension']).".gif");
 			if ($path_parts['extension'] == 'gif'				||					// Gif thumb
 				($path_parts['extension'] == 'mp4' && !$hasgif)	||					// Mp4 without Gif thumb
-				($path_parts['extension'] == 'avi' && !$hasgif)	||					// Avi without Gif thumb
 				($path_parts['extension'] == 'jpg' && $file_postfix == 'thumb')) {	// Snapshot thumb
 				$file_time = mktime($file_hour, $file_min, $file_sec, $file_month, $file_day, $file_year); 
 				$file_array[$file] = $file_time;
@@ -313,14 +312,11 @@ if ($handle = @opendir($dir)) {
 				list($file_prefix, $file_year, $file_month, $file_day, $file_hour, $file_min, $file_sec, $file_postfix) = sscanf($filenamenoext, "%[a-z,A-Z]_%d_%d_%d_%d_%d_%d_%[a-z,A-Z]");
 				$uribasenoext = "$filesdirpath/$selected_year_string/$selected_month_string/$selected_day_string/$filenamenoext";
 				$mp4uri = "$uribasenoext.mp4"; $mp4uri_get = urlencode($mp4uri); $mp4file = "$dir/$filenamenoext.mp4";
-				$aviuri = "$uribasenoext.avi"; $aviuri_for_html = htmlspecialchars(str_replace("%2F", "/", rawurlencode($aviuri))); $avifile = "$dir/$filenamenoext.avi";
 				$gifuri = "$uribasenoext.gif"; $gifuri_for_html = htmlspecialchars(str_replace("%2F", "/", rawurlencode($gifuri)));
 				echo "<span class=\"thumbcontainer\">";
 				if ($path_parts['extension'] == 'gif') {
 					if (is_file($mp4file))
 						echo "<a href=\"mp4.php?file=$mp4uri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . $mp4s . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri_for_html\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a>";
-					else if (is_file($avifile))
-						echo "<a href=\"$aviuri_for_html\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri_for_html\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a>";
 					else
 						echo "<a href=\"#\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri_for_html\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a>";
 				}
@@ -329,8 +325,6 @@ if ($handle = @opendir($dir)) {
 					$jpeguri = str_replace("_thumb", "", $jpegthumburi); $jpeguri_get = urlencode($jpeguri);
 					echo "<a href=\"jpeg.php?file=$jpeguri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$jpegthumburi_for_html\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a>";
 				}
-				else if ($path_parts['extension'] == 'avi')
-					echo strtoupper($file_prefix) . "<br /><a href=\"$aviuri_for_html\" >$file_timestamp</a>";
 				else if ($path_parts['extension'] == 'mp4')
 					echo strtoupper($file_prefix) . "<br /><a href=\"mp4.php?file=$mp4uri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\" >$file_timestamp</a>";
 				if ($show_trash_command)
