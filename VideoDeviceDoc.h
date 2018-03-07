@@ -61,7 +61,6 @@ class CMovementDetectionPage;
 #define FRAME_USER_FLAG_END					0x04		// mark the frame as being the last frame of the detection sequence
 #define DEFAULT_DEL_RECS_OLDER_THAN_DAYS	31			// by default delete recordings older than a month
 #define MIN_DISK_FREE_PERMILLION			50000		// 5%
-#define DEFAULT_VIDEO_FILEEXT				_T(".mp4")	// default file extension
 #define DEFAULT_EMAIL_SUBJECT				_T("%name%: %date% %time% %note%")
 #define PLACEMENT_THRESHOLD_PIXELS			50			// to make sure that the saved placement is visible
 
@@ -493,7 +492,6 @@ public:
 			BOOL m_bSnapshotHistoryJpeg;
 			BOOL m_bSnapshotHistoryVideoFtp;
 			float m_fSnapshotVideoCompressorQuality;
-			CString m_sSnapshotVideoFileExt;
 			double m_dSnapshotHistoryFrameRate;
 			CTime m_Time;
 			CString m_sMetadataTitle;
@@ -712,7 +710,6 @@ public:
 	BOOL AudioListen(	LPBYTE pData, DWORD dwSizeInBytes,
 						CAudioTools* pAudioTools, CAudioPlay* pAudioPlay);
 	static void WaveInitFormat(WORD wCh, DWORD dwSampleRate, WORD wBitsPerSample, LPWAVEFORMATEX pWaveFormat);
-	void UpdateDstWaveFormat();
 	UINT EffectiveCaptureAudioDeviceID();
 	static CString CaptureAudioDeviceIDToName(UINT uiID);
 	static UINT CaptureAudioNameToDeviceID(const CString& sName);
@@ -896,7 +893,6 @@ public:
 
 	// Audio / Video Rec
 	CString m_sRecordAutoSaveDir;						// The Record Directory
-	CString m_sAVRecFileExt;							// Extension of video file (lowercase with dot)
 	volatile float m_fVideoRecQuality;					// 2.0f best quality, 31.0f worst quality, for H.264 clamped to [VIDEO_QUALITY_BEST, VIDEO_QUALITY_LOW]
 	volatile int m_nDeleteRecordingsOlderThanDays;		// Delete Recordings older than the given amount of days,
 														// 0 means never delete any file

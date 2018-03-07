@@ -27,7 +27,6 @@ public:
 	//{{AFX_DATA(CCameraBasicSettingsDlg)
 	enum { IDD = IDD_CAMERABASICSETTINGS };
 	int		m_nComboKeepFor;
-	int		m_nComboFileExt;
 	CString	m_sName;
 	CString m_sMaxCameraFolderSizeGB;
 	CString m_sMinDiskFreePercent;

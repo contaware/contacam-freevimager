@@ -336,7 +336,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		if (!sVideoFileName.IsEmpty())
 			sVideoFileName += _T("\\");
 		CString sGIFFileName(sVideoFileName);
-		sVideoFileName += _T("rec_") + sFirstTime + m_pDoc->m_sAVRecFileExt;
+		sVideoFileName += _T("rec_") + sFirstTime + DEFAULT_VIDEO_FILEEXT;
 		sGIFFileName += _T("rec_") + sFirstTime + _T(".gif");
 		CString sVideoTempFileName(sTempDetectionDir + _T("\\") + ::GetShortFileName(sVideoFileName));
 		CString sGIFTempFileName(sTempDetectionDir + _T("\\") + ::GetShortFileName(sGIFFileName));
@@ -422,7 +422,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 					DstBmi.biWidth = VideoSaveDib.GetWidth();
 					DstBmi.biHeight = VideoSaveDib.GetHeight();
 					DstBmi.biPlanes = 1;
-					DstBmi.biCompression = ::GetFileExt(AVRecVideo.GetFileName()) == _T(".mp4") ? DEFAULT_MP4_VIDEO_FOURCC : DEFAULT_VIDEO_FOURCC;
+					DstBmi.biCompression = DEFAULT_VIDEO_FOURCC;
 					AVRecVideo.AddVideoStream(VideoSaveDib.GetBMI(),			// Source Video Format
 											(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
 											CalcFrameRate.num,					// Rate
@@ -1086,7 +1086,7 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 								DstBmi.biWidth = Dib.GetWidth();
 								DstBmi.biHeight = Dib.GetHeight();
 								DstBmi.biPlanes = 1;
-								DstBmi.biCompression = ::GetFileExt(pAVRecVideo->GetFileName()) == _T(".mp4") ? DEFAULT_MP4_VIDEO_FOURCC : DEFAULT_VIDEO_FOURCC;
+								DstBmi.biCompression = DEFAULT_VIDEO_FOURCC;
 								pAVRecVideo->AddVideoStream(Dib.GetBMI(),						// Source Video Format
 															(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
 															FrameRate.num,						// Rate
@@ -1122,7 +1122,7 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 								DstBmi.biWidth = Dib.GetWidth();
 								DstBmi.biHeight = Dib.GetHeight();
 								DstBmi.biPlanes = 1;
-								DstBmi.biCompression = ::GetFileExt(pAVRecThumbVideo->GetFileName()) == _T(".mp4") ? DEFAULT_MP4_VIDEO_FOURCC : DEFAULT_VIDEO_FOURCC;
+								DstBmi.biCompression = DEFAULT_VIDEO_FOURCC;
 								pAVRecThumbVideo->AddVideoStream(Dib.GetBMI(),						// Source Video Format
 																(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
 																FrameRate.num,						// Rate
@@ -1352,9 +1352,9 @@ __forceinline CString CVideoDeviceDoc::CSaveSnapshotVideoThread::MakeVideoHistor
 
 	// Return file name
 	if (sYearMonthDayDir == _T(""))
-		return _T("shot_") + sTime + m_sSnapshotVideoFileExt;
+		return _T("shot_") + sTime + DEFAULT_VIDEO_FILEEXT;
 	else
-		return sYearMonthDayDir + _T("\\") + _T("shot_") + sTime + m_sSnapshotVideoFileExt;
+		return sYearMonthDayDir + _T("\\") + _T("shot_") + sTime + DEFAULT_VIDEO_FILEEXT;
 }
 
 BOOL CVideoDeviceDoc::SendMail(	const SendMailConfigurationStruct& Config,
@@ -3785,7 +3785,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 
 	// Recording
 	m_sRecordAutoSaveDir = _T("");
-	m_sAVRecFileExt = DEFAULT_VIDEO_FILEEXT;
 	m_fVideoRecQuality = DEFAULT_VIDEO_QUALITY;
 	m_nDeleteRecordingsOlderThanDays = DEFAULT_DEL_RECS_OLDER_THAN_DAYS;
 	m_nMaxCameraFolderSizeMB = 0;
@@ -3852,7 +3851,14 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_pSrcWaveFormat = (WAVEFORMATEX*)new BYTE[sizeof(WAVEFORMATEX)];
 	WaveInitFormat(DEFAULT_AUDIO_CHANNELS, DEFAULT_AUDIO_SAMPLINGRATE, DEFAULT_AUDIO_BITS, m_pSrcWaveFormat);
 	m_pDstWaveFormat = (WAVEFORMATEX*)new BYTE[sizeof(WAVEFORMATEX)];
-	UpdateDstWaveFormat(); // m_sAVRecFileExt must be initialized!
+	WaveInitFormat(DEFAULT_AUDIO_CHANNELS, DEFAULT_AUDIO_SAMPLINGRATE, DEFAULT_AUDIO_BITS, m_pDstWaveFormat);
+	if (m_pDstWaveFormat)
+	{
+		m_pDstWaveFormat->wFormatTag = DEFAULT_AUDIO_FORMAT_TAG;
+		m_pDstWaveFormat->nAvgBytesPerSec = DEFAULT_AUDIO_BITRATE / 8;
+		m_pDstWaveFormat->nBlockAlign = 0;
+		m_pDstWaveFormat->wBitsPerSample = 0;
+	}
 
 	// Property Sheet
 	m_pMovementDetectionPage = NULL;
@@ -4655,8 +4661,6 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_bHideExecCommandMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("HideExecCommandMovementDetection"), FALSE);
 	m_bWaitExecCommandMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("WaitExecCommandMovementDetection"), FALSE);
 	m_dwVideoProcessorMode = (DWORD) MIN(1, MAX(0, pApp->GetProfileInt(sSection, _T("VideoProcessorMode"), 0)));
-	m_sAVRecFileExt = pApp->GetProfileString(sSection, _T("VideoFileExt"), DEFAULT_VIDEO_FILEEXT);
-	UpdateDstWaveFormat(); // this updates m_pDstWaveFormat from m_sAVRecFileExt
 	m_fVideoRecQuality = (float) CAVRec::ClipVideoQuality((float)pApp->GetProfileInt(sSection, _T("VideoRecQuality"), (int)DEFAULT_VIDEO_QUALITY));
 	m_nDetectionStartStop = (int) pApp->GetProfileInt(sSection, _T("DetectionStartStop"), 0);
 	m_bDetectionSunday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionSunday"), TRUE);
@@ -4843,7 +4847,6 @@ void CVideoDeviceDoc::SaveSettings()
 		
 	pApp->WriteProfileInt(sSection, _T("HideExecCommandMovementDetection"), m_bHideExecCommandMovementDetection);
 	pApp->WriteProfileInt(sSection, _T("WaitExecCommandMovementDetection"), m_bWaitExecCommandMovementDetection);
-	pApp->WriteProfileString(sSection, _T("VideoFileExt"), m_sAVRecFileExt);
 	pApp->WriteProfileInt(sSection, _T("VideoRecQuality"), (int)m_fVideoRecQuality);
 	pApp->WriteProfileInt(sSection, _T("DetectionStartStop"), m_nDetectionStartStop);
 	pApp->WriteProfileInt(sSection, _T("DetectionSunday"), (int)m_bDetectionSunday);
@@ -5360,39 +5363,6 @@ void CVideoDeviceDoc::WaveInitFormat(WORD wCh, DWORD dwSampleRate, WORD wBitsPer
 		pWaveFormat->nAvgBytesPerSec = dwSampleRate * pWaveFormat->nBlockAlign;
 		pWaveFormat->wBitsPerSample = wBitsPerSample;
 		pWaveFormat->cbSize = 0;
-	}
-}
-
-void CVideoDeviceDoc::UpdateDstWaveFormat()
-{
-	if (m_pDstWaveFormat)
-	{
-		// Init
-		WaveInitFormat(DEFAULT_AUDIO_CHANNELS, DEFAULT_AUDIO_SAMPLINGRATE, DEFAULT_AUDIO_BITS, m_pDstWaveFormat);
-		if (m_sAVRecFileExt == _T(".mp4"))
-			m_pDstWaveFormat->wFormatTag = DEFAULT_MP4_AUDIO_FORMAT_TAG;
-		else
-			m_pDstWaveFormat->wFormatTag = DEFAULT_AUDIO_FORMAT_TAG;
-
-		// Update according to format tag
-		if (m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_DVI_ADPCM)
-		{
-			m_pDstWaveFormat->nAvgBytesPerSec = m_pDstWaveFormat->nSamplesPerSec * m_pDstWaveFormat->nChannels / 2; // calculated more precisely by codec
-			m_pDstWaveFormat->nBlockAlign = 0;																		// calculated by codec
-			m_pDstWaveFormat->wBitsPerSample = 4;
-		}
-		else if (m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_MPEGLAYER3)
-		{
-			m_pDstWaveFormat->nAvgBytesPerSec = DEFAULT_MP3_AUDIO_BITRATE / 8;
-			m_pDstWaveFormat->nBlockAlign = 0;
-			m_pDstWaveFormat->wBitsPerSample = 0;
-		}
-		else if (m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_AAC2)
-		{
-			m_pDstWaveFormat->nAvgBytesPerSec = DEFAULT_AAC_AUDIO_BITRATE / 8;
-			m_pDstWaveFormat->nBlockAlign = 0;
-			m_pDstWaveFormat->wBitsPerSample = 0;
-		}
 	}
 }
 
@@ -7879,7 +7849,6 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 			m_SaveSnapshotVideoThread.m_bSnapshotHistoryJpeg = m_bSnapshotHistoryJpeg;
 			m_SaveSnapshotVideoThread.m_bSnapshotHistoryVideoFtp = m_bSnapshotHistoryVideoFtp;
 			m_SaveSnapshotVideoThread.m_fSnapshotVideoCompressorQuality = m_fVideoRecQuality;
-			m_SaveSnapshotVideoThread.m_sSnapshotVideoFileExt = m_sAVRecFileExt;
 			m_SaveSnapshotVideoThread.m_dSnapshotHistoryFrameRate = (double)m_nSnapshotHistoryFrameRate;
 			m_SaveSnapshotVideoThread.m_Time = Yesterday;
 			m_SaveSnapshotVideoThread.m_sMetadataTitle = GetAssignedDeviceName() + _T(" ") + ::MakeDateLocalFormat(Yesterday);

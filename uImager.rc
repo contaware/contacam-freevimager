@@ -2359,12 +2359,12 @@ BEGIN
     LTEXT           "SSL Key",IDC_STATIC,11,197,43,8
 END
 
-IDD_CAMERABASICSETTINGS DIALOGEX 0, 0, 419, 336
+IDD_CAMERABASICSETTINGS DIALOGEX 0, 0, 418, 325
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Camera Basic Settings"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "1. Usage",IDC_STATIC,5,3,408,65
+    GROUPBOX        "1. Usage",IDC_STATIC,5,3,407,65
     CONTROL         "Movement detection surveillance",IDC_RADIO_MOVDET,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP,16,14,121,10
     CONTROL         "Snapshots with history",IDC_RADIO_SNAPSHOTHISTORY,
@@ -2377,11 +2377,11 @@ BEGIN
     COMBOBOX        IDC_COMBO_SNAPSHOT_RATE,152,40,114,198,CBS_DROPDOWNLIST | WS_TABSTOP
     CONTROL         "Full stretch (for mobile applications)",IDC_CHECK_FULLSTRETCH,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,279,42,129,10
-    GROUPBOX        "2. Name",IDC_STATIC,5,72,408,33
+    GROUPBOX        "2. Name",IDC_STATIC,5,72,407,33
     LTEXT           "Enter a friendly name for your camera",IDC_STATIC,16,83,123,8
     LTEXT           "(that's also the camera folder name)",IDC_STATIC,16,92,117,8
     EDITTEXT        IDC_EDIT_NAME,152,85,254,13,ES_AUTOHSCROLL
-    GROUPBOX        "3. Web interface",IDC_STATIC,5,110,408,43
+    GROUPBOX        "3. Web interface",IDC_STATIC,5,110,407,43
     LTEXT           "Language",IDC_STATIC,16,122,32,8
     COMBOBOX        IDC_COMBO_LANGUAGE,152,120,114,222,CBS_DROPDOWNLIST | WS_TABSTOP
     LTEXT           "Style / color",IDC_STATIC,16,137,39,8
@@ -2390,35 +2390,33 @@ BEGIN
     COMBOBOX        IDC_COMBO_THUMBSPERPAGE,362,117,44,288,CBS_DROPDOWNLIST | WS_TABSTOP
     CONTROL         "Allow deleting files",IDC_CHECK_TRASHCOMMAND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,279,131,75,10
     CONTROL         "Allow obscuring source",IDC_CHECK_CAMERACOMMANDS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,279,141,89,10
-    GROUPBOX        "4. Storage",IDC_STATIC,5,158,408,71
-    LTEXT           "Video file format",IDC_STATIC,16,171,133,8
-    COMBOBOX        IDC_COMBO_FILEEXT,152,167,254,116,CBS_DROPDOWNLIST | WS_TABSTOP
-    LTEXT           "Keep files for",IDC_STATIC,16,185,133,8
-    COMBOBOX        IDC_COMBO_KEEPFOR,152,182,254,116,CBS_DROPDOWNLIST | WS_TABSTOP
-    LTEXT           "Minimum disk free space",IDC_STATIC,16,198,132,8
-    EDITTEXT        IDC_EDIT_MIN_DISK_FREE_PERCENT,152,197,35,13,ES_RIGHT
-    LTEXT           "%",IDC_STATIC,190,200,8,8
-    LTEXT           "Maximum camera folder size\n(0.0: unlimited)",IDC_STATIC,16,209,133,16
-    EDITTEXT        IDC_EDIT_MAX_CAMERA_FOLDER_SIZE,152,211,35,13,ES_RIGHT
-    LTEXT           "GB",IDC_STATIC,190,213,10,8
-    LTEXT           "NOTE: if the free disk space becomes low or the maximum camera folder size is reached the oldest files are deleted",IDC_STATIC,211,203,195,20
-    GROUPBOX        "5. Notification",IDC_STATIC,5,235,408,77
+    GROUPBOX        "4. Storage",IDC_STATIC,5,158,407,56
+    LTEXT           "Keep files for",IDC_STATIC,16,170,133,8
+    COMBOBOX        IDC_COMBO_KEEPFOR,152,167,254,116,CBS_DROPDOWNLIST | WS_TABSTOP
+    LTEXT           "Minimum disk free space",IDC_STATIC,16,183,132,8
+    EDITTEXT        IDC_EDIT_MIN_DISK_FREE_PERCENT,152,182,35,13,ES_RIGHT
+    LTEXT           "%",IDC_STATIC,190,185,8,8
+    LTEXT           "Maximum camera folder size\n(0.0: unlimited)",IDC_STATIC,16,194,133,16
+    EDITTEXT        IDC_EDIT_MAX_CAMERA_FOLDER_SIZE,152,196,35,13,ES_RIGHT
+    LTEXT           "GB",IDC_STATIC,190,198,10,8
+    LTEXT           "NOTE: if the free disk space becomes low or the maximum camera folder size is reached the oldest files are deleted",IDC_STATIC,211,188,195,20
+    GROUPBOX        "5. Notification",IDC_STATIC,5,219,407,77
     CONTROL         "Send email when camera fails",IDC_CHECK_SENDMAIL_MALFUNCTION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,247,115,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,231,115,10
     CONTROL         "Send email when AC 100-240V fails",IDC_CHECK_SENDMAIL_ACLINE_MALFUNCTION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,259,135,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,243,135,10
     CONTROL         "Send daily camera OK email",IDC_CHECK_SENDMAIL_DEVICE_OK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,271,110,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,255,110,10
     CONTROL         "Send email(s) on Motion Detection",IDC_CHECK_SENDMAIL_MOVEMENT_DETECTION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,283,129,10
-    COMBOBOX        IDC_ATTACHMENT,185,281,138,124,CBS_DROPDOWNLIST | WS_TABSTOP
-    LTEXT           "minimum time between motion detection emails",IDC_STATIC,27,295,156,8
-    EDITTEXT        IDC_EDIT_SENDMAIL_SEC_BETWEEN_MSG,268,295,39,12,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_SPIN_SENDMAIL_SEC_BETWEEN_MSG,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,296,295,11,12
-    LTEXT           "sec",IDC_STATIC2295,313,297,15,8
-    PUSHBUTTON      "Email Settings",IDC_SENDMAIL_CONFIGURE,331,261,75,32
-    PUSHBUTTON      "OK",IDOK,152,316,58,16,BS_MULTILINE
-    PUSHBUTTON      "Cancel",IDCANCEL,220,316,58,16
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,267,129,10
+    COMBOBOX        IDC_ATTACHMENT,185,265,138,124,CBS_DROPDOWNLIST | WS_TABSTOP
+    LTEXT           "minimum time between motion detection emails",IDC_STATIC,27,279,156,8
+    EDITTEXT        IDC_EDIT_SENDMAIL_SEC_BETWEEN_MSG,268,279,39,12,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_SPIN_SENDMAIL_SEC_BETWEEN_MSG,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,296,279,11,12
+    LTEXT           "sec",IDC_STATIC2295,313,281,15,8
+    PUSHBUTTON      "Email Settings",IDC_SENDMAIL_CONFIGURE,331,245,75,32
+    PUSHBUTTON      "OK",IDOK,152,300,58,16,BS_MULTILINE
+    PUSHBUTTON      "Cancel",IDCANCEL,221,300,58,16
 END
 
 IDD_RENAME DIALOG 0, 0, 186, 47
@@ -3017,14 +3015,14 @@ BEGIN
     IDD_CAMERABASICSETTINGS, DIALOG
     BEGIN
         LEFTMARGIN, 5
-        RIGHTMARGIN, 413
+        RIGHTMARGIN, 412
         VERTGUIDE, 16
         VERTGUIDE, 152
         VERTGUIDE, 266
         VERTGUIDE, 279
         VERTGUIDE, 406
         TOPMARGIN, 2
-        BOTTOMMARGIN, 332
+        BOTTOMMARGIN, 321
     END
 
     IDD_RENAME, DIALOG
@@ -4340,8 +4338,6 @@ BEGIN
     IDS_STRING1744          "4 Seconds Rate"
     IDS_STRING1745          "5 Seconds Rate"
     IDS_STRING1746          "10 Seconds Rate"
-    IDS_STRING1747          "MP4 (best for desktop and mobile viewing)"
-    IDS_STRING1748          "AVI (fast encoding but not playable in web browsers)"
     IDS_STRING1750          "ADD CAMERA"
     IDS_STRING1751          "1. Make sure your video capture device is plugged-in and drivers are installed"
     IDS_STRING1752          "(network and DV cameras do not need specific drivers)"

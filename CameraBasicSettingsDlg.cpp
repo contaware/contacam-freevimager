@@ -37,7 +37,6 @@ void CCameraBasicSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CCameraBasicSettingsDlg)
 	DDX_CBIndex(pDX, IDC_COMBO_KEEPFOR, m_nComboKeepFor);
-	DDX_CBIndex(pDX, IDC_COMBO_FILEEXT, m_nComboFileExt);
 	DDX_Text(pDX, IDC_EDIT_NAME, m_sName);
 	DDX_Radio(pDX, IDC_RADIO_MOVDET, m_nUsage);
 	DDX_CBIndex(pDX, IDC_COMBO_SNAPSHOT_RATE, m_nComboSnapshotRate);
@@ -141,12 +140,6 @@ BOOL CCameraBasicSettingsDlg::OnInitDialog()
 		pComboBox->AddString(ML_STRING(1731, "1 Year"));
 		pComboBox->AddString(ML_STRING(1732, "Unlimited"));
 	}
-	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_FILEEXT);
-	if (pComboBox)
-	{
-		pComboBox->AddString(ML_STRING(1747, "MP4 (best for desktop and mobile viewing)"));
-		pComboBox->AddString(ML_STRING(1748, "AVI (fast encoding but not playable in web browsers)"));
-	}
 	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_THUMBSPERPAGE);
 	if (pComboBox)
 	{
@@ -244,10 +237,6 @@ BOOL CCameraBasicSettingsDlg::OnInitDialog()
 		m_nComboKeepFor = 0;	// 1 Day
 	else
 		m_nComboKeepFor = 11;	// Infinite
-	if (m_pDoc->m_sAVRecFileExt == _T(".mp4"))
-		m_nComboFileExt = 0;
-	else
-		m_nComboFileExt = 1;
 	m_sMaxCameraFolderSizeGB.Format(_T("%.1f"), (double)m_pDoc->m_nMaxCameraFolderSizeMB / 1024.0);
 	m_sMinDiskFreePercent.Format(_T("%.3f"), (double)m_pDoc->m_nMinDiskFreePermillion / 10000.0);
 	if (m_pDoc->m_nSnapshotRate > 240)
@@ -454,8 +443,6 @@ void CCameraBasicSettingsDlg::EnableDisableAllCtrls(BOOL bEnable)
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_CAMERACOMMANDS);
 	pCheck->EnableWindow(bEnable);
 	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_KEEPFOR);
-	pComboBox->EnableWindow(bEnable);
-	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_FILEEXT);
 	pComboBox->EnableWindow(bEnable);
 	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_MAX_CAMERA_FOLDER_SIZE);
 	pEdit->EnableWindow(bEnable);
@@ -1072,14 +1059,6 @@ void CCameraBasicSettingsDlg::ApplySettings()
 		case 10 : m_pDoc->m_nDeleteRecordingsOlderThanDays = 366; break;
 		default : m_pDoc->m_nDeleteRecordingsOlderThanDays = 0;   break;
 	}
-
-	// File format
-	switch (m_nComboFileExt)
-	{
-		case 0  : m_pDoc->m_sAVRecFileExt = _T(".mp4"); break;
-		default : m_pDoc->m_sAVRecFileExt = _T(".avi"); break; // also .mov is working
-	}
-	m_pDoc->UpdateDstWaveFormat(); // this updates m_pDstWaveFormat from m_sAVRecFileExt
 
 	// Maximum camera folder size
 	double dMaxCameraFolderSizeGB = _tcstod(m_sMaxCameraFolderSizeGB.GetBuffer(0), NULL);
