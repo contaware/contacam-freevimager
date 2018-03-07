@@ -47,7 +47,6 @@ define ("SHOW_CAMERA_COMMANDS","0");  // 0 = Hide , 1 = Show
 define ("SNAPSHOTREFRESHSEC","1");
 
 // Top-right preview size for summarysnapshot.php
-// and snapshot history thumb size
 define ("THUMBWIDTH","228");
 define ("THUMBHEIGHT","172");
 

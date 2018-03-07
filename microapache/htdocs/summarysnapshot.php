@@ -252,9 +252,8 @@ if ($handle = @opendir($dir)) {
 		if (is_file("$dir/$file")) {
 			list($file_prefix, $file_year, $file_month, $file_day, $file_hour, $file_min, $file_sec, $file_postfix) = sscanf($file, "%[a-z,A-Z]_%d_%d_%d_%d_%d_%d_%[a-z,A-Z]");
 			$hasgif = is_file($dir."/".basename($file, ".".$path_parts['extension']).".gif");
-			if ($path_parts['extension'] == 'gif'				||					// Gif thumb
-				($path_parts['extension'] == 'mp4' && !$hasgif)	||					// Mp4 without Gif thumb
-				($path_parts['extension'] == 'jpg' && $file_postfix == 'thumb')) {	// Snapshot thumb
+			if ($path_parts['extension'] == 'gif' ||				// Gif thumb
+				($path_parts['extension'] == 'mp4' && !$hasgif)) {	// Mp4 without Gif thumb
 				$file_time = mktime($file_hour, $file_min, $file_sec, $file_month, $file_day, $file_year); 
 				$file_array[$file] = $file_time;
 			}
@@ -319,11 +318,6 @@ if ($handle = @opendir($dir)) {
 						echo "<a href=\"mp4.php?file=$mp4uri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . $mp4s . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri_for_html\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a>";
 					else
 						echo "<a href=\"#\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri_for_html\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a>";
-				}
-				else if ($path_parts['extension'] == 'jpg') {
-					$jpegthumburi = "$uribasenoext.jpg"; $jpegthumburi_for_html = htmlspecialchars(str_replace("%2F", "/", rawurlencode($jpegthumburi)));
-					$jpeguri = str_replace("_thumb", "", $jpegthumburi); $jpeguri_get = urlencode($jpeguri);
-					echo "<a href=\"jpeg.php?file=$jpeguri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$jpegthumburi_for_html\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a>";
 				}
 				else if ($path_parts['extension'] == 'mp4')
 					echo strtoupper($file_prefix) . "<br /><a href=\"mp4.php?file=$mp4uri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\" >$file_timestamp</a>";
