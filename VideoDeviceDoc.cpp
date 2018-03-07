@@ -7541,6 +7541,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 			m_bCaptureStarted = TRUE;
 			if (m_bDeviceFirstRun)
 			{
+				AutorunAddDevice(GetDevicePathName());
 				::PostMessage(	GetView()->GetSafeHwnd(),
 								WM_THREADSAFE_CAPTURECAMERABASICSETTINGS,
 								0, 0);

@@ -950,8 +950,6 @@ STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "General"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "Start this Camera when ContaCam is executed",IDC_CHECK_AUTORUN,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,22,172,10
     EDITTEXT        IDC_FRAMERATE,108,66,34,13,ES_AUTOHSCROLL
     CONTROL         "Spin3",IDC_SPIN_FRAMERATE,"msctls_updown32",UDS_ALIGNRIGHT | UDS_ARROWKEYS,135,66,11,13
     CONTROL         "Slider1",IDC_VIDEO_COMPRESSION_QUALITY,
@@ -980,7 +978,6 @@ BEGIN
     LTEXT           "Process Frame Time",IDC_STATIC2172,13,120,73,8
     RTEXT           "",IDC_PROCESS_TIME,105,120,37,8
     LTEXT           "ms",IDC_STATIC2173,145,120,10,8
-    GROUPBOX        "Autostart",IDC_STATIC2158,7,5,183,40
 END
 
 IDD_RESIZING DIALOGEX 0, 0, 171, 143
@@ -2364,35 +2361,21 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTI
 CAPTION "Camera Basic Settings"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "1. Usage",IDC_STATIC,5,3,407,53
     CONTROL         "Movement detection surveillance",IDC_RADIO_MOVDET,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP,16,14,121,10
     CONTROL         "Snapshots with history",IDC_RADIO_SNAPSHOT,"Button",BS_AUTORADIOBUTTON,16,27,89,10
     CONTROL         "Continuous / manual recording",IDC_RADIO_MANUAL,"Button",BS_AUTORADIOBUTTON,16,40,113,10
-    GROUPBOX        "2. Name",IDC_STATIC,5,61,407,33
-    LTEXT           "Enter a friendly name for your camera",IDC_STATIC,16,72,123,8
-    LTEXT           "(that's also the camera folder name)",IDC_STATIC,16,81,117,8
+    CONTROL         "AUTOSTART\nCamera when ContaCam is executed",IDC_CHECK_AUTORUN,
+                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,256,12,150,39
     EDITTEXT        IDC_EDIT_NAME,152,74,254,13,ES_AUTOHSCROLL
-    GROUPBOX        "3. Web interface",IDC_STATIC,5,99,407,43
-    LTEXT           "Language",IDC_STATIC,16,111,32,8
     COMBOBOX        IDC_COMBO_LANGUAGE,152,109,114,222,CBS_DROPDOWNLIST | WS_TABSTOP
-    LTEXT           "Style / color",IDC_STATIC,16,126,39,8
     COMBOBOX        IDC_COMBO_STYLE,152,125,114,222,CBS_DROPDOWNLIST | WS_TABSTOP
-    LTEXT           "Thumbnails per page",IDC_LABEL_THUMBSPERPAGE,280,107,72,8
     COMBOBOX        IDC_COMBO_THUMBSPERPAGE,362,106,44,288,CBS_DROPDOWNLIST | WS_TABSTOP
     CONTROL         "Allow deleting files",IDC_CHECK_TRASHCOMMAND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,279,120,75,10
     CONTROL         "Allow obscuring source",IDC_CHECK_CAMERACOMMANDS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,279,130,89,10
-    GROUPBOX        "4. Storage",IDC_STATIC,5,147,407,56
-    LTEXT           "Keep files for",IDC_STATIC,16,159,133,8
     COMBOBOX        IDC_COMBO_KEEPFOR,152,156,254,116,CBS_DROPDOWNLIST | WS_TABSTOP
-    LTEXT           "Minimum disk free space",IDC_STATIC,16,172,132,8
     EDITTEXT        IDC_EDIT_MIN_DISK_FREE_PERCENT,152,171,35,13,ES_RIGHT
-    LTEXT           "%",IDC_STATIC,190,174,8,8
-    LTEXT           "Maximum camera folder size\n(0.0: unlimited)",IDC_STATIC,16,183,133,16
     EDITTEXT        IDC_EDIT_MAX_CAMERA_FOLDER_SIZE,152,185,35,13,ES_RIGHT
-    LTEXT           "GB",IDC_STATIC,190,187,10,8
-    LTEXT           "NOTE: if the free disk space becomes low or the maximum camera folder size is reached the oldest files are deleted",IDC_STATIC,211,177,195,20
-    GROUPBOX        "5. Notification",IDC_STATIC,5,208,407,77
     CONTROL         "Send email when camera fails",IDC_CHECK_SENDMAIL_MALFUNCTION,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,220,115,10
     CONTROL         "Send email when AC 100-240V fails",IDC_CHECK_SENDMAIL_ACLINE_MALFUNCTION,
@@ -2402,13 +2385,29 @@ BEGIN
     CONTROL         "Send email(s) on Motion Detection",IDC_CHECK_SENDMAIL_MOVEMENT_DETECTION,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,256,129,10
     COMBOBOX        IDC_ATTACHMENT,185,254,138,124,CBS_DROPDOWNLIST | WS_TABSTOP
-    LTEXT           "minimum time between motion detection emails",IDC_STATIC,27,268,156,8
     EDITTEXT        IDC_EDIT_SENDMAIL_SEC_BETWEEN_MSG,268,268,39,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_SPIN_SENDMAIL_SEC_BETWEEN_MSG,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,296,268,11,12
-    LTEXT           "sec",IDC_STATIC2295,313,270,15,8
     PUSHBUTTON      "Email Settings",IDC_SENDMAIL_CONFIGURE,331,234,75,32
     PUSHBUTTON      "OK",IDOK,152,289,58,16,BS_MULTILINE
     PUSHBUTTON      "Cancel",IDCANCEL,221,289,58,16
+    GROUPBOX        "1. Usage",IDC_STATIC,5,3,407,53
+    GROUPBOX        "2. Name",IDC_STATIC,5,61,407,33
+    LTEXT           "Enter a friendly name for your camera",IDC_STATIC,16,72,123,8
+    LTEXT           "(that's also the camera folder name)",IDC_STATIC,16,81,117,8
+    GROUPBOX        "3. Web interface",IDC_STATIC,5,99,407,43
+    LTEXT           "Language",IDC_STATIC,16,111,32,8
+    LTEXT           "Style / color",IDC_STATIC,16,126,39,8
+    LTEXT           "Thumbnails per page",IDC_LABEL_THUMBSPERPAGE,280,107,72,8
+    GROUPBOX        "4. Storage",IDC_STATIC,5,147,407,56
+    LTEXT           "Keep files for",IDC_STATIC,16,159,133,8
+    LTEXT           "Minimum disk free space",IDC_STATIC,16,172,132,8
+    LTEXT           "%",IDC_STATIC,190,174,8,8
+    LTEXT           "Maximum camera folder size\n(0.0: unlimited)",IDC_STATIC,16,183,133,16
+    LTEXT           "GB",IDC_STATIC,190,187,10,8
+    LTEXT           "NOTE: if the free disk space becomes low or the maximum camera folder size is reached the oldest files are deleted",IDC_STATIC,211,177,195,20
+    GROUPBOX        "5. Notification",IDC_STATIC,5,208,407,77
+    LTEXT           "minimum time between motion detection emails",IDC_STATIC,27,268,156,8
+    LTEXT           "sec",IDC_STATIC2295,313,270,15,8
 END
 
 IDD_RENAME DIALOG 0, 0, 186, 47

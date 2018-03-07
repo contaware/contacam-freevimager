@@ -52,7 +52,6 @@ void CGeneralPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_VIDEO_COMPRESSION_QUALITY, m_VideoRecQuality);
 	DDX_Control(pDX, IDC_FRAMERATE, m_FrameRate);
 	DDX_Control(pDX, IDC_SPIN_FRAMERATE, m_SpinFrameRate);
-	DDX_Check(pDX, IDC_CHECK_AUTORUN, m_bAutorun);
 	DDX_Check(pDX, IDC_CHECK_LIVE_ROTATE180, m_bRotate180);
 	DDX_Check(pDX, IDC_CHECK_AUDIO_LISTEN, m_bAudioListen);
 	//}}AFX_DATA_MAP
@@ -74,7 +73,6 @@ BEGIN_MESSAGE_MAP(CGeneralPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_AUDIO_MIXER, OnAudioMixer)
 	ON_BN_CLICKED(IDC_VIDEO_INPUT, OnVideoInput)
 	ON_BN_CLICKED(IDC_VIDEO_TUNER, OnVideoTuner)
-	ON_BN_CLICKED(IDC_CHECK_AUTORUN, OnCheckAutorun)
 	ON_BN_CLICKED(IDC_CHECK_LIVE_ROTATE180, OnCheckLiveRotate180)
 	ON_BN_CLICKED(IDC_CHECK_AUDIO_LISTEN, OnCheckAudioListen)
 	//}}AFX_MSG_MAP
@@ -155,12 +153,6 @@ BOOL CGeneralPage::OnInitDialog()
 {	
 	// Frame Rate Change Flag
 	m_bDoChangeFrameRate = FALSE;
-
-	// Init Autorun Var
-	if (CVideoDeviceDoc::AutorunGetDeviceKey(m_pDoc->GetDevicePathName()) != _T(""))
-		m_bAutorun = TRUE;
-	else
-		m_bAutorun = FALSE;
 
 	// Init Live Rotate 180° Var
 	m_bRotate180 = m_pDoc->m_bRotate180;
@@ -526,15 +518,6 @@ void CGeneralPage::OnCheckAudioListen()
 {
 	UpdateData(TRUE);
 	m_pDoc->m_bAudioListen = m_bAudioListen;
-}
-
-void CGeneralPage::OnCheckAutorun() 
-{
-	UpdateData(TRUE);
-	if (m_bAutorun)
-		CVideoDeviceDoc::AutorunAddDevice(m_pDoc->GetDevicePathName());
-	else
-		CVideoDeviceDoc::AutorunRemoveDevice(m_pDoc->GetDevicePathName());
 }
 
 void CGeneralPage::OnAudioInput() 

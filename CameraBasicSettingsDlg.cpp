@@ -39,6 +39,7 @@ void CCameraBasicSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_CBIndex(pDX, IDC_COMBO_KEEPFOR, m_nComboKeepFor);
 	DDX_Text(pDX, IDC_EDIT_NAME, m_sName);
 	DDX_Radio(pDX, IDC_RADIO_MOVDET, m_nUsage);
+	DDX_Check(pDX, IDC_CHECK_AUTORUN, m_bAutorun);
 	DDX_Check(pDX, IDC_CHECK_TRASHCOMMAND, m_bCheckTrashCommand);
 	DDX_Check(pDX, IDC_CHECK_CAMERACOMMANDS, m_bCheckCameraCommands);
 	DDX_Check(pDX, IDC_CHECK_SENDMAIL_MALFUNCTION, m_bCheckSendMailMalfunction);
@@ -157,6 +158,10 @@ BOOL CCameraBasicSettingsDlg::OnInitDialog()
 		m_nUsage = 1;
 	else
 		m_nUsage = 2;
+	if (CVideoDeviceDoc::AutorunGetDeviceKey(m_pDoc->GetDevicePathName()) != _T(""))
+		m_bAutorun = TRUE;
+	else
+		m_bAutorun = FALSE;
 	if (m_pDoc->m_nDeleteRecordingsOlderThanDays > 366)
 		m_nComboKeepFor = 11;	// Infinite
 	else if (m_pDoc->m_nDeleteRecordingsOlderThanDays > 183)
@@ -243,6 +248,8 @@ void CCameraBasicSettingsDlg::EnableDisableAllCtrls(BOOL bEnable)
 	pCheck = (CButton*)GetDlgItem(IDC_RADIO_SNAPSHOT);
 	pCheck->EnableWindow(bEnable);
 	pCheck = (CButton*)GetDlgItem(IDC_RADIO_MANUAL);
+	pCheck->EnableWindow(bEnable);
+	pCheck = (CButton*)GetDlgItem(IDC_CHECK_AUTORUN);
 	pCheck->EnableWindow(bEnable);
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_NAME);
 	pEdit->EnableWindow(bEnable);
@@ -795,28 +802,11 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	// Restart process frame
 	m_pDoc->StartProcessFrame(PROCESSFRAME_CAMERABASICSETTINGS);
 
-	// Set Autorun
-	if (m_nUsage >= 0 && m_nUsage <= 1)
-	{
-		if (m_pDoc->m_pGeneralPage)
-		{
-			CButton* pCheck = (CButton*)m_pDoc->m_pGeneralPage->GetDlgItem(IDC_CHECK_AUTORUN);
-			pCheck->SetCheck(1);
-			m_pDoc->m_pGeneralPage->m_bAutorun = TRUE;
-		}
+	// Autorun
+	if (m_bAutorun)
 		CVideoDeviceDoc::AutorunAddDevice(m_pDoc->GetDevicePathName());
-	}
-	// Clear Autorun
-	else if (m_nUsage == 2)
-	{
-		if (m_pDoc->m_pGeneralPage)
-		{
-			CButton* pCheck = (CButton*)m_pDoc->m_pGeneralPage->GetDlgItem(IDC_CHECK_AUTORUN);
-			pCheck->SetCheck(0);
-			m_pDoc->m_pGeneralPage->m_bAutorun = FALSE;
-		}
+	else
 		CVideoDeviceDoc::AutorunRemoveDevice(m_pDoc->GetDevicePathName());
-	}
 
 	// End wait cursor
 	EndWaitCursor();

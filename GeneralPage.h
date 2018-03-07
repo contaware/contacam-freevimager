@@ -34,7 +34,6 @@ public:
 	CSliderCtrl	m_VideoRecQuality;
 	CNumEdit	m_FrameRate;
 	CNumSpinCtrl m_SpinFrameRate;
-	BOOL	m_bAutorun;
 	BOOL	m_bRotate180;
 	BOOL	m_bAudioListen;
 	//}}AFX_DATA
@@ -67,7 +66,6 @@ protected:
 	afx_msg void OnAudioMixer();
 	afx_msg void OnVideoInput();
 	afx_msg void OnVideoTuner();
-	afx_msg void OnCheckAutorun();
 	afx_msg void OnCheckLiveRotate180();
 	afx_msg void OnCheckAudioListen();
 	//}}AFX_MSG
