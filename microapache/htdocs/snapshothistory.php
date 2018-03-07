@@ -1,14 +1,8 @@
 <?php
 require_once( 'configuration.php' );
 require_once( LANGUAGEFILEPATH ); // Must be here at the top of this file because it outputs the UTF8-BOM!
-if (intval(WIDTH) > intval(THUMBWIDTH))
-	$iframe_width = intval(WIDTH) + 60;
-else
-	$iframe_width = intval(THUMBWIDTH) + 60;
-if (intval(HEIGHT) > intval(THUMBHEIGHT))
-	$iframe_height = intval(HEIGHT) + 90;
-else
-	$iframe_height = intval(THUMBHEIGHT) + 90;
+$iframe_width = intval(WIDTH) + 60;
+$iframe_height = intval(HEIGHT) + 90;
 // Min. size 320x240:
 if ($iframe_width < 380)
 	$iframe_width = 380;
@@ -94,26 +88,11 @@ function loadIFrame(y,m,d) {
 	else {
 		todayselected = false;
 		<?php
-		if (SNAPSHOTHISTORY_THUMB == 1)
-		{
-			$video_width = THUMBWIDTH;
-			$video_height = THUMBHEIGHT;
-		}
-		else
-		{
-			$video_width = WIDTH;
-			$video_height = HEIGHT;
-		}
-		$srcuri = "?width=" . $video_width . "&height=" . $video_height . "&file=";
+		$srcuri = "?width=" . WIDTH . "&height=" . HEIGHT . "&file=";
 		echo "var filesdirpath = '$filesdirpath';\n";
 		echo "var srcuri = '$srcuri';\n";
-		echo "var usethumb = " . SNAPSHOTHISTORY_THUMB . ";\n";
 		?>
-		var filename;
-		if (usethumb == 1)
-			filename = 'shot' + '_' + y + '_' + LZ(m) + '_' + LZ(d) + '_thumb';
-		else
-			filename = 'shot' + '_' + y + '_' + LZ(m) + '_' + LZ(d);
+		var filename = 'shot' + '_' + y + '_' + LZ(m) + '_' + LZ(d);
 		var videouri = filesdirpath + '/' + y + '/' + LZ(m) + '/' + LZ(d) + '/' + filename;
 		var videouri_get = new String(videouri);
 		if (urlExists(videouri_get + '.mp4')) {

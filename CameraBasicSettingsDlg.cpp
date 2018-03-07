@@ -598,7 +598,6 @@ void CCameraBasicSettingsDlg::ApplySettings()
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_HEIGHT, sHeight);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBWIDTH, sThumbWidth);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBHEIGHT, sThumbHeight);
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTHISTORY_THUMB, _T("0")); // TODO: remove that when we drop using thumbs!
 
 			// Disable snapshot history
 			m_pDoc->m_bSnapshotHistoryVideo = FALSE;
@@ -657,7 +656,6 @@ void CCameraBasicSettingsDlg::ApplySettings()
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_HEIGHT, sHeight);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBWIDTH, sThumbWidth);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBHEIGHT, sThumbHeight);
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTHISTORY_THUMB, _T("0")); // TODO: remove that when we drop using thumbs!
 
 			// Enable snapshot history
 			m_pDoc->m_bSnapshotHistoryVideo = TRUE;
@@ -716,7 +714,6 @@ void CCameraBasicSettingsDlg::ApplySettings()
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_HEIGHT, sHeight);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBWIDTH, sThumbWidth);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBHEIGHT, sThumbHeight);
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTHISTORY_THUMB, _T("0")); // TODO: remove that when we drop using thumbs!
 
 			// Disable snapshot history
 			m_pDoc->m_bSnapshotHistoryVideo = FALSE;

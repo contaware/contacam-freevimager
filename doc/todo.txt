@@ -57,10 +57,22 @@ ContaCam Program
   (sambul7165@gmail.com) 
 - Advanced motion scheduler with the possibility to configure times for each day
   (g.frascarolo@tiscali.it)
-- Snapshots with history always use the full size, never create thumbs history
-  (eginfo7@gruenefeld.de)
-- Remove manual record + scheduler as the motion detection with 100% sensitivity 
-  can be used for that!
+- Prevent a file from DIRECT URL ACCESS:
+  -> re-introduce basic auth
+  or
+  -> protect with:
+     <FilesMatch "\.(gif|jpg|mp4|avi|bat)$">
+		 Order allow,deny
+		 Deny from all
+	 </FilesMatch>
+	 and server all medias through php (like used in download.php)
+  or
+     Order deny,allow
+     Deny from all
+     <FilesMatch "\.(php|png)$">
+        Allow from all
+     </FilesMatch>
+  Note: attention for images used in css!
   
   
 ContaCam Web Interface

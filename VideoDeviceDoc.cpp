@@ -1048,11 +1048,8 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 	CDib Dib;
 	Dib.SetShowMessageBoxOnError(FALSE);
 	CAVRec* pAVRecVideo = NULL;
-	CAVRec* pAVRecThumbVideo = NULL;
 	CString sVideoFileName = MakeVideoHistoryFileName();
-	CString sVideoThumbFileName = ::GetFileNameNoExt(sVideoFileName) + _T("_thumb") + ::GetFileExt(sVideoFileName);
 	CString sVideoTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), sVideoFileName);
-	CString sVideoTempThumbFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), sVideoThumbFileName);
 
 	// Find and process jpg snapshot history files
 	CSortableFileFind FileFind;
@@ -1069,76 +1066,37 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 			{
 				if (Dib.LoadJPEG(FileFind.GetFileName(pos)))
 				{
-					if (sShortFileNameNoExt.Right(6) != _T("_thumb"))
+					// Alloc
+					if (!pAVRecVideo)
+						pAVRecVideo = new CAVRec(sVideoTempFileName, ((CUImagerApp*)::AfxGetApp())->m_bMovFragmented);
+					if (pAVRecVideo)
 					{
-						// Alloc
-						if (!pAVRecVideo)
-							pAVRecVideo = new CAVRec(sVideoTempFileName, ((CUImagerApp*)::AfxGetApp())->m_bMovFragmented);
-						if (pAVRecVideo)
+						// Open
+						if (!pAVRecVideo->IsOpen())
 						{
-							// Open
-							if (!pAVRecVideo->IsOpen())
-							{
-								AVRational FrameRate = av_d2q(m_dSnapshotHistoryFrameRate, MAX_SIZE_FOR_RATIONAL);
-								BITMAPINFOHEADER DstBmi;
-								memset(&DstBmi, 0, sizeof(BITMAPINFOHEADER));
-								DstBmi.biSize = sizeof(BITMAPINFOHEADER);
-								DstBmi.biWidth = Dib.GetWidth();
-								DstBmi.biHeight = Dib.GetHeight();
-								DstBmi.biPlanes = 1;
-								DstBmi.biCompression = DEFAULT_VIDEO_FOURCC;
-								pAVRecVideo->AddVideoStream(Dib.GetBMI(),						// Source Video Format
-															(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
-															FrameRate.num,						// Rate
-															FrameRate.den,						// Scale				
-															m_fSnapshotVideoCompressorQuality,
-															((CUImagerApp*)::AfxGetApp())->m_nCoresCount);
-								pAVRecVideo->Open(m_sMetadataTitle);
-							}
-
-							// Add Frame
-							if (pAVRecVideo->IsOpen())
-							{
-								pAVRecVideo->AddFrame(pAVRecVideo->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
-													&Dib,
-													false);	// No interleave for Video only
-							}
+							AVRational FrameRate = av_d2q(m_dSnapshotHistoryFrameRate, MAX_SIZE_FOR_RATIONAL);
+							BITMAPINFOHEADER DstBmi;
+							memset(&DstBmi, 0, sizeof(BITMAPINFOHEADER));
+							DstBmi.biSize = sizeof(BITMAPINFOHEADER);
+							DstBmi.biWidth = Dib.GetWidth();
+							DstBmi.biHeight = Dib.GetHeight();
+							DstBmi.biPlanes = 1;
+							DstBmi.biCompression = DEFAULT_VIDEO_FOURCC;
+							pAVRecVideo->AddVideoStream(Dib.GetBMI(),						// Source Video Format
+														(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
+														FrameRate.num,						// Rate
+														FrameRate.den,						// Scale				
+														m_fSnapshotVideoCompressorQuality,
+														((CUImagerApp*)::AfxGetApp())->m_nCoresCount);
+							pAVRecVideo->Open(m_sMetadataTitle);
 						}
-					}
-					else
-					{
-						// Alloc
-						if (!pAVRecThumbVideo)
-							pAVRecThumbVideo = new CAVRec(sVideoTempThumbFileName, ((CUImagerApp*)::AfxGetApp())->m_bMovFragmented);
-						if (pAVRecThumbVideo)
-						{
-							// Open
-							if (!pAVRecThumbVideo->IsOpen())
-							{
-								AVRational FrameRate = av_d2q(m_dSnapshotHistoryFrameRate, MAX_SIZE_FOR_RATIONAL);
-								BITMAPINFOHEADER DstBmi;
-								memset(&DstBmi, 0, sizeof(BITMAPINFOHEADER));
-								DstBmi.biSize = sizeof(BITMAPINFOHEADER);
-								DstBmi.biWidth = Dib.GetWidth();
-								DstBmi.biHeight = Dib.GetHeight();
-								DstBmi.biPlanes = 1;
-								DstBmi.biCompression = DEFAULT_VIDEO_FOURCC;
-								pAVRecThumbVideo->AddVideoStream(Dib.GetBMI(),						// Source Video Format
-																(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
-																FrameRate.num,						// Rate
-																FrameRate.den,						// Scale				
-																m_fSnapshotVideoCompressorQuality,
-																((CUImagerApp*)::AfxGetApp())->m_nCoresCount);
-								pAVRecThumbVideo->Open(m_sMetadataTitle);
-							}
 
-							// Add Frame
-							if (pAVRecThumbVideo->IsOpen())
-							{
-								pAVRecThumbVideo->AddFrame(pAVRecThumbVideo->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
-														&Dib,
-														false);	// No interleave for Video only
-							}
+						// Add Frame
+						if (pAVRecVideo->IsOpen())
+						{
+							pAVRecVideo->AddFrame(pAVRecVideo->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
+												&Dib,
+												false);	// No interleave for Video only
 						}
 					}
 				}
@@ -1154,29 +1112,22 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 		}
 	}
 
-	// Close temp file(s) by freeing CAVRec object(s)
+	// Close temp file by freeing CAVRec object
 	if (pAVRecVideo)
 	{
 		delete pAVRecVideo;
 		pAVRecVideo = NULL;
 	}
-	if (pAVRecThumbVideo)
-	{
-		delete pAVRecThumbVideo;
-		pAVRecThumbVideo = NULL;
-	}
 
 	// Copy from temp to snapshots folder
 	::CopyFile(sVideoTempFileName, sVideoFileName, FALSE);
-	::CopyFile(sVideoTempThumbFileName, sVideoThumbFileName, FALSE);
 
 	// Ftp upload
 	if (m_bSnapshotHistoryVideoFtp)
 	{
 		CString sUploadDir(m_Time.Format(_T("%Y")) + _T("/") + m_Time.Format(_T("%m")) + _T("/") + m_Time.Format(_T("%d")));
 		hFTP = CVideoDeviceDoc::FTPUpload(	m_Config,
-											sVideoFileName, sUploadDir + _T("/") + ::GetShortFileName(sVideoFileName),
-											sVideoThumbFileName, sUploadDir + _T("/") + ::GetShortFileName(sVideoThumbFileName));
+											sVideoFileName, sUploadDir + _T("/") + ::GetShortFileName(sVideoFileName));
 		if (hFTP)
 			CloseHandle(hFTP);
 	}
@@ -1189,10 +1140,7 @@ exit:
 	// Clean-up
 	if (pAVRecVideo)
 		delete pAVRecVideo;
-	if (pAVRecThumbVideo)
-		delete pAVRecThumbVideo;
 	::DeleteFile(sVideoTempFileName);
-	::DeleteFile(sVideoTempThumbFileName);
 
 	return 0;
 }
@@ -1214,15 +1162,14 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	sLiveThumbFileName.TrimRight(_T('\\'));
 	sLiveThumbFileName += _T("\\") + m_sSnapshotLiveJpegThumbName + _T(".jpg");
 
-	// Init history file names
+	// Init history file name
 	// Note: if m_bSnapshotHistoryJpeg is TRUE, it creates also the year, month and day
 	// directories, otherwise it just returns the file name without path
 	CString sHistoryFileName(MakeJpegHistoryFileName());
-	CString sHistoryThumbFileName(::GetFileNameNoExt(sHistoryFileName) + _T("_thumb.jpg"));
 
 	// Temp file names
 	CString sTempFileName(::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), sHistoryFileName));
-	CString sTempThumbFileName(::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), sHistoryThumbFileName));
+	CString sTempThumbFileName(::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), ::GetFileNameNoExt(sHistoryFileName) + _T("_thumb.jpg")));
 
 	// Resize thumb
 	CDib DibThumb;
@@ -1273,13 +1220,11 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	if (m_bSnapshotHistoryJpeg)
 	{
 		::CopyFile(sTempFileName, sHistoryFileName, FALSE);
-		::CopyFile(sTempThumbFileName, sHistoryThumbFileName, FALSE);
 		if (m_bSnapshotHistoryJpegFtp)
 		{
 			CString sUploadDir(m_Time.Format(_T("%Y")) + _T("/") + m_Time.Format(_T("%m")) + _T("/") + m_Time.Format(_T("%d")));
 			hFTP = CVideoDeviceDoc::FTPUpload(	m_Config,
-												sTempFileName, sUploadDir + _T("/") + ::GetShortFileName(sHistoryFileName),
-												sTempThumbFileName, sUploadDir + _T("/") + ::GetShortFileName(sHistoryThumbFileName));
+												sTempFileName, sUploadDir + _T("/") + ::GetShortFileName(sHistoryFileName));
 			if (hFTP)
 			{
 				if (::WaitForSingleObject(hFTP, FTPPROG_JPEGUPLOAD_WAIT_TIMEOUT_MS) == WAIT_TIMEOUT)
@@ -7905,35 +7850,13 @@ void CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 	// Dib
 	CDib Dib(*pDib);
 
-	// Resize Thumb
-	CDib DibThumb;
-	DibThumb.SetShowMessageBoxOnError(FALSE); // no Message Box on Error
-	if (DibThumb.AllocateBitsFast(12, FCC('I420'), m_nSnapshotThumbWidth, m_nSnapshotThumbHeight))
-	{
-		CVideoDeviceDoc::ResizeFast(&Dib, &DibThumb);
-		DibThumb.SetUpTime(Dib.GetUpTime());
-	}
-
 	// Add frame time
 	if (m_bShowFrameTime)
-	{
 		AddFrameTime(&Dib, Time, dwUpTime, m_nRefFontSize);
-		if (DibThumb.IsValid())
-			AddFrameTime(&DibThumb, Time, dwUpTime, m_nRefFontSize);
-	}
 
-	// Save to JPEG Files
-	// Note: always first save full-size file then the thumb
-	// version which links to the full-size in web interface!
+	// Save to JPEG File
 	CMJPEGEncoder MJPEGEncoder;
 	BOOL res = CVideoDeviceDoc::SaveJpegFast(&Dib, &MJPEGEncoder, sFileName, m_nSnapshotCompressionQuality);
-	if (DibThumb.IsValid())
-	{
-		CMJPEGEncoder MJPEGThumbEncoder;
-		CVideoDeviceDoc::SaveJpegFast(	&DibThumb, &MJPEGThumbEncoder,
-										::GetFileNameNoExt(sFileName) + _T("_thumb.jpg"),
-										m_nSnapshotCompressionQuality);
-	}
 
 	// Open Document File
 	if (res && m_bManualSnapshotAutoOpen)
