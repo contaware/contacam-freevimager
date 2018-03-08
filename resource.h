@@ -880,7 +880,6 @@
 #define IDC_FRAMERATE                   1034
 #define IDC_SAVE_VIDEO_MOVEMENT_DETECTION 1034
 #define IDS_MULTILANG_1035              1035
-#define IDC_SPIN_FRAMERATE              1035
 #define IDS_MULTILANG_1036              1036
 #define IDS_MULTILANG_1037              1037
 #define IDC_CHECK_LOSSLESSTRANS         1037
@@ -1192,7 +1191,6 @@
 #define IDS_MULTILANG_1214              1214
 #define IDC_ANIMATEDGIF_SIZE            1214
 #define IDS_MULTILANG_1215              1215
-#define IDC_EFFECTIVE_FRAMERATE         1215
 #define IDS_MULTILANG_1216              1216
 #define IDC_SENDER_NAME                 1216
 #define IDS_MULTILANG_1217              1217
@@ -1202,7 +1200,6 @@
 #define IDS_MULTILANG_1219              1219
 #define IDC_AUTH_USERNAME               1219
 #define IDC_SENDMAIL_CONFIGURE          1219
-#define IDC_PROCESS_TIME                1219
 #define IDS_MULTILANG_1220              1220
 #define IDC_AUTH_PASSWORD               1220
 #define IDS_MULTILANG_1221              1221
@@ -2164,7 +2161,6 @@
 #define IDS_STRING1766                  1766
 #define IDC_TEXT_FILE                   1767
 #define IDS_STRING1767                  1767
-#define IDC_WARNING                     1768
 #define IDC_EDIT_SNAPSHOT_HISTORY_FRAMERATE 1768
 #define IDS_STRING1768                  1768
 #define IDS_STRING1769                  1769

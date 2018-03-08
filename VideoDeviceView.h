@@ -29,6 +29,7 @@ protected:
 	void DrawZones(HDC hDC);
 	BOOL ReOpenDxDevice();
 	BYTE m_MovDetSingleZoneSensitivity;
+	BOOL m_bMovDetUnsupportedVideoOrZonesSize;
 	CVideoDeviceToolBar m_VideoDeviceToolBar;
 
 // Overrides

@@ -81,7 +81,6 @@ BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	ON_EN_CHANGE(IDC_EDIT_PARAMS, OnChangeEditParams)
 	ON_BN_CLICKED(IDC_CHECK_HIDE_EXEC_COMMAND, OnCheckHideExecCommand)
 	ON_BN_CLICKED(IDC_CHECK_WAIT_EXEC_COMMAND, OnCheckWaitExecCommand)
-	ON_WM_CTLCOLOR()
 	ON_CBN_SELCHANGE(IDC_EXECMODE_MOVEMENT_DETECTION, OnSelchangeExecmodeMovementDetection)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_SUNDAY, OnCheckSchedulerSunday)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_MONDAY, OnCheckSchedulerMonday)
@@ -188,11 +187,6 @@ BOOL CMovementDetectionPage::OnInitDialog()
 		pCheckWaitExecCommandMovementDetection->SetCheck(0);
 	UpdateExecHelp();
 
-	// Hide Warning
-	CEdit* pEditWarning = (CEdit*)GetDlgItem(IDC_WARNING);
-	if (pEditWarning)
-		pEditWarning->ShowWindow(SW_HIDE);
-
 	// Set Page Pointer to this
 	m_pDoc->m_pMovementDetectionPage = this;
 	
@@ -213,47 +207,6 @@ void CMovementDetectionPage::OnDestroy()
 
 	// Set Page Pointer to NULL
 	m_pDoc->m_pMovementDetectionPage = NULL;
-}
-
-HBRUSH CMovementDetectionPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor) 
-{
-	HBRUSH hbr; 
-
-	switch (nCtlColor) 
-	{ 
-		// For Read/Write Edit Controls
-		case CTLCOLOR_EDIT:
-		case CTLCOLOR_MSGBOX:
-			hbr = CPropertyPage::OnCtlColor(pDC, pWnd, nCtlColor);
-			break;
-
-		// Process Static text, READONLY controls, DISABLED * controls.
-		//   NOTE: Disabled controls can NOT have their text color
-		//         changed.
-		//         Suggest you change all your DISABLED controls to
-		//         READONLY.
-		case CTLCOLOR_STATIC:
-			switch (pWnd->GetDlgCtrlID())
-			{     
-				case IDC_WARNING :
-					pDC->SetBkMode(TRANSPARENT);
-					pDC->SetTextColor(RGB(0xFF,0,0));
-					hbr = (HBRUSH)::GetStockObject(NULL_BRUSH);
-					break;
-		
-				default:
-					hbr = CPropertyPage::OnCtlColor(pDC, pWnd, nCtlColor);
-					break;
-			}
-			break;
-
-		// Otherwise, do default handling of OnCtlColor
-		default:
-			hbr = CPropertyPage::OnCtlColor(pDC, pWnd, nCtlColor);
-			break;
-	}
-
-	return hbr; // return brush
 }
 
 void CMovementDetectionPage::OnChangeSecondsAfterMovementEnd() 
@@ -284,18 +237,8 @@ void CMovementDetectionPage::OnTimer(UINT nIDEvent)
 {
 	if (!m_pDoc->m_bClosing)
 	{
-		// Warning
-		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_WARNING);
-		if (pEdit)
-		{
-			if (m_pDoc->m_bUnsupportedVideoSizeForMovDet)
-				pEdit->ShowWindow(SW_SHOW);
-			else
-				pEdit->ShowWindow(SW_HIDE);
-		}
-
 		// Max Det Video Length
-		pEdit = (CEdit*)GetDlgItem(IDC_MAX_MOVDET_VIDEOLENGTH);
+		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_MAX_MOVDET_VIDEOLENGTH);
 		if (pEdit)
 		{
 			CString sMaxDetVideoLengthSec;

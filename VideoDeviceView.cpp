@@ -70,6 +70,7 @@ CVideoDeviceView::CVideoDeviceView()
 {
 	// Init vars
 	m_MovDetSingleZoneSensitivity = 1;
+	m_bMovDetUnsupportedVideoOrZonesSize = FALSE;
 }
 
 CVideoDeviceView::~CVideoDeviceView()
@@ -275,15 +276,23 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 	// Check and update doc vars
 	if (lMovDetTotalZones == 0 || lMovDetTotalZones > MOVDET_MAX_ZONES)
 	{
-		if (!pDoc->m_bUnsupportedVideoSizeForMovDet)
-			pDoc->m_bUnsupportedVideoSizeForMovDet = TRUE;
+		if (!m_bMovDetUnsupportedVideoOrZonesSize)
+		{
+			m_bMovDetUnsupportedVideoOrZonesSize = TRUE;
+			if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
+				::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, ML_STRING(1836, "Unsupported Video or Zones Size!"), 0);
+		}
 		::InterlockedExchange(&pDoc->m_lMovDetTotalZones, 0);
 		return 0;
 	}
 	else
 	{
-		if (pDoc->m_bUnsupportedVideoSizeForMovDet)
-			pDoc->m_bUnsupportedVideoSizeForMovDet = FALSE;
+		if (m_bMovDetUnsupportedVideoOrZonesSize)
+		{
+			m_bMovDetUnsupportedVideoOrZonesSize = FALSE;
+			if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
+				::AfxGetMainFrame()->CloseToaster();
+		}
 		::InterlockedExchange(&pDoc->m_lMovDetXZonesCount, lMovDetXZonesCount);
 		::InterlockedExchange(&pDoc->m_lMovDetYZonesCount, lMovDetYZonesCount);
 		::InterlockedExchange(&pDoc->m_lMovDetTotalZones, lMovDetTotalZones);

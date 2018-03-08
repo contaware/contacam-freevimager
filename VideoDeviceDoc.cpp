@@ -3663,7 +3663,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_dwEffectiveFrameTimeCountUp = 0U;
 	m_bDoEditCopy = FALSE;
 	m_bDoEditSnapshot = FALSE;
-	m_lProcessFrameTime = 0;
 	m_lEffectiveDataRate = 0;
 	m_lEffectiveDataRateSum = 0;
 	m_bPlacementLoaded = FALSE;
@@ -3784,7 +3783,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bDetectionSaturday = TRUE;
 	m_DetectionStartTime = CurrentTimeOnly;
 	m_DetectionStopTime = CurrentTimeOnly;
-	m_bUnsupportedVideoSizeForMovDet = FALSE;
 	m_nMovDetFreqDiv = 1;
 	m_dMovDetFrameRateFreqDivCalc = 0.0;
 
@@ -5595,40 +5593,6 @@ void CVideoDeviceDoc::OnChangeDxVideoFormat()
 	::PostMessage(	GetView()->GetSafeHwnd(),
 					WM_THREADSAFE_UPDATE_PHPPARAMS,
 					0, 0);
-}
-
-void CVideoDeviceDoc::OnChangeFrameRate()
-{
-	if (!m_bClosing)
-	{
-		if (m_pDxCapture)
-		{
-			m_pDxCapture->Stop();
-			m_pDxCapture->SetFrameRate(m_dFrameRate);
-			if (m_pDxCapture->Run())
-			{
-				// Some devices need that...
-				// Process frame must still be stopped when calling Dx Stop()!
-				m_pDxCapture->Stop();
-				m_pDxCapture->Run();
-
-				// Restart process frame
-				StartProcessFrame(PROCESSFRAME_CHANGEFRAMERATE);
-			}
-			SetDocumentTitle();
-		}
-		else if (m_pVideoNetCom)
-		{
-			if (m_pHttpVideoParseProcess->m_FormatType == CHttpParseProcess::FORMATVIDEO_MJPEG)
-			{
-				if (m_nNetworkDeviceTypeMode == CVideoDeviceDoc::EDIMAX_SP)
-					m_pHttpVideoParseProcess->m_bSetVideoFramerate = TRUE;
-				m_HttpThread.SetEventVideoConnect();
-			}
-			StartProcessFrame(PROCESSFRAME_CHANGEFRAMERATE);
-			SetDocumentTitle();
-		}
-	}
 }
 
 void CVideoDeviceDoc::OnCaptureCameraBasicSettings() 
@@ -7653,10 +7617,6 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 							0, 0);
 		}
 	}
-
-	DWORD dwCurrentEndUpTime = ::timeGetTime();
-	DWORD dwProcessFrameTime = dwCurrentEndUpTime - dwCurrentInitUpTime;
-	::InterlockedExchange(&m_lProcessFrameTime, (LONG)dwProcessFrameTime);
 }
 
 void CVideoDeviceDoc::SnapshotRate(double dRate)

@@ -69,7 +69,6 @@ protected:
 	afx_msg void OnChangeEditParams();
 	afx_msg void OnCheckHideExecCommand();
 	afx_msg void OnCheckWaitExecCommand();
-	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	afx_msg void OnSelchangeExecmodeMovementDetection();
 	afx_msg void OnCheckSchedulerSunday();
 	afx_msg void OnCheckSchedulerMonday();

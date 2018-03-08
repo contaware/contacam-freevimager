@@ -18,7 +18,7 @@ class CVideoDeviceDoc;
 /////////////////////////////////////////////////////////////////////////////
 // CGeneralPage dialog
 
-#define FRAMERATE_CHANGE_TIMEOUT			4	// In GENERALDLG_TIMER_MS units
+#define FRAMERATE_CHANGE_TIMEOUT			4	// In GENERALPAGE_TIMER_MS units
 
 class CGeneralPage : public CPropertyPage
 {
@@ -32,8 +32,6 @@ public:
 	//{{AFX_DATA(CGeneralPage)
 	enum { IDD = IDD_GENERAL };
 	CSliderCtrl	m_VideoRecQuality;
-	CNumEdit	m_FrameRate;
-	CNumSpinCtrl m_SpinFrameRate;
 	BOOL	m_bRotate180;
 	BOOL	m_bAudioListen;
 	//}}AFX_DATA
@@ -77,7 +75,6 @@ protected:
 	CDWordArray m_VideoCompressionQualitySupport;
 	BOOL m_bDoChangeFrameRate;
 	int m_nFrameRateChangeTimeout;
-	BOOL m_bDlgInitialized;
 };
 
 #endif

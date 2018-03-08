@@ -656,9 +656,6 @@ public:
 	// Function called when the directx video grabbing format has been changed
 	void OnChangeDxVideoFormat();
 
-	// On Change Frame Rate
-	void OnChangeFrameRate();
-
 	// Changes the snapshot rate
 	void SnapshotRate(double dRate);
 	
@@ -831,7 +828,6 @@ public:
 	volatile BOOL m_bRotate180;							// Rotate Video by 180°
 	volatile double m_dFrameRate;						// Set Capture Frame Rate
 	volatile double m_dEffectiveFrameRate;				// Current calculated Frame Rate
-	volatile LONG m_lProcessFrameTime;					// Time in ms inside ProcessI420Frame()
 	volatile LONG m_lEffectiveDataRate;					// Current calculated Data Rate in bytes / sec
 	volatile LONG m_lEffectiveDataRateSum;				// Current calculated Data Rate sum
 	BITMAPINFOFULL m_CaptureBMI;						// Capture source format
@@ -997,7 +993,6 @@ public:
 	volatile BOOL m_bDetectionSaturday;					// Do detections on Saturday
 	CTime m_DetectionStartTime;							// Daily Detection Start Time
 	CTime m_DetectionStopTime;							// Daily Detection Stop Time
-	BOOL m_bUnsupportedVideoSizeForMovDet;				// Flag indicating an unsupported resolution
 	volatile int m_nMovDetFreqDiv;						// Current frequency divider
 	volatile double m_dMovDetFrameRateFreqDivCalc;		// Framerate used to calculate the current frequency divider
 	volatile AttachmentType m_MovDetAttachmentType;		// The email attachment type

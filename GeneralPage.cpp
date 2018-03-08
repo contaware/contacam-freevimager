@@ -32,7 +32,6 @@ CGeneralPage::CGeneralPage()
 	//{{AFX_DATA_INIT(CGeneralPage)
 	//}}AFX_DATA_INIT
 	m_pDoc = NULL;
-	m_bDlgInitialized = FALSE;
 }
 
 void CGeneralPage::SetDoc(CVideoDeviceDoc* pDoc)
@@ -50,8 +49,6 @@ void CGeneralPage::DoDataExchange(CDataExchange* pDX)
 	CPropertyPage::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CGeneralPage)
 	DDX_Control(pDX, IDC_VIDEO_COMPRESSION_QUALITY, m_VideoRecQuality);
-	DDX_Control(pDX, IDC_FRAMERATE, m_FrameRate);
-	DDX_Control(pDX, IDC_SPIN_FRAMERATE, m_SpinFrameRate);
 	DDX_Check(pDX, IDC_CHECK_LIVE_ROTATE180, m_bRotate180);
 	DDX_Check(pDX, IDC_CHECK_AUDIO_LISTEN, m_bAudioListen);
 	//}}AFX_DATA_MAP
@@ -149,8 +146,8 @@ void CGeneralPage::UpdateVideoQualityInfo()
 	pEdit->SetWindowText(sQuality);
 }
 
-BOOL CGeneralPage::OnInitDialog() 
-{	
+BOOL CGeneralPage::OnInitDialog()
+{
 	// Frame Rate Change Flag
 	m_bDoChangeFrameRate = FALSE;
 
@@ -162,19 +159,19 @@ BOOL CGeneralPage::OnInitDialog()
 
 	// Init Codec's Supports
 
-	m_VideoCompressionFcc.Add((DWORD)FCC('FFVH')); 
+	m_VideoCompressionFcc.Add((DWORD)FCC('FFVH'));
 	m_VideoCompressionFastEncodeAndKeyframesRateSupport.Add((DWORD)0);
 	m_VideoCompressionQualitySupport.Add((DWORD)0);
 
-	m_VideoCompressionFcc.Add((DWORD)FCC('MJPG')); 
+	m_VideoCompressionFcc.Add((DWORD)FCC('MJPG'));
 	m_VideoCompressionFastEncodeAndKeyframesRateSupport.Add((DWORD)0);
 	m_VideoCompressionQualitySupport.Add((DWORD)1);
 
-	m_VideoCompressionFcc.Add((DWORD)FCC('DIVX')); 
+	m_VideoCompressionFcc.Add((DWORD)FCC('DIVX'));
 	m_VideoCompressionFastEncodeAndKeyframesRateSupport.Add((DWORD)1);
 	m_VideoCompressionQualitySupport.Add((DWORD)1);
 
-	m_VideoCompressionFcc.Add((DWORD)FCC('H264')); 
+	m_VideoCompressionFcc.Add((DWORD)FCC('H264'));
 	m_VideoCompressionFastEncodeAndKeyframesRateSupport.Add((DWORD)1);
 	m_VideoCompressionQualitySupport.Add((DWORD)1);
 
@@ -182,47 +179,25 @@ BOOL CGeneralPage::OnInitDialog()
 	CPropertyPage::OnInitDialog();
 
 	// Frame Rate
-	m_FrameRate.SetMinNumberOfNumberAfterPoint(1);
-	m_FrameRate.SetMaxNumberOfNumberAfterPoint(1);
-	m_SpinFrameRate.SetBuddy(&m_FrameRate);
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_FRAMERATE);
 	if (m_pDoc->m_pDxCapture)
 	{
-		if (m_pDoc->m_pDxCapture->GetFrameRate() <= 0.0) // Not Settable
-		{
-			m_SpinFrameRate.SetRange(0.0, 0.0);
-			m_SpinFrameRate.EnableWindow(FALSE);
+		if (m_pDoc->m_pDxCapture->GetFrameRate() <= 0.0) // cannot be set
 			pEdit->EnableWindow(FALSE);
-		}
-		else
-			m_SpinFrameRate.SetRange(MIN_FRAMERATE, MAX_FRAMERATE);
 	}
 	else if (m_pDoc->m_pVideoNetCom)
 	{
-		// Axis and Edimax support only integer values starting at 1 fps
-		if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::AXIS_SP ||
-			m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::EDIMAX_SP)
-			m_SpinFrameRate.SetRange(1.0, MAX_FRAMERATE);
-		// Pixord or Foscam
-		else if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::PIXORD_SP ||
-				m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::FOSCAM_SP)
-			m_SpinFrameRate.SetRange(MIN_FRAMERATE, MAX_FRAMERATE);
-		// Disable all other HTTP motion jpeg devices,
-		// HTTP jpeg snapshots devices will be enabled in OnTimer()
-		else
-		{
-			m_SpinFrameRate.SetRange(0.0, 0.0);
-			m_SpinFrameRate.EnableWindow(FALSE);
+		// Disable all HTTP devices which do not support setting the framerate. 
+		// HTTP jpeg snapshots devices can only be detected as such when running,
+		// so enable them later on in OnTimer()
+		if (m_pDoc->m_nNetworkDeviceTypeMode != CVideoDeviceDoc::AXIS_SP	&&
+			m_pDoc->m_nNetworkDeviceTypeMode != CVideoDeviceDoc::EDIMAX_SP	&&
+			m_pDoc->m_nNetworkDeviceTypeMode != CVideoDeviceDoc::PIXORD_SP	&&
+			m_pDoc->m_nNetworkDeviceTypeMode != CVideoDeviceDoc::FOSCAM_SP)
 			pEdit->EnableWindow(FALSE);
-		}
 	}
 	else
-	{
-		m_SpinFrameRate.SetRange(0.0, 0.0);
-		m_SpinFrameRate.EnableWindow(FALSE);
 		pEdit->EnableWindow(FALSE);
-	}
-	m_SpinFrameRate.SetDelta(1.0);
 	CString sFrameRate;
 	sFrameRate.Format(_T("%0.1f"), m_pDoc->m_dFrameRate);
 	if (pEdit->IsWindowEnabled())
@@ -305,9 +280,6 @@ BOOL CGeneralPage::OnInitDialog()
 	else
 		pButton->EnableWindow(FALSE);
 
-	// OnInitDialog() has been called
-	m_bDlgInitialized = TRUE;
-
 	// Set Page Pointer to this
 	m_pDoc->m_pGeneralPage = this;
 
@@ -328,27 +300,6 @@ void CGeneralPage::OnDestroy()
 
 	// Set Page Pointer to NULL
 	m_pDoc->m_pGeneralPage = NULL;
-}
-
-void CGeneralPage::OnChangeFrameRate() 
-{
-	if (m_bDlgInitialized && ::IsWindow(m_SpinFrameRate.GetSafeHwnd()))
-	{
-		CString sFrameRate;
-		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_FRAMERATE);
-		pEdit->GetWindowText(sFrameRate);
-		double dFrameRate = _tcstod(sFrameRate, NULL);
-		if (sFrameRate != _T("") && dFrameRate != m_pDoc->m_dFrameRate)
-		{
-			m_pDoc->StopProcessFrame(PROCESSFRAME_CHANGEFRAMERATE);
-			m_nFrameRateChangeTimeout = FRAMERATE_CHANGE_TIMEOUT;
-			if (!m_bDoChangeFrameRate)
-			{
-				// Done in OnTimer()
-				m_bDoChangeFrameRate = TRUE;
-			}
-		}
-	}
 }
 
 void CGeneralPage::OnRecAudio() 
@@ -406,35 +357,35 @@ void CGeneralPage::OnRecAudioFromSource()
 	m_pDoc->m_SaveFrameListThread.Start();
 }
 
+void CGeneralPage::OnChangeFrameRate()
+{
+	CString sFrameRate;
+	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_FRAMERATE);
+	pEdit->GetWindowText(sFrameRate);
+	double dFrameRate = _tcstod(sFrameRate, NULL);
+	if (sFrameRate != _T("") && dFrameRate != m_pDoc->m_dFrameRate)
+	{
+		m_pDoc->StopProcessFrame(PROCESSFRAME_CHANGEFRAMERATE);
+		m_nFrameRateChangeTimeout = FRAMERATE_CHANGE_TIMEOUT;
+		if (!m_bDoChangeFrameRate)
+		{
+			// Done in OnTimer()
+			m_bDoChangeFrameRate = TRUE;
+		}
+	}
+}
+
 void CGeneralPage::OnTimer(UINT nIDEvent) 
 {
 	if (!m_pDoc->m_bClosing)
 	{
-		// Show Calculated Frame Rate
-		double dEffectiveFrameRate = m_pDoc->m_dEffectiveFrameRate;
-		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EFFECTIVE_FRAMERATE);
-		CString sEffectiveFrameRate;
-		sEffectiveFrameRate.Format(_T("%0.1f"), dEffectiveFrameRate);
-		pEdit->SetWindowText(sEffectiveFrameRate);
-
-		// Show Process Frame Time
-		pEdit = (CEdit*)GetDlgItem(IDC_PROCESS_TIME);
-		if (pEdit)
-		{
-			CString sProcessFrameTime;
-			sProcessFrameTime.Format(_T("%d"), m_pDoc->m_lProcessFrameTime);
-			pEdit->SetWindowText(sProcessFrameTime);
-		}
-
 		// Enable Frame Rate Edit Control for HTTP jpeg snapshots devices
 		CString sFrameRate;
-		pEdit = (CEdit*)GetDlgItem(IDC_FRAMERATE);
+		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_FRAMERATE);
 		if (m_pDoc->m_pVideoNetCom &&
 			m_pDoc->m_pHttpVideoParseProcess->m_FormatType == CVideoDeviceDoc::CHttpParseProcess::FORMATVIDEO_JPEG &&
 			!pEdit->IsWindowEnabled())
 		{
-			m_SpinFrameRate.SetRange(MIN_FRAMERATE, MAX_FRAMERATE);
-			m_SpinFrameRate.EnableWindow(TRUE);
 			pEdit->EnableWindow(TRUE);
 			sFrameRate.Format(_T("%0.1f"), m_pDoc->m_dFrameRate);
 			pEdit->SetWindowText(sFrameRate);
@@ -443,38 +394,58 @@ void CGeneralPage::OnTimer(UINT nIDEvent)
 		// Change The Frame Rate if Necessary
 		if (m_bDoChangeFrameRate)
 		{
-			--m_nFrameRateChangeTimeout;
-			if (m_nFrameRateChangeTimeout <= 0 && m_pDoc->IsProcessFrameStopped(PROCESSFRAME_CHANGEFRAMERATE))
+			if (--m_nFrameRateChangeTimeout <= 0 && m_pDoc->IsProcessFrameStopped(PROCESSFRAME_CHANGEFRAMERATE))
 			{
-				// Reset flag
 				m_bDoChangeFrameRate = FALSE;
-
-				// Frame Rate Edit Control
 				pEdit->GetWindowText(sFrameRate);
-				BOOL bOk = FALSE;
-				BOOL bRestore = FALSE;
 				double dFrameRate = _tcstod(sFrameRate, NULL);
-				double dMinFrameRate, dMaxFrameRate;
-				m_SpinFrameRate.GetRange(dMinFrameRate, dMaxFrameRate);
 				if (sFrameRate != _T(""))
 				{
-					if (dFrameRate >= dMinFrameRate && dFrameRate <= dMaxFrameRate)
-						bOk = TRUE;
+					if (dFrameRate >= MIN_FRAMERATE && dFrameRate <= MAX_FRAMERATE)
+					{
+						// Correct the display format
+						m_pDoc->m_dFrameRate = dFrameRate;
+						sFrameRate.Format(_T("%0.1f"), m_pDoc->m_dFrameRate);
+						pEdit->SetWindowText(sFrameRate);
+
+						// Set to device
+						if (m_pDoc->m_pDxCapture)
+						{
+							m_pDoc->m_pDxCapture->Stop();
+							m_pDoc->m_pDxCapture->SetFrameRate(m_pDoc->m_dFrameRate);
+							if (m_pDoc->m_pDxCapture->Run())
+							{
+								// Some devices need that...
+								// Process frame must still be stopped when calling Dx Stop()!
+								m_pDoc->m_pDxCapture->Stop();
+								m_pDoc->m_pDxCapture->Run();
+
+								// Restart process frame
+								m_pDoc->StartProcessFrame(PROCESSFRAME_CHANGEFRAMERATE);
+							}
+							m_pDoc->SetDocumentTitle();
+						}
+						else if (m_pDoc->m_pVideoNetCom)
+						{
+							if (m_pDoc->m_pHttpVideoParseProcess->m_FormatType == CVideoDeviceDoc::CHttpParseProcess::FORMATVIDEO_MJPEG)
+							{
+								if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::EDIMAX_SP)
+									m_pDoc->m_pHttpVideoParseProcess->m_bSetVideoFramerate = TRUE;
+								m_pDoc->m_HttpThread.SetEventVideoConnect();
+							}
+							m_pDoc->StartProcessFrame(PROCESSFRAME_CHANGEFRAMERATE);
+							m_pDoc->SetDocumentTitle();
+						}
+					}
 					else
-						bRestore = TRUE;
-				}
-				if (bOk)
-				{
-					m_pDoc->m_dFrameRate = dFrameRate;
-					m_pDoc->OnChangeFrameRate();
-				}
-				else if (bRestore)
-				{
-					m_pDoc->StartProcessFrame(PROCESSFRAME_CHANGEFRAMERATE);
-					sFrameRate.Format(_T("%0.1f"), m_pDoc->m_dFrameRate);
-					pEdit->SetWindowText(sFrameRate);
-					pEdit->SetFocus();
-					pEdit->SetSel(0xFFFF0000);
+					{
+						// Restore
+						m_pDoc->StartProcessFrame(PROCESSFRAME_CHANGEFRAMERATE);
+						sFrameRate.Format(_T("%0.1f"), m_pDoc->m_dFrameRate);
+						pEdit->SetWindowText(sFrameRate);
+						pEdit->SetFocus();
+						pEdit->SetSel(0xFFFF0000);
+					}
 				}
 			}
 		}
