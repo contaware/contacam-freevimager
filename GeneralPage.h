@@ -18,7 +18,7 @@ class CVideoDeviceDoc;
 /////////////////////////////////////////////////////////////////////////////
 // CGeneralPage dialog
 
-#define FRAMERATE_CHANGE_TIMEOUT			4	// In GENERALPAGE_TIMER_MS units
+#define FRAMERATE_CHANGE_TIMEOUT	6	// In GENERALPAGE_TIMER_MS units
 
 class CGeneralPage : public CPropertyPage
 {
@@ -70,9 +70,6 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 	CVideoDeviceDoc* m_pDoc;
-	CDWordArray m_VideoCompressionFcc;
-	CDWordArray m_VideoCompressionFastEncodeAndKeyframesRateSupport;
-	CDWordArray m_VideoCompressionQualitySupport;
 	BOOL m_bDoChangeFrameRate;
 	int m_nFrameRateChangeTimeout;
 };

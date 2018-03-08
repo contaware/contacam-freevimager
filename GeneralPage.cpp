@@ -54,7 +54,6 @@ void CGeneralPage::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP
 }
 
-
 BEGIN_MESSAGE_MAP(CGeneralPage, CPropertyPage)
 	//{{AFX_MSG_MAP(CGeneralPage)
 	ON_BN_CLICKED(IDC_VIDEO_FORMAT, OnVideoFormat)
@@ -91,7 +90,6 @@ void CGeneralPage::OnVideoFormat()
 		sFrameRate.Format(_T("%0.1f"), m_pDoc->m_dFrameRate);
 		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_FRAMERATE);
 		pEdit->SetWindowText(sFrameRate);
-		m_pDoc->SetDocumentTitle();
 	}
 }
 
@@ -110,7 +108,6 @@ void CGeneralPage::OnVideoSource()
 			sFrameRate.Format(_T("%0.1f"), m_pDoc->m_dFrameRate);
 			CEdit* pEdit = (CEdit*)GetDlgItem(IDC_FRAMERATE);
 			pEdit->SetWindowText(sFrameRate);
-			m_pDoc->SetDocumentTitle();
 		}
 	}
 }
@@ -156,24 +153,6 @@ BOOL CGeneralPage::OnInitDialog()
 
 	// Init Audio Listen Var
 	m_bAudioListen = m_pDoc->m_bAudioListen;
-
-	// Init Codec's Supports
-
-	m_VideoCompressionFcc.Add((DWORD)FCC('FFVH'));
-	m_VideoCompressionFastEncodeAndKeyframesRateSupport.Add((DWORD)0);
-	m_VideoCompressionQualitySupport.Add((DWORD)0);
-
-	m_VideoCompressionFcc.Add((DWORD)FCC('MJPG'));
-	m_VideoCompressionFastEncodeAndKeyframesRateSupport.Add((DWORD)0);
-	m_VideoCompressionQualitySupport.Add((DWORD)1);
-
-	m_VideoCompressionFcc.Add((DWORD)FCC('DIVX'));
-	m_VideoCompressionFastEncodeAndKeyframesRateSupport.Add((DWORD)1);
-	m_VideoCompressionQualitySupport.Add((DWORD)1);
-
-	m_VideoCompressionFcc.Add((DWORD)FCC('H264'));
-	m_VideoCompressionFastEncodeAndKeyframesRateSupport.Add((DWORD)1);
-	m_VideoCompressionQualitySupport.Add((DWORD)1);
 
 	// This calls UpdateData(FALSE)
 	CPropertyPage::OnInitDialog();
@@ -362,15 +341,14 @@ void CGeneralPage::OnChangeFrameRate()
 	CString sFrameRate;
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_FRAMERATE);
 	pEdit->GetWindowText(sFrameRate);
-	double dFrameRate = _tcstod(sFrameRate, NULL);
+	double dFrameRate = _tcstod(sFrameRate, NULL); // here we need the full precision, will be rounded in OnTimer()
 	if (sFrameRate != _T("") && dFrameRate != m_pDoc->m_dFrameRate)
 	{
-		m_pDoc->StopProcessFrame(PROCESSFRAME_CHANGEFRAMERATE);
 		m_nFrameRateChangeTimeout = FRAMERATE_CHANGE_TIMEOUT;
 		if (!m_bDoChangeFrameRate)
 		{
-			// Done in OnTimer()
-			m_bDoChangeFrameRate = TRUE;
+			m_pDoc->StopProcessFrame(PROCESSFRAME_CHANGEFRAMERATE);
+			m_bDoChangeFrameRate = TRUE; // done in OnTimer()
 		}
 	}
 }
@@ -388,66 +366,61 @@ void CGeneralPage::OnTimer(UINT nIDEvent)
 		{
 			pEdit->EnableWindow(TRUE);
 			sFrameRate.Format(_T("%0.1f"), m_pDoc->m_dFrameRate);
-			pEdit->SetWindowText(sFrameRate);
+			pEdit->SetWindowText(sFrameRate); // this triggers OnChangeFrameRate()
 		}
 
 		// Change The Frame Rate if Necessary
-		if (m_bDoChangeFrameRate)
+		if (m_bDoChangeFrameRate && --m_nFrameRateChangeTimeout <= 0 && m_pDoc->IsProcessFrameStopped(PROCESSFRAME_CHANGEFRAMERATE))
 		{
-			if (--m_nFrameRateChangeTimeout <= 0 && m_pDoc->IsProcessFrameStopped(PROCESSFRAME_CHANGEFRAMERATE))
+			pEdit->GetWindowText(sFrameRate);
+			double dFrameRate = round(_tcstod(sFrameRate, NULL) * 10.0) / 10.0;
+			if (sFrameRate != _T(""))
 			{
-				m_bDoChangeFrameRate = FALSE;
-				pEdit->GetWindowText(sFrameRate);
-				double dFrameRate = _tcstod(sFrameRate, NULL);
-				if (sFrameRate != _T(""))
+				if (dFrameRate >= MIN_FRAMERATE && dFrameRate <= MAX_FRAMERATE)
 				{
-					if (dFrameRate >= MIN_FRAMERATE && dFrameRate <= MAX_FRAMERATE)
+					// Correct the display format
+					m_pDoc->m_dFrameRate = dFrameRate;
+					sFrameRate.Format(_T("%0.1f"), m_pDoc->m_dFrameRate);
+					pEdit->SetWindowText(sFrameRate); // this triggers OnChangeFrameRate()
+
+					// Set to device
+					if (m_pDoc->m_pDxCapture)
 					{
-						// Correct the display format
-						m_pDoc->m_dFrameRate = dFrameRate;
-						sFrameRate.Format(_T("%0.1f"), m_pDoc->m_dFrameRate);
-						pEdit->SetWindowText(sFrameRate);
-
-						// Set to device
-						if (m_pDoc->m_pDxCapture)
+						m_pDoc->m_pDxCapture->Stop();
+						m_pDoc->m_pDxCapture->SetFrameRate(m_pDoc->m_dFrameRate);
+						if (m_pDoc->m_pDxCapture->Run())
 						{
+							// Some devices need that...
+							// Process frame must still be stopped when calling Dx Stop()!
 							m_pDoc->m_pDxCapture->Stop();
-							m_pDoc->m_pDxCapture->SetFrameRate(m_pDoc->m_dFrameRate);
-							if (m_pDoc->m_pDxCapture->Run())
-							{
-								// Some devices need that...
-								// Process frame must still be stopped when calling Dx Stop()!
-								m_pDoc->m_pDxCapture->Stop();
-								m_pDoc->m_pDxCapture->Run();
-
-								// Restart process frame
-								m_pDoc->StartProcessFrame(PROCESSFRAME_CHANGEFRAMERATE);
-							}
-							m_pDoc->SetDocumentTitle();
-						}
-						else if (m_pDoc->m_pVideoNetCom)
-						{
-							if (m_pDoc->m_pHttpVideoParseProcess->m_FormatType == CVideoDeviceDoc::CHttpParseProcess::FORMATVIDEO_MJPEG)
-							{
-								if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::EDIMAX_SP)
-									m_pDoc->m_pHttpVideoParseProcess->m_bSetVideoFramerate = TRUE;
-								m_pDoc->m_HttpThread.SetEventVideoConnect();
-							}
-							m_pDoc->StartProcessFrame(PROCESSFRAME_CHANGEFRAMERATE);
-							m_pDoc->SetDocumentTitle();
+							m_pDoc->m_pDxCapture->Run();
 						}
 					}
-					else
+					else if (m_pDoc->m_pVideoNetCom)
 					{
-						// Restore
-						m_pDoc->StartProcessFrame(PROCESSFRAME_CHANGEFRAMERATE);
-						sFrameRate.Format(_T("%0.1f"), m_pDoc->m_dFrameRate);
-						pEdit->SetWindowText(sFrameRate);
-						pEdit->SetFocus();
-						pEdit->SetSel(0xFFFF0000);
+						if (m_pDoc->m_pHttpVideoParseProcess->m_FormatType == CVideoDeviceDoc::CHttpParseProcess::FORMATVIDEO_MJPEG)
+						{
+							if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::EDIMAX_SP)
+								m_pDoc->m_pHttpVideoParseProcess->m_bSetVideoFramerate = TRUE;
+							m_pDoc->m_HttpThread.SetEventVideoConnect();
+						}
 					}
 				}
+				else
+				{
+					// Restore
+					sFrameRate.Format(_T("%0.1f"), m_pDoc->m_dFrameRate);
+					pEdit->SetWindowText(sFrameRate); // this triggers OnChangeFrameRate()
+					pEdit->SetFocus();
+					pEdit->SetSel(0xFFFF0000);
+				}
 			}
+
+			// Restart process frame
+			m_pDoc->StartProcessFrame(PROCESSFRAME_CHANGEFRAMERATE);
+
+			// Clear flag here at the end
+			m_bDoChangeFrameRate = FALSE;
 		}
 	}
 	CPropertyPage::OnTimer(nIDEvent);
