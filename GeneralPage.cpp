@@ -346,11 +346,8 @@ void CGeneralPage::OnChangeFrameRate()
 	if (sFrameRate != _T("") && dFrameRate != m_pDoc->m_dFrameRate)
 	{
 		m_nFrameRateChangeTimeout = FRAMERATE_CHANGE_TIMEOUT;
-		if (!m_bDoChangeFrameRate)
-		{
-			m_pDoc->StopProcessFrame(PROCESSFRAME_CHANGEFRAMERATE);
-			m_bDoChangeFrameRate = TRUE; // done in OnTimer()
-		}
+		m_pDoc->StopProcessFrame(PROCESSFRAME_CHANGEFRAMERATE);
+		m_bDoChangeFrameRate = TRUE; // done in OnTimer()
 	}
 }
 
