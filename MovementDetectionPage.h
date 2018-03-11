@@ -45,6 +45,7 @@ public:
 
 // Implementation
 protected:
+	BOOL m_bInOnTimer;
 	CVideoDeviceDoc* m_pDoc;
 	void UpdateDetectionStartStopTimes();
 	void UpdateExecHelp();

@@ -31,6 +31,7 @@ CMovementDetectionPage::CMovementDetectionPage()
 	// OnInitDialog() inits the property page pointer in the doc
 	//{{AFX_DATA_INIT(CMovementDetectionPage)
 	//}}AFX_DATA_INIT
+	m_bInOnTimer = FALSE;
 	m_pDoc = NULL;
 }
 
@@ -235,29 +236,40 @@ void CMovementDetectionPage::OnChangeEditDetectionMaxFrames()
 
 void CMovementDetectionPage::OnTimer(UINT nIDEvent)
 {
-	if (!m_pDoc->m_bClosing)
+	// m_bInOnTimer avoids that a message pumping routine (like a modal dialog)
+	// inside this OnTimer() calls OnTimer() again!
+	if (!m_bInOnTimer)
 	{
-		// Max Det Video Length
-		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_MAX_MOVDET_VIDEOLENGTH);
-		if (pEdit)
+		// Set flag
+		m_bInOnTimer = TRUE;
+		
+		if (!m_pDoc->m_bClosing)
 		{
-			CString sMaxDetVideoLengthSec;
-			double dEffectiveFrameRate = m_pDoc->m_dEffectiveFrameRate;
-			if (dEffectiveFrameRate > 0.0)
-				sMaxDetVideoLengthSec.Format(_T("%0.1f"), (double)m_pDoc->m_nDetectionMaxFrames / dEffectiveFrameRate);
-			pEdit->SetWindowText(sMaxDetVideoLengthSec);
+			// Max Det Video Length
+			CEdit* pEdit = (CEdit*)GetDlgItem(IDC_MAX_MOVDET_VIDEOLENGTH);
+			if (pEdit)
+			{
+				CString sMaxDetVideoLengthSec;
+				double dEffectiveFrameRate = m_pDoc->m_dEffectiveFrameRate;
+				if (dEffectiveFrameRate > 0.0)
+					sMaxDetVideoLengthSec.Format(_T("%0.1f"), (double)m_pDoc->m_nDetectionMaxFrames / dEffectiveFrameRate);
+				pEdit->SetWindowText(sMaxDetVideoLengthSec);
+			}
+
+			// Max Det Queue Size
+			pEdit = (CEdit*)GetDlgItem(IDC_MAX_MOVDET_QUEUESIZE);
+			if (pEdit)
+			{
+				CString sMaxDetQueueSizeGB;
+				LONG lFrameSize = m_pDoc->m_ProcessFrameBMI.bmiHeader.biSizeImage;
+				if (lFrameSize > 0)
+					sMaxDetQueueSizeGB.Format(_T("%0.1f"), (double)lFrameSize * m_pDoc->m_nDetectionMaxFrames / 1073741824.0);
+				pEdit->SetWindowText(sMaxDetQueueSizeGB);
+			}
 		}
 
-		// Max Det Queue Size
-		pEdit = (CEdit*)GetDlgItem(IDC_MAX_MOVDET_QUEUESIZE);
-		if (pEdit)
-		{
-			CString sMaxDetQueueSizeGB;
-			LONG lFrameSize = m_pDoc->m_ProcessFrameBMI.bmiHeader.biSizeImage;
-			if (lFrameSize > 0)
-				sMaxDetQueueSizeGB.Format(_T("%0.1f"), (double)lFrameSize * m_pDoc->m_nDetectionMaxFrames / 1073741824.0);
-			pEdit->SetWindowText(sMaxDetQueueSizeGB);
-		}
+		// Clear flag
+		m_bInOnTimer = FALSE;
 	}
 	CPropertyPage::OnTimer(nIDEvent);
 }

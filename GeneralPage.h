@@ -68,7 +68,7 @@ protected:
 	afx_msg void OnCheckAudioListen();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
-
+	BOOL m_bInOnTimer;
 	CVideoDeviceDoc* m_pDoc;
 	BOOL m_bDoChangeFrameRate;
 	int m_nFrameRateChangeTimeout;
