@@ -74,7 +74,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_INDICATOR_YCOORDINATE, OnUpdateIndicatorYCoordinate)
 	ON_MESSAGE(WM_PROGRESS, OnProgress)
 	ON_MESSAGE(WM_SETMESSAGESTRING, OnSetMessageString)
-	ON_MESSAGE(WM_THREADSAFE_OPEN_DOC, OnThreadSafeOpenDoc)
 	ON_MESSAGE(WM_ALL_CLOSED, OnAllClosed)
 	ON_MESSAGE(WM_SCANANDEMAIL, OnScanAndEmail)
 	ON_MESSAGE(WM_TRAY_NOTIFICATION, OnTrayNotification)
@@ -1014,24 +1013,6 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 	}
 	
 	return CMDIFrameWnd::PreTranslateMessage(pMsg);
-}
-
-LONG CMainFrame::OnThreadSafeOpenDoc(WPARAM wparam, LPARAM lparam)
-{
-	LONG nOK = 0;
-	CString* pFileName = (CString*)wparam;
-	if (pFileName)
-	{
-		if (!m_bFullScreenMode)
-		{
-			if (((CUImagerApp*)::AfxGetApp())->GetTemplateFromFileExtension(*pFileName) != NULL)
-				nOK = ((CUImagerApp*)::AfxGetApp())->OpenDocumentFile(*pFileName) != NULL ? 1 : 0;
-			else
-				nOK = ::ShellExecute(NULL, _T("open"), *pFileName, NULL, NULL, SW_SHOWNORMAL) > (HINSTANCE)32 ? 1 : 0;
-		}
-		delete pFileName;
-	}
-	return nOK;
 }
 
 #ifdef VIDEODEVICEDOC
