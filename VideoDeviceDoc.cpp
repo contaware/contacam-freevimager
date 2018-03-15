@@ -1085,7 +1085,7 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 														(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
 														FrameRate.num,						// Rate
 														FrameRate.den,						// Scale				
-														m_fSnapshotVideoCompressorQuality,
+														DEFAULT_VIDEO_QUALITY,
 														((CUImagerApp*)::AfxGetApp())->m_nCoresCount);
 							pAVRecVideo->Open(m_sMetadataTitle);
 						}
@@ -3704,7 +3704,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bSnapshotLiveJpegFtp = FALSE;
 	m_bSnapshotHistoryJpegFtp = FALSE;
 	m_bSnapshotHistoryVideoFtp = FALSE;
-	m_bManualSnapshotAutoOpen = TRUE;
 	m_sSnapshotLiveJpegName = DEFAULT_SNAPSHOT_LIVE_JPEGNAME;
 	m_sSnapshotLiveJpegThumbName = DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME;
 	m_nSnapshotRate = DEFAULT_SNAPSHOT_RATE;
@@ -4545,7 +4544,6 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 		m_bSnapshotHistoryVideoFtp = (BOOL) nSnapshotHistorySwfFtp;
 	else
 		m_bSnapshotHistoryVideoFtp = FALSE;
-	m_bManualSnapshotAutoOpen = (BOOL) pApp->GetProfileInt(sSection, _T("ManualSnapshotAutoOpen"), TRUE);
 	m_sSnapshotLiveJpegName = pApp->GetProfileString(sSection, _T("SnapshotLiveJpegName"), DEFAULT_SNAPSHOT_LIVE_JPEGNAME);
 	m_sSnapshotLiveJpegThumbName = pApp->GetProfileString(sSection, _T("SnapshotLiveJpegThumbName"), DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME);
 	m_nSnapshotRate = (int) pApp->GetProfileInt(sSection, _T("SnapshotRate"), DEFAULT_SNAPSHOT_RATE);
@@ -4733,7 +4731,6 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("SnapshotLiveJpegFtp"), (int)m_bSnapshotLiveJpegFtp);
 	pApp->WriteProfileInt(sSection, _T("SnapshotHistoryJpegFtp"), (int)m_bSnapshotHistoryJpegFtp);
 	pApp->WriteProfileInt(sSection, _T("SnapshotHistoryVideoFtp"), (int)m_bSnapshotHistoryVideoFtp);
-	pApp->WriteProfileInt(sSection, _T("ManualSnapshotAutoOpen"), (int)m_bManualSnapshotAutoOpen);
 	pApp->WriteProfileString(sSection, _T("SnapshotLiveJpegName"), m_sSnapshotLiveJpegName);
 	pApp->WriteProfileString(sSection, _T("SnapshotLiveJpegThumbName"), m_sSnapshotLiveJpegThumbName);
 	pApp->WriteProfileInt(sSection, _T("SnapshotRate"), m_nSnapshotRate);
@@ -7754,7 +7751,6 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 		{
 			m_SaveSnapshotVideoThread.m_bSnapshotHistoryJpeg = m_bSnapshotHistoryJpeg;
 			m_SaveSnapshotVideoThread.m_bSnapshotHistoryVideoFtp = m_bSnapshotHistoryVideoFtp;
-			m_SaveSnapshotVideoThread.m_fSnapshotVideoCompressorQuality = m_fVideoRecQuality;
 			m_SaveSnapshotVideoThread.m_dSnapshotHistoryFrameRate = (double)m_nSnapshotHistoryFrameRate;
 			m_SaveSnapshotVideoThread.m_Time = Yesterday;
 			m_SaveSnapshotVideoThread.m_sMetadataTitle = GetAssignedDeviceName() + _T(" ") + ::MakeDateLocalFormat(Yesterday);
@@ -7819,24 +7815,12 @@ void CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 	CMJPEGEncoder MJPEGEncoder;
 	BOOL res = CVideoDeviceDoc::SaveJpegFast(&Dib, &MJPEGEncoder, sFileName, m_nSnapshotCompressionQuality);
 
-	// Open Document File
-	if (res && m_bManualSnapshotAutoOpen)
-	{
-		::PostMessage(	::AfxGetMainFrame()->GetSafeHwnd(),
-						WM_THREADSAFE_OPEN_DOC,
-						(WPARAM)(new CString(sFileName)),
-						(LPARAM)NULL);
-	}
-
 	// Clear flag
 	m_bDoEditSnapshot = FALSE;
 
 	// Show message
 	if (res)
-	{
-		if (!m_bManualSnapshotAutoOpen)
-			::AfxGetMainFrame()->PopupToaster(CString(APPNAME_NOEXT) + _T(" ") + ML_STRING(1849, "Saved"), sFileName);
-	}
+		::AfxGetMainFrame()->PopupToaster(CString(APPNAME_NOEXT) + _T(" ") + ML_STRING(1849, "Saved"), sFileName);
 	else
 		::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, ML_STRING(1850, "Save Failed!"), 0);
 }

@@ -71,7 +71,6 @@ BEGIN_MESSAGE_MAP(CSnapshotPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_FTP_SNAPSHOT, OnCheckFtpSnapshot)
 	ON_BN_CLICKED(IDC_CHECK_FTP_SNAPSHOT_HISTORY_JPEG, OnCheckFtpSnapshotHistoryJpeg)
 	ON_BN_CLICKED(IDC_CHECK_FTP_SNAPSHOT_HISTORY_VIDEO, OnCheckFtpSnapshotHistoryVideo)
-	ON_BN_CLICKED(IDC_CHECK_MANUALSHOT_AUTOOPEN, OnCheckManualshotAutoopen)
 	ON_BN_CLICKED(IDC_BUTTON_SNAPSHOT_NAMES, OnButtonSnapshotNames)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -107,10 +106,6 @@ BOOL CSnapshotPage::OnInitDialog()
 	// Snapshot History Video Ftp Check Box
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_FTP_SNAPSHOT_HISTORY_VIDEO);
 	pCheck->SetCheck(m_pDoc->m_bSnapshotHistoryVideoFtp);
-
-	// Manual Snapshot Auto-Open Document File
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_MANUALSHOT_AUTOOPEN);
-	pCheck->SetCheck(m_pDoc->m_bManualSnapshotAutoOpen);
 
 	// Snapshot Scheduler Check Box
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_DAILY);
@@ -156,15 +151,6 @@ void CSnapshotPage::OnDestroy()
 
 	// Set Page Pointer to NULL
 	m_pDoc->m_pSnapshotPage = NULL;
-}
-
-void CSnapshotPage::OnCheckManualshotAutoopen() 
-{
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_MANUALSHOT_AUTOOPEN);
-	if (pCheck->GetCheck())
-		m_pDoc->m_bManualSnapshotAutoOpen = TRUE;
-	else
-		m_pDoc->m_bManualSnapshotAutoOpen = FALSE;
 }
 
 void CSnapshotPage::OnCheckSnapshotHistoryJpeg() 

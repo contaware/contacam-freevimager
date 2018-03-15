@@ -118,7 +118,7 @@ BEGIN
     END
     POPUP "&Settings"
     BEGIN
-        MENUITEM "Global Settings...",          ID_FILE_SETTINGS
+        MENUITEM "Global Settings",             ID_FILE_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "Normal logging",              ID_SETTINGS_LOG_NORMAL
         MENUITEM "Verbose logging",             ID_SETTINGS_LOG_VERBOSE
@@ -196,10 +196,8 @@ IDR_CONTEXT_VIDEO_DEVICE MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
-        MENUITEM "Obscure Source",              ID_CAPTURE_OBSCURESOURCE
-        MENUITEM SEPARATOR
-        MENUITEM "Camera Basic Settings...",    ID_CAPTURE_CAMERABASICSETTINGS
-        MENUITEM "Camera Advanced Settings...", ID_CAPTURE_CAMERAADVANCEDSETTINGS
+        MENUITEM "&Snapshot\tIns",              ID_EDIT_SNAPSHOT
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
         MENUITEM SEPARATOR
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
     END
@@ -255,14 +253,12 @@ BEGIN
     POPUP "&Capture"
     BEGIN
         MENUITEM "&Network",                    ID_CAPTURE_NETWORK
-        MENUITEM SEPARATOR
-        MENUITEM "Obscure Source",              ID_CAPTURE_OBSCURESOURCE
     END
     POPUP "&Settings"
     BEGIN
-        MENUITEM "Global Settings...",          ID_FILE_SETTINGS
-        MENUITEM "Camera Basic Settings...",    ID_CAPTURE_CAMERABASICSETTINGS
-        MENUITEM "Camera Advanced Settings...", ID_CAPTURE_CAMERAADVANCEDSETTINGS
+        MENUITEM "Global Settings",             ID_FILE_SETTINGS
+        MENUITEM "Camera Settings",             ID_CAPTURE_CAMERABASICSETTINGS
+        MENUITEM "Camera Advanced Settings",    ID_CAPTURE_CAMERAADVANCEDSETTINGS
         MENUITEM SEPARATOR
         MENUITEM "Normal logging",              ID_SETTINGS_LOG_NORMAL
         MENUITEM "Verbose logging",             ID_SETTINGS_LOG_VERBOSE
@@ -501,7 +497,7 @@ BEGIN
     END
     POPUP "&Settings"
     BEGIN
-        MENUITEM "Global Settings...",          ID_FILE_SETTINGS
+        MENUITEM "Global Settings",             ID_FILE_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "Normal logging",              ID_SETTINGS_LOG_NORMAL
         MENUITEM "Verbose logging",             ID_SETTINGS_LOG_VERBOSE
@@ -2240,8 +2236,6 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,125,177,10
     CONTROL         "DateTimePicker1",IDC_TIME_DAILY_START,"SysDateTimePick32",DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,243,122,66,16
     CONTROL         "DateTimePicker1",IDC_TIME_DAILY_STOP,"SysDateTimePick32",DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,338,122,66,16
-    CONTROL         "Open file after manual snapshot",IDC_CHECK_MANUALSHOT_AUTOOPEN,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,172,121,10
     PUSHBUTTON      "Full size && Thumbnail File Names",IDC_BUTTON_SNAPSHOT_NAMES,13,217,185,17
     CONTROL         "Ftp Upload",IDC_CHECK_FTP_SNAPSHOT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,243,50,10
     CONTROL         "Enable",IDC_CHECK_SNAPSHOT_HISTORY_JPEG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,227,166,37,10
@@ -2256,14 +2250,13 @@ BEGIN
     LTEXT           "JPEG Quality\n(0: worst, 100: best)",IDC_STATIC2480,14,48,104,17
     GROUPBOX        "Snapshot Parameters",IDC_STATIC2481,7,5,403,96
     LTEXT           "frames/sec",IDC_STATIC2483,300,245,36,8
-    GROUPBOX        "Snapshot Scheduling",IDC_STATIC2484,7,107,403,41
+    GROUPBOX        "Scheduler",IDC_STATIC2484,7,107,403,41
     LTEXT           "From",IDC_STATIC2485,219,126,16,8
     LTEXT           "To",IDC_STATIC2486,323,126,10,8
     LTEXT           "(multiple of 4)",IDC_STATIC2491,354,24,49,9
     GROUPBOX        "Snapshot History as Daily Video",IDC_STATIC2482,212,201,198,61
     LTEXT           "Framerate",IDC_STATIC2487,242,245,34,8
     GROUPBOX        "Live Snapshot",IDC_STATIC2488,7,201,198,61
-    GROUPBOX        "Manual Snapshot",IDC_STATIC2489,7,154,198,41
     LTEXT           "Ftp Upload",IDC_STATIC,13,80,80,8
 END
 
@@ -2330,7 +2323,7 @@ END
 
 IDD_CAMERABASICSETTINGS DIALOGEX 0, 0, 418, 310
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Camera Basic Settings"
+CAPTION "Camera Settings"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Movement detection surveillance",IDC_RADIO_MOVDET,
@@ -3684,14 +3677,14 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_EDIT_ZONE            "Add / remove / show detection zones\nDetection Zones"
+    ID_EDIT_ZONE            "Add / remove / show zones\nAdd / Remove / Show Zones"
 END
 
 STRINGTABLE
 BEGIN
-    ID_EDIT_ZONE_REMOVE     "Remove detection zones\nRemove Detection Zones"
-    ID_EDIT_SELECTALL       "Select all detection zones\nSelect All"
-    ID_EDIT_SELECTNONE      "Clear all detection zones\nSelect None"
+    ID_EDIT_ZONE_REMOVE     "Remove zones\nRemove Zones"
+    ID_EDIT_SELECTALL       "Select all zones\nSelect All"
+    ID_EDIT_SELECTNONE      "Clear all zones\nSelect None"
     ID_CAPTURE_NETWORK      "Capture frames from the network\nCapture From Network"
     ID_CAPTURE_RECORD       "Enable / disable recording\nEnable / Disable Recording"
     ID_VIEW_ALL_NEXT_PICTURE 
@@ -4272,8 +4265,8 @@ BEGIN
     IDS_STRING1752          "(network and DV cameras do not need specific drivers)"
     IDS_STRING1753          "2. From the Capture menu select the device you want to use"
     IDS_STRING1754          "(for network cameras supply host name or ip address, port and camera type)"
-    IDS_STRING1755          "3. Follow the Camera Basic Settings dialog"
-    IDS_STRING1756          "(if it's not popping-up select Camera Basic Settings from the Settings menu)"
+    IDS_STRING1755          "3. Follow the Camera Settings dialog"
+    IDS_STRING1756          "(if it's not popping-up select Camera Settings from the Settings menu)"
     IDS_STRING1757          "4. Choose Browse from the View menu"
     IDS_STRING1758          "&Snapshooting...\tIns"
     IDS_STRING1759          "&Snapshot\tIns"
@@ -4342,16 +4335,15 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_CAPTURE_CAMERABASICSETTINGS 
-                            "Camera basic settings\nCamera Basic Settings"
+    ID_CAPTURE_CAMERABASICSETTINGS "Camera settings\nCamera Settings"
     ID_EDIT_ZONE_SENSITIVITY_100 
-                            "Add detection zones with 100% sensitivity\nAdd Detection Zones with 100% Sensitivity"
+                            "Add zones with 100% sensitivity\nAdd Zones with 100% Sensitivity"
     ID_EDIT_ZONE_SENSITIVITY_50 
-                            "Add detection zones with 50% sensitivity\nAdd Detection Zones with 50% Sensitivity"
+                            "Add zones with 50% sensitivity\nAdd Zones with 50% Sensitivity"
     ID_EDIT_ZONE_SENSITIVITY_25 
-                            "Add detection zones with 25% sensitivity\nAdd Detection Zones with 25% Sensitivity"
+                            "Add zones with 25% sensitivity\nAdd Zones with 25% Sensitivity"
     ID_EDIT_ZONE_SENSITIVITY_10 
-                            "Add detection zones with 10% sensitivity\nAdd Detection Zones with 10% Sensitivity"
+                            "Add zones with 10% sensitivity\nAdd Zones with 10% Sensitivity"
     ID_FILE_EXTRACT         "Extract all pages/frames\nExtract Pages/Frames"
     ID_EDIT_SCREENSHOT      "Take a screenshot\nScreenshot"
 END

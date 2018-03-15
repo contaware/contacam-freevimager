@@ -489,7 +489,6 @@ public:
 
 			BOOL m_bSnapshotHistoryJpeg;
 			BOOL m_bSnapshotHistoryVideoFtp;
-			float m_fSnapshotVideoCompressorQuality;
 			double m_dSnapshotHistoryFrameRate;
 			CTime m_Time;
 			CString m_sMetadataTitle;
@@ -917,7 +916,6 @@ public:
 	volatile BOOL m_bSnapshotLiveJpegFtp;				// Upload Jpeg Live snapshot files
 	volatile BOOL m_bSnapshotHistoryJpegFtp;			// Upload Jpeg Snapshot history files
 	volatile BOOL m_bSnapshotHistoryVideoFtp;			// Upload Video Snapshot history files
-	volatile BOOL m_bManualSnapshotAutoOpen;			// Auto open after executing the manual snapshot command
 	volatile int m_nSnapshotRate;						// Snapshot rate in seconds
 	volatile int m_nSnapshotRateMs;						// Snapshot rate in ms, effective: 1000 * m_nSnapshotRate + m_nSnapshotRateMs
 	volatile int m_nSnapshotHistoryFrameRate;			// Snapshot history framerate
