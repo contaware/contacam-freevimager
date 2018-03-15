@@ -62,14 +62,12 @@ BEGIN_MESSAGE_MAP(CSnapshotPage, CPropertyPage)
 	ON_WM_HSCROLL()
 	ON_BN_CLICKED(IDC_BUTTON_THUMB_SIZE, OnButtonThumbSize)
 	ON_EN_CHANGE(IDC_EDIT_SNAPSHOT_HISTORY_FRAMERATE, OnChangeEditSnapshotHistoryFramerate)
-	ON_BN_CLICKED(IDC_CHECK_SNAPSHOT_HISTORY_JPEG, OnCheckSnapshotHistoryJpeg)
 	ON_BN_CLICKED(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO, OnCheckSnapshotHistoryVideo)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_DAILY, OnCheckSchedulerDaily)
 	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_DAILY_START, OnDatetimechangeTimeDailyStart)
 	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_DAILY_STOP, OnDatetimechangeTimeDailyStop)
 	ON_BN_CLICKED(IDC_FTP_CONFIGURE, OnFtpConfigure)
 	ON_BN_CLICKED(IDC_CHECK_FTP_SNAPSHOT, OnCheckFtpSnapshot)
-	ON_BN_CLICKED(IDC_CHECK_FTP_SNAPSHOT_HISTORY_JPEG, OnCheckFtpSnapshotHistoryJpeg)
 	ON_BN_CLICKED(IDC_CHECK_FTP_SNAPSHOT_HISTORY_VIDEO, OnCheckFtpSnapshotHistoryVideo)
 	ON_BN_CLICKED(IDC_BUTTON_SNAPSHOT_NAMES, OnButtonSnapshotNames)
 	//}}AFX_MSG_MAP
@@ -87,21 +85,13 @@ BOOL CSnapshotPage::OnInitDialog()
 	// This calls UpdateData(FALSE)
 	CPropertyPage::OnInitDialog();
 
-	// Snapshot History Jpeg Check Box
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_JPEG);
-	pCheck->SetCheck(m_pDoc->m_bSnapshotHistoryJpeg);
-
 	// Snapshot History Video Check Box
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO);
+	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO);
 	pCheck->SetCheck(m_pDoc->m_bSnapshotHistoryVideo);
 
 	// Live Snapshot Jpeg Ftp Check Box
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_FTP_SNAPSHOT);
 	pCheck->SetCheck(m_pDoc->m_bSnapshotLiveJpegFtp);
-
-	// Snapshot History Jpeg Ftp Check Box
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_FTP_SNAPSHOT_HISTORY_JPEG);
-	pCheck->SetCheck(m_pDoc->m_bSnapshotHistoryJpegFtp);
 
 	// Snapshot History Video Ftp Check Box
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_FTP_SNAPSHOT_HISTORY_VIDEO);
@@ -153,15 +143,6 @@ void CSnapshotPage::OnDestroy()
 	m_pDoc->m_pSnapshotPage = NULL;
 }
 
-void CSnapshotPage::OnCheckSnapshotHistoryJpeg() 
-{
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_JPEG);
-	if (pCheck->GetCheck())
-		m_pDoc->m_bSnapshotHistoryJpeg = TRUE;
-	else
-		m_pDoc->m_bSnapshotHistoryJpeg = FALSE;
-}
-
 void CSnapshotPage::OnCheckSnapshotHistoryVideo() 
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO);
@@ -178,15 +159,6 @@ void CSnapshotPage::OnCheckFtpSnapshot()
 		m_pDoc->m_bSnapshotLiveJpegFtp = TRUE;
 	else
 		m_pDoc->m_bSnapshotLiveJpegFtp = FALSE;
-}
-
-void CSnapshotPage::OnCheckFtpSnapshotHistoryJpeg() 
-{
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_FTP_SNAPSHOT_HISTORY_JPEG);
-	if (pCheck->GetCheck())
-		m_pDoc->m_bSnapshotHistoryJpegFtp = TRUE;
-	else
-		m_pDoc->m_bSnapshotHistoryJpegFtp = FALSE;
 }
 
 void CSnapshotPage::OnCheckFtpSnapshotHistoryVideo() 

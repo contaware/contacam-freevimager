@@ -487,7 +487,6 @@ public:
 			CSaveSnapshotVideoThread(){m_ThreadExecutedForTime = CTime(0);};
 			virtual ~CSaveSnapshotVideoThread() {Kill();};
 
-			BOOL m_bSnapshotHistoryJpeg;
 			BOOL m_bSnapshotHistoryVideoFtp;
 			double m_dSnapshotHistoryFrameRate;
 			CTime m_Time;
@@ -509,8 +508,7 @@ public:
 			virtual ~CSaveSnapshotThread() {Kill();};
 
 			CDib m_Dib;
-			BOOL m_bSnapshotHistoryJpeg;
-			BOOL m_bSnapshotHistoryJpegFtp;
+			BOOL m_bSnapshotHistoryVideo;
 			BOOL m_bShowFrameTime;
 			BOOL m_bDetectingMinLengthMovement;
 			int m_nRefFontSize;
@@ -911,10 +909,8 @@ public:
 	CStringArray m_HttpGetFrameLocations;				// Automatic camera type detection query string
 
 	// Snapshot Vars
-	volatile BOOL m_bSnapshotHistoryJpeg;				// Snapshot history save Jpegs
 	volatile BOOL m_bSnapshotHistoryVideo;				// Snapshot history save Video
 	volatile BOOL m_bSnapshotLiveJpegFtp;				// Upload Jpeg Live snapshot files
-	volatile BOOL m_bSnapshotHistoryJpegFtp;			// Upload Jpeg Snapshot history files
 	volatile BOOL m_bSnapshotHistoryVideoFtp;			// Upload Video Snapshot history files
 	volatile int m_nSnapshotRate;						// Snapshot rate in seconds
 	volatile int m_nSnapshotRateMs;						// Snapshot rate in ms, effective: 1000 * m_nSnapshotRate + m_nSnapshotRateMs

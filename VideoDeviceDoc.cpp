@@ -1101,8 +1101,7 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 				}
 
 				// Delete unwanted history jpg files
-				if (!m_bSnapshotHistoryJpeg)
-					::DeleteFile(FileFind.GetFileName(pos));
+				::DeleteFile(FileFind.GetFileName(pos));
 			}
 
 			// Do Exit?
@@ -1148,8 +1147,6 @@ exit:
 // thumb version which links to the full-size in web interface
 int CVideoDeviceDoc::CSaveSnapshotThread::Work() 
 {
-	HANDLE hFTP;
-
 	// Get uptime
 	DWORD dwUpTime = m_Dib.GetUpTime();
 
@@ -1162,7 +1159,7 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	sLiveThumbFileName += _T("\\") + m_sSnapshotLiveJpegThumbName + _T(".jpg");
 
 	// Init history file name
-	// Note: if m_bSnapshotHistoryJpeg is TRUE, it creates also the year, month and day
+	// Note: if m_bSnapshotHistoryVideo is TRUE, it creates also the year, month and day
 	// directories, otherwise it just returns the file name without path
 	CString sHistoryFileName(MakeJpegHistoryFileName());
 
@@ -1200,9 +1197,9 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	::CopyFile(sTempThumbFileName, sLiveThumbFileName, FALSE);
 	if (m_bSnapshotLiveJpegFtp)
 	{
-		hFTP = CVideoDeviceDoc::FTPUpload(	m_Config,
-											sTempFileName, m_sSnapshotLiveJpegName + _T(".jpg"),
-											sTempThumbFileName, m_sSnapshotLiveJpegThumbName + _T(".jpg"));
+		HANDLE hFTP = CVideoDeviceDoc::FTPUpload(m_Config,
+												sTempFileName, m_sSnapshotLiveJpegName + _T(".jpg"),
+												sTempThumbFileName, m_sSnapshotLiveJpegThumbName + _T(".jpg"));
 		if (hFTP)
 		{
 			if (::WaitForSingleObject(hFTP, FTPPROG_JPEGUPLOAD_WAIT_TIMEOUT_MS) == WAIT_TIMEOUT)
@@ -1216,26 +1213,8 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	}
 
 	// History
-	if (m_bSnapshotHistoryJpeg)
-	{
+	if (m_bSnapshotHistoryVideo)
 		::CopyFile(sTempFileName, sHistoryFileName, FALSE);
-		if (m_bSnapshotHistoryJpegFtp)
-		{
-			CString sUploadDir(m_Time.Format(_T("%Y")) + _T("/") + m_Time.Format(_T("%m")) + _T("/") + m_Time.Format(_T("%d")));
-			hFTP = CVideoDeviceDoc::FTPUpload(	m_Config,
-												sTempFileName, sUploadDir + _T("/") + ::GetShortFileName(sHistoryFileName));
-			if (hFTP)
-			{
-				if (::WaitForSingleObject(hFTP, FTPPROG_JPEGUPLOAD_WAIT_TIMEOUT_MS) == WAIT_TIMEOUT)
-				{
-					::KillApp(hFTP); // CloseHandle(hFTP) called inside this function 
-					goto exit;
-				}
-				else
-					CloseHandle(hFTP);
-			}
-		}
-	}
 
 exit:
 	// Clean-up
@@ -1257,7 +1236,7 @@ __forceinline CString CVideoDeviceDoc::CSaveSnapshotThread::MakeJpegHistoryFileN
 	sSnapshotDir.TrimRight(_T('\\'));
 
 	// Create directory if necessary
-	if (sSnapshotDir != _T("") && m_bSnapshotHistoryJpeg)
+	if (sSnapshotDir != _T("") && m_bSnapshotHistoryVideo)
 	{
 		DWORD dwAttrib = ::GetFileAttributes(sSnapshotDir);
 		if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
@@ -3699,10 +3678,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_HttpGetFrameLocations.Add(_T("/")); // first element must be valid ("/" => try home to see whether cam is reachable)
 
 	// Snapshot
-	m_bSnapshotHistoryJpeg = FALSE;
 	m_bSnapshotHistoryVideo = FALSE;
 	m_bSnapshotLiveJpegFtp = FALSE;
-	m_bSnapshotHistoryJpegFtp = FALSE;
 	m_bSnapshotHistoryVideoFtp = FALSE;
 	m_sSnapshotLiveJpegName = DEFAULT_SNAPSHOT_LIVE_JPEGNAME;
 	m_sSnapshotLiveJpegThumbName = DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME;
@@ -4525,7 +4502,6 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 		sDetectionTriggerFileName = sDetectionAutoSaveDir + _T("\\") + sDetectionTriggerFileName;
 	}
 	::GetFileTime(sDetectionTriggerFileName, NULL, NULL, &m_DetectionTriggerLastWriteTime);
-	m_bSnapshotHistoryJpeg = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistoryJpeg"), FALSE);
 	int nSnapshotHistoryVideo = pApp->GetProfileInt(sSection, _T("SnapshotHistoryVideo"), 2);	// use invalid default value to check whether it exists
 	int nSnapshotHistorySwf = pApp->GetProfileInt(sSection, _T("SnapshotHistorySwf"), 2);		// for backwards compatibility
 	if (nSnapshotHistoryVideo >= 0 && nSnapshotHistoryVideo <= 1)
@@ -4535,7 +4511,6 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	else
 		m_bSnapshotHistoryVideo = FALSE;
 	m_bSnapshotLiveJpegFtp = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotLiveJpegFtp"), FALSE);
-	m_bSnapshotHistoryJpegFtp = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistoryJpegFtp"), FALSE);
 	int nSnapshotHistoryVideoFtp = pApp->GetProfileInt(sSection, _T("SnapshotHistoryVideoFtp"), 2);	// use invalid default value to check whether it exists
 	int nSnapshotHistorySwfFtp = pApp->GetProfileInt(sSection, _T("SnapshotHistorySwfFtp"), 2);		// for backwards compatibility
 	if (nSnapshotHistoryVideoFtp >= 0 && nSnapshotHistoryVideoFtp <= 1)
@@ -4726,10 +4701,8 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("Rotate180"), (int)m_bRotate180);
 	pApp->WriteProfileString(sSection, _T("RecordAutoSaveDir"), m_sRecordAutoSaveDir);
 	pApp->WriteProfileString(sSection, _T("DetectionTriggerFileName"), m_sDetectionTriggerFileName);
-	pApp->WriteProfileInt(sSection, _T("SnapshotHistoryJpeg"), (int)m_bSnapshotHistoryJpeg);
 	pApp->WriteProfileInt(sSection, _T("SnapshotHistoryVideo"), (int)m_bSnapshotHistoryVideo);
 	pApp->WriteProfileInt(sSection, _T("SnapshotLiveJpegFtp"), (int)m_bSnapshotLiveJpegFtp);
-	pApp->WriteProfileInt(sSection, _T("SnapshotHistoryJpegFtp"), (int)m_bSnapshotHistoryJpegFtp);
 	pApp->WriteProfileInt(sSection, _T("SnapshotHistoryVideoFtp"), (int)m_bSnapshotHistoryVideoFtp);
 	pApp->WriteProfileString(sSection, _T("SnapshotLiveJpegName"), m_sSnapshotLiveJpegName);
 	pApp->WriteProfileString(sSection, _T("SnapshotLiveJpegThumbName"), m_sSnapshotLiveJpegThumbName);
@@ -7716,8 +7689,7 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 			// Note: we need the history jpgs to make the video file inside the snapshot video thread,
 			// user unwanted history jpgs are deleted in snapshot video thread
 			m_SaveSnapshotThread.m_Dib = *pDib;
-			m_SaveSnapshotThread.m_bSnapshotHistoryJpeg = (m_bSnapshotHistoryJpeg || m_bSnapshotHistoryVideo);
-			m_SaveSnapshotThread.m_bSnapshotHistoryJpegFtp = m_bSnapshotHistoryJpegFtp;
+			m_SaveSnapshotThread.m_bSnapshotHistoryVideo = m_bSnapshotHistoryVideo;
 			m_SaveSnapshotThread.m_bShowFrameTime = m_bShowFrameTime;
 			m_SaveSnapshotThread.m_bDetectingMinLengthMovement = m_bDetectingMinLengthMovement;
 			m_SaveSnapshotThread.m_nRefFontSize = m_nRefFontSize;
@@ -7749,7 +7721,6 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 		// Start Thread if not already executed for Yesterday
 		if (m_SaveSnapshotVideoThread.m_ThreadExecutedForTime < Yesterday)
 		{
-			m_SaveSnapshotVideoThread.m_bSnapshotHistoryJpeg = m_bSnapshotHistoryJpeg;
 			m_SaveSnapshotVideoThread.m_bSnapshotHistoryVideoFtp = m_bSnapshotHistoryVideoFtp;
 			m_SaveSnapshotVideoThread.m_dSnapshotHistoryFrameRate = (double)m_nSnapshotHistoryFrameRate;
 			m_SaveSnapshotVideoThread.m_Time = Yesterday;
