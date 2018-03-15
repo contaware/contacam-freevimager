@@ -32,7 +32,6 @@ extern "C"
 class CVideoDeviceView;
 class CVideoDeviceChildFrame;
 class CDxCapture;
-class CGeneralPage;
 class CSnapshotPage;
 class CCameraAdvancedSettingsPropertySheet;
 class CMovementDetectionPage;
@@ -1010,7 +1009,6 @@ public:
 	// Property Sheet Pointer
 	CCameraAdvancedSettingsPropertySheet* volatile m_pCameraAdvancedSettingsPropertySheet;
 	CSnapshotPage* volatile m_pSnapshotPage;
-	CGeneralPage* volatile m_pGeneralPage;
 	CMovementDetectionPage* volatile m_pMovementDetectionPage;
 
 // Protected Variables

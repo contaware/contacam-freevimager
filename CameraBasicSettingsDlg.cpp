@@ -49,7 +49,6 @@ void CCameraBasicSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_CBIndex(pDX, IDC_ATTACHMENT, m_nComboSendMailMovementDetectionAttachment);
 	DDX_Text(pDX, IDC_EDIT_SENDMAIL_SEC_BETWEEN_MSG, m_nSendMailSecBetweenMsg);
 	DDV_MinMaxInt(pDX, m_nSendMailSecBetweenMsg, 0, INT_MAX);
-	DDX_Control(pDX, IDC_SPIN_SENDMAIL_SEC_BETWEEN_MSG, m_SpinSendMailSecBetweenMsg);
 	DDX_Text(pDX, IDC_EDIT_MAX_CAMERA_FOLDER_SIZE, m_sMaxCameraFolderSizeGB);
 	DDX_Text(pDX, IDC_EDIT_MIN_DISK_FREE_PERCENT, m_sMinDiskFreePercent);
 	//}}AFX_DATA_MAP
@@ -221,9 +220,6 @@ BOOL CCameraBasicSettingsDlg::OnInitDialog()
 
 	// This calls UpdateData(FALSE) -> vars to view
 	CDialog::OnInitDialog();
-
-	// Minimum seconds between Motion Emails Spin Control
-	m_SpinSendMailSecBetweenMsg.SetRange32(0, INT_MAX);
 	
 	// Set Timer
 	SetTimer(ID_TIMER_CAMERABASICSETTINGSDLG, CAMERABASICSETTINGSDLG_TIMER_MS, NULL);
@@ -281,8 +277,6 @@ void CCameraBasicSettingsDlg::EnableDisableAllCtrls(BOOL bEnable)
 	pComboBox->EnableWindow(bEnable);
 	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_SENDMAIL_SEC_BETWEEN_MSG);
 	pEdit->EnableWindow(bEnable);
-	CSpinButtonCtrl* pSpin = (CSpinButtonCtrl*)GetDlgItem(IDC_SPIN_SENDMAIL_SEC_BETWEEN_MSG);
-	pSpin->EnableWindow(bEnable);
 	CButton* pButton = (CButton*)GetDlgItem(IDC_SENDMAIL_CONFIGURE);
 	pButton->EnableWindow(bEnable);
 	pButton = (CButton*)GetDlgItem(IDOK);

@@ -6,7 +6,6 @@
 #include "VideoDeviceView.h"
 #include "MainFrm.h"
 #include "DxCapture.h"
-#include "GeneralPage.h"
 #include "dbt.h"
 #include "PicturePrintPreviewView.h"
 #include "BatchProcDlg.h"

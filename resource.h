@@ -20,7 +20,6 @@
 #define IDR_VIDEODEVICE                 129
 #define IDD_CAPTURE_VIDEO               135
 #define IDI_DEVICE                      136
-#define IDD_GENERAL                     140
 #define IDR_VIDEO_DEVICE_TOOLBAR        144
 #define IDR_PICTURE_TOOLBAR             145
 #define IDR_CONTEXT_PICTURE             147
@@ -877,9 +876,9 @@
 #define IDS_MULTILANG_1033              1033
 #define IDC_VIDEO_SOURCE                1033
 #define IDS_MULTILANG_1034              1034
-#define IDC_FRAMERATE                   1034
 #define IDC_SAVE_VIDEO_MOVEMENT_DETECTION 1034
 #define IDS_MULTILANG_1035              1035
+#define IDC_FRAMERATE                   1035
 #define IDS_MULTILANG_1036              1036
 #define IDS_MULTILANG_1037              1037
 #define IDC_CHECK_LOSSLESSTRANS         1037
@@ -2164,9 +2163,7 @@
 #define IDC_EDIT_SNAPSHOT_HISTORY_FRAMERATE 1768
 #define IDS_STRING1768                  1768
 #define IDS_STRING1769                  1769
-#define IDC_MAX_MOVDET_QUEUESIZE        1769
 #define IDS_STRING1770                  1770
-#define IDC_MAX_MOVDET_VIDEOLENGTH      1770
 #define IDS_STRING1771                  1771
 #define IDS_STRING1772                  1772
 #define IDS_STRING1773                  1773
@@ -3034,7 +3031,6 @@
 #define IDC_BUTTON_CERT_SSL             2567
 #define IDC_EDIT_SENDMAIL_SEC_BETWEEN_MSG 2568
 #define IDC_BUTTON_KEY_SSL              2568
-#define IDC_SPIN_SENDMAIL_SEC_BETWEEN_MSG 2569
 #define IDC_BUTTON_ASSOCIATE            2570
 #define IDC_BUTTON_UNASSOCIATE          2571
 #define IDC_REC_AUDIO_FROM_STREAM       2572

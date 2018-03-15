@@ -5,7 +5,6 @@
 #include "VideoDeviceDoc.h"
 #include "AudioInSourceDlg.h"
 #include "CameraBasicSettingsDlg.h"
-#include "GeneralPage.h"
 #include "SnapshotPage.h"
 #include "CameraAdvancedSettingsPropertySheet.h"
 #include "Quantizer.h"
@@ -3805,7 +3804,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 
 	// Property Sheet
 	m_pMovementDetectionPage = NULL;
-	m_pGeneralPage = NULL;
 	m_pSnapshotPage = NULL;
 	m_pCameraAdvancedSettingsPropertySheet = NULL;
 

@@ -29,14 +29,12 @@ CPropertySheet(MakeTitle(pDoc), NULL)
 	m_pDoc = pDoc;
 	
 	// Init pages
-	m_GeneralPropertyPage.SetDoc(pDoc);
-	m_SnapshotPropertyPage.SetDoc(pDoc);
 	m_MovementDetectionPropertyPage.SetDoc(pDoc);
+	m_SnapshotPropertyPage.SetDoc(pDoc);
 
 	// Add pages
-	AddPage(&m_GeneralPropertyPage);
-	AddPage(&m_SnapshotPropertyPage);
 	AddPage(&m_MovementDetectionPropertyPage);
+	AddPage(&m_SnapshotPropertyPage);
 }
 
 CCameraAdvancedSettingsPropertySheet::~CCameraAdvancedSettingsPropertySheet()

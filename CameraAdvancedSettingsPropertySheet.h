@@ -6,9 +6,8 @@
 // CameraAdvancedSettingsPropertySheet.h : header file
 //
 
-#include "GeneralPage.h"
-#include "SnapshotPage.h"
 #include "MovementDetectionPage.h"
+#include "SnapshotPage.h"
 
 #ifdef VIDEODEVICEDOC
 
@@ -30,9 +29,8 @@ protected:
 	static CString MakeTitle(CVideoDeviceDoc* pDoc);
 
 // Attributes
-	CGeneralPage m_GeneralPropertyPage;
-	CSnapshotPage m_SnapshotPropertyPage;
 	CMovementDetectionPage m_MovementDetectionPropertyPage;
+	CSnapshotPage m_SnapshotPropertyPage;
 	CVideoDeviceDoc* m_pDoc;
 
 // Overrides

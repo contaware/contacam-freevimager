@@ -40,7 +40,6 @@ public:
 	BOOL	m_bCheckSendMailMovementDetection;
 	int		m_nComboSendMailMovementDetectionAttachment;
 	int		m_nSendMailSecBetweenMsg;
-	CSpinButtonCtrl	m_SpinSendMailSecBetweenMsg;
 	//}}AFX_DATA
 
 

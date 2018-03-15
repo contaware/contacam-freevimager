@@ -1306,7 +1306,6 @@ void CVideoDeviceChildFrame::EndShutdown()
 	// the following pointers (used inside ProcessI420Frame()):
 	//
 	// m_pCameraAdvancedSettingsPropertySheet
-	// m_pGeneralPage
 	// m_pSnapshotPage
 	// m_pMovementDetectionPage
 	//
