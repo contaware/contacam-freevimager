@@ -16,9 +16,8 @@ class CVideoDeviceDoc;
 class CMovementDetectionPage : public CPropertyPage
 {
 	DECLARE_DYNCREATE(CMovementDetectionPage)
-
-// Construction
 public:
+	// Construction
 	CMovementDetectionPage();
 	void SetDoc(CVideoDeviceDoc* pDoc);
 	~CMovementDetectionPage();

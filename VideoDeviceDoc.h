@@ -91,12 +91,10 @@ class CMovementDetectionPage;
 // Snapshot
 #define MIN_SNAPSHOT_RATE					1			// one snapshot per second
 #define DEFAULT_SNAPSHOT_RATE				1			// each given seconds
-#define DEFAULT_SNAPSHOT_HISTORY_FRAMERATE	15			// fps
-#define MIN_SNAPSHOT_HISTORY_FRAMERATE		1			// fps
-#define MAX_SNAPSHOT_HISTORY_FRAMERATE		95			// fps
+#define DEFAULT_SNAPSHOT_HISTORY_FRAMERATE	15.0		// fps
 #define DEFAULT_SNAPSHOT_LIVE_JPEGNAME		_T("snapshot")
 #define DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME	_T("snapshot_thumb")
-#define DEFAULT_SNAPSHOT_COMPR_QUALITY		60			// 0 Worst Quality, 100 Best Quality 
+#define DEFAULT_SNAPSHOT_COMPR_QUALITY		60			// 0 Worst Quality, 100 Best Quality
 #define DEFAULT_SNAPSHOT_THUMB_WIDTH		228			// Must be a multiple of 4 because of video
 #define DEFAULT_SNAPSHOT_THUMB_HEIGHT		172			// Must be a multiple of 4 because of video
 #define DEFAULT_SERVERPUSH_POLLRATE_MS		200			// ms
@@ -488,7 +486,6 @@ public:
 			virtual ~CSaveSnapshotVideoThread() {Kill();};
 
 			BOOL m_bSnapshotHistoryVideoFtp;
-			double m_dSnapshotHistoryFrameRate;
 			CTime m_Time;
 			CString m_sMetadataTitle;
 			CTime m_ThreadExecutedForTime;
@@ -515,7 +512,6 @@ public:
 			BOOL m_bSnapshotLiveJpegFtp;
 			int m_nSnapshotThumbWidth;
 			int m_nSnapshotThumbHeight;
-			int m_nSnapshotCompressionQuality;
 			CTime m_Time;
 			CString m_sSnapshotAutoSaveDir;
 			CString m_sSnapshotLiveJpegName;
@@ -914,8 +910,6 @@ public:
 	volatile BOOL m_bSnapshotHistoryVideoFtp;			// Upload Video Snapshot history files
 	volatile int m_nSnapshotRate;						// Snapshot rate in seconds
 	volatile int m_nSnapshotRateMs;						// Snapshot rate in ms, effective: 1000 * m_nSnapshotRate + m_nSnapshotRateMs
-	volatile int m_nSnapshotHistoryFrameRate;			// Snapshot history framerate
-	volatile int m_nSnapshotCompressionQuality;			// Snapshot compression quality
 	volatile int m_nSnapshotThumbWidth;					// Snapshot thumbnail width
 	volatile int m_nSnapshotThumbHeight;				// Snapshot thumbnail height
 	volatile DWORD m_dwNextSnapshotUpTime;				// The up-time of the next snapshot

@@ -2150,9 +2150,7 @@
 #define IDS_STRING1760                  1760
 #define IDC_BUTTON_CLEAR_DIR            1761
 #define IDS_STRING1761                  1761
-#define IDC_COMPRESSION_QUALITY         1762
 #define IDS_STRING1762                  1762
-#define IDC_COMPRESSION_QUALITY_NUM     1763
 #define IDS_STRING1763                  1763
 #define IDS_STRING1764                  1764
 #define IDC_BUTTON_THUMB_SIZE           1765
@@ -2160,7 +2158,6 @@
 #define IDS_STRING1766                  1766
 #define IDC_TEXT_FILE                   1767
 #define IDS_STRING1767                  1767
-#define IDC_EDIT_SNAPSHOT_HISTORY_FRAMERATE 1768
 #define IDS_STRING1768                  1768
 #define IDS_STRING1769                  1769
 #define IDS_STRING1770                  1770

@@ -11,60 +11,46 @@
 // Forward Declaration
 class CVideoDeviceDoc;
 
-/////////////////////////////////////////////////////////////////////////////
-// CSnapshotPage dialog
-
 class CSnapshotPage : public CPropertyPage
 {
 	DECLARE_DYNCREATE(CSnapshotPage)
-
-// Construction
 public:
+	// Construction
 	CSnapshotPage();
 	void SetDoc(CVideoDeviceDoc* pDoc);
 	~CSnapshotPage();
+
+	// Dialog data
+	enum { IDD = IDD_SNAPSHOT };
+	CTime m_SnapshotStartTime;
+	CTime m_SnapshotStopTime;
+
+	// Public Helper functions
 	void DisplaySnapshotRate();
 	void ChangeThumbSize(int nNewWidth, int nNewHeight);
 
-// Dialog Data
-	//{{AFX_DATA(CSnapshotPage)
-	enum { IDD = IDD_SNAPSHOT };
-	CSliderCtrl	m_CompressionQuality;
-	CTime	m_SnapshotStartTime;
-	CTime	m_SnapshotStopTime;
-	//}}AFX_DATA
-
-
-// Overrides
-	// ClassWizard generate virtual function overrides
-	//{{AFX_VIRTUAL(CSnapshotPage)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	//}}AFX_VIRTUAL
-
-// Implementation
 protected:
-	void UpdateSnapshotStartStopTimes();
+	// Helper vars
 	CVideoDeviceDoc* m_pDoc;
-	// Generated message map functions
-	//{{AFX_MSG(CSnapshotPage)
+
+	// Helper functions
+	void UpdateSnapshotStartStopTimes();
+
+	// Dialog functions
+	virtual void DoDataExchange(CDataExchange* pDX);
 	virtual BOOL OnInitDialog();
 	afx_msg void OnDestroy();
 	afx_msg void OnChangeEditSnapshotRate();
-	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	afx_msg void OnButtonSnapshotNames();
 	afx_msg void OnButtonThumbSize();
-	afx_msg void OnChangeEditSnapshotHistoryFramerate();
 	afx_msg void OnCheckSnapshotHistoryVideo();
+	afx_msg void OnCheckFtpSnapshot();
+	afx_msg void OnCheckFtpSnapshotHistoryVideo();
+	afx_msg void OnFtpConfigure();
 	afx_msg void OnCheckSchedulerDaily();
 	afx_msg void OnDatetimechangeTimeDailyStart(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnDatetimechangeTimeDailyStop(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnFtpConfigure();
-	afx_msg void OnCheckFtpSnapshot();
-	afx_msg void OnCheckFtpSnapshotHistoryVideo();
-	afx_msg void OnButtonSnapshotNames();
-	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
-
 };
 
 #endif

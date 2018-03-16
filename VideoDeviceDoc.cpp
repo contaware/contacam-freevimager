@@ -1041,8 +1041,6 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 
 int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 {
-	HANDLE hFTP;
-
 	// Init
 	CDib Dib;
 	Dib.SetShowMessageBoxOnError(FALSE);
@@ -1073,7 +1071,7 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 						// Open
 						if (!pAVRecVideo->IsOpen())
 						{
-							AVRational FrameRate = av_d2q(m_dSnapshotHistoryFrameRate, MAX_SIZE_FOR_RATIONAL);
+							AVRational FrameRate = av_d2q(DEFAULT_SNAPSHOT_HISTORY_FRAMERATE, MAX_SIZE_FOR_RATIONAL);
 							BITMAPINFOHEADER DstBmi;
 							memset(&DstBmi, 0, sizeof(BITMAPINFOHEADER));
 							DstBmi.biSize = sizeof(BITMAPINFOHEADER);
@@ -1117,17 +1115,21 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 		pAVRecVideo = NULL;
 	}
 
-	// Copy from temp to snapshots folder
-	::CopyFile(sVideoTempFileName, sVideoFileName, FALSE);
-
-	// Ftp upload
-	if (m_bSnapshotHistoryVideoFtp)
+	// If video has been created
+	if (::IsExistingFile(sVideoTempFileName))
 	{
-		CString sUploadDir(m_Time.Format(_T("%Y")) + _T("/") + m_Time.Format(_T("%m")) + _T("/") + m_Time.Format(_T("%d")));
-		hFTP = CVideoDeviceDoc::FTPUpload(	m_Config,
-											sVideoFileName, sUploadDir + _T("/") + ::GetShortFileName(sVideoFileName));
-		if (hFTP)
-			CloseHandle(hFTP);
+		// Copy from temp to snapshots folder
+		::CopyFile(sVideoTempFileName, sVideoFileName, FALSE);
+
+		// Ftp upload
+		if (m_bSnapshotHistoryVideoFtp)
+		{
+			CString sUploadDir(m_Time.Format(_T("%Y")) + _T("/") + m_Time.Format(_T("%m")) + _T("/") + m_Time.Format(_T("%d")));
+			HANDLE hFTP = CVideoDeviceDoc::FTPUpload(m_Config,
+				sVideoFileName, sUploadDir + _T("/") + ::GetShortFileName(sVideoFileName));
+			if (hFTP)
+				CloseHandle(hFTP);
+		}
 	}
 
 	// Set thread executed variable
@@ -1189,8 +1191,8 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	}
 
 	// Save to temp location
-	CVideoDeviceDoc::SaveJpegFast(&m_Dib, &m_MJPEGEncoder, sTempFileName, m_nSnapshotCompressionQuality);
-	CVideoDeviceDoc::SaveJpegFast(&DibThumb, &m_MJPEGThumbEncoder, sTempThumbFileName, m_nSnapshotCompressionQuality);
+	CVideoDeviceDoc::SaveJpegFast(&m_Dib, &m_MJPEGEncoder, sTempFileName, DEFAULT_SNAPSHOT_COMPR_QUALITY);
+	CVideoDeviceDoc::SaveJpegFast(&DibThumb, &m_MJPEGThumbEncoder, sTempThumbFileName, DEFAULT_SNAPSHOT_COMPR_QUALITY);
 	
 	// Live
 	::CopyFile(sTempFileName, sLiveFileName, FALSE);
@@ -1212,7 +1214,8 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 		}
 	}
 
-	// History
+	// We need the History jpgs to make the video file inside the snapshot video thread
+	// (history jpgs are deleted in snapshot video thread)
 	if (m_bSnapshotHistoryVideo)
 		::CopyFile(sTempFileName, sHistoryFileName, FALSE);
 
@@ -3685,8 +3688,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_sSnapshotLiveJpegThumbName = DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME;
 	m_nSnapshotRate = DEFAULT_SNAPSHOT_RATE;
 	m_nSnapshotRateMs = 0;
-	m_nSnapshotHistoryFrameRate = DEFAULT_SNAPSHOT_HISTORY_FRAMERATE;
-	m_nSnapshotCompressionQuality = DEFAULT_SNAPSHOT_COMPR_QUALITY;
 	m_nSnapshotThumbWidth = DEFAULT_SNAPSHOT_THUMB_WIDTH;
 	m_nSnapshotThumbHeight = DEFAULT_SNAPSHOT_THUMB_HEIGHT;
 	m_dwNextSnapshotUpTime = 0U;
@@ -4523,8 +4524,6 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_sSnapshotLiveJpegThumbName = pApp->GetProfileString(sSection, _T("SnapshotLiveJpegThumbName"), DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME);
 	m_nSnapshotRate = (int) pApp->GetProfileInt(sSection, _T("SnapshotRate"), DEFAULT_SNAPSHOT_RATE);
 	m_nSnapshotRateMs = (int) pApp->GetProfileInt(sSection, _T("SnapshotRateMs"), 0);
-	m_nSnapshotHistoryFrameRate = (int) pApp->GetProfileInt(sSection, _T("SnapshotHistoryFrameRate"), DEFAULT_SNAPSHOT_HISTORY_FRAMERATE);
-	m_nSnapshotCompressionQuality = (int) pApp->GetProfileInt(sSection, _T("SnapshotCompressionQuality"), DEFAULT_SNAPSHOT_COMPR_QUALITY);
 	m_nSnapshotThumbWidth = (int) pApp->GetProfileInt(sSection, _T("SnapshotThumbWidth"), DEFAULT_SNAPSHOT_THUMB_WIDTH);
 	m_nSnapshotThumbHeight = (int) pApp->GetProfileInt(sSection, _T("SnapshotThumbHeight"), DEFAULT_SNAPSHOT_THUMB_HEIGHT);
 	m_bSnapshotStartStop = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotStartStop"), FALSE);
@@ -4708,8 +4707,6 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileString(sSection, _T("SnapshotLiveJpegThumbName"), m_sSnapshotLiveJpegThumbName);
 	pApp->WriteProfileInt(sSection, _T("SnapshotRate"), m_nSnapshotRate);
 	pApp->WriteProfileInt(sSection, _T("SnapshotRateMs"), m_nSnapshotRateMs);
-	pApp->WriteProfileInt(sSection, _T("SnapshotHistoryFrameRate"), m_nSnapshotHistoryFrameRate);
-	pApp->WriteProfileInt(sSection, _T("SnapshotCompressionQuality"), m_nSnapshotCompressionQuality);
 	pApp->WriteProfileInt(sSection, _T("SnapshotThumbWidth"), m_nSnapshotThumbWidth);
 	pApp->WriteProfileInt(sSection, _T("SnapshotThumbHeight"), m_nSnapshotThumbHeight);
 	pApp->WriteProfileInt(sSection, _T("SnapshotStartStop"), (int)m_bSnapshotStartStop);
@@ -7686,8 +7683,6 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 		// Start Thread?
 		if (bDoSnapshot)
 		{
-			// Note: we need the history jpgs to make the video file inside the snapshot video thread,
-			// user unwanted history jpgs are deleted in snapshot video thread
 			m_SaveSnapshotThread.m_Dib = *pDib;
 			m_SaveSnapshotThread.m_bSnapshotHistoryVideo = m_bSnapshotHistoryVideo;
 			m_SaveSnapshotThread.m_bShowFrameTime = m_bShowFrameTime;
@@ -7696,7 +7691,6 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 			m_SaveSnapshotThread.m_bSnapshotLiveJpegFtp = m_bSnapshotLiveJpegFtp;
 			m_SaveSnapshotThread.m_nSnapshotThumbWidth = m_nSnapshotThumbWidth;
 			m_SaveSnapshotThread.m_nSnapshotThumbHeight = m_nSnapshotThumbHeight;
-			m_SaveSnapshotThread.m_nSnapshotCompressionQuality = m_nSnapshotCompressionQuality;
 			m_SaveSnapshotThread.m_Time = Time;
 			m_SaveSnapshotThread.m_sSnapshotAutoSaveDir = m_sRecordAutoSaveDir;
 			::EnterCriticalSection(&m_csSnapshotConfiguration);
@@ -7722,7 +7716,6 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 		if (m_SaveSnapshotVideoThread.m_ThreadExecutedForTime < Yesterday)
 		{
 			m_SaveSnapshotVideoThread.m_bSnapshotHistoryVideoFtp = m_bSnapshotHistoryVideoFtp;
-			m_SaveSnapshotVideoThread.m_dSnapshotHistoryFrameRate = (double)m_nSnapshotHistoryFrameRate;
 			m_SaveSnapshotVideoThread.m_Time = Yesterday;
 			m_SaveSnapshotVideoThread.m_sMetadataTitle = GetAssignedDeviceName() + _T(" ") + ::MakeDateLocalFormat(Yesterday);
 			m_SaveSnapshotVideoThread.m_sSnapshotAutoSaveDir = m_sRecordAutoSaveDir;
@@ -7784,7 +7777,7 @@ void CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 
 	// Save to JPEG File
 	CMJPEGEncoder MJPEGEncoder;
-	BOOL res = CVideoDeviceDoc::SaveJpegFast(&Dib, &MJPEGEncoder, sFileName, m_nSnapshotCompressionQuality);
+	BOOL res = CVideoDeviceDoc::SaveJpegFast(&Dib, &MJPEGEncoder, sFileName, DEFAULT_JPEGCOMPRESSION);
 
 	// Clear flag
 	m_bDoEditSnapshot = FALSE;
