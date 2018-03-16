@@ -283,14 +283,3 @@ UAC NSIS installer plugin
 
 - Added silent install switches to the UAC.nsh include file:
   MessageBox ... /SD IDOK
-
-
-Web interface
--------------
-
-- Using Prototype 1.7 with Scriptaculous 1.9.0
-  (compressed prototype.js file with YUI Compressor 2.4.6)
-  Adapted slider.js to work also when clicking on the track
-  
-- Automatic Timezone Detection Using JavaScript ver 1.0.6
-  http://pellepim.bitbucket.org/jstz/
