@@ -378,13 +378,7 @@ void CMovementDetectionPage::OnTimer(UINT nIDEvent)
 						{
 							m_pDoc->m_pDxCapture->Stop();
 							m_pDoc->m_pDxCapture->SetFrameRate(m_pDoc->m_dFrameRate);
-							if (m_pDoc->m_pDxCapture->Run())
-							{
-								// Some devices need that...
-								// Process frame must still be stopped when calling Dx Stop()!
-								m_pDoc->m_pDxCapture->Stop();
-								m_pDoc->m_pDxCapture->Run();
-							}
+							m_pDoc->m_pDxCapture->Run();
 						}
 						else if (m_pDoc->m_pVideoNetCom)
 						{

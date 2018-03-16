@@ -4858,7 +4858,7 @@ void CVideoDeviceDoc::OpenDxVideoDevice(int nId, CString sDevicePathName, CStrin
 
 		// Start capturing video data
 		StopProcessFrame(PROCESSFRAME_DXOPEN);
-		if (m_pDxCapture->Run())
+		if (bOK = m_pDxCapture->Run())
 		{
 			// Select Input Id for Capture Devices with multiple inputs (S-Video, TV-Tuner,...)
 			if (m_nDeviceInputId >= 0 && m_nDeviceInputId < m_pDxCapture->GetInputsCount())
@@ -4868,11 +4868,6 @@ void CVideoDeviceDoc::OpenDxVideoDevice(int nId, CString sDevicePathName, CStrin
 			}
 			else
 				m_nDeviceInputId = m_pDxCapture->SetDefaultInput();
-
-			// Some devices need that...
-			// Process frame must still be stopped when calling Dx Stop()!
-			m_pDxCapture->Stop();
-			bOK = m_pDxCapture->Run();
 
 			// Restart process frame
 			StartProcessFrame(PROCESSFRAME_DXOPEN);

@@ -128,11 +128,6 @@ LONG CVideoDeviceView::OnThreadSafeDVChangeVideoFormat(WPARAM wparam, LPARAM lpa
 				// Restart
 				if (pDoc->m_pDxCapture->Run())
 				{
-					// Some devices need that...
-					// Process frame must still be stopped when calling Dx Stop()!
-					pDoc->m_pDxCapture->Stop();
-					pDoc->m_pDxCapture->Run();
-
 					// Restart process frame
 					pDoc->StartProcessFrame(PROCESSFRAME_DVFORMATDIALOG);
 				}
@@ -948,11 +943,6 @@ BOOL CVideoDeviceView::ReOpenDxDevice()
 				}
 				else
 					pDoc->m_nDeviceInputId = pDoc->m_pDxCapture->SetDefaultInput();
-
-				// Some devices need that...
-				// Process frame must still be stopped when calling Dx Stop()!
-				pDoc->m_pDxCapture->Stop();
-				pDoc->m_pDxCapture->Run();
 
 				return TRUE;
 			}
