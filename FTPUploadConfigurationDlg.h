@@ -9,12 +9,6 @@
 #ifdef VIDEODEVICEDOC
 
 // FTP upload configuration structure
-enum FilesToUploadType
-{
-	FILES_TO_UPLOAD_VIDEO		= 0,
-	FILES_TO_UPLOAD_GIF			= 1,
-	FILES_TO_UPLOAD_VIDEO_GIF	= 2
-};
 typedef struct tagFTPUploadConfigurationStruct
 {
 	CString			m_sHost;
@@ -22,7 +16,6 @@ typedef struct tagFTPUploadConfigurationStruct
 	int				m_nPort;
 	CString			m_sUsername;
 	CString			m_sPassword;
-	FilesToUploadType m_FilesToUpload;
 } FTPUploadConfigurationStruct;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -32,10 +25,11 @@ class CFTPUploadConfigurationDlg : public CDialog
 {
 // Construction
 public:
-	CFTPUploadConfigurationDlg(UINT idd);
+	CFTPUploadConfigurationDlg(CWnd* pParent = NULL);
 	FTPUploadConfigurationStruct m_FTPUploadConfiguration;
 // Dialog Data
 	//{{AFX_DATA(CFTPUploadConfigurationDlg)
+	enum { IDD = IDD_FTP_CONFIGURATION };
 	//}}AFX_DATA
 
 // Overrides

@@ -48,7 +48,6 @@
 #define IDD_SHRINK_OPEN_DOCS            181
 #define IDD_SENDMAIL_OPEN_DOCS          182
 #define IDD_SENDMAIL_CONFIGURATION      183
-#define IDD_MOVDET_FTP_CONFIGURATION    184
 #define IDD_HOSTPORT                    185
 #define IDD_MOVDET                      187
 #define IDD_REDEYE                      188
@@ -107,7 +106,7 @@
 #define IDD_SNAPSHOT                    297
 #define IDI_TIF                         297
 #define IDI_PNG                         298
-#define IDD_SNAPSHOT_FTP_CONFIGURATION  299
+#define IDD_FTP_CONFIGURATION           299
 #define IDI_PCX                         299
 #define IDD_SETTINGS_VIDEODEVICEDOC     300
 #define IDI_EMF                         300
@@ -1232,7 +1231,6 @@
 #define IDS_MULTILANG_1234              1234
 #define IDC_FTP_REMOTEDIR               1234
 #define IDS_MULTILANG_1235              1235
-#define IDC_FILES_TO_UPLOAD             1235
 #define IDS_MULTILANG_1236              1236
 #define IDS_MULTILANG_1237              1237
 #define IDC_COMBO_HOST                  1237
@@ -2748,14 +2746,7 @@
 #define IDC_STATIC2261                  2261
 #define IDC_STATIC2262                  2262
 #define IDC_STATIC2263                  2263
-#define IDC_STATIC2264                  2264
 #define IDC_STATIC2265                  2265
-#define IDC_STATIC2266                  2266
-#define IDC_STATIC2267                  2267
-#define IDC_STATIC2268                  2268
-#define IDC_STATIC2269                  2269
-#define IDC_STATIC2270                  2270
-#define IDC_STATIC2271                  2271
 #define IDC_STATIC2272                  2272
 #define IDC_STATIC_IP                   2272
 #define IDC_STATIC2273                  2273
@@ -3000,7 +2991,6 @@
 #define IDC_STATIC2544                  2544
 #define IDC_CAM_FOLDERS                 2545
 #define IDC_COMBOBOX_DETECTION_SCHEDULER 2545
-#define IDC_EDIT_EXEC_HELP              2546
 #define IDC_CHECK_SCHEDULER_SUNDAY      2547
 #define IDC_CHECK_SCHEDULER_MONDAY      2548
 #define IDC_CHECK_SCHEDULER_TUESDAY     2549

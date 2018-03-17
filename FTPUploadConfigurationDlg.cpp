@@ -17,8 +17,8 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CFTPUploadConfigurationDlg dialog
 
-CFTPUploadConfigurationDlg::CFTPUploadConfigurationDlg(UINT idd)
-	: CDialog(idd, NULL)
+CFTPUploadConfigurationDlg::CFTPUploadConfigurationDlg(CWnd* pParent /*=NULL*/)
+	: CDialog(CFTPUploadConfigurationDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CFTPUploadConfigurationDlg)
 		// NOTE: the ClassWizard will add member initialization here
@@ -65,16 +65,6 @@ BOOL CFTPUploadConfigurationDlg::OnInitDialog()
 	pEdit->SetWindowText(m_FTPUploadConfiguration.m_sUsername);
 	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
 	pEdit->SetWindowText(m_FTPUploadConfiguration.m_sPassword);
-	
-	// Files to upload (optional control)
-	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_FILES_TO_UPLOAD);
-	if (pComboBox)
-	{
-		pComboBox->AddString(ML_STRING(1883, "Saved Full Video"));
-		pComboBox->AddString(ML_STRING(1882, "Saved Small Video"));
-		pComboBox->AddString(ML_STRING(1883, "Saved Full Video") + _T(" + ") + ML_STRING(1882, "Saved Small Video"));
-		pComboBox->SetCurSel((int)m_FTPUploadConfiguration.m_FilesToUpload);
-	}
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -108,10 +98,6 @@ void CFTPUploadConfigurationDlg::CopyToStruct()
 	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
 	pEdit->GetWindowText(sText);
 	m_FTPUploadConfiguration.m_sPassword = sText;
-
-	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_FILES_TO_UPLOAD);
-	if (pComboBox)
-		m_FTPUploadConfiguration.m_FilesToUpload = (FilesToUploadType)pComboBox->GetCurSel();
 }
 
 void CFTPUploadConfigurationDlg::OnOK() 

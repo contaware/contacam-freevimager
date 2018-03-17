@@ -44,7 +44,6 @@ protected:
 	// Helper functions
 	void UpdateVideoQualityInfo();
 	void UpdateDetectionStartStopTimes();
-	void UpdateExecHelp();
 
 	// Dialog functions
 	virtual void DoDataExchange(CDataExchange* pDX);

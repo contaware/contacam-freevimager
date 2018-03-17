@@ -577,7 +577,34 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 
 		// FTP Upload
 		if (m_pDoc->m_bFTPUploadMovementDetection)
-			FTPUploadMovementDetection(FirstTime, sVideoFileName, sGIFFileName);
+		{
+			HANDLE hFTP;
+			CString sUploadDir = FirstTime.Format(_T("%Y")) + _T("/") + FirstTime.Format(_T("%m")) + _T("/") + FirstTime.Format(_T("%d"));
+			if (::GetFileSize64(sVideoFileName).QuadPart > 0 && ::GetFileSize64(sGIFFileName).QuadPart > 0)
+			{
+				hFTP = CVideoDeviceDoc::FTPUpload(m_pDoc->m_MovDetFTPUploadConfiguration,
+					sVideoFileName, sUploadDir + _T("/") + ::GetShortFileName(sVideoFileName),
+					sGIFFileName, sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
+				if (hFTP)
+					CloseHandle(hFTP);
+			}
+			else if (::GetFileSize64(sVideoFileName).QuadPart > 0)
+			{
+				hFTP = CVideoDeviceDoc::FTPUpload(m_pDoc->m_MovDetFTPUploadConfiguration,
+					sVideoFileName,
+					sUploadDir + _T("/") + ::GetShortFileName(sVideoFileName));
+				if (hFTP)
+					CloseHandle(hFTP);
+			}
+			else if (::GetFileSize64(sGIFFileName).QuadPart > 0)
+			{
+				hFTP = CVideoDeviceDoc::FTPUpload(m_pDoc->m_MovDetFTPUploadConfiguration,
+					sGIFFileName,
+					sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
+				if (hFTP)
+					CloseHandle(hFTP);
+			}
+		}
 
 		// Execute Command After Save
 		if (m_pDoc->m_bExecCommandMovementDetection && m_pDoc->m_nExecModeMovementDetection == 1)
@@ -623,43 +650,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 	}
 	ASSERT(FALSE); // should never end up here...
 	return 0;
-}
-
-void CVideoDeviceDoc::CSaveFrameListThread::FTPUploadMovementDetection(	const CTime& Time,
-																		const CString& sVideoFileName,
-																		const CString& sGIFFileName)
-{
-	HANDLE hFTP;
-	CString sUploadDir = Time.Format(_T("%Y")) + _T("/") + Time.Format(_T("%m")) + _T("/") + Time.Format(_T("%d"));
-	switch (m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload)
-	{
-		case FILES_TO_UPLOAD_VIDEO :
-			hFTP = CVideoDeviceDoc::FTPUpload(	m_pDoc->m_MovDetFTPUploadConfiguration,
-												sVideoFileName,
-												sUploadDir + _T("/") + ::GetShortFileName(sVideoFileName));
-			if (hFTP)
-				CloseHandle(hFTP);
-			break;
-
-		case FILES_TO_UPLOAD_GIF :
-			hFTP = CVideoDeviceDoc::FTPUpload(	m_pDoc->m_MovDetFTPUploadConfiguration,
-												sGIFFileName,
-												sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
-			if (hFTP)
-				CloseHandle(hFTP);
-			break;
-
-		case FILES_TO_UPLOAD_VIDEO_GIF :
-			hFTP = CVideoDeviceDoc::FTPUpload(	m_pDoc->m_MovDetFTPUploadConfiguration,
-												sVideoFileName, sUploadDir + _T("/") + ::GetShortFileName(sVideoFileName),
-												sGIFFileName, sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
-			if (hFTP)
-				CloseHandle(hFTP);
-			break;
-
-		default :
-			break;
-	}
 }
 
 void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors,
@@ -3808,13 +3798,11 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_MovDetFTPUploadConfiguration.m_nPort = 21;
 	m_MovDetFTPUploadConfiguration.m_sUsername = _T("");
 	m_MovDetFTPUploadConfiguration.m_sPassword = _T("");
-	m_MovDetFTPUploadConfiguration.m_FilesToUpload = FILES_TO_UPLOAD_VIDEO_GIF;
 	m_SnapshotFTPUploadConfiguration.m_sHost = _T("");
 	m_SnapshotFTPUploadConfiguration.m_sRemoteDir = _T("");
 	m_SnapshotFTPUploadConfiguration.m_nPort = 21;
 	m_SnapshotFTPUploadConfiguration.m_sUsername = _T("");
 	m_SnapshotFTPUploadConfiguration.m_sPassword = _T("");
-	m_SnapshotFTPUploadConfiguration.m_FilesToUpload = FILES_TO_UPLOAD_VIDEO; // Not used
 
 	// Init Command Execution on Detection Critical Section
 	::InitializeCriticalSection(&m_csExecCommandMovementDetection);
@@ -4453,11 +4441,6 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_MovDetFTPUploadConfiguration.m_nPort = (int) pApp->GetProfileInt(sSection, _T("MovDetFTPPort"), 21);
 	m_MovDetFTPUploadConfiguration.m_sUsername = pApp->GetSecureProfileString(sSection, _T("MovDetFTPUsernameExportable"));
 	m_MovDetFTPUploadConfiguration.m_sPassword = pApp->GetSecureProfileString(sSection, _T("MovDetFTPPasswordExportable"));
-	m_MovDetFTPUploadConfiguration.m_FilesToUpload = (FilesToUploadType) pApp->GetProfileInt(sSection, _T("MovDetFilesToUpload"), FILES_TO_UPLOAD_VIDEO_GIF);
-	if (m_MovDetFTPUploadConfiguration.m_FilesToUpload < FILES_TO_UPLOAD_VIDEO)
-		m_MovDetFTPUploadConfiguration.m_FilesToUpload = FILES_TO_UPLOAD_VIDEO;
-	else if (m_MovDetFTPUploadConfiguration.m_FilesToUpload > FILES_TO_UPLOAD_VIDEO_GIF)
-		m_MovDetFTPUploadConfiguration.m_FilesToUpload = FILES_TO_UPLOAD_VIDEO_GIF;
 	m_SnapshotFTPUploadConfiguration.m_sHost = pApp->GetProfileString(sSection, _T("SnapshotFTPHost"), _T(""));
 	m_SnapshotFTPUploadConfiguration.m_sRemoteDir = pApp->GetProfileString(sSection, _T("SnapshotFTPRemoteDir"), _T(""));
 	m_SnapshotFTPUploadConfiguration.m_nPort = (int) pApp->GetProfileInt(sSection, _T("SnapshotFTPPort"), 21);
@@ -4681,7 +4664,6 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("MovDetFTPPort"), m_MovDetFTPUploadConfiguration.m_nPort);
 	pApp->WriteSecureProfileString(sSection, _T("MovDetFTPUsernameExportable"), m_MovDetFTPUploadConfiguration.m_sUsername);
 	pApp->WriteSecureProfileString(sSection, _T("MovDetFTPPasswordExportable"), m_MovDetFTPUploadConfiguration.m_sPassword);
-	pApp->WriteProfileInt(sSection, _T("MovDetFilesToUpload"), (int)m_MovDetFTPUploadConfiguration.m_FilesToUpload);
 	pApp->WriteProfileString(sSection, _T("SnapshotFTPHost"), m_SnapshotFTPUploadConfiguration.m_sHost);
 	pApp->WriteProfileString(sSection, _T("SnapshotFTPRemoteDir"), m_SnapshotFTPUploadConfiguration.m_sRemoteDir);
 	pApp->WriteProfileInt(sSection, _T("SnapshotFTPPort"), m_SnapshotFTPUploadConfiguration.m_nPort);

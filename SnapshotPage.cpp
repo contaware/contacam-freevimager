@@ -213,7 +213,7 @@ void CSnapshotPage::OnCheckFtpSnapshotHistoryVideo()
 void CSnapshotPage::OnFtpConfigure()
 {
 	// FTP Config Dialog
-	CFTPUploadConfigurationDlg dlg(IDD_SNAPSHOT_FTP_CONFIGURATION);
+	CFTPUploadConfigurationDlg dlg;
 	dlg.m_FTPUploadConfiguration = m_pDoc->m_SnapshotFTPUploadConfiguration;
 	if (dlg.DoModal() == IDOK)
 	{

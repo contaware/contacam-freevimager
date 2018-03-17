@@ -298,7 +298,6 @@ BOOL CMovementDetectionPage::OnInitDialog()
 		pCheckWaitExecCommandMovementDetection->SetCheck(1);
 	else
 		pCheckWaitExecCommandMovementDetection->SetCheck(0);
-	UpdateExecHelp();
 
 	// Set Page Pointer to this
 	m_pDoc->m_pMovementDetectionPage = this;
@@ -761,7 +760,7 @@ void CMovementDetectionPage::OnFtpConfigure()
 	m_pDoc->m_SaveFrameListThread.Kill();
 
 	// FTP Config Dialog
-	CFTPUploadConfigurationDlg dlg(IDD_MOVDET_FTP_CONFIGURATION);
+	CFTPUploadConfigurationDlg dlg;
 	dlg.m_FTPUploadConfiguration = m_pDoc->m_MovDetFTPUploadConfiguration;
 	if (dlg.DoModal() == IDOK)
 		m_pDoc->m_MovDetFTPUploadConfiguration = dlg.m_FTPUploadConfiguration;
@@ -776,22 +775,10 @@ void CMovementDetectionPage::OnExecMovementDetection()
 	m_pDoc->m_bExecCommandMovementDetection = pCheck->GetCheck() > 0;
 }
 
-void CMovementDetectionPage::UpdateExecHelp()
-{
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_EXEC_HELP);
-	CString s;
-	if (m_pDoc->m_nExecModeMovementDetection == 0)
-		s = ML_STRING(1719, "Example to play a sound\r\nCmd\tPath to vlc.exe\r\nParams\t-I dummy --dummy-quiet --play-and-exit\r\n\t--no-loop --no-repeat\r\n\t\"audio file path\"");
-	else
-		s = ML_STRING(1862, "Params can include case sensitive variables\r\n%sec% %min% %hour%\r\n%day% %month% %year%\r\n%fullvideo% %smallvideo% %counter%");
-	pEdit->SetWindowText(s);
-}
-
 void CMovementDetectionPage::OnSelchangeExecmodeMovementDetection()
 {
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_EXECMODE_MOVEMENT_DETECTION);
 	m_pDoc->m_nExecModeMovementDetection = pComboBox->GetCurSel();
-	UpdateExecHelp();
 }
 
 void CMovementDetectionPage::OnChangeEditExe()

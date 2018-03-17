@@ -467,9 +467,6 @@ public:
 									const CTime& RefTime,
 									DWORD dwRefUpTime,
 									const CString& sMovDetSavesCount);
-			void FTPUploadMovementDetection(const CTime& Time,
-											const CString& sVideoFileName,
-											const CString& sGIFFileName);
 
 			CVideoDeviceDoc* m_pDoc;
 			CDib::LIST* m_pFrameList;
