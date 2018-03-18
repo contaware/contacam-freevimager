@@ -22,12 +22,12 @@ static char THIS_FILE[] = __FILE__;
 #ifdef VIDEODEVICEDOC
 
 /////////////////////////////////////////////////////////////////////////////
-// CMovementDetectionPage property page
+// CVideoPage property page
 
-IMPLEMENT_DYNCREATE(CMovementDetectionPage, CPropertyPage)
+IMPLEMENT_DYNCREATE(CVideoPage, CPropertyPage)
 
-CMovementDetectionPage::CMovementDetectionPage()
-	: CPropertyPage(CMovementDetectionPage::IDD)
+CVideoPage::CVideoPage()
+	: CPropertyPage(CVideoPage::IDD)
 {
 	m_pDoc = NULL;
 	m_bInOnTimer = FALSE;
@@ -35,17 +35,17 @@ CMovementDetectionPage::CMovementDetectionPage()
 	m_nFrameRateChangeTimeout = FRAMERATE_CHANGE_TIMEOUT;
 }
 
-void CMovementDetectionPage::SetDoc(CVideoDeviceDoc* pDoc)
+void CVideoPage::SetDoc(CVideoDeviceDoc* pDoc)
 {
 	ASSERT(pDoc);
 	m_pDoc = pDoc;
 }
 
-CMovementDetectionPage::~CMovementDetectionPage()
+CVideoPage::~CVideoPage()
 {
 }
 
-void CMovementDetectionPage::DoDataExchange(CDataExchange* pDX)
+void CVideoPage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
 	DDX_Text(pDX, IDC_SECONDS_BEFORE_MOVEMENT_BEGIN, m_nSecondsBeforeMovementBegin);
@@ -63,7 +63,7 @@ void CMovementDetectionPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_VIDEO_COMPRESSION_QUALITY, m_VideoRecQuality);
 }
 
-BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
+BEGIN_MESSAGE_MAP(CVideoPage, CPropertyPage)
 	ON_WM_DESTROY()
 	ON_EN_CHANGE(IDC_FRAMERATE, OnChangeFrameRate)
 	ON_WM_TIMER()
@@ -106,7 +106,7 @@ BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_WAIT_EXEC_COMMAND, OnCheckWaitExecCommand)
 END_MESSAGE_MAP()
 
-BOOL CMovementDetectionPage::OnInitDialog() 
+BOOL CVideoPage::OnInitDialog() 
 {
 	// Init vars
 	m_nSecondsBeforeMovementBegin = m_pDoc->m_nMilliSecondsRecBeforeMovementBegin / 1000;
@@ -124,8 +124,8 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	pComboBoxDetectionScheduler->AddString(ML_STRING(1875, "Recording enabled:"));
 	pComboBoxDetectionScheduler->AddString(ML_STRING(1876, "Recording disabled:"));
 	CComboBox* pComboBoxExexMode = (CComboBox*)GetDlgItem(IDC_EXECMODE_MOVEMENT_DETECTION);
-	pComboBoxExexMode->AddString(ML_STRING(1842, "when Recording starts"));
-	pComboBoxExexMode->AddString(ML_STRING(1843, "when Saving done"));
+	pComboBoxExexMode->AddString(ML_STRING(1842, "Recording starts"));
+	pComboBoxExexMode->AddString(ML_STRING(1843, "Saving done"));
 
 	// This calls UpdateData(FALSE)
 	CPropertyPage::OnInitDialog();
@@ -300,7 +300,7 @@ BOOL CMovementDetectionPage::OnInitDialog()
 		pCheckWaitExecCommandMovementDetection->SetCheck(0);
 
 	// Set Page Pointer to this
-	m_pDoc->m_pMovementDetectionPage = this;
+	m_pDoc->m_pVideoPage = this;
 	
 	// Set Timer
 	SetTimer(ID_TIMER_MOVDETPAGE, MOVDETPAGE_TIMER_MS, NULL);
@@ -309,7 +309,7 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CMovementDetectionPage::OnDestroy() 
+void CVideoPage::OnDestroy() 
 {
 	// Kill timer
 	KillTimer(ID_TIMER_MOVDETPAGE);
@@ -318,10 +318,10 @@ void CMovementDetectionPage::OnDestroy()
 	CPropertyPage::OnDestroy();
 
 	// Set Page Pointer to NULL
-	m_pDoc->m_pMovementDetectionPage = NULL;
+	m_pDoc->m_pVideoPage = NULL;
 }
 
-void CMovementDetectionPage::OnChangeFrameRate()
+void CVideoPage::OnChangeFrameRate()
 {
 	CString sFrameRate;
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_FRAMERATE);
@@ -335,7 +335,7 @@ void CMovementDetectionPage::OnChangeFrameRate()
 	}
 }
 
-void CMovementDetectionPage::OnTimer(UINT nIDEvent)
+void CVideoPage::OnTimer(UINT nIDEvent)
 {
 	// m_bInOnTimer avoids that a message pumping routine (like a modal dialog)
 	// inside this OnTimer() calls OnTimer() again!
@@ -413,37 +413,37 @@ void CMovementDetectionPage::OnTimer(UINT nIDEvent)
 	CPropertyPage::OnTimer(nIDEvent);
 }
 
-void CMovementDetectionPage::OnChangeSecondsBeforeMovementBegin()
+void CVideoPage::OnChangeSecondsBeforeMovementBegin()
 {
 	if (UpdateData(TRUE))
 		m_pDoc->m_nMilliSecondsRecBeforeMovementBegin = m_nSecondsBeforeMovementBegin * 1000;
 }
 
-void CMovementDetectionPage::OnChangeSecondsAfterMovementEnd()
+void CVideoPage::OnChangeSecondsAfterMovementEnd()
 {
 	if (UpdateData(TRUE))
 		m_pDoc->m_nMilliSecondsRecAfterMovementEnd = m_nSecondsAfterMovementEnd * 1000;
 }
 
-void CMovementDetectionPage::OnChangeEditDetectionMinLength()
+void CVideoPage::OnChangeEditDetectionMinLength()
 {
 	if (UpdateData(TRUE))
 		m_pDoc->m_nDetectionMinLengthMilliSeconds = m_nDetectionMinLengthSeconds * 1000;
 }
 
-void CMovementDetectionPage::OnChangeEditDetectionMaxFrames()
+void CVideoPage::OnChangeEditDetectionMaxFrames()
 {
 	if (UpdateData(TRUE))
 		m_pDoc->m_nDetectionMaxFrames = m_nDetectionMaxFrames;
 }
 
-void CMovementDetectionPage::OnCheckLiveRotate180()
+void CVideoPage::OnCheckLiveRotate180()
 {
 	if (UpdateData(TRUE))
 		m_pDoc->m_bRotate180 = m_bRotate180;
 }
 
-void CMovementDetectionPage::OnVideoFormat()
+void CVideoPage::OnVideoFormat()
 {
 	// Open the video format dialog
 	m_pDoc->VideoFormatDialog();
@@ -459,7 +459,7 @@ void CMovementDetectionPage::OnVideoFormat()
 	}
 }
 
-void CMovementDetectionPage::OnVideoSource()
+void CVideoPage::OnVideoSource()
 {
 	if (m_pDoc->m_pDxCapture)
 	{
@@ -478,7 +478,7 @@ void CMovementDetectionPage::OnVideoSource()
 	}
 }
 
-void CMovementDetectionPage::OnVideoInput()
+void CVideoPage::OnVideoInput()
 {
 	// Open the video input dialog
 	if (m_pDoc->m_pDxCapture)
@@ -488,14 +488,14 @@ void CMovementDetectionPage::OnVideoInput()
 	}
 }
 
-void CMovementDetectionPage::OnVideoTuner()
+void CVideoPage::OnVideoTuner()
 {
 	// Open the tv tuner dialog
 	if (m_pDoc->m_pDxCapture)
 		m_pDoc->m_pDxCapture->ShowVideoTVTunerDlg();
 }
 
-void CMovementDetectionPage::OnRecAudio()
+void CVideoPage::OnRecAudio()
 {
 	// Stop Save Frame List Thread
 	m_pDoc->m_SaveFrameListThread.Kill();
@@ -520,13 +520,13 @@ void CMovementDetectionPage::OnRecAudio()
 	m_pDoc->m_SaveFrameListThread.Start();
 }
 
-void CMovementDetectionPage::OnCheckAudioListen()
+void CVideoPage::OnCheckAudioListen()
 {
 	if (UpdateData(TRUE))
 		m_pDoc->m_bAudioListen = m_bAudioListen;
 }
 
-void CMovementDetectionPage::OnRecAudioFromStream()
+void CVideoPage::OnRecAudioFromStream()
 {
 	// Stop Save Frame List Thread
 	m_pDoc->m_SaveFrameListThread.Kill();
@@ -541,7 +541,7 @@ void CMovementDetectionPage::OnRecAudioFromStream()
 	m_pDoc->m_SaveFrameListThread.Start();
 }
 
-void CMovementDetectionPage::OnRecAudioFromSource()
+void CVideoPage::OnRecAudioFromSource()
 {
 	// Stop Save Frame List Thread
 	m_pDoc->m_SaveFrameListThread.Kill();
@@ -556,7 +556,7 @@ void CMovementDetectionPage::OnRecAudioFromSource()
 	m_pDoc->m_SaveFrameListThread.Start();
 }
 
-void CMovementDetectionPage::OnAudioInput()
+void CVideoPage::OnAudioInput()
 {
 	m_pDoc->m_CaptureAudioThread.AudioInSourceDialog();
 }
@@ -582,13 +582,13 @@ audio-rendering endpoint devices only.
 It does not display volume controls for
 audio-capture devices.
 */
-void CMovementDetectionPage::OnAudioMixer()
+void CVideoPage::OnAudioMixer()
 {
 	::ShellExecute(NULL, NULL,
 		_T("control.exe"), _T("mmsys.cpl,,1"), NULL, SW_SHOWNORMAL);
 }
 
-void CMovementDetectionPage::UpdateDetectionStartStopTimes()
+void CVideoPage::UpdateDetectionStartStopTimes()
 {
 	if (m_pDoc->m_nDetectionStartStop > 0)
 	{
@@ -610,70 +610,70 @@ void CMovementDetectionPage::UpdateDetectionStartStopTimes()
 	}
 }
 
-void CMovementDetectionPage::OnCbnSelchangeComboboxDetectionScheduler()
+void CVideoPage::OnCbnSelchangeComboboxDetectionScheduler()
 {
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBOBOX_DETECTION_SCHEDULER);
 	m_pDoc->m_nDetectionStartStop = pComboBox->GetCurSel();
 	UpdateDetectionStartStopTimes();
 }
 
-void CMovementDetectionPage::OnCheckSchedulerSunday()
+void CVideoPage::OnCheckSchedulerSunday()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_SUNDAY);
 	pCheck->GetCheck() == 0 ? m_pDoc->m_bDetectionSunday = FALSE : m_pDoc->m_bDetectionSunday = TRUE;
 }
 
-void CMovementDetectionPage::OnCheckSchedulerMonday()
+void CVideoPage::OnCheckSchedulerMonday()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_MONDAY);
 	pCheck->GetCheck() == 0 ? m_pDoc->m_bDetectionMonday = FALSE : m_pDoc->m_bDetectionMonday = TRUE;
 }
 
-void CMovementDetectionPage::OnCheckSchedulerTuesday()
+void CVideoPage::OnCheckSchedulerTuesday()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_TUESDAY);
 	pCheck->GetCheck() == 0 ? m_pDoc->m_bDetectionTuesday = FALSE : m_pDoc->m_bDetectionTuesday = TRUE;
 }
 
-void CMovementDetectionPage::OnCheckSchedulerWednesday()
+void CVideoPage::OnCheckSchedulerWednesday()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_WEDNESDAY);
 	pCheck->GetCheck() == 0 ? m_pDoc->m_bDetectionWednesday = FALSE : m_pDoc->m_bDetectionWednesday = TRUE;
 }
 
-void CMovementDetectionPage::OnCheckSchedulerThursday()
+void CVideoPage::OnCheckSchedulerThursday()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_THURSDAY);
 	pCheck->GetCheck() == 0 ? m_pDoc->m_bDetectionThursday = FALSE : m_pDoc->m_bDetectionThursday = TRUE;
 }
 
-void CMovementDetectionPage::OnCheckSchedulerFriday()
+void CVideoPage::OnCheckSchedulerFriday()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_FRIDAY);
 	pCheck->GetCheck() == 0 ? m_pDoc->m_bDetectionFriday = FALSE : m_pDoc->m_bDetectionFriday = TRUE;
 }
 
-void CMovementDetectionPage::OnCheckSchedulerSaturday()
+void CVideoPage::OnCheckSchedulerSaturday()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_SATURDAY);
 	pCheck->GetCheck() == 0 ? m_pDoc->m_bDetectionSaturday = FALSE : m_pDoc->m_bDetectionSaturday = TRUE;
 }
 
-void CMovementDetectionPage::OnDatetimechangeTimeDailyStart(NMHDR* pNMHDR, LRESULT* pResult)
+void CVideoPage::OnDatetimechangeTimeDailyStart(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	if (UpdateData(TRUE))
 		UpdateDetectionStartStopTimes();
 	*pResult = 0;
 }
 
-void CMovementDetectionPage::OnDatetimechangeTimeDailyStop(NMHDR* pNMHDR, LRESULT* pResult)
+void CVideoPage::OnDatetimechangeTimeDailyStop(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	if (UpdateData(TRUE))
 		UpdateDetectionStartStopTimes();
 	*pResult = 0;
 }
 
-void CMovementDetectionPage::UpdateVideoQualityInfo()
+void CVideoPage::UpdateVideoQualityInfo()
 {
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY_INFO);
 	CString sQuality;
@@ -687,7 +687,7 @@ void CMovementDetectionPage::UpdateVideoQualityInfo()
 	pEdit->SetWindowText(sQuality);
 }
 
-void CMovementDetectionPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
+void CVideoPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
 	if (pScrollBar)
 	{
@@ -712,19 +712,19 @@ void CMovementDetectionPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScr
 	CPropertyPage::OnHScroll(nSBCode, nPos, (CScrollBar*)pScrollBar);
 }
 
-void CMovementDetectionPage::OnSaveVideoMovementDetection()
+void CVideoPage::OnSaveVideoMovementDetection()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_SAVE_VIDEO_MOVEMENT_DETECTION);
 	m_pDoc->m_bSaveVideoMovementDetection = pCheck->GetCheck() > 0;
 }
 
-void CMovementDetectionPage::OnSaveAnimGifMovementDetection()
+void CVideoPage::OnSaveAnimGifMovementDetection()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_SAVE_ANIMATEDGIF_MOVEMENT_DETECTION);
 	m_pDoc->m_bSaveAnimGIFMovementDetection = pCheck->GetCheck() > 0;
 }
 
-void CMovementDetectionPage::OnAnimatedgifSize()
+void CVideoPage::OnAnimatedgifSize()
 {
 	// Stop Save Frame List Thread
 	m_pDoc->m_SaveFrameListThread.Kill();
@@ -748,13 +748,13 @@ void CMovementDetectionPage::OnAnimatedgifSize()
 	m_pDoc->m_SaveFrameListThread.Start();
 }
 
-void CMovementDetectionPage::OnFtpMovementDetection()
+void CVideoPage::OnFtpMovementDetection()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_FTP_MOVEMENT_DETECTION);
 	m_pDoc->m_bFTPUploadMovementDetection = pCheck->GetCheck() > 0;
 }
 
-void CMovementDetectionPage::OnFtpConfigure()
+void CVideoPage::OnFtpConfigure()
 {
 	// Stop Save Frame List Thread
 	m_pDoc->m_SaveFrameListThread.Kill();
@@ -769,19 +769,19 @@ void CMovementDetectionPage::OnFtpConfigure()
 	m_pDoc->m_SaveFrameListThread.Start();
 }
 
-void CMovementDetectionPage::OnExecMovementDetection()
+void CVideoPage::OnExecMovementDetection()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_EXEC_MOVEMENT_DETECTION);
 	m_pDoc->m_bExecCommandMovementDetection = pCheck->GetCheck() > 0;
 }
 
-void CMovementDetectionPage::OnSelchangeExecmodeMovementDetection()
+void CVideoPage::OnSelchangeExecmodeMovementDetection()
 {
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_EXECMODE_MOVEMENT_DETECTION);
 	m_pDoc->m_nExecModeMovementDetection = pComboBox->GetCurSel();
 }
 
-void CMovementDetectionPage::OnChangeEditExe()
+void CVideoPage::OnChangeEditExe()
 {
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_EXE);
 	::EnterCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
@@ -789,7 +789,7 @@ void CMovementDetectionPage::OnChangeEditExe()
 	::LeaveCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
 }
 
-void CMovementDetectionPage::OnChangeEditParams()
+void CVideoPage::OnChangeEditParams()
 {
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PARAMS);
 	::EnterCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
@@ -797,7 +797,7 @@ void CMovementDetectionPage::OnChangeEditParams()
 	::LeaveCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
 }
 
-void CMovementDetectionPage::OnCheckHideExecCommand()
+void CVideoPage::OnCheckHideExecCommand()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_HIDE_EXEC_COMMAND);
 	::EnterCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
@@ -805,7 +805,7 @@ void CMovementDetectionPage::OnCheckHideExecCommand()
 	::LeaveCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
 }
 
-void CMovementDetectionPage::OnCheckWaitExecCommand()
+void CVideoPage::OnCheckWaitExecCommand()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_WAIT_EXEC_COMMAND);
 	::EnterCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);

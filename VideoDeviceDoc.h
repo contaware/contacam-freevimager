@@ -34,7 +34,7 @@ class CVideoDeviceChildFrame;
 class CDxCapture;
 class CSnapshotPage;
 class CCameraAdvancedSettingsPropertySheet;
-class CMovementDetectionPage;
+class CVideoPage;
 
 // General Settings
 #define MIN_FRAMERATE						0.1			// fps
@@ -994,7 +994,7 @@ public:
 	// Property Sheet Pointer
 	CCameraAdvancedSettingsPropertySheet* volatile m_pCameraAdvancedSettingsPropertySheet;
 	CSnapshotPage* volatile m_pSnapshotPage;
-	CMovementDetectionPage* volatile m_pMovementDetectionPage;
+	CVideoPage* volatile m_pVideoPage;
 
 // Protected Variables
 protected:

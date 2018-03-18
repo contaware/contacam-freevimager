@@ -29,7 +29,7 @@ protected:
 	static CString MakeTitle(CVideoDeviceDoc* pDoc);
 
 // Attributes
-	CMovementDetectionPage m_MovementDetectionPropertyPage;
+	CVideoPage m_VideoPropertyPage;
 	CSnapshotPage m_SnapshotPropertyPage;
 	CVideoDeviceDoc* m_pDoc;
 

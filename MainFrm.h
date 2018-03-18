@@ -226,7 +226,7 @@ protected:
 	static BOOL GetDiskStats(CString& sDiskStats, LPCTSTR lpszPath, int nMinDiskFreePermillion);
 	void PrintHeapBlocks(FILE* pf, WORD wFlags, __int64 Data, __int64 Overhead, __int64 Count);
 #ifdef VIDEODEVICEDOC
-	double GetMaxOverallDetectionQueueSizeGB();
+	double GetMaxOverallQueueSizeGB();
 	void CleanupFileMenu(CMenu* pPopupMenu);
 	void PopulateCaptureMenu(CMenu* pPopupMenu);
 #endif
@@ -282,7 +282,7 @@ protected:
 	afx_msg LONG OnAutorunVideoDevices(WPARAM wparam, LPARAM lparam);
 	afx_msg void OnViewWeb();
 	afx_msg void OnViewFiles();
-	afx_msg void OnDetBufsSizeClick();
+	afx_msg void OnBufsSizeClick();
 #endif
 	DECLARE_MESSAGE_MAP()
 };

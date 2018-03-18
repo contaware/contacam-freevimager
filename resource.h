@@ -49,7 +49,7 @@
 #define IDD_SENDMAIL_OPEN_DOCS          182
 #define IDD_SENDMAIL_CONFIGURATION      183
 #define IDD_HOSTPORT                    185
-#define IDD_MOVDET                      187
+#define IDD_VIDEO                       187
 #define IDD_REDEYE                      188
 #define IDC_ZOOMMINUS                   200
 #define IDC_ZOOMPLUS                    201
@@ -3225,7 +3225,7 @@
 #define ID_VIEW_FILES                   33501
 #define ID_SETTINGS_BROWSE_CONFIGLOG_FILES 33503
 #define ID_INDICATOR_PROGRESS           33504
-#define ID_INDICATOR_DETBUFS_SIZE       33505
+#define ID_INDICATOR_BUFS_SIZE          33505
 #define ID_INDICATOR_HD_USAGE           33506
 #define ID_INDICATOR_CPU_USAGE          33507
 #define ID_INDICATOR_XCOORDINATE        33508

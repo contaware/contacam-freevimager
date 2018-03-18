@@ -816,15 +816,15 @@ BEGIN
     POPUP "_Context Menu_"
     BEGIN
         MENUITEM "Only Trigger File",           ID_SENSITIVITY_0
-        MENUITEM "Sensitivity 10",              ID_SENSITIVITY_10
-        MENUITEM "Sensitivity 20",              ID_SENSITIVITY_20
-        MENUITEM "Sensitivity 30",              ID_SENSITIVITY_30
-        MENUITEM "Sensitivity 40",              ID_SENSITIVITY_40
-        MENUITEM "Sensitivity 50",              ID_SENSITIVITY_50
-        MENUITEM "Sensitivity 60",              ID_SENSITIVITY_60
-        MENUITEM "Sensitivity 70",              ID_SENSITIVITY_70
-        MENUITEM "Sensitivity 80",              ID_SENSITIVITY_80
-        MENUITEM "Sensitivity 90",              ID_SENSITIVITY_90
+        MENUITEM "Motion Sensitivity 10",       ID_SENSITIVITY_10
+        MENUITEM "Motion Sensitivity 20",       ID_SENSITIVITY_20
+        MENUITEM "Motion Sensitivity 30",       ID_SENSITIVITY_30
+        MENUITEM "Motion Sensitivity 40",       ID_SENSITIVITY_40
+        MENUITEM "Motion Sensitivity 50",       ID_SENSITIVITY_50
+        MENUITEM "Motion Sensitivity 60",       ID_SENSITIVITY_60
+        MENUITEM "Motion Sensitivity 70",       ID_SENSITIVITY_70
+        MENUITEM "Motion Sensitivity 80",       ID_SENSITIVITY_80
+        MENUITEM "Motion Sensitivity 90",       ID_SENSITIVITY_90
         MENUITEM "Continuous / Manual Rec",     ID_SENSITIVITY_100
     END
 END
@@ -1171,9 +1171,9 @@ BEGIN
     LTEXT           "HTTP: 80, 88",IDC_STATIC_HTTP_PORTS,70,64,143,8
 END
 
-IDD_MOVDET DIALOGEX 0, 0, 417, 268
+IDD_VIDEO DIALOGEX 0, 0, 417, 268
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
-CAPTION "Video / Audio"
+CAPTION "Video"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_FRAMERATE,80,15,37,12,ES_AUTOHSCROLL
@@ -1182,7 +1182,7 @@ BEGIN
     EDITTEXT        IDC_EDIT_DETECTION_MIN_LENGTH,80,43,37,12,ES_AUTOHSCROLL | ES_NUMBER
     EDITTEXT        IDC_EDIT_DETECTION_MAX_FRAMES,80,57,37,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Rotate\n180°",IDC_CHECK_LIVE_ROTATE180,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,169,27,37,27
-    PUSHBUTTON      "General Settings",IDC_VIDEO_SOURCE,13,74,93,16
+    PUSHBUTTON      "Source Settings",IDC_VIDEO_SOURCE,13,74,93,16
     PUSHBUTTON      "Size && Format",IDC_VIDEO_FORMAT,110,74,93,16
     PUSHBUTTON      "TV Tuner",IDC_VIDEO_TUNER,13,93,93,16
     PUSHBUTTON      "Input Select",IDC_VIDEO_INPUT,110,93,93,16
@@ -1211,7 +1211,7 @@ BEGIN
     CONTROL         "Upload Saved Video Files",IDC_FTP_MOVEMENT_DETECTION,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,220,76,95,10
     PUSHBUTTON      "Ftp Settings",IDC_FTP_CONFIGURE,324,73,81,16
-    CONTROL         "Execute",IDC_EXEC_MOVEMENT_DETECTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,220,119,41,10
+    CONTROL         "Execute when",IDC_EXEC_MOVEMENT_DETECTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,220,119,60,10
     COMBOBOX        IDC_EXECMODE_MOVEMENT_DETECTION,282,118,123,72,CBS_DROPDOWNLIST | WS_TABSTOP
     EDITTEXT        IDC_EDIT_EXE,220,146,185,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_EDIT_PARAMS,220,175,185,54,ES_MULTILINE | WS_VSCROLL
@@ -2208,7 +2208,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_EDIT_SNAPSHOT_RATE,190,21,34,12
     PUSHBUTTON      "",IDC_BUTTON_THUMB_SIZE,190,43,154,21
-    PUSHBUTTON      "Full size && Thumbnail File Names",IDC_BUTTON_SNAPSHOT_NAMES,13,43,154,21
+    PUSHBUTTON      "File Names",IDC_BUTTON_SNAPSHOT_NAMES,13,43,154,21
     CONTROL         "Save History Video File",IDC_CHECK_SNAPSHOT_HISTORY_VIDEO,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,110,88,10
     CONTROL         "Upload Live Snapshots",IDC_CHECK_FTP_SNAPSHOT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,166,87,10
@@ -2297,10 +2297,9 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTI
 CAPTION "Camera Settings"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "Movement detection surveillance",IDC_RADIO_MOVDET,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,16,14,121,10
-    CONTROL         "Snapshots with history",IDC_RADIO_SNAPSHOT,"Button",BS_AUTORADIOBUTTON,16,27,89,10
-    CONTROL         "Continuous / manual recording",IDC_RADIO_MANUAL,"Button",BS_AUTORADIOBUTTON,16,40,113,10
+    CONTROL         "Motion detection surveillance",IDC_RADIO_MOVDET,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,14,107,10
+    CONTROL         "Snapshots with history",IDC_RADIO_SNAPSHOT,"Button",BS_AUTORADIOBUTTON,16,27,87,10
+    CONTROL         "Continuous / manual recording",IDC_RADIO_MANUAL,"Button",BS_AUTORADIOBUTTON,16,40,114,10
     CONTROL         "AUTOSTART\nCamera when ContaCam is executed",IDC_CHECK_AUTORUN,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,256,12,150,39
     EDITTEXT        IDC_EDIT_NAME,152,74,254,13,ES_AUTOHSCROLL
@@ -2312,14 +2311,14 @@ BEGIN
     COMBOBOX        IDC_COMBO_KEEPFOR,152,156,254,116,CBS_DROPDOWNLIST | WS_TABSTOP
     EDITTEXT        IDC_EDIT_MIN_DISK_FREE_PERCENT,152,171,35,13,ES_AUTOHSCROLL
     EDITTEXT        IDC_EDIT_MAX_CAMERA_FOLDER_SIZE,152,185,35,13,ES_AUTOHSCROLL
-    CONTROL         "Send email when camera fails",IDC_CHECK_SENDMAIL_MALFUNCTION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,220,115,10
-    CONTROL         "Send email when AC 100-240V fails",IDC_CHECK_SENDMAIL_ACLINE_MALFUNCTION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,232,135,10
+    CONTROL         "Send camera failure email",IDC_CHECK_SENDMAIL_MALFUNCTION,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,220,98,10
+    CONTROL         "Send AC 100-240V failure email",IDC_CHECK_SENDMAIL_ACLINE_MALFUNCTION,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,232,116,10
     CONTROL         "Send daily camera OK email",IDC_CHECK_SENDMAIL_DEVICE_OK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,244,110,10
-    CONTROL         "Send email(s) on Motion Detection",IDC_CHECK_SENDMAIL_MOVEMENT_DETECTION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,256,129,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,244,104,10
+    CONTROL         "Send recording event email with",IDC_CHECK_SENDMAIL_MOVEMENT_DETECTION,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,256,118,10
     COMBOBOX        IDC_ATTACHMENT,185,254,138,124,CBS_DROPDOWNLIST | WS_TABSTOP
     EDITTEXT        IDC_EDIT_SENDMAIL_SEC_BETWEEN_MSG,279,268,29,12,ES_AUTOHSCROLL | ES_NUMBER
     PUSHBUTTON      "Email Settings",IDC_SENDMAIL_CONFIGURE,331,234,75,32
@@ -2341,7 +2340,7 @@ BEGIN
     LTEXT           "GB",IDC_STATIC,190,187,10,8
     LTEXT           "NOTE: if the free disk space becomes low or the maximum camera folder size is reached the oldest files are deleted",IDC_STATIC,211,177,195,20
     GROUPBOX        "5. Notification",IDC_STATIC,5,208,407,77
-    LTEXT           "minimum time between motion detection emails",IDC_STATIC,27,268,156,8
+    LTEXT           "minimum time between recording emails",IDC_STATIC,27,268,142,8
     LTEXT           "sec",IDC_STATIC2295,313,270,15,8
 END
 
@@ -2513,7 +2512,7 @@ BEGIN
         BOTTOMMARGIN, 239
     END
 
-    IDD_MOVDET, DIALOG
+    IDD_VIDEO, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 410
@@ -3048,7 +3047,7 @@ BEGIN
     0
 END
 
-IDD_MOVDET AFX_DIALOG_LAYOUT
+IDD_VIDEO AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
@@ -3592,7 +3591,7 @@ STRINGTABLE
 BEGIN
     ID_PLAY_SLIDESHOW       "Start slideshow (inside current directory)\nStart Slideshow"
     ID_STOP_SLIDESHOW       "Stop slideshow\nStop Slideshow"
-    ID_VIEW_FRAMETIME       "Enable / disable frame time display\nShow / Hide Frame Time"
+    ID_VIEW_FRAMETIME       "Enable / disable frame time display\nFrame Time"
     ID_FILE_INFO            "Show file information\nFile Info"
     ID_PLAY_TRANSITION_OFF  "Turn transition effect off\nTransition Off"
     ID_PLAY_TRANSITION_RANDOM "Random transition effect\nRandom Transition"
@@ -3633,7 +3632,7 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_EDIT_ZONE            "Add / remove / show zones\nAdd / Remove / Show Zones"
+    ID_EDIT_ZONE            "Add / remove / show zones (mask)\nZones (Mask)"
 END
 
 STRINGTABLE
@@ -3642,7 +3641,7 @@ BEGIN
     ID_EDIT_SELECTALL       "Select all zones\nSelect All"
     ID_EDIT_SELECTNONE      "Clear all zones\nSelect None"
     ID_CAPTURE_NETWORK      "Capture frames from the network\nCapture From Network"
-    ID_CAPTURE_RECORD       "Enable / disable recording\nEnable / Disable Recording"
+    ID_CAPTURE_RECORD       "Enable / disable recording\nRecording"
     ID_VIEW_ALL_NEXT_PICTURE 
                             "Show next image of all open documents\nAll Next Image"
     ID_VIEW_ALL_PREVIOUS_PICTURE 
@@ -3656,7 +3655,7 @@ END
 STRINGTABLE
 BEGIN
     ID_INDICATOR_PROGRESS   "                                   "
-    ID_INDICATOR_DETBUFS_SIZE " BUF:            "
+    ID_INDICATOR_BUFS_SIZE  " BUF:            "
     ID_INDICATOR_HD_USAGE   " HD:             "
     ID_INDICATOR_CPU_USAGE  " CPU:            "
     ID_INDICATOR_XCOORDINATE " X:        "
@@ -4232,7 +4231,7 @@ BEGIN
     IDS_STRING1760          "Application Log File has not yet been created"
     IDS_STRING1761          "HD usage"
     IDS_STRING1762          "CPU usage"
-    IDS_STRING1763          "Maximum overall movement detection buffers size\n(click for more information)"
+    IDS_STRING1763          "Maximum overall buffers size\n(click for more information)"
     IDS_STRING1764          "Starting"
     IDS_STRING1765          "%s already exists.\nDo you want to proceed and merge the files?"
     IDS_STRING1766          "Only ASCII characters allowed in path"
@@ -4269,9 +4268,9 @@ BEGIN
     IDS_STRING1810          "VERBOSE LOGGING"
     IDS_STRING1811          "DEBUG LOGGING"
     IDS_STRING1816          "Create a text file where each line represents a Paste\ncommand at the given position:\n  1. Origin: top left, top right, bottom left, bottom right\n  2. horizontal and vertical positions with sign and unit\n      (px, in, cm, mm)\n\nExample:\n\ntop left 1.57cm -1.32cm\nbottom right 12.1mm 5.5mm"
-    IDS_STRING1817          "OUT OF MEMORY / OVERLOAD: dropping movement detection frames"
+    IDS_STRING1817          "OUT OF MEMORY / OVERLOAD: dropping frames"
     IDS_STRING1818          "Aborting"
-    IDS_STRING1819          "To limit the movement detection buffer size lower the ""Split detection files longer than"" value under ""Camera Advanced Settings - Movement Detection"" tab"
+    IDS_STRING1819          "To limit the buffer size lower the ""Split longer than"" value under ""Camera Advanced Settings - Video"" tab"
     IDS_STRING1820          "usable"
     IDS_STRING1822          "Fit"
     IDS_STRING1823          "Fit Big"
@@ -4285,7 +4284,7 @@ BEGIN
     IDS_STRING1834          "SSL/TLS (Port 465)"
     IDS_STRING1835          "STARTTLS (Port 25 or 587)"
     IDS_STRING1836          "Unsupported Video or Zones Size!"
-    IDS_STRING1839          "%s, attention cannot realtime save the detections: SaveTime=%0.1fsec > FramesTime=%0.1fsec"
+    IDS_STRING1839          "%s, attention cannot realtime save: SaveTime=%0.1fsec > FramesTime=%0.1fsec"
 END
 
 STRINGTABLE
@@ -4306,9 +4305,9 @@ END
 STRINGTABLE
 BEGIN
     IDS_STRING1840          "%s, consider lowering the framerate and/or video resolution!"
-    IDS_STRING1841          "%s, realtime saving the detections is ok: SaveTime=%0.1fsec < FramesTime=%0.1fsec"
-    IDS_STRING1842          "when Recording starts"
-    IDS_STRING1843          "when Saving done"
+    IDS_STRING1841          "%s, realtime saving is ok: SaveTime=%0.1fsec < FramesTime=%0.1fsec"
+    IDS_STRING1842          "Recording starts"
+    IDS_STRING1843          "Saving done"
     IDS_STRING1849          "Saved"
     IDS_STRING1850          "Save Failed!"
     IDS_STRING1852          "Name"

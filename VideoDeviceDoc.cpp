@@ -627,7 +627,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		{
 			if (g_nLogLevel > 0 || dwFramesTimeMs > MOVDET_MIN_FRAMES_TIME_CHECK_MSEC)
 			{
-				::LogLine(	ML_STRING(1839, "%s, attention cannot realtime save the detections: SaveTime=%0.1fsec > FramesTime=%0.1fsec"),
+				::LogLine(	ML_STRING(1839, "%s, attention cannot realtime save: SaveTime=%0.1fsec > FramesTime=%0.1fsec"),
 							m_pDoc->GetAssignedDeviceName(), (double)dwSaveTimeMs / 1000.0, (double)dwFramesTimeMs / 1000.0);
 				::LogLine(	ML_STRING(1840, "%s, consider lowering the framerate and/or video resolution!"),
 							m_pDoc->GetAssignedDeviceName());
@@ -637,15 +637,15 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		{
 			if (g_nLogLevel > 0)
 			{
-				::LogLine(	ML_STRING(1841, "%s, realtime saving the detections is ok: SaveTime=%0.1fsec < FramesTime=%0.1fsec"),
+				::LogLine(	ML_STRING(1841, "%s, realtime saving is ok: SaveTime=%0.1fsec < FramesTime=%0.1fsec"),
 							m_pDoc->GetAssignedDeviceName(), (double)dwSaveTimeMs / 1000.0, (double)dwFramesTimeMs / 1000.0);
 			}
 		}
 		if (dwLoadDetFrameErrorCode != ERROR_SUCCESS)
 		{
 			if (g_nLogLevel > 0)
-				::ShowErrorMsg(dwLoadDetFrameErrorCode, FALSE, +_T("Shared Memory -> Frame: "));
-			::LogLine(_T("%s"), ML_STRING(1817, "OUT OF MEMORY / OVERLOAD: dropping movement detection frames"));
+				::ShowErrorMsg(dwLoadDetFrameErrorCode, FALSE, _T("Shared Memory -> Frame: "));
+			::LogLine(_T("%s"), ML_STRING(1817, "OUT OF MEMORY / OVERLOAD: dropping frames"));
 		}
 	}
 	ASSERT(FALSE); // should never end up here...
@@ -2205,8 +2205,8 @@ end_of_software_detection:
 	{
 		((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = bDropFrame = TRUE;
 		if (g_nLogLevel > 0)
-			::ShowErrorMsg(dwError, FALSE, +_T("Frame -> Shared Memory: "));
-		::LogLine(_T("%s"), ML_STRING(1817, "OUT OF MEMORY / OVERLOAD: dropping movement detection frames"));
+			::ShowErrorMsg(dwError, FALSE, _T("Frame -> Shared Memory: "));
+		::LogLine(_T("%s"), ML_STRING(1817, "OUT OF MEMORY / OVERLOAD: dropping frames"));
 	}
 
 	// Drop frames
@@ -3770,7 +3770,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	}
 
 	// Property Sheet
-	m_pMovementDetectionPage = NULL;
+	m_pVideoPage = NULL;
 	m_pSnapshotPage = NULL;
 	m_pCameraAdvancedSettingsPropertySheet = NULL;
 

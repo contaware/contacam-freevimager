@@ -1307,7 +1307,7 @@ void CVideoDeviceChildFrame::EndShutdown()
 	//
 	// m_pCameraAdvancedSettingsPropertySheet
 	// m_pSnapshotPage
-	// m_pMovementDetectionPage
+	// m_pVideoPage
 	//
 	if (pDoc->m_pCameraAdvancedSettingsPropertySheet)
 	{

@@ -13,17 +13,17 @@ class CVideoDeviceDoc;
 
 #define FRAMERATE_CHANGE_TIMEOUT	6	// In MOVDETPAGE_TIMER_MS units
 
-class CMovementDetectionPage : public CPropertyPage
+class CVideoPage : public CPropertyPage
 {
-	DECLARE_DYNCREATE(CMovementDetectionPage)
+	DECLARE_DYNCREATE(CVideoPage)
 public:
 	// Construction
-	CMovementDetectionPage();
+	CVideoPage();
 	void SetDoc(CVideoDeviceDoc* pDoc);
-	~CMovementDetectionPage();
+	~CVideoPage();
 
 	// Dialog data
-	enum { IDD = IDD_MOVDET };
+	enum { IDD = IDD_VIDEO };
 	int	m_nSecondsBeforeMovementBegin;
 	int	m_nSecondsAfterMovementEnd;
 	int	m_nDetectionMinLengthSeconds;
