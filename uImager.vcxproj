@@ -622,7 +622,7 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="MovementDetectionPage.cpp">
+    <ClCompile Include="VideoPage.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -1092,7 +1092,7 @@
     <ClInclude Include="MlString.h" />
     <ClInclude Include="MonochromeConversionDlg.h" />
     <ClInclude Include="MotionDetHelpers.h" />
-    <ClInclude Include="MovementDetectionPage.h" />
+    <ClInclude Include="VideoPage.h" />
     <ClInclude Include="MyMemDC.h" />
     <ClInclude Include="NetCom.h" />
     <ClInclude Include="NewDlg.h" />

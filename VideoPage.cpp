@@ -1,10 +1,10 @@
-// MovementDetectionPage.cpp : implementation file
+// VideoPage.cpp : implementation file
 //
 
 #include "stdafx.h"
 #include "uimager.h"
 #include "MainFrm.h"
-#include "MovementDetectionPage.h"
+#include "VideoPage.h"
 #include "VideoDeviceDoc.h"
 #include "VideoDeviceView.h"
 #include "DxCapture.h"

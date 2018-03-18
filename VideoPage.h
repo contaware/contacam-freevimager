@@ -1,9 +1,9 @@
-#if !defined(AFX_MOVEMENTDETECTIONPAGE_H__AAD75600_3201_49D1_A5D4_3AE518917430__INCLUDED_)
-#define AFX_MOVEMENTDETECTIONPAGE_H__AAD75600_3201_49D1_A5D4_3AE518917430__INCLUDED_
+#if !defined(AFX_VIDEOPAGE_H__AAD75600_3201_49D1_A5D4_3AE518917430__INCLUDED_)
+#define AFX_VIDEOPAGE_H__AAD75600_3201_49D1_A5D4_3AE518917430__INCLUDED_
 
 #pragma once
 
-// MovementDetectionPage.h : header file
+// VideoPage.h : header file
 //
 
 #ifdef VIDEODEVICEDOC
@@ -96,4 +96,4 @@ protected:
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_MOVEMENTDETECTIONPAGE_H__AAD75600_3201_49D1_A5D4_3AE518917430__INCLUDED_)
+#endif // !defined(AFX_VIDEOPAGE_H__AAD75600_3201_49D1_A5D4_3AE518917430__INCLUDED_)

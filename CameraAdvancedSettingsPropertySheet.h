@@ -6,7 +6,7 @@
 // CameraAdvancedSettingsPropertySheet.h : header file
 //
 
-#include "MovementDetectionPage.h"
+#include "VideoPage.h"
 #include "SnapshotPage.h"
 
 #ifdef VIDEODEVICEDOC
