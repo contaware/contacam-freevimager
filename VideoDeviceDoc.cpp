@@ -7248,14 +7248,6 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 		b1SecTick = TRUE;
 		m_1SecTime = CurrentTime;
 	}
-	BOOL bStartupSettled = FALSE;
-	if (m_bCaptureStarted)
-	{
-		CTimeSpan TimeSinceStart = CurrentTime - m_CaptureStartTime;
-		if (TimeSinceStart.GetTotalSeconds() >= STARTUP_SETTLE_TIME_SEC ||
-			TimeSinceStart.GetTotalSeconds() < 0)
-			bStartupSettled = TRUE;
-	}
 
 	// Process Frame Stop Engine
 	::EnterCriticalSection(&m_csProcessFrameStop);
@@ -7354,34 +7346,29 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 		else
 			pDib->FreeUserList();
 
-		// Movement Detection only when start-up settled
-		// (especially for audio/video synchronization)
-		if (bStartupSettled)
+		// Detection Scheduler
+		DWORD dwVideoProcessorMode = m_dwVideoProcessorMode;
+		if (dwVideoProcessorMode > 0 && m_nDetectionStartStop > 0) // (m_nDetectionStartStop == 0 -> no scheduler)
 		{
-			// Detection Scheduler
-			DWORD dwVideoProcessorMode = m_dwVideoProcessorMode;
-			if (dwVideoProcessorMode > 0 && m_nDetectionStartStop > 0) // (m_nDetectionStartStop == 0 -> no scheduler)
+			// Is current time in schedule?
+			BOOL bInSchedule = IsInMovDetSchedule(CurrentTime);
+
+			// 1 -> Enable detection on specified schedule
+			if (m_nDetectionStartStop == 1) 
 			{
-				// Is current time in schedule?
-				BOOL bInSchedule = IsInMovDetSchedule(CurrentTime);
-
-				// 1 -> Enable detection on specified schedule
-				if (m_nDetectionStartStop == 1) 
-				{
-					if (!bInSchedule)
-						dwVideoProcessorMode = 0;
-				}
-				// 2 -> Disable detection on specified schedule
-				else
-				{
-					if (bInSchedule)
-						dwVideoProcessorMode = 0;
-				}
+				if (!bInSchedule)
+					dwVideoProcessorMode = 0;
 			}
-
-			// Do Motion Detection Processing
-			MovementDetectionProcessing(pDib, dwVideoProcessorMode, b1SecTick);
+			// 2 -> Disable detection on specified schedule
+			else
+			{
+				if (bInSchedule)
+					dwVideoProcessorMode = 0;
+			}
 		}
+
+		// Do Motion Detection Processing
+		MovementDetectionProcessing(pDib, dwVideoProcessorMode, b1SecTick);
 
 		// Copy to Clipboard
 		if (m_bDoEditCopy)
