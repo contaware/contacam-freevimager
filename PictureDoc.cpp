@@ -1595,6 +1595,7 @@ CPictureDoc::CTransitionThread::CTransitionThread()
 	m_hTimerEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hEventArray[0] = GetKillEvent();
 	m_hEventArray[1] = m_hTimerEvent;
+	m_bPseudoRandomInited = FALSE;
 }
 			
 CPictureDoc::CTransitionThread::~CTransitionThread()
@@ -1639,11 +1640,15 @@ int CPictureDoc::CTransitionThread::Work()
 					&(m_pDoc->m_AlphaRenderedDib) :
 					m_pDoc->m_pDib;
 
-	// The Number Of Transitions
-	const int nNumOfTransitions = 5;
-
-	// The Transitions Offset
-	const int nTransitionsOffset = 2;
+	// Init pseudo-random generators
+	if (!m_bPseudoRandomInited)
+	{
+		std::random_device TrueRandom; // non-deterministic generator implemented as crypto-secure in Visual C++
+		m_PseudoRandomTransitionType.seed(TrueRandom());
+		m_PseudoRandomTransitionChessX.seed(TrueRandom());
+		m_PseudoRandomTransitionChessY.seed(TrueRandom());
+		m_bPseudoRandomInited = TRUE;
+	}
 
 	// Current Monitor Bpp
 	int nCurrentMonitorBpp = ::AfxGetMainFrame()->GetMonitorBpp();
@@ -1729,16 +1734,21 @@ int CPictureDoc::CTransitionThread::Work()
 	// Init Vars
 	m_pDoc->m_bNoDrawing = FALSE;
 	m_pDoc->GetView()->m_nTransitionStep = 0;
-	LARGE_INTEGER PerformanceCounterSeed;
-	::QueryPerformanceCounter(&PerformanceCounterSeed);
-	srand(::makeseed(PerformanceCounterSeed.LowPart, (unsigned int)::time(NULL), ::GetCurrentThreadId())); // Seed
 	if (m_pDoc->m_nTransitionType == 1) // Random Transition
-		m_pDoc->GetView()->m_nCurrentTransition =
-							(int)(((unsigned int)rand())%((unsigned int)nNumOfTransitions)) +
-							nTransitionsOffset;
+	{
+		// Transitions:
+		// 0: off
+		// 1: random
+		// 2: chessboard
+		// 3: curtain-in
+		// 4: roll-in
+		// 5: slide-in
+		// 6: blend
+		std::uniform_int_distribution<int> Distribution(2, 6); // distribute results: [2, 6]
+		m_pDoc->GetView()->m_nCurrentTransition = Distribution(m_PseudoRandomTransitionType);
+	}
 	else
-		m_pDoc->GetView()->m_nCurrentTransition =
-							m_pDoc->m_nTransitionType;
+		m_pDoc->GetView()->m_nCurrentTransition = m_pDoc->m_nTransitionType;
 
 	// Set Timer				
 	UINT uiTimerId = ::timeSetEvent(TRANSITION_DELAY,
@@ -1785,7 +1795,9 @@ int CPictureDoc::CTransitionThread::Work()
 																					m_pDoc->GetView()->m_ZoomRect.Width(),
 																					m_pDoc->GetView()->m_ZoomRect.Height(),
 																					m_pDoc->GetView()->m_nTransitionStep++,
-																					32);
+																					32,
+																					m_PseudoRandomTransitionChessX,
+																					m_PseudoRandomTransitionChessY);
 												break;
 
 											case 3 :
@@ -8589,7 +8601,9 @@ void CPictureDoc::OnUpdateFileInfo(CCmdUI* pCmdUI)
 BOOL CPictureDoc::TransitionChess(	HDC hSrcDC, int xs, int ys,
 									HDC hDestDC, int xd, int yd,
 									int width, int height,
-									int nStep, int nMaxSteps)
+									int nStep, int nMaxSteps,
+									std::mt19937& PseudoRandomX,
+									std::mt19937& PseudoRandomY)
 {
 	if ((nStep >= nMaxSteps) || (nStep < 0))
 		return FALSE;
@@ -8598,18 +8612,16 @@ BOOL CPictureDoc::TransitionChess(	HDC hSrcDC, int xs, int ys,
 		int nSquareSize = (int)sqrt((double)(width * height) / (16 * nMaxSteps));
 		if (nSquareSize == 0)
 			nSquareSize = 1;
-		int nXNum = width / nSquareSize + 1;
-		int nYNum = height / nSquareSize + 1;
-		LARGE_INTEGER PerformanceCounterSeed;
-		::QueryPerformanceCounter(&PerformanceCounterSeed);
-		srand(::makeseed(PerformanceCounterSeed.LowPart, (unsigned int)::time(NULL), ::GetCurrentThreadId())); // Seed
-
+		int nXNum = width / nSquareSize;
+		int nYNum = height / nSquareSize;
+		std::uniform_int_distribution<int> DistributionX(0, nXNum); // distribute results: [0, nXNum]
+		std::uniform_int_distribution<int> DistributionY(0, nYNum); // distribute results: [0, nYNum]
 		if (hSrcDC && hDestDC)
 		{
 			for (int i = 0 ; i < 64 ; i++)
 			{
-				int nX = (int)(((unsigned int)rand())%((unsigned int)nXNum));
-				int nY = (int)(((unsigned int)rand())%((unsigned int)nYNum));
+				int nX = DistributionX(PseudoRandomX);
+				int nY = DistributionY(PseudoRandomY);
 				::BitBlt(	hDestDC,
 							xd + nX*nSquareSize, yd + nY*nSquareSize,
 							nSquareSize, nSquareSize,

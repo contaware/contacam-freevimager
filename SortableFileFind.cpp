@@ -431,10 +431,14 @@ BOOL CSortableFileFind::FindRandomFile()
 	if (m_Files.GetSize() > 0)
 	{
 		int nOldFilePos = m_nFilePos;
-		LARGE_INTEGER PerformanceCounterSeed;
-		::QueryPerformanceCounter(&PerformanceCounterSeed);
-		srand(::makeseed(PerformanceCounterSeed.LowPart, (unsigned int)::time(NULL), ::GetCurrentThreadId())); // Seed
-		m_nFilePos = (int)irand(m_Files.GetSize()); // returns a random pos in the range [0,m_Files.GetSize()[
+		if (!m_bPseudoRandomInited)
+		{
+			std::random_device TrueRandom; // non-deterministic generator implemented as crypto-secure in Visual C++
+			m_PseudoRandom.seed(TrueRandom());
+			m_bPseudoRandomInited = TRUE;
+		}
+		std::uniform_int_distribution<int> Distribution(0, m_Files.GetSize() - 1); // distribute results: [0, m_Files.GetSize() - 1]
+		m_nFilePos = Distribution(m_PseudoRandom);
 		m_sFileName = m_Files[m_nFilePos];
 		if (nOldFilePos == m_nFilePos) // We do not want the same file, return next one
 		{

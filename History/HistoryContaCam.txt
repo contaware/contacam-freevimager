@@ -6,6 +6,7 @@ CONTACAM HISTORY
 - Manual / continuous recording is now performed by the motion
   engine (it makes no sense to have a separate continuous
   recording engine)
+- Using better random generators
 
 7.7.0 (February 18th 2018)
 

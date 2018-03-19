@@ -9,6 +9,7 @@
 
 #include "SortableStringArray.h"
 #include "WorkerThread.h"
+#include <random>
 
 #define	WM_RECURSIVEFILEFIND_STARTED			WM_USER + 1100
 #define	WM_RECURSIVEFILEFIND_DONE				WM_USER + 1101
@@ -47,7 +48,9 @@ class CSortableFileFind
 								m_sFileName = _T("");
 								m_sDirName = _T("");
 								m_nDirPos = -1;
-								m_nFilePos = -1;};
+								m_nFilePos = -1;
+								m_bPseudoRandomInited = FALSE;
+		};
 
 		virtual ~CSortableFileFind() {	Close();
 										ClearAllowedExtensions();
@@ -230,6 +233,8 @@ class CSortableFileFind
 		HANDLE m_hRecursiveFileFindStarted;
 		HANDLE m_hRecursiveFileFindNoFiles;
 		HWND m_hWnd;
+		std::mt19937 m_PseudoRandom;
+		BOOL m_bPseudoRandomInited;
 };
 
 

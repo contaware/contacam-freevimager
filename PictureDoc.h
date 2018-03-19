@@ -19,6 +19,7 @@
 #include "SortableFileFind.h"
 #include "PaletteWnd.h"
 #include "LayeredDlg.h"
+#include <random>
 
 //////////////////////////////////////////////
 // NOTE:                                    //
@@ -324,6 +325,10 @@ public:
 			CPictureDoc* m_pDoc;
 			HANDLE m_hTimerEvent;
 			HANDLE m_hEventArray[2];
+			std::mt19937 m_PseudoRandomTransitionType;
+			std::mt19937 m_PseudoRandomTransitionChessX;
+			std::mt19937 m_PseudoRandomTransitionChessY;
+			BOOL m_bPseudoRandomInited; // pseudo-randoms are initialized on first thread run
 	};
 
 	// Alpha Blend Transition Function Type
@@ -467,7 +472,9 @@ public:
 	static BOOL TransitionChess(HDC hSrcDC, int xs, int ys,
 							HDC hDestDC, int xd, int yd,
 							int width, int height,
-							int nStep, int nMaxSteps);
+							int nStep, int nMaxSteps,
+							std::mt19937& PseudoRandomX,
+							std::mt19937& PseudoRandomY);
 
 	static BOOL TransitionLRCurtain(HDC hSrcDC, int xs, int ys,
 							HDC hDestDC, int xd, int yd,

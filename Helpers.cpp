@@ -2892,31 +2892,6 @@ BOOL IntersectsValidMonitor(LPCRECT lpRect)
 	return (MonitorFromRect(lpRect, MONITOR_DEFAULTTONULL) != NULL ? TRUE : FALSE);
 }
 
-// From: http://www.azillionmonkeys.com/qed/random.html
-#define RS_SCALE (1.0 / (1.0 + RAND_MAX))
-double drand() { // returns a double in the range of [0.0,1.0[  (0.0 included and 1.0 excluded)
-    double d;
-    do {
-       d = (((rand() * RS_SCALE) + rand()) * RS_SCALE + rand()) * RS_SCALE;
-    } while (d >= 1.0); // shield in case of an extremely unlikely case of erroneous overflow
-    return d;
-}
-
-// From: http://www.concentric.net/~Ttwang/tech/inthash.htm
-unsigned int makeseed(unsigned int a, unsigned int b, unsigned int c)
-{
-	a=a-b;  a=a-c;  a=a^(c >> 13);
-	b=b-c;  b=b-a;  b=b^(a << 8); 
-	c=c-a;  c=c-b;  c=c^(b >> 13);
-	a=a-b;  a=a-c;  a=a^(c >> 12);
-	b=b-c;  b=b-a;  b=b^(a << 16);
-	c=c-a;  c=c-b;  c=c^(b >> 5);
-	a=a-b;  a=a-c;  a=a^(c >> 3);
-	b=b-c;  b=b-a;  b=b^(a << 10);
-	c=c-a;  c=c-b;  c=c^(b >> 15);
-	return c;
-}
-
 static int CALLBACK EnumFontFamExProc(const LOGFONT *lpelfe /*lpelfe*/, const TEXTMETRIC *lpntme /*lpntme*/, DWORD /*FontType*/, LPARAM lParam)
 {
 	LPARAM* p = (LPARAM*)lParam;

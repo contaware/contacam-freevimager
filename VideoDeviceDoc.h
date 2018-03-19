@@ -48,7 +48,7 @@ class CVideoPage;
 #define ACTIVE_VIDEO_STREAM					0			// Video stream 0 for recording and detection
 #define ACTIVE_AUDIO_STREAM					0			// Audio stream 0 for recording and detection
 #define	FILES_DELETE_INTERVAL_MIN			600000	 	// in ms -> 10min
-#define	FILES_DELETE_INTERVAL_RANGE			300000		// in ms -> each [10min,15min[ check whether we can delete old files
+#define	FILES_DELETE_INTERVAL_MAX			900000		// in ms -> 15min
 #define AUDIO_IN_MIN_BUF_SIZE				256			// bytes
 #define AUDIO_MAX_LIST_SIZE					1024		// make sure that: 1 / MIN_FRAMERATE < AUDIO_IN_MIN_BUF_SIZE * AUDIO_MAX_LIST_SIZE / 11025
 														// (see CCaptureAudioThread::OpenInAudio())
@@ -407,8 +407,8 @@ public:
 	class CDeleteThread : public CWorkerThread
 	{
 		public:
-			CDeleteThread(){m_pDoc = NULL;};
-			virtual ~CDeleteThread(){Kill();};
+			CDeleteThread() {m_pDoc = NULL;};
+			virtual ~CDeleteThread() {Kill();};
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
 
 		protected:

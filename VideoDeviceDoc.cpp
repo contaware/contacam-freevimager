@@ -20,6 +20,7 @@
 #include "Psapi.h"
 #include "NoVistaFileDlg.h"
 #include "YuvToYuv.h"
+#include <random>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -3461,16 +3462,16 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 	LONGLONG llDaysAgo, llStartDiskFreeSpaceDaysAgo, llStartCameraFolderSizeDaysAgo;
 	ULONGLONG ullStartDiskFreeSpace, ullDiskFreeSpace, ullMinDiskFreeSpace;
 	ULONGLONG ullStartCameraFolderSize, ullCameraFolderSize, ullMaxCameraFolderSize;
+	std::random_device TrueRandom; // non-deterministic generator implemented as crypto-secure in Visual C++
+	std::mt19937 PseudoRandom(TrueRandom());
+	std::uniform_int_distribution<DWORD> Distribution(FILES_DELETE_INTERVAL_MIN, FILES_DELETE_INTERVAL_MAX); // distribute results: [FILES_DELETE_INTERVAL_MIN, FILES_DELETE_INTERVAL_MAX]
 
 	for (;;)
 	{
 		// If using a constant deletion time interval in case of multiple devices running
 		// the first started one would be cleared more than the last one. To fix that
 		// we use a random generator for the deletion interval
-		LARGE_INTEGER PerformanceCounterSeed;
-		::QueryPerformanceCounter(&PerformanceCounterSeed);
-		srand(::makeseed(PerformanceCounterSeed.LowPart, (unsigned int)::time(NULL), ::GetCurrentThreadId())); // Seed
-		DWORD dwDeleteInMs = FILES_DELETE_INTERVAL_MIN + irand(FILES_DELETE_INTERVAL_RANGE); // [10min,15min[
+		DWORD dwDeleteInMs = Distribution(PseudoRandom);
 		Event = ::WaitForSingleObject(GetKillEvent(), dwDeleteInMs);
 		switch (Event)
 		{
@@ -8930,10 +8931,8 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRawRequest(CString sRequest)
 			m_dwCNonceCount++;
 			CString sCNonceCount;
 			sCNonceCount.Format(_T("%08x"), m_dwCNonceCount);
-			LARGE_INTEGER PerformanceCounterSeed;
-			::QueryPerformanceCounter(&PerformanceCounterSeed);
-			srand(::makeseed(PerformanceCounterSeed.LowPart, (unsigned int)::time(NULL), ::GetCurrentThreadId())); // Seed
-			DWORD dwCNonce = (DWORD)irand(4294967296.0); // returns a random value in the range [0,0xFFFFFFFF]
+			std::random_device TrueRandom; // non-deterministic generator implemented as crypto-secure in Visual C++
+			DWORD dwCNonce = TrueRandom(); // returns value in the range [0, 0xFFFFFFFF]
 			CString sCNonce;
 			sCNonce.Format(_T("%08x"), dwCNonce);
 			sToHash =	sHA1 + _T(":")			+
