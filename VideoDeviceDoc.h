@@ -103,8 +103,7 @@ class CVideoPage;
 #define DEFAULT_POST_BUFFER_MSEC			6000		// ms
 #define MOVDET_MIN_LENGTH_MSEC				1000		// Minimum detection length in ms, below this value SaveFrameList() is not called
 #define MOVDET_MIN_FRAMES_TIME_CHECK_MSEC	8000U		// In case of a too high save time log a warning if the frames time is above this
-#define DEFAULT_MOVDET_LEVEL				50			// Detection level default value (1 .. 100 = Max Sensitivity)
-#define DEFAULT_MOVDET_INTENSITY_LIMIT		25			// Intensity difference default value
+#define DEFAULT_MOVDET_LEVEL				50			// Detection level default value (0 = Off .. 99 = Max Sensitivity, 100 = Continuous Recording)
 #define MOVDET_MAX_ZONES_BLOCK_SIZE			1024		// Subdivide settings in blocks (MOVDET_MAX_ZONES must be a multiple of this)
 #define MOVDET_MAX_ZONES					8192		// Maximum number of zones
 #define MOVDET_MIN_ZONES_XORY				4			// Minimum number of zones in X or Y direction
@@ -924,7 +923,7 @@ public:
 	int m_nShowEditDetectionZones;						// Edit Detection zones, 0: disabled, 1: add, 2: remove
 	volatile BOOL m_bDetectingMovement;					// Flag indicating a Detection
 	volatile BOOL m_bDetectingMinLengthMovement;		// Flag indicating a Movement of at least m_nDetectionMinLengthMilliSeconds
-	volatile int m_nDetectionLevel;						// 0 = Off .. 100 = Max Sensitivity
+	volatile int m_nDetectionLevel;						// 0 = Off .. 99 = Max Sensitivity, 100 = Continuous Recording
 	volatile int m_nDetectionZoneSize;					// Configured detection zone size: 0->Big, 1->Medium, 2->Small
 	volatile int m_nCurrentDetectionZoneSize;			// Current detection zone size: 0->Big, 1->Medium, 2->Small
 	volatile DWORD m_dwFirstDetFrameUpTime;				// Uptime of first movement detection frame
@@ -960,7 +959,6 @@ public:
 	BYTE* volatile m_DoMovementDetection;				// Do Movement Detection in this Zone with given relative sensitivity
 														// 0 -> No Detection, 1 -> Full Sensitivity=100%, 2 -> 50%, 4 -> 25%, 10 -> 10%
 														// (array allocated in constructor)
-	volatile int m_nMovementDetectorIntensityLimit;		// Noise Floor
 	volatile LONG m_lMovDetXZonesCount;					// Number of zones in X direction (never set to 0 to avoid division by 0)
 	volatile LONG m_lMovDetYZonesCount;					// Number of zones in Y direction (never set to 0 to avoid division by 0)
 	volatile LONG m_lMovDetTotalZones;					// Total Number of zones (set to 0 when a (re-)init of the zones is wanted)

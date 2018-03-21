@@ -555,10 +555,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 			// Enable movement detection
 			bDoMovDet = TRUE;
 			if (m_pDoc->m_nDetectionLevel == 100)
-			{
 				m_pDoc->m_nDetectionLevel = DEFAULT_MOVDET_LEVEL;
-				m_pDoc->m_nMovementDetectorIntensityLimit = 50 - m_pDoc->m_nDetectionLevel / 2;
-			}
 			if (m_pDoc->m_nMilliSecondsRecBeforeMovementBegin == 1000)
 				m_pDoc->m_nMilliSecondsRecBeforeMovementBegin = DEFAULT_PRE_BUFFER_MSEC;
 			if (m_pDoc->m_nMilliSecondsRecAfterMovementEnd == 1000)
@@ -614,10 +611,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 			// Disable movement detection
 			bDoMovDet = FALSE;
 			if (m_pDoc->m_nDetectionLevel != 100)
-			{
 				m_pDoc->m_nDetectionLevel = 100;
-				m_pDoc->m_nMovementDetectorIntensityLimit = 50 - m_pDoc->m_nDetectionLevel / 2;
-			}
 			if (m_pDoc->m_nMilliSecondsRecBeforeMovementBegin != 1000)
 				m_pDoc->m_nMilliSecondsRecBeforeMovementBegin = 1000;
 			if (m_pDoc->m_nMilliSecondsRecAfterMovementEnd != 1000)
@@ -671,10 +665,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 			// Disable movement detection
 			bDoMovDet = FALSE;
 			if (m_pDoc->m_nDetectionLevel != 100)
-			{
 				m_pDoc->m_nDetectionLevel = 100;
-				m_pDoc->m_nMovementDetectorIntensityLimit = 50 - m_pDoc->m_nDetectionLevel / 2;
-			}
 			if (m_pDoc->m_nMilliSecondsRecBeforeMovementBegin != 1000)
 				m_pDoc->m_nMilliSecondsRecBeforeMovementBegin = 1000;
 			if (m_pDoc->m_nMilliSecondsRecAfterMovementEnd != 1000)

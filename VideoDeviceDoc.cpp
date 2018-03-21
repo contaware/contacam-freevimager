@@ -1939,8 +1939,10 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, DWORD dwVideoProce
 {
 	BOOL bSoftwareDetectionMovement = FALSE;
 	BOOL bExternalFileTriggerMovement = FALSE;
-	BOOL bDoSoftwareDetection = (dwVideoProcessorMode && m_nDetectionLevel > 0);
-
+	int nDetectionLevel = m_nDetectionLevel; // use local var
+	int nMovementDetectorIntensityLimit = 50 - nDetectionLevel / 2;	// noise floor
+	BOOL bDoSoftwareDetection = (dwVideoProcessorMode && nDetectionLevel > 0);
+	
 	// Clean-up
 	if (!bDoSoftwareDetection)
 	{	
@@ -1971,99 +1973,127 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, DWORD dwVideoProce
 	// Software Detection
 	if (bDoSoftwareDetection)
 	{
-		// Every 1 sec check whether we have to update the Freq Div
-		if (b1SecTick														&&
-			(m_dEffectiveFrameRate > m_dMovDetFrameRateFreqDivCalc + 0.5	||
-			m_dEffectiveFrameRate < m_dMovDetFrameRateFreqDivCalc - 0.5))
+		if (nDetectionLevel == 100)
 		{
-			double dNewMovDetFreqDiv = m_dEffectiveFrameRate / MOVDET_WANTED_FREQ;
-			if (dNewMovDetFreqDiv < 1.0)
-				dNewMovDetFreqDiv = 1.0;
-			m_nMovDetFreqDiv = Round(dNewMovDetFreqDiv);
-			m_dMovDetFrameRateFreqDivCalc = m_dEffectiveFrameRate;
+			if (m_pDifferencingDib)
+			{
+				delete m_pDifferencingDib;
+				m_pDifferencingDib = NULL;
+			}
+			if (m_pMovementDetectorBackgndDib)
+			{
+				delete m_pMovementDetectorBackgndDib;
+				m_pMovementDetectorBackgndDib = NULL;
+			}
+			for (int i = 0; i < m_lMovDetTotalZones; i++)
+			{
+				if (m_DoMovementDetection[i])
+				{
+					m_MovementDetections[i] = 1;
+					m_MovementDetectionsUpTime[i] = pDib->GetUpTime();
+				}
+				else
+					m_MovementDetections[i] = 0;
+			}
+			bSoftwareDetectionMovement = TRUE;
 		}
-
-		// Do detect?
-		if ((m_dwFrameCountUp % m_nMovDetFreqDiv) == 0)
+		else
 		{
-			if (!m_pMovementDetectorBackgndDib)
+			// Every 1 sec check whether we have to update the Freq Div
+			if (b1SecTick &&
+				(m_dEffectiveFrameRate > m_dMovDetFrameRateFreqDivCalc + 0.5 ||
+					m_dEffectiveFrameRate < m_dMovDetFrameRateFreqDivCalc - 0.5))
 			{
-				m_pMovementDetectorBackgndDib = new CDib(*pDib);
+				double dNewMovDetFreqDiv = m_dEffectiveFrameRate / MOVDET_WANTED_FREQ;
+				if (dNewMovDetFreqDiv < 1.0)
+					dNewMovDetFreqDiv = 1.0;
+				m_nMovDetFreqDiv = Round(dNewMovDetFreqDiv);
+				m_dMovDetFrameRateFreqDivCalc = m_dEffectiveFrameRate;
+			}
+
+			// Do detect?
+			if ((m_dwFrameCountUp % m_nMovDetFreqDiv) == 0)
+			{
+				// Init Dibs
 				if (!m_pMovementDetectorBackgndDib)
-					goto end_of_software_detection;
-				m_pMovementDetectorBackgndDib->SetShowMessageBoxOnError(FALSE);
-			}
-			if (!m_pDifferencingDib)
-			{
-				m_pDifferencingDib = new CDib;
+				{
+					m_pMovementDetectorBackgndDib = new CDib(*pDib);
+					if (!m_pMovementDetectorBackgndDib)
+						goto end_of_software_detection;
+					m_pMovementDetectorBackgndDib->SetShowMessageBoxOnError(FALSE);
+				}
 				if (!m_pDifferencingDib)
-					goto end_of_software_detection;
-				m_pDifferencingDib->SetShowMessageBoxOnError(FALSE);
-				if (!m_pDifferencingDib->AllocateBitsFast(	pDib->GetBitCount(),
-															pDib->GetCompression(),
-															pDib->GetWidth(),
-															pDib->GetHeight()))
-					goto end_of_software_detection;
-			}
-
-			// Differencing
-			BYTE p[16];
-			LPBYTE MinDiff = (LPBYTE)((DWORD)(p+7) & 0xFFFFFFF8);
-			MinDiff[0] = m_nMovementDetectorIntensityLimit;
-			MinDiff[1] = MinDiff[0];
-			MinDiff[2] = MinDiff[0];
-			MinDiff[3] = MinDiff[0];
-			MinDiff[4] = MinDiff[0];
-			MinDiff[5] = MinDiff[0];
-			MinDiff[6] = MinDiff[0];
-			MinDiff[7] = MinDiff[0];
-
-			// Size in 8 bytes units
-			int nSize8 = (pDib->GetWidth() * pDib->GetHeight()) >> 3;
-
-			// Do Differencing
-			::DiffMMX(	m_pDifferencingDib->GetBits(),				// Dst
-						pDib->GetBits(),							// Src1
-						m_pMovementDetectorBackgndDib->GetBits(),	// Src2
-						nSize8,										// Size in 8 bytes units
-						MinDiff);
-
-			// Call Detector
-			m_pDifferencingDib->SetUpTime(pDib->GetUpTime());
-			bSoftwareDetectionMovement = MovementDetector(m_pDifferencingDib, m_nDetectionLevel);
-
-			// Update background
-			// Note: Mix7To1MMX and Mix3To1MMX use the pavgb instruction
-			// which is available only on SSE processors
-			if (g_bSSE)
-			{
-				if (m_dMovDetFrameRateFreqDivCalc / m_nMovDetFreqDiv >= MOVDET_MIX_THRESHOLD)
 				{
-					::Mix7To1MMX(	m_pMovementDetectorBackgndDib->GetBits(),	// Src1 & Dst
-									pDib->GetBits(),							// Src2
-									nSize8);									// Size in 8 bytes units
+					m_pDifferencingDib = new CDib;
+					if (!m_pDifferencingDib)
+						goto end_of_software_detection;
+					m_pDifferencingDib->SetShowMessageBoxOnError(FALSE);
+					if (!m_pDifferencingDib->AllocateBitsFast(pDib->GetBitCount(),
+						pDib->GetCompression(),
+						pDib->GetWidth(),
+						pDib->GetHeight()))
+						goto end_of_software_detection;
+				}
+
+				// Differencing
+				BYTE p[16];
+				LPBYTE MinDiff = (LPBYTE)((DWORD)(p + 7) & 0xFFFFFFF8);
+				MinDiff[0] = nMovementDetectorIntensityLimit; // noise floor
+				MinDiff[1] = MinDiff[0];
+				MinDiff[2] = MinDiff[0];
+				MinDiff[3] = MinDiff[0];
+				MinDiff[4] = MinDiff[0];
+				MinDiff[5] = MinDiff[0];
+				MinDiff[6] = MinDiff[0];
+				MinDiff[7] = MinDiff[0];
+
+				// Size in 8 bytes units
+				int nSize8 = (pDib->GetWidth() * pDib->GetHeight()) >> 3;
+
+				// Do Differencing
+				::DiffMMX(m_pDifferencingDib->GetBits(),				// Dst
+					pDib->GetBits(),							// Src1
+					m_pMovementDetectorBackgndDib->GetBits(),	// Src2
+					nSize8,										// Size in 8 bytes units
+					MinDiff);
+
+				// Call Detector
+				m_pDifferencingDib->SetUpTime(pDib->GetUpTime());
+				bSoftwareDetectionMovement = MovementDetector(m_pDifferencingDib, nDetectionLevel);
+
+				// Update background
+				// Note: Mix7To1MMX and Mix3To1MMX use the pavgb instruction
+				// which is available only on SSE processors
+				if (g_bSSE)
+				{
+					if (m_dMovDetFrameRateFreqDivCalc / m_nMovDetFreqDiv >= MOVDET_MIX_THRESHOLD)
+					{
+						::Mix7To1MMX(m_pMovementDetectorBackgndDib->GetBits(),	// Src1 & Dst
+							pDib->GetBits(),							// Src2
+							nSize8);									// Size in 8 bytes units
+					}
+					else
+					{
+						::Mix3To1MMX(m_pMovementDetectorBackgndDib->GetBits(),	// Src1 & Dst
+							pDib->GetBits(),							// Src2
+							nSize8);									// Size in 8 bytes units
+					}
 				}
 				else
 				{
-					::Mix3To1MMX(	m_pMovementDetectorBackgndDib->GetBits(),	// Src1 & Dst
-									pDib->GetBits(),							// Src2
-									nSize8);									// Size in 8 bytes units
-				}
-			}
-			else
-			{
-				int nSize = pDib->GetWidth() * pDib->GetHeight();
-				LPBYTE p1 = m_pMovementDetectorBackgndDib->GetBits();
-				LPBYTE p2 = pDib->GetBits();
-				if (m_dMovDetFrameRateFreqDivCalc / m_nMovDetFreqDiv >= MOVDET_MIX_THRESHOLD)
-				{
-					for (int i = 0 ; i < nSize ; i++)
-						p1[i] = (BYTE)((7 * (int)(p1[i]) + (int)(p2[i]) + 4)>>3);
-				}
-				else
-				{
-					for (int i = 0 ; i < nSize ; i++)
-						p1[i] = (BYTE)((3 * (int)(p1[i]) + (int)(p2[i]) + 2)>>2);
+					int nSize = pDib->GetWidth() * pDib->GetHeight();
+					LPBYTE p1 = m_pMovementDetectorBackgndDib->GetBits();
+					LPBYTE p2 = pDib->GetBits();
+					if (m_dMovDetFrameRateFreqDivCalc / m_nMovDetFreqDiv >= MOVDET_MIX_THRESHOLD)
+					{
+						for (int i = 0; i < nSize; i++)
+							p1[i] = (BYTE)((7 * (int)(p1[i]) + (int)(p2[i]) + 4) >> 3);
+					}
+					else
+					{
+						for (int i = 0; i < nSize; i++)
+							p1[i] = (BYTE)((3 * (int)(p1[i]) + (int)(p2[i]) + 2) >> 2);
+					}
 				}
 			}
 		}
@@ -3730,7 +3760,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_hExecCommandMovementDetection = NULL;
 	m_nDetectionLevel = DEFAULT_MOVDET_LEVEL;
 	m_nCurrentDetectionZoneSize = m_nDetectionZoneSize = 0;
-	m_nMovementDetectorIntensityLimit = DEFAULT_MOVDET_INTENSITY_LIMIT;
 	m_dwAnimatedGifWidth = MOVDET_ANIMGIF_DEFAULT_WIDTH;
 	m_dwAnimatedGifHeight = MOVDET_ANIMGIF_DEFAULT_HEIGHT;
 	m_MovementDetectorCurrentIntensity = new int[MOVDET_MAX_ZONES];
@@ -4535,7 +4564,6 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	else
 		m_nDetectionMaxFrames = MOVDET_DEFAULT_MAX_FRAMES_IN_LIST; // restore the default if a strange value is set
 	m_nDetectionLevel = ValidateDetectionLevel(pApp->GetProfileInt(sSection, _T("DetectionLevel"), DEFAULT_MOVDET_LEVEL));
-	m_nMovementDetectorIntensityLimit = (int)pApp->GetProfileInt(sSection, _T("IntensityLimit"), DEFAULT_MOVDET_INTENSITY_LIMIT);
 	m_nCurrentDetectionZoneSize = m_nDetectionZoneSize = (int) pApp->GetProfileInt(sSection, _T("DetectionZoneSize"), 0);
 	m_bSaveVideoMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveVideoMovementDetection"), TRUE);
 	m_bSaveAnimGIFMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), TRUE);
@@ -4713,7 +4741,6 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("DetectionMinLengthMilliSeconds"), m_nDetectionMinLengthMilliSeconds);
 	pApp->WriteProfileInt(sSection, _T("DetectionMaxFrames"), m_nDetectionMaxFrames);
 	pApp->WriteProfileInt(sSection, _T("DetectionLevel"), m_nDetectionLevel);
-	pApp->WriteProfileInt(sSection, _T("IntensityLimit"), m_nMovementDetectorIntensityLimit);
 	pApp->WriteProfileInt(sSection, _T("DetectionZoneSize"), m_nDetectionZoneSize);
 	pApp->WriteProfileInt(sSection, _T("SaveVideoMovementDetection"), m_bSaveVideoMovementDetection);
 	pApp->WriteProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), m_bSaveAnimGIFMovementDetection);
@@ -5271,7 +5298,6 @@ void CVideoDeviceDoc::CaptureRecord()
 void CVideoDeviceDoc::OnMovDetSensitivity0()
 {
 	m_nDetectionLevel = 0;
-	m_nMovementDetectorIntensityLimit = 50 - m_nDetectionLevel / 2;
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity0(CCmdUI* pCmdUI)
@@ -5282,7 +5308,6 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity0(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity10()
 {
 	m_nDetectionLevel = 10;
-	m_nMovementDetectorIntensityLimit = 50 - m_nDetectionLevel / 2;
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity10(CCmdUI* pCmdUI)
@@ -5293,7 +5318,6 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity10(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity20()
 {
 	m_nDetectionLevel = 20;
-	m_nMovementDetectorIntensityLimit = 50 - m_nDetectionLevel / 2;
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity20(CCmdUI* pCmdUI)
@@ -5304,7 +5328,6 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity20(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity30()
 {
 	m_nDetectionLevel = 30;
-	m_nMovementDetectorIntensityLimit = 50 - m_nDetectionLevel / 2;
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity30(CCmdUI* pCmdUI)
@@ -5315,7 +5338,6 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity30(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity40()
 {
 	m_nDetectionLevel = 40;
-	m_nMovementDetectorIntensityLimit = 50 - m_nDetectionLevel / 2;
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity40(CCmdUI* pCmdUI)
@@ -5326,7 +5348,6 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity40(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity50()
 {
 	m_nDetectionLevel = 50;
-	m_nMovementDetectorIntensityLimit = 50 - m_nDetectionLevel / 2;
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity50(CCmdUI* pCmdUI)
@@ -5337,7 +5358,6 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity50(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity60()
 {
 	m_nDetectionLevel = 60;
-	m_nMovementDetectorIntensityLimit = 50 - m_nDetectionLevel / 2;
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity60(CCmdUI* pCmdUI)
@@ -5348,7 +5368,6 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity60(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity70()
 {
 	m_nDetectionLevel = 70;
-	m_nMovementDetectorIntensityLimit = 50 - m_nDetectionLevel / 2;
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity70(CCmdUI* pCmdUI)
@@ -5359,7 +5378,6 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity70(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity80()
 {
 	m_nDetectionLevel = 80;
-	m_nMovementDetectorIntensityLimit = 50 - m_nDetectionLevel / 2;
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity80(CCmdUI* pCmdUI)
@@ -5370,7 +5388,6 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity80(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity90()
 {
 	m_nDetectionLevel = 90;
-	m_nMovementDetectorIntensityLimit = 50 - m_nDetectionLevel / 2;
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity90(CCmdUI* pCmdUI)
@@ -5381,7 +5398,6 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity90(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity100()
 {
 	m_nDetectionLevel = 100;
-	m_nMovementDetectorIntensityLimit = 50 - m_nDetectionLevel / 2;
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity100(CCmdUI* pCmdUI)
@@ -7262,7 +7278,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 	BOOL bDoProcessFrame = (m_dwProcessFrameStopped == 0U);
 	::LeaveCriticalSection(&m_csProcessFrameStop);
 	
-	// Detect, Copy, Snapshot, Record and finally Draw
+	// Motion Detect, Copy, Snapshot and finally Draw
 	CDib* pDib = m_pProcessFrameDib;
 	if (bDoProcessFrame && pData && dwSize > 0 && pDib &&
 		pDib->SetBMI((LPBITMAPINFO)&m_ProcessFrameBMI) &&
@@ -7375,7 +7391,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 		if (m_bDoEditCopy)
 			EditCopy(pDib, CurrentTime);
 
-		// Manual Snapshot to JPEG Files
+		// Manual Snapshot
 		if (m_bDoEditSnapshot)
 			EditSnapshot(pDib, CurrentTime);
 
