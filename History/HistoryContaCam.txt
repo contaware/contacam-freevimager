@@ -2,6 +2,7 @@ CONTACAM HISTORY
 
 7.9.0 (Month XXth 2018)
 
+- Privacy mask option: removed detection zones are obscured
 - Dropped .avi video file support, always save as .mp4 
 - Manual / continuous recording is now performed by the motion
   engine (it makes no sense to have a separate continuous

@@ -32,8 +32,8 @@ BEGIN_MESSAGE_MAP(CVideoDeviceView, CUImagerView)
 	ON_WM_MOUSEMOVE()
 	ON_COMMAND(ID_VIEW_FULLSCREEN, OnViewFullscreen)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FULLSCREEN, OnUpdateViewFullscreen)
-	ON_COMMAND(ID_EDIT_SELECTALL, OnEditSelectall)
-	ON_COMMAND(ID_EDIT_SELECTNONE, OnEditSelectnone)
+	ON_COMMAND(ID_EDIT_ADDALL, OnEditAddAll)
+	ON_COMMAND(ID_EDIT_REMOVEALL, OnEditRemoveAll)
 	ON_WM_MOUSEWHEEL()
 	ON_COMMAND(ID_FONTSIZE_4, OnFrameTimeFontSize4)
 	ON_UPDATE_COMMAND_UI(ID_FONTSIZE_4, OnUpdateFrameTimeFontSize4)
@@ -1052,7 +1052,7 @@ void CVideoDeviceView::OnUpdateViewFullscreen(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(m_bFullScreenMode ? 1 : 0);	
 }
 
-void CVideoDeviceView::OnEditSelectall() 
+void CVideoDeviceView::OnEditAddAll() 
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
@@ -1060,7 +1060,7 @@ void CVideoDeviceView::OnEditSelectall()
 	Invalidate(FALSE);
 }
 
-void CVideoDeviceView::OnEditSelectnone() 
+void CVideoDeviceView::OnEditRemoveAll()
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);

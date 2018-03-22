@@ -540,8 +540,8 @@ IDR_CONTEXT_ZONES MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
-        MENUITEM "Select All",                  ID_EDIT_SELECTALL
-        MENUITEM "Select None",                 ID_EDIT_SELECTNONE
+        MENUITEM "Add All",                     ID_EDIT_ADDALL
+        MENUITEM "Remove All",                  ID_EDIT_REMOVEALL
         MENUITEM SEPARATOR
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
     END
@@ -851,15 +851,17 @@ IDR_CONTEXT_ADD_REMOVE_ZONES MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
-        MENUITEM "Add Zones (100%)",            ID_EDIT_ZONE_SENSITIVITY_100
-        MENUITEM "Add Zones (50%)",             ID_EDIT_ZONE_SENSITIVITY_50
-        MENUITEM "Add Zones (25%)",             ID_EDIT_ZONE_SENSITIVITY_25
-        MENUITEM "Add Zones (10%)",             ID_EDIT_ZONE_SENSITIVITY_10
-        MENUITEM "Remove Zones",                ID_EDIT_ZONE_REMOVE
+        MENUITEM "Add (100%)",                  ID_EDIT_ZONE_SENSITIVITY_100
+        MENUITEM "Add (50%)",                   ID_EDIT_ZONE_SENSITIVITY_50
+        MENUITEM "Add (25%)",                   ID_EDIT_ZONE_SENSITIVITY_25
+        MENUITEM "Add (10%)",                   ID_EDIT_ZONE_SENSITIVITY_10
+        MENUITEM "Remove",                      ID_EDIT_ZONE_REMOVE
         MENUITEM SEPARATOR
-        MENUITEM "Big Zones",                   ID_EDIT_ZONE_BIG
-        MENUITEM "Medium Zones",                ID_EDIT_ZONE_MEDIUM
-        MENUITEM "Small Zones",                 ID_EDIT_ZONE_SMALL
+        MENUITEM "Privacy Mask",                ID_EDIT_PRIVACY_MASK
+        MENUITEM SEPARATOR
+        MENUITEM "Big",                         ID_EDIT_ZONE_BIG
+        MENUITEM "Medium",                      ID_EDIT_ZONE_MEDIUM
+        MENUITEM "Small",                       ID_EDIT_ZONE_SMALL
     END
 END
 
@@ -3525,7 +3527,7 @@ BEGIN
     IDS_MULTILANG_1473      "Camera folder must reside inside the document root directory!"
     IDS_MULTILANG_1474      "Failed to stop the web server"
     IDS_MULTILANG_1475      "Failed to start the web server"
-    IDS_MULTILANG_1483      "*** Ctrl: Add <-> Remove Zones ***"
+    IDS_MULTILANG_1483      "*** Ctrl: Add <-> Remove ***"
     IDS_MULTILANG_1484      "&Copying...\tCtrl+C"
     IDS_MULTILANG_1485      "&Copy\tCtrl+C"
 END
@@ -3638,8 +3640,8 @@ END
 STRINGTABLE
 BEGIN
     ID_EDIT_ZONE_REMOVE     "Remove zones\nRemove Zones"
-    ID_EDIT_SELECTALL       "Select all zones\nSelect All"
-    ID_EDIT_SELECTNONE      "Clear all zones\nSelect None"
+    ID_EDIT_ADDALL          "Add all\nAdd All"
+    ID_EDIT_REMOVEALL       "Remove all\nRemove All"
     ID_CAPTURE_NETWORK      "Capture frames from the network\nCapture From Network"
     ID_CAPTURE_RECORD       "Enable / disable recording\nRecording"
     ID_VIEW_ALL_NEXT_PICTURE 
@@ -4365,6 +4367,7 @@ STRINGTABLE
 BEGIN
     ID_EDIT_ZONE_MEDIUM     "Medium zones size\nMedium Zones Size"
     ID_EDIT_ZONE_SMALL      "Small zones size\nSmall Zones Size"
+    ID_EDIT_PRIVACY_MASK    "Obscure removed zones\nPrivacy Mask"
 END
 
 #endif    // English (United States) resources
