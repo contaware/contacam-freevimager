@@ -4519,23 +4519,9 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 		sDetectionTriggerFileName = sDetectionAutoSaveDir + _T("\\") + sDetectionTriggerFileName;
 	}
 	::GetFileTime(sDetectionTriggerFileName, NULL, NULL, &m_DetectionTriggerLastWriteTime);
-	int nSnapshotHistoryVideo = pApp->GetProfileInt(sSection, _T("SnapshotHistoryVideo"), 2);	// use invalid default value to check whether it exists
-	int nSnapshotHistorySwf = pApp->GetProfileInt(sSection, _T("SnapshotHistorySwf"), 2);		// for backwards compatibility
-	if (nSnapshotHistoryVideo >= 0 && nSnapshotHistoryVideo <= 1)
-		m_bSnapshotHistoryVideo = (BOOL) nSnapshotHistoryVideo;
-	else if (nSnapshotHistorySwf >= 0 && nSnapshotHistorySwf <= 1)
-		m_bSnapshotHistoryVideo = (BOOL) nSnapshotHistorySwf;
-	else
-		m_bSnapshotHistoryVideo = FALSE;
+	m_bSnapshotHistoryVideo = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistoryVideo"), FALSE);
 	m_bSnapshotLiveJpegFtp = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotLiveJpegFtp"), FALSE);
-	int nSnapshotHistoryVideoFtp = pApp->GetProfileInt(sSection, _T("SnapshotHistoryVideoFtp"), 2);	// use invalid default value to check whether it exists
-	int nSnapshotHistorySwfFtp = pApp->GetProfileInt(sSection, _T("SnapshotHistorySwfFtp"), 2);		// for backwards compatibility
-	if (nSnapshotHistoryVideoFtp >= 0 && nSnapshotHistoryVideoFtp <= 1)
-		m_bSnapshotHistoryVideoFtp = (BOOL) nSnapshotHistoryVideoFtp;
-	else if (nSnapshotHistorySwfFtp >= 0 && nSnapshotHistorySwfFtp <= 1)
-		m_bSnapshotHistoryVideoFtp = (BOOL) nSnapshotHistorySwfFtp;
-	else
-		m_bSnapshotHistoryVideoFtp = FALSE;
+	m_bSnapshotHistoryVideoFtp = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistoryVideoFtp"), FALSE);
 	m_sSnapshotLiveJpegName = pApp->GetProfileString(sSection, _T("SnapshotLiveJpegName"), DEFAULT_SNAPSHOT_LIVE_JPEGNAME);
 	m_sSnapshotLiveJpegThumbName = pApp->GetProfileString(sSection, _T("SnapshotLiveJpegThumbName"), DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME);
 	m_nSnapshotRate = (int) pApp->GetProfileInt(sSection, _T("SnapshotRate"), DEFAULT_SNAPSHOT_RATE);
@@ -4769,7 +4755,9 @@ void CVideoDeviceDoc::SaveSettings()
 		
 	pApp->WriteProfileInt(sSection, _T("HideExecCommandMovementDetection"), m_bHideExecCommandMovementDetection);
 	pApp->WriteProfileInt(sSection, _T("WaitExecCommandMovementDetection"), m_bWaitExecCommandMovementDetection);
+	pApp->WriteProfileInt(sSection, _T("VideoProcessorMode"), m_dwVideoProcessorMode);
 	pApp->WriteProfileInt(sSection, _T("VideoRecQuality"), (int)m_fVideoRecQuality);
+	pApp->WriteProfileInt(sSection, _T("PrivacyMask"), (int)m_bPrivacyMask);
 	pApp->WriteProfileInt(sSection, _T("DetectionStartStop"), m_nDetectionStartStop);
 	pApp->WriteProfileInt(sSection, _T("DetectionSunday"), (int)m_bDetectionSunday);
 	pApp->WriteProfileInt(sSection, _T("DetectionMonday"), (int)m_bDetectionMonday);
@@ -4784,12 +4772,17 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("DetectionStopHour"), m_DetectionStopTime.GetHour());
 	pApp->WriteProfileInt(sSection, _T("DetectionStopMin"), m_DetectionStopTime.GetMinute());
 	pApp->WriteProfileInt(sSection, _T("DetectionStopSec"), m_DetectionStopTime.GetSecond());
+	pApp->WriteProfileInt(sSection, _T("ShowFrameTime"), (int)m_bShowFrameTime);
 	pApp->WriteProfileInt(sSection, _T("RefFontSize"), m_nRefFontSize);
 	pApp->WriteProfileInt(sSection, _T("AnimatedGifWidth"), m_dwAnimatedGifWidth);
 	pApp->WriteProfileInt(sSection, _T("AnimatedGifHeight"), m_dwAnimatedGifHeight);
 	pApp->WriteProfileInt(sSection, _T("DeleteRecordingsOlderThanDays"), m_nDeleteRecordingsOlderThanDays);
 	pApp->WriteProfileInt(sSection, _T("MaxCameraFolderSizeMB"), m_nMaxCameraFolderSizeMB);
 	pApp->WriteProfileInt(sSection, _T("MinDiskFreePermillion"), m_nMinDiskFreePermillion);
+
+	// Frame-rate
+	unsigned int nSize = sizeof(m_dFrameRate);
+	pApp->WriteProfileBinary(sSection, _T("FrameRate"), (LPBYTE)&m_dFrameRate, nSize);
 
 	// Store the detection zones only if they have been loaded/inited
 	// in OnThreadSafeInitMovDet() <-> m_lMovDetTotalZones is set
@@ -4798,10 +4791,6 @@ void CVideoDeviceDoc::SaveSettings()
 		pApp->WriteProfileInt(sSection, _T("MovDetTotalZones"), m_lMovDetTotalZones);
 		SaveZonesSettings();
 	}
-
-	pApp->WriteProfileInt(sSection, _T("VideoProcessorMode"), m_dwVideoProcessorMode);
-	unsigned int nSize = sizeof(m_dFrameRate);
-	pApp->WriteProfileBinary(sSection, _T("FrameRate"), (LPBYTE)&m_dFrameRate, nSize);
 }
 
 void CVideoDeviceDoc::OpenDxVideoDevice(int nId, CString sDevicePathName, CString sDeviceName)
@@ -5302,6 +5291,7 @@ void CVideoDeviceDoc::CaptureRecord()
 void CVideoDeviceDoc::OnMovDetSensitivity0()
 {
 	m_nDetectionLevel = 0;
+	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity0(CCmdUI* pCmdUI)
@@ -5312,6 +5302,7 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity0(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity10()
 {
 	m_nDetectionLevel = 10;
+	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity10(CCmdUI* pCmdUI)
@@ -5322,6 +5313,7 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity10(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity20()
 {
 	m_nDetectionLevel = 20;
+	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity20(CCmdUI* pCmdUI)
@@ -5332,6 +5324,7 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity20(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity30()
 {
 	m_nDetectionLevel = 30;
+	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity30(CCmdUI* pCmdUI)
@@ -5342,6 +5335,7 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity30(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity40()
 {
 	m_nDetectionLevel = 40;
+	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity40(CCmdUI* pCmdUI)
@@ -5352,6 +5346,7 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity40(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity50()
 {
 	m_nDetectionLevel = 50;
+	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity50(CCmdUI* pCmdUI)
@@ -5362,6 +5357,7 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity50(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity60()
 {
 	m_nDetectionLevel = 60;
+	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity60(CCmdUI* pCmdUI)
@@ -5372,6 +5368,7 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity60(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity70()
 {
 	m_nDetectionLevel = 70;
+	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity70(CCmdUI* pCmdUI)
@@ -5382,6 +5379,7 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity70(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity80()
 {
 	m_nDetectionLevel = 80;
+	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity80(CCmdUI* pCmdUI)
@@ -5392,6 +5390,7 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity80(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity90()
 {
 	m_nDetectionLevel = 90;
+	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity90(CCmdUI* pCmdUI)
@@ -5402,6 +5401,7 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity90(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity100()
 {
 	m_nDetectionLevel = 100;
+	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity100(CCmdUI* pCmdUI)
@@ -8449,7 +8449,7 @@ void CVideoDeviceDoc::OnUpdateEditPrivacyMask(CCmdUI* pCmdUI)
 
 void CVideoDeviceDoc::OnEditZoneBig()
 {
-	m_nDetectionZoneSize = 0;
+	m_nDetectionZoneSize = 0; // changing this triggers OnThreadSafeInitMovDet() which calls WriteProfileInt()
 	OnEditZoneRemove();
 }
 
@@ -8460,7 +8460,7 @@ void CVideoDeviceDoc::OnUpdateEditZoneBig(CCmdUI* pCmdUI)
 
 void CVideoDeviceDoc::OnEditZoneMedium()
 {
-	m_nDetectionZoneSize = 1;
+	m_nDetectionZoneSize = 1; // changing this triggers OnThreadSafeInitMovDet() which calls WriteProfileInt()
 	OnEditZoneRemove();
 }
 
@@ -8471,7 +8471,7 @@ void CVideoDeviceDoc::OnUpdateEditZoneMedium(CCmdUI* pCmdUI)
 
 void CVideoDeviceDoc::OnEditZoneSmall()
 {
-	m_nDetectionZoneSize = 2;
+	m_nDetectionZoneSize = 2; // changing this triggers OnThreadSafeInitMovDet() which calls WriteProfileInt()
 	OnEditZoneRemove();
 }
 

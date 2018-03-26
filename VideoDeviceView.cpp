@@ -1073,6 +1073,7 @@ void CVideoDeviceView::OnFrameTimeFontSize4()
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	pDoc->m_nRefFontSize = 4;
+	::AfxGetApp()->WriteProfileInt(pDoc->GetDevicePathName(), _T("RefFontSize"), pDoc->m_nRefFontSize);
 }
 
 void CVideoDeviceView::OnUpdateFrameTimeFontSize4(CCmdUI* pCmdUI)
@@ -1087,6 +1088,7 @@ void CVideoDeviceView::OnFrameTimeFontSize5()
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	pDoc->m_nRefFontSize = 5;
+	::AfxGetApp()->WriteProfileInt(pDoc->GetDevicePathName(), _T("RefFontSize"), pDoc->m_nRefFontSize);
 }
 
 void CVideoDeviceView::OnUpdateFrameTimeFontSize5(CCmdUI* pCmdUI)
@@ -1101,6 +1103,7 @@ void CVideoDeviceView::OnFrameTimeFontSize6()
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	pDoc->m_nRefFontSize = 6;
+	::AfxGetApp()->WriteProfileInt(pDoc->GetDevicePathName(), _T("RefFontSize"), pDoc->m_nRefFontSize);
 }
 
 void CVideoDeviceView::OnUpdateFrameTimeFontSize6(CCmdUI* pCmdUI)
@@ -1115,6 +1118,7 @@ void CVideoDeviceView::OnFrameTimeFontSize7()
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	pDoc->m_nRefFontSize = 7;
+	::AfxGetApp()->WriteProfileInt(pDoc->GetDevicePathName(), _T("RefFontSize"), pDoc->m_nRefFontSize);
 }
 
 void CVideoDeviceView::OnUpdateFrameTimeFontSize7(CCmdUI* pCmdUI)
@@ -1129,6 +1133,7 @@ void CVideoDeviceView::OnFrameTimeFontSize8()
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	pDoc->m_nRefFontSize = 8;
+	::AfxGetApp()->WriteProfileInt(pDoc->GetDevicePathName(), _T("RefFontSize"), pDoc->m_nRefFontSize);
 }
 
 void CVideoDeviceView::OnUpdateFrameTimeFontSize8(CCmdUI* pCmdUI)
@@ -1143,6 +1148,7 @@ void CVideoDeviceView::OnFrameTimeFontSize9()
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	pDoc->m_nRefFontSize = 9;
+	::AfxGetApp()->WriteProfileInt(pDoc->GetDevicePathName(), _T("RefFontSize"), pDoc->m_nRefFontSize);
 }
 
 void CVideoDeviceView::OnUpdateFrameTimeFontSize9(CCmdUI* pCmdUI)
@@ -1157,6 +1163,7 @@ void CVideoDeviceView::OnFrameTimeFontSize10()
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	pDoc->m_nRefFontSize = 10;
+	::AfxGetApp()->WriteProfileInt(pDoc->GetDevicePathName(), _T("RefFontSize"), pDoc->m_nRefFontSize);
 }
 
 void CVideoDeviceView::OnUpdateFrameTimeFontSize10(CCmdUI* pCmdUI)
@@ -1171,6 +1178,7 @@ void CVideoDeviceView::OnFrameTimeFontSize11()
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	pDoc->m_nRefFontSize = 11;
+	::AfxGetApp()->WriteProfileInt(pDoc->GetDevicePathName(), _T("RefFontSize"), pDoc->m_nRefFontSize);
 }
 
 void CVideoDeviceView::OnUpdateFrameTimeFontSize11(CCmdUI* pCmdUI)
@@ -1185,6 +1193,7 @@ void CVideoDeviceView::OnFrameTimeFontSize12()
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	pDoc->m_nRefFontSize = 12;
+	::AfxGetApp()->WriteProfileInt(pDoc->GetDevicePathName(), _T("RefFontSize"), pDoc->m_nRefFontSize);
 }
 
 void CVideoDeviceView::OnUpdateFrameTimeFontSize12(CCmdUI* pCmdUI)
@@ -1199,6 +1208,7 @@ void CVideoDeviceView::OnFrameTimeFontSize14()
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	pDoc->m_nRefFontSize = 14;
+	::AfxGetApp()->WriteProfileInt(pDoc->GetDevicePathName(), _T("RefFontSize"), pDoc->m_nRefFontSize);
 }
 
 void CVideoDeviceView::OnUpdateFrameTimeFontSize14(CCmdUI* pCmdUI)
@@ -1213,6 +1223,7 @@ void CVideoDeviceView::OnFrameTimeFontSize16()
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	pDoc->m_nRefFontSize = 16;
+	::AfxGetApp()->WriteProfileInt(pDoc->GetDevicePathName(), _T("RefFontSize"), pDoc->m_nRefFontSize);
 }
 
 void CVideoDeviceView::OnUpdateFrameTimeFontSize16(CCmdUI* pCmdUI)

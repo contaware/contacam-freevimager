@@ -828,7 +828,7 @@ public:
 	CRITICAL_SECTION m_csConnectionError;				// Critical section for the connection error
 	volatile BOOL m_bObscureSource;						// Flag indicating whether the source has to be obscured
 	volatile BOOL m_bShowFrameTime;						// Show / Hide Frame Time Inside the Frame (frame time is also recorded)
-	volatile int m_nRefFontSize;						// Minimum font size for frame time, detection indicator, save/email/ftp progress
+	volatile int m_nRefFontSize;						// Minimum font size for frame time, detection indicator and save progress
 	volatile BOOL m_bDoEditCopy;						// Copy Frame to Clipboard in ProcessI420Frame()
 	volatile BOOL m_bDoEditSnapshot;					// Manual Snapshot Frame to file
 	volatile DWORD m_dwFrameCountUp;					// Captured Frames Count-Up, it can wrap around!
