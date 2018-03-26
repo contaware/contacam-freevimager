@@ -260,7 +260,7 @@ libtiff 3.8.2
 - In tif_dirinfo.c EXIFTAG_SUBJECTDISTANCE is TIFF_SRATIONAL!
 
 
-libpng 1.2.57
+libpng 1.2.59
 -------------
 
 - Thread Safe, but do not define PNG_THREAD_UNSAFE_OK!
@@ -281,5 +281,5 @@ https://github.com/avaneev/avir
 UAC NSIS installer plugin
 -------------------------
 
-- Added silent install switches to the UAC.nsh include file:
-  MessageBox ... /SD IDOK
+Added silent install switches to the UAC.nsh include file:
+MessageBox ... /SD IDOK
