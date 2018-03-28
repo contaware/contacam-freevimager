@@ -19,6 +19,15 @@ Hinweis: © 2001 by Christian Rodemeyer
 static char THIS_FILE[] = __FILE__;
 #endif
 
+#define TABS_HEIGHT				19
+#define TABS_PADDING_X			26
+#define TABS_PADDING_Y			5
+#define CLOSE_THICKNESS			1
+#define CLOSE_COLOR				RGB(0x30,0x30,0x30)
+#define CLOSE_HOT_COLOR			RGB(0xff,0xff,0xff)
+#define CLOSE_HOT_BKGCOLOR		RGB(0xe8,0x11,0x23)
+#define CLOSE_PADDING			7
+
 /////////////////////////////////////////////////////////////////////////////
 // CMDITabs
 
@@ -28,15 +37,18 @@ CMDITabs::CMDITabs()
   m_minViews = 0;
   m_bImages = false;
   m_bTop    = false;
+  m_bTracking = FALSE;
+  m_nCloseHotTabIndex = -1;
 }
 
 BEGIN_MESSAGE_MAP(CMDITabs, CTabCtrl)
-  //{{AFX_MSG_MAP(CMDITabs)
   ON_NOTIFY_REFLECT(TCN_SELCHANGE, OnSelChange)
   ON_WM_PAINT()
   ON_WM_NCPAINT()
   ON_WM_CONTEXTMENU()
-  //}}AFX_MSG_MAP
+  ON_WM_LBUTTONDOWN()
+  ON_WM_MOUSEMOVE()
+  ON_WM_MOUSELEAVE()
   ON_MESSAGE(WM_SIZEPARENT, OnSizeParent)
 END_MESSAGE_MAP()
 
@@ -57,7 +69,7 @@ afx_msg LRESULT CMDITabs::OnSizeParent(WPARAM, LPARAM lParam)
     AFX_SIZEPARENTPARAMS* pParams = reinterpret_cast<AFX_SIZEPARENTPARAMS*>(lParam);
 	const bool bLayoutQuery = (pParams->hDWP == NULL);
 
-    const int height = ::SystemDPIScale(26) + (m_bImages ? 1 : 0);
+    const int height = ::SystemDPIScale(2 * TABS_PADDING_Y + TABS_HEIGHT) + (m_bImages ? 1 : 0);
     const int offset = 2;
 
     m_height = height + offset;
@@ -167,14 +179,41 @@ void CMDITabs::Update()
 
 void CMDITabs::OnPaint()
 {
-  CPaintDC dc(this);
+	CPaintDC dc(this);
 
-  if (GetItemCount() == 0) return; // do nothing
+	if (GetItemCount() == 0) return; // do nothing
 
-  // windows should draw the control as usual
-  _AFX_THREAD_STATE* pThreadState = AfxGetThreadState();
-  pThreadState->m_lastSentMsg.wParam = WPARAM(HDC(dc));
-  Default();
+	// windows should draw the control as usual
+	_AFX_THREAD_STATE* pThreadState = AfxGetThreadState();
+	pThreadState->m_lastSentMsg.wParam = WPARAM(HDC(dc));
+	Default();
+
+	// Paint Close Cross
+	int nPadding = ::SystemDPIScale(CLOSE_PADDING);
+	int nPenThickness = ::SystemDPIScale(CLOSE_THICKNESS);
+	for (int i = 0; i < GetItemCount(); i++)
+	{
+		CRect rcItem;
+		GetItemRect(i, &rcItem);
+		CPen Pen;
+		if (i == m_nCloseHotTabIndex)
+		{
+			dc.FillSolidRect(GetCloseBkgRect(i), CLOSE_HOT_BKGCOLOR);
+			Pen.CreatePen(PS_SOLID, nPenThickness, CLOSE_HOT_COLOR);
+		}
+		else
+			Pen.CreatePen(PS_SOLID, nPenThickness, CLOSE_COLOR);
+		CPen* pOldPen = dc.SelectObject(&Pen);
+		int left = rcItem.right - rcItem.Height() + nPadding;
+		int top = rcItem.top + nPadding;
+		int right = rcItem.right - nPadding;
+		int bottom = rcItem.bottom - nPadding;
+		dc.MoveTo(left, top);
+		dc.LineTo(right + 1, bottom + 1);	/* draws: \ */
+		dc.MoveTo(right, top);
+		dc.LineTo(left - 1, bottom + 1);	/* draws: / */
+		dc.SelectObject(pOldPen);
+	}
 }
 
 void CMDITabs::OnNcPaint()
@@ -247,7 +286,76 @@ void CMDITabs::Create(CFrameWnd* pMainFrame, DWORD dwStyle)
     SetImageList(&m_images);
   }
 
-  //SetItemSize(CSize(50, 0)); // Fixed Width Experiment
+  SetPadding(CSize(::SystemDPIScale(TABS_PADDING_X), ::SystemDPIScale(TABS_PADDING_Y)));
+}
+
+CRect CMDITabs::GetCloseBkgRect(int nTabIndex)
+{
+	CRect rc(0,0,0,0);
+	if (nTabIndex >= 0)
+	{
+		GetItemRect(nTabIndex, &rc);
+		int nPadding = ::SystemDPIScale(CLOSE_PADDING);
+		rc.left = rc.right - rc.Height();
+		rc.DeflateRect(nPadding / 2, nPadding / 2);
+		rc.right += 1;
+		rc.bottom += 1;
+	}
+	return rc;
+}
+
+void CMDITabs::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	TCHITTESTINFO tcHit;
+	tcHit.pt = point;
+	int nTabIndex = HitTest(&tcHit);
+	if (GetCloseBkgRect(nTabIndex).PtInRect(point))
+	{
+		TCITEM item;
+		item.mask = TCIF_PARAM;
+		GetItem(nTabIndex, &item);
+		HWND hWnd = HWND(item.lParam);
+		::SendMessage(hWnd, WM_SYSCOMMAND, SC_CLOSE, 0);
+		return; // return without calling base class handler
+	}
+	CTabCtrl::OnLButtonDown(nFlags, point); // activate tab
+}
+
+void CMDITabs::OnMouseMove(UINT nFlags, CPoint point)
+{
+	// Do the tab hover
+	CTabCtrl::OnMouseMove(nFlags, point);
+		
+	// Update m_nCloseHotTabIndex and invalidate for painting 
+	TCHITTESTINFO tcHit;
+	tcHit.pt = point;
+	int nTabIndex = HitTest(&tcHit);
+	int nCloseHotTabIndex = -1;
+	if (GetCloseBkgRect(nTabIndex).PtInRect(point))
+		nCloseHotTabIndex = nTabIndex;
+	if (nCloseHotTabIndex != m_nCloseHotTabIndex)
+	{
+		m_nCloseHotTabIndex = nCloseHotTabIndex;
+		Invalidate(FALSE);
+	}
+
+	// Get a message when leaving the client area
+	if (!m_bTracking)
+	{
+		TRACKMOUSEEVENT tme;
+		tme.cbSize = sizeof(tme);
+		tme.hwndTrack = m_hWnd;
+		tme.dwFlags = TME_LEAVE;
+		tme.dwHoverTime = 0;
+		m_bTracking = ::TrackMouseEvent(&tme);
+	}
+}
+
+void CMDITabs::OnMouseLeave()
+{
+	m_bTracking = FALSE;
+	m_nCloseHotTabIndex = -1;
+	Invalidate(FALSE);
 }
 
 void CMDITabs::OnContextMenu(CWnd* pWnd, CPoint point) 

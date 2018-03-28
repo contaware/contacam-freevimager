@@ -53,25 +53,18 @@ private:
   int        m_minViews; // minimum number of views 
   bool       m_bImages;
   bool       m_bTop;
+  BOOL       m_bTracking;
+  int        m_nCloseHotTabIndex;
 
-public:
-
-// Overrides
-  // ClassWizard generated virtual function overrides
-  //{{AFX_VIRTUAL(CMDITabs)
-  //}}AFX_VIRTUAL
-
-// Implementation
-public:
-
-  // Generated message map functions
 protected:
-  //{{AFX_MSG(CMDITabs)
+  CRect GetCloseBkgRect(int nTabIndex);
   afx_msg void OnSelChange(NMHDR* pNMHDR, LRESULT* pResult);
   afx_msg void OnPaint();
   afx_msg void OnNcPaint();
   afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-  //}}AFX_MSG
+  afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+  afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+  afx_msg void OnMouseLeave();
   afx_msg LRESULT OnSizeParent(WPARAM, LPARAM lParam);
   DECLARE_MESSAGE_MAP()
 };
