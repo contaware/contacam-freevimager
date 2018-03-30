@@ -5565,7 +5565,7 @@ void CVideoDeviceDoc::OnCaptureCameraBasicSettings()
 
 void CVideoDeviceDoc::OnUpdateCaptureCameraBasicSettings(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(m_bCaptureStarted && !m_bClosing);
+	pCmdUI->Enable(!m_bClosing);
 }
 
 void CVideoDeviceDoc::CaptureCameraBasicSettings()

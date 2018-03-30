@@ -162,7 +162,7 @@ LONG CVideoDeviceView::OnThreadSafeCaptureCameraBasicSettings(WPARAM wparam, LPA
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-	if (pDoc && pDoc->m_bCaptureStarted	&& !pDoc->m_bClosing)
+	if (pDoc && !pDoc->m_bClosing)
 	{
 		pDoc->CaptureCameraBasicSettings();
 		return 1;
