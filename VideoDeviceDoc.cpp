@@ -4878,12 +4878,12 @@ void CVideoDeviceDoc::OpenDxVideoDevice(int nId, CString sDevicePathName, CStrin
 			// Start Audio Capture Thread
 			if (m_bCaptureAudio && !m_bCaptureAudioFromStream)
 				m_CaptureAudioThread.Start();
-
-			// Title
-			SetDocumentTitle();
 		}
 	}
 	
+	// Title
+	SetDocumentTitle();
+
 	// Show error message?
 	if (!bOK)
 	{
@@ -5146,6 +5146,10 @@ BOOL CVideoDeviceDoc::OpenNetVideoDevice(CString sAddress)
 	m_dwNextSnapshotUpTime = ::timeGetTime();
 	::InterlockedExchange(&m_lCurrentInitUpTime, (LONG)m_dwNextSnapshotUpTime);
 
+	// The Title is set here before starting to connect
+	// and also later on when we are connected
+	SetDocumentTitle();
+
 	// Connect
 	if (m_nNetworkDeviceTypeMode < CVideoDeviceDoc::URL_RTSP)
 		ConnectHttp();
@@ -5194,6 +5198,10 @@ void CVideoDeviceDoc::OpenNetVideoDevice(CHostPortDlg* pDlg)
 	m_dwFrameCountUp = 0U;
 	m_dwNextSnapshotUpTime = ::timeGetTime();
 	::InterlockedExchange(&m_lCurrentInitUpTime, (LONG)m_dwNextSnapshotUpTime);
+
+	// The Title is set here before starting to connect
+	// and also later on when we are connected
+	SetDocumentTitle();
 
 	// Connect
 	if (m_nNetworkDeviceTypeMode < CVideoDeviceDoc::URL_RTSP)
@@ -5600,8 +5608,6 @@ void CVideoDeviceDoc::OnCaptureCameraAdvancedSettings()
 		else
 			m_pCameraAdvancedSettingsPropertySheet->Show();
 	}
-
-	SetDocumentTitle();
 }
 
 void CVideoDeviceDoc::OnUpdateCaptureCameraAdvancedSettings(CCmdUI* pCmdUI) 
