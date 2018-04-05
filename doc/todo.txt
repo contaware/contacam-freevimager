@@ -50,11 +50,6 @@ ContaCam Program
   server (jeanbaptiste.guyot@orange.fr)
 - Change the color and position of the date and time on the camera frame
   (toan.nguyenk@gmail.com)
-- Snapshot and continuous recording schedulers like detection scheduler
-  so that we have a single registry entry to enable/disable continuous 
-  recording. Like for the detection it would be easy to add the possibility
-  to change that registry/ini file value from another program 
-  (sambul7165@gmail.com) 
 - Advanced motion scheduler with the possibility to configure times for each day
   (g.frascarolo@tiscali.it)
 - Prevent a file from DIRECT URL ACCESS:
