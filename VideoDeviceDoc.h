@@ -957,7 +957,7 @@ public:
 	DWORD* volatile m_MovementDetectionsUpTime;			// Detection Up-Time For each Zone (array allocated in constructor)
 	BYTE* volatile m_MovementDetections;				// Detecting in Zone (array allocated in constructor)
 	BYTE* volatile m_DoMovementDetection;				// Do Movement Detection in this Zone with given relative sensitivity
-														// 0 -> No Detection, 1 -> Full Sensitivity=100%, 2 -> 50%, 4 -> 25%, 10 -> 10%
+														// 0 -> No Detection, 1 -> Full Sensitivity=100%, 2 -> 50%, 4 -> 25%, 10 -> 10%, 20 -> 5%
 														// (array allocated in constructor)
 	volatile LONG m_lMovDetXZonesCount;					// Number of zones in X direction (never set to 0 to avoid division by 0)
 	volatile LONG m_lMovDetYZonesCount;					// Number of zones in Y direction (never set to 0 to avoid division by 0)
@@ -1067,6 +1067,8 @@ protected:
 	afx_msg void OnUpdateEditZoneSensitivity25(CCmdUI* pCmdUI);
 	afx_msg void OnEditZoneSensitivity10();
 	afx_msg void OnUpdateEditZoneSensitivity10(CCmdUI* pCmdUI);
+	afx_msg void OnEditZoneSensitivity5();
+	afx_msg void OnUpdateEditZoneSensitivity5(CCmdUI* pCmdUI);
 	afx_msg void OnEditZoneRemove();
 	afx_msg void OnUpdateEditZoneRemove(CCmdUI* pCmdUI);
 	afx_msg void OnEditPrivacyMask();

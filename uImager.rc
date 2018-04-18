@@ -825,7 +825,7 @@ BEGIN
         MENUITEM "Motion Sensitivity 70",       ID_SENSITIVITY_70
         MENUITEM "Motion Sensitivity 80",       ID_SENSITIVITY_80
         MENUITEM "Motion Sensitivity 90",       ID_SENSITIVITY_90
-        MENUITEM "Continuous / Manual Rec",     ID_SENSITIVITY_100
+        MENUITEM "Continuous Recording",        ID_SENSITIVITY_100
     END
 END
 
@@ -855,6 +855,7 @@ BEGIN
         MENUITEM "Add (50%)",                   ID_EDIT_ZONE_SENSITIVITY_50
         MENUITEM "Add (25%)",                   ID_EDIT_ZONE_SENSITIVITY_25
         MENUITEM "Add (10%)",                   ID_EDIT_ZONE_SENSITIVITY_10
+		MENUITEM "Add (5%)",                    ID_EDIT_ZONE_SENSITIVITY_5
         MENUITEM "Remove",                      ID_EDIT_ZONE_REMOVE
         MENUITEM SEPARATOR
         MENUITEM "Privacy Mask",                ID_EDIT_PRIVACY_MASK
@@ -2301,7 +2302,8 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Motion detection surveillance",IDC_RADIO_MOVDET,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,14,107,10
     CONTROL         "Snapshots with history",IDC_RADIO_SNAPSHOT,"Button",BS_AUTORADIOBUTTON,16,27,87,10
-    CONTROL         "Continuous / manual recording",IDC_RADIO_MANUAL,"Button",BS_AUTORADIOBUTTON,16,40,114,10
+    CONTROL         "Continuous recording (ON/OFF by the red dot toolbar button)",IDC_RADIO_MANUAL,
+                    "Button",BS_AUTORADIOBUTTON,16,40,213,10
     CONTROL         "AUTOSTART\nCamera when ContaCam is executed",IDC_CHECK_AUTORUN,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,256,12,150,39
     EDITTEXT        IDC_EDIT_NAME,152,74,254,13,ES_AUTOHSCROLL
@@ -3643,7 +3645,7 @@ BEGIN
     ID_EDIT_ADDALL          "Add all\nAdd All"
     ID_EDIT_REMOVEALL       "Remove all\nRemove All"
     ID_CAPTURE_NETWORK      "Capture frames from the network\nCapture From Network"
-    ID_CAPTURE_RECORD       "Enable / disable recording\nRecording"
+    ID_CAPTURE_RECORD       "Recording ON/OFF\nRecording"
     ID_VIEW_ALL_NEXT_PICTURE 
                             "Show next image of all open documents\nAll Next Image"
     ID_VIEW_ALL_PREVIOUS_PICTURE 
@@ -4293,13 +4295,15 @@ STRINGTABLE
 BEGIN
     ID_CAPTURE_CAMERABASICSETTINGS "Camera settings\nCamera Settings"
     ID_EDIT_ZONE_SENSITIVITY_100 
-                            "Add zones with 100% sensitivity\nAdd Zones with 100% Sensitivity"
+                            "Add zones with 100% relative sensitivity\nAdd Zones with 100% Relative Sensitivity"
     ID_EDIT_ZONE_SENSITIVITY_50 
-                            "Add zones with 50% sensitivity\nAdd Zones with 50% Sensitivity"
+                            "Add zones with 50% relative sensitivity\nAdd Zones with 50% Relative Sensitivity"
     ID_EDIT_ZONE_SENSITIVITY_25 
-                            "Add zones with 25% sensitivity\nAdd Zones with 25% Sensitivity"
+                            "Add zones with 25% relative sensitivity\nAdd Zones with 25% Relative Sensitivity"
     ID_EDIT_ZONE_SENSITIVITY_10 
-                            "Add zones with 10% sensitivity\nAdd Zones with 10% Sensitivity"
+                            "Add zones with 10% relative sensitivity\nAdd Zones with 10% Relative Sensitivity"
+	ID_EDIT_ZONE_SENSITIVITY_5 
+                            "Add zones with 5% relative sensitivity\nAdd Zones with 5% Relative Sensitivity"
     ID_FILE_EXTRACT         "Extract all pages/frames\nExtract Pages/Frames"
     ID_EDIT_SCREENSHOT      "Take a screenshot\nScreenshot"
 END

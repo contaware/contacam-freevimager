@@ -91,6 +91,8 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_SENSITIVITY_25, OnUpdateEditZoneSensitivity25)
 	ON_COMMAND(ID_EDIT_ZONE_SENSITIVITY_10, OnEditZoneSensitivity10)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_SENSITIVITY_10, OnUpdateEditZoneSensitivity10)
+	ON_COMMAND(ID_EDIT_ZONE_SENSITIVITY_5, OnEditZoneSensitivity5)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_SENSITIVITY_5, OnUpdateEditZoneSensitivity5)
 	ON_COMMAND(ID_EDIT_ZONE_REMOVE, OnEditZoneRemove)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_REMOVE, OnUpdateEditZoneRemove)
 	ON_COMMAND(ID_EDIT_PRIVACY_MASK, OnEditPrivacyMask)
@@ -8417,6 +8419,31 @@ void CVideoDeviceDoc::OnEditZoneSensitivity10()
 void CVideoDeviceDoc::OnUpdateEditZoneSensitivity10(CCmdUI* pCmdUI)
 {
 	pCmdUI->SetCheck(m_nShowEditDetectionZones == 1 && GetView()->m_MovDetSingleZoneSensitivity == 10 ? 1 : 0);
+}
+
+void CVideoDeviceDoc::OnEditZoneSensitivity5()
+{
+	GetView()->m_MovDetSingleZoneSensitivity = 20;
+
+	// Enable Add
+	if (m_nShowEditDetectionZones == 0)
+	{
+		m_nShowEditDetectionZones = 1;
+		GetView()->ForceCursor();
+		GetView()->Invalidate(FALSE);
+		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** Ctrl: Add <-> Remove Zones ***"));
+	}
+	// Switch from Remove to Add
+	else if (m_nShowEditDetectionZones == 2)
+	{
+		m_nShowEditDetectionZones = 1;
+		GetView()->Invalidate(FALSE);
+	}
+}
+
+void CVideoDeviceDoc::OnUpdateEditZoneSensitivity5(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(m_nShowEditDetectionZones == 1 && GetView()->m_MovDetSingleZoneSensitivity == 20 ? 1 : 0);
 }
 
 void CVideoDeviceDoc::OnEditZoneRemove()

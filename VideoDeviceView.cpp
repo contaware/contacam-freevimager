@@ -364,13 +364,33 @@ __forceinline void CVideoDeviceView::DrawZoneSensitivity(int i, HDC hDC, const R
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
+	// Note: the relative sensitivity text size n can be 0, 2 or 4
+
 	RECT rc;
 	POINT ptCenter;
 	ptCenter.x = rcDetZone.left + (rcDetZone.right - rcDetZone.left) / 2;
 	ptCenter.y = rcDetZone.top + (rcDetZone.bottom - rcDetZone.top) / 2;
 
+	// 5 %
+	if (pDoc->m_DoMovementDetection[i] >= 20)
+	{
+		// Fill background		
+		rc.left = ptCenter.x - (3+n);
+		rc.top = ptCenter.y - (3+n);
+		rc.right = ptCenter.x + (4+n);
+		rc.bottom = ptCenter.y + (4+n);
+		::FillRect(hDC, &rc, hBkgndBrush);
+
+		// Draw a 5
+		::MoveToEx(hDC, ptCenter.x + 1 + (n/2), ptCenter.y - (2+n), NULL);
+		::LineTo(hDC, ptCenter.x - (n/2), ptCenter.y - (2+n));
+		::LineTo(hDC, ptCenter.x - (n/2), ptCenter.y);
+		::LineTo(hDC, ptCenter.x + 1 + (n/2), ptCenter.y);
+		::LineTo(hDC, ptCenter.x + 1 + (n/2), ptCenter.y + (2+n));
+		::LineTo(hDC, ptCenter.x - 1 - (n/2), ptCenter.y + (2+n));
+	}
 	// 10 %
-	if (pDoc->m_DoMovementDetection[i] >= 10)
+	else if (pDoc->m_DoMovementDetection[i] >= 10)
 	{
 		// Fill background		
 		rc.left = ptCenter.x - (3+n);
