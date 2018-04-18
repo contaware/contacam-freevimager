@@ -95,8 +95,8 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_SENSITIVITY_5, OnUpdateEditZoneSensitivity5)
 	ON_COMMAND(ID_EDIT_ZONE_REMOVE, OnEditZoneRemove)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_REMOVE, OnUpdateEditZoneRemove)
-	ON_COMMAND(ID_EDIT_PRIVACY_MASK, OnEditPrivacyMask)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_PRIVACY_MASK, OnUpdateEditPrivacyMask)
+	ON_COMMAND(ID_EDIT_ZONE_OBSCURE_REMOVED, OnEditZoneObscureRemoved)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_OBSCURE_REMOVED, OnUpdateEditZoneObscureRemoved)
 	ON_COMMAND(ID_EDIT_ZONE_BIG, OnEditZoneBig)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_BIG, OnUpdateEditZoneBig)
 	ON_COMMAND(ID_EDIT_ZONE_MEDIUM, OnEditZoneMedium)
@@ -3773,7 +3773,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_lMovDetXZonesCount = MOVDET_MIN_ZONES_XORY;
 	m_lMovDetYZonesCount = MOVDET_MIN_ZONES_XORY;
 	m_lMovDetTotalZones = 0;
-	m_bPrivacyMask = FALSE;
+	m_bObscureRemovedZones = FALSE;
 	m_nDetectionStartStop = 0;
 	m_bDetectionSunday = TRUE;
 	m_bDetectionMonday = TRUE;
@@ -4578,7 +4578,7 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_bWaitExecCommandMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("WaitExecCommandMovementDetection"), FALSE);
 	m_dwVideoProcessorMode = (DWORD) MIN(1, MAX(0, pApp->GetProfileInt(sSection, _T("VideoProcessorMode"), 0)));
 	m_fVideoRecQuality = (float) CAVRec::ClipVideoQuality((float)pApp->GetProfileInt(sSection, _T("VideoRecQuality"), (int)DEFAULT_VIDEO_QUALITY));
-	m_bPrivacyMask = (BOOL) pApp->GetProfileInt(sSection, _T("PrivacyMask"), FALSE);
+	m_bObscureRemovedZones = (BOOL) pApp->GetProfileInt(sSection, _T("ObscureRemovedZones"), FALSE);
 	m_nDetectionStartStop = (int) pApp->GetProfileInt(sSection, _T("DetectionStartStop"), 0);
 	m_bDetectionSunday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionSunday"), TRUE);
 	m_bDetectionMonday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionMonday"), TRUE);
@@ -4759,7 +4759,7 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("WaitExecCommandMovementDetection"), m_bWaitExecCommandMovementDetection);
 	pApp->WriteProfileInt(sSection, _T("VideoProcessorMode"), m_dwVideoProcessorMode);
 	pApp->WriteProfileInt(sSection, _T("VideoRecQuality"), (int)m_fVideoRecQuality);
-	pApp->WriteProfileInt(sSection, _T("PrivacyMask"), (int)m_bPrivacyMask);
+	pApp->WriteProfileInt(sSection, _T("ObscureRemovedZones"), (int)m_bObscureRemovedZones);
 	pApp->WriteProfileInt(sSection, _T("DetectionStartStop"), m_nDetectionStartStop);
 	pApp->WriteProfileInt(sSection, _T("DetectionSunday"), (int)m_bDetectionSunday);
 	pApp->WriteProfileInt(sSection, _T("DetectionMonday"), (int)m_bDetectionMonday);
@@ -7344,7 +7344,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 							m_pCamOffDib->GetWidth());
 		}
 		// Draw the privacy mask
-		else if (m_bPrivacyMask && m_lMovDetTotalZones > 0)
+		else if (m_bObscureRemovedZones && m_lMovDetTotalZones > 0)
 		{
 			// Note: m_lMovDetXZonesCount and m_lMovDetYZonesCount will never be set to 0 and will never
 			//       be updated (updated in OnThreadSafeInitMovDet) while executing the following code.
@@ -8469,15 +8469,16 @@ void CVideoDeviceDoc::OnUpdateEditZoneRemove(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(m_nShowEditDetectionZones == 2 ? 1 : 0);
 }
 
-void CVideoDeviceDoc::OnEditPrivacyMask()
+void CVideoDeviceDoc::OnEditZoneObscureRemoved()
 {
-	m_bPrivacyMask = !m_bPrivacyMask;
-	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("PrivacyMask"), m_bPrivacyMask);
+	m_bObscureRemovedZones = !m_bObscureRemovedZones;
+	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("ObscureRemovedZones"), m_bObscureRemovedZones);
+	OnEditZoneRemove();
 }
 
-void CVideoDeviceDoc::OnUpdateEditPrivacyMask(CCmdUI* pCmdUI)
+void CVideoDeviceDoc::OnUpdateEditZoneObscureRemoved(CCmdUI* pCmdUI)
 {
-	pCmdUI->SetCheck(m_bPrivacyMask ? 1 : 0);
+	pCmdUI->SetCheck(m_bObscureRemovedZones ? 1 : 0);
 }
 
 void CVideoDeviceDoc::OnEditZoneBig()

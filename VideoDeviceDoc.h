@@ -962,7 +962,7 @@ public:
 	volatile LONG m_lMovDetXZonesCount;					// Number of zones in X direction (never set to 0 to avoid division by 0)
 	volatile LONG m_lMovDetYZonesCount;					// Number of zones in Y direction (never set to 0 to avoid division by 0)
 	volatile LONG m_lMovDetTotalZones;					// Total Number of zones (set to 0 when a (re-)init of the zones is wanted)
-	volatile BOOL m_bPrivacyMask;						// TRUE -> removed detection zones are obscured
+	volatile BOOL m_bObscureRemovedZones;				// Removed detection zones are obscured
 	volatile int m_nDetectionStartStop;					// 0 -> Detection Alwayn on
 														// 1 -> Enable detection on specified times and days
 														// 2 -> Disable detection on specified times and days
@@ -1071,8 +1071,8 @@ protected:
 	afx_msg void OnUpdateEditZoneSensitivity5(CCmdUI* pCmdUI);
 	afx_msg void OnEditZoneRemove();
 	afx_msg void OnUpdateEditZoneRemove(CCmdUI* pCmdUI);
-	afx_msg void OnEditPrivacyMask();
-	afx_msg void OnUpdateEditPrivacyMask(CCmdUI* pCmdUI);
+	afx_msg void OnEditZoneObscureRemoved();
+	afx_msg void OnUpdateEditZoneObscureRemoved(CCmdUI* pCmdUI);
 	afx_msg void OnEditZoneBig();
 	afx_msg void OnUpdateEditZoneBig(CCmdUI* pCmdUI);
 	afx_msg void OnEditZoneMedium();

@@ -3275,7 +3275,7 @@
 #define ID_EDIT_ZONE_BIG                33551
 #define ID_EDIT_ZONE_MEDIUM             33552
 #define ID_EDIT_ZONE_SMALL              33553
-#define ID_EDIT_PRIVACY_MASK            33554
+#define ID_EDIT_ZONE_OBSCURE_REMOVED    33554
 #define ID_BUTTON_PRINT_SETUP           58120
 
 // Next default values for new objects

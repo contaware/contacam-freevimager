@@ -855,10 +855,10 @@ BEGIN
         MENUITEM "Add (50%)",                   ID_EDIT_ZONE_SENSITIVITY_50
         MENUITEM "Add (25%)",                   ID_EDIT_ZONE_SENSITIVITY_25
         MENUITEM "Add (10%)",                   ID_EDIT_ZONE_SENSITIVITY_10
-		MENUITEM "Add (5%)",                    ID_EDIT_ZONE_SENSITIVITY_5
-        MENUITEM "Remove",                      ID_EDIT_ZONE_REMOVE
+        MENUITEM "Add (5%)",                    ID_EDIT_ZONE_SENSITIVITY_5
         MENUITEM SEPARATOR
-        MENUITEM "Privacy Mask",                ID_EDIT_PRIVACY_MASK
+        MENUITEM "Remove",                      ID_EDIT_ZONE_REMOVE
+        MENUITEM "Obscure removed",             ID_EDIT_ZONE_OBSCURE_REMOVED
         MENUITEM SEPARATOR
         MENUITEM "Big",                         ID_EDIT_ZONE_BIG
         MENUITEM "Medium",                      ID_EDIT_ZONE_MEDIUM
@@ -4302,7 +4302,7 @@ BEGIN
                             "Add zones with 25% relative sensitivity\nAdd Zones with 25% Relative Sensitivity"
     ID_EDIT_ZONE_SENSITIVITY_10 
                             "Add zones with 10% relative sensitivity\nAdd Zones with 10% Relative Sensitivity"
-	ID_EDIT_ZONE_SENSITIVITY_5 
+    ID_EDIT_ZONE_SENSITIVITY_5 
                             "Add zones with 5% relative sensitivity\nAdd Zones with 5% Relative Sensitivity"
     ID_FILE_EXTRACT         "Extract all pages/frames\nExtract Pages/Frames"
     ID_EDIT_SCREENSHOT      "Take a screenshot\nScreenshot"
@@ -4371,7 +4371,8 @@ STRINGTABLE
 BEGIN
     ID_EDIT_ZONE_MEDIUM     "Medium zones size\nMedium Zones Size"
     ID_EDIT_ZONE_SMALL      "Small zones size\nSmall Zones Size"
-    ID_EDIT_PRIVACY_MASK    "Obscure removed zones\nPrivacy Mask"
+    ID_EDIT_ZONE_OBSCURE_REMOVED 
+                            "Obscure removed zones\nObscure Removed Zones"
 END
 
 #endif    // English (United States) resources
