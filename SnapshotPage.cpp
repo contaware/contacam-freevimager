@@ -40,21 +40,11 @@ CSnapshotPage::~CSnapshotPage()
 {
 }
 
-void CSnapshotPage::DoDataExchange(CDataExchange* pDX)
-{
-	CPropertyPage::DoDataExchange(pDX);
-	DDX_DateTimeCtrl(pDX, IDC_TIME_DAILY_START, m_SnapshotStartTime);
-	DDX_DateTimeCtrl(pDX, IDC_TIME_DAILY_STOP, m_SnapshotStopTime);
-}
-
 BEGIN_MESSAGE_MAP(CSnapshotPage, CPropertyPage)
 	ON_WM_DESTROY()
 	ON_EN_CHANGE(IDC_EDIT_SNAPSHOT_RATE, OnChangeEditSnapshotRate)
 	ON_BN_CLICKED(IDC_BUTTON_THUMB_SIZE, OnButtonThumbSize)
 	ON_BN_CLICKED(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO, OnCheckSnapshotHistoryVideo)
-	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_DAILY, OnCheckSchedulerDaily)
-	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_DAILY_START, OnDatetimechangeTimeDailyStart)
-	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_DAILY_STOP, OnDatetimechangeTimeDailyStop)
 	ON_BN_CLICKED(IDC_FTP_CONFIGURE, OnFtpConfigure)
 	ON_BN_CLICKED(IDC_CHECK_FTP_SNAPSHOT, OnCheckFtpSnapshot)
 	ON_BN_CLICKED(IDC_CHECK_FTP_SNAPSHOT_HISTORY_VIDEO, OnCheckFtpSnapshotHistoryVideo)
@@ -63,10 +53,6 @@ END_MESSAGE_MAP()
 
 BOOL CSnapshotPage::OnInitDialog() 
 {
-	// Init vars
-	m_SnapshotStartTime = m_pDoc->m_SnapshotStartTime;
-	m_SnapshotStopTime = m_pDoc->m_SnapshotStopTime;
-
 	// This calls UpdateData(FALSE)
 	CPropertyPage::OnInitDialog();
 
@@ -81,10 +67,6 @@ BOOL CSnapshotPage::OnInitDialog()
 	// Snapshot History Video Ftp Check Box
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_FTP_SNAPSHOT_HISTORY_VIDEO);
 	pCheck->SetCheck(m_pDoc->m_bSnapshotHistoryVideoFtp);
-
-	// Snapshot Scheduler Check Box
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_DAILY);
-	pCheck->SetCheck(m_pDoc->m_bSnapshotStartStop);
 
 	// Snapshot rate
 	DisplaySnapshotRate();
@@ -221,51 +203,6 @@ void CSnapshotPage::OnFtpConfigure()
 		m_pDoc->m_SnapshotFTPUploadConfiguration = dlg.m_FTPUploadConfiguration;
 		::LeaveCriticalSection(&m_pDoc->m_csSnapshotConfiguration);
 	}
-}
-
-void CSnapshotPage::OnCheckSchedulerDaily()
-{
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_DAILY);
-	if (pCheck->GetCheck())
-		m_pDoc->m_bSnapshotStartStop = TRUE;
-	else
-		m_pDoc->m_bSnapshotStartStop = FALSE;
-	UpdateSnapshotStartStopTimes();
-}
-
-void CSnapshotPage::UpdateSnapshotStartStopTimes()
-{
-	if (m_pDoc->m_bSnapshotStartStop)
-	{
-		::EnterCriticalSection(&m_pDoc->m_csSnapshotConfiguration);
-		m_pDoc->m_SnapshotStartTime = CTime(	2000,
-												1,
-												1,
-												m_SnapshotStartTime.GetHour(),
-												m_SnapshotStartTime.GetMinute(),
-												m_SnapshotStartTime.GetSecond());
-		m_pDoc->m_SnapshotStopTime = CTime(	2000,
-												1,
-												1,
-												m_SnapshotStopTime.GetHour(),
-												m_SnapshotStopTime.GetMinute(),
-												m_SnapshotStopTime.GetSecond());
-		::LeaveCriticalSection(&m_pDoc->m_csSnapshotConfiguration);
-	}
-}
-
-void CSnapshotPage::OnDatetimechangeTimeDailyStart(NMHDR* pNMHDR, LRESULT* pResult) 
-{
-	UpdateData(TRUE);
-	UpdateSnapshotStartStopTimes();
-	*pResult = 0;
-}
-
-void CSnapshotPage::OnDatetimechangeTimeDailyStop(NMHDR* pNMHDR, LRESULT* pResult) 
-{	
-	UpdateData(TRUE);
-	UpdateSnapshotStartStopTimes();
-	*pResult = 0;
 }
 
 #endif

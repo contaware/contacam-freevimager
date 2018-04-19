@@ -500,7 +500,7 @@ public:
 			virtual ~CSaveSnapshotThread() {Kill();};
 
 			CDib m_Dib;
-			BOOL m_bSnapshotHistoryVideo;
+			BOOL m_bSnapshotHistoryJpeg;
 			BOOL m_bShowFrameTime;
 			BOOL m_bDetectingMinLengthMovement;
 			int m_nRefFontSize;
@@ -675,7 +675,7 @@ public:
 	void ProcessM420Frame(LPBYTE pData, DWORD dwSize);
 	void ProcessI420Frame(LPBYTE pData, DWORD dwSize);
 	static BOOL Rotate180(CDib* pDib);
-	BOOL IsInMovDetSchedule(const CTime& Time);
+	BOOL IsInSchedule(const CTime& Time);
 
 	// To Start / Stop Frame Processing and Avoid Dead-Locks!
 	__forceinline void StopProcessFrame(DWORD dwMask) {		::EnterCriticalSection(&m_csProcessFrameStop);
@@ -794,7 +794,7 @@ public:
 protected:
 	int ValidateRefFontSize(int nRefFontSize);
 	int ValidateDetectionLevel(int nDetectionLevel);
-	void Snapshot(CDib* pDib, const CTime& Time);
+	void Snapshot(CDib* pDib, const CTime& Time, BOOL bInSchedule);
 	BOOL EditCopy(CDib* pDib, const CTime& Time);
 	void EditSnapshot(CDib* pDib, const CTime& Time);
 	CString SaveJpegMail(CDib* pDib, const CTime& RefTime, DWORD dwRefUpTime);
@@ -908,9 +908,6 @@ public:
 	volatile int m_nSnapshotThumbWidth;					// Snapshot thumbnail width
 	volatile int m_nSnapshotThumbHeight;				// Snapshot thumbnail height
 	volatile DWORD m_dwNextSnapshotUpTime;				// The up-time of the next snapshot
-	volatile BOOL m_bSnapshotStartStop;					// Enable / Disable Daily Timed Snapshots
-	CTime m_SnapshotStartTime;							// Daily Snapshots Start Time
-	CTime m_SnapshotStopTime;							// Daily Snapshots Stop Time
 	CString m_sSnapshotLiveJpegName;					// Live snapshot jpeg name (without .jpg extension)
 	CString m_sSnapshotLiveJpegThumbName;				// Live snapshot jpeg thumb name (without .jpg extension)
 	FTPUploadConfigurationStruct m_SnapshotFTPUploadConfiguration;

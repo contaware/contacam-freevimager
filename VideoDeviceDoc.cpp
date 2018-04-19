@@ -1211,7 +1211,7 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 
 	// We need the History jpgs to make the video file inside the snapshot video thread
 	// (history jpgs are deleted in snapshot video thread)
-	if (m_bSnapshotHistoryVideo)
+	if (m_bSnapshotHistoryJpeg)
 		::CopyFile(sTempFileName, sHistoryFileName, FALSE);
 
 exit:
@@ -1234,7 +1234,7 @@ __forceinline CString CVideoDeviceDoc::CSaveSnapshotThread::MakeJpegHistoryFileN
 	sSnapshotDir.TrimRight(_T('\\'));
 
 	// Create directory if necessary
-	if (sSnapshotDir != _T("") && m_bSnapshotHistoryVideo)
+	if (sSnapshotDir != _T("") && m_bSnapshotHistoryJpeg)
 	{
 		DWORD dwAttrib = ::GetFileAttributes(sSnapshotDir);
 		if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
@@ -3716,9 +3716,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nSnapshotThumbWidth = DEFAULT_SNAPSHOT_THUMB_WIDTH;
 	m_nSnapshotThumbHeight = DEFAULT_SNAPSHOT_THUMB_HEIGHT;
 	m_dwNextSnapshotUpTime = 0U;
-	m_bSnapshotStartStop = FALSE;
-	m_SnapshotStartTime = CurrentTimeOnly;
-	m_SnapshotStopTime = CurrentTimeOnly;
 
 	// Threads Init
 	m_CaptureAudioThread.SetDoc(this);
@@ -4530,13 +4527,6 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_nSnapshotRateMs = (int) pApp->GetProfileInt(sSection, _T("SnapshotRateMs"), 0);
 	m_nSnapshotThumbWidth = (int) pApp->GetProfileInt(sSection, _T("SnapshotThumbWidth"), DEFAULT_SNAPSHOT_THUMB_WIDTH);
 	m_nSnapshotThumbHeight = (int) pApp->GetProfileInt(sSection, _T("SnapshotThumbHeight"), DEFAULT_SNAPSHOT_THUMB_HEIGHT);
-	m_bSnapshotStartStop = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotStartStop"), FALSE);
-	m_SnapshotStartTime = CTime(2000, 1, 1,	pApp->GetProfileInt(sSection, _T("SnapshotStartHour"), t.GetHour()),
-											pApp->GetProfileInt(sSection, _T("SnapshotStartMin"), t.GetMinute()),
-											pApp->GetProfileInt(sSection, _T("SnapshotStartSec"), t.GetSecond()));
-	m_SnapshotStopTime = CTime(2000, 1, 1,	pApp->GetProfileInt(sSection, _T("SnapshotStopHour"), t.GetHour()),
-											pApp->GetProfileInt(sSection, _T("SnapshotStopMin"), t.GetMinute()),
-											pApp->GetProfileInt(sSection, _T("SnapshotStopSec"), t.GetSecond()));
 	m_bCaptureAudio = (BOOL) pApp->GetProfileInt(sSection, _T("CaptureAudio"), FALSE);
 	m_bCaptureAudioFromStream = (BOOL)pApp->GetProfileInt(sSection, _T("CaptureAudioFromStream"), bDefaultCaptureAudioFromStream);
 	m_bAudioListen = (BOOL) pApp->GetProfileInt(sSection, _T("AudioListen"), FALSE);
@@ -4712,13 +4702,6 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("SnapshotRateMs"), m_nSnapshotRateMs);
 	pApp->WriteProfileInt(sSection, _T("SnapshotThumbWidth"), m_nSnapshotThumbWidth);
 	pApp->WriteProfileInt(sSection, _T("SnapshotThumbHeight"), m_nSnapshotThumbHeight);
-	pApp->WriteProfileInt(sSection, _T("SnapshotStartStop"), (int)m_bSnapshotStartStop);
-	pApp->WriteProfileInt(sSection, _T("SnapshotStartHour"), m_SnapshotStartTime.GetHour());
-	pApp->WriteProfileInt(sSection, _T("SnapshotStartMin"), m_SnapshotStartTime.GetMinute());
-	pApp->WriteProfileInt(sSection, _T("SnapshotStartSec"), m_SnapshotStartTime.GetSecond());
-	pApp->WriteProfileInt(sSection, _T("SnapshotStopHour"), m_SnapshotStopTime.GetHour());
-	pApp->WriteProfileInt(sSection, _T("SnapshotStopMin"), m_SnapshotStopTime.GetMinute());
-	pApp->WriteProfileInt(sSection, _T("SnapshotStopSec"), m_SnapshotStopTime.GetSecond());
 	pApp->WriteProfileInt(sSection, _T("CaptureAudio"), m_bCaptureAudio);
 	pApp->WriteProfileInt(sSection, _T("CaptureAudioFromStream"), m_bCaptureAudioFromStream);
 	pApp->WriteProfileInt(sSection, _T("AudioListen"), (int)m_bAudioListen);
@@ -6914,8 +6897,11 @@ BOOL CVideoDeviceDoc::Rotate180(CDib* pDib)
 	return TRUE;
 }
 
-BOOL CVideoDeviceDoc::IsInMovDetSchedule(const CTime& Time)
+BOOL CVideoDeviceDoc::IsInSchedule(const CTime& Time)
 {
+	if (m_nDetectionStartStop == 0) // always enabled
+		return TRUE;
+
 	BOOL bInSchedule = TRUE;
 	switch (Time.GetDayOfWeek())
 	{
@@ -6944,7 +6930,11 @@ BOOL CVideoDeviceDoc::IsInMovDetSchedule(const CTime& Time)
 		if (timeonly < m_DetectionStartTime && timeonly > m_DetectionStopTime)
 			bInSchedule = FALSE;
 	}
-	return bInSchedule;
+
+	if (m_nDetectionStartStop == 1) // enable on specified schedule
+		return bInSchedule;
+	else							// disable on specified schedule
+		return !bInSchedule;
 }
 
 void CVideoDeviceDoc::ProcessOtherFrame(LPBYTE pData, DWORD dwSize)
@@ -7413,29 +7403,11 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 		else
 			pDib->FreeUserList();
 
-		// Detection Scheduler
-		DWORD dwVideoProcessorMode = m_dwVideoProcessorMode;
-		if (dwVideoProcessorMode > 0 && m_nDetectionStartStop > 0) // (m_nDetectionStartStop == 0 -> no scheduler)
-		{
-			// Is current time in schedule?
-			BOOL bInSchedule = IsInMovDetSchedule(CurrentTime);
-
-			// 1 -> Enable detection on specified schedule
-			if (m_nDetectionStartStop == 1) 
-			{
-				if (!bInSchedule)
-					dwVideoProcessorMode = 0;
-			}
-			// 2 -> Disable detection on specified schedule
-			else
-			{
-				if (bInSchedule)
-					dwVideoProcessorMode = 0;
-			}
-		}
+		// Is current time in schedule?
+		BOOL bInSchedule = IsInSchedule(CurrentTime);
 
 		// Do Motion Detection Processing
-		MovementDetectionProcessing(pDib, dwVideoProcessorMode, b1SecTick);
+		MovementDetectionProcessing(pDib, bInSchedule ? m_dwVideoProcessorMode : 0, b1SecTick);
 
 		// Copy to Clipboard
 		if (m_bDoEditCopy)
@@ -7446,7 +7418,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 			EditSnapshot(pDib, CurrentTime);
 
 		// Timed Snapshot
-		Snapshot(pDib, CurrentTime);
+		Snapshot(pDib, CurrentTime, bInSchedule);
 
 		// Device OK heartbeat
 		if (CurrentTime.GetDay() != m_LastDeviceNotifyTime.GetDay()		||
@@ -7649,7 +7621,7 @@ void CVideoDeviceDoc::SnapshotRate(double dRate)
 	PhpConfigFileSetParam(PHPCONFIG_SERVERPUSH_POLLRATE_MS, sText);
 }
 
-void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
+void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time, BOOL bInSchedule)
 {
 	// Snapshot Thread
 	if (!m_SaveSnapshotThread.IsAlive())
@@ -7688,34 +7660,11 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 			}
 		}
 
-		// Check the scheduler to update bDoSnapshot
-		if (bDoSnapshot && m_bSnapshotStartStop)
-		{
-			CTime timeonly(	2000,
-							1,
-							1,
-							Time.GetHour(),
-							Time.GetMinute(),
-							Time.GetSecond());
-			::EnterCriticalSection(&m_csSnapshotConfiguration);
-			if (m_SnapshotStartTime <= m_SnapshotStopTime)
-			{
-				if (timeonly < m_SnapshotStartTime || timeonly > m_SnapshotStopTime)
-					bDoSnapshot = FALSE;
-			}
-			else
-			{
-				if (timeonly < m_SnapshotStartTime && timeonly > m_SnapshotStopTime)
-					bDoSnapshot = FALSE;
-			}
-			::LeaveCriticalSection(&m_csSnapshotConfiguration);
-		}
-
 		// Start Thread?
 		if (bDoSnapshot)
 		{
 			m_SaveSnapshotThread.m_Dib = *pDib;
-			m_SaveSnapshotThread.m_bSnapshotHistoryVideo = m_bSnapshotHistoryVideo;
+			m_SaveSnapshotThread.m_bSnapshotHistoryJpeg = bInSchedule ? m_bSnapshotHistoryVideo : FALSE;
 			m_SaveSnapshotThread.m_bShowFrameTime = m_bShowFrameTime;
 			m_SaveSnapshotThread.m_bDetectingMinLengthMovement = m_bDetectingMinLengthMovement;
 			m_SaveSnapshotThread.m_nRefFontSize = m_nRefFontSize;

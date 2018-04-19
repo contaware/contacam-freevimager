@@ -22,8 +22,6 @@ public:
 
 	// Dialog data
 	enum { IDD = IDD_SNAPSHOT };
-	CTime m_SnapshotStartTime;
-	CTime m_SnapshotStopTime;
 
 	// Public Helper functions
 	void DisplaySnapshotRate();
@@ -33,11 +31,7 @@ protected:
 	// Helper vars
 	CVideoDeviceDoc* m_pDoc;
 
-	// Helper functions
-	void UpdateSnapshotStartStopTimes();
-
 	// Dialog functions
-	virtual void DoDataExchange(CDataExchange* pDX);
 	virtual BOOL OnInitDialog();
 	afx_msg void OnDestroy();
 	afx_msg void OnChangeEditSnapshotRate();
@@ -47,9 +41,6 @@ protected:
 	afx_msg void OnCheckFtpSnapshot();
 	afx_msg void OnCheckFtpSnapshotHistoryVideo();
 	afx_msg void OnFtpConfigure();
-	afx_msg void OnCheckSchedulerDaily();
-	afx_msg void OnDatetimechangeTimeDailyStart(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnDatetimechangeTimeDailyStop(NMHDR* pNMHDR, LRESULT* pResult);
 	DECLARE_MESSAGE_MAP()
 };
 

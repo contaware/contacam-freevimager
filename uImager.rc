@@ -1217,7 +1217,7 @@ BEGIN
     CONTROL         "Execute when",IDC_EXEC_MOVEMENT_DETECTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,220,119,60,10
     COMBOBOX        IDC_EXECMODE_MOVEMENT_DETECTION,282,118,123,72,CBS_DROPDOWNLIST | WS_TABSTOP
     EDITTEXT        IDC_EDIT_EXE,220,146,185,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_PARAMS,220,175,185,54,ES_MULTILINE | WS_VSCROLL
+    EDITTEXT        IDC_EDIT_PARAMS,220,175,185,53,ES_MULTILINE | WS_VSCROLL
     CONTROL         "Hide window of executed command",IDC_CHECK_HIDE_EXEC_COMMAND,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,220,234,129,10
     CONTROL         "Only one instance of executed command",IDC_CHECK_WAIT_EXEC_COMMAND,
@@ -2209,29 +2209,22 @@ STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Snapshot"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    EDITTEXT        IDC_EDIT_SNAPSHOT_RATE,190,21,34,12
-    PUSHBUTTON      "",IDC_BUTTON_THUMB_SIZE,190,43,154,21
-    PUSHBUTTON      "File Names",IDC_BUTTON_SNAPSHOT_NAMES,13,43,154,21
-    CONTROL         "Save History Video File",IDC_CHECK_SNAPSHOT_HISTORY_VIDEO,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,110,88,10
-    CONTROL         "Upload Live Snapshots",IDC_CHECK_FTP_SNAPSHOT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,166,87,10
-    CONTROL         "Upload Saved History Video File",IDC_CHECK_FTP_SNAPSHOT_HISTORY_VIDEO,
-                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,13,185,116,10
-    PUSHBUTTON      "Ftp Settings",IDC_FTP_CONFIGURE,243,169,150,21
-    CONTROL         "Enable Snapshots (if not checked always enabled)",IDC_CHECK_SCHEDULER_DAILY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,238,177,10
-    CONTROL         "DateTimePicker1",IDC_TIME_DAILY_START,"SysDateTimePick32",DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,243,235,66,16
-    CONTROL         "DateTimePicker1",IDC_TIME_DAILY_STOP,"SysDateTimePick32",DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,338,235,66,16
-    LTEXT           "Snapshot each (0: as fast as possible)",IDC_STATIC2476,13,23,132,8
-    LTEXT           "sec",IDC_STATIC2477,232,22,14,10
-    GROUPBOX        "Scheduler",IDC_STATIC2484,7,219,403,43
-    LTEXT           "From",IDC_STATIC2485,219,239,16,8
-    LTEXT           "To",IDC_STATIC2486,323,239,10,8
-    LTEXT           "(multiple of 4)",IDC_STATIC2491,351,49,49,9
-    GROUPBOX        "Ftp",IDC_STATIC2482,7,150,403,56
-    GROUPBOX        "Live",IDC_STATIC2488,7,5,403,72
-    GROUPBOX        "History",IDC_STATIC2489,7,89,403,48
-    LTEXT           "NOTE: snapshot files are saved with the above set rate, at midnight they are used to create the video, after that the snapshot files are deleted",IDC_STATIC,144,107,257,19
+    EDITTEXT        IDC_EDIT_SNAPSHOT_RATE,208,20,34,12
+    PUSHBUTTON      "",IDC_BUTTON_THUMB_SIZE,13,45,175,21
+    PUSHBUTTON      "File Names",IDC_BUTTON_SNAPSHOT_NAMES,13,79,175,21
+    CONTROL         "Save Daily History Video File",IDC_CHECK_SNAPSHOT_HISTORY_VIDEO,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,151,105,10
+    CONTROL         "Upload Live Snapshots",IDC_CHECK_FTP_SNAPSHOT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,217,87,10
+    CONTROL         "Upload Saved Daily History Video File",IDC_CHECK_FTP_SNAPSHOT_HISTORY_VIDEO,
+                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,13,237,133,10
+    PUSHBUTTON      "Ftp Settings",IDC_FTP_CONFIGURE,243,222,150,21
+    LTEXT           "Take a Snapshot each (0: as fast as possible)",IDC_STATIC2476,13,22,175,8
+    LTEXT           "sec",IDC_STATIC2477,250,21,14,10
+    LTEXT           "(multiple of 4)",IDC_STATIC2491,208,51,49,9
+    GROUPBOX        "Ftp",IDC_STATIC2482,7,197,403,65
+    GROUPBOX        "Live",IDC_STATIC2488,7,5,403,107
+    GROUPBOX        "History",IDC_STATIC2489,7,126,403,57
+    LTEXT           "NOTE: snapshot files are saved with the above set rate, at midnight they are used to create the video, after that the snapshot files are deleted",IDC_STATIC,188,144,217,29
 END
 
 IDD_FTP_CONFIGURATION DIALOGEX 0, 0, 245, 161
@@ -2889,10 +2882,12 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 410
         VERTGUIDE, 13
+        VERTGUIDE, 188
         TOPMARGIN, 2
         BOTTOMMARGIN, 266
-        HORZGUIDE, 27
-        HORZGUIDE, 53
+        HORZGUIDE, 26
+        HORZGUIDE, 55
+        HORZGUIDE, 89
     END
 
     IDD_FTP_CONFIGURATION, DIALOG
