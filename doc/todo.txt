@@ -17,15 +17,10 @@ ContaCam Program
 - Use a Logitech C920 to implement H.264 video capture support
   -> directshow graph building for H.264 support is intentionally
   crap and difficult, not wanting to play their game...
-- Save JPEG snapshots once the motion detection is triggered
 - Rotate by 0,90,180,270 degrees
-- Ability to send different emails to different people. For example
-  send GIF files to one person and JPGs to another
 - Configurable saving frame-rate and resolution or skip excess frames
   in cases where the source doesn't listen to the requested framerate
   (chris@weldtest.com)
-- Allow Digital Zoom of live camera via mouse wheel
-  (suggested by alanphoto@starpower.net)
 - Possibility to speed-up or slow-down animated gif preview
   (mankovv@hotmail.com). Every animated gif stops at the end (before it
   starts over) with a pause, is it possible to make it just repeat or to
@@ -39,14 +34,7 @@ ContaCam Program
   disable motion email alerts but have them on when I'm away. It would be 
   most convenient if you could toggle between stay/away from either the 
   software or the web interface (tyler.barnes@telus.net)
-- Black squares where no detection and where image is obscured with black
-  pixels (jeanbaptiste.guyot@orange.fr) or crop regions to also reduce the
-  saving cpu usage (dodfr@yahoo.com)
-- Add detection grid layer drawing over recorded video file that will show
-  the square(s) that triggered the detection so it would help to fine tune
-  motion detection grid/sensitivity when first days videos are recorded
-  (dodfr@yahoo.com)
-- Checkbox in Camera Basic Settings to remove the files also from the FTP
+- Checkbox in Camera Settings to remove the files also from the FTP
   server (jeanbaptiste.guyot@orange.fr)
 - Change the color and position of the date and time on the camera frame
   (toan.nguyenk@gmail.com)
@@ -77,7 +65,3 @@ ContaCam Web Interface
   (pauls583@yahoo.com.au)
 - In index.php when clicking on live thumb open fullscreen and when
   clicking text open detections (matthewn_02@yahoo.com)
-- If live snapshot file time stamp remains the same then output a red
-  border to alert
-- Possibility to browse the detections from multiple cameras at the same
-  time (suggested by alanphoto@starpower.net)

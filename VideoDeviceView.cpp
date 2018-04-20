@@ -570,20 +570,6 @@ void CVideoDeviceView::OnDraw(CDC* pDC)
 										pDoc->m_nRefFontSize,
 										FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
 
-		// Draw REC
-		if (pDoc->m_bDetectingMinLengthMovement)
-		{
-			::DrawBigText(	MemDC.GetSafeHdc(), CRect(0, 0, rcClient.Width(), rcClient.Height()),
-							_T("\u25cf"), // REC dot symbol, if using more than 16 bits, use a uppercase U (for example \U0001F3C3)
-							REC_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT);
-		}
-		else if (!pDoc->m_bInSchedule || (pDoc->m_dwVideoProcessorMode == 0 && pDoc->m_nDetectionLevel != 100))
-		{
-			::DrawBigText(	MemDC.GetSafeHdc(), CRect(0, 0, rcClient.Width(), rcClient.Height()),
-							_T("REC OFF"), DRAW_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT,
-							OPAQUE, DRAW_BKG_COLOR);
-		}
-
 		// Draw Save progress
 		if (pDoc->m_SaveFrameListThread.GetSaveProgress() < 100)
 		{
@@ -591,6 +577,28 @@ void CVideoDeviceView::OnDraw(CDC* pDC)
 			sProgress.Format(ML_STRING(1877, "Save: %d%%"), pDoc->m_SaveFrameListThread.GetSaveProgress());
 			::DrawBigText(	MemDC.GetSafeHdc(), CRect(0, 0, rcClient.Width(), rcClient.Height()),
 							sProgress, DRAW_MESSAGE_COLOR, nMaxFontSize, DT_TOP | DT_RIGHT,
+							OPAQUE, DRAW_BKG_COLOR);
+		}
+
+		// Draw REC dot symbol
+		if (pDoc->m_bDetectingMinLengthMovement)
+		{
+			::DrawBigText(	MemDC.GetSafeHdc(), CRect(0, 0, rcClient.Width(), rcClient.Height()),
+							_T("\u25cf"), // note: if using more than 16 bits, use a uppercase U (for example \U0001F3C3)
+							REC_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT);
+		}
+		// Draw REC OFF (by button)
+		else if (pDoc->m_dwVideoProcessorMode == 0 && pDoc->m_nDetectionLevel != 100)
+		{
+			::DrawBigText(	MemDC.GetSafeHdc(), CRect(0, 0, rcClient.Width(), rcClient.Height()),
+							ML_STRING(1878, "REC OFF (by button)"), DRAW_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT,
+							OPAQUE, DRAW_BKG_COLOR);
+		}
+		// Draw REC OFF (by scheduler)
+		else if (!pDoc->m_bInSchedule)
+		{
+			::DrawBigText(	MemDC.GetSafeHdc(), CRect(0, 0, rcClient.Width(), rcClient.Height()),
+							ML_STRING(1879, "REC OFF (by scheduler)"), DRAW_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT,
 							OPAQUE, DRAW_BKG_COLOR);
 		}
 	}

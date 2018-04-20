@@ -6824,7 +6824,7 @@ void CVideoDeviceDoc::AddRecSymbol(CDib* pDib, int nRefFontSize)
 	int nFontSize = ::ScaleFont(rcRect.right, rcRect.bottom, nRefFontSize, FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
 	Font.CreatePointFont(nFontSize * 10, g_szDefaultFontFace);
 
-	pDib->AddSingleLineText(_T("\u25cf"),
+	pDib->AddSingleLineText(_T("\u25cf"), // note: if using more than 16 bits, use a uppercase U (for example \U0001F3C3)
 							rcRect,
 							&Font,
 							(DT_RIGHT | DT_BOTTOM),
