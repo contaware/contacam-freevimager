@@ -794,7 +794,7 @@ public:
 protected:
 	int ValidateRefFontSize(int nRefFontSize);
 	int ValidateDetectionLevel(int nDetectionLevel);
-	void Snapshot(CDib* pDib, const CTime& Time, BOOL bInSchedule);
+	void Snapshot(CDib* pDib, const CTime& Time);
 	BOOL EditCopy(CDib* pDib, const CTime& Time);
 	void EditSnapshot(CDib* pDib, const CTime& Time);
 	CString SaveJpegMail(CDib* pDib, const CTime& RefTime, DWORD dwRefUpTime);
@@ -972,6 +972,7 @@ public:
 	volatile BOOL m_bDetectionSaturday;					// Do detections on Saturday
 	CTime m_DetectionStartTime;							// Daily Detection Start Time
 	CTime m_DetectionStopTime;							// Daily Detection Stop Time
+	volatile BOOL m_bInSchedule;						// Updated by the UI thread each RELOAD_TIMER_MS
 	volatile int m_nMovDetFreqDiv;						// Current frequency divider
 	volatile double m_dMovDetFrameRateFreqDivCalc;		// Framerate used to calculate the current frequency divider
 	volatile AttachmentType m_MovDetAttachmentType;		// The email attachment type

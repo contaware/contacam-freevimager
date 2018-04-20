@@ -44,7 +44,7 @@ extern "C"
 #define ID_TIMER_MOVDETPAGE  						11
 #define ID_TIMER_CAMERABASICSETTINGSDLG				12
 #define ID_TIMER_SETTINGSDLG						13
-#define ID_TIMER_RELOAD_SETTINGS					14
+#define ID_TIMER_RELOAD								14
 #endif
 
 #define FULLSCREEN_TIMER_MS							1000U	// ms
@@ -55,7 +55,7 @@ extern "C"
 #define MOVDETPAGE_TIMER_MS							300U	// ms
 #define CAMERABASICSETTINGSDLG_TIMER_MS				500U	// ms
 #define SETTINGSDLG_TIMER_MS						500U	// ms
-#define RELOAD_SETTINGS_TIMER_MS					1000U	// ms
+#define RELOAD_TIMER_MS								1000U	// ms
 #endif
 
 // Picture document closing wait time

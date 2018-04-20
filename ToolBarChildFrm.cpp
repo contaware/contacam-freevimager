@@ -1080,7 +1080,7 @@ void CVideoDeviceChildFrame::OnClose()
 		if (pDoc->CanCloseFrame(this))
 		{
 			// Kill Timer
-			pView->KillTimer(ID_TIMER_RELOAD_SETTINGS);
+			pView->KillTimer(ID_TIMER_RELOAD);
 
 			// Hide detection zones
 			if (pDoc->m_nShowEditDetectionZones)

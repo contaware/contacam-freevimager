@@ -329,36 +329,6 @@ int CVideoDeviceView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 }
 
-void CVideoDeviceView::DrawTextMsg(HDC hDC)
-{
-	CVideoDeviceDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-	CRect rcClient;
-	GetClientRect(&rcClient);
-
-	// Calc. font size
-	int nMaxFontSize = ::ScaleFont(	rcClient.Width(), rcClient.Height(),
-									pDoc->m_nRefFontSize, FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
-
-	// REC dot symbol
-	if (pDoc->m_bDetectingMinLengthMovement)
-	{
-		::DrawBigText(	hDC, CRect(0, 0, rcClient.Width(), rcClient.Height()),
-						_T("\u25cf"), // note: if using more than 16 bits, use a uppercase U (for example \U0001F3C3)
-						REC_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT);
-	}
-
-	// Save progress display
-	if (pDoc->m_SaveFrameListThread.GetSaveProgress() < 100)
-	{
-		CString sProgress;
-		sProgress.Format(ML_STRING(1877, "Save: %d%%"), pDoc->m_SaveFrameListThread.GetSaveProgress());
-		::DrawBigText(	hDC, CRect(0, 0, rcClient.Width(), rcClient.Height()),
-						sProgress, DRAW_MESSAGE_COLOR, nMaxFontSize, DT_TOP | DT_RIGHT,
-						OPAQUE, DRAW_BKG_COLOR);
-	}
-}
-
 __forceinline void CVideoDeviceView::DrawZoneSensitivity(int i, HDC hDC, const RECT& rcDetZone, int n, HBRUSH hBkgndBrush)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
@@ -595,9 +565,34 @@ void CVideoDeviceView::OnDraw(CDC* pDC)
 		if (pDoc->m_nShowEditDetectionZones)
 			DrawZones(MemDC.GetSafeHdc());
 
-		// Draw Text
-		if (pDoc->m_bDetectingMinLengthMovement || pDoc->m_SaveFrameListThread.GetSaveProgress() < 100)
-			DrawTextMsg(MemDC.GetSafeHdc());
+		// Calc. font size
+		int nMaxFontSize = ::ScaleFont(	rcClient.Width(), rcClient.Height(),
+										pDoc->m_nRefFontSize,
+										FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
+
+		// Draw REC
+		if (pDoc->m_bDetectingMinLengthMovement)
+		{
+			::DrawBigText(	MemDC.GetSafeHdc(), CRect(0, 0, rcClient.Width(), rcClient.Height()),
+							_T("\u25cf"), // REC dot symbol, if using more than 16 bits, use a uppercase U (for example \U0001F3C3)
+							REC_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT);
+		}
+		else if (!pDoc->m_bInSchedule || (pDoc->m_dwVideoProcessorMode == 0 && pDoc->m_nDetectionLevel != 100))
+		{
+			::DrawBigText(	MemDC.GetSafeHdc(), CRect(0, 0, rcClient.Width(), rcClient.Height()),
+							_T("REC OFF"), DRAW_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT,
+							OPAQUE, DRAW_BKG_COLOR);
+		}
+
+		// Draw Save progress
+		if (pDoc->m_SaveFrameListThread.GetSaveProgress() < 100)
+		{
+			CString sProgress;
+			sProgress.Format(ML_STRING(1877, "Save: %d%%"), pDoc->m_SaveFrameListThread.GetSaveProgress());
+			::DrawBigText(	MemDC.GetSafeHdc(), CRect(0, 0, rcClient.Width(), rcClient.Height()),
+							sProgress, DRAW_MESSAGE_COLOR, nMaxFontSize, DT_TOP | DT_RIGHT,
+							OPAQUE, DRAW_BKG_COLOR);
+		}
 	}
 	else
 	{
@@ -789,7 +784,7 @@ void CVideoDeviceView::OnTimer(UINT nIDEvent)
 
 	switch (nIDEvent)
 	{
-		case ID_TIMER_RELOAD_SETTINGS :
+		case ID_TIMER_RELOAD :
 		{
 			// Load detection on/off from registry/ini file
 			pDoc->m_dwVideoProcessorMode = (DWORD) MIN(1, MAX(0, ::AfxGetApp()->GetProfileInt(pDoc->GetDevicePathName(), _T("VideoProcessorMode"), 0)));
@@ -799,6 +794,9 @@ void CVideoDeviceView::OnTimer(UINT nIDEvent)
 			sRecordAutoSaveDir.TrimRight(_T('\\'));
 			pDoc->m_bObscureSource = ::IsExistingFile(sRecordAutoSaveDir + _T("\\") + CAMERA_IS_OBSCURED_FILENAME);
 				
+			// Set the scheduler state flag
+			pDoc->m_bInSchedule = pDoc->IsInSchedule(CTime::GetCurrentTime());
+
 			break;
 		}
 		default:

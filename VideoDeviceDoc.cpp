@@ -3781,6 +3781,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bDetectionSaturday = TRUE;
 	m_DetectionStartTime = CurrentTimeOnly;
 	m_DetectionStopTime = CurrentTimeOnly;
+	m_bInSchedule = FALSE;
 	m_nMovDetFreqDiv = 1;
 	m_dMovDetFrameRateFreqDivCalc = 0.0;
 
@@ -4408,7 +4409,7 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	CUImagerApp* pApp = (CUImagerApp*)::AfxGetApp();
 
 	// Current Time
-	CTime t = CTime::GetCurrentTime();
+	CTime CurrentTime = CTime::GetCurrentTime();
 
 	// Default auto-save directory
 	sDeviceName = GetValidName(sDeviceName);
@@ -4577,12 +4578,13 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_bDetectionThursday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionThursday"), TRUE);
 	m_bDetectionFriday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionFriday"), TRUE);
 	m_bDetectionSaturday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionSaturday"), TRUE);
-	m_DetectionStartTime = CTime(2000, 1, 1,	pApp->GetProfileInt(sSection, _T("DetectionStartHour"), t.GetHour()),
-												pApp->GetProfileInt(sSection, _T("DetectionStartMin"), t.GetMinute()),
-												pApp->GetProfileInt(sSection, _T("DetectionStartSec"), t.GetSecond()));
-	m_DetectionStopTime = CTime(2000, 1, 1,		pApp->GetProfileInt(sSection, _T("DetectionStopHour"), t.GetHour()),
-												pApp->GetProfileInt(sSection, _T("DetectionStopMin"), t.GetMinute()),
-												pApp->GetProfileInt(sSection, _T("DetectionStopSec"), t.GetSecond()));
+	m_DetectionStartTime = CTime(2000, 1, 1,	pApp->GetProfileInt(sSection, _T("DetectionStartHour"), CurrentTime.GetHour()),
+												pApp->GetProfileInt(sSection, _T("DetectionStartMin"), CurrentTime.GetMinute()),
+												pApp->GetProfileInt(sSection, _T("DetectionStartSec"), CurrentTime.GetSecond()));
+	m_DetectionStopTime = CTime(2000, 1, 1,		pApp->GetProfileInt(sSection, _T("DetectionStopHour"), CurrentTime.GetHour()),
+												pApp->GetProfileInt(sSection, _T("DetectionStopMin"), CurrentTime.GetMinute()),
+												pApp->GetProfileInt(sSection, _T("DetectionStopSec"), CurrentTime.GetSecond()));
+	m_bInSchedule = IsInSchedule(CurrentTime);
 	m_bShowFrameTime = (BOOL) pApp->GetProfileInt(sSection, _T("ShowFrameTime"), TRUE);
 	m_nRefFontSize = ValidateRefFontSize(pApp->GetProfileInt(sSection, _T("RefFontSize"), 9));
 	m_dwAnimatedGifWidth = (DWORD) pApp->GetProfileInt(sSection, _T("AnimatedGifWidth"), MOVDET_ANIMGIF_DEFAULT_WIDTH);
@@ -4813,7 +4815,7 @@ void CVideoDeviceDoc::OpenDxVideoDevice(int nId, CString sDevicePathName, CStrin
 
 	// Load Settings
 	LoadSettings(DEFAULT_FRAMERATE, FALSE, sDevicePathName, sDeviceName);
-	::SetTimer(GetView()->GetSafeHwnd(), ID_TIMER_RELOAD_SETTINGS, RELOAD_SETTINGS_TIMER_MS, NULL);
+	::SetTimer(GetView()->GetSafeHwnd(), ID_TIMER_RELOAD, RELOAD_TIMER_MS, NULL);
 
 	// Start Delete Thread
 	if (!m_DeleteThread.IsAlive())
@@ -5120,7 +5122,7 @@ BOOL CVideoDeviceDoc::OpenNetVideoDevice(CString sAddress)
 					m_nNetworkDeviceTypeMode >= CVideoDeviceDoc::URL_RTSP,
 					GetDevicePathName(),
 					GetDeviceName());
-	::SetTimer(GetView()->GetSafeHwnd(), ID_TIMER_RELOAD_SETTINGS, RELOAD_SETTINGS_TIMER_MS, NULL);
+	::SetTimer(GetView()->GetSafeHwnd(), ID_TIMER_RELOAD, RELOAD_TIMER_MS, NULL);
 
 	// Start Delete Thread
 	if (!m_DeleteThread.IsAlive())
@@ -5173,7 +5175,7 @@ void CVideoDeviceDoc::OpenNetVideoDevice(CHostPortDlg* pDlg)
 					m_nNetworkDeviceTypeMode >= CVideoDeviceDoc::URL_RTSP,
 					GetDevicePathName(),
 					GetDeviceName());
-	::SetTimer(GetView()->GetSafeHwnd(), ID_TIMER_RELOAD_SETTINGS, RELOAD_SETTINGS_TIMER_MS, NULL);
+	::SetTimer(GetView()->GetSafeHwnd(), ID_TIMER_RELOAD, RELOAD_TIMER_MS, NULL);
 
 	// Start Delete Thread
 	if (!m_DeleteThread.IsAlive())
@@ -7403,11 +7405,8 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 		else
 			pDib->FreeUserList();
 
-		// Is current time in schedule?
-		BOOL bInSchedule = IsInSchedule(CurrentTime);
-
 		// Do Motion Detection Processing
-		MovementDetectionProcessing(pDib, bInSchedule ? m_dwVideoProcessorMode : 0, b1SecTick);
+		MovementDetectionProcessing(pDib, m_bInSchedule ? m_dwVideoProcessorMode : 0, b1SecTick);
 
 		// Copy to Clipboard
 		if (m_bDoEditCopy)
@@ -7418,7 +7417,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 			EditSnapshot(pDib, CurrentTime);
 
 		// Timed Snapshot
-		Snapshot(pDib, CurrentTime, bInSchedule);
+		Snapshot(pDib, CurrentTime);
 
 		// Device OK heartbeat
 		if (CurrentTime.GetDay() != m_LastDeviceNotifyTime.GetDay()		||
@@ -7621,7 +7620,7 @@ void CVideoDeviceDoc::SnapshotRate(double dRate)
 	PhpConfigFileSetParam(PHPCONFIG_SERVERPUSH_POLLRATE_MS, sText);
 }
 
-void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time, BOOL bInSchedule)
+void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 {
 	// Snapshot Thread
 	if (!m_SaveSnapshotThread.IsAlive())
@@ -7664,7 +7663,7 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time, BOOL bInSchedule)
 		if (bDoSnapshot)
 		{
 			m_SaveSnapshotThread.m_Dib = *pDib;
-			m_SaveSnapshotThread.m_bSnapshotHistoryJpeg = bInSchedule ? m_bSnapshotHistoryVideo : FALSE;
+			m_SaveSnapshotThread.m_bSnapshotHistoryJpeg = m_bInSchedule ? m_bSnapshotHistoryVideo : FALSE;
 			m_SaveSnapshotThread.m_bShowFrameTime = m_bShowFrameTime;
 			m_SaveSnapshotThread.m_bDetectingMinLengthMovement = m_bDetectingMinLengthMovement;
 			m_SaveSnapshotThread.m_nRefFontSize = m_nRefFontSize;
