@@ -86,6 +86,7 @@ class CVideoPage;
 // Watch Dog
 #define WATCHDOG_CHECK_TIME					1000U		// ms
 #define WATCHDOG_THRESHOLD					30000U		// ms, make sure that: 1000 / MIN_FRAMERATE < WATCHDOG_THRESHOLD
+#define WATCHDOG_MALFUNCTION_THRESHOLD		135000U		// ms, make sure that: WATCHDOG_THRESHOLD < WATCHDOG_MALFUNCTION_THRESHOLD
 
 // Snapshot
 #define MIN_SNAPSHOT_RATE					1			// one snapshot per second

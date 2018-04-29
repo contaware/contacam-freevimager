@@ -3307,7 +3307,7 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 					}
 
 					// Device Alert
-					if (dwMsSinceLastProcessFrame > (4U * WATCHDOG_THRESHOLD) && !bDeviceAlert)
+					if (dwMsSinceLastProcessFrame > WATCHDOG_MALFUNCTION_THRESHOLD && !bDeviceAlert)
 					{
 						if (m_pDoc->m_bSendMailMalfunction)
 							CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), CurrentTime, _T("OFF!"));
