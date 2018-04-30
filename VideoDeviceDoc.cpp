@@ -52,8 +52,6 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	//{{AFX_MSG_MAP(CVideoDeviceDoc)
 	ON_COMMAND(ID_CAPTURE_RECORD, OnCaptureRecord)
 	ON_UPDATE_COMMAND_UI(ID_CAPTURE_RECORD, OnUpdateCaptureRecord)
-	ON_COMMAND(ID_SENSITIVITY_0, OnMovDetSensitivity0)
-	ON_UPDATE_COMMAND_UI(ID_SENSITIVITY_0, OnUpdateMovDetSensitivity0)
 	ON_COMMAND(ID_SENSITIVITY_10, OnMovDetSensitivity10)
 	ON_UPDATE_COMMAND_UI(ID_SENSITIVITY_10, OnUpdateMovDetSensitivity10)
 	ON_COMMAND(ID_SENSITIVITY_20, OnMovDetSensitivity20)
@@ -4391,11 +4389,11 @@ int CVideoDeviceDoc::ValidateRefFontSize(int nRefFontSize)
 	return nRefFontSize;
 }
 
-// Valid values: 0,10,20,30,40,50,60,70,80,90,100
+// Valid values: 10,20,30,40,50,60,70,80,90,100
 int CVideoDeviceDoc::ValidateDetectionLevel(int nDetectionLevel)
 {
-	if (nDetectionLevel < 0)
-		nDetectionLevel = 0;
+	if (nDetectionLevel < 10)
+		nDetectionLevel = 10;
 	else if (nDetectionLevel > 100)
 		nDetectionLevel = 100;
 	return (nDetectionLevel / 10) * 10;
@@ -5279,22 +5277,11 @@ void CVideoDeviceDoc::OnUpdateCaptureRecord(CCmdUI* pCmdUI)
 
 void CVideoDeviceDoc::CaptureRecord()
 {
-	if (m_nDetectionLevel == 0 || m_nDetectionLevel == 100)
+	if (m_nDetectionLevel == 100)
 		m_dwVideoProcessorMode = !m_dwVideoProcessorMode;	// toggle
 	else
-		m_dwVideoProcessorMode = 1;							// avoid that user turns it off (he can still set detection sensitivity to 0 or 100)
+		m_dwVideoProcessorMode = 1;							// avoid that user turns it off (he can still set detection sensitivity to 100)
 	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("VideoProcessorMode"), m_dwVideoProcessorMode);
-}
-
-void CVideoDeviceDoc::OnMovDetSensitivity0()
-{
-	m_nDetectionLevel = 0;
-	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
-}
-
-void CVideoDeviceDoc::OnUpdateMovDetSensitivity0(CCmdUI* pCmdUI)
-{
-	pCmdUI->SetCheck(m_nDetectionLevel == 0 ? 1 : 0);
 }
 
 void CVideoDeviceDoc::OnMovDetSensitivity10()
@@ -5418,6 +5405,8 @@ void CVideoDeviceDoc::OnMovDetSensitivity100()
 {
 	m_nDetectionLevel = 100;
 	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
+	m_dwVideoProcessorMode = 0;
+	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("VideoProcessorMode"), m_dwVideoProcessorMode);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity100(CCmdUI* pCmdUI)

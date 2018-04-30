@@ -815,7 +815,6 @@ IDR_CONTEXT_SENSITIVITY MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
-        MENUITEM "Only Trigger File",           ID_SENSITIVITY_0
         MENUITEM "Motion Sensitivity 10",       ID_SENSITIVITY_10
         MENUITEM "Motion Sensitivity 20",       ID_SENSITIVITY_20
         MENUITEM "Motion Sensitivity 30",       ID_SENSITIVITY_30
@@ -3640,7 +3639,7 @@ BEGIN
     ID_EDIT_ADDALL          "Add all\nAdd All"
     ID_EDIT_REMOVEALL       "Remove all\nRemove All"
     ID_CAPTURE_NETWORK      "Capture frames from the network\nCapture From Network"
-    ID_CAPTURE_RECORD       "Recording ON/OFF\nRecording"
+    ID_CAPTURE_RECORD       "Recording\nRecording"
     ID_VIEW_ALL_NEXT_PICTURE 
                             "Show next image of all open documents\nAll Next Image"
     ID_VIEW_ALL_PREVIOUS_PICTURE 
