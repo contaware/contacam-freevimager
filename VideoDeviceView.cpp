@@ -587,13 +587,6 @@ void CVideoDeviceView::OnDraw(CDC* pDC)
 							_T("\u25cf"), // note: if using more than 16 bits, use a uppercase U (for example \U0001F3C3)
 							REC_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT);
 		}
-		// Draw REC OFF (by button)
-		else if (pDoc->m_dwVideoProcessorMode == 0 && pDoc->m_nDetectionLevel != 100)
-		{
-			::DrawBigText(	MemDC.GetSafeHdc(), CRect(0, 0, rcClient.Width(), rcClient.Height()),
-							ML_STRING(1878, "REC OFF (by button)"), DRAW_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT,
-							OPAQUE, DRAW_BKG_COLOR);
-		}
 		// Draw REC OFF (by scheduler)
 		else if (!pDoc->m_bInSchedule)
 		{
