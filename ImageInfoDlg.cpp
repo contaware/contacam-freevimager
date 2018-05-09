@@ -1399,7 +1399,7 @@ void CImageInfoDlg::DisplayMetadata()
 	{
 		if (m_pDoc->m_pDib->GetExifInfo()->CameraMake[0])
 		{
-			t.Format(ML_STRING(1657, "Camera make:\t%s"), CString(m_pDoc->m_pDib->GetExifInfo()->CameraMake));
+			t.Format(ML_STRING(1657, "Camera make:\t%s"), CString(m_pDoc->m_pDib->GetExifInfo()->CameraMake).Trim());
 			::MakeLineBreakCRLF(t);
 			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
@@ -1408,7 +1408,7 @@ void CImageInfoDlg::DisplayMetadata()
 		
 		if (m_pDoc->m_pDib->GetExifInfo()->CameraModel[0])
 		{
-			t.Format(ML_STRING(1658, "Camera model:\t%s"), CString(m_pDoc->m_pDib->GetExifInfo()->CameraModel));
+			t.Format(ML_STRING(1658, "Camera model:\t%s"), CString(m_pDoc->m_pDib->GetExifInfo()->CameraModel).Trim());
 			::MakeLineBreakCRLF(t);
 			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
@@ -1417,7 +1417,7 @@ void CImageInfoDlg::DisplayMetadata()
 
 		if (m_pDoc->m_pDib->GetExifInfo()->ImageDescription[0])
 		{
-			t.Format(ML_STRING(1660, "Image description:\t%s"), CString(m_pDoc->m_pDib->GetExifInfo()->ImageDescription));
+			t.Format(ML_STRING(1660, "Image description:\t%s"), CString(m_pDoc->m_pDib->GetExifInfo()->ImageDescription).Trim());
 			::MakeLineBreakCRLF(t);
 			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
@@ -1426,7 +1426,7 @@ void CImageInfoDlg::DisplayMetadata()
 
 		if (m_pDoc->m_pDib->GetExifInfo()->UserComment[0])
 		{
-			t.Format(ML_STRING(1661, "User comment:\t%s"), CString(m_pDoc->m_pDib->GetExifInfo()->UserComment));
+			t.Format(ML_STRING(1661, "User comment:\t%s"), CString(m_pDoc->m_pDib->GetExifInfo()->UserComment).Trim());
 			::MakeLineBreakCRLF(t);
 			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
@@ -1435,7 +1435,7 @@ void CImageInfoDlg::DisplayMetadata()
 
 		if (m_pDoc->m_pDib->GetExifInfo()->Software[0])
 		{
-			t.Format(ML_STRING(1662, "Software:\t%s"), CString(m_pDoc->m_pDib->GetExifInfo()->Software));
+			t.Format(ML_STRING(1662, "Software:\t%s"), CString(m_pDoc->m_pDib->GetExifInfo()->Software).Trim());
 			::MakeLineBreakCRLF(t);
 			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
@@ -1444,7 +1444,7 @@ void CImageInfoDlg::DisplayMetadata()
 
 		if (m_pDoc->m_pDib->GetExifInfo()->Artist[0])
 		{
-			t.Format(ML_STRING(1663, "Artist:\t%s"), CString(m_pDoc->m_pDib->GetExifInfo()->Artist));
+			t.Format(ML_STRING(1663, "Artist:\t%s"), CString(m_pDoc->m_pDib->GetExifInfo()->Artist).Trim());
 			::MakeLineBreakCRLF(t);
 			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
@@ -1453,9 +1453,7 @@ void CImageInfoDlg::DisplayMetadata()
 
 		if (m_pDoc->m_pDib->GetExifInfo()->CopyrightPhotographer[0])
 		{
-			// Some cameras just put spaces as a placeholder
-			CString sCopyrightPhotographer = CString(m_pDoc->m_pDib->GetExifInfo()->CopyrightPhotographer);
-			sCopyrightPhotographer.TrimLeft(_T(' '));
+			CString sCopyrightPhotographer = CString(m_pDoc->m_pDib->GetExifInfo()->CopyrightPhotographer).Trim();
 			if (sCopyrightPhotographer != _T(""))
 			{
 				t.Format(ML_STRING(1664, "Photographer©:\t%s"), sCopyrightPhotographer);
@@ -1468,9 +1466,7 @@ void CImageInfoDlg::DisplayMetadata()
 
 		if (m_pDoc->m_pDib->GetExifInfo()->CopyrightEditor[0])
 		{
-			// Some cameras just put spaces as a placeholder
-			CString sCopyrightEditor = CString(m_pDoc->m_pDib->GetExifInfo()->CopyrightEditor);
-			sCopyrightEditor.TrimLeft(_T(' '));
+			CString sCopyrightEditor = CString(m_pDoc->m_pDib->GetExifInfo()->CopyrightEditor).Trim();
 			if (sCopyrightEditor != _T(""))
 			{
 				t.Format(ML_STRING(1665, "Editor©:\t%s"), sCopyrightEditor);
@@ -1484,7 +1480,7 @@ void CImageInfoDlg::DisplayMetadata()
 #ifdef _DEBUG
 		if (m_pDoc->m_pDib->GetExifInfo()->Version[0])
 		{
-			t.Format(_T("Exif version:\t%s\r\n"), CString(m_pDoc->m_pDib->GetExifInfo()->Version)); s+=t;
+			t.Format(_T("Exif version:\t%s\r\n"), CString(m_pDoc->m_pDib->GetExifInfo()->Version).Trim()); s+=t;
 		}
 #endif
 
@@ -1590,7 +1586,7 @@ void CImageInfoDlg::DisplayMetadata()
 		
 		if (m_pDoc->m_pDib->GetExifInfo()->Brightness)
 		{
-			t.Format(ML_STRING(1675, "Brightness:\t%.3f\r\n"), m_pDoc->m_pDib->GetExifInfo()->Brightness); s+=t;
+			t.Format(ML_STRING(1675, "Brightness:\t%.3f\r\n"), (double)m_pDoc->m_pDib->GetExifInfo()->Brightness); s+=t;
 		}
 		
 		if (m_pDoc->m_pDib->GetExifInfo()->ApertureFNumber)
