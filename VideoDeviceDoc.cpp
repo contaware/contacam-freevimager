@@ -5747,8 +5747,8 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	sConfig += _T("ThreadsPerChild 128\r\n");
 	sConfig += _T("AcceptFilter http none\r\n");
 	sConfig += _T("AcceptFilter https none\r\n");
-	sConfig += _T("LoadFile php/libcrypto-1_1.dll\r\n");		// for PHP but also for mod_ssl.so
-	sConfig += _T("LoadFile php/libssl-1_1.dll\r\n");			// for PHP but also for mod_ssl.so
+	sConfig += _T("LoadFile php/libeay32.dll\r\n");				// for PHP but also for mod_ssl.so
+	sConfig += _T("LoadFile php/ssleay32.dll\r\n");				// for PHP but also for mod_ssl.so
 	sConfig += _T("LoadModule access_compat_module modules/mod_access_compat.so\r\n");
 	sConfig += _T("LoadModule auth_basic_module modules/mod_auth_basic.so\r\n");
 	sConfig += _T("LoadModule authn_core_module modules/mod_authn_core.so\r\n");
@@ -5759,7 +5759,7 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	sConfig += _T("LoadModule mime_module modules/mod_mime.so\r\n");
 	sConfig += _T("LoadModule rewrite_module modules/mod_rewrite.so\r\n");
 	sConfig += _T("LoadModule ssl_module modules/mod_ssl.so\r\n");
-	sConfig += _T("LoadModule php7_module php/php7apache2_4.dll\r\n");
+	sConfig += _T("LoadModule php5_module php/php5apache2_4.dll\r\n");
 	sConfig += _T("AddHandler application/x-httpd-php .php\r\n");
 	sConfig += _T("PHPIniDir php\r\n");
 	sConfig += _T("AcceptPathInfo off\r\n");

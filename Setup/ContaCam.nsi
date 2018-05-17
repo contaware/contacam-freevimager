@@ -293,7 +293,7 @@ Section "${APPNAME_NOEXT} Program (required)"
   File "MasterConfig.ini"
   SetOverwrite on
   
-  ; Microapache files and VC9 redistributables for it
+  ; Microapache files and VC11 redistributables for it
   File "https.crt"
   File "https.key"
   SetOutPath $INSTDIR\microapache
@@ -301,7 +301,7 @@ Section "${APPNAME_NOEXT} Program (required)"
   SetOutPath $INSTDIR
   File "/oname=microapache\htdocs\configuration.php" "..\microapache\htdocs\configuration${INSTALLER_LANGUAGE_SUFFIX}.php"
   File "vcredist_x86.exe"
-  ExecWait '"$INSTDIR\vcredist_x86.exe" /qb!'  ; /qb! unattended mode with "Cancel" button disabled
+  ExecWait '"$INSTDIR\vcredist_x86.exe" /passive /norestart'
   
   ; Mailer files
   SetOutPath $INSTDIR\mail
