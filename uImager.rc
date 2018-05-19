@@ -4351,6 +4351,7 @@ BEGIN
     IDS_STRING1875          "Recording enabled:"
     IDS_STRING1876          "Recording disabled:"
     IDS_STRING1877          "Save: %d%%"
+    IDS_STRING1878          "Switching ON/OFF only for Continuous Recording"
     IDS_STRING1879          "REC OFF (by scheduler)"
     IDS_STRING1880          "No Attachment"
     IDS_STRING1881          "Snapshot"

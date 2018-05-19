@@ -5278,9 +5278,14 @@ void CVideoDeviceDoc::OnUpdateCaptureRecord(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::CaptureRecord()
 {
 	if (m_nDetectionLevel == 100)
-		m_dwVideoProcessorMode = !m_dwVideoProcessorMode;	// toggle
+		m_dwVideoProcessorMode = !m_dwVideoProcessorMode; // toggle
 	else
-		m_dwVideoProcessorMode = 1;							// avoid that user turns it off (he can still set detection sensitivity to 100)
+	{
+		if (m_dwVideoProcessorMode == 1)
+			::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, ML_STRING(1878, "Switching ON/OFF only for Continuous Recording"));
+		else
+			m_dwVideoProcessorMode = 1;
+	}
 	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("VideoProcessorMode"), m_dwVideoProcessorMode);
 }
 
