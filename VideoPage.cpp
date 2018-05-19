@@ -249,7 +249,7 @@ BOOL CVideoPage::OnInitDialog()
 		pCheckVideoSaveMovementDetection->SetCheck(0);
 
 	// Video Compressor Quality
-	m_VideoRecQuality.SetRange((int)VIDEO_QUALITY_BEST, (int)VIDEO_QUALITY_LOW);
+	m_VideoRecQuality.SetRange((int)VIDEO_QUALITY_LOSSLESS, (int)VIDEO_QUALITY_LOW);
 	m_VideoRecQuality.SetPageSize(1);
 	m_VideoRecQuality.SetLineSize(1);
 	m_pDoc->m_fVideoRecQuality = CAVRec::ClipVideoQuality(m_pDoc->m_fVideoRecQuality);
@@ -679,6 +679,7 @@ void CVideoPage::UpdateVideoQualityInfo()
 	CString sQuality;
 	switch (::GetRevertedPos(&m_VideoRecQuality))
 	{
+		case 2: sQuality = ML_STRING(1545, "Lossless"); break;
 		case 3: sQuality = ML_STRING(1544, "Best"); break;
 		case 4: sQuality = ML_STRING(1543, "Good"); break;
 		case 5: sQuality = ML_STRING(1542, "Medium"); break;

@@ -4001,6 +4001,7 @@ BEGIN
     IDS_STRING1542          "Medium"
     IDS_STRING1543          "Good"
     IDS_STRING1544          "Best"
+    IDS_STRING1545          "Lossless"
     IDS_STRING1548          "Other Camera"
 END
 

@@ -34,6 +34,7 @@ uint32_t x264_cpu_detect();
 #define MAX_STREAMS							20
 
 // Video Compression Quality
+#define VIDEO_QUALITY_LOSSLESS				2.0f
 #define VIDEO_QUALITY_BEST					3.0f
 #define VIDEO_QUALITY_GOOD					4.0f
 #define VIDEO_QUALITY_MEDIUM				5.0f
@@ -73,7 +74,7 @@ public:
 						const LPBITMAPINFO pDstFormat,
 						DWORD dwDstTimeBaseDenominator,
 						DWORD dwDstTimeBaseNumerator,
-						float qscale,	// 2.0f best quality, 31.0f worst quality, for H.264 clamped to [VIDEO_QUALITY_BEST, VIDEO_QUALITY_LOW]
+						float qscale,	// 2.0f best quality, 31.0f worst quality, for H.264 clamped to [VIDEO_QUALITY_LOSSLESS, VIDEO_QUALITY_LOW]
 						int nThreadCount);
 
 	// Add Audio Stream

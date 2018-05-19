@@ -200,7 +200,7 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 							const LPBITMAPINFO pDstFormat,
 							DWORD dwDstTimeBaseDenominator,
 							DWORD dwDstTimeBaseNumerator,
-							float qscale,	// 2.0f best quality, 31.0f worst quality, for H.264 clamped to [VIDEO_QUALITY_BEST, VIDEO_QUALITY_LOW]
+							float qscale,	// 2.0f best quality, 31.0f worst quality, for H.264 clamped to [VIDEO_QUALITY_LOSSLESS, VIDEO_QUALITY_LOW]
 							int nThreadCount)
 {
 	int nStreamNum = -1;
@@ -267,22 +267,16 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 	// Encoder specific settings
 	if (pCodecCtx->codec_id == AV_CODEC_ID_H264)
 	{
-		// Clamp to [VIDEO_QUALITY_BEST, VIDEO_QUALITY_LOW]
-		if (qscale > VIDEO_QUALITY_LOW)
-			qscale = VIDEO_QUALITY_LOW;
-		else if (qscale < VIDEO_QUALITY_BEST)
-			qscale = VIDEO_QUALITY_BEST;
-		int nQScale = (int)qscale;
-
 		// Quality 0-51: where 0 is lossless, 23 is default, and 51 is worst possible
-		// Note: subjectively sane range is 18-28 (consider 18 to be visually lossless)
+		// Note: subjectively sane range is 18-28 (consider 17 to be visually lossless)
 		int crf;
-		switch (nQScale)
+		switch ((int)ClipVideoQuality(qscale)) // Clamp to [VIDEO_QUALITY_LOSSLESS, VIDEO_QUALITY_LOW]
 		{
-			case 3 : crf = 22; break;
-			case 4 : crf = 25; break;
-			case 5 : crf = 27; break;
-			default: crf = 29; break;
+			case 2 : crf = 17; break; // Video quality Lossless
+			case 3 : crf = 22; break; // Video quality Best
+			case 4 : crf = 25; break; // Video quality Good
+			case 5 : crf = 27; break; // Video quality Medium
+			default: crf = 29; break; // Video quality Low
 		}
 		CStringA scrf;
 		scrf.Format("%d.0", crf);
@@ -1462,8 +1456,8 @@ float CAVRec::ClipVideoQuality(float fQuality)
 {
 	if (fQuality > VIDEO_QUALITY_LOW)
 		fQuality = VIDEO_QUALITY_LOW;
-	else if (fQuality < VIDEO_QUALITY_BEST)
-		fQuality = VIDEO_QUALITY_BEST;
+	else if (fQuality < VIDEO_QUALITY_LOSSLESS)
+		fQuality = VIDEO_QUALITY_LOSSLESS;
 	return fQuality;
 }
 
