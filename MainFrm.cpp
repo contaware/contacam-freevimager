@@ -1878,6 +1878,8 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 				{
 					if (idx == ((CUImagerDoc*)pDoc)->m_nFileMenuPos)
 						CleanupFileMenu(pPopupMenu);
+					else if (idx == ((CUImagerDoc*)pDoc)->m_nEditMenuPos)
+						CleanupEditMenu(pPopupMenu);
 					else if (idx == ((CUImagerDoc*)pDoc)->m_nCaptureMenuPos)
 						PopulateCaptureMenu(pPopupMenu);
 				}
@@ -1892,6 +1894,8 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 		{
 			if (idx == m_nFileMenuPos)
 				CleanupFileMenu(pPopupMenu);
+			else if (idx == m_nEditMenuPos)
+				CleanupEditMenu(pPopupMenu);
 			else if (idx == m_nCaptureMenuPos)
 				PopulateCaptureMenu(pPopupMenu);
 		}	
@@ -1912,18 +1916,48 @@ void CMainFrame::CleanupFileMenu(CMenu* pPopupMenu)
 		int nID = (int)pPopupMenu->GetMenuItemID(nPos);
 
 		// Leave item?
-		if ((nID == 0 && nIDPrev != 0)								||	// keep separator if not double
-			nID == ID_FILE_OPEN										||
-			nID == ID_FILE_CLOSE									||
-			nID == ID_FILE_RELOAD									||
-			nID == ID_FILE_SAVE										||
-			nID == ID_FILE_SAVE_AS									||
-			nID == ID_FILE_MOVE_TO									||
-			nID == ID_FILE_COPY_TO									||
-			nID == ID_FILE_INFO										||
-			nID == ID_FILE_PRINT_PREVIEW							||
-			(nID >= ID_FILE_MRU_FIRST && nID <= ID_FILE_MRU_LAST)	||
+		if ((nID == 0 && nIDPrev != 0)		||	// keep separator if not double
+			nID == ID_FILE_CLOSE			||
+			nID == ID_FILE_RELOAD			||
+			nID == ID_FILE_SAVE				||
+			nID == ID_FILE_SAVE_AS			||
+			nID == ID_FILE_INFO				||
+			nID == ID_FILE_PRINT_PREVIEW	||
 			nID == ID_APP_EXIT)
+			nPos++;
+		else
+			pPopupMenu->DeleteMenu(nPos, MF_BYPOSITION);
+	}
+
+	// Cleanup beginning separator
+	if (pPopupMenu->GetMenuItemCount() > 0 && pPopupMenu->GetMenuItemID(0) == 0)
+		pPopupMenu->DeleteMenu(0, MF_BYPOSITION);
+
+	// Cleanup ending separator
+	if (pPopupMenu->GetMenuItemCount() > 0 && pPopupMenu->GetMenuItemID(pPopupMenu->GetMenuItemCount() - 1) == 0)
+		pPopupMenu->DeleteMenu(pPopupMenu->GetMenuItemCount() - 1, MF_BYPOSITION);
+#endif
+}
+
+void CMainFrame::CleanupEditMenu(CMenu* pPopupMenu)
+{
+#ifndef _DEBUG
+	int nPos = 0;
+	while (nPos < pPopupMenu->GetMenuItemCount())
+	{
+		// Item IDs, GetMenuItemID() returns:
+		// -1: pop-up menu or not existing, 0: separator, > 0: ID
+		int nIDPrev = -1;
+		if ((nPos - 1) >= 0)
+			nIDPrev = (int)pPopupMenu->GetMenuItemID(nPos - 1);
+		int nID = (int)pPopupMenu->GetMenuItemID(nPos);
+
+		// Leave item?
+		if ((nID == 0 && nIDPrev != 0)	||	// keep separator if not double
+			nID == ID_EDIT_UNDO			||
+			nID == ID_EDIT_REDO			||
+			nID == ID_EDIT_DELETE		||
+			nID == ID_EDIT_RENAME)
 			nPos++;
 		else
 			pPopupMenu->DeleteMenu(nPos, MF_BYPOSITION);
