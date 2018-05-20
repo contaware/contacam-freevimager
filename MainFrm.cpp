@@ -1956,6 +1956,7 @@ void CMainFrame::CleanupEditMenu(CMenu* pPopupMenu)
 		if ((nID == 0 && nIDPrev != 0)	||	// keep separator if not double
 			nID == ID_EDIT_UNDO			||
 			nID == ID_EDIT_REDO			||
+			nID == ID_EDIT_SNAPSHOT		||
 			nID == ID_EDIT_DELETE		||
 			nID == ID_EDIT_RENAME)
 			nPos++;
