@@ -147,11 +147,11 @@ void CMDIClientWnd::OnPaint()
 	rcDraw.top += nLineHeight;
 	DrawT(memDC, ML_STRING(1751, "1. Make sure your video capture device is plugged-in and drivers are installed"), rcDraw);
 	rcDraw.top += nLineHeight;
-	DrawT(memDC, _T("    ") + ML_STRING(1752, "(network and DV cameras do not need specific drivers)"), rcDraw);
+	DrawT(memDC, _T("    ") + ML_STRING(1752, "(IP/WiFi cameras do not need drivers)"), rcDraw);
 
 	// Draw point 2.
 	rcDraw.top += nLineHeight;
-	DrawT(memDC, ML_STRING(1753, "2. From the Capture menu select the device you want to use"), rcDraw);
+	DrawT(memDC, ML_STRING(1753, "2. From the Camera menu select the device you want to use"), rcDraw);
 	rcDraw.top += nLineHeight;
 	DrawT(memDC, _T("    ") + ML_STRING(1754, "(for network cameras supply host name or ip address, port and camera type)"), rcDraw);
 

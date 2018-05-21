@@ -107,9 +107,9 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Delete",                     ID_EDIT_DELETE
     END
-    POPUP "&Capture"
+    POPUP "&Camera"
     BEGIN
-        MENUITEM "&Network",                    ID_CAPTURE_NETWORK
+        MENUITEM "&IP/WiFi Camera",             ID_CAPTURE_NETWORK
     END
     POPUP "&Settings"
     BEGIN
@@ -242,9 +242,9 @@ BEGIN
         MENUITEM "Browse",                      ID_VIEW_WEB
         MENUITEM "Browse Files",                ID_VIEW_FILES
     END
-    POPUP "&Capture"
+    POPUP "&Camera"
     BEGIN
-        MENUITEM "&Network",                    ID_CAPTURE_NETWORK
+        MENUITEM "&IP/WiFi Camera",             ID_CAPTURE_NETWORK
     END
     POPUP "&Settings"
     BEGIN
@@ -449,9 +449,9 @@ BEGIN
         MENUITEM "Next Page/Frame\tPageDn",     ID_VIEW_NEXT_PAGE_FRAME
         MENUITEM "Prev. Page/Frame\tPageUp",    ID_VIEW_PREVIOUS_PAGE_FRAME
     END
-    POPUP "&Capture"
+    POPUP "&Camera"
     BEGIN
-        MENUITEM "&Network",                    ID_CAPTURE_NETWORK
+        MENUITEM "&IP/WiFi Camera",             ID_CAPTURE_NETWORK
     END
     POPUP "&Play"
     BEGIN
@@ -3627,7 +3627,7 @@ BEGIN
     ID_EDIT_ZONE_REMOVE     "Remove zones\nRemove Zones"
     ID_EDIT_ADDALL          "Add all\nAdd All"
     ID_EDIT_REMOVEALL       "Remove all\nRemove All"
-    ID_CAPTURE_NETWORK      "Capture frames from the network\nCapture From Network"
+    ID_CAPTURE_NETWORK      "IP/WiFi camera\nIP/WiFi Camera"
     ID_CAPTURE_RECORD       "Recording\nRecording"
     ID_VIEW_ALL_NEXT_PICTURE 
                             "Show next image of all open documents\nAll Next Image"
@@ -4198,8 +4198,8 @@ STRINGTABLE
 BEGIN
     IDS_STRING1750          "ADD CAMERA"
     IDS_STRING1751          "1. Make sure your video capture device is plugged-in and drivers are installed"
-    IDS_STRING1752          "(network and DV cameras do not need specific drivers)"
-    IDS_STRING1753          "2. From the Capture menu select the device you want to use"
+    IDS_STRING1752          "(IP/WiFi cameras do not need drivers)"
+    IDS_STRING1753          "2. From the Camera menu select the device you want to use"
     IDS_STRING1754          "(for network cameras supply host name or ip address, port and camera type)"
     IDS_STRING1755          "3. Follow the Camera Settings dialog"
     IDS_STRING1756          "(if it's not popping-up select Camera Settings from the Settings menu)"
