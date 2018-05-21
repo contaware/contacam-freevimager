@@ -107,11 +107,6 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Delete",                     ID_EDIT_DELETE
     END
-    POPUP "&View"
-    BEGIN
-        MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
-        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
-    END
     POPUP "&Capture"
     BEGIN
         MENUITEM "&Network",                    ID_CAPTURE_NETWORK
@@ -241,9 +236,6 @@ BEGIN
     END
     POPUP "&View"
     BEGIN
-        MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
-        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
-        MENUITEM SEPARATOR
         MENUITEM "Fit",                         ID_VIEW_FIT
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
         MENUITEM SEPARATOR
@@ -397,9 +389,6 @@ BEGIN
     END
     POPUP "&View"
     BEGIN
-        MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
-        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
-        MENUITEM SEPARATOR
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
         MENUITEM SEPARATOR
         POPUP "Zoom"
@@ -3941,12 +3930,6 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_VIEW_TOOLBAR         "Show or hide the toolbar\nToggle ToolBar"
-    ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
-END
-
-STRINGTABLE
-BEGIN
     AFX_IDS_SCSIZE          "Change the window size"
     AFX_IDS_SCMOVE          "Change the window position"
     AFX_IDS_SCMINIMIZE      "Reduce the window to an icon"
@@ -4220,7 +4203,7 @@ BEGIN
     IDS_STRING1754          "(for network cameras supply host name or ip address, port and camera type)"
     IDS_STRING1755          "3. Follow the Camera Settings dialog"
     IDS_STRING1756          "(if it's not popping-up select Camera Settings from the Settings menu)"
-    IDS_STRING1757          "4. Choose Browse from the View menu"
+    IDS_STRING1757          "4. To watch press the Browse toolbar button"
     IDS_STRING1758          "&Snapshooting...\tIns"
     IDS_STRING1759          "&Snapshot\tIns"
 END

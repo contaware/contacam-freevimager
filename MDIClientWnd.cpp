@@ -163,7 +163,7 @@ void CMDIClientWnd::OnPaint()
 
 	// Draw point 4.
 	rcDraw.top += nLineHeight;	
-	DrawT(memDC, ML_STRING(1757, "4. Choose Browse from the View menu") +  _T(" ") + ML_STRING(1800, "or type in Web Browser's address bar") + _T(":"), rcDraw);
+	DrawT(memDC, ML_STRING(1757, "4. To watch press the Browse toolbar button") +  _T(" ") + ML_STRING(1800, "or type in Web Browser's address bar") + _T(":"), rcDraw);
 
 	// Draw indent
 	rcDraw.top += nLineHeight;

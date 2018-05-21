@@ -57,8 +57,7 @@ BOOL CChildToolBar::Create(CWnd* pParentWnd)
 {
 	return CToolBar::CreateEx(	pParentWnd,
 								TBSTYLE_FLAT, 
-								(((CUImagerApp*)::AfxGetApp())->m_bShowToolbar ? WS_VISIBLE : 0) |
-								WS_CHILD | CBRS_ALIGN_BOTTOM | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_FIXED,
+								WS_VISIBLE | WS_CHILD | CBRS_ALIGN_BOTTOM | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_FIXED,
 								TOOLBAR_BORDERRECT);
 }
 
@@ -165,11 +164,6 @@ END_MESSAGE_MAP()
 
 BOOL CVideoDeviceToolBar::SwitchToolBar(int nDPI, BOOL bCallShowControlBar/*=TRUE*/)
 {
-	// NOTE
-	// In the past there was a bug in MFC when switching toolbar,
-	// but in new versions it seems to be solved:
-	// http://www.verycomputer.com/418_a17ba2bef12732f0_1.htm
-
 	// Load and set sizes
 	if (nDPI > 192)
 	{
@@ -292,11 +286,6 @@ END_MESSAGE_MAP()
 
 BOOL CPictureToolBar::SwitchToolBar(int nDPI, BOOL bCallShowControlBar/*=TRUE*/)
 {
-	// NOTE
-	// In the past there was a bug in MFC when switching toolbar,
-	// but in new versions it seems to be solved:
-	// http://www.verycomputer.com/418_a17ba2bef12732f0_1.htm
-
 	// Load and set sizes
 	if (nDPI > 192)
 	{

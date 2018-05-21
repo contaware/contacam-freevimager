@@ -11,6 +11,10 @@ CONTACAM HISTORY
   engine (it makes no sense to have a separate continuous
   recording engine)
 - Using better random generators
+- Removed the possibility to hide the toolbars because they
+  provide important commands not available elsewhere
+- Removed the possibility to hide the statusbar because it
+  notifies about important issues like buffer shortage
 
 7.7.0 (February 18th 2018)
 
@@ -50,7 +54,7 @@ CONTACAM HISTORY
 - Possibility to obscure the video source from the web interface
 - All cameras can now capture audio from a selectable source
   (removed Axis HTTP audio support, please use RTSP)
-- New status-bar pane showing the maximum overall movement detection
+- New statusbar pane showing the maximum overall movement detection
   buffers size
 
 5.5.0 (February 18th 2017)

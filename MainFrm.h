@@ -132,7 +132,6 @@ public:
 	// Toolbar
 	CToolBar* GetToolBar() {return &m_wndToolBar;};
 	BOOL SwitchToolBar(int nDPI, BOOL bCallShowControlBar = TRUE);
-	void ToggleToolbars();
 
 	// Statusbar
 	void StatusText(CString sText = _T("")); // if sText is _T("") the idle message is displayed
@@ -166,7 +165,6 @@ public:
 	// Main frame menu positions
 	int m_nFileMenuPos;
 	int m_nEditMenuPos;
-	int m_nViewMenuPos;
 	int m_nCaptureMenuPos;
 	int m_nPlayMenuPos;
 	int m_nSettingsMenuPos;
@@ -240,10 +238,6 @@ protected:
 	afx_msg void OnFileSelecttwainsource();
 	afx_msg void OnFileAcquire();
 	afx_msg void OnMenuSelect(UINT nItemID, UINT nFlags, HMENU hSysMenu);
-	afx_msg void OnViewStatusbar();
-	afx_msg void OnUpdateViewStatusbar(CCmdUI* pCmdUI);
-	afx_msg void OnViewToolbar();
-	afx_msg void OnUpdateViewToolbar(CCmdUI* pCmdUI);
 	afx_msg void OnViewAllPreviousPicture();
 	afx_msg void OnViewAllNextPicture();
 	afx_msg void OnViewAllFirstPicture();

@@ -158,8 +158,6 @@ CUImagerApp::CUImagerApp()
 	m_bSingleInstance = FALSE;
 #endif
 	m_bTopMost = FALSE;
-	m_bShowStatusbar = TRUE;
-	m_bShowToolbar = TRUE;
 	m_pPictureDocTemplate = NULL;
 	m_bUseLoadPreviewDib = TRUE;
 	m_bFileDlgPreview = TRUE;

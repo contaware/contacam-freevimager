@@ -36,11 +36,6 @@ public:
 protected:
 	BOOL m_bFirstCloseAttempt;
 	DWORD m_dwShutdownStartUpTime;
-
-	//{{AFX_MSG(CChildFrame)
-	afx_msg void OnViewToolbar();
-	afx_msg void OnUpdateViewToolbar(CCmdUI* pCmdUI);
-	//}}AFX_MSG
 	LRESULT OnSetMessageString(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 };
