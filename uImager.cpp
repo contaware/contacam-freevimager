@@ -142,7 +142,6 @@ CUImagerApp::CUImagerApp()
 #ifdef VIDEODEVICEDOC
 	m_pVideoDeviceDocTemplate = NULL;
 	m_bAutostartsExecuted = FALSE;
-	m_bBrowserAutostart = FALSE;
 	m_dwFirstStartDelayMs = DEFAULT_FIRSTSTART_DELAY_MS;
 	m_bMovFragmented = FALSE;
 	m_bStartMicroApache = FALSE;
@@ -1137,7 +1136,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// Start Micro Apache
 		// Note: make sure the web server is running because the below devices
 		//       autorun which can connect to localhost's push.php or poll.php
-		//       and the browser autostart need it
 		if (m_bStartMicroApache && !CVideoDeviceDoc::MicroApacheStart(MICROAPACHE_STARTUP_TIMEOUT_MS))
 		{
 			sMsg = ML_STRING(1475, "Failed to start the web server");
@@ -1156,23 +1154,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			::AfxGetMainFrame()->StatusText(sMsg);
 		if (g_nLogLevel > 0)
 			::LogLine(_T("%s"), sMsg);
-
-		// Start Browser
-		if (m_bBrowserAutostart && !m_bServiceProcess)
-		{
-			CString sUrl, sPort;
-			sPort.Format(_T("%d"), m_nMicroApachePort);
-			if (sPort != _T("80"))
-				sUrl = _T("http://localhost:") + sPort + _T("/");
-			else
-				sUrl = _T("http://localhost/");
-			::ShellExecute(	NULL,
-							_T("open"),
-							sUrl,
-							NULL,
-							NULL,
-							SW_SHOWNORMAL);
-		}
 
 		// Flag indicating that the auto-starts have been executed
 		m_bAutostartsExecuted = TRUE;
@@ -1919,8 +1900,6 @@ void CUImagerApp::SaveOnEndSession()
 	{
 		if (m_bStartMicroApache)
 			CVideoDeviceDoc::MicroApacheShutdown(MICROAPACHE_TIMEOUT_MS);
-		if (!m_bServiceProcess)
-			BrowserAutostart();
 		::LogLine(_T("%s"), ML_STRING(1566, "Closing") + _T(" ") + APPNAME_NOEXT + _T(" (Session End)"));
 	}
 	if (m_bDoStartFromService && GetContaCamServiceState() == CONTACAMSERVICE_RUNNING)
@@ -2097,10 +2076,6 @@ int CUImagerApp::ExitInstance()
 		if (m_bStartMicroApache)
 			CVideoDeviceDoc::MicroApacheShutdown(MICROAPACHE_TIMEOUT_MS);
 
-		// Browser autostart
-		if (!m_bServiceProcess)
-			BrowserAutostart();
-
 		// Log the stopping of the application
 		::LogLine(_T("%s"), ML_STRING(1566, "Closing") + _T(" ") + APPNAME_NOEXT);
 	}
@@ -2249,27 +2224,6 @@ DWORD CUImagerApp::ControlContaCamService(int nMsg)
 		::CloseServiceHandle(schSCManager); 
 	}
 	return dwError;
-}
-
-void CUImagerApp::BrowserAutostart()
-{
-	::DeleteRegistryValue(	HKEY_CURRENT_USER,
-							_T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"),
-							BROSERAUTORUN_NAME);
-	if (m_bDoStartFromService && GetContaCamServiceState() == CONTACAMSERVICE_RUNNING &&
-		!IsAutostart() && m_bBrowserAutostart)
-	{
-		CString sUrl, sPort;
-		sPort.Format(_T("%d"), m_nMicroApachePort);
-		if (sPort != _T("80"))
-			sUrl = _T("http://localhost:") + sPort + _T("/");
-		else
-			sUrl = _T("http://localhost/");
-		CString sAutorunCommand(_T("rundll32.exe url.dll,FileProtocolHandler ") + sUrl);
-		::SetRegistryStringValue(	HKEY_CURRENT_USER,
-									_T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"),
-									BROSERAUTORUN_NAME, sAutorunCommand);
-	}
 }
 
 BOOL CUImagerApp::MovDetSaveReservation(DWORD dwId)
@@ -3428,9 +3382,6 @@ void CUImagerApp::LoadSettings(UINT showCmd/*=SW_SHOWNORMAL*/)
 	m_crNewBackgroundColor = (COLORREF)GetProfileInt(sSection, _T("NewBackgroundColor"), DEFAULT_NEW_COLOR);
 
 #ifdef VIDEODEVICEDOC
-	// Browser
-	m_bBrowserAutostart = (BOOL)GetProfileInt(sSection, _T("BrowserAutostart"), FALSE);
-
 	// Wait time before autostarting first device
 	m_dwFirstStartDelayMs = (DWORD)GetProfileInt(sSection, _T("FirstStartDelayMs"), DEFAULT_FIRSTSTART_DELAY_MS);
 

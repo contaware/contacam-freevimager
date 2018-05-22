@@ -28,7 +28,6 @@ CSettingsDlgVideoDeviceDoc::CSettingsDlgVideoDeviceDoc(CWnd* pParent /*=NULL*/)
 	m_bTrayIcon =		((CUImagerApp*)::AfxGetApp())->m_bTrayIcon;
 	m_bAutostart =		((CUImagerApp*)::AfxGetApp())->IsAutostart();
 	m_bStartFromService = CUImagerApp::GetContaCamServiceState() > 0;
-	m_bBrowserAutostart = ((CUImagerApp*)::AfxGetApp())->m_bBrowserAutostart;
 	m_nFirstStartDelay = ((CUImagerApp*)::AfxGetApp())->m_dwFirstStartDelayMs / 1000;
 	m_bStartMicroApache = ((CUImagerApp*)::AfxGetApp())->m_bStartMicroApache;
 	m_nMicroApachePort = ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort;
@@ -66,7 +65,6 @@ void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_CERT_SSL, m_sMicroApacheCertFileSSL);
 	DDX_Text(pDX, IDC_EDIT_KEY_SSL, m_sMicroApacheKeyFileSSL);
 	DDX_Text(pDX, IDC_EDIT_DOCROOT, m_sMicroApacheDocRoot);
-	DDX_Check(pDX, IDC_CHECK_BROWSER_AUTOSTART, m_bBrowserAutostart);
 	DDX_Check(pDX, IDC_CHECK_STARTFROM_SERVICE, m_bStartFromService);
 	DDX_Text(pDX, IDC_EDIT_FIRSTSTART_DELAY, m_nFirstStartDelay);
 	DDV_MinMaxInt(pDX, m_nFirstStartDelay, 0, 600);
@@ -139,9 +137,6 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsInit()
 		::AfxGetMainFrame()->SetWindowPos(&wndTopMost, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 	else
 		::AfxGetMainFrame()->SetWindowPos(&wndNoTopMost, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-
-	// Browser
-	pApp->m_bBrowserAutostart = m_bBrowserAutostart;
 
 	// Wait time before autostarting first device
 	pApp->m_dwFirstStartDelayMs = 1000 * m_nFirstStartDelay;
@@ -245,9 +240,6 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsEnd()
 									_T("TrayIcon"),
 									m_bTrayIcon);
 	pApp->WriteProfileInt(			_T("GeneralApp"),
-									_T("BrowserAutostart"),
-									m_bBrowserAutostart);
-	pApp->WriteProfileInt(			_T("GeneralApp"),
 									_T("FirstStartDelayMs"),
 									1000 * m_nFirstStartDelay);
 	pApp->WriteProfileInt(			_T("GeneralApp"),
@@ -334,8 +326,6 @@ void CSettingsDlgVideoDeviceDoc::EnableDisableAllCtrls(BOOL bEnable)
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_TRAYICON);
 	pCheck->EnableWindow(bEnable);
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_STARTFROM_SERVICE);
-	pCheck->EnableWindow(bEnable);
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_BROWSER_AUTOSTART);
 	pCheck->EnableWindow(bEnable);
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_TOPMOST);
 	pCheck->EnableWindow(bEnable);

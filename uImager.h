@@ -366,9 +366,6 @@ public:
 	// CONTACAMSERVICE_CONTROL_END_PROC
 	static DWORD ControlContaCamService(int nMsg);
 
-	// Broser autostart
-	void BrowserAutostart();
-
 	// Movement detection save reservation queue
 	BOOL MovDetSaveReservation(DWORD dwId);
 	void MovDetSaveReservationRemove(DWORD dwId);
@@ -539,9 +536,6 @@ public:
 	// Flag indicating that the auto-starts have been executed
 	volatile BOOL m_bAutostartsExecuted;
 
-	// Browser
-	BOOL m_bBrowserAutostart;
-
 	// Wait time before autostarting first device
 	volatile DWORD m_dwFirstStartDelayMs;
 
@@ -576,13 +570,10 @@ public:
 	CRITICAL_SECTION m_csMovDetSaveReservation;
 
 	// Service
-	// - ContaCam's browser autostart disabled if this set
-	//   (in this case a registry Run key is set to start the browser
-	//    and that's made in BrowserAutostart() by the UI process)
 	// - Window placement store/restore disabled if this set
 	// - Start/stop ContaCam.exe from service disabled if this set
 	// - Drawing disabled if this set
-	volatile BOOL m_bServiceProcess;	// Set if SERVICENAME_EXT started us
+	volatile BOOL m_bServiceProcess; // set if SERVICENAME_EXT started us
 
 	// Do start from service
 	BOOL m_bDoStartFromService;

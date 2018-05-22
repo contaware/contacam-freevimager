@@ -2050,7 +2050,6 @@
 #define IDC_CHECK_TOPMOST               1700
 #define IDS_STRING1700                  1700
 #define IDS_STRING1701                  1701
-#define IDC_CHECK_BROWSER_AUTOSTART     1701
 #define IDS_STRING1702                  1702
 #define IDC_CHECK_PREFER_TCP_FOR_RTSP   1702
 #define IDS_STRING1703                  1703

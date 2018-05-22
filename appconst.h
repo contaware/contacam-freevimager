@@ -19,7 +19,6 @@
 #define SERVICENAME_EXT									_T("ContaCamService.exe")
 #define SERVICENAME_NOEXT								_T("ContaCamService")
 #define APPMUTEXNAME									_T("ContaCamAppMutex")
-#define BROSERAUTORUN_NAME								_T("ContaCamBrowser")
 #define FAQ_ONLINE_PAGE									_T("http://www.contaware.com/contacamfaq/")
 #define MANUAL_ONLINE_PAGE								_T("http://www.contaware.com/contacammanual/")
 #else
