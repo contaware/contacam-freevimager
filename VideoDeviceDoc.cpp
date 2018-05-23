@@ -6221,6 +6221,7 @@ CString CVideoDeviceDoc::MicroApacheGetPidFileName()
 
 BOOL CVideoDeviceDoc::MicroApacheStart(DWORD dwTimeoutMs)
 {
+	::DeleteFile(MicroApacheGetPidFileName()); // delete old pid file from crashed/killed processes
 	CString sMicroapacheConfigFile = MicroApacheGetConfigFileName();
 	if (!::IsExistingFile(sMicroapacheConfigFile))
 		return FALSE;
@@ -6267,6 +6268,8 @@ BOOL CVideoDeviceDoc::MicroApacheStart(DWORD dwTimeoutMs)
 										::GetDriveAndDirName(sMicroapacheStartFile), &si, &pi);
 		if (pi.hProcess)
 			::CloseHandle(pi.hProcess);
+		if (pi.hThread)
+			::CloseHandle(pi.hThread);
 		if (bStarted)
 		{
 			::Sleep(nWaitMul * MICROAPACHE_WAITTIME_MS);
