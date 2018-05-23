@@ -200,7 +200,7 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 							const LPBITMAPINFO pDstFormat,
 							DWORD dwDstTimeBaseDenominator,
 							DWORD dwDstTimeBaseNumerator,
-							float qscale,	// 2.0f best quality, 31.0f worst quality, for H.264 clamped to [VIDEO_QUALITY_LOSSLESS, VIDEO_QUALITY_LOW]
+							float qscale,	// 2.0f best quality, 31.0f worst quality, for H.264 clamped to [VIDEO_QUALITY_BEST, VIDEO_QUALITY_LOW]
 							int nThreadCount)
 {
 	int nStreamNum = -1;
@@ -270,7 +270,7 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 		// Quality 0-51: where 0 is lossless, 23 is default, and 51 is worst possible
 		// Note: subjectively sane range is 18-28 (consider 17 to be visually lossless)
 		int crf;
-		switch ((int)ClipVideoQuality(qscale)) // Clamp to [VIDEO_QUALITY_LOSSLESS, VIDEO_QUALITY_LOW]
+		switch ((int)ClipVideoQuality(qscale)) // Clamp to [VIDEO_QUALITY_BEST, VIDEO_QUALITY_LOW]
 		{
 			case 2 : crf = 17; break; // Video quality Lossless
 			case 3 : crf = 22; break; // Video quality Best
@@ -1456,8 +1456,8 @@ float CAVRec::ClipVideoQuality(float fQuality)
 {
 	if (fQuality > VIDEO_QUALITY_LOW)
 		fQuality = VIDEO_QUALITY_LOW;
-	else if (fQuality < VIDEO_QUALITY_LOSSLESS)
-		fQuality = VIDEO_QUALITY_LOSSLESS;
+	else if (fQuality < VIDEO_QUALITY_BEST)
+		fQuality = VIDEO_QUALITY_BEST;
 	return fQuality;
 }
 

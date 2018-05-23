@@ -876,7 +876,7 @@ public:
 
 	// Audio / Video Rec
 	CString m_sRecordAutoSaveDir;						// The Record Directory
-	volatile float m_fVideoRecQuality;					// 2.0f best quality, 31.0f worst quality, for H.264 clamped to [VIDEO_QUALITY_LOSSLESS, VIDEO_QUALITY_LOW]
+	volatile float m_fVideoRecQuality;					// 2.0f best quality, 31.0f worst quality, for H.264 clamped to [VIDEO_QUALITY_BEST, VIDEO_QUALITY_LOW]
 	volatile int m_nDeleteRecordingsOlderThanDays;		// Delete Recordings older than the given amount of days,
 														// 0 means never delete any file
 	volatile int m_nMaxCameraFolderSizeMB;				// Maximum size of a camera folder, after that oldest files are removed,
