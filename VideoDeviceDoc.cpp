@@ -6221,10 +6221,22 @@ CString CVideoDeviceDoc::MicroApacheGetPidFileName()
 
 BOOL CVideoDeviceDoc::MicroApacheStart(DWORD dwTimeoutMs)
 {
-	::DeleteFile(MicroApacheGetPidFileName()); // delete old pid file from crashed/killed processes
+	// Delete old pid file from crashed / killed processes
+	CString sMicroapachePidFile = MicroApacheGetPidFileName();
+	::DeleteFile(sMicroapachePidFile);
+
+	// Delete old log file to avoid growing it too much
+	::DeleteFile(MicroApacheGetLogFileName());
+
+	// Config file path
 	CString sMicroapacheConfigFile = MicroApacheGetConfigFileName();
 	if (!::IsExistingFile(sMicroapacheConfigFile))
 		return FALSE;
+	sMicroapacheConfigFile = ::GetASCIICompatiblePath(sMicroapacheConfigFile); // file must exist!
+	sMicroapacheConfigFile.Replace(_T('\\'), _T('/')); // change path from \ to / (otherwise apache is not happy)
+	CString sParams = _T("-f \"") + sMicroapacheConfigFile + _T("\"");
+
+	// Executable path
 	TCHAR szDrive[_MAX_DRIVE];
 	TCHAR szDir[_MAX_DIR];
 	TCHAR szProgramName[MAX_PATH];
@@ -6235,85 +6247,41 @@ BOOL CVideoDeviceDoc::MicroApacheStart(DWORD dwTimeoutMs)
 	sMicroapacheStartFile += MICROAPACHE_RELPATH;
 	if (!::IsExistingFile(sMicroapacheStartFile))
 		return FALSE;
-	::DeleteFile(MicroApacheGetLogFileName()); // avoid growing it too much!
-	sMicroapacheConfigFile = ::GetASCIICompatiblePath(sMicroapacheConfigFile); // file must exist!
-	sMicroapacheConfigFile.Replace(_T('\\'), _T('/')); // change path from \ to / (otherwise apache is not happy)
-	CString sParams = _T("-f \"") + sMicroapacheConfigFile + _T("\"");
+	
+	// Start mapache.exe
+	// Note: do not use ShellExecuteEx because it creates a separate thread
+	//       and does not return until that thread completes. During this time
+	//       ShellExecuteEx will pump window messages to prevent windows
+	//       owned by the calling thread from appearing hung. We do not want
+	//       that messages are pumped when starting ContaCam!
+	STARTUPINFO si;
+	PROCESS_INFORMATION pi;
+	memset(&si, 0, sizeof(si));
+	memset(&pi, 0, sizeof(pi));
+	si.cb = sizeof(si);
+	si.dwFlags = STARTF_USESHOWWINDOW;
+	si.wShowWindow = SW_HIDE;
 	TCHAR lpCommandLine[32768];
-	CNetCom NetCom;
-	HANDLE hEventArray[2];
-	hEventArray[0] = ::CreateEvent(NULL, TRUE, FALSE, NULL); // Http Connected Event						
-	hEventArray[1] = ::CreateEvent(NULL, TRUE, FALSE, NULL); // Http Connect Failed Event
+	_tcscpy_s(lpCommandLine, _T("\"") + sMicroapacheStartFile + _T("\"") + _T(" ") + sParams);
 	DWORD dwStartUpTimeMs = ::GetTickCount();
-	int nWaitMul = 2;
-	BOOL res = FALSE;
-	do
+	BOOL bStarted = ::CreateProcess(sMicroapacheStartFile, lpCommandLine,
+									NULL, NULL, FALSE, NORMAL_PRIORITY_CLASS, NULL,
+									::GetDriveAndDirName(sMicroapacheStartFile), &si, &pi);
+	if (pi.hProcess)
+		::CloseHandle(pi.hProcess);
+	if (pi.hThread)
+		::CloseHandle(pi.hThread);
+	if (bStarted)
 	{
-		// Start mapache.exe
-		// Note: do not use ShellExecuteEx because it creates a separate thread
-		//       and does not return until that thread completes. During this time
-		//       ShellExecuteEx will pump window messages to prevent windows
-		//       owned by the calling thread from appearing hung. We do not want
-		//       that messages are pumped when starting ContaCam!
-		STARTUPINFO si;
-		PROCESS_INFORMATION pi;
-		memset(&si, 0, sizeof(si));
-		memset(&pi, 0, sizeof(pi));
-		si.cb = sizeof(si);
-		si.dwFlags = STARTF_USESHOWWINDOW;
-		si.wShowWindow = SW_HIDE;
-		_tcscpy_s(lpCommandLine, _T("\"") + sMicroapacheStartFile + _T("\"") + _T(" ") + sParams);
-		BOOL bStarted = ::CreateProcess(sMicroapacheStartFile, lpCommandLine,
-										NULL, NULL, FALSE, NORMAL_PRIORITY_CLASS, NULL,
-										::GetDriveAndDirName(sMicroapacheStartFile), &si, &pi);
-		if (pi.hProcess)
-			::CloseHandle(pi.hProcess);
-		if (pi.hThread)
-			::CloseHandle(pi.hThread);
-		if (bStarted)
+		do
 		{
-			::Sleep(nWaitMul * MICROAPACHE_WAITTIME_MS);
-			if (nWaitMul < 5)
-				nWaitMul = 5;
-			else
-				nWaitMul = 10;
+			if (::IsExistingFile(sMicroapachePidFile))
+				return TRUE;
+			::Sleep(MICROAPACHE_WAITTIME_MS);
 		}
-		else
-			goto exit;
-
-		// Try connecting to mapache.exe
-		// Note: if another server is running on our port, mapache.exe will terminate after
-		//       successfully starting. In that case the below connection test succeeds.
-		//       In previous code versions after the connection test I checked whether
-		//       mapache.exe was running, but that's not reliable because as stated above
-		//       mapache.exe may run for a short time and then exit. We want a fast ContaCam
-		//       start, so we cannot wait a long time to make sure mapache.exe is really
-		//       listening on the set port!
-		NetCom.Close();
-		::ResetEvent(hEventArray[0]);
-		::ResetEvent(hEventArray[1]);
-		if (NetCom.Init(NULL,					// Parser
-						_T("localhost"),		// Peer Address (IP or Host Name)
-						((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort,	// Peer Port
-						hEventArray[0],			// Handle to an Event Object that will get Connect Events
-						hEventArray[1],			// Handle to an Event Object that will get Connect Failed Events
-						NULL,					// Handle to an Event Object that will get Read Events
-						AF_UNSPEC))				// Socket family
-		{
-			if (::WaitForMultipleObjects(2, hEventArray, FALSE, dwTimeoutMs / 2U) == WAIT_OBJECT_0) // http Connected Event
-			{
-				res = TRUE;
-				goto exit;
-			}
-		}
+		while ((::GetTickCount() - dwStartUpTimeMs) < dwTimeoutMs);
 	}
-	while ((::GetTickCount() - dwStartUpTimeMs) < dwTimeoutMs);
-
-exit:
-	NetCom.Close();
-	::CloseHandle(hEventArray[0]);
-	::CloseHandle(hEventArray[1]);
-	return res;
+	return FALSE;
 }
 
 BOOL CVideoDeviceDoc::MicroApacheShutdown(DWORD dwTimeoutMs)
