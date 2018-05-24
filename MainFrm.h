@@ -226,7 +226,6 @@ protected:
 #ifdef VIDEODEVICEDOC
 	double GetMaxOverallQueueSizeGB();
 	void CleanupFileMenu(CMenu* pPopupMenu);
-	void CleanupEditMenu(CMenu* pPopupMenu);
 	void PopulateCaptureMenu(CMenu* pPopupMenu);
 #endif
 

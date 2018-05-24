@@ -104,8 +104,6 @@ BEGIN
     BEGIN
         MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
         MENUITEM "Screenshot\tCtrl+F11",        ID_EDIT_SCREENSHOT
-        MENUITEM SEPARATOR
-        MENUITEM "&Delete",                     ID_EDIT_DELETE
     END
     POPUP "&Camera"
     BEGIN
@@ -227,10 +225,6 @@ BEGIN
     POPUP "&Edit"
     BEGIN
         MENUITEM "&Snapshot\tIns",              ID_EDIT_SNAPSHOT
-        MENUITEM SEPARATOR
-        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
-        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
-        MENUITEM "Screenshot\tCtrl+F11",        ID_EDIT_SCREENSHOT
         MENUITEM SEPARATOR
         MENUITEM "&Delete",                     ID_EDIT_DELETE
     END
@@ -2343,8 +2337,8 @@ CAPTION "Select Cameras to Delete (all files are removed)"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LISTBOX         IDC_CAM_FOLDERS,7,7,236,172,LBS_MULTIPLESEL | LBS_USETABSTOPS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
-    DEFPUSHBUTTON   "Delete",IDOK,7,186,50,19
-    PUSHBUTTON      "Cancel",IDCANCEL,64,186,50,19
+    DEFPUSHBUTTON   "Delete Now!",IDOK,7,186,65,19
+    PUSHBUTTON      "Cancel",IDCANCEL,79,186,50,19
     PUSHBUTTON      "Sel All",IDC_BUTTON_LIST_SELECTALL,166,186,35,19
     PUSHBUTTON      "Sel None",IDC_BUTTON_LIST_SELECTNONE,208,186,35,19
 END
@@ -4240,7 +4234,7 @@ STRINGTABLE
 BEGIN
     IDS_STRING1800          "or type in Web Browser's address bar"
     IDS_STRING1801          "REMOVE CAMERAS"
-    IDS_STRING1803          "1. Choose Delete from the Edit menu"
+    IDS_STRING1803          "1. Press the Delete toolbar button"
 END
 
 STRINGTABLE

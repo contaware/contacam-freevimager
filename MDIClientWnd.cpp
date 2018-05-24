@@ -210,7 +210,7 @@ void CMDIClientWnd::OnPaint()
 
 	// Draw point 1.
 	rcDraw.top += nLineHeight;
-	DrawT(memDC, ML_STRING(1803, "1. Choose Delete from the Edit menu"), rcDraw);
+	DrawT(memDC, ML_STRING(1803, "1. Press the Delete toolbar button"), rcDraw);
 #endif
 
 	// Clean-Up
