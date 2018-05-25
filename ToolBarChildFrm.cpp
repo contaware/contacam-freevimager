@@ -398,8 +398,11 @@ void CPictureToolBar::UpdateControls(void)
 	// Place Color Button Picker
 	if (::IsWindow(m_BkgColorButtonPicker))
 	{
+		// TODO: when I will make the drop-down arrow of the
+		// picker button high-DPI aware then I have to replace:
+		// 15 -> ScaleToolBar(g_nSystemDPI, 15)
 		GetItemRect(m_BkgColorButtonPickerIndex, rect);
-		rect.right = rect.left + ScaleToolBar(g_nSystemDPI, TOOLBAR_COLORBUTTONPICKER_WIDTH);
+		rect.right = rect.left + rect.Height() + 15;
 		SetButtonInfo(	m_BkgColorButtonPickerIndex,
 						ID_BACKGROUND_COLOR,
 						TBBS_SEPARATOR,
