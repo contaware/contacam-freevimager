@@ -135,9 +135,6 @@ IDR_CONTEXT_PICTURE MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
-        MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
-        MENUITEM "&Redo\tCtrl+Y",               ID_EDIT_REDO
-        MENUITEM SEPARATOR
         MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
         POPUP "Paste Into"
         BEGIN
@@ -149,37 +146,8 @@ BEGIN
             MENUITEM "From coord. File...",         ID_EDIT_PASTE_INTO_FILE
             MENUITEM "Coord. File Help",            ID_EDIT_PASTE_INTO_FILE_HELP
         END
+        MENUITEM SEPARATOR
         MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
-        MENUITEM "Re&name\tF2",                 ID_EDIT_RENAME
-        MENUITEM SEPARATOR
-        MENUITEM "&Play\tEnter",                ID_PLAY_SLIDESHOW
-        MENUITEM "&Stop\tPause",                ID_STOP_SLIDESHOW
-        POPUP "Slide Show &Delay"
-        BEGIN
-            MENUITEM "2 s",                         ID_SLIDESHOW_DELAY_2
-            MENUITEM "3 s",                         ID_SLIDESHOW_DELAY_3
-            MENUITEM "4 s",                         ID_SLIDESHOW_DELAY_4
-            MENUITEM "5 s",                         ID_SLIDESHOW_DELAY_5
-            MENUITEM "10 s",                        ID_SLIDESHOW_DELAY_10
-            MENUITEM "30 s",                        ID_SLIDESHOW_DELAY_30
-            MENUITEM "1 min",                       ID_SLIDESHOW_DELAY_60
-        END
-        POPUP "Slideshow Transition"
-        BEGIN
-            MENUITEM "Off",                         ID_PLAY_TRANSITION_OFF
-            MENUITEM "Random",                      ID_PLAY_TRANSITION_RANDOM
-            MENUITEM "Chessboard",                  ID_PLAY_TRANSITION_CHESSBOARD
-            MENUITEM "Curtain-In",                  ID_PLAY_TRANSITION_CURTAININ
-            MENUITEM "Roll-In",                     ID_PLAY_TRANSITION_ROOLIN
-            MENUITEM "Slide-In",                    ID_PLAY_TRANSITION_SLIDEIN
-            MENUITEM "Blend",                       ID_PLAY_TRANSITION_BLEND
-        END
-        MENUITEM "Slideshow Infinite Loop",     ID_PLAY_LOOP
-        MENUITEM "Slideshow Random\tF9",        ID_PLAY_RANDOM
-        MENUITEM SEPARATOR
-        MENUITEM "File Information...\tCtrl+I", ID_FILE_INFO
-        MENUITEM SEPARATOR
-        MENUITEM "Print...\tCtrl+P",            ID_FILE_PRINT_PREVIEW
         MENUITEM SEPARATOR
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
     END
@@ -190,7 +158,6 @@ BEGIN
     POPUP "_Context Menu_"
     BEGIN
         MENUITEM "&Snapshot\tIns",              ID_EDIT_SNAPSHOT
-        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
         MENUITEM SEPARATOR
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
     END
@@ -534,9 +501,6 @@ IDR_CONTEXT_PICTURE_FULLSCREEN MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
-        MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
-        MENUITEM "&Redo\tCtrl+Y",               ID_EDIT_REDO
-        MENUITEM SEPARATOR
         MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
         POPUP "Paste Into"
         BEGIN
@@ -548,8 +512,8 @@ BEGIN
             MENUITEM "From coord. File...",         ID_EDIT_PASTE_INTO_FILE
             MENUITEM "Coord. File Help",            ID_EDIT_PASTE_INTO_FILE_HELP
         END
+        MENUITEM SEPARATOR
         MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
-        MENUITEM "Re&name\tF2",                 ID_EDIT_RENAME
         MENUITEM SEPARATOR
         POPUP "Zoom"
         BEGIN
@@ -560,33 +524,6 @@ BEGIN
         BEGIN
             MENUITEM "To Next\tTAB",                ID_VIEW_NEXT_MONITOR
             MENUITEM "To Previous\tShift+TAB",      ID_VIEW_PREVIOUS_MONITOR
-        END
-        MENUITEM "Preview Display\tCtrl+U",     ID_VIEW_LAYERED_DLG
-        POPUP "Preview Display Settings"
-        BEGIN
-            MENUITEM "Max Size 2/3 Screen",         ID_LAYEREDDLG_MAXSIZE_0_66
-            MENUITEM "Max Size 1/2 Screen",         ID_LAYEREDDLG_MAXSIZE_0_50
-            MENUITEM "Max Size 1/3 Screen",         ID_LAYEREDDLG_MAXSIZE_0_33
-            MENUITEM "Max Size 1/4 Screen",         ID_LAYEREDDLG_MAXSIZE_0_25
-            MENUITEM "Size 12.5 %",                 ID_LAYEREDDLG_SIZE_0125
-            MENUITEM "Size 25 %",                   ID_LAYEREDDLG_SIZE_025
-            MENUITEM "Size 50 %",                   ID_LAYEREDDLG_SIZE_050
-            MENUITEM "Size 100 %",                  ID_LAYEREDDLG_SIZE_100
-            MENUITEM "Size 200 %",                  ID_LAYEREDDLG_SIZE_200
-            MENUITEM "Size 400 %",                  ID_LAYEREDDLG_SIZE_400
-            MENUITEM "Size 800 %",                  ID_LAYEREDDLG_SIZE_800
-            MENUITEM "Size 1600 %",                 ID_LAYEREDDLG_SIZE_1600
-            MENUITEM SEPARATOR
-            MENUITEM "Top - Left",                  ID_LAYEREDDLG_SIZE_TOPLEFT
-            MENUITEM "Top - Right",                 ID_LAYEREDDLG_SIZE_TOPRIGHT
-            MENUITEM "Bottom - Left",               ID_LAYEREDDLG_SIZE_BOTTOMLEFT
-            MENUITEM "Bottom - Right",              ID_LAYEREDDLG_SIZE_BOTTOMRIGHT
-            MENUITEM SEPARATOR
-            MENUITEM "Opacity 100 %",               ID_LAYEREDDLG_OPACITY_100
-            MENUITEM "Opacity 80 %",                ID_LAYEREDDLG_OPACITY_80
-            MENUITEM "Opacity 60 %",                ID_LAYEREDDLG_OPACITY_60
-            MENUITEM "Opacity 40 %",                ID_LAYEREDDLG_OPACITY_40
-            MENUITEM "Opacity 20 %",                ID_LAYEREDDLG_OPACITY_20
         END
         MENUITEM SEPARATOR
         MENUITEM "&Play\tEnter",                ID_PLAY_SLIDESHOW
@@ -614,7 +551,6 @@ BEGIN
         MENUITEM "Slideshow Infinite Loop",     ID_PLAY_LOOP
         MENUITEM "Slideshow Random\tF9",        ID_PLAY_RANDOM
         MENUITEM SEPARATOR
-        MENUITEM "File Information...\tCtrl+I", ID_FILE_INFO
         MENUITEM "On-Screen Display",           ID_VIEW_ENABLE_OSD
         POPUP "OSD Settings"
         BEGIN
@@ -676,8 +612,6 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "Defaults",                    ID_OSD_DEFAULTS
         END
-        MENUITEM SEPARATOR
-        MENUITEM "Print...\tCtrl+P",            ID_FILE_PRINT_PREVIEW
         MENUITEM SEPARATOR
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
     END
