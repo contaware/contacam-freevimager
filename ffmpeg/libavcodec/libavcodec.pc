@@ -9,6 +9,6 @@ Version: 57.89.100
 Requires: libavutil >= 55.58.100
 Requires.private: 
 Conflicts:
-Libs: -L${libdir}  -lavcodec -lws2_32 -Ld:/mingw/lib -lx264 -lmp3lame -lm -lpsapi -ladvapi32 -lshell32
+Libs: -L${libdir}  -lavcodec -lws2_32 -Ld:/mingw/lib -lx264 -lm -lpsapi -ladvapi32 -lshell32
 Libs.private: 
 Cflags: -I${includedir}

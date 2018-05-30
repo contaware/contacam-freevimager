@@ -13,8 +13,7 @@ FFMPEG
 2. Copy latest c:\mingw\lib\gcc\mingw32\6.3.0\libgcc.a to /c/uimager/ffmpeg/mingw
                c:\mingw\lib\libmingwex.a to /c/uimager/ffmpeg/mingw
    
-   In VS2017 to correctly link we have to remove pow.o, strtoimax.o, strtof.o, sinf.o and exp2f.o from libmingwex.a,
-   perform the following in visual studio command prompt:
+   To correctly link we have to remove the following object files, in visual studio 2017 command prompt do:
    $ lib -remove:pow.o -remove:strtoimax.o -remove:strtoumax.o -remove:strtof.o -remove:sinf.o -remove:exp2f.o libmingwex.a
    $ rename libmingwex.lib libmingwex.a
 
@@ -35,8 +34,9 @@ X264 (to disable asm and multi-threading use --disable-asm --disable-thread)
 Put library source to /src and extract it
 (get stable src from: ftp://ftp.videolan.org/pub/videolan/x264/snapshots/)
 
-Apparently mingw doesn't support 32-bytes stack alignment on Windows (-mpreferred-stack-boundary=5),
-this effectively prevents the use of 256-bit AVX instructions. In our code we prevent the use of AVX
+Apparently mingw doesn't support 32-bytes and 64-bytes stack alignment on Windows
+(-mpreferred-stack-boundary=5 and -mpreferred-stack-boundary=6),
+this effectively prevents the use of AVX instructions. In our code we prevent the use of AVX
 by calling av_opt_set(). When recompiling X264 remember to disable newer SIMD instructions in
 CAVRec::AddVideoStream()!
 http://stackoverflow.com/questions/5983389/how-to-align-stack-at-32-byte-boundary-in-gcc
@@ -44,7 +44,10 @@ https://gcc.gnu.org/bugzilla/show_bug.cgi?id=49001
 
 Patch the X264 configure file to have the default 16-bytes alignment:
 if [ $compiler = GNU -a \( $ARCH = X86 -o $ARCH = X86_64 \) ] ; then
-    #if cc_check '' -mpreferred-stack-boundary=5 ; then
+    #if cc_check '' -mpreferred-stack-boundary=6 ; then
+    #    CFLAGS="$CFLAGS -mpreferred-stack-boundary=6"
+    #    stack_alignment=64
+    #elif cc_check '' -mpreferred-stack-boundary=5 ; then
     #    CFLAGS="$CFLAGS -mpreferred-stack-boundary=5"
     #    stack_alignment=32
     #elif [ $stack_alignment -lt 16 ] && cc_check '' -mpreferred-stack-boundary=4 ; then

@@ -8,5 +8,5 @@ Description: FFmpeg container format library
 Version: 57.71.100
 Requires: libavcodec >= 57.89.100, libavutil >= 55.58.100
 Conflicts:
-Libs: -L${libdir} -Wl,-rpath,${libdir} -lavformat -lws2_32 -Ld:/mingw/lib -lx264 -lmp3lame -lm -lpsapi -ladvapi32 -lshell32
+Libs: -L${libdir} -Wl,-rpath,${libdir} -lavformat -lws2_32 -Ld:/mingw/lib -lx264 -lm -lpsapi -ladvapi32 -lshell32
 Cflags: -I${includedir}

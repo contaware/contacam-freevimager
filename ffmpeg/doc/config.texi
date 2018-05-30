@@ -464,7 +464,7 @@
 @c @set config-libilbc no
 @c @set config-libkvazaar no
 @c @set config-libmodplug no
-@set config-libmp3lame yes
+@c @set config-libmp3lame no
 @c @set config-libnut no
 @c @set config-libopencv no
 @c @set config-libopenh264 no
@@ -1564,7 +1564,7 @@
 @c @set config-libgsm-encoder no
 @c @set config-libgsm-ms-encoder no
 @c @set config-libilbc-encoder no
-@set config-libmp3lame-encoder yes
+@c @set config-libmp3lame-encoder no
 @c @set config-libopencore-amrnb-encoder no
 @c @set config-libopenjpeg-encoder no
 @c @set config-libopus-encoder no
