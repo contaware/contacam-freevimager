@@ -347,11 +347,7 @@ public:
 	CDib& operator=(const CDib& dib); // Copy Assignment
 	void CopyVars(const CDib& SrcDib);
 
-	// Colors Returned by GetDIBits
-	static RGBQUAD ms_GdiColors16[];
-	static RGBQUAD ms_GdiColors256[];
-
-	// Halftone Colors
+	// Windows Standard System Colors
 	static RGBQUAD ms_StdColors[];
 
 #ifdef VIDEODEVICEDOC
@@ -677,11 +673,10 @@ public:
 
 	// Palette Functions
 	CPalette* GetPalette();
-	static BOOL CreateHalftonePalette(CPalette* pPal, int nNumColors);
+	static BOOL CreateHalftonePalette(CPalette* pPal, int nNumColors);	// for 16 it returns the Microsoft Windows Standard 16 colors palette used by toolbars and icons
 
 	// Color fill functions, pColors must already be allocated!
-	static BOOL FillGdiColors(RGBQUAD* pColors, int nNumColors);
-	static BOOL FillHalftoneColors(RGBQUAD* pColors, int nNumColors);
+	static BOOL FillHalftoneColors(RGBQUAD* pColors, int nNumColors);	// for 16 it returns the Microsoft Windows Standard 16 colors palette used by toolbars and icons
 	static BOOL FillGrayscaleColors(RGBQUAD* pColors, int nNumColors);
 
 	// Highlight the Color

@@ -808,7 +808,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors
 		Quantizer.SetColorTable(pGIFColors);
 	}
 
-	// Append VGA Palette
+	// Append Microsoft Windows Standard 16-colors palette
 	// Note: palette Entry 255 is the Transparency Index!
 	int i;
 	for (i = 0; i < 8; i++)
@@ -820,9 +820,9 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors
 	}
 	for (i = 8; i < 16; i++)
 	{
-		pGIFColors[i+239].rgbRed		= CDib::ms_StdColors[248+i].rgbRed;
-		pGIFColors[i+239].rgbGreen		= CDib::ms_StdColors[248+i].rgbGreen;
-		pGIFColors[i+239].rgbBlue		= CDib::ms_StdColors[248+i].rgbBlue;
+		pGIFColors[i+239].rgbRed		= CDib::ms_StdColors[240+i].rgbRed;
+		pGIFColors[i+239].rgbGreen		= CDib::ms_StdColors[240+i].rgbGreen;
+		pGIFColors[i+239].rgbBlue		= CDib::ms_StdColors[240+i].rgbBlue;
 		pGIFColors[i+239].rgbReserved	= 0;
 	}
 	pGIFColors[255].rgbRed		= 255;
