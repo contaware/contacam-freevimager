@@ -48,7 +48,7 @@ ContaCam Program
 		 Order allow,deny
 		 Deny from all
 	 </FilesMatch>
-	 and server all medias through php (like used in download.php)
+	 and serve all medias through php (like used in download.php)
   or
      Order deny,allow
      Deny from all

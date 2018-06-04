@@ -190,10 +190,10 @@ public:
 	CMDIClientWnd m_MDIClientWnd;
 
 protected:
-	CStatusBarACT	m_wndStatusBar;
-	CToolBar		m_wndToolBar;
-	HMENU			m_hMenu;
-	CMDITabs		m_wndMDITabs;
+	CStatusBarACT m_wndStatusBar;
+	CToolBar m_wndToolBar;
+	HMENU m_hMenu;
+	CMDITabs m_wndMDITabs;
 	LONG m_lOldChildStyle;
 	LONG m_lOldChildExStyle;
 	LONG m_lOldStyle;
