@@ -122,7 +122,9 @@ CMainFrame::CMainFrame() : m_TrayIcon(IDR_TRAYICON) // Menu ID
 	m_bChildMax = false;
 	m_bChildMin = false;
 	m_bStatusBarWasVisible = false;
+#ifndef VIDEODEVICEDOC
 	m_bToolBarWasVisible = false;
+#endif
 	m_bChildToolBarWasVisible = false;
 	m_dChildZoomFactor = 1.0;
 	m_ptChildScrollPosition = CPoint(0,0);
@@ -158,12 +160,14 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
 
 	// Create Toolbar
+#ifndef VIDEODEVICEDOC
 	if (!m_wndToolBar.CreateEx(this, TBSTYLE_FLAT, WS_VISIBLE | WS_CHILD | CBRS_TOP | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_FIXED) ||
 		!SwitchToolBar(g_nSystemDPI, FALSE))
 	{
 		TRACE(_T("Failed to create toolbar\n"));
 		return -1;      // fail to create
 	}
+#endif
 
 	// Create Statusbar
 #ifdef VIDEODEVICEDOC
@@ -185,9 +189,11 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_wndStatusBar.SetHandCursor(IDC_HAND_CURSOR);
 
 	// Dock Toolbar
+#ifndef VIDEODEVICEDOC
 	m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);
 	EnableDocking(CBRS_ALIGN_ANY);
 	DockControlBar(&m_wndToolBar);
+#endif
 
 	// Create tab control
 	m_wndMDITabs.Create(this, MT_TOP | MT_HIDEWLT2VIEWS);
@@ -1235,9 +1241,11 @@ void CMainFrame::FullScreenModeOn()
 	// Hide Tabs
 	m_wndMDITabs.SetMinViews(INT_MAX);
 
-	// Store the Toolbars and Statusbar States and hide them
+	// Store the Toolbar(s) and Statusbar States and hide them
+#ifndef VIDEODEVICEDOC
 	m_bToolBarWasVisible = (m_wndToolBar.IsWindowVisible() != FALSE);
 	m_wndToolBar.ShowWindow(SW_HIDE);
+#endif
 	CToolBar* pChildToolBar = ((CToolBarChildFrame*)pChild)->GetToolBar(); 
 	if (pChildToolBar)
 	{
@@ -1418,8 +1426,10 @@ void CMainFrame::FullScreenModeOff()
 		SetWindowPos(&wndNoTopMost, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
 	// Restore the Toolbar and Statusbar States
+#ifndef VIDEODEVICEDOC
 	if (m_bToolBarWasVisible)
 		m_wndToolBar.ShowWindow(SW_SHOW);
+#endif
 	if (m_bStatusBarWasVisible)
 		m_wndStatusBar.ShowWindow(SW_SHOW);
 
@@ -1783,14 +1793,12 @@ void CMainFrame::InitMenuPositions(CDocument* pDoc/*=NULL*/)
 			m_nSettingsMenuPos = 3;
 			m_nHelpMenuPos = 4;
 #ifdef VIDEODEVICEDOC
-#ifndef _DEBUG
 			if (nCount == 5)
 				pMenu->DeleteMenu(m_nEditMenuPos, MF_BYPOSITION);
 			m_nEditMenuPos = -2;
 			m_nCaptureMenuPos--;
 			m_nSettingsMenuPos--;
 			m_nHelpMenuPos--;
-#endif
 #else
 			if (nCount == 5)
 				pMenu->DeleteMenu(m_nCaptureMenuPos, MF_BYPOSITION);
@@ -1804,34 +1812,20 @@ void CMainFrame::InitMenuPositions(CDocument* pDoc/*=NULL*/)
 			((CPictureDoc*)pDoc)->m_nFileMenuPos = 0;
 			((CPictureDoc*)pDoc)->m_nEditMenuPos = 1;
 			((CPictureDoc*)pDoc)->m_nViewMenuPos = 2;
-			((CPictureDoc*)pDoc)->m_nCaptureMenuPos = 3;
-			((CPictureDoc*)pDoc)->m_nPlayMenuPos = 4;
-			((CPictureDoc*)pDoc)->m_nSettingsMenuPos = 5;
-			((CPictureDoc*)pDoc)->m_nWindowsPos = 6;
-			((CPictureDoc*)pDoc)->m_nHelpMenuPos = 7;
-#ifndef VIDEODEVICEDOC
-			// In maximized state the first position is the system icon,
-			// MDIMaximize() is always called after InitMenuPositions()
-			// so that the Capture menu position is correct:
-			if (nCount == 8) // On some OSs menus are re-used from one doc opening to the next!
-				pMenu->DeleteMenu(((CPictureDoc*)pDoc)->m_nCaptureMenuPos, MF_BYPOSITION);
-			((CPictureDoc*)pDoc)->m_nCaptureMenuPos = -2;
-			((CPictureDoc*)pDoc)->m_nPlayMenuPos--;
-			((CPictureDoc*)pDoc)->m_nSettingsMenuPos--;
-			((CPictureDoc*)pDoc)->m_nWindowsPos--;
-			((CPictureDoc*)pDoc)->m_nHelpMenuPos--;
-#endif
+			((CPictureDoc*)pDoc)->m_nPlayMenuPos = 3;
+			((CPictureDoc*)pDoc)->m_nSettingsMenuPos = 4;
+			((CPictureDoc*)pDoc)->m_nWindowsPos = 5;
+			((CPictureDoc*)pDoc)->m_nHelpMenuPos = 6;
 		}
 #ifdef VIDEODEVICEDOC
 		else if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoDeviceDoc)))
 		{
 			((CVideoDeviceDoc*)pDoc)->m_nFileMenuPos = 0;
-			((CVideoDeviceDoc*)pDoc)->m_nEditMenuPos = 1;
-			((CVideoDeviceDoc*)pDoc)->m_nViewMenuPos = 2;
-			((CVideoDeviceDoc*)pDoc)->m_nCaptureMenuPos = 3;
-			((CVideoDeviceDoc*)pDoc)->m_nSettingsMenuPos = 4;
-			((CVideoDeviceDoc*)pDoc)->m_nWindowsPos = 5;
-			((CVideoDeviceDoc*)pDoc)->m_nHelpMenuPos = 6;
+			((CVideoDeviceDoc*)pDoc)->m_nViewMenuPos = 1;
+			((CVideoDeviceDoc*)pDoc)->m_nCaptureMenuPos = 2;
+			((CVideoDeviceDoc*)pDoc)->m_nSettingsMenuPos = 3;
+			((CVideoDeviceDoc*)pDoc)->m_nWindowsPos = 4;
+			((CVideoDeviceDoc*)pDoc)->m_nHelpMenuPos = 5;
 		}
 #endif
 		else
@@ -1901,7 +1895,6 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 
 void CMainFrame::CleanupFileMenu(CMenu* pPopupMenu)
 {
-#ifndef _DEBUG
 	int nPos = 0;
 	while (nPos < pPopupMenu->GetMenuItemCount())
 	{
@@ -1933,7 +1926,6 @@ void CMainFrame::CleanupFileMenu(CMenu* pPopupMenu)
 	// Cleanup ending separator
 	if (pPopupMenu->GetMenuItemCount() > 0 && pPopupMenu->GetMenuItemID(pPopupMenu->GetMenuItemCount() - 1) == 0)
 		pPopupMenu->DeleteMenu(pPopupMenu->GetMenuItemCount() - 1, MF_BYPOSITION);
-#endif
 }
 
 void CMainFrame::PopulateCaptureMenu(CMenu* pPopupMenu)
@@ -2013,6 +2005,7 @@ void CMainFrame::OnMenuSelect(UINT nItemID, UINT nFlags, HMENU hSysMenu)
 	CMDIFrameWnd::OnMenuSelect(nItemID, nFlags, hSysMenu);
 }
 
+#ifndef VIDEODEVICEDOC
 BOOL CMainFrame::SwitchToolBar(int nDPI, BOOL bCallShowControlBar/*=TRUE*/)
 {
 	// Load and set sizes
@@ -2044,6 +2037,7 @@ BOOL CMainFrame::SwitchToolBar(int nDPI, BOOL bCallShowControlBar/*=TRUE*/)
 
 	return TRUE;
 }
+#endif
 
 void CMainFrame::OnViewAllFirstPicture() 
 {

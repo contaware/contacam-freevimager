@@ -130,8 +130,10 @@ public:
 	CRect GetNextMonitorFullRect();
 
 	// Toolbar
+#ifndef VIDEODEVICEDOC
 	CToolBar* GetToolBar() {return &m_wndToolBar;};
 	BOOL SwitchToolBar(int nDPI, BOOL bCallShowControlBar = TRUE);
+#endif
 
 	// Statusbar
 	void StatusText(CString sText = _T("")); // if sText is _T("") the idle message is displayed
@@ -190,14 +192,20 @@ public:
 	CMDIClientWnd m_MDIClientWnd;
 
 protected:
-	CStatusBarACT m_wndStatusBar;
+#ifndef VIDEODEVICEDOC
 	CToolBar m_wndToolBar;
+#endif
+	CStatusBarACT m_wndStatusBar;
 	HMENU m_hMenu;
 	CMDITabs m_wndMDITabs;
 	LONG m_lOldChildStyle;
 	LONG m_lOldChildExStyle;
 	LONG m_lOldStyle;
-	bool m_bStatusBarWasVisible, m_bToolBarWasVisible, m_bChildToolBarWasVisible;
+#ifndef VIDEODEVICEDOC
+	bool m_bToolBarWasVisible;
+#endif
+	bool m_bChildToolBarWasVisible;
+	bool m_bStatusBarWasVisible;
 	CRect m_MainWndRect;
 	bool m_bChildMax;
 	bool m_bChildMin;

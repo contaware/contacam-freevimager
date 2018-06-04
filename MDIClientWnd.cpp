@@ -147,7 +147,7 @@ void CMDIClientWnd::OnPaint()
 	rcDraw.top += nLineHeight;
 	DrawT(memDC, ML_STRING(1751, "1. Make sure your video capture device is plugged-in and drivers are installed"), rcDraw);
 	rcDraw.top += nLineHeight;
-	DrawT(memDC, _T("    ") + ML_STRING(1752, "(IP/WiFi cameras do not need drivers)"), rcDraw);
+	DrawT(memDC, _T("    ") + ML_STRING(1752, "(IP / WiFi cameras do not need drivers)"), rcDraw);
 
 	// Draw point 2.
 	rcDraw.top += nLineHeight;
@@ -157,13 +157,13 @@ void CMDIClientWnd::OnPaint()
 
 	// Draw point 3.
 	rcDraw.top += nLineHeight;
-	DrawT(memDC, ML_STRING(1755, "3. Follow the Camera Basic Settings dialog"), rcDraw);
+	DrawT(memDC, ML_STRING(1755, "3. Follow the Camera Settings dialog"), rcDraw);
 	rcDraw.top += nLineHeight;
-	DrawT(memDC, _T("    ") + ML_STRING(1756, "(if it's not popping-up select Camera Basic Settings from the Settings menu)"), rcDraw);
+	DrawT(memDC, _T("    ") + ML_STRING(1756, "(if it's not popping-up select Camera Settings from the Settings menu)"), rcDraw);
 
 	// Draw point 4.
 	rcDraw.top += nLineHeight;	
-	DrawT(memDC, ML_STRING(1757, "4. To watch press the Browse toolbar button") +  _T(" ") + ML_STRING(1800, "or type in Web Browser's address bar") + _T(":"), rcDraw);
+	DrawT(memDC, ML_STRING(1757, "4. To watch live stream / recordings enter in Web Browser's address bar") + _T(":"), rcDraw);
 
 	// Draw indent
 	rcDraw.top += nLineHeight;
@@ -210,7 +210,7 @@ void CMDIClientWnd::OnPaint()
 
 	// Draw point 1.
 	rcDraw.top += nLineHeight;
-	DrawT(memDC, ML_STRING(1803, "1. Press the Delete toolbar button"), rcDraw);
+	DrawT(memDC, ML_STRING(1803, "1. Choose Remove Camera(s) from the Camera menu"), rcDraw);
 #endif
 
 	// Clean-Up

@@ -370,13 +370,10 @@ IDR_LICENSE                TEXT  MOVEABLE PURE  "License\\License.txt"
 // Bitmap
 //
 
-IDR_MAINFRAME              BITMAP               "res\\toolbars\\contacam\\contacam.bmp"
 IDR_PICTURE_TOOLBAR        BITMAP               "res\\toolbars\\picturedoc\\picturedoc.bmp"
 IDR_VIDEO_DEVICE_TOOLBAR   BITMAP               "res\\toolbars\\videodevicedoc\\videodevicedoc.bmp"
-IDR_MAINFRAME2X            BITMAP               "res\\toolbars\\contacam\\contacam2x.bmp"
 IDR_PICTURE_TOOLBAR2X      BITMAP               "res\\toolbars\\picturedoc\\picturedoc2x.bmp"
 IDR_VIDEO_DEVICE_TOOLBAR2X BITMAP               "res\\toolbars\\videodevicedoc\\videodevicedoc2x.bmp"
-IDR_MAINFRAME3X            BITMAP               "res\\toolbars\\contacam\\contacam3x.bmp"
 IDR_PICTURE_TOOLBAR3X      BITMAP               "res\\toolbars\\picturedoc\\picturedoc3x.bmp"
 IDR_VIDEO_DEVICE_TOOLBAR3X BITMAP               "res\\toolbars\\videodevicedoc\\videodevicedoc3x.bmp"
 IDB_CAMOFF                 BITMAP               "res\\camoff.bmp"
@@ -385,15 +382,6 @@ IDB_CAMOFF                 BITMAP               "res\\camoff.bmp"
 //
 // Toolbar
 //
-
-IDR_MAINFRAME TOOLBAR 22, 21
-BEGIN
-    BUTTON      ID_VIEW_WEB
-    SEPARATOR
-    BUTTON      ID_VIEW_FILES
-    SEPARATOR
-	BUTTON      ID_EDIT_DELETE
-END
 
 IDR_PICTURE_TOOLBAR TOOLBAR 22, 21
 BEGIN
@@ -433,15 +421,6 @@ BEGIN
     BUTTON      ID_EDIT_ZONE
 END
 
-IDR_MAINFRAME2X TOOLBAR 44, 42
-BEGIN
-    BUTTON      ID_VIEW_WEB
-    SEPARATOR
-    BUTTON      ID_VIEW_FILES
-    SEPARATOR
-	BUTTON      ID_EDIT_DELETE
-END
-
 IDR_PICTURE_TOOLBAR2X TOOLBAR 44, 42
 BEGIN
     BUTTON      ID_VIEW_PREVIOUS_PICTURE
@@ -478,15 +457,6 @@ BEGIN
     BUTTON      ID_CAPTURE_RECORD
     SEPARATOR
     BUTTON      ID_EDIT_ZONE
-END
-
-IDR_MAINFRAME3X TOOLBAR 66, 63
-BEGIN
-    BUTTON      ID_VIEW_WEB
-    SEPARATOR
-    BUTTON      ID_VIEW_FILES
-    SEPARATOR
-	BUTTON      ID_EDIT_DELETE
 END
 
 IDR_PICTURE_TOOLBAR3X TOOLBAR 66, 63

@@ -107,7 +107,9 @@ BEGIN
     END
     POPUP "&Camera"
     BEGIN
-        MENUITEM "&IP/WiFi Camera",             ID_CAPTURE_NETWORK
+        MENUITEM "&IP / WiFi Camera",           ID_CAPTURE_NETWORK
+        MENUITEM SEPARATOR
+        MENUITEM "&Remove Camera(s)",           ID_EDIT_DELETE
     END
     POPUP "&Settings"
     BEGIN
@@ -189,23 +191,21 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_APP_EXIT
     END
-    POPUP "&Edit"
-    BEGIN
-        MENUITEM "&Snapshot\tIns",              ID_EDIT_SNAPSHOT
-        MENUITEM SEPARATOR
-        MENUITEM "&Delete",                     ID_EDIT_DELETE
-    END
     POPUP "&View"
     BEGIN
         MENUITEM "Fit",                         ID_VIEW_FIT
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
         MENUITEM SEPARATOR
-        MENUITEM "Browse",                      ID_VIEW_WEB
-        MENUITEM "Browse Files",                ID_VIEW_FILES
+        MENUITEM "Browse live stream / recordings", ID_VIEW_WEB
+        MENUITEM "Browse stored files",         ID_VIEW_FILES
     END
     POPUP "&Camera"
     BEGIN
-        MENUITEM "&IP/WiFi Camera",             ID_CAPTURE_NETWORK
+        MENUITEM "&IP / WiFi Camera",           ID_CAPTURE_NETWORK
+        MENUITEM SEPARATOR
+        MENUITEM "&Remove Camera(s)",           ID_EDIT_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "&Snapshot\tIns",              ID_EDIT_SNAPSHOT
     END
     POPUP "&Settings"
     BEGIN
@@ -409,10 +409,6 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Next Page/Frame\tPageDn",     ID_VIEW_NEXT_PAGE_FRAME
         MENUITEM "Prev. Page/Frame\tPageUp",    ID_VIEW_PREVIOUS_PAGE_FRAME
-    END
-    POPUP "&Camera"
-    BEGIN
-        MENUITEM "&IP/WiFi Camera",             ID_CAPTURE_NETWORK
     END
     POPUP "&Play"
     BEGIN
@@ -2267,7 +2263,7 @@ END
 
 IDD_DELETE_CAM_FOLDERS DIALOGEX 0, 0, 250, 210
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION
-CAPTION "Select Cameras to Delete (all files are removed)"
+CAPTION "Select the Cameras to Remove (all files are deleted)"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LISTBOX         IDC_CAM_FOLDERS,7,7,236,172,LBS_MULTIPLESEL | LBS_USETABSTOPS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
@@ -3553,7 +3549,7 @@ BEGIN
     ID_EDIT_ZONE_REMOVE     "Remove zones\nRemove Zones"
     ID_EDIT_ADDALL          "Add all\nAdd All"
     ID_EDIT_REMOVEALL       "Remove all\nRemove All"
-    ID_CAPTURE_NETWORK      "IP/WiFi camera\nIP/WiFi Camera"
+    ID_CAPTURE_NETWORK      "IP / WiFi camera\nIP / WiFi Camera"
     ID_CAPTURE_RECORD       "Recording\nRecording"
     ID_VIEW_ALL_NEXT_PICTURE 
                             "Show next image of all open documents\nAll Next Image"
@@ -3769,7 +3765,7 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_VIEW_WEB             "Open web browser\nBrowse"
+    ID_VIEW_WEB             "Open web browser to watch live stream / recordings\nBrowse Live Stream / Recordings"
     ID_SETTINGS_VIEW_LOGFILE 
                             "View the log file with the default text editor\nView Log File"
     ID_EDIT_ROTATE_180      "Rotate current image 180° (Ctrl + Down Arrow)\nRotate 180°"
@@ -4124,12 +4120,12 @@ STRINGTABLE
 BEGIN
     IDS_STRING1750          "ADD CAMERA"
     IDS_STRING1751          "1. Make sure your video capture device is plugged-in and drivers are installed"
-    IDS_STRING1752          "(IP/WiFi cameras do not need drivers)"
+    IDS_STRING1752          "(IP / WiFi cameras do not need drivers)"
     IDS_STRING1753          "2. From the Camera menu select the device you want to use"
     IDS_STRING1754          "(for network cameras supply host name or ip address, port and camera type)"
     IDS_STRING1755          "3. Follow the Camera Settings dialog"
     IDS_STRING1756          "(if it's not popping-up select Camera Settings from the Settings menu)"
-    IDS_STRING1757          "4. To watch press the Browse toolbar button"
+    IDS_STRING1757          "4. To watch live stream / recordings enter in Web Browser's address bar"
     IDS_STRING1758          "&Snapshooting...\tIns"
     IDS_STRING1759          "&Snapshot\tIns"
 END
@@ -4166,9 +4162,8 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_STRING1800          "or type in Web Browser's address bar"
     IDS_STRING1801          "REMOVE CAMERAS"
-    IDS_STRING1803          "1. Press the Delete toolbar button"
+    IDS_STRING1803          "1. Choose Remove Camera(s) from the Camera menu"
 END
 
 STRINGTABLE
@@ -4247,9 +4242,9 @@ END
 STRINGTABLE
 BEGIN
     ID_FILE_RELOAD          "Reload current file\nReload File"
-    ID_VIEW_FILES           "Open file explorer\nBrowse Files"
+    ID_VIEW_FILES           "Open file explorer to access stored files\nBrowse Stored Files"
     ID_SETTINGS_BROWSE_CONFIGLOG_FILES 
-                            "Open file explorer\nBrowse Config/Log Files"
+                            "Open file explorer to access configuration and log files\nBrowse Config/Log Files"
 END
 
 STRINGTABLE
