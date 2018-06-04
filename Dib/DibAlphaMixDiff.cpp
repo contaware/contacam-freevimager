@@ -289,6 +289,293 @@ BOOL CDib::GrayToAlphaChannel(COLORREF crColor, CDib* pSrcDib/*=NULL*/, CWnd* pP
 	return TRUE;
 }
 
+BOOL CDib::ColorToTransparent(COLORREF crColor, CDib* pSrcDib/*=NULL*/, CWnd* pProgressWnd/*=NULL*/, BOOL bProgressSend/*=TRUE*/)
+{
+	int r, g, b;
+
+	// Make a Copy of this?
+	CDib SrcDib;
+	BOOL bCopySrcToDst = FALSE;
+	if (pSrcDib == NULL || this == pSrcDib)
+	{
+		// Check
+		if (GetBitCount() != 32)
+			return FALSE;
+
+		if (IsCompressed())
+		{
+			if (!Decompress(GetBitCount())) // Decompress
+				return FALSE;
+		}
+
+		SrcDib = *this;
+		pSrcDib = &SrcDib;
+
+		if (!pSrcDib->m_pBits)
+		{
+			if (!pSrcDib->DibSectionToBits())
+				return FALSE;
+		}
+
+		// Pointers Check
+		if (!pSrcDib->m_pBits || !pSrcDib->m_pBMI)
+			return FALSE;
+	}
+	else
+	{
+		// Check
+		if (pSrcDib->GetBitCount() != 32)
+			return FALSE;
+
+		// Pointers Check
+		if (!pSrcDib->m_pBits || !pSrcDib->m_pBMI)
+			return FALSE;
+
+		// No Compression Supported!
+		if (pSrcDib->IsCompressed())
+			return FALSE;
+
+		// Allocate BMI
+		if (m_pBMI == NULL)
+		{
+			// Allocate & Copy BMI
+			m_pBMI = (LPBITMAPINFO)new BYTE[pSrcDib->GetBMISize()];
+			if (m_pBMI == NULL)
+				return FALSE;
+		}
+		// Need to ReAllocate BMI because they are of differente size
+		else if (pSrcDib->GetBMISize() != GetBMISize())
+		{
+			delete[] m_pBMI;
+
+			// Allocate & Copy BMI
+			m_pBMI = (LPBITMAPINFO)new BYTE[pSrcDib->GetBMISize()];
+			if (m_pBMI == NULL)
+				return FALSE;
+		}
+		memcpy((void*)m_pBMI, (void*)pSrcDib->m_pBMI, pSrcDib->GetBMISize());
+
+		// Make Sure m_pColors Points to the Right Place
+		m_pColors = NULL;
+
+		// Copy Src To Dst
+		bCopySrcToDst = TRUE;
+	}
+
+	// Scan Line Alignment
+	DWORD uiDIBScanLineSize = DWALIGNEDWIDTHBYTES(pSrcDib->GetWidth() * pSrcDib->GetBitCount());
+
+	// Allocate Bits
+	if (m_pBits == NULL)
+	{
+		// Allocate memory
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * pSrcDib->GetHeight());
+	}
+	// Need to ReAllocate Bits because they are of different size
+	else if (m_dwImageSize != uiDIBScanLineSize * pSrcDib->GetHeight())
+	{
+		BIGFREE(m_pBits);
+
+		// Allocate memory
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * pSrcDib->GetHeight());
+	}
+	if (m_pBits == NULL)
+		return FALSE;
+
+	// Copy Vars
+	if (bCopySrcToDst)
+		CopyVars(*pSrcDib);
+
+	// Image Size
+	m_dwImageSize = m_pBMI->bmiHeader.biSizeImage = uiDIBScanLineSize * GetHeight();
+
+	// Init Mask
+	InitMasks();
+
+	// Free
+	ResetColorUndo();
+	if (m_hDibSection)
+	{
+		::DeleteObject(m_hDibSection);
+		m_hDibSection = NULL;
+		m_pDibSectionBits = NULL;
+	}
+	DeletePreviewDib();
+	DeleteThumbnailDib();
+
+	DIB_INIT_PROGRESS;
+
+	// Color to transparent
+	int nUpperBound = GetImageSize() / 4;
+	int nRefRed = GetRValue(crColor);
+	int nRefGreen = GetGValue(crColor);
+	int nRefBlue = GetBValue(crColor);
+	for (int i = 0; i < nUpperBound; i++)
+	{
+		if ((i & 0xFFFF) == 0)
+			DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, i, nUpperBound);
+
+		int pix = ((DWORD*)(pSrcDib->GetBits()))[i];
+		b = pix & 0xFF;
+		g = (pix >> 8) & 0xFF;
+		r = (pix >> 16) & 0xFF;
+		if (nRefRed == r && nRefGreen == g && nRefBlue == b)
+			pix = 0x00FFFFFF & pix; // transparent
+		else
+			pix = 0xFF000000 | pix; // opaque
+		((DWORD*)m_pBits)[i] = pix;
+	}
+
+	// Set alpha
+	m_bAlpha = TRUE;
+
+	DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
+
+	return TRUE;
+}
+
+BOOL CDib::StraightToPremultipliedAlpha(CDib* pSrcDib/*=NULL*/, CWnd* pProgressWnd/*=NULL*/, BOOL bProgressSend/*=TRUE*/)
+{
+	int r, g, b, a;
+
+	// Make a Copy of this?
+	CDib SrcDib;
+	BOOL bCopySrcToDst = FALSE;
+	if (pSrcDib == NULL || this == pSrcDib)
+	{
+		// Check
+		if (GetBitCount() != 32)
+			return FALSE;
+
+		if (IsCompressed())
+		{
+			if (!Decompress(GetBitCount())) // Decompress
+				return FALSE;
+		}
+
+		SrcDib = *this;
+		pSrcDib = &SrcDib;
+
+		if (!pSrcDib->m_pBits)
+		{
+			if (!pSrcDib->DibSectionToBits())
+				return FALSE;
+		}
+
+		// Pointers Check
+		if (!pSrcDib->m_pBits || !pSrcDib->m_pBMI)
+			return FALSE;
+	}
+	else
+	{
+		// Check
+		if (pSrcDib->GetBitCount() != 32)
+			return FALSE;
+
+		// Pointers Check
+		if (!pSrcDib->m_pBits || !pSrcDib->m_pBMI)
+			return FALSE;
+
+		// No Compression Supported!
+		if (pSrcDib->IsCompressed())
+			return FALSE;
+
+		// Allocate BMI
+		if (m_pBMI == NULL)
+		{
+			// Allocate & Copy BMI
+			m_pBMI = (LPBITMAPINFO)new BYTE[pSrcDib->GetBMISize()];
+			if (m_pBMI == NULL)
+				return FALSE;
+		}
+		// Need to ReAllocate BMI because they are of differente size
+		else if (pSrcDib->GetBMISize() != GetBMISize())
+		{
+			delete[] m_pBMI;
+
+			// Allocate & Copy BMI
+			m_pBMI = (LPBITMAPINFO)new BYTE[pSrcDib->GetBMISize()];
+			if (m_pBMI == NULL)
+				return FALSE;
+		}
+		memcpy((void*)m_pBMI, (void*)pSrcDib->m_pBMI, pSrcDib->GetBMISize());
+
+		// Make Sure m_pColors Points to the Right Place
+		m_pColors = NULL;
+
+		// Copy Src To Dst
+		bCopySrcToDst = TRUE;
+	}
+
+	// Scan Line Alignment
+	DWORD uiDIBScanLineSize = DWALIGNEDWIDTHBYTES(pSrcDib->GetWidth() * pSrcDib->GetBitCount());
+
+	// Allocate Bits
+	if (m_pBits == NULL)
+	{
+		// Allocate memory
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * pSrcDib->GetHeight());
+	}
+	// Need to ReAllocate Bits because they are of different size
+	else if (m_dwImageSize != uiDIBScanLineSize * pSrcDib->GetHeight())
+	{
+		BIGFREE(m_pBits);
+
+		// Allocate memory
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * pSrcDib->GetHeight());
+	}
+	if (m_pBits == NULL)
+		return FALSE;
+
+	// Copy Vars
+	if (bCopySrcToDst)
+		CopyVars(*pSrcDib);
+
+	// Image Size
+	m_dwImageSize = m_pBMI->bmiHeader.biSizeImage = uiDIBScanLineSize * GetHeight();
+
+	// Init Mask
+	InitMasks();
+
+	// Free
+	ResetColorUndo();
+	if (m_hDibSection)
+	{
+		::DeleteObject(m_hDibSection);
+		m_hDibSection = NULL;
+		m_pDibSectionBits = NULL;
+	}
+	DeletePreviewDib();
+	DeleteThumbnailDib();
+
+	DIB_INIT_PROGRESS;
+
+	// Convert straight alpha color value to premultiplied format
+	int nUpperBound = GetImageSize() / 4;
+	for (int i = 0; i < nUpperBound; i++)
+	{
+		if ((i & 0xFFFF) == 0)
+			DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, i, nUpperBound);
+
+		int pix = ((DWORD*)(pSrcDib->GetBits()))[i];
+		b = pix & 0xFF;
+		g = (pix >> 8) & 0xFF;
+		r = (pix >> 16) & 0xFF;
+		a = (pix >> 24) & 0xFF;
+		r = r * a / 255;
+		g = g * a / 255;
+		b = b * a / 255;
+		((DWORD*)m_pBits)[i] = b | (g << 8) | (r << 16) | (a << 24);
+	}
+
+	// Set alpha
+	m_bAlpha = TRUE;
+
+	DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
+
+	return TRUE;
+}
+
 BOOL CDib::AlphaOffset(int nAlphaOffset, CDib* pSrcDib/*=NULL*/, CWnd* pProgressWnd/*=NULL*/, BOOL bProgressSend/*=TRUE*/)
 {
 	// Make a Copy of this?

@@ -275,6 +275,7 @@ typedef struct {
 //
 // pix0                                  pix1                                  .. pixn
 // B(byte0) G(byte1) R(byte2) A(byte3)   B(byte4) G(byte5) R(byte6) A(byte7)
+// 0xAARRGGBB (little endian)
 //
 // NOTE: this is the order of the RGBQUAD structure, the COLORREF type has B and R swapped:
 //       R(byte0) G(byte1) B(byte2) A(byte3) or 0xAABBGGRR (little endian)
@@ -738,7 +739,9 @@ public:
 	// Alpha, Mix & Difference Bitmaps
 	BOOL IsBilevelAlpha();					// Is the alpha channel only composed by 0s and 255s?
 	BOOL RenderAlphaWithSrcBackground(CDib* pSrcDib = NULL); // Uses m_crBackgroundColor to render the image
-	BOOL GrayToAlphaChannel(COLORREF crColor, CDib* pSrcDib = NULL, CWnd* pProgressWnd = NULL, BOOL bProgressSend = TRUE);
+	BOOL GrayToAlphaChannel(COLORREF crColor, CDib* pSrcDib = NULL, CWnd* pProgressWnd = NULL, BOOL bProgressSend = TRUE); // make alpha layer from grayscale pixel level and set all pixels to crColor
+	BOOL ColorToTransparent(COLORREF crColor, CDib* pSrcDib = NULL, CWnd* pProgressWnd = NULL, BOOL bProgressSend = TRUE); // make the given crColor transparent
+	BOOL StraightToPremultipliedAlpha(CDib* pSrcDib = NULL, CWnd* pProgressWnd = NULL, BOOL bProgressSend = TRUE);
 	BOOL AlphaOffset(int nAlphaOffset, CDib* pSrcDib = NULL, CWnd* pProgressWnd = NULL, BOOL bProgressSend = TRUE); // nAlphaOffset: -255 .. +255
 	BOOL MixRGB(CDib* pDib);				// Mix this = (this + pDib) / 2, for RGB images only!
 	BOOL DiffRGB(CDib* pDib, int nMinDiff);	// for RGB images only!
