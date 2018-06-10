@@ -99,7 +99,7 @@ a.lastselected img, a.lastselected:visited img, a:active img, a:focus img {
 
 /* Controls style */
 video {
-	background: transparent url('gray.gif') repeat 0 0;
+	background-color: transparent;
 }
 span.globalbuttons {
 	white-space: nowrap;

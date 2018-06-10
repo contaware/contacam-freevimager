@@ -280,9 +280,8 @@ if ($handle = @opendir($dir)) {
 			
 			if ($pos >= $page_offset && $count < $max_per_page) {
 				$filenamenoext = basename($file, ".".$path_parts['extension']);
-				if ($path_parts['extension'] == 'gif') {		// Gif thumb
-					$mp4file = "$dir/$filenamenoext.mp4";
-					if (is_file($mp4file)) {
+				if ($path_parts['extension'] == 'gif') { // Gif thumb
+					if (is_file("$dir/$filenamenoext.mp4")) {
 						$mp4s .= "&amp;" . $mp4pos . '=' . urlencode($filenamenoext);
 						$mp4pos++;
 					}
@@ -310,14 +309,14 @@ if ($handle = @opendir($dir)) {
 				$filenamenoext = basename($file, ".".$path_parts['extension']);
 				list($file_prefix, $file_year, $file_month, $file_day, $file_hour, $file_min, $file_sec, $file_postfix) = sscanf($filenamenoext, "%[a-z,A-Z]_%d_%d_%d_%d_%d_%d_%[a-z,A-Z]");
 				$uribasenoext = "$filesdirpath/$selected_year_string/$selected_month_string/$selected_day_string/$filenamenoext";
-				$mp4uri = "$uribasenoext.mp4"; $mp4uri_get = urlencode($mp4uri); $mp4file = "$dir/$filenamenoext.mp4";
-				$gifuri = "$uribasenoext.gif"; $gifuri_for_html = htmlspecialchars(str_replace("%2F", "/", rawurlencode($gifuri)));
+				$mp4uri = "$uribasenoext.mp4"; $mp4uri_get = urlencode($mp4uri);
+				$gifuri = "$uribasenoext.gif"; $gifuri_get = urlencode($gifuri);
 				echo "<span class=\"thumbcontainer\">";
 				if ($path_parts['extension'] == 'gif') {
-					if (is_file($mp4file))
-						echo "<a href=\"mp4.php?file=$mp4uri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . $mp4s . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri_for_html\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a>";
+					if (is_file("$dir/$filenamenoext.mp4"))
+						echo "<a href=\"mp4.php?file=$mp4uri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . $mp4s . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"media.php?file=$gifuri_get\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a>";
 					else
-						echo "<a href=\"#\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri_for_html\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a>";
+						echo "<a href=\"#\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"media.php?file=$gifuri_get\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a>";
 				}
 				else if ($path_parts['extension'] == 'mp4')
 					echo strtoupper($file_prefix) . "<br /><a href=\"mp4.php?file=$mp4uri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\" >$file_timestamp</a>";

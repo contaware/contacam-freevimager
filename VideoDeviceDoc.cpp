@@ -5760,7 +5760,7 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	sConfig += _T("LoadModule authn_file_module modules/mod_authn_file.so\r\n");
 	sConfig += _T("LoadModule authz_core_module modules/mod_authz_core.so\r\n");
 	sConfig += _T("LoadModule authz_user_module modules/mod_authz_user.so\r\n");
-	sConfig += _T("LoadModule dir_module modules/mod_dir.so\r\n");
+	sConfig += _T("LoadModule dir_module modules/mod_dir.so\r\n"); // for DirectorySlash Directive (On by default) support, it appends the trailing slashes
 	sConfig += _T("LoadModule mime_module modules/mod_mime.so\r\n");
 	sConfig += _T("LoadModule rewrite_module modules/mod_rewrite.so\r\n");
 	sConfig += _T("LoadModule ssl_module modules/mod_ssl.so\r\n");
@@ -5807,13 +5807,19 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	sConfig += _T("SSLCertificateKeyFile \"") + sMicroApacheKeyFileSSL + _T("\"\r\n");
 	sConfig += _T("</VirtualHost>\r\n");
 
-	// Do not allow .htaccess files and setup the rewrite engine
+	// <Directory />
 	sConfig += _T("<Directory />\r\n");
+	// Do not allow .htaccess files
 	sConfig += _T("AllowOverride None\r\n");
-	sConfig += _T("RewriteEngine on\r\n");
-	sConfig += _T("RewriteBase /\r\n");
-	sConfig += _T("RewriteCond %{REQUEST_FILENAME} -d\r\n");
-	sConfig += _T("RewriteRule [^/]$ http://%{HTTP_HOST}%{REQUEST_URI}/ [L,R=301]\r\n");
+	// Do not allow direct .mp4, .gif and .jpg accesses
+	// Attention: cannot use those file types in css!
+	if (((CUImagerApp*)::AfxGetApp())->m_sMicroApacheUsername != _T("") ||
+		((CUImagerApp*)::AfxGetApp())->m_sMicroApachePassword != _T(""))
+	{
+		// Case insensitive regular expression "not match" (Apache 2.4 or higher)
+		// Note: %{REQUEST_URI} is only the URI path part without the query string!
+		sConfig += _T("Require expr %{REQUEST_URI} !~ m#\\.(mp4|gif|jpg)$#i\r\n");
+	}
 	sConfig += _T("</Directory>\r\n");
 	
 	// Include custom configurations file (create an empty one if not existing)
@@ -6092,6 +6098,10 @@ BOOL CVideoDeviceDoc::MicroApacheUpdateWebFiles(CString sAutoSaveDir)
 	::DeleteFile(sAutoSaveDir + _T("swf.php"));
 	::DeleteFile(sAutoSaveDir + _T("avi.php"));
 	::DeleteFile(sAutoSaveDir + _T("jpeg.php"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\black.gif"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\darkgray.gif"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\gray.gif"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\white.gif"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\show_black.gif"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\hide_black.gif"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\show_white.gif"));

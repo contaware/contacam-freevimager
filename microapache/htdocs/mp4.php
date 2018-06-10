@@ -62,8 +62,8 @@ if (!isset($_GET['height']))
 else
 	$height = $_GET['height'];
 echo "<video onloadedmetadata=\"restoreTime(this);\" id=\"myMp4Movie\" width=\"$width\" height=\"$height\" autoplay controls>\n";
-echo "<source src=\"$filename\" type=\"video/mp4\">\n";
-echo "<p>Try this page in a modern browser or <a href=\"$filename\">download the video</a> instead.</p>\n";
+echo "<source src=\"media.php?file=" . urlencode($filename) . "\" type=\"video/mp4\">\n";
+echo "<p>Try this page in a modern browser or <a href=\"download.php?file=" . urlencode($filename) . "\">download the video</a> instead.</p>\n";
 echo "</video>\n";
 ?>
 </div>
