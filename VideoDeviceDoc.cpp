@@ -645,11 +645,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			}
 		}
 		if (dwLoadDetFrameErrorCode != ERROR_SUCCESS)
-		{
-			if (g_nLogLevel > 0)
-				::ShowErrorMsg(dwLoadDetFrameErrorCode, FALSE, _T("Shared Memory -> Frame: "));
-			::LogLine(_T("%s"), ML_STRING(1817, "OUT OF MEMORY / OVERLOAD: dropping frames"));
-		}
+			::LogLine(_T("%s"), ML_STRING(1815, "OUT OF MEMORY / OVERLOAD (while retrieving from buffer): dropping frames"));
 	}
 	ASSERT(FALSE); // should never end up here...
 	return 0;
@@ -2237,9 +2233,7 @@ end_of_software_detection:
 	if (dwError != ERROR_SUCCESS)
 	{
 		((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = bDropFrame = TRUE;
-		if (g_nLogLevel > 0)
-			::ShowErrorMsg(dwError, FALSE, _T("Frame -> Shared Memory: "));
-		::LogLine(_T("%s"), ML_STRING(1817, "OUT OF MEMORY / OVERLOAD: dropping frames"));
+		::LogLine(_T("%s"), ML_STRING(1817, "OUT OF MEMORY / OVERLOAD (while storing to buffer): dropping frames"));
 	}
 
 	// Drop frames

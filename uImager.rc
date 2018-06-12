@@ -196,8 +196,8 @@ BEGIN
         MENUITEM "Fit",                         ID_VIEW_FIT
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
         MENUITEM SEPARATOR
-        MENUITEM "Browse live stream / recordings", ID_VIEW_WEB
-        MENUITEM "Browse stored files",         ID_VIEW_FILES
+        MENUITEM "Browse Web",                  ID_VIEW_WEB
+        MENUITEM "Browse Files",                ID_VIEW_FILES
     END
     POPUP "&Camera"
     BEGIN
@@ -4170,8 +4170,9 @@ STRINGTABLE
 BEGIN
     IDS_STRING1810          "VERBOSE LOGGING"
     IDS_STRING1811          "DEBUG LOGGING"
+    IDS_STRING1815          "OUT OF MEMORY / OVERLOAD (while retrieving from buffer): dropping frames"
     IDS_STRING1816          "Create a text file where each line represents a Paste\ncommand at the given position:\n  1. Origin: top left, top right, bottom left, bottom right\n  2. horizontal and vertical positions with sign and unit\n      (px, in, cm, mm)\n\nExample:\n\ntop left 1.57cm -1.32cm\nbottom right 12.1mm 5.5mm"
-    IDS_STRING1817          "OUT OF MEMORY / OVERLOAD: dropping frames"
+    IDS_STRING1817          "OUT OF MEMORY / OVERLOAD (while storing to buffer): dropping frames"
     IDS_STRING1818          "Aborting"
     IDS_STRING1819          "To limit the buffer size lower the ""Split longer than"" value under ""Camera Advanced Settings - Video"" tab"
     IDS_STRING1820          "usable"
