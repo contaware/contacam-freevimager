@@ -62,8 +62,8 @@ if (!isset($_GET['height']))
 else
 	$height = $_GET['height'];
 echo "<video onloadedmetadata=\"restoreTime(this);\" id=\"myMp4Movie\" width=\"$width\" height=\"$height\" autoplay controls>\n";
-echo "<source src=\"media.php?file=" . urlencode($filename) . "\" type=\"video/mp4\">\n";
-echo "<p>Try this page in a modern browser or <a href=\"download.php?file=" . urlencode($filename) . "\">download the video</a> instead.</p>\n";
+echo "<source src=\"download.php?embed=yes&amp;file=" . urlencode($filename) . "\" type=\"video/mp4\">\n";
+echo "<p>Try this page in a modern browser or <a href=\"download.php?file=" . urlencode($filename) . "\" target=\"_top\">download the video</a> instead.</p>\n";
 echo "</video>\n";
 ?>
 </div>
@@ -103,7 +103,7 @@ if (isset($_GET['backuri']))
 	echo "<a style=\"font-size: 18px;\" href=\"" . htmlspecialchars($_GET['backuri']) . "\">&#x2191;</a>&nbsp;";
 echo "<a href=\"javascript:;\" onclick=\"playRate(0.25);\">0.25x</a>&nbsp;";
 echo "<a href=\"javascript:;\" onclick=\"playRate(1.0);\">1.0x</a>&nbsp;";
-echo "<a style=\"font-size: 16px;\" href=\"download.php?file=" . urlencode($filename) . "\">&#x1f4be;</a>";
+echo "<a style=\"font-size: 16px;\" href=\"download.php?file=" . urlencode($filename) . "\" target=\"_top\">&#x1f4be;</a>";
 echo "</span>\n";
 echo "</div>\n";
 ?>
