@@ -48,26 +48,9 @@ class CPerformance
 			// Init vars
 			m_InitCount.QuadPart = 0;
 			m_EndCount.QuadPart = 0;
-			m_Frequency.QuadPart = 0;
 			m_dwDiffMicroSec = 0U;
 			m_dwInitTick = 0U;
-
-#ifdef USE_SET_THREAD_AFFINITY_MASK
-			// Get the current process core mask
-			DWORD dwProcMask;
-			DWORD dwSysMask;
-			::GetProcessAffinityMask(::GetCurrentProcess(), &dwProcMask, &dwSysMask);
-			
-			// If dwProcMask is 0, consider there is only one core available
-			// (using 0 as dwProcMask will cause an infinite loop below)
-			if (dwProcMask == 0U)
-				dwProcMask = 1U;
-
-			// Find the lowest core that this process uses
-			m_dwFirstCoreMask = 1U;
-			while ((m_dwFirstCoreMask & dwProcMask) == 0U)
-				m_dwFirstCoreMask <<= 1;
-#endif
+			::QueryPerformanceFrequency(&m_Frequency); // the frequency will not change while the system is running
 		}
 		virtual ~CPerformance()
 		{
@@ -75,44 +58,15 @@ class CPerformance
 		}
 		__forceinline void Init()
 		{
-#ifdef USE_SET_THREAD_AFFINITY_MASK
-			// Get thread handle
-			HANDLE hThread = ::GetCurrentThread();
-
-			// Set affinity to the first core
-			DWORD dwOldMask = ::SetThreadAffinityMask(hThread, m_dwFirstCoreMask);
-#endif
-
-			// Get the constant frequency
-			::QueryPerformanceFrequency(&m_Frequency);
-
 			// Query the counters
 			m_dwInitTick = ::GetTickCount(); // GetTickCount() is faster than timeGetTime() but a bit less accurate
 			::QueryPerformanceCounter(&m_InitCount);
-
-#ifdef USE_SET_THREAD_AFFINITY_MASK
-			// Reset affinity
-			::SetThreadAffinityMask(hThread, dwOldMask);
-#endif
 		}
 		__forceinline void End()
 		{
-#ifdef USE_SET_THREAD_AFFINITY_MASK
-			// Get thread handle
-			HANDLE hThread = ::GetCurrentThread();
-
-			// Set affinity to the first core
-			DWORD dwOldMask = ::SetThreadAffinityMask(hThread, m_dwFirstCoreMask);
-#endif
-
 			// Query the counters
 			::QueryPerformanceCounter(&m_EndCount);
 			DWORD dwEndTick = ::GetTickCount(); // GetTickCount() is faster than timeGetTime() but a bit less accurate
-
-#ifdef USE_SET_THREAD_AFFINITY_MASK
-			// Reset affinity
-			::SetThreadAffinityMask(hThread, dwOldMask);
-#endif
 
 			// Get differences
 			if (m_Frequency.QuadPart > 0)
@@ -190,9 +144,6 @@ class CPerformance
 		LARGE_INTEGER m_Frequency;
 		DWORD m_dwDiffMicroSec;
 		DWORD m_dwInitTick;
-#ifdef USE_SET_THREAD_AFFINITY_MASK
-		DWORD m_dwFirstCoreMask;
-#endif
 };
 
 #endif // !defined(AFX_PERFORMANCE_H__0A6BEBCA_829C_4085_8A12_19A15A12F62C__INCLUDED_)
