@@ -360,7 +360,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		DWORD dwLoadDetFrameErrorCode = ERROR_SUCCESS;
 		double dDelayMul = 1.0;
 		double dSpeedMul = 1.0;
-		CDib VideoSaveDib;
 		CDib GIFSaveDib;
 		CDib* pDibPrev;
 		CDib* pDib = NULL;
@@ -405,14 +404,11 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			// Video
 			if (bMakeVideo)
 			{
-				if (pDib)
-					VideoSaveDib = *pDib;
-
 				// Add Frame Tags
 				if (m_pDoc->m_bShowFrameTime)
 				{
-					AddFrameTime(&VideoSaveDib, RefTime, dwRefUpTime, m_pDoc->m_nRefFontSize);
-					AddFrameCount(&VideoSaveDib, sMovDetSavesCount, m_pDoc->m_nRefFontSize);
+					AddFrameTime(pDib, RefTime, dwRefUpTime, m_pDoc->m_nRefFontSize);
+					AddFrameCount(pDib, sMovDetSavesCount, m_pDoc->m_nRefFontSize);
 				}
 
 				// Open if first frame
@@ -421,11 +417,11 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 					BITMAPINFOHEADER DstBmi;
 					memset(&DstBmi, 0, sizeof(BITMAPINFOHEADER));
 					DstBmi.biSize = sizeof(BITMAPINFOHEADER);
-					DstBmi.biWidth = VideoSaveDib.GetWidth();
-					DstBmi.biHeight = VideoSaveDib.GetHeight();
+					DstBmi.biWidth = pDib ? pDib->GetWidth() : 0;
+					DstBmi.biHeight = pDib ? pDib->GetHeight() : 0;
 					DstBmi.biPlanes = 1;
 					DstBmi.biCompression = DEFAULT_VIDEO_FOURCC;
-					AVRecVideo.AddVideoStream(VideoSaveDib.GetBMI(),			// Source Video Format
+					AVRecVideo.AddVideoStream(pDib ? pDib->GetBMI() : NULL,		// Source Video Format
 											(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
 											CalcFrameRate.num,					// Rate
 											CalcFrameRate.den,					// Scale			
@@ -441,18 +437,18 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				}
 
 				// If open add data to file
-				if (AVRecVideo.IsOpen())
+				if (AVRecVideo.IsOpen() && pDib)
 				{
 					// Add Frame
-					if (VideoSaveDib.IsValid())
+					if (pDib->IsValid())
 					{
 						AVRecVideo.AddFrame(AVRecVideo.VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
-											&VideoSaveDib,
+											pDib,
 											false);	// No interleave
 					}
 
 					// Add Audio Samples
-					if (m_pDoc->m_bCaptureAudio && pDib)
+					if (m_pDoc->m_bCaptureAudio)
 					{
 						POSITION posUserBuf = pDib->m_UserList.GetHeadPosition();
 						while (posUserBuf)
@@ -630,8 +626,10 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		{
 			if (g_nLogLevel > 0 || dwFramesTimeMs > MOVDET_MIN_FRAMES_TIME_CHECK_MSEC)
 			{
-				::LogLine(	ML_STRING(1839, "%s, attention cannot realtime save: SaveTime=%0.1fsec > FramesTime=%0.1fsec"),
-							m_pDoc->GetAssignedDeviceName(), (double)dwSaveTimeMs / 1000.0, (double)dwFramesTimeMs / 1000.0);
+				CString sSpeed;
+				sSpeed.Format(_T("%0.2fX"), (double)dwFramesTimeMs / (double)dwSaveTimeMs);
+				::LogLine(	ML_STRING(1839, "%s, attention cannot realtime save") + _T(" (%s)"),
+							m_pDoc->GetAssignedDeviceName(), sSpeed);
 				::LogLine(	ML_STRING(1840, "%s, consider lowering the framerate and/or video resolution!"),
 							m_pDoc->GetAssignedDeviceName());
 			}
@@ -640,8 +638,10 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		{
 			if (g_nLogLevel > 0)
 			{
-				::LogLine(	ML_STRING(1841, "%s, realtime saving is ok: SaveTime=%0.1fsec < FramesTime=%0.1fsec"),
-							m_pDoc->GetAssignedDeviceName(), (double)dwSaveTimeMs / 1000.0, (double)dwFramesTimeMs / 1000.0);
+				CString sSpeed;
+				sSpeed.Format(_T("%0.2fX"), (double)dwFramesTimeMs / (double)dwSaveTimeMs);
+				::LogLine(	ML_STRING(1841, "%s, realtime saving is ok") + _T(" (%s)"),
+							m_pDoc->GetAssignedDeviceName(), sSpeed);
 			}
 		}
 		if (dwLoadDetFrameErrorCode != ERROR_SUCCESS)
