@@ -399,7 +399,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			// Get Frame
 			currentpos = nextpos;
 			pDib = m_pFrameList->GetNext(nextpos);
-			LoadDetFrame(pDib, dwLoadDetFrameErrorCode);
+			LoadDetFrame(pDib, dwLoadDetFrameErrorCode); // load from shared memory, if not already loaded by AnimatedGifInit()
 
 			// Video
 			if (bMakeVideo)
@@ -715,50 +715,52 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors
 		nFrameCountDown--;
 	}
 	
-	// Prepare the 3 dibs
+	// Prepare Dib 1
 	if (!pDibForPalette1)
 		pDibForPalette1 = m_pFrameList->GetHead();
-	LoadDetFrame(pDibForPalette1, dwLoadDetFrameUpdatedIfErrorNoSuccess);
+	LoadDetFrame(pDibForPalette1, dwLoadDetFrameUpdatedIfErrorNoSuccess); // load from shared memory, if not already loaded by main loop
 	if (pDibForPalette1)
+	{
 		DibForPalette1 = *pDibForPalette1;
-	if (DibForPalette1.IsCompressed() || DibForPalette1.GetBitCount() <= 8)
-		DibForPalette1.Decompress(32);
-	DibForPalette1.StretchBits(m_pDoc->m_dwAnimatedGifWidth, m_pDoc->m_dwAnimatedGifHeight);
+		StretchAnimatedGif(&DibForPalette1); // resize and convert from I420 to RGB32
+	}
+
+	// Prepare Dib 2
 	if (!pDibForPalette2)
 		pDibForPalette2 = m_pFrameList->GetHead();
-	LoadDetFrame(pDibForPalette2, dwLoadDetFrameUpdatedIfErrorNoSuccess);
+	LoadDetFrame(pDibForPalette2, dwLoadDetFrameUpdatedIfErrorNoSuccess); // load from shared memory, if not already loaded by main loop
 	if (pDibForPalette2)
+	{
 		DibForPalette2 = *pDibForPalette2;
-	if (DibForPalette2.IsCompressed() || DibForPalette2.GetBitCount() <= 8)
-		DibForPalette2.Decompress(32);
-	DibForPalette2.StretchBits(m_pDoc->m_dwAnimatedGifWidth, m_pDoc->m_dwAnimatedGifHeight);
+		StretchAnimatedGif(&DibForPalette2); // resize and convert from I420 to RGB32
+	}
+
+	// Prepare Dib 3
 	if (!pDibForPalette3)
 		pDibForPalette3 = m_pFrameList->GetHead();
-	LoadDetFrame(pDibForPalette3, dwLoadDetFrameUpdatedIfErrorNoSuccess);
+	LoadDetFrame(pDibForPalette3, dwLoadDetFrameUpdatedIfErrorNoSuccess); // load from shared memory, if not already loaded by main loop
 	if (pDibForPalette3)
+	{
 		DibForPalette3 = *pDibForPalette3;
-	if (DibForPalette3.IsCompressed() || DibForPalette3.GetBitCount() <= 8)
-		DibForPalette3.Decompress(32);
-	DibForPalette3.StretchBits(m_pDoc->m_dwAnimatedGifWidth, m_pDoc->m_dwAnimatedGifHeight);
+		StretchAnimatedGif(&DibForPalette3); // resize and convert from I420 to RGB32
+	}
 	
 	// Generate the Palette
 	if (DibForPalette1.GetWidth() == DibForPalette2.GetWidth() && DibForPalette2.GetWidth() == DibForPalette3.GetWidth()							&&
 		DibForPalette1.GetHeight() == DibForPalette2.GetHeight() && DibForPalette2.GetHeight() == DibForPalette3.GetHeight()						&&
 		DibForPalette1.GetCompression() == DibForPalette2.GetCompression() && DibForPalette2.GetCompression() == DibForPalette3.GetCompression()	&&
-		(DibForPalette1.GetCompression() == BI_RGB || DibForPalette1.GetCompression() == BI_BITFIELDS))
+		DibForPalette1.GetBitCount() == DibForPalette2.GetBitCount() && DibForPalette2.GetBitCount() == DibForPalette3.GetBitCount()				&&
+		DibForPalette1.GetCompression() == BI_RGB && DibForPalette1.GetBitCount() == 32)
 	{
 		// Dib for Palette Calculation
-		DibForPalette.AllocateBitsFast(	DibForPalette1.GetBitCount(),
-										DibForPalette1.GetCompression(),
+		DibForPalette.AllocateBitsFast(	32,
+										BI_RGB,
 										DibForPalette1.GetWidth(),
-										3 * DibForPalette1.GetHeight(),
-										DibForPalette1.GetCompression() == BI_BITFIELDS ?
-										(RGBQUAD*)((LPBYTE)(DibForPalette1.GetBMI()) + DibForPalette1.GetBMIH()->biSize) :
-										NULL);
+										3 * DibForPalette1.GetHeight());
 		LPBYTE pDstBits = DibForPalette.GetBits();
 		if (pDstBits)
 		{
-			int nScanLineSize = DWALIGNEDWIDTHBYTES(DibForPalette.GetWidth() * DibForPalette.GetBitCount());
+			int nScanLineSize = 4 * DibForPalette.GetWidth();
 			LPBYTE pSrcBits = DibForPalette1.GetBits();
 			if (pSrcBits)
 			{
@@ -828,8 +830,8 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors
 	
 	// Limit the saved frames to around MOVDET_ANIMGIF_MAX_FRAMES and
 	// the play length to around MOVDET_ANIMGIF_MAX_LENGTH ms.
-	// Note: ie has problems with to many anim. gifs frames and also
-	// with to many anim. gifs images per displayed page!
+	// Note: IE has problems with too many anim. gifs frames and also
+	// with too many anim. gifs images per displayed page!
 	double dLengthMs = (double)m_nNumFramesToSave / dCalcFrameRate * 1000.0;
 	dSpeedMul = max(1.0, dLengthMs / MOVDET_ANIMGIF_MAX_LENGTH);
 	if (m_nNumFramesToSave >= MOVDET_ANIMGIF_MAX_FRAMES)
@@ -846,14 +848,10 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveSingleGif(	CDib* pDib,
 															DWORD dwRefUpTime,
 															const CString& sMovDetSavesCount)
 {
-	if (pDib && pGIFColors)
+	if (pDib && pGIFColors && pDib->GetCompression() == FCC('I420'))
 	{
-		// Make sure we have a true RGB format
-		if (pDib->IsCompressed() || pDib->GetBitCount() <= 8)
-			pDib->Decompress(32);
-
-		// Resize
-		pDib->StretchBits(m_pDoc->m_dwAnimatedGifWidth, m_pDoc->m_dwAnimatedGifHeight);
+		// Resize and convert from I420 to RGB32
+		StretchAnimatedGif(pDib);
 
 		// Add Frame Tags
 		if (m_pDoc->m_bShowFrameTime)
@@ -863,11 +861,8 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveSingleGif(	CDib* pDib,
 		}
 
 		// Convert to 8 bpp
-		if (pDib->GetBitCount() > 8)
-		{
-			pDib->CreatePaletteFromColors(256, pGIFColors); // Use all indexes for color!
-			pDib->ConvertTo8bitsErrDiff(pDib->GetPalette());
-		}
+		pDib->CreatePaletteFromColors(256, pGIFColors); // Use all indexes for color!
+		pDib->ConvertTo8bitsErrDiff(pDib->GetPalette());
 
 		// Save It
 		pDib->GetGif()->SetBackgroundColorIndex(0);
@@ -881,20 +876,33 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveSingleGif(	CDib* pDib,
 		return FALSE;
 }
 
-__forceinline void CVideoDeviceDoc::CSaveFrameListThread::To255Colors(	CDib* pDib,
-																		RGBQUAD* pGIFColors,
-																		const CTime& RefTime,
-																		DWORD dwRefUpTime,
-																		const CString& sMovDetSavesCount)
+void CVideoDeviceDoc::CSaveFrameListThread::StretchAnimatedGif(CDib* pDib)
 {
-	if (pDib && pGIFColors)
+	if (pDib && pDib->GetCompression() == FCC('I420'))
 	{
-		// Make sure we have a true RGB format
-		if (pDib->IsCompressed() || pDib->GetBitCount() <= 8)
+		CDib DibAnimatedGif;
+		DibAnimatedGif.SetShowMessageBoxOnError(FALSE); // no Message Box on Error
+		if (DibAnimatedGif.AllocateBitsFast(12, FCC('I420'), m_pDoc->m_dwAnimatedGifWidth, m_pDoc->m_dwAnimatedGifHeight))
+		{
+			CVideoDeviceDoc::ResizeFast(pDib, &DibAnimatedGif);
+			DibAnimatedGif.SetUpTime(pDib->GetUpTime());		// copy frame uptime	
+			DibAnimatedGif.SetUserFlag(pDib->GetUserFlag());	// copy motion, detection sequence start and stop flags
+			*pDib = DibAnimatedGif;
 			pDib->Decompress(32);
+		}
+	}
+}
 
-		// Resize
-		pDib->StretchBits(m_pDoc->m_dwAnimatedGifWidth, m_pDoc->m_dwAnimatedGifHeight);
+void CVideoDeviceDoc::CSaveFrameListThread::To255Colors(CDib* pDib,
+														RGBQUAD* pGIFColors,
+														const CTime& RefTime,
+														DWORD dwRefUpTime,
+														const CString& sMovDetSavesCount)
+{
+	if (pDib && pGIFColors && pDib->GetCompression() == FCC('I420'))
+	{
+		// Resize and convert from I420 to RGB32
+		StretchAnimatedGif(pDib);
 
 		// Add Frame Tags
 		if (m_pDoc->m_bShowFrameTime)
@@ -904,11 +912,8 @@ __forceinline void CVideoDeviceDoc::CSaveFrameListThread::To255Colors(	CDib* pDi
 		}
 
 		// Convert to 8 bpp
-		if (pDib->GetBitCount() > 8)
-		{
-			pDib->CreatePaletteFromColors(255, pGIFColors); // One index for transparency!
-			pDib->ConvertTo8bitsErrDiff(pDib->GetPalette());
-		}
+		pDib->CreatePaletteFromColors(255, pGIFColors); // One index for transparency!
+		pDib->ConvertTo8bitsErrDiff(pDib->GetPalette());
 	}
 }
 
@@ -8058,7 +8063,7 @@ __forceinline CDib* CVideoDeviceDoc::AllocDetFrame(CDib* pDib)
 			pNewDib->SetBMI(pDib->GetBMI());			// set BMI	
 			pNewDib->SetBits((LPBYTE)pDib->GetBits());	// copy bits
 			pNewDib->SetUpTime(pDib->GetUpTime());		// copy frame uptime
-			pNewDib->SetUserFlag(pDib->GetUserFlag());	// copy motion, deinterlace and rotate by 180° flags
+			pNewDib->SetUserFlag(pDib->GetUserFlag());	// copy motion, detection sequence start and stop flags
 			pNewDib->CopyUserList(pDib->m_UserList);	// copy audio bufs if any
 		}
 	}

@@ -122,8 +122,8 @@ class CVideoPage;
 #define MOVDET_ANIMGIF_LAST_FRAME_DELAY		1000		// ms (last frame time)
 #define MOVDET_ANIMGIF_DIFF_MINLEVEL		10			// determines the "inter-frame-compression" of animated gifs
 														// higher values better compression but worse quality
-#define MOVDET_ANIMGIF_DEFAULT_WIDTH		128			// Default animated gif width
-#define MOVDET_ANIMGIF_DEFAULT_HEIGHT		96			// Default animated gif height
+#define MOVDET_ANIMGIF_DEFAULT_WIDTH		128			// Default animated gif width (must be a multiple of 4 for stretch)
+#define MOVDET_ANIMGIF_DEFAULT_HEIGHT		96			// Default animated gif height (must be a multiple of 4 for stretch)
 #define MOVDET_DETECTING_ZONES_COLOR		RGB(0xFF,0x00,0x00)
 #define MOVDET_SELECTED_ZONES_COLOR			RGB(0x00,0x00,0xFF)
 #define MOVDET_SENSITIVITY_BKGCOLOR			RGB(0xEE,0xEE,0xEE)
@@ -448,11 +448,12 @@ public:
 									const CTime& RefTime,
 									DWORD dwRefUpTime,
 									const CString& sMovDetSavesCount);
-			__forceinline void To255Colors(	CDib* pDib,
-											RGBQUAD* pGIFColors,
-											const CTime& RefTime,
-											DWORD dwRefUpTime,
-											const CString& sMovDetSavesCount);
+			void StretchAnimatedGif(CDib* pDib);
+			void To255Colors(		CDib* pDib,
+									RGBQUAD* pGIFColors,
+									const CTime& RefTime,
+									DWORD dwRefUpTime,
+									const CString& sMovDetSavesCount);
 			BOOL SaveAnimatedGif(	CDib* pGIFSaveDib,
 									CDib* pGIFDib,
 									CDib** ppGIFDibPrev,
