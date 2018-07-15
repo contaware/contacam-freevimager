@@ -140,8 +140,8 @@ void CSnapshotPage::ChangeThumbSize(int nNewWidth, int nNewHeight)
 {
 	// Init thumb vars: must be a multiple of 4 for some video codecs,
 	// most efficient would be a multiple of 16 to fit the macro blocks
-	m_pDoc->m_nSnapshotThumbWidth = nNewWidth & ~0x3;
-	m_pDoc->m_nSnapshotThumbHeight = nNewHeight & ~0x3;
+	m_pDoc->m_nSnapshotThumbWidth = CVideoDeviceDoc::MakeSizeMultipleOf4(nNewWidth);
+	m_pDoc->m_nSnapshotThumbHeight = CVideoDeviceDoc::MakeSizeMultipleOf4(nNewHeight);
 	CString sSize;
 	sSize.Format(ML_STRING(1769, "Thumbnail Size %i x %i"),
 				m_pDoc->m_nSnapshotThumbWidth,
@@ -153,7 +153,8 @@ void CSnapshotPage::ChangeThumbSize(int nNewWidth, int nNewHeight)
 void CSnapshotPage::OnButtonThumbSize()
 {
 	CResizingDlg dlg(m_pDoc->m_DocRect.Width(), m_pDoc->m_DocRect.Height(),
-		m_pDoc->m_nSnapshotThumbWidth, m_pDoc->m_nSnapshotThumbHeight, this);
+					m_pDoc->m_nSnapshotThumbWidth, m_pDoc->m_nSnapshotThumbHeight,
+					this);
 	if (dlg.DoModal() == IDOK)
 	{
 		ChangeThumbSize(dlg.m_nPixelsWidth, dlg.m_nPixelsHeight);

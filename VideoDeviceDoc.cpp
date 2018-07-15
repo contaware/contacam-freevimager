@@ -4398,6 +4398,14 @@ int CVideoDeviceDoc::ValidateDetectionLevel(int nDetectionLevel)
 	return (nDetectionLevel / 10) * 10;
 }
 
+int CVideoDeviceDoc::MakeSizeMultipleOf4(int nSize)
+{
+	if (nSize <= 4)
+		return 4;
+	else
+		return nSize & ~0x3;
+}
+
 void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 									BOOL bDefaultCaptureAudioFromStream,
 									CString sSection,
@@ -4523,8 +4531,8 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_sSnapshotLiveJpegThumbName = pApp->GetProfileString(sSection, _T("SnapshotLiveJpegThumbName"), DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME);
 	m_nSnapshotRate = (int) pApp->GetProfileInt(sSection, _T("SnapshotRate"), DEFAULT_SNAPSHOT_RATE);
 	m_nSnapshotRateMs = (int) pApp->GetProfileInt(sSection, _T("SnapshotRateMs"), 0);
-	m_nSnapshotThumbWidth = (int) pApp->GetProfileInt(sSection, _T("SnapshotThumbWidth"), DEFAULT_SNAPSHOT_THUMB_WIDTH);
-	m_nSnapshotThumbHeight = (int) pApp->GetProfileInt(sSection, _T("SnapshotThumbHeight"), DEFAULT_SNAPSHOT_THUMB_HEIGHT);
+	m_nSnapshotThumbWidth = (int) MakeSizeMultipleOf4(pApp->GetProfileInt(sSection, _T("SnapshotThumbWidth"), DEFAULT_SNAPSHOT_THUMB_WIDTH));
+	m_nSnapshotThumbHeight = (int) MakeSizeMultipleOf4(pApp->GetProfileInt(sSection, _T("SnapshotThumbHeight"), DEFAULT_SNAPSHOT_THUMB_HEIGHT));
 	m_bCaptureAudio = (BOOL) pApp->GetProfileInt(sSection, _T("CaptureAudio"), FALSE);
 	m_bCaptureAudioFromStream = (BOOL)pApp->GetProfileInt(sSection, _T("CaptureAudioFromStream"), bDefaultCaptureAudioFromStream);
 	m_bAudioListen = (BOOL) pApp->GetProfileInt(sSection, _T("AudioListen"), FALSE);
@@ -4584,8 +4592,8 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_bInSchedule = IsInSchedule(CurrentTime);
 	m_bShowFrameTime = (BOOL) pApp->GetProfileInt(sSection, _T("ShowFrameTime"), TRUE);
 	m_nRefFontSize = ValidateRefFontSize(pApp->GetProfileInt(sSection, _T("RefFontSize"), 9));
-	m_dwAnimatedGifWidth = (DWORD) pApp->GetProfileInt(sSection, _T("AnimatedGifWidth"), MOVDET_ANIMGIF_DEFAULT_WIDTH);
-	m_dwAnimatedGifHeight = (DWORD) pApp->GetProfileInt(sSection, _T("AnimatedGifHeight"), MOVDET_ANIMGIF_DEFAULT_HEIGHT);
+	m_dwAnimatedGifWidth = (DWORD) MakeSizeMultipleOf4(pApp->GetProfileInt(sSection, _T("AnimatedGifWidth"), MOVDET_ANIMGIF_DEFAULT_WIDTH));
+	m_dwAnimatedGifHeight = (DWORD) MakeSizeMultipleOf4(pApp->GetProfileInt(sSection, _T("AnimatedGifHeight"), MOVDET_ANIMGIF_DEFAULT_HEIGHT));
 	m_nDeleteRecordingsOlderThanDays = (int) pApp->GetProfileInt(sSection, _T("DeleteRecordingsOlderThanDays"), DEFAULT_DEL_RECS_OLDER_THAN_DAYS);
 	m_nMaxCameraFolderSizeMB = (int) pApp->GetProfileInt(sSection, _T("MaxCameraFolderSizeMB"), 0);
 	m_nMinDiskFreePermillion = (int) pApp->GetProfileInt(sSection, _T("MinDiskFreePermillion"), MIN_DISK_FREE_PERMILLION);

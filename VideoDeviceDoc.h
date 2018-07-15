@@ -95,8 +95,8 @@ class CVideoPage;
 #define DEFAULT_SNAPSHOT_LIVE_JPEGNAME		_T("snapshot")
 #define DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME	_T("snapshot_thumb")
 #define DEFAULT_SNAPSHOT_COMPR_QUALITY		60			// 0 Worst Quality, 100 Best Quality
-#define DEFAULT_SNAPSHOT_THUMB_WIDTH		228			// Must be a multiple of 4 because of video
-#define DEFAULT_SNAPSHOT_THUMB_HEIGHT		172			// Must be a multiple of 4 because of video
+#define DEFAULT_SNAPSHOT_THUMB_WIDTH		228			// Must be a multiple of 4 because of stretch and codec
+#define DEFAULT_SNAPSHOT_THUMB_HEIGHT		172			// Must be a multiple of 4 because of stretch and codec
 #define DEFAULT_SERVERPUSH_POLLRATE_MS		200			// ms
 
 // Movement Detection
@@ -738,6 +738,9 @@ public:
 	// Settings
 	BOOL LoadZonesSettings();
 	void SaveZonesSettings();
+	static int ValidateRefFontSize(int nRefFontSize);
+	static int ValidateDetectionLevel(int nDetectionLevel);
+	static int MakeSizeMultipleOf4(int nSize);
 	void LoadSettings(	double dDefaultFrameRate,
 						BOOL bDefaultCaptureAudioFromStream,
 						CString sSection,
@@ -794,8 +797,6 @@ public:
 
 // Protected Functions
 protected:
-	int ValidateRefFontSize(int nRefFontSize);
-	int ValidateDetectionLevel(int nDetectionLevel);
 	void Snapshot(CDib* pDib, const CTime& Time);
 	BOOL EditCopy(CDib* pDib, const CTime& Time);
 	void EditSnapshot(CDib* pDib, const CTime& Time);

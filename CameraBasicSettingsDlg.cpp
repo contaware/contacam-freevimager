@@ -448,8 +448,8 @@ void CCameraBasicSettingsDlg::ApplySettingsSnapshot(int nThumbWidth, int nThumbH
 	else
 	{
 		// Thumb size
-		m_pDoc->m_nSnapshotThumbWidth = nThumbWidth;
-		m_pDoc->m_nSnapshotThumbHeight = nThumbHeight;
+		m_pDoc->m_nSnapshotThumbWidth = CVideoDeviceDoc::MakeSizeMultipleOf4(nThumbWidth);
+		m_pDoc->m_nSnapshotThumbHeight = CVideoDeviceDoc::MakeSizeMultipleOf4(nThumbHeight);
 	}
 }
 

@@ -2132,7 +2132,6 @@ BEGIN
     PUSHBUTTON      "Ftp Settings",IDC_FTP_CONFIGURE,243,222,150,21
     LTEXT           "Take a Snapshot each (0: as fast as possible)",IDC_STATIC2476,13,22,175,8
     LTEXT           "sec",IDC_STATIC2477,250,21,14,10
-    LTEXT           "(multiple of 4)",IDC_STATIC2491,208,51,49,9
     GROUPBOX        "Ftp",IDC_STATIC2482,7,197,403,65
     GROUPBOX        "Live",IDC_STATIC2488,7,5,403,107
     GROUPBOX        "History",IDC_STATIC2489,7,126,403,57

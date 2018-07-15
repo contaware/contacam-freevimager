@@ -736,8 +736,8 @@ void CVideoPage::OnAnimatedgifSize()
 	if (dlg.DoModal() == IDOK)
 	{
 		// Must be a multiple of 4 for stretch
-		m_pDoc->m_dwAnimatedGifWidth = dlg.m_nPixelsWidth & ~0x3;
-		m_pDoc->m_dwAnimatedGifHeight = dlg.m_nPixelsHeight & ~0x3;
+		m_pDoc->m_dwAnimatedGifWidth = CVideoDeviceDoc::MakeSizeMultipleOf4(dlg.m_nPixelsWidth);
+		m_pDoc->m_dwAnimatedGifHeight = CVideoDeviceDoc::MakeSizeMultipleOf4(dlg.m_nPixelsHeight);
 
 		CString sSize;
 		sSize.Format(ML_STRING(1769, "Thumbnail Size %i x %i"),
