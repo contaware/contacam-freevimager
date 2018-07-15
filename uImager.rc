@@ -119,8 +119,8 @@ BEGIN
         MENUITEM "Verbose logging",             ID_SETTINGS_LOG_VERBOSE
         MENUITEM "Debug logging",               ID_SETTINGS_LOG_ALL_MESSAGES
         MENUITEM SEPARATOR
-        MENUITEM "View Log File",               ID_SETTINGS_VIEW_LOGFILE
-        MENUITEM "Browse Config/Log Files",     ID_SETTINGS_BROWSE_CONFIGLOG_FILES
+        MENUITEM "Log File (View)",             ID_SETTINGS_VIEW_LOGFILE
+        MENUITEM "Config/Log Files (Folder)",   ID_SETTINGS_BROWSE_CONFIGLOG_FILES
     END
     POPUP "&Help"
     BEGIN
@@ -196,8 +196,8 @@ BEGIN
         MENUITEM "Fit",                         ID_VIEW_FIT
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
         MENUITEM SEPARATOR
-        MENUITEM "Browse Web",                  ID_VIEW_WEB
-        MENUITEM "Browse Files",                ID_VIEW_FILES
+        MENUITEM "Web Browser",                 ID_VIEW_WEB
+        MENUITEM "File Explorer",               ID_VIEW_FILES
     END
     POPUP "&Camera"
     BEGIN
@@ -217,8 +217,8 @@ BEGIN
         MENUITEM "Verbose logging",             ID_SETTINGS_LOG_VERBOSE
         MENUITEM "Debug logging",               ID_SETTINGS_LOG_ALL_MESSAGES
         MENUITEM SEPARATOR
-        MENUITEM "View Log File",               ID_SETTINGS_VIEW_LOGFILE
-        MENUITEM "Browse Config/Log Files",     ID_SETTINGS_BROWSE_CONFIGLOG_FILES
+        MENUITEM "Log File (View)",             ID_SETTINGS_VIEW_LOGFILE
+        MENUITEM "Config/Log Files (Folder)",   ID_SETTINGS_BROWSE_CONFIGLOG_FILES
     END
     POPUP "&Window"
     BEGIN
@@ -449,8 +449,8 @@ BEGIN
         MENUITEM "Verbose logging",             ID_SETTINGS_LOG_VERBOSE
         MENUITEM "Debug logging",               ID_SETTINGS_LOG_ALL_MESSAGES
         MENUITEM SEPARATOR
-        MENUITEM "View Log File",               ID_SETTINGS_VIEW_LOGFILE
-        MENUITEM "Browse Config/Log Files",     ID_SETTINGS_BROWSE_CONFIGLOG_FILES
+        MENUITEM "Log File (View)",             ID_SETTINGS_VIEW_LOGFILE
+        MENUITEM "Config/Log Files (Folder)",   ID_SETTINGS_BROWSE_CONFIGLOG_FILES
     END
     POPUP "&Window"
     BEGIN
