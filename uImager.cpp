@@ -111,7 +111,6 @@ BEGIN_MESSAGE_MAP(CUImagerApp, CWinApp)
 	ON_UPDATE_COMMAND_UI(ID_SETTINGS_LOG_VERBOSE, OnUpdateSettingsLogVerbose)
 	ON_COMMAND(ID_SETTINGS_LOG_ALL_MESSAGES, OnSettingsLogAllMessages)
 	ON_UPDATE_COMMAND_UI(ID_SETTINGS_LOG_ALL_MESSAGES, OnUpdateSettingsLogAllMessages)
-	ON_COMMAND(ID_SETTINGS_VIEW_LOGFILE, OnSettingsViewLogfile)
 	ON_COMMAND(ID_SETTINGS_BROWSE_CONFIGLOG_FILES, OnSettingsBrowseConfigLogFiles)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SHRINK_DIR_DOCS, OnUpdateFileShrinkDirDocs)
 	ON_COMMAND(ID_EDIT_SCREENSHOT, OnEditScreenshot)
@@ -4458,14 +4457,6 @@ void CUImagerApp::OnSettingsLogAllMessages()
 void CUImagerApp::OnUpdateSettingsLogAllMessages(CCmdUI* pCmdUI) 
 {
 	pCmdUI->SetCheck(g_nLogLevel == 2 ? 1 : 0);
-}
-
-void CUImagerApp::OnSettingsViewLogfile() 
-{
-	if (::IsExistingFile(g_sLogFileName))
-		::ShellExecute(NULL, _T("open"), g_sLogFileName, NULL, NULL, SW_SHOWNORMAL);
-	else
-		::AfxMessageBox(ML_STRING(1760, "Application Log File has not yet been created"), MB_OK | MB_ICONINFORMATION);
 }
 
 void CUImagerApp::OnSettingsBrowseConfigLogFiles()

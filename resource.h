@@ -3203,7 +3203,6 @@
 #define ID_EDIT_PASTE_INTO_BOTTOMRIGHT  33134
 #define ID_EDIT_PASTE_INTO_FILE         33135
 #define ID_VIEW_WEB                     33139
-#define ID_SETTINGS_VIEW_LOGFILE        33142
 #define ID_EDIT_ROTATE_180              33145
 #define ID_EDIT_SNAPSHOT                33161
 #define ID_EDIT_PASTE_INTO_FILE_HELP    33164

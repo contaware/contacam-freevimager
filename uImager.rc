@@ -119,7 +119,6 @@ BEGIN
         MENUITEM "Verbose logging",             ID_SETTINGS_LOG_VERBOSE
         MENUITEM "Debug logging",               ID_SETTINGS_LOG_ALL_MESSAGES
         MENUITEM SEPARATOR
-        MENUITEM "Log File (View)",             ID_SETTINGS_VIEW_LOGFILE
         MENUITEM "Config/Log Files (Folder)",   ID_SETTINGS_BROWSE_CONFIGLOG_FILES
     END
     POPUP "&Help"
@@ -217,7 +216,6 @@ BEGIN
         MENUITEM "Verbose logging",             ID_SETTINGS_LOG_VERBOSE
         MENUITEM "Debug logging",               ID_SETTINGS_LOG_ALL_MESSAGES
         MENUITEM SEPARATOR
-        MENUITEM "Log File (View)",             ID_SETTINGS_VIEW_LOGFILE
         MENUITEM "Config/Log Files (Folder)",   ID_SETTINGS_BROWSE_CONFIGLOG_FILES
     END
     POPUP "&Window"
@@ -449,7 +447,6 @@ BEGIN
         MENUITEM "Verbose logging",             ID_SETTINGS_LOG_VERBOSE
         MENUITEM "Debug logging",               ID_SETTINGS_LOG_ALL_MESSAGES
         MENUITEM SEPARATOR
-        MENUITEM "Log File (View)",             ID_SETTINGS_VIEW_LOGFILE
         MENUITEM "Config/Log Files (Folder)",   ID_SETTINGS_BROWSE_CONFIGLOG_FILES
     END
     POPUP "&Window"
@@ -3765,8 +3762,6 @@ END
 STRINGTABLE
 BEGIN
     ID_VIEW_WEB             "Open web browser to watch live stream / recordings\nBrowse Live Stream / Recordings"
-    ID_SETTINGS_VIEW_LOGFILE 
-                            "View the log file with the default text editor\nView Log File"
     ID_EDIT_ROTATE_180      "Rotate current image 180° (Ctrl + Down Arrow)\nRotate 180°"
 END
 
@@ -4131,7 +4126,6 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_STRING1760          "Application Log File has not yet been created"
     IDS_STRING1761          "HD usage"
     IDS_STRING1762          "CPU usage"
     IDS_STRING1763          "Maximum overall buffers size\n(click for more information)"
