@@ -616,11 +616,14 @@ void CUImagerView::OnMouseMove(UINT nFlags, CPoint point)
 	m_ptMouseMoveLastPoint = point;
 
 	// Update Pane Text
+#ifndef VIDEODEVICEDOC
 	UpdatePaneText();
+#endif
 
 	CScrollView::OnMouseMove(nFlags, point);
 }
 
+#ifndef VIDEODEVICEDOC
 void CUImagerView::UpdatePaneText()
 {
 	CUImagerDoc* pDoc = (CUImagerDoc*)GetDocument();
@@ -671,6 +674,7 @@ void CUImagerView::UpdatePaneText()
 	::AfxGetMainFrame()->GetStatusBar()->SetPaneText(::AfxGetMainFrame()->GetStatusBar()->CommandToIndex(ID_INDICATOR_XCOORDINATE), _T(" ") + sXCoord + _T(" "));
 	::AfxGetMainFrame()->GetStatusBar()->SetPaneText(::AfxGetMainFrame()->GetStatusBar()->CommandToIndex(ID_INDICATOR_YCOORDINATE), _T(" ") + sYCoord + _T(" "));
 }
+#endif
 
 int CUImagerView::DoRealizePalette(BOOL bForceBackground)
 {

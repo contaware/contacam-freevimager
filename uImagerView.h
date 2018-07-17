@@ -95,7 +95,9 @@ public:
 	void FitBigZoomFactor();
 
 	// Update Pane Text
+#ifndef VIDEODEVICEDOC
 	void UpdatePaneText();
+#endif
 
 	// Full screen flag
 	volatile bool m_bFullScreenMode;

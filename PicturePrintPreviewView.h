@@ -34,7 +34,9 @@ public:
 	BOOL IsInchPaperFormat();
 	void DisplayPrinterPaperDPI();
 	void UpdateStatusText();
+#ifndef VIDEODEVICEDOC
 	void UpdatePaneText();
+#endif
 	void Close() {OnPreviewClose();};
 
 protected:

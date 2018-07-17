@@ -219,7 +219,9 @@ protected:
 protected:
 	void FullScreenModeOn();
 	void FullScreenModeOff();
+#ifndef VIDEODEVICEDOC
 	void ChangeCoordinatesUnit();
+#endif
 	static BOOL GetDiskStats(CString& sDiskStats, LPCTSTR lpszPath, int nMinDiskFreePermillion);
 	void PrintHeapBlocks(FILE* pf, WORD wFlags, __int64 Data, __int64 Overhead, __int64 Count);
 #ifdef VIDEODEVICEDOC
@@ -257,11 +259,7 @@ protected:
 	afx_msg BOOL OnQueryEndSession();
 	afx_msg void OnEndSession(BOOL bEnding);
 	//}}AFX_MSG
-	afx_msg void OnXCoordinatesDoubleClick();
-	afx_msg void OnYCoordinatesDoubleClick();
 	afx_msg LONG OnProgress(WPARAM wparam, LPARAM lparam);
-	afx_msg void OnUpdateIndicatorXCoordinate(CCmdUI* pCmdUI);
-	afx_msg void OnUpdateIndicatorYCoordinate(CCmdUI* pCmdUI);
 	LRESULT OnSetMessageString(WPARAM wParam, LPARAM lParam);
 	afx_msg LONG OnAllClosed(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnScanAndEmail(WPARAM wparam, LPARAM lparam);
@@ -275,6 +273,11 @@ protected:
 	afx_msg void OnViewWeb();
 	afx_msg void OnViewFiles();
 	afx_msg void OnBufsSizeClick();
+#else
+	afx_msg void OnXCoordinatesDoubleClick();
+	afx_msg void OnYCoordinatesDoubleClick();
+	afx_msg void OnUpdateIndicatorXCoordinate(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateIndicatorYCoordinate(CCmdUI* pCmdUI);
 #endif
 	DECLARE_MESSAGE_MAP()
 };

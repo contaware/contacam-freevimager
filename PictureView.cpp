@@ -1383,7 +1383,9 @@ BOOL CPictureView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 		OnMouseMove(m_uiOnMouseMoveLastFlag, m_OnMouseMoveLastPoint);
 
 	// Update Pane Text
+#ifndef VIDEODEVICEDOC
 	UpdatePaneText();
+#endif
 
 	return TRUE;
 }

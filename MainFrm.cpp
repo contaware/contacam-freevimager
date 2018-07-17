@@ -63,10 +63,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_WM_QUERYENDSESSION()
 	ON_WM_ENDSESSION()
 	//}}AFX_MSG_MAP
-	ON_COMMAND(ID_INDICATOR_XCOORDINATE, OnXCoordinatesDoubleClick)
-	ON_COMMAND(ID_INDICATOR_YCOORDINATE, OnYCoordinatesDoubleClick)
-	ON_UPDATE_COMMAND_UI(ID_INDICATOR_XCOORDINATE, OnUpdateIndicatorXCoordinate)
-	ON_UPDATE_COMMAND_UI(ID_INDICATOR_YCOORDINATE, OnUpdateIndicatorYCoordinate)
 	ON_MESSAGE(WM_PROGRESS, OnProgress)
 	ON_MESSAGE(WM_SETMESSAGESTRING, OnSetMessageString)
 	ON_MESSAGE(WM_ALL_CLOSED, OnAllClosed)
@@ -81,6 +77,11 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_COMMAND(ID_VIEW_WEB, OnViewWeb)
 	ON_COMMAND(ID_VIEW_FILES, OnViewFiles)
 	ON_COMMAND(ID_INDICATOR_BUFS_SIZE, OnBufsSizeClick)
+#else
+	ON_COMMAND(ID_INDICATOR_XCOORDINATE, OnXCoordinatesDoubleClick)
+	ON_COMMAND(ID_INDICATOR_YCOORDINATE, OnYCoordinatesDoubleClick)
+	ON_UPDATE_COMMAND_UI(ID_INDICATOR_XCOORDINATE, OnUpdateIndicatorXCoordinate)
+	ON_UPDATE_COMMAND_UI(ID_INDICATOR_YCOORDINATE, OnUpdateIndicatorYCoordinate)
 #endif
 END_MESSAGE_MAP()
 
@@ -88,8 +89,9 @@ END_MESSAGE_MAP()
 static TCHAR sba_BUFSSIZEHelp[MAX_PATH];
 static TCHAR sba_HDHelp[MAX_PATH];
 static TCHAR sba_CPUHelp[MAX_PATH];
-#endif
+#else
 static TCHAR sba_CoordinateHelp[MAX_PATH];
+#endif
 static SBACTPANEINFO sba_indicators[] = 
 {
 	{ ID_SEPARATOR, _T(""), SBACTF_NORMAL },		// status line indicator
@@ -97,9 +99,10 @@ static SBACTPANEINFO sba_indicators[] =
 	{ ID_INDICATOR_BUFS_SIZE, sba_BUFSSIZEHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_SINGLECLICK | SBACTF_DOUBLECLICK | SBACTF_HANDCURSOR },
 	{ ID_INDICATOR_HD_USAGE, sba_HDHelp, SBACTF_AUTOFIT },
 	{ ID_INDICATOR_CPU_USAGE, sba_CPUHelp, SBACTF_AUTOFIT },
-#endif
+#else
 	{ ID_INDICATOR_XCOORDINATE, sba_CoordinateHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_SINGLECLICK | SBACTF_DOUBLECLICK | SBACTF_HANDCURSOR },
 	{ ID_INDICATOR_YCOORDINATE, sba_CoordinateHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_SINGLECLICK | SBACTF_DOUBLECLICK | SBACTF_HANDCURSOR },
+#endif
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -169,9 +172,10 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	sba_HDHelp[MAX_PATH - 1] = _T('\0');
 	_tcsncpy(sba_CPUHelp, CString(APPNAME_NOEXT) + _T(": ") + ML_STRING(1762, "CPU usage"), MAX_PATH);
 	sba_CPUHelp[MAX_PATH - 1] = _T('\0');
-#endif
+#else
 	_tcsncpy(sba_CoordinateHelp, ML_STRING(1768, "Click to change unit"), MAX_PATH);
 	sba_CoordinateHelp[MAX_PATH - 1] = _T('\0');
+#endif
 	if (!m_wndStatusBar.Create(this, WS_VISIBLE | WS_CHILD | CBRS_BOTTOM, AFX_IDW_STATUS_BAR) || 
 		!m_wndStatusBar.SetPanes(sba_indicators, sizeof(sba_indicators)/sizeof(SBACTPANEINFO)))
 	{
@@ -222,6 +226,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 }
 
+#ifndef VIDEODEVICEDOC
 void CMainFrame::OnXCoordinatesDoubleClick()
 {
 	ChangeCoordinatesUnit();
@@ -230,6 +235,18 @@ void CMainFrame::OnXCoordinatesDoubleClick()
 void CMainFrame::OnYCoordinatesDoubleClick()
 {	
 	ChangeCoordinatesUnit();
+}
+
+void CMainFrame::OnUpdateIndicatorXCoordinate(CCmdUI* pCmdUI)
+{
+	if (!((CUImagerApp*)::AfxGetApp())->AreDocsOpen())
+		pCmdUI->SetText(_T(" X:        "));
+}
+
+void CMainFrame::OnUpdateIndicatorYCoordinate(CCmdUI* pCmdUI)
+{
+	if (!((CUImagerApp*)::AfxGetApp())->AreDocsOpen())
+		pCmdUI->SetText(_T(" Y:        "));
 }
 
 void CMainFrame::ChangeCoordinatesUnit()
@@ -259,6 +276,7 @@ void CMainFrame::ChangeCoordinatesUnit()
 		}
 	}
 }
+#endif
 
 void CMainFrame::TrayIcon(BOOL bEnable)
 {
@@ -2584,18 +2602,6 @@ void CMainFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 {
 	CMDIFrameWnd::OnUpdateFrameTitle(bAddToTitle);
 	m_wndMDITabs.Update(); // sync the mdi tab control with all views
-}
-
-void CMainFrame::OnUpdateIndicatorXCoordinate(CCmdUI* pCmdUI)
-{
-	if (!((CUImagerApp*)::AfxGetApp())->AreDocsOpen())
-		pCmdUI->SetText(_T(" X:        "));
-}
-
-void CMainFrame::OnUpdateIndicatorYCoordinate(CCmdUI* pCmdUI)
-{
-	if (!((CUImagerApp*)::AfxGetApp())->AreDocsOpen())
-		pCmdUI->SetText(_T(" Y:        "));
 }
 
 LONG CMainFrame::OnProgress(WPARAM wparam, LPARAM lparam)
