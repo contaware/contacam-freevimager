@@ -201,11 +201,6 @@ protected:
 	LONG m_lOldChildStyle;
 	LONG m_lOldChildExStyle;
 	LONG m_lOldStyle;
-#ifndef VIDEODEVICEDOC
-	bool m_bToolBarWasVisible;
-#endif
-	bool m_bChildToolBarWasVisible;
-	bool m_bStatusBarWasVisible;
 	CRect m_MainWndRect;
 	bool m_bChildMax;
 	bool m_bChildMin;

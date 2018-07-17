@@ -121,11 +121,6 @@ CMainFrame::CMainFrame() : m_TrayIcon(IDR_TRAYICON) // Menu ID
 	m_hMenu = NULL;
 	m_bChildMax = false;
 	m_bChildMin = false;
-	m_bStatusBarWasVisible = false;
-#ifndef VIDEODEVICEDOC
-	m_bToolBarWasVisible = false;
-#endif
-	m_bChildToolBarWasVisible = false;
 	m_dChildZoomFactor = 1.0;
 	m_ptChildScrollPosition = CPoint(0,0);
 	m_bScreenSaverWasActive = FALSE;
@@ -1241,18 +1236,13 @@ void CMainFrame::FullScreenModeOn()
 	// Hide Tabs
 	m_wndMDITabs.SetMinViews(INT_MAX);
 
-	// Store the Toolbar(s) and Statusbar States and hide them
+	// Hide Toolbar(s) and Statusbar
 #ifndef VIDEODEVICEDOC
-	m_bToolBarWasVisible = (m_wndToolBar.IsWindowVisible() != FALSE);
 	m_wndToolBar.ShowWindow(SW_HIDE);
 #endif
 	CToolBar* pChildToolBar = ((CToolBarChildFrame*)pChild)->GetToolBar(); 
 	if (pChildToolBar)
-	{
-		m_bChildToolBarWasVisible = (pChildToolBar->IsWindowVisible() != FALSE);
 		pChildToolBar->ShowWindow(SW_HIDE);
-	}
-	m_bStatusBarWasVisible = (m_wndStatusBar.IsWindowVisible() != FALSE);
 	m_wndStatusBar.ShowWindow(SW_HIDE);
 
 	// Hide Menu
@@ -1394,9 +1384,9 @@ void CMainFrame::FullScreenModeOff()
 		::SetWindowLong(pChild->GetSafeHwnd(), GWL_STYLE, m_lOldChildStyle);
 		::SetWindowLong(pChild->GetSafeHwnd(), GWL_EXSTYLE, m_lOldChildExStyle);
 
-		// Restore the Child Toolbar
+		// Show the Child Toolbar
 		CToolBar* pChildToolBar = ((CToolBarChildFrame*)pChild)->GetToolBar();
-		if (pChildToolBar && m_bChildToolBarWasVisible)
+		if (pChildToolBar)
 			pChildToolBar->ShowWindow(SW_SHOW);
 
 		// Restore Child Placement, if minimized restore it,
@@ -1425,13 +1415,11 @@ void CMainFrame::FullScreenModeOff()
 	if (!((CUImagerApp*)::AfxGetApp())->m_bTopMost)
 		SetWindowPos(&wndNoTopMost, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
-	// Restore the Toolbar and Statusbar States
+	// Show Toolbar and Statusbar
 #ifndef VIDEODEVICEDOC
-	if (m_bToolBarWasVisible)
-		m_wndToolBar.ShowWindow(SW_SHOW);
+	m_wndToolBar.ShowWindow(SW_SHOW);
 #endif
-	if (m_bStatusBarWasVisible)
-		m_wndStatusBar.ShowWindow(SW_SHOW);
+	m_wndStatusBar.ShowWindow(SW_SHOW);
 
 	// Show Menu
 	if (m_hMenu)
