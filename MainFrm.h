@@ -179,9 +179,6 @@ public:
 	// Full screen flag
 	volatile bool m_bFullScreenMode;
 
-	// Progress control
-	CProgressCtrl m_Progress;
-
 	// Batch Processing dialog
 	CBatchProcDlg* m_pBatchProcDlg;
 
@@ -211,7 +208,6 @@ protected:
 	CPoint m_ptChildScrollPosition;
 	BOOL m_bScreenSaverWasActive;
 	CString m_sStatusBarString;
-	BOOL m_bProgressIndicatorCreated;
 	BOOL m_bLastToasterDone;
 	CToasterWnd* m_pToaster;
 	CToasterNotificationLink m_ToasterNotificationLink;
@@ -246,7 +242,6 @@ protected:
 	afx_msg void OnViewAllLastPicture();
 	afx_msg void OnTimer(UINT nIDEvent);
 	afx_msg void OnDestroy();
-	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnRestore();
 	afx_msg void OnUpdateRestore(CCmdUI* pCmdUI);
 	afx_msg void OnMinimize();

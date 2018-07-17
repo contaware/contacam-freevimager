@@ -3559,7 +3559,6 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_INDICATOR_PROGRESS   "                                   "
     ID_INDICATOR_BUFS_SIZE  " BUF:            "
     ID_INDICATOR_HD_USAGE   " HD:             "
     ID_INDICATOR_CPU_USAGE  " CPU:            "

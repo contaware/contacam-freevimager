@@ -48,7 +48,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_COMMAND(ID_VIEW_ALL_LAST_PICTURE, OnViewAllLastPicture)
 	ON_WM_TIMER()
 	ON_WM_DESTROY()
-	ON_WM_SIZE()
 	ON_COMMAND(ID_RESTORE, OnRestore)
 	ON_UPDATE_COMMAND_UI(ID_RESTORE, OnUpdateRestore)
 	ON_COMMAND(ID_MINIMIZE, OnMinimize)
@@ -94,7 +93,6 @@ static TCHAR sba_CoordinateHelp[MAX_PATH];
 static SBACTPANEINFO sba_indicators[] = 
 {
 	{ ID_SEPARATOR, _T(""), SBACTF_NORMAL },		// status line indicator
-	{ ID_INDICATOR_PROGRESS, _T(""), SBACTF_NORMAL },
 #ifdef VIDEODEVICEDOC
 	{ ID_INDICATOR_BUFS_SIZE, sba_BUFSSIZEHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_SINGLECLICK | SBACTF_DOUBLECLICK | SBACTF_HANDCURSOR },
 	{ ID_INDICATOR_HD_USAGE, sba_HDHelp, SBACTF_AUTOFIT },
@@ -125,7 +123,6 @@ CMainFrame::CMainFrame() : m_TrayIcon(IDR_TRAYICON) // Menu ID
 	m_ptChildScrollPosition = CPoint(0,0);
 	m_bScreenSaverWasActive = FALSE;
 	m_sStatusBarString = _T("");
-	m_bProgressIndicatorCreated = FALSE;
 	m_TiffScan = NULL;
 	m_bScanAndEmail = FALSE;
 	m_pBatchProcDlg = NULL;
@@ -2614,40 +2611,13 @@ void CMainFrame::Progress(int nPercent)
 		nPercent = 0;
 	else if (nPercent > 100)
 		nPercent = 100;
-
-	RECT Rect;
-
-	m_wndStatusBar.GetItemRect(1, &Rect);
-
-	if (!m_bProgressIndicatorCreated)
-	{
-		m_Progress.Create(WS_VISIBLE | WS_CHILD, Rect, &m_wndStatusBar, 1);
-		m_Progress.SetRange(0, 100);
-		m_Progress.SetStep(1);
-		m_bProgressIndicatorCreated = TRUE;
-	}
-
 	if (nPercent == 100)
-	{
-		m_wndStatusBar.GetItemRect(1, &Rect);
-		m_Progress.SetPos(0);
-		m_Progress.SetWindowPos(&wndTop,
-								Rect.left,
-								Rect.top,
-								Rect.right - Rect.left,
-								Rect.bottom - Rect.top,
-								SWP_HIDEWINDOW);
-	}
+		StatusText();
 	else
 	{
-		m_wndStatusBar.GetItemRect(1, &Rect);
-		m_Progress.SetPos(nPercent);
-		m_Progress.SetWindowPos(&wndTop,
-								Rect.left,
-								Rect.top,
-								Rect.right - Rect.left,
-								Rect.bottom - Rect.top,
-								SWP_SHOWWINDOW);
+		CString sProgress;
+		sProgress.Format(_T("%d%%"), nPercent);
+		StatusText(sProgress);
 	}
 }
 
@@ -2663,24 +2633,6 @@ void CMainFrame::OnSysCommand(UINT nID, LPARAM lParam)
 	}
 	else
 		CMDIFrameWnd::OnSysCommand(nID, lParam);
-}
-
-void CMainFrame::OnSize(UINT nType, int cx, int cy) 
-{	
-	CMDIFrameWnd::OnSize(nType, cx, cy);
-	RECT Rect;
-	m_wndStatusBar.GetItemRect(1, &Rect);
-
-	// Reposition the progress control correctly!
-	if (m_bProgressIndicatorCreated)
-	{
-		m_Progress.SetWindowPos(&wndTop,
-								Rect.left,
-								Rect.top,
-								Rect.right - Rect.left,
-								Rect.bottom - Rect.top,
-								0);
-	}
 }
 
 void CMainFrame::OnOpenFromTray() 

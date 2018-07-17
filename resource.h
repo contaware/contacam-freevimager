@@ -3222,7 +3222,6 @@
 #define ID_FILE_RELOAD                  33500
 #define ID_VIEW_FILES                   33501
 #define ID_SETTINGS_BROWSE_CONFIGLOG_FILES 33503
-#define ID_INDICATOR_PROGRESS           33504
 #define ID_INDICATOR_BUFS_SIZE          33505
 #define ID_INDICATOR_HD_USAGE           33506
 #define ID_INDICATOR_CPU_USAGE          33507
