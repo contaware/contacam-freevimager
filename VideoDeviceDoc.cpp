@@ -620,30 +620,39 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCountMonth"), nMovDetSavesCountMonth);
 		::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCountYear"), nMovDetSavesCountYear);
 
-		// Logs
+		// Saving speed
 		DWORD dwSaveTimeMs = ::timeGetTime() - dwStartUpTime;
-		if (dwFramesTimeMs < dwSaveTimeMs)
+		if (dwFramesTimeMs > MOVDET_MIN_LENGTH_SAVESPEED_MSEC && dwSaveTimeMs > 0)
 		{
-			if (g_nLogLevel > 0 || dwFramesTimeMs > MOVDET_MIN_FRAMES_TIME_CHECK_MSEC)
+			// Calculate moving average of saving speed
+			double dCurrentSaveFrameListSpeed = (double)dwFramesTimeMs / (double)dwSaveTimeMs;
+			double dAvgSaveFrameListSpeed;
+			if (m_pDoc->m_nSaveFrameListSpeedPercent == 0)
+				dAvgSaveFrameListSpeed = dCurrentSaveFrameListSpeed;
+			else
+				dAvgSaveFrameListSpeed = (3.0 * (double)m_pDoc->m_nSaveFrameListSpeedPercent / 100.0 + dCurrentSaveFrameListSpeed) / 4.0;
+			m_pDoc->m_nSaveFrameListSpeedPercent = Round(dAvgSaveFrameListSpeed * 100.0);
+
+			// Log
+			if (dAvgSaveFrameListSpeed < 1.0)
 			{
 				CString sSpeed;
-				sSpeed.Format(_T("%0.2fX"), (double)dwFramesTimeMs / (double)dwSaveTimeMs);
-				::LogLine(	ML_STRING(1839, "%s, attention cannot realtime save") + _T(" (%s)"),
-							m_pDoc->GetAssignedDeviceName(), sSpeed);
-				::LogLine(	ML_STRING(1840, "%s, consider lowering the framerate and/or video resolution!"),
-							m_pDoc->GetAssignedDeviceName());
+				sSpeed.Format(_T("%0.2fx"), dAvgSaveFrameListSpeed);
+				::LogLine(ML_STRING(1839, "%s, attention cannot realtime save") + _T(" (%s)"),
+					m_pDoc->GetAssignedDeviceName(), sSpeed);
+				::LogLine(ML_STRING(1840, "%s, consider lowering the framerate and/or video resolution!"),
+					m_pDoc->GetAssignedDeviceName());
 			}
-		}
-		else
-		{
-			if (g_nLogLevel > 0)
+			else if (g_nLogLevel > 0)
 			{
 				CString sSpeed;
-				sSpeed.Format(_T("%0.2fX"), (double)dwFramesTimeMs / (double)dwSaveTimeMs);
-				::LogLine(	ML_STRING(1841, "%s, realtime saving is ok") + _T(" (%s)"),
-							m_pDoc->GetAssignedDeviceName(), sSpeed);
+				sSpeed.Format(_T("%0.2fx"), dAvgSaveFrameListSpeed);
+				::LogLine(ML_STRING(1841, "%s, realtime saving is ok") + _T(" (%s)"),
+					m_pDoc->GetAssignedDeviceName(), sSpeed);
 			}
 		}
+
+		// Log error
 		if (dwLoadDetFrameErrorCode != ERROR_SUCCESS)
 			::LogLine(_T("%s"), ML_STRING(1815, "OUT OF MEMORY / OVERLOAD (while retrieving from buffer): dropping frames"));
 	}
@@ -3728,6 +3737,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nDeleteRecordingsOlderThanDays = DEFAULT_DEL_RECS_OLDER_THAN_DAYS;
 	m_nMaxCameraFolderSizeMB = 0;
 	m_nMinDiskFreePermillion = MIN_DISK_FREE_PERMILLION;
+	m_nSaveFrameListSpeedPercent = 0;
 
 	// Movement Detection
 	m_pDifferencingDib = NULL;
@@ -4171,6 +4181,7 @@ void CVideoDeviceDoc::SetDocumentTitle()
 
 		// General info
 		CString sWidthHeight;
+		CString sSaveFrameListSpeed;
 		CString sFrameRate;
 		CString sDataRate;
 		CString sFormat;
@@ -4182,6 +4193,11 @@ void CVideoDeviceDoc::SetDocumentTitle()
 			// Framerate
 			if (m_dEffectiveFrameRate > 0.0)
 				sFrameRate.Format(_T("%0.1ffps"), m_dEffectiveFrameRate);
+
+			// Saving speed
+			double dSaveFrameListSpeed = (double)m_nSaveFrameListSpeedPercent / 100.0;
+			if (dSaveFrameListSpeed > 0.0)
+				sSaveFrameListSpeed.Format(_T("%0.1fx"), dSaveFrameListSpeed);
 
 			// Datarate
 			if (m_lEffectiveDataRate > 0)
@@ -4206,6 +4222,8 @@ void CVideoDeviceDoc::SetDocumentTitle()
 			sTitle += _T(" , ") + sWidthHeight;
 		if (!sFrameRate.IsEmpty())
 			sTitle += _T(" , ") + sFrameRate;
+		if (!sSaveFrameListSpeed.IsEmpty())
+			sTitle += _T(" , ") + sSaveFrameListSpeed;
 		if (!sDataRate.IsEmpty())
 			sTitle += _T(" , ") + sDataRate;
 		if (!sFormat.IsEmpty())

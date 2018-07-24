@@ -102,8 +102,8 @@ class CVideoPage;
 // Movement Detection
 #define DEFAULT_PRE_BUFFER_MSEC				2000		// ms
 #define DEFAULT_POST_BUFFER_MSEC			6000		// ms
-#define MOVDET_MIN_LENGTH_MSEC				1000		// Minimum detection length in ms, below this value SaveFrameList() is not called
-#define MOVDET_MIN_FRAMES_TIME_CHECK_MSEC	8000U		// In case of a too high save time log a warning if the frames time is above this
+#define MOVDET_MIN_LENGTH_MSEC				1000		// Default minimum detection length in ms, below this value frames are not saved
+#define MOVDET_MIN_LENGTH_SAVESPEED_MSEC	4000U		// Saving speed calculation only for frame sequences longer than this value 
 #define DEFAULT_MOVDET_LEVEL				50			// Detection level default value (0 = Off .. 99 = Max Sensitivity, 100 = Continuous Recording)
 #define MOVDET_MAX_ZONES_BLOCK_SIZE			1024		// Subdivide settings in blocks (MOVDET_MAX_ZONES must be a multiple of this)
 #define MOVDET_MAX_ZONES					8192		// Maximum number of zones
@@ -884,6 +884,7 @@ public:
 	volatile int m_nMaxCameraFolderSizeMB;				// Maximum size of a camera folder, after that oldest files are removed,
 														// 0 means no limit
 	volatile int m_nMinDiskFreePermillion;				// Minimum disk free size in permillion, if the free space is lower than that the oldest files are removed
+	volatile int m_nSaveFrameListSpeedPercent;			// Moving average of frames saving speed: if greater than 100 then the PC can realtime save
 
 	// Networking
 	CNetCom* volatile m_pVideoNetCom;					// HTTP Video Instance
