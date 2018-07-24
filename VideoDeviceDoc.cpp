@@ -5998,6 +5998,9 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 				sAuthenticate += _T("	background-color: #333333;\r\n");
 				sAuthenticate += _T("	color: #bbbbbb;\r\n");
 				sAuthenticate += _T("}\r\n");
+				sAuthenticate += _T("form span {\r\n");
+				sAuthenticate += _T("	mix-blend-mode: difference;\r\n");
+				sAuthenticate += _T("}\r\n");
 				sAuthenticate += _T("input[type=\'text\'], input[type=\'password\'], input[type=\'submit\'] {\r\n");
 				sAuthenticate += _T("	font-size: 14px;\r\n");
 				sAuthenticate += _T("	font-style: normal;\r\n");
@@ -6023,12 +6026,12 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 				sAuthenticate += _T("<div style=\"text-align: center\">\r\n");
 				sAuthenticate += _T("<form name=\"login\" action=\"\" method=\"post\">\r\n");
 				sAuthenticate += _T("<?php if ($invalid_login): ?>\r\n");
-				sAuthenticate += _T("&#x1F464;<input style=\"border:1px solid #f00;\" type=\"text\" name=\"username\" autocapitalize=\"none\" autofocus /><br />\r\n");
-				sAuthenticate += _T("&#x1f512;<input style=\"border:1px solid #f00;\" type=\"password\" name=\"password\" /><br />\r\n");
+				sAuthenticate += _T("<span>&#x1F464;</span><input style=\"border:1px solid #f00;\" type=\"text\" name=\"username\" autocapitalize=\"none\" autofocus /><br />\r\n");
+				sAuthenticate += _T("<span>&#x1f512;</span><input style=\"border:1px solid #f00;\" type=\"password\" name=\"password\" /><br />\r\n");
 				sAuthenticate += _T("<input type=\"submit\" name=\"submit\" value=\"Login\" />\r\n");
 				sAuthenticate += _T("<?php else: ?>\r\n");
-				sAuthenticate += _T("&#x1F464;<input type=\"text\" name=\"username\" autocapitalize=\"none\" /><br />\r\n");
-				sAuthenticate += _T("&#x1f512;<input type=\"password\" name=\"password\" /><br />\r\n");
+				sAuthenticate += _T("<span>&#x1F464;</span><input type=\"text\" name=\"username\" autocapitalize=\"none\" /><br />\r\n");
+				sAuthenticate += _T("<span>&#x1f512;</span><input type=\"password\" name=\"password\" /><br />\r\n");
 				sAuthenticate += _T("<input type=\"submit\" name=\"submit\" value=\"Login\" autofocus />\r\n");
 				sAuthenticate += _T("<?php endif; ?>\r\n");
 				sAuthenticate += _T("</form>\r\n");
