@@ -4203,7 +4203,6 @@ END
 STRINGTABLE
 BEGIN
     IDS_STRING1840          "%s, consider lowering the framerate and/or video resolution!"
-    IDS_STRING1841          "%s, realtime saving is ok"
     IDS_STRING1842          "Recording starts"
     IDS_STRING1843          "Saving done"
     IDS_STRING1849          "Saved"

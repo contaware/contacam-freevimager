@@ -75,6 +75,7 @@ public:
 						DWORD dwDstTimeBaseDenominator,
 						DWORD dwDstTimeBaseNumerator,
 						float qscale,	// 2.0f best quality, 31.0f worst quality, for H.264 clamped to [VIDEO_QUALITY_BEST, VIDEO_QUALITY_LOW]
+						bool bFast,
 						int nThreadCount);
 
 	// Add Audio Stream

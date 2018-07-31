@@ -425,7 +425,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 											(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
 											CalcFrameRate.num,					// Rate
 											CalcFrameRate.den,					// Scale			
-											m_pDoc->m_fVideoRecQuality,
+											m_pDoc->m_fVideoRecQuality,			// Video quality
+											m_pDoc->m_bFastVideoEncoding,		// Enabled at the end of CSaveFrameListThread::Work() if saving cannot be done in real-time
 											((CUImagerApp*)::AfxGetApp())->m_nCoresCount);
 					if (m_pDoc->m_bCaptureAudio)
 					{	
@@ -620,36 +621,32 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCountMonth"), nMovDetSavesCountMonth);
 		::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCountYear"), nMovDetSavesCountYear);
 
-		// Saving speed
+		// Saving speed calculation and check (only if the saved video reaches a minimum length)
 		DWORD dwSaveTimeMs = ::timeGetTime() - dwStartUpTime;
 		if (dwFramesTimeMs > MOVDET_MIN_LENGTH_SAVESPEED_MSEC && dwSaveTimeMs > 0)
 		{
-			// Calculate moving average of saving speed
-			double dCurrentSaveFrameListSpeed = (double)dwFramesTimeMs / (double)dwSaveTimeMs;
-			double dAvgSaveFrameListSpeed;
-			if (m_pDoc->m_nSaveFrameListSpeedPercent == 0)
-				dAvgSaveFrameListSpeed = dCurrentSaveFrameListSpeed;
-			else
-				dAvgSaveFrameListSpeed = (3.0 * (double)m_pDoc->m_nSaveFrameListSpeedPercent / 100.0 + dCurrentSaveFrameListSpeed) / 4.0;
-			m_pDoc->m_nSaveFrameListSpeedPercent = Round(dAvgSaveFrameListSpeed * 100.0);
+			double dSaveFrameListSpeed = (double)dwFramesTimeMs / (double)dwSaveTimeMs;
+			m_pDoc->m_nSaveFrameListSpeedPercent = Round(dSaveFrameListSpeed * 100.0);
 
-			// Log
-			if (dAvgSaveFrameListSpeed < 1.0)
+			// Fast video encoding necessary
+			if (dSaveFrameListSpeed < MOVDET_SAVE_SPEEDUP_ENABLE)
 			{
-				CString sSpeed;
-				sSpeed.Format(_T("%0.2fx"), dAvgSaveFrameListSpeed);
-				::LogLine(ML_STRING(1839, "%s, attention cannot realtime save") + _T(" (%s)"),
-					m_pDoc->GetAssignedDeviceName(), sSpeed);
-				::LogLine(ML_STRING(1840, "%s, consider lowering the framerate and/or video resolution!"),
-					m_pDoc->GetAssignedDeviceName());
+				// Log if fast video encoding is already enabled
+				if (m_pDoc->m_bFastVideoEncoding)
+				{
+					CString sSaveFrameListSpeed;
+					sSaveFrameListSpeed.Format(_T("%0.1fx"), dSaveFrameListSpeed);
+					::LogLine(ML_STRING(1839, "%s, attention cannot realtime save") + _T(" (%s)"),
+						m_pDoc->GetAssignedDeviceName(), sSaveFrameListSpeed);
+					::LogLine(ML_STRING(1840, "%s, consider lowering the framerate and/or video resolution!"),
+						m_pDoc->GetAssignedDeviceName());
+				}
+				else
+					m_pDoc->m_bFastVideoEncoding = TRUE;
 			}
-			else if (g_nLogLevel > 0)
-			{
-				CString sSpeed;
-				sSpeed.Format(_T("%0.2fx"), dAvgSaveFrameListSpeed);
-				::LogLine(ML_STRING(1841, "%s, realtime saving is ok") + _T(" (%s)"),
-					m_pDoc->GetAssignedDeviceName(), sSpeed);
-			}
+			// Fast video encoding not needed
+			else if (dSaveFrameListSpeed > MOVDET_SAVE_SPEEDUP_DISABLE)
+				m_pDoc->m_bFastVideoEncoding = FALSE;
 		}
 
 		// Log error
@@ -1086,7 +1083,8 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 														(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
 														FrameRate.num,						// Rate
 														FrameRate.den,						// Scale				
-														DEFAULT_VIDEO_QUALITY,
+														DEFAULT_VIDEO_QUALITY,				// Use default video quality
+														false,								// Slower encoding but resulting file size is smaller
 														((CUImagerApp*)::AfxGetApp())->m_nCoresCount);
 							pAVRecVideo->Open(m_sMetadataTitle);
 						}
@@ -3734,6 +3732,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	// Recording
 	m_sRecordAutoSaveDir = _T("");
 	m_fVideoRecQuality = DEFAULT_VIDEO_QUALITY;
+	m_bFastVideoEncoding = FALSE;
 	m_nDeleteRecordingsOlderThanDays = DEFAULT_DEL_RECS_OLDER_THAN_DAYS;
 	m_nMaxCameraFolderSizeMB = 0;
 	m_nMinDiskFreePermillion = MIN_DISK_FREE_PERMILLION;
