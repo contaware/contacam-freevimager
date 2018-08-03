@@ -10274,6 +10274,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 			//       for this reason it's important to check the m_bAuthorized flag
 			if (!m_bAuthorized && m_AnswerAuthorizationType != AUTHNONE)
 			{
+				m_AnswerAuthorizationType = AUTHNONE; // reset
 				m_pDoc->ConnectErr(ML_STRING(1780, "Authorization failed"), m_pDoc->GetDeviceName());
 				delete[] pMsg;
 				return FALSE; // Do not call Processor
