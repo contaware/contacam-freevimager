@@ -3546,7 +3546,7 @@ BEGIN
     ID_EDIT_ADDALL          "Add all\nAdd All"
     ID_EDIT_REMOVEALL       "Remove all\nRemove All"
     ID_CAPTURE_NETWORK      "IP / WiFi camera\nIP / WiFi Camera"
-    ID_CAPTURE_RECORD       "Recording\nRecording"
+    ID_CAPTURE_RECORD       "Recording ON / OFF\nRecording"
     ID_VIEW_ALL_NEXT_PICTURE 
                             "Show next image of all open documents\nAll Next Image"
     ID_VIEW_ALL_PREVIOUS_PICTURE 
@@ -4247,7 +4247,6 @@ BEGIN
     IDS_STRING1875          "Recording enabled:"
     IDS_STRING1876          "Recording disabled:"
     IDS_STRING1877          "Save: %d%%"
-    IDS_STRING1878          "Switching ON/OFF only for Continuous Recording"
     IDS_STRING1879          "REC OFF (by scheduler)"
     IDS_STRING1880          "No Attachment"
     IDS_STRING1881          "Snapshot"

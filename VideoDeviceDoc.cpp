@@ -5301,15 +5301,7 @@ void CVideoDeviceDoc::OnUpdateCaptureRecord(CCmdUI* pCmdUI)
 
 void CVideoDeviceDoc::CaptureRecord()
 {
-	if (m_nDetectionLevel == 100)
-		m_dwVideoProcessorMode = !m_dwVideoProcessorMode; // toggle
-	else
-	{
-		if (m_dwVideoProcessorMode == 1)
-			::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, ML_STRING(1878, "Switching ON/OFF only for Continuous Recording"));
-		else
-			m_dwVideoProcessorMode = 1;
-	}
+	m_dwVideoProcessorMode = !m_dwVideoProcessorMode;
 	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("VideoProcessorMode"), m_dwVideoProcessorMode);
 }
 
@@ -5317,8 +5309,6 @@ void CVideoDeviceDoc::OnMovDetSensitivity10()
 {
 	m_nDetectionLevel = 10;
 	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
-	m_dwVideoProcessorMode = 1;
-	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("VideoProcessorMode"), m_dwVideoProcessorMode);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity10(CCmdUI* pCmdUI)
@@ -5330,8 +5320,6 @@ void CVideoDeviceDoc::OnMovDetSensitivity20()
 {
 	m_nDetectionLevel = 20;
 	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
-	m_dwVideoProcessorMode = 1;
-	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("VideoProcessorMode"), m_dwVideoProcessorMode);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity20(CCmdUI* pCmdUI)
@@ -5343,8 +5331,6 @@ void CVideoDeviceDoc::OnMovDetSensitivity30()
 {
 	m_nDetectionLevel = 30;
 	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
-	m_dwVideoProcessorMode = 1;
-	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("VideoProcessorMode"), m_dwVideoProcessorMode);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity30(CCmdUI* pCmdUI)
@@ -5356,8 +5342,6 @@ void CVideoDeviceDoc::OnMovDetSensitivity40()
 {
 	m_nDetectionLevel = 40;
 	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
-	m_dwVideoProcessorMode = 1;
-	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("VideoProcessorMode"), m_dwVideoProcessorMode);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity40(CCmdUI* pCmdUI)
@@ -5369,8 +5353,6 @@ void CVideoDeviceDoc::OnMovDetSensitivity50()
 {
 	m_nDetectionLevel = 50;
 	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
-	m_dwVideoProcessorMode = 1;
-	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("VideoProcessorMode"), m_dwVideoProcessorMode);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity50(CCmdUI* pCmdUI)
@@ -5382,8 +5364,6 @@ void CVideoDeviceDoc::OnMovDetSensitivity60()
 {
 	m_nDetectionLevel = 60;
 	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
-	m_dwVideoProcessorMode = 1;
-	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("VideoProcessorMode"), m_dwVideoProcessorMode);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity60(CCmdUI* pCmdUI)
@@ -5395,8 +5375,6 @@ void CVideoDeviceDoc::OnMovDetSensitivity70()
 {
 	m_nDetectionLevel = 70;
 	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
-	m_dwVideoProcessorMode = 1;
-	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("VideoProcessorMode"), m_dwVideoProcessorMode);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity70(CCmdUI* pCmdUI)
@@ -5408,8 +5386,6 @@ void CVideoDeviceDoc::OnMovDetSensitivity80()
 {
 	m_nDetectionLevel = 80;
 	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
-	m_dwVideoProcessorMode = 1;
-	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("VideoProcessorMode"), m_dwVideoProcessorMode);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity80(CCmdUI* pCmdUI)
@@ -5421,8 +5397,6 @@ void CVideoDeviceDoc::OnMovDetSensitivity90()
 {
 	m_nDetectionLevel = 90;
 	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
-	m_dwVideoProcessorMode = 1;
-	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("VideoProcessorMode"), m_dwVideoProcessorMode);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity90(CCmdUI* pCmdUI)
@@ -5434,8 +5408,6 @@ void CVideoDeviceDoc::OnMovDetSensitivity100()
 {
 	m_nDetectionLevel = 100;
 	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
-	m_dwVideoProcessorMode = 0;
-	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("VideoProcessorMode"), m_dwVideoProcessorMode);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity100(CCmdUI* pCmdUI)
