@@ -104,8 +104,6 @@ class CVideoPage;
 #define DEFAULT_POST_BUFFER_MSEC			6000		// ms
 #define MOVDET_MIN_LENGTH_MSEC				1000		// Default minimum detection length in ms, below this value frames are not saved
 #define MOVDET_MIN_LENGTH_SAVESPEED_MSEC	8000U		// Saving speed calculation only for frame sequences longer than this value
-#define MOVDET_SAVE_SPEEDUP_ENABLE			1.0			// Below this saving speed the fast video encoding is enabled
-#define MOVDET_SAVE_SPEEDUP_DISABLE			1.6			// Above this saving speed the fast video encoding is disabled
 #define DEFAULT_MOVDET_LEVEL				50			// Detection level default value (0 = Off .. 99 = Max Sensitivity, 100 = Continuous Recording)
 #define MOVDET_MAX_ZONES_BLOCK_SIZE			1024		// Subdivide settings in blocks (MOVDET_MAX_ZONES must be a multiple of this)
 #define MOVDET_MAX_ZONES					8192		// Maximum number of zones
@@ -881,7 +879,6 @@ public:
 	// Audio / Video Rec
 	CString m_sRecordAutoSaveDir;						// The Record Directory
 	volatile float m_fVideoRecQuality;					// 2.0f best quality, 31.0f worst quality, for H.264 clamped to [VIDEO_QUALITY_BEST, VIDEO_QUALITY_LOW]
-	volatile BOOL m_bFastVideoEncoding;					// Fast video encoding is enabled on slow machines
 	volatile int m_nDeleteRecordingsOlderThanDays;		// Delete Recordings older than the given amount of days,
 														// 0 means never delete any file
 	volatile int m_nMaxCameraFolderSizeMB;				// Maximum size of a camera folder, after that oldest files are removed,

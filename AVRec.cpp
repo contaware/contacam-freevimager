@@ -196,7 +196,6 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 							DWORD dwDstTimeBaseDenominator,
 							DWORD dwDstTimeBaseNumerator,
 							float qscale,	// 2.0f best quality, 31.0f worst quality, for H.264 clamped to [VIDEO_QUALITY_BEST, VIDEO_QUALITY_LOW]
-							bool bFast, 
 							int nThreadCount)
 {
 	int nStreamNum = -1;
@@ -293,10 +292,7 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 		// - slower presets use more RAM because of the increasing complexity
 		//   of the used algorithms, for example a Full HD video encoding uses
 		//   ~270 MB with medium, ~130 MB with veryfast and ~65 MB with ultrafast
-		if (bFast)
-			av_opt_set(pCodecCtx->priv_data, "preset", "ultrafast", 0);
-		else
-			av_opt_set(pCodecCtx->priv_data, "preset", "veryfast", 0);
+		av_opt_set(pCodecCtx->priv_data, "preset", "veryfast", 0);
 
 		// Disable 256-bit and 512-bit instructions because mingw doesn't support 32-bytes and 64-bytes
 		// stack alignment on Windows
