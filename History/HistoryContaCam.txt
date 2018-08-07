@@ -4,8 +4,6 @@ CONTACAM HISTORY
 
 - Privacy mask option: removed detection zones are obscured
 - Document tabs have got a close button
-- Updated internal web server to Apache 2.4.33 and PHP 5.6.36
-  (both with OpenSSL 1.0.2o)
 - Dropped .avi video file support, always saving in .mp4 
 - Manual / continuous recording is now performed by the motion
   engine (it makes no sense to have a separate continuous
