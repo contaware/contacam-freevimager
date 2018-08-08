@@ -1529,6 +1529,18 @@ void KillApp(HANDLE& hProcess)
 	}
 }
 
+BOOL KillProcByPID(DWORD dwProcID)
+{
+	BOOL res = FALSE;
+	HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, dwProcID);
+	if (hProcess)
+	{
+		res = TerminateProcess(hProcess, 0);
+		CloseHandle(hProcess); // close handle to avoid ERROR_NO_SYSTEM_RESOURCES
+	}
+	return res;
+}
+
 int EnumKillProcByName(const CString& sProcessName, BOOL bKill/*=FALSE*/)
 {
 	// Vars
@@ -1568,14 +1580,14 @@ int EnumKillProcByName(const CString& sProcessName, BOOL bKill/*=FALSE*/)
 	{
 		// Get the process name
 		DWORD dwStrLength = 0;
-		HANDLE hProc = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pProcIDs[i]);
-		if (hProc)
+		HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pProcIDs[i]);
+		if (hProcess)
 		{
 			HMODULE hMod;
 			DWORD dwBytesNeeded;
-			if (EnumProcessModules(hProc, &hMod, sizeof(hMod), &dwBytesNeeded))
-				dwStrLength = GetModuleBaseName(hProc, hMod, szName, MAX_PATH);
-			CloseHandle(hProc);
+			if (EnumProcessModules(hProcess, &hMod, sizeof(hMod), &dwBytesNeeded))
+				dwStrLength = GetModuleBaseName(hProcess, hMod, szName, MAX_PATH);
+			CloseHandle(hProcess);
 		}
 
 		// We will match regardless of character case
@@ -1583,14 +1595,7 @@ int EnumKillProcByName(const CString& sProcessName, BOOL bKill/*=FALSE*/)
 		{
 			iCount++;
 			if (bKill)
-			{
-				hProc = OpenProcess(PROCESS_TERMINATE, FALSE, pProcIDs[i]);
-				if (hProc)
-				{
-					TerminateProcess(hProc, 0);
-					CloseHandle(hProc); // close handle to avoid ERROR_NO_SYSTEM_RESOURCES
-				}
-			}
+				KillProcByPID(pProcIDs[i]);
 		}
 	}
 

@@ -6290,12 +6290,15 @@ BOOL CVideoDeviceDoc::MicroApacheStart(DWORD dwTimeoutMs)
 
 BOOL CVideoDeviceDoc::MicroApacheShutdown(DWORD dwTimeoutMs)
 {
-	BOOL res;
+	CString sMicroapachePidFile = MicroApacheGetPidFileName();
+
+	// First try to shutdown by event signalisation,
+	// then try to terminate by PID and last terminate by process name
 	LPBYTE pData = NULL;
 	try
 	{
 		// Open Pid File
-		CFile f(MicroApacheGetPidFileName(),
+		CFile f(sMicroapachePidFile,
 				CFile::modeRead | CFile::shareDenyNone);
 		DWORD dwLength = (DWORD)f.GetLength();
 		if (dwLength > 0)
@@ -6304,7 +6307,7 @@ BOOL CVideoDeviceDoc::MicroApacheShutdown(DWORD dwTimeoutMs)
 			pData = new BYTE [dwLength+1];
 			if (pData)
 			{
-				// Read Data
+				// Read Pid
 				dwLength = f.Read(pData, dwLength);
 				pData[dwLength] = '\0';
 				CString sPid;
@@ -6312,6 +6315,8 @@ BOOL CVideoDeviceDoc::MicroApacheShutdown(DWORD dwTimeoutMs)
 				sPid.TrimLeft();
 				sPid.TrimRight();
 				delete [] pData;
+				DWORD dwPid = _tcstol(sPid.GetBuffer(0), NULL, 10);
+				sPid.ReleaseBuffer();
 
 				// Get the existing event
 				CString sEventName;
@@ -6320,17 +6325,23 @@ BOOL CVideoDeviceDoc::MicroApacheShutdown(DWORD dwTimeoutMs)
 				if (hShutdownEvent)
 				{
 					// Set the event
-					res = ::SetEvent(hShutdownEvent);
+					BOOL bEventSet = ::SetEvent(hShutdownEvent);
 
 					// Clean-up
 					::CloseHandle(hShutdownEvent);
 
 					// Check
-					if (!res)
-						::EnumKillProcByName(MICROAPACHE_FILENAME, TRUE);
+					if (!bEventSet)
+					{
+						if (!::KillProcByPID(dwPid))
+							::EnumKillProcByName(MICROAPACHE_FILENAME, TRUE);
+					}
 				}
 				else
-					::EnumKillProcByName(MICROAPACHE_FILENAME, TRUE);
+				{
+					if (!::KillProcByPID(dwPid))
+						::EnumKillProcByName(MICROAPACHE_FILENAME, TRUE);
+				}
 			}
 			else
 				::EnumKillProcByName(MICROAPACHE_FILENAME, TRUE);
@@ -6347,7 +6358,7 @@ BOOL CVideoDeviceDoc::MicroApacheShutdown(DWORD dwTimeoutMs)
 	}
 
 	// Wait a max of dwTimeoutMs
-	res = TRUE;
+	BOOL res = TRUE;
 	DWORD dwElapsedMs = 0U;
 	while (::EnumKillProcByName(MICROAPACHE_FILENAME) > 0)
 	{
@@ -6379,7 +6390,7 @@ BOOL CVideoDeviceDoc::MicroApacheShutdown(DWORD dwTimeoutMs)
 	}
 
 	// Delete pid file
-	::DeleteFile(MicroApacheGetPidFileName());
+	::DeleteFile(sMicroapachePidFile);
 
 	return res;
 }

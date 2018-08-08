@@ -246,6 +246,9 @@ extern HANDLE ExecAppUtf8(										// close the returned process handle when no
 						BOOL bShow = TRUE);						// show application window
 extern void KillApp(HANDLE& hProcess);							// this closes the process handle and sets it to NULL
 
+// Kill process by PID
+extern BOOL KillProcByPID(DWORD dwProcID);
+
 // Enumerate or eventually kill process(es) by name
 // returns the number of found processes
 extern int EnumKillProcByName(const CString& sProcessName, BOOL bKill = FALSE);
