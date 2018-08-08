@@ -152,13 +152,8 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsInit()
 		m_sMicroApacheDocRoot.CompareNoCase(m_sMicroApacheDocRootOld) != 0)
 	{
 		// Stop Micro Apache
-		if (pApp->m_bStartMicroApache && !CVideoDeviceDoc::MicroApacheShutdown(MICROAPACHE_TIMEOUT_MS))
-		{
-			EndWaitCursor();
-			::AfxMessageBox(ML_STRING(1474, "Failed to stop the web server"),
-							MB_ICONSTOP);
-			BeginWaitCursor();
-		}
+		if (pApp->m_bStartMicroApache)
+			CVideoDeviceDoc::MicroApacheShutdown(MICROAPACHE_TIMEOUT_MS);
 
 		// Document root changed?
 		if (m_sMicroApacheDocRoot.CompareNoCase(m_sMicroApacheDocRootOld) != 0)

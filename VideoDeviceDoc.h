@@ -771,7 +771,7 @@ public:
 	static void MicroApacheUpdateMainFiles();
 	static BOOL MicroApacheUpdateWebFiles(CString sAutoSaveDir);
 	static BOOL MicroApacheStart(DWORD dwTimeoutMs);
-	static BOOL MicroApacheShutdown(DWORD dwTimeoutMs);
+	static void MicroApacheShutdown(DWORD dwTimeoutMs);
 	
 	// Mailer
 	// returns the handle of the started mailsend process

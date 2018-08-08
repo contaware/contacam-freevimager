@@ -1135,7 +1135,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// Start Micro Apache
 		// Note: make sure the web server is running because the below devices
 		//       autorun which can connect to localhost's push.php or poll.php
-		if (m_bStartMicroApache && !CVideoDeviceDoc::MicroApacheStart(MICROAPACHE_STARTUP_TIMEOUT_MS))
+		if (m_bStartMicroApache && !CVideoDeviceDoc::MicroApacheStart(MICROAPACHE_TIMEOUT_MS))
 		{
 			sMsg = ML_STRING(1475, "Failed to start the web server");
 			if (!m_bServiceProcess)

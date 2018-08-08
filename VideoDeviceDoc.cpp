@@ -6275,6 +6275,8 @@ BOOL CVideoDeviceDoc::MicroApacheStart(DWORD dwTimeoutMs)
 		::CloseHandle(pi.hProcess);
 	if (pi.hThread)
 		::CloseHandle(pi.hThread);
+
+	// Wait a max of dwTimeoutMs
 	if (bStarted)
 	{
 		do
@@ -6285,15 +6287,21 @@ BOOL CVideoDeviceDoc::MicroApacheStart(DWORD dwTimeoutMs)
 		}
 		while ((::GetTickCount() - dwStartUpTimeMs) < dwTimeoutMs);
 	}
+
 	return FALSE;
 }
 
-BOOL CVideoDeviceDoc::MicroApacheShutdown(DWORD dwTimeoutMs)
+void CVideoDeviceDoc::MicroApacheShutdown(DWORD dwTimeoutMs)
 {
 	CString sMicroapachePidFile = MicroApacheGetPidFileName();
 
-	// First try to shutdown by event signalisation,
-	// then try to terminate by PID and last terminate by process name
+	// Init with an invalid process id
+	// see: https://blogs.msdn.microsoft.com/oldnewthing/20040223-00/?p=40503
+	DWORD dwPid = 0; // this is the System Idle Process
+	
+	// Shutdown by event signalisation
+	DWORD dwShutdownTimeMs = ::GetTickCount();
+	BOOL bShutdownSignaled = FALSE;
 	LPBYTE pData = NULL;
 	try
 	{
@@ -6304,7 +6312,7 @@ BOOL CVideoDeviceDoc::MicroApacheShutdown(DWORD dwTimeoutMs)
 		if (dwLength > 0)
 		{
 			// Allocate Buffer
-			pData = new BYTE [dwLength+1];
+			pData = new BYTE[dwLength + 1];
 			if (pData)
 			{
 				// Read Pid
@@ -6314,8 +6322,8 @@ BOOL CVideoDeviceDoc::MicroApacheShutdown(DWORD dwTimeoutMs)
 				sPid = CString((LPCSTR)pData);
 				sPid.TrimLeft();
 				sPid.TrimRight();
-				delete [] pData;
-				DWORD dwPid = _tcstol(sPid.GetBuffer(0), NULL, 10);
+				delete[] pData;
+				dwPid = _tcstol(sPid.GetBuffer(0), NULL, 10);
 				sPid.ReleaseBuffer();
 
 				// Get the existing event
@@ -6325,74 +6333,42 @@ BOOL CVideoDeviceDoc::MicroApacheShutdown(DWORD dwTimeoutMs)
 				if (hShutdownEvent)
 				{
 					// Set the event
-					BOOL bEventSet = ::SetEvent(hShutdownEvent);
+					bShutdownSignaled = ::SetEvent(hShutdownEvent);
 
 					// Clean-up
 					::CloseHandle(hShutdownEvent);
-
-					// Check
-					if (!bEventSet)
-					{
-						if (!::KillProcByPID(dwPid))
-							::EnumKillProcByName(MICROAPACHE_FILENAME, TRUE);
-					}
-				}
-				else
-				{
-					if (!::KillProcByPID(dwPid))
-						::EnumKillProcByName(MICROAPACHE_FILENAME, TRUE);
 				}
 			}
-			else
-				::EnumKillProcByName(MICROAPACHE_FILENAME, TRUE);
 		}
-		else
-			::EnumKillProcByName(MICROAPACHE_FILENAME, TRUE);
 	}
 	catch (CFileException* e)
 	{
 		if (pData)
 			delete [] pData;
 		e->Delete();
-		::EnumKillProcByName(MICROAPACHE_FILENAME, TRUE);
+	}
+
+	// Kill if shutdown signalisation failed
+	if (!bShutdownSignaled)
+	{
+		if (!::KillProcByPID(dwPid)) // this function correctly fails if passing 0
+			::EnumKillProcByName(MICROAPACHE_FILENAME, TRUE);
 	}
 
 	// Wait a max of dwTimeoutMs
-	BOOL res = TRUE;
-	DWORD dwElapsedMs = 0U;
-	while (::EnumKillProcByName(MICROAPACHE_FILENAME) > 0)
+	do
 	{
-		dwElapsedMs += MICROAPACHE_WAITTIME_MS;
+		if (::EnumKillProcByName(MICROAPACHE_FILENAME) == 0)
+		{
+			::DeleteFile(sMicroapachePidFile);
+			return;
+		}
 		::Sleep(MICROAPACHE_WAITTIME_MS);
-		if (dwElapsedMs >= dwTimeoutMs)
-		{
-			res = FALSE;
-			break;
-		}
 	}
+	while ((::GetTickCount() - dwShutdownTimeMs) < dwTimeoutMs);
 
-	// Kill and wait again a max of dwTimeoutMs
-	if (!res)
-	{
-		::EnumKillProcByName(MICROAPACHE_FILENAME, TRUE);
-		res = TRUE;
-		dwElapsedMs = 0U;
-		while (::EnumKillProcByName(MICROAPACHE_FILENAME) > 0)
-		{
-			dwElapsedMs += MICROAPACHE_WAITTIME_MS;
-			::Sleep(MICROAPACHE_WAITTIME_MS);
-			if (dwElapsedMs >= dwTimeoutMs)
-			{
-				res = FALSE;
-				break;
-			}
-		}
-	}
-
-	// Delete pid file
-	::DeleteFile(sMicroapachePidFile);
-
-	return res;
+	// Last try...
+	::EnumKillProcByName(MICROAPACHE_FILENAME, TRUE);
 }
 
 // Attention: remember to call CloseHandle() for the returned handle if it's != NULL
