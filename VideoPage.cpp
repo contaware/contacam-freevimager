@@ -415,25 +415,25 @@ void CVideoPage::OnTimer(UINT nIDEvent)
 
 void CVideoPage::OnChangeSecondsBeforeMovementBegin()
 {
-	if (UpdateData(TRUE))
+	if (!IsEmpty(IDC_SECONDS_BEFORE_MOVEMENT_BEGIN) && UpdateData(TRUE))
 		m_pDoc->m_nMilliSecondsRecBeforeMovementBegin = m_nSecondsBeforeMovementBegin * 1000;
 }
 
 void CVideoPage::OnChangeSecondsAfterMovementEnd()
 {
-	if (UpdateData(TRUE))
+	if (!IsEmpty(IDC_SECONDS_AFTER_MOVEMENT_END) && UpdateData(TRUE))
 		m_pDoc->m_nMilliSecondsRecAfterMovementEnd = m_nSecondsAfterMovementEnd * 1000;
 }
 
 void CVideoPage::OnChangeEditDetectionMinLength()
 {
-	if (UpdateData(TRUE))
+	if (!IsEmpty(IDC_EDIT_DETECTION_MIN_LENGTH) && UpdateData(TRUE))
 		m_pDoc->m_nDetectionMinLengthMilliSeconds = m_nDetectionMinLengthSeconds * 1000;
 }
 
 void CVideoPage::OnChangeEditDetectionMaxFrames()
 {
-	if (UpdateData(TRUE))
+	if (!IsEmpty(IDC_EDIT_DETECTION_MAX_FRAMES) && UpdateData(TRUE))
 		m_pDoc->m_nDetectionMaxFrames = m_nDetectionMaxFrames;
 }
 
@@ -671,6 +671,18 @@ void CVideoPage::OnDatetimechangeTimeDailyStop(NMHDR* pNMHDR, LRESULT* pResult)
 	if (UpdateData(TRUE))
 		UpdateDetectionStartStopTimes();
 	*pResult = 0;
+}
+
+BOOL CVideoPage::IsEmpty(int nIDC)
+{
+	CString s;
+	CEdit* pEdit = (CEdit*)GetDlgItem(nIDC);
+	if (pEdit)
+	{
+		pEdit->GetWindowText(s);
+		s.Trim();
+	}
+	return s.IsEmpty();
 }
 
 void CVideoPage::UpdateVideoQualityInfo()

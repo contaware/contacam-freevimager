@@ -42,6 +42,7 @@ protected:
 	int m_nFrameRateChangeTimeout;
 
 	// Helper functions
+	BOOL IsEmpty(int nIDC);
 	void UpdateVideoQualityInfo();
 	void UpdateDetectionStartStopTimes();
 
