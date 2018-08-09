@@ -631,12 +631,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			// Alert
 			if (dwFramesTimeMs > MOVDET_MIN_LENGTH_SAVESPEED_MSEC && dSaveFrameListSpeed < 1.0)
 			{
-				CString sSaveFrameListSpeed;
-				sSaveFrameListSpeed.Format(_T("%fx"), dSaveFrameListSpeed);
-				::LogLine(ML_STRING(1839, "%s, attention cannot realtime save") + _T(" (%s)"),
-					m_pDoc->GetAssignedDeviceName(), sSaveFrameListSpeed);
-				::LogLine(ML_STRING(1840, "%s, consider lowering the framerate and/or video resolution!"),
-					m_pDoc->GetAssignedDeviceName());
+				::LogLine(ML_STRING(1839, "%s, cannot realtime save (%fx), decrease framerate and/or video resolution!"),
+						m_pDoc->GetAssignedDeviceName(), dSaveFrameListSpeed);
 			}
 		}
 

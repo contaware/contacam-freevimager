@@ -4179,7 +4179,7 @@ BEGIN
     IDS_STRING1834          "SSL/TLS (Port 465)"
     IDS_STRING1835          "STARTTLS (Port 25 or 587)"
     IDS_STRING1836          "Unsupported Video or Zones Size!"
-    IDS_STRING1839          "%s, attention cannot realtime save"
+    IDS_STRING1839          "%s, cannot realtime save (%fx), decrease framerate and/or video resolution!"
 END
 
 STRINGTABLE
@@ -4201,7 +4201,6 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_STRING1840          "%s, consider lowering the framerate and/or video resolution!"
     IDS_STRING1842          "Recording starts"
     IDS_STRING1843          "Saving done"
     IDS_STRING1849          "Saved"
