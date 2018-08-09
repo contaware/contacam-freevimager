@@ -1,7 +1,8 @@
 CONTACAM HISTORY
 
-7.9.0 (Month XXth 2018)
+9.0.0 (Month XXth 2018)
 
+- ContaCam is now DONATIONWARE
 - Privacy mask option: removed detection zones are obscured
 - Document tabs have got a close button
 - Dropped .avi video file support, always saving in .mp4 

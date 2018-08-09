@@ -1,7 +1,8 @@
 FREEVIMAGER HISTORY
 
-7.9.0 (Month XXth 2018)
+9.0.0 (Month XXth 2018)
 
+- FreeVimager is now DONATIONWARE
 - Document tabs have got a close button
 - Using better random generators
 - libpng updated to 1.2.59

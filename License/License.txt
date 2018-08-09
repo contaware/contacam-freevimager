@@ -1,8 +1,11 @@
-Copyright (C) 2014 Oliver Pfister <http://www.contaware.com/>
-This program is free software, you can redistribute it and/or modify
-it under the terms of the following GNU General Public License, or
-any later version:
+Copyright (C) 2018 Oliver Pfister <http://www.contaware.com/>
 
+This program is Donationware, it is requested to donate US$ 10 per
+installation to cover the costs of software development. As a bonus
+you get email support and access to the source code.
+
+This program is under the terms of the following GNU General Public
+License, or any later version:
 
                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
