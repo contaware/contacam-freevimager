@@ -7,6 +7,7 @@
 //
 
 #include "BkgColEdit.h"
+#include "Staticlink.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CLicenseDlg dialog
@@ -22,14 +23,13 @@ public:
 	enum { IDD = IDD_LICENSE };
 	CBkgColEdit	m_License;
 	//}}AFX_DATA
-
+	CStaticLink m_WebLink;	// Hyperlink
 
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CLicenseDlg)
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -38,6 +38,7 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CLicenseDlg)
 	virtual BOOL OnInitDialog();
+	virtual void OnOK();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

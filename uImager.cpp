@@ -172,6 +172,7 @@ CUImagerApp::CUImagerApp()
 	m_nPdfScanCompressionQuality = DEFAULT_JPEGCOMPRESSION;
 	m_sScanToPdfFileName = _T("");
 	m_sScanToTiffFileName = _T("");
+	m_bNoDonation = TRUE;
 	m_bTrayIcon = FALSE;
 	m_bHideMainFrame = FALSE;
 	m_bPrinterInit = FALSE;
@@ -784,6 +785,9 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 
 		// Init Global Helper Functions
 		::InitHelpers();
+
+		// Donation
+		DonorEmailValidate(GetProfileString(_T("GeneralApp"), _T("DonorEmail"), _T("")));
 
 		// Init for the PostDelayedMessage() Function
 		CPostDelayedMessageThread::Init();
@@ -1567,6 +1571,43 @@ void CUImagerApp::CaptureScreenToClipboard()
 	::DeleteObject(hBitmap);
 	::DeleteDC(hMemDC);
 	::ReleaseDC(NULL, hScreenDC);
+}
+
+BOOL CUImagerApp::DonorEmailValidate(CString sEmail)
+{
+	sEmail.Trim();
+	int nNameChars = sEmail.Find(_T('@'));
+	int nDomainChars = sEmail.GetLength() - nNameChars - 1;
+
+	// Check
+	BOOL bOK = FALSE;
+	if (nNameChars > 0 && nDomainChars >= 3)
+	{
+		CString sName(sEmail.Left(nNameChars));
+		CString sDomain(sEmail.Right(nDomainChars));
+		if (sName.Find(_T(' ')) == -1	&&
+			sDomain.Find(_T(' ')) == -1	&&
+			sDomain.Find(_T('@')) == -1	&&
+			sDomain.Find(_T('.')) > 0)
+			bOK = TRUE;
+	}
+	
+	// Update vars
+	if (bOK)
+	{
+		m_sDonorEmail = sEmail;
+		m_bNoDonation = FALSE;
+	}
+	else
+	{
+		m_sDonorEmail = _T("");
+		m_bNoDonation = TRUE;
+	}
+	
+	// Write email to settings
+	WriteProfileString(_T("GeneralApp"), _T("DonorEmail"), m_sDonorEmail);
+	
+	return !m_bNoDonation;
 }
 
 BOOL CUImagerApp::PasteToFile(LPCTSTR lpszFileName, COLORREF crBackgroundColor/*=RGB(255,255,255)*/)

@@ -444,6 +444,11 @@ public:
 	// Paste clipboard to given file
 	static BOOL PasteToFile(LPCTSTR lpszFileName, COLORREF crBackgroundColor = RGB(255,255,255));
 
+	// Donation
+	BOOL DonorEmailValidate(CString sEmail);
+	volatile BOOL m_bNoDonation;
+	CString m_sDonorEmail;
+
 	// Use Tray Icon
 	volatile BOOL m_bTrayIcon;
 

@@ -117,24 +117,36 @@ BOOL CLicenseDlg::OnInitDialog()
 		// LoadResource is always returning the same portion of memory!
 	}
 	
+	// contaware.com site link
+	m_WebLink.SubclassDlgItem(IDC_WEB_LINK, this);
+
+	// Set Donor Email
+	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_DONOR_EMAIL);
+	pEdit->SetWindowText(((CUImagerApp*)::AfxGetApp())->m_sDonorEmail);
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-BOOL CLicenseDlg::OnCommand(WPARAM wParam, LPARAM lParam) 
+void CLicenseDlg::OnOK()
 {
-	if (HIWORD (wParam) == BN_CLICKED)
+	BeginWaitCursor();
+	CString sEmail;
+	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_DONOR_EMAIL);
+	pEdit->GetWindowText(sEmail);
+	BOOL bOK = ((CUImagerApp*)::AfxGetApp())->DonorEmailValidate(sEmail);
+	if (bOK)
 	{
-		switch (LOWORD (wParam))
-		{
-			case IDOK:
-				OnOK();
-				return TRUE;
-			case IDCANCEL:
-				return TRUE;
-			default:
-				return CDialog::OnCommand(wParam, lParam);
-		}
+		::Sleep(2000);
+		::AfxGetMainFrame()->m_MDIClientWnd.Invalidate();
+		EndWaitCursor();
+		CDialog::OnOK();
 	}
-	return CDialog::OnCommand(wParam, lParam);
+	else
+	{
+		::AfxGetMainFrame()->m_MDIClientWnd.Invalidate();
+		EndWaitCursor();
+		pEdit->SetFocus();
+		::AlertUser(GetSafeHwnd());
+	}
 }

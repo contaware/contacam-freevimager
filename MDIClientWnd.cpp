@@ -115,10 +115,23 @@ void CMDIClientWnd::OnPaint()
 					rcClient.bottom);
 	rcDraw.top += TextMetrics.tmAscent;
 	CString s;
-	if (g_nLogLevel <= 0)
-		s.Format(_T("%s %s"), APPNAME_NOEXT, APPVERSION);
+	if (((CUImagerApp*)::AfxGetApp())->m_bNoDonation)
+	{
+		CString sNoDonation(ML_STRING(1734, "NO DONATION: see Help menu"));
+		if (sNoDonation.GetLength() < 10)
+			sNoDonation = _T("NO DONATION: see Help menu");
+		if (g_nLogLevel <= 0)
+			s.Format(_T("%s %s (%s)"), APPNAME_NOEXT, APPVERSION, sNoDonation);
+		else
+			s.Format(_T("%s %s (%s) - "), APPNAME_NOEXT, APPVERSION, sNoDonation);
+	}
 	else
-		s.Format(_T("%s %s - "), APPNAME_NOEXT, APPVERSION);
+	{
+		if (g_nLogLevel <= 0)
+			s.Format(_T("%s %s"), APPNAME_NOEXT, APPVERSION);
+		else
+			s.Format(_T("%s %s - "), APPNAME_NOEXT, APPVERSION);
+	}
 	CRect rcLastText = DrawTAndCalcRect(memDC, s, rcDraw);
 	rcDraw.left = rcLastText.right;
 	COLORREF crPrevTextColor;

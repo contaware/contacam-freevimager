@@ -3017,6 +3017,7 @@
 #define IDC_BUTTON_UNASSOCIATE          2571
 #define IDC_REC_AUDIO_FROM_STREAM       2572
 #define IDC_REC_AUDIO_FROM_SOURCE       2573
+#define IDC_EDIT_DONOR_EMAIL            2574
 #define ID_EDIT_ROTATE_FLIP             32778
 #define ID_FILE_SELECTTWAINSOURCE       32779
 #define ID_FILE_ACQUIRE                 32780
@@ -3270,7 +3271,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1502
 #define _APS_NEXT_COMMAND_VALUE         33555
-#define _APS_NEXT_CONTROL_VALUE         2574
+#define _APS_NEXT_CONTROL_VALUE         2575
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -411,6 +411,10 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 					AddFrameCount(pDib, sMovDetSavesCount, m_pDoc->m_nRefFontSize);
 				}
 
+				// Add "NO DONATION" tag
+				if (((CUImagerApp*)::AfxGetApp())->m_bNoDonation)
+					AddNoDonationTag(pDib, m_pDoc->m_nRefFontSize);
+
 				// Open if first frame
 				if (nFrames == m_nNumFramesToSave)
 				{
@@ -793,6 +797,10 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors
 			AddFrameCount(&DibForPalette, sMovDetSavesCount, m_pDoc->m_nRefFontSize);
 		}
 
+		// Add "NO DONATION" tag to include its colors
+		if (((CUImagerApp*)::AfxGetApp())->m_bNoDonation)
+			AddNoDonationTag(&DibForPalette, m_pDoc->m_nRefFontSize);
+
 		// Calc. Palette
 		CQuantizer Quantizer(239, 8); // 239 = 256 (8 bits colors) - 1 (transparency index) - 16 (vga palette)
 		Quantizer.ProcessImage(&DibForPalette);
@@ -853,6 +861,10 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveSingleGif(	CDib* pDib,
 			AddFrameCount(pDib, sMovDetSavesCount, m_pDoc->m_nRefFontSize);
 		}
 
+		// Add "NO DONATION" tag
+		if (((CUImagerApp*)::AfxGetApp())->m_bNoDonation)
+			AddNoDonationTag(pDib, m_pDoc->m_nRefFontSize);
+
 		// Convert to 8 bpp
 		pDib->CreatePaletteFromColors(256, pGIFColors); // Use all indexes for color!
 		pDib->ConvertTo8bitsErrDiff(pDib->GetPalette());
@@ -903,6 +915,10 @@ void CVideoDeviceDoc::CSaveFrameListThread::To255Colors(CDib* pDib,
 			AddFrameTime(pDib, RefTime, dwRefUpTime, m_pDoc->m_nRefFontSize);
 			AddFrameCount(pDib, sMovDetSavesCount, m_pDoc->m_nRefFontSize);
 		}
+
+		// Add "NO DONATION" tag
+		if (((CUImagerApp*)::AfxGetApp())->m_bNoDonation)
+			AddNoDonationTag(pDib, m_pDoc->m_nRefFontSize);
 
 		// Convert to 8 bpp
 		pDib->CreatePaletteFromColors(255, pGIFColors); // One index for transparency!
@@ -1170,6 +1186,11 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	{
 		AddFrameTime(&m_Dib, m_Time, dwUpTime, m_nRefFontSize);
 		AddFrameTime(&DibThumb, m_Time, dwUpTime, m_nRefFontSize);
+	}
+	if (((CUImagerApp*)::AfxGetApp())->m_bNoDonation)
+	{
+		AddNoDonationTag(&m_Dib, m_nRefFontSize);
+		AddNoDonationTag(&DibThumb, m_nRefFontSize);
 	}
 	if (m_bDetectingMinLengthMovement)
 	{
@@ -6781,6 +6802,33 @@ void CVideoDeviceDoc::AddFrameCount(CDib* pDib, const CString& sCount, int nRefF
 							DRAW_BKG_COLOR);
 }
 
+void CVideoDeviceDoc::AddNoDonationTag(CDib* pDib, int nRefFontSize)
+{
+	// Check
+	if (!pDib)
+		return;
+
+	CRect rcRect;
+	rcRect.left = 0;
+	rcRect.top = 0;
+	rcRect.right = pDib->GetWidth();
+	rcRect.bottom = pDib->GetHeight();
+
+	CFont Font;
+	int nFontSize = ::ScaleFont(rcRect.right, rcRect.bottom, nRefFontSize, FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
+	Font.CreatePointFont(nFontSize * 10, g_szDefaultFontFace);
+	CString sNoDonation(ML_STRING(1734, "NO DONATION: see Help menu"));
+	if (sNoDonation.GetLength() < 10)
+		sNoDonation = _T("NO DONATION: see Help menu");
+	pDib->AddSingleLineText(sNoDonation,
+							rcRect,
+							&Font,
+							(DT_RIGHT | DT_BOTTOM),
+							NODONATION_MESSAGE_COLOR,
+							OPAQUE,
+							DRAW_BKG_COLOR);
+}
+
 void CVideoDeviceDoc::AddRecSymbol(CDib* pDib, int nRefFontSize)
 {
 	// Check
@@ -7404,7 +7452,11 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 
 		// Add Frame Time if User Wants it
 		if (m_bShowFrameTime)
-			AddFrameTime(pDib, CurrentTime, dwCurrentInitUpTime, m_nRefFontSize);				
+			AddFrameTime(pDib, CurrentTime, dwCurrentInitUpTime, m_nRefFontSize);
+
+		// Add "NO DONATION" tag
+		if (((CUImagerApp*)::AfxGetApp())->m_bNoDonation)
+			AddNoDonationTag(pDib, m_nRefFontSize);
 
 		// Swap Dib pointers, convert to RGB32 and invalidate to draw
 		::EnterCriticalSection(&m_csDib);
@@ -7693,7 +7745,11 @@ BOOL CVideoDeviceDoc::EditCopy(CDib* pDib, const CTime& Time)
 	// Add frame time
 	if (m_bShowFrameTime)
 		AddFrameTime(&Dib, Time, dwUpTime, m_nRefFontSize);
-	
+
+	// Add "NO DONATION" tag
+	if (((CUImagerApp*)::AfxGetApp())->m_bNoDonation)
+		AddNoDonationTag(&Dib, m_nRefFontSize);
+
 	// Copy to clipboard
 	Dib.EditCopy();
 
@@ -7725,6 +7781,10 @@ void CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 	// Add frame time
 	if (m_bShowFrameTime)
 		AddFrameTime(&Dib, Time, dwUpTime, m_nRefFontSize);
+
+	// Add "NO DONATION" tag
+	if (((CUImagerApp*)::AfxGetApp())->m_bNoDonation)
+		AddNoDonationTag(&Dib, m_nRefFontSize);
 
 	// Save to JPEG File
 	CMJPEGEncoder MJPEGEncoder;
@@ -7782,6 +7842,10 @@ CString CVideoDeviceDoc::SaveJpegMail(CDib* pDib, const CTime& RefTime, DWORD dw
 	// Add frame time
 	if (m_bShowFrameTime)
 		AddFrameTime(&Dib, RefTime, dwRefUpTime, m_nRefFontSize);
+
+	// Add "NO DONATION" tag
+	if (((CUImagerApp*)::AfxGetApp())->m_bNoDonation)
+		AddNoDonationTag(&Dib, m_nRefFontSize);
 
 	// Save to JPEG File
 	CMJPEGEncoder MJPEGEncoder;

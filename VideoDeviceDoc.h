@@ -72,6 +72,7 @@ class CVideoPage;
 #define DRAW_BKG_COLOR						RGB(0,0,0)
 #define DRAW_MESSAGE_COLOR					RGB(0xFF,0xFF,0xFF)
 #define REC_MESSAGE_COLOR					RGB(0xFF,0,0)
+#define NODONATION_MESSAGE_COLOR            RGB(255,228,18)
 
 // Process Frame Stop Engine
 #define PROCESSFRAME_MAX_RETRY_TIME			3500		// maximum retry time in ms for Process Frame Stop Engine
@@ -640,6 +641,7 @@ public:
 	static CTime CalcTime(DWORD dwUpTime, const CTime& RefTime, DWORD dwRefUpTime);
 	static void AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime, int nRefFontSize);
 	static void AddFrameCount(CDib* pDib, const CString& sCount, int nRefFontSize);
+	static void AddNoDonationTag(CDib* pDib, int nRefFontSize);
 	static void AddRecSymbol(CDib* pDib, int nRefFontSize);
 
 	// Function called when the directx video grabbing format has been changed
