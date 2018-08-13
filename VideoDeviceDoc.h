@@ -563,7 +563,8 @@ public:
 		DLINK_PLAY1_RTSP = 1081,		// D-Link play1.sdp RTSP
 		DAHUA_RTSP = 1090,				// Dahua RTSP
 		DIGOO_RTSP = 1100,				// Digoo RTSP
-		EDIMAX_RTSP = 1110,				// Edimax RTSP
+		EDIMAX_H264_RTSP = 1110,		// Edimax H.264 RTSP
+		EDIMAX_MPEG4_RTSP = 1111,		// Edimax MPEG4 RTSP
 		FALCONEYE_RTSP = 1115,			// FalconEye RTSP
 		FOSCAM_RTSP = 1120,				// Foscam RTSP
 		GEMBIRD_RTSP = 1123,			// Gembird RTSP

@@ -8854,7 +8854,8 @@ void CVideoDeviceDoc::ConnectRtsp()
 		case DLINK_PLAY1_RTSP:		sQuery = _T("/play1.sdp"); break;
 		case DAHUA_RTSP:			sQuery = _T("/live"); break;
 		case DIGOO_RTSP:			sQuery = _T("/onvif1"); break;
-		case EDIMAX_RTSP:			sQuery = _T("/ipcam_h264.sdp"); break;
+		case EDIMAX_H264_RTSP:		sQuery = _T("/ipcam_h264.sdp"); break;
+		case EDIMAX_MPEG4_RTSP:		sQuery = _T("/ipcam.sdp"); break;
 		case FALCONEYE_RTSP:		sQuery = m_bPreferTcpforRtsp ? _T("/ch01.264?ptype=tcp") : _T("/ch01.264?ptype=udp"); break;
 		case FOSCAM_RTSP:			sQuery = _T("/videoMain"); break;
 		case GEMBIRD_RTSP:			sQuery = _T("/live/ch0"); break;
