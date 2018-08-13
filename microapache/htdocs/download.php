@@ -40,8 +40,10 @@ if (isset($_SERVER['HTTP_RANGE'])) { // especially iOS wants byte-ranges
 	rangedownload($full_path);
 } else {
 	header("Content-Length: " . filesize($full_path));
+	ob_flush();
 	flush();
-	readfile($full_path);
+	if (!connection_aborted())
+		readfile($full_path);
 }
 
 // Range download support
@@ -63,6 +65,7 @@ function rangedownload($full_path) {
 	// Validate param
 	if (strtolower($param) != 'bytes') {
 		header("HTTP/1.1 400 Invalid Request");
+		fclose($fp);
 		exit;
 	}
 
@@ -70,6 +73,7 @@ function rangedownload($full_path) {
 	if (strpos($range, ',') !== false) {
 		header('HTTP/1.1 416 Requested Range Not Satisfiable');
 		header("Content-Range: bytes 0-$lastbytepos/$filesize");
+		fclose($fp);
 		exit;
 	}
 	
@@ -92,6 +96,7 @@ function rangedownload($full_path) {
 	if ($startpos > $endpos) {
 		header('HTTP/1.1 416 Requested Range Not Satisfiable');
 		header("Content-Range: bytes 0-$lastbytepos/$filesize");
+		fclose($fp);
 		exit;
 	}
 
@@ -100,7 +105,12 @@ function rangedownload($full_path) {
 	header('HTTP/1.1 206 Partial Content');
 	header("Content-Range: bytes $startpos-$endpos/$filesize");
 	header("Content-Length: $rangelength");
+	ob_flush();
 	flush();
+	if (connection_aborted()) {
+		fclose($fp);
+		exit;
+	}
 	
 	// Start buffered download
 	fseek($fp, $startpos);
@@ -109,7 +119,12 @@ function rangedownload($full_path) {
 		if ($p + $buffer > $endpos)
 			$buffer = $endpos - $p + 1;
 		echo fread($fp, $buffer);
+		ob_flush();
 		flush();
+		if (connection_aborted()) {
+			fclose($fp);
+			exit;
+		}
 	}
 
 	// Close file
