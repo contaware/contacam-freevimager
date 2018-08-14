@@ -1304,9 +1304,9 @@ BEGIN
     EDITTEXT        IDC_EDIT_DONOR_EMAIL,19,195,365,14,ES_AUTOHSCROLL
     DEFPUSHBUTTON   "I Agree and Donated",IDOK,129,255,141,25
     EDITTEXT        IDC_EDIT_LICENSE,7,6,387,138,ES_MULTILINE | ES_READONLY | WS_VSCROLL
-    LTEXT           "1. Please donate the requested $10 USD per installation at:",IDC_STATIC,19,167,190,8
-    LTEXT           "www.contaware.com",IDC_WEB_LINK,212,167,70,8,SS_NOTIFY
-    LTEXT           "2. Enter here the email address used to donate (this will remove the ""NO DONATION"" text):",IDC_STATIC,19,181,294,8
+    LTEXT           "1. Please donate the requested $10 USD per installation at:",IDC_STATIC,19,167,195,8
+    LTEXT           "www.contaware.com",IDC_WEB_LINK,218,167,70,8,SS_NOTIFY
+    LTEXT           "2. Enter here the email address used to donate (this will remove the ""NO DONATION"" text):",IDC_STATIC,19,181,365,8
     LTEXT           "NOTE",IDC_STATIC,19,213,19,8
     LTEXT           "- Email addresses of past donors are all valid.",IDC_STATIC,19,223,365,8
     LTEXT           "- For each additional installation please donate another $10 USD, the same email address can then be used.",IDC_STATIC,19,234,365,8
