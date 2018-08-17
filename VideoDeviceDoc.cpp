@@ -5756,7 +5756,6 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	sConfig += _T("AcceptFilter https none\r\n");
 	sConfig += _T("LoadFile php/libeay32.dll\r\n");										// for PHP but also for mod_ssl.so
 	sConfig += _T("LoadFile php/ssleay32.dll\r\n");										// for PHP but also for mod_ssl.so
-	sConfig += _T("LoadModule access_compat_module modules/mod_access_compat.so\r\n");	// for compatibility with old Allow, Deny and Order Directives
 	sConfig += _T("LoadModule auth_basic_module modules/mod_auth_basic.so\r\n");		// for basic auth support
 	sConfig += _T("LoadModule authn_core_module modules/mod_authn_core.so\r\n");		// for AuthType and AuthName Directives support
 	sConfig += _T("LoadModule authn_file_module modules/mod_authn_file.so\r\n");		// for AuthUserFile Directive support
