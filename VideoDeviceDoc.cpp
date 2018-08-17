@@ -5754,15 +5754,15 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	sConfig += _T("ThreadsPerChild 128\r\n");
 	sConfig += _T("AcceptFilter http none\r\n");
 	sConfig += _T("AcceptFilter https none\r\n");
-	sConfig += _T("LoadFile php/libeay32.dll\r\n");				// for PHP but also for mod_ssl.so
-	sConfig += _T("LoadFile php/ssleay32.dll\r\n");				// for PHP but also for mod_ssl.so
-	sConfig += _T("LoadModule access_compat_module modules/mod_access_compat.so\r\n");
-	sConfig += _T("LoadModule auth_basic_module modules/mod_auth_basic.so\r\n");
-	sConfig += _T("LoadModule authn_core_module modules/mod_authn_core.so\r\n");
-	sConfig += _T("LoadModule authn_file_module modules/mod_authn_file.so\r\n");
-	sConfig += _T("LoadModule authz_core_module modules/mod_authz_core.so\r\n");
-	sConfig += _T("LoadModule authz_user_module modules/mod_authz_user.so\r\n");
-	sConfig += _T("LoadModule dir_module modules/mod_dir.so\r\n"); // for DirectorySlash Directive (On by default) support, it appends the trailing slashes
+	sConfig += _T("LoadFile php/libeay32.dll\r\n");										// for PHP but also for mod_ssl.so
+	sConfig += _T("LoadFile php/ssleay32.dll\r\n");										// for PHP but also for mod_ssl.so
+	sConfig += _T("LoadModule access_compat_module modules/mod_access_compat.so\r\n");	// for compatibility with old Allow, Deny and Order Directives
+	sConfig += _T("LoadModule auth_basic_module modules/mod_auth_basic.so\r\n");		// for basic auth support
+	sConfig += _T("LoadModule authn_core_module modules/mod_authn_core.so\r\n");		// for AuthType and AuthName Directives support
+	sConfig += _T("LoadModule authn_file_module modules/mod_authn_file.so\r\n");		// for AuthUserFile Directive support
+	sConfig += _T("LoadModule authz_core_module modules/mod_authz_core.so\r\n");		// for Require Directive support
+	sConfig += _T("LoadModule authz_user_module modules/mod_authz_user.so\r\n");		// for user support in Require Directive
+	sConfig += _T("LoadModule dir_module modules/mod_dir.so\r\n");						// for DirectorySlash Directive (On by default) support, it appends the trailing slashes
 	sConfig += _T("LoadModule mime_module modules/mod_mime.so\r\n");
 	sConfig += _T("LoadModule rewrite_module modules/mod_rewrite.so\r\n");
 	sConfig += _T("LoadModule ssl_module modules/mod_ssl.so\r\n");
@@ -5817,14 +5817,14 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	{
 		// Do not allow direct .mp4, .gif, .jpg and .recycled accesses
 		// Attention: cannot use those file types in css!
-		// Case insensitive regular expression "not match" (Apache 2.4 or higher)
+		// Case insensitive regular expression "not match" (Apache 2.4 or higher with mod_authz_core.so)
 		// Note: %{REQUEST_URI} is only the URI path part without the query string!
 		sConfig += _T("Require expr %{REQUEST_URI} !~ m#\\.(mp4|gif|jpg|recycled)$#i\r\n");
 	}
 	else
 	{
 		// Do not allow direct .recycled accesses
-		// Case insensitive regular expression "not match" (Apache 2.4 or higher)
+		// Case insensitive regular expression "not match" (Apache 2.4 or higher with mod_authz_core.so)
 		// Note: %{REQUEST_URI} is only the URI path part without the query string!
 		sConfig += _T("Require expr %{REQUEST_URI} !~ m#\\.recycled$#i\r\n");
 	}
@@ -6242,20 +6242,25 @@ CString CVideoDeviceDoc::MicroApacheGetPidFileName()
 
 BOOL CVideoDeviceDoc::MicroApacheStart(DWORD dwTimeoutMs)
 {
-	// Delete old pid file from crashed / killed processes
-	CString sMicroapachePidFile = MicroApacheGetPidFileName();
-	::DeleteFile(sMicroapachePidFile);
-
-	// Delete old log file to avoid growing it too much
-	::DeleteFile(MicroApacheGetLogFileName());
-
 	// Config file path
 	CString sMicroapacheConfigFile = MicroApacheGetConfigFileName();
 	if (!::IsExistingFile(sMicroapacheConfigFile))
 		return FALSE;
 	sMicroapacheConfigFile = ::GetASCIICompatiblePath(sMicroapacheConfigFile); // file must exist!
-	sMicroapacheConfigFile.Replace(_T('\\'), _T('/')); // change path from \ to / (otherwise apache is not happy)
-	CString sParams = _T("-f \"") + sMicroapacheConfigFile + _T("\"");
+	CString sConfigDir = ::GetDriveAndDirName(sMicroapacheConfigFile);
+
+	// Delete old pid file from crashed / killed processes
+	CString sMicroapachePidFile = sConfigDir + MICROAPACHE_PIDNAME_EXT;
+	::DeleteFile(sMicroapachePidFile);
+
+	// Delete old log file to avoid growing it too much
+	CString sMicroapacheLogFile = sConfigDir + MICROAPACHE_LOGNAME_EXT;
+	::DeleteFile(sMicroapacheLogFile);
+	
+	// Startup parameters
+	sMicroapacheConfigFile.Replace(_T('\\'), _T('/'));	// change path from \ to / (otherwise apache is not happy)
+	sMicroapacheLogFile.Replace(_T('\\'), _T('/'));		// change path from \ to / (otherwise apache is not happy)
+	CString sParams = _T("-f \"") + sMicroapacheConfigFile + _T("\" -e debug -E \"") + sMicroapacheLogFile + _T("\"");
 
 	// Executable path
 	TCHAR szDrive[_MAX_DRIVE];
@@ -6310,8 +6315,6 @@ BOOL CVideoDeviceDoc::MicroApacheStart(DWORD dwTimeoutMs)
 
 void CVideoDeviceDoc::MicroApacheShutdown(DWORD dwTimeoutMs)
 {
-	CString sMicroapachePidFile = MicroApacheGetPidFileName();
-
 	// Init with an invalid process id
 	// see: https://blogs.msdn.microsoft.com/oldnewthing/20040223-00/?p=40503
 	DWORD dwPid = 0; // this is the System Idle Process
@@ -6323,7 +6326,7 @@ void CVideoDeviceDoc::MicroApacheShutdown(DWORD dwTimeoutMs)
 	try
 	{
 		// Open Pid File
-		CFile f(sMicroapachePidFile,
+		CFile f(MicroApacheGetPidFileName(),
 				CFile::modeRead | CFile::shareDenyNone);
 		DWORD dwLength = (DWORD)f.GetLength();
 		if (dwLength > 0)
@@ -6376,16 +6379,10 @@ void CVideoDeviceDoc::MicroApacheShutdown(DWORD dwTimeoutMs)
 	do
 	{
 		if (::EnumKillProcByName(MICROAPACHE_FILENAME) == 0)
-		{
-			::DeleteFile(sMicroapachePidFile);
 			return;
-		}
 		::Sleep(MICROAPACHE_WAITTIME_MS);
 	}
 	while ((::GetTickCount() - dwShutdownTimeMs) < dwTimeoutMs);
-
-	// Last try...
-	::EnumKillProcByName(MICROAPACHE_FILENAME, TRUE);
 }
 
 // Attention: remember to call CloseHandle() for the returned handle if it's != NULL
