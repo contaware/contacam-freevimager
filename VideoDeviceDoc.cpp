@@ -5755,7 +5755,8 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	sConfig += _T("AcceptFilter http none\r\n");										// the default "connect" will use the AcceptEx() API, "none" uses accept() and will 
 	sConfig += _T("AcceptFilter https none\r\n");										// not recycle sockets between connections. This is useful for network adapters with
 																						// broken driver support, as well as some virtual network providers!
-	sConfig += _T("EnableMMAP off\r\n");												// do not use memory mapping to read files during delivery
+	sConfig += _T("EnableMMAP off\r\n");												// do not use memory mapping to read files during delivery because deleting or truncating
+																						// a file while httpd has it memory-mapped can cause httpd to crash!
 	sConfig += _T("LoadFile php/libeay32.dll\r\n");										// for PHP but also for mod_ssl.so
 	sConfig += _T("LoadFile php/ssleay32.dll\r\n");										// for PHP but also for mod_ssl.so
 	sConfig += _T("LoadModule auth_basic_module modules/mod_auth_basic.so\r\n");		// for basic auth support
