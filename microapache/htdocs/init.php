@@ -64,5 +64,5 @@ function getParentUrl() {
 }
 
 // Do authentication
-if (file_exists(dirname(dirname(__FILE__)).'/authenticate.php'))
-	require_once(dirname(dirname(__FILE__)).'/authenticate.php');
+if (file_exists(dirname(dirname($_SERVER['SCRIPT_FILENAME'])).'/authenticate.php'))
+	require_once(dirname(dirname($_SERVER['SCRIPT_FILENAME'])).'/authenticate.php');

@@ -1,7 +1,7 @@
 <?php
-if (file_exists(dirname(__FILE__).'/authenticate.php')) {
+if (file_exists(dirname($_SERVER['SCRIPT_FILENAME']).'/authenticate.php')) {
 	session_start();
-	require_once(dirname(__FILE__).'/authenticate.php');
+	require_once(dirname($_SERVER['SCRIPT_FILENAME']).'/authenticate.php');
 }
 ?>
 <!DOCTYPE html>
