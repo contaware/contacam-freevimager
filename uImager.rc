@@ -107,7 +107,7 @@ BEGIN
     END
     POPUP "&Camera"
     BEGIN
-        MENUITEM "&IP / WiFi Camera",           ID_CAPTURE_NETWORK
+        MENUITEM "&Network / IP Camera",        ID_CAPTURE_NETWORK
         MENUITEM SEPARATOR
         MENUITEM "&Remove Camera(s)",           ID_EDIT_DELETE
     END
@@ -119,7 +119,7 @@ BEGIN
         MENUITEM "Verbose logging",             ID_SETTINGS_LOG_VERBOSE
         MENUITEM "Debug logging",               ID_SETTINGS_LOG_ALL_MESSAGES
         MENUITEM SEPARATOR
-        MENUITEM "Config/Log Files (Folder)",   ID_SETTINGS_BROWSE_CONFIGLOG_FILES
+        MENUITEM "Config/Log Files",            ID_SETTINGS_BROWSE_CONFIGLOG_FILES
     END
     POPUP "&Help"
     BEGIN
@@ -196,12 +196,12 @@ BEGIN
         MENUITEM "Fit",                         ID_VIEW_FIT
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
         MENUITEM SEPARATOR
-        MENUITEM "Web Browser",                 ID_VIEW_WEB
-        MENUITEM "File Explorer",               ID_VIEW_FILES
+        MENUITEM "Recordings Browser",          ID_VIEW_WEB
+        MENUITEM "Recordings Files",            ID_VIEW_FILES
     END
     POPUP "&Camera"
     BEGIN
-        MENUITEM "&IP / WiFi Camera",           ID_CAPTURE_NETWORK
+        MENUITEM "&Network / IP Camera",        ID_CAPTURE_NETWORK
         MENUITEM SEPARATOR
         MENUITEM "&Remove Camera(s)",           ID_EDIT_DELETE
         MENUITEM SEPARATOR
@@ -217,7 +217,7 @@ BEGIN
         MENUITEM "Verbose logging",             ID_SETTINGS_LOG_VERBOSE
         MENUITEM "Debug logging",               ID_SETTINGS_LOG_ALL_MESSAGES
         MENUITEM SEPARATOR
-        MENUITEM "Config/Log Files (Folder)",   ID_SETTINGS_BROWSE_CONFIGLOG_FILES
+        MENUITEM "Config/Log Files",            ID_SETTINGS_BROWSE_CONFIGLOG_FILES
     END
     POPUP "&Window"
     BEGIN
@@ -449,7 +449,7 @@ BEGIN
         MENUITEM "Verbose logging",             ID_SETTINGS_LOG_VERBOSE
         MENUITEM "Debug logging",               ID_SETTINGS_LOG_ALL_MESSAGES
         MENUITEM SEPARATOR
-        MENUITEM "Config/Log Files (Folder)",   ID_SETTINGS_BROWSE_CONFIGLOG_FILES
+        MENUITEM "Config/Log Files",            ID_SETTINGS_BROWSE_CONFIGLOG_FILES
     END
     POPUP "&Window"
     BEGIN
@@ -3559,8 +3559,8 @@ BEGIN
     ID_EDIT_ZONE_REMOVE     "Remove zones\nRemove Zones"
     ID_EDIT_ADDALL          "Add all\nAdd All"
     ID_EDIT_REMOVEALL       "Remove all\nRemove All"
-    ID_CAPTURE_NETWORK      "IP / WiFi camera\nIP / WiFi Camera"
-    ID_CAPTURE_RECORD       "Recording ON / OFF\nRecording"
+    ID_CAPTURE_NETWORK      "Network / IP camera\nNetwork / IP Camera"
+    ID_CAPTURE_RECORD       "Recording ON / OFF\nRecord"
     ID_VIEW_ALL_NEXT_PICTURE 
                             "Show next image of all open documents\nAll Next Image"
     ID_VIEW_ALL_PREVIOUS_PICTURE 
@@ -4128,7 +4128,7 @@ STRINGTABLE
 BEGIN
     IDS_STRING1750          "ADD CAMERA"
     IDS_STRING1751          "1. Make sure your video capture device is plugged-in and drivers are installed"
-    IDS_STRING1752          "(IP / WiFi cameras do not need drivers)"
+    IDS_STRING1752          "(Network cameras do not need drivers)"
     IDS_STRING1753          "2. From the Camera menu select the device you want to use"
     IDS_STRING1754          "(for network cameras supply host name or ip address, port and camera type)"
     IDS_STRING1755          "3. Follow the Camera Settings dialog"
