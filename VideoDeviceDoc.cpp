@@ -1955,7 +1955,6 @@ BOOL CVideoDeviceDoc::AudioListen(	LPBYTE pData, DWORD dwSizeInBytes,
 void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, DWORD dwVideoProcessorMode, BOOL b1SecTick)
 {
 	BOOL bSoftwareDetectionMovement = FALSE;
-	BOOL bExternalFileTriggerMovement = FALSE;
 	int nDetectionLevel = m_nDetectionLevel; // use local var
 	int nMovementDetectorIntensityLimit = 50 - nDetectionLevel / 2;	// noise floor
 	BOOL bDoSoftwareDetection = (dwVideoProcessorMode && nDetectionLevel > 0);
@@ -2119,39 +2118,9 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, DWORD dwVideoProce
 	// End of software detection
 end_of_software_detection:
 
-	// Trigger file detection
-	if (b1SecTick && !m_sDetectionTriggerFileName.IsEmpty())
-	{
-		CString sDetectionTriggerFileName(m_sDetectionTriggerFileName);
-		sDetectionTriggerFileName.TrimLeft();
-		sDetectionTriggerFileName.TrimRight();
-		sDetectionTriggerFileName.TrimLeft(_T('\"'));
-		sDetectionTriggerFileName.TrimRight(_T('\"'));
-		if (sDetectionTriggerFileName.Find(_T('\\')) < 0)
-		{
-			CString sDetectionAutoSaveDir = m_sRecordAutoSaveDir;
-			sDetectionAutoSaveDir.TrimRight(_T('\\'));
-			sDetectionTriggerFileName = sDetectionAutoSaveDir + _T("\\") + sDetectionTriggerFileName;
-		}
-		if (dwVideoProcessorMode)
-		{
-			FILETIME LastWriteTime;
-			if (::GetFileTime(sDetectionTriggerFileName, NULL, NULL, &LastWriteTime)			&&
-				(LastWriteTime.dwLowDateTime != m_DetectionTriggerLastWriteTime.dwLowDateTime	||
-				LastWriteTime.dwHighDateTime != m_DetectionTriggerLastWriteTime.dwHighDateTime))
-			{
-				m_DetectionTriggerLastWriteTime.dwLowDateTime = LastWriteTime.dwLowDateTime;
-				m_DetectionTriggerLastWriteTime.dwHighDateTime = LastWriteTime.dwHighDateTime;
-				bExternalFileTriggerMovement = TRUE;
-			}
-		}
-		else
-			::GetFileTime(sDetectionTriggerFileName, NULL, NULL, &m_DetectionTriggerLastWriteTime);
-	}
-
 	// If Movement
 	BOOL bMarkStart = FALSE;
-	if (bSoftwareDetectionMovement || bExternalFileTriggerMovement)
+	if (bSoftwareDetectionMovement)
 	{
 		// Mark the Frame as a Cause of Movement
 		pDib->SetUserFlag(pDib->GetUserFlag() | FRAME_USER_FLAG_MOTION);
@@ -3750,9 +3719,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nShowEditDetectionZones = 0;
 	m_bDetectingMovement = FALSE;
 	m_bDetectingMinLengthMovement = FALSE;
-	m_sDetectionTriggerFileName = _T("");
-	m_DetectionTriggerLastWriteTime.dwLowDateTime = 0;
-	m_DetectionTriggerLastWriteTime.dwHighDateTime = 0;
 	m_nMilliSecondsRecBeforeMovementBegin = DEFAULT_PRE_BUFFER_MSEC;
 	m_nMilliSecondsRecAfterMovementEnd = DEFAULT_POST_BUFFER_MSEC;
 	m_nDetectionMinLengthMilliSeconds = MOVDET_MIN_LENGTH_MSEC;
@@ -4534,19 +4500,6 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	CString sRecordAutoSaveDir = m_sRecordAutoSaveDir;
 	sRecordAutoSaveDir.TrimRight(_T('\\'));
 	m_bObscureSource = ::IsExistingFile(sRecordAutoSaveDir + _T("\\") + CAMERA_IS_OBSCURED_FILENAME);
-	m_sDetectionTriggerFileName = pApp->GetProfileString(sSection, _T("DetectionTriggerFileName"), _T("movtrigger.txt"));
-	CString sDetectionTriggerFileName(m_sDetectionTriggerFileName);
-	sDetectionTriggerFileName.TrimLeft();
-	sDetectionTriggerFileName.TrimRight();
-	sDetectionTriggerFileName.TrimLeft(_T('\"'));
-	sDetectionTriggerFileName.TrimRight(_T('\"'));
-	if (sDetectionTriggerFileName.Find(_T('\\')) < 0)
-	{
-		CString sDetectionAutoSaveDir = m_sRecordAutoSaveDir;
-		sDetectionAutoSaveDir.TrimRight(_T('\\'));
-		sDetectionTriggerFileName = sDetectionAutoSaveDir + _T("\\") + sDetectionTriggerFileName;
-	}
-	::GetFileTime(sDetectionTriggerFileName, NULL, NULL, &m_DetectionTriggerLastWriteTime);
 	m_bSnapshotHistoryVideo = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistoryVideo"), FALSE);
 	m_bSnapshotLiveJpegFtp = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotLiveJpegFtp"), FALSE);
 	m_bSnapshotHistoryVideoFtp = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistoryVideoFtp"), FALSE);
@@ -4722,7 +4675,6 @@ void CVideoDeviceDoc::SaveSettings()
 	// All other
 	pApp->WriteProfileInt(sSection, _T("Rotate180"), (int)m_bRotate180);
 	pApp->WriteProfileString(sSection, _T("RecordAutoSaveDir"), m_sRecordAutoSaveDir);
-	pApp->WriteProfileString(sSection, _T("DetectionTriggerFileName"), m_sDetectionTriggerFileName);
 	pApp->WriteProfileInt(sSection, _T("SnapshotHistoryVideo"), (int)m_bSnapshotHistoryVideo);
 	pApp->WriteProfileInt(sSection, _T("SnapshotLiveJpegFtp"), (int)m_bSnapshotLiveJpegFtp);
 	pApp->WriteProfileInt(sSection, _T("SnapshotHistoryVideoFtp"), (int)m_bSnapshotHistoryVideoFtp);
@@ -6111,6 +6063,8 @@ BOOL CVideoDeviceDoc::MicroApacheUpdateWebFiles(CString sAutoSaveDir)
 	::DeleteFile(sAutoSaveDir + _T("swf.php"));
 	::DeleteFile(sAutoSaveDir + _T("avi.php"));
 	::DeleteFile(sAutoSaveDir + _T("jpeg.php"));
+	::DeleteFile(sAutoSaveDir + _T("movtrigger.bat"));
+	::DeleteFile(sAutoSaveDir + _T("movtrigger.txt"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\black.gif"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\darkgray.gif"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\gray.gif"));

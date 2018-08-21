@@ -921,9 +921,7 @@ public:
 	CRITICAL_SECTION m_csSnapshotConfiguration;			// Critical section for snapshot configurations
 
 	// Movement Detector Vars
-	volatile DWORD m_dwVideoProcessorMode;				// 0 = Off, 1 = software + file trigger detectors On
-	CString m_sDetectionTriggerFileName;				// The external detection trigger file name
-	FILETIME m_DetectionTriggerLastWriteTime;			// Last known write time of detection trigger file
+	volatile DWORD m_dwVideoProcessorMode;				// 0 = Off, 1 = On
 	int m_nShowEditDetectionZones;						// Edit Detection zones, 0: disabled, 1: add, 2: remove
 	volatile BOOL m_bDetectingMovement;					// Flag indicating a Detection
 	volatile BOOL m_bDetectingMinLengthMovement;		// Flag indicating a Movement of at least m_nDetectionMinLengthMilliSeconds
