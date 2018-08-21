@@ -9,6 +9,8 @@ CONTACAM HISTORY
 - Manual / continuous recording is now performed by the motion
   engine (it makes no sense to have a separate continuous
   recording engine)
+- To enforce security removed the possibility to delete recordings
+  from the web interface
 - Using better random generators
 - Removed the possibility to hide the toolbars because they
   provide important commands not available elsewhere

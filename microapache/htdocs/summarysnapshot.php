@@ -320,8 +320,6 @@ if ($handle = @opendir($dir)) {
 				}
 				else if ($path_parts['extension'] == 'mp4')
 					echo strtoupper($file_prefix) . "<br /><a href=\"mp4.php?file=$mp4uri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\" >$file_timestamp</a>";
-				if ($show_trash_command)
-					echo "<a class=\"trashbuttons\" href=\"recycle.php?year=$selected_year_string&amp;month=$selected_month_string&amp;day=$selected_day_string&amp;filenamenoext=$filenamenoext&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\">&nbsp;</a>";
 				echo "</span>";
 				$count++;
 			}

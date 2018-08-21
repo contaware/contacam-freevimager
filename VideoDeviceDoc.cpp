@@ -5769,18 +5769,11 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	if (((CUImagerApp*)::AfxGetApp())->m_sMicroApacheUsername != _T("") ||
 		((CUImagerApp*)::AfxGetApp())->m_sMicroApachePassword != _T(""))
 	{
-		// Do not allow direct .mp4, .gif, .jpg and .recycled accesses
+		// Do not allow direct .mp4, .gif, and .jpg accesses
 		// Attention: cannot use those file types in css!
 		// Case insensitive regular expression "not match" (Apache 2.4 or higher with mod_authz_core.so)
 		// Note: %{REQUEST_URI} is only the URI path part without the query string!
-		sConfig += _T("Require expr %{REQUEST_URI} !~ m#\\.(mp4|gif|jpg|recycled)$#i\r\n");
-	}
-	else
-	{
-		// Do not allow direct .recycled accesses
-		// Case insensitive regular expression "not match" (Apache 2.4 or higher with mod_authz_core.so)
-		// Note: %{REQUEST_URI} is only the URI path part without the query string!
-		sConfig += _T("Require expr %{REQUEST_URI} !~ m#\\.recycled$#i\r\n");
+		sConfig += _T("Require expr %{REQUEST_URI} !~ m#\\.(mp4|gif|jpg)$#i\r\n");
 	}
 	sConfig += _T("</Directory>\r\n");
 	
@@ -6063,6 +6056,7 @@ BOOL CVideoDeviceDoc::MicroApacheUpdateWebFiles(CString sAutoSaveDir)
 	::DeleteFile(sAutoSaveDir + _T("swf.php"));
 	::DeleteFile(sAutoSaveDir + _T("avi.php"));
 	::DeleteFile(sAutoSaveDir + _T("jpeg.php"));
+	::DeleteFile(sAutoSaveDir + _T("recycle.php"));
 	::DeleteFile(sAutoSaveDir + _T("movtrigger.bat"));
 	::DeleteFile(sAutoSaveDir + _T("movtrigger.txt"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\black.gif"));
@@ -6101,6 +6095,8 @@ BOOL CVideoDeviceDoc::MicroApacheUpdateWebFiles(CString sAutoSaveDir)
 	::DeleteFile(sAutoSaveDir + _T("styles\\scaler_slider_track_darkgray.gif"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\scaler_slider_gray.gif"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\scaler_slider_track_gray.gif"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\trash.png"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\trashhover.png"));
 	::DeleteDir(sAutoSaveDir + _T("js"));
 
 	return TRUE;

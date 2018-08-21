@@ -138,19 +138,6 @@ a.camonbuttons {
 a.camoffbuttons {
 	background: transparent url('camoff_black.png') no-repeat center center;
 }
-a.trashbuttons {
-	display: inline-block;
-	width: 17px;
-	height: 20px;
-	line-height: 20px;
-	text-align: center;
-	vertical-align: bottom;
-	text-decoration: none;
-	background: transparent url('trash.png') no-repeat left top;
-}
-a.trashbuttons:hover {
-	background: transparent url('trashhover.png') no-repeat left top;
-}
 div#imagereloading {
 	margin: 6px 0 0 0;
 	text-align: center;

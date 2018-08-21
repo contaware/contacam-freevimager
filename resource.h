@@ -2983,7 +2983,6 @@
 #define IDC_STATIC2537                  2537
 #define IDC_CONNECTIONTYPE              2538
 #define IDC_STATIC2539                  2539
-#define IDC_CHECK_TRASHCOMMAND          2540
 #define IDC_CHECK_CAMERACOMMANDS        2542
 #define IDC_EXECMODE_MOVEMENT_DETECTION 2542
 #define IDC_STATIC2544                  2544

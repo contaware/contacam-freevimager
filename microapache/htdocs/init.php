@@ -27,12 +27,6 @@ if (!empty($_SERVER['HTTPS']) && (strtolower($_SERVER['HTTPS']) != 'off'))
 else
 	$scheme = 'http';
 
-// Trash command
-if (defined('SHOW_TRASH_COMMAND'))
-	$show_trash_command = SHOW_TRASH_COMMAND;
-else
-	$show_trash_command = 0;
-
 // Camera commands
 if (defined('SHOW_CAMERA_COMMANDS'))
 	$show_camera_commands = SHOW_CAMERA_COMMANDS;
