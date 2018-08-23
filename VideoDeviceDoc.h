@@ -507,13 +507,16 @@ public:
 			BOOL m_bDetectingMinLengthMovement;
 			int m_nRefFontSize;
 			BOOL m_bSnapshotLiveJpegFtp;
+			BOOL m_bSnapshotLiveJpegEmail;
 			int m_nSnapshotThumbWidth;
 			int m_nSnapshotThumbHeight;
 			CTime m_Time;
+			CString m_sAssignedDeviceName;
 			CString m_sSnapshotAutoSaveDir;
 			CString m_sSnapshotLiveJpegName;
 			CString m_sSnapshotLiveJpegThumbName;
-			FTPUploadConfigurationStruct m_Config;
+			FTPUploadConfigurationStruct m_FTPUploadConfiguration;
+			SendMailConfigurationStruct m_SendMailConfiguration;
 
 		protected:
 			CMJPEGEncoder m_MJPEGEncoder;
@@ -774,12 +777,6 @@ public:
 	static BOOL MicroApacheUpdateWebFiles(CString sAutoSaveDir);
 	static BOOL MicroApacheStart(DWORD dwTimeoutMs);
 	static void MicroApacheShutdown(DWORD dwTimeoutMs);
-	
-	// Mailer
-	// returns the handle of the started mailsend process
-	// (remember to call CloseHandle() for the returned handle if != NULL)
-	static HANDLE SendMailCall(	CString sParams,			// command line params for mailsend.exe
-								BOOL bShow = FALSE);		// show / hide the console window
 
 	// Send Mail
 	static BOOL SendMail(const SendMailConfigurationStruct& Config,
@@ -788,7 +785,8 @@ public:
 						const CString& sNote,				// sNote is replaced in subject if %note% present
 						CString sBody = _T(""),				// if no body given use the format "name: date time note"
 						const CString& sFileName = _T(""),	// attachment
-						BOOL bShow = FALSE);				// show / hide the console window
+						BOOL bShow = FALSE,					// show / hide the console window
+						HANDLE* phApp = NULL);				// remember to call CloseHandle() for the returned handle if != NULL
 
 	// Php config file manipulation
 	CString PhpGetConfigFileName();
@@ -908,6 +906,7 @@ public:
 	// Snapshot Vars
 	volatile BOOL m_bSnapshotHistoryVideo;				// Snapshot history save Video
 	volatile BOOL m_bSnapshotLiveJpegFtp;				// Upload Jpeg Live snapshot files
+	volatile BOOL m_bSnapshotLiveJpegEmail;				// Email Jpeg Live snapshot file
 	volatile BOOL m_bSnapshotHistoryVideoFtp;			// Upload Video Snapshot history files
 	volatile int m_nSnapshotRate;						// Snapshot rate in seconds
 	volatile int m_nSnapshotRateMs;						// Snapshot rate in ms, effective: 1000 * m_nSnapshotRate + m_nSnapshotRateMs

@@ -1207,18 +1207,29 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	::CopyFile(sTempThumbFileName, sLiveThumbFileName, FALSE);
 	if (m_bSnapshotLiveJpegFtp)
 	{
-		HANDLE hFTP = CVideoDeviceDoc::FTPUpload(m_Config,
+		HANDLE hFTP = CVideoDeviceDoc::FTPUpload(m_FTPUploadConfiguration,
 												sTempFileName, m_sSnapshotLiveJpegName + _T(".jpg"),
 												sTempThumbFileName, m_sSnapshotLiveJpegThumbName + _T(".jpg"));
 		if (hFTP)
 		{
 			if (::WaitForSingleObject(hFTP, FTPPROG_JPEGUPLOAD_WAIT_TIMEOUT_MS) == WAIT_TIMEOUT)
-			{
-				::KillApp(hFTP); // CloseHandle(hFTP) called inside this function 
-				goto exit;
-			}
+				::KillApp(hFTP); // CloseHandle(hFTP) called inside this function
 			else
 				CloseHandle(hFTP);
+		}
+	}
+	if (m_bSnapshotLiveJpegEmail)
+	{
+		HANDLE hEMAIL = NULL;
+		CVideoDeviceDoc::SendMail(m_SendMailConfiguration,
+								m_sAssignedDeviceName, m_Time, _T("REC"), _T(""),
+								sTempFileName, FALSE, &hEMAIL);
+		if (hEMAIL)
+		{
+			if (::WaitForSingleObject(hEMAIL, 1000 * MAILPROG_TIMEOUT_SEC) == WAIT_TIMEOUT)
+				::KillApp(hEMAIL); // CloseHandle(hEMAIL) called inside this function 
+			else
+				CloseHandle(hEMAIL);
 		}
 	}
 
@@ -1227,7 +1238,6 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	if (m_bSnapshotHistoryJpeg)
 		::CopyFile(sTempFileName, sHistoryFileName, FALSE);
 
-exit:
 	// Clean-up
 	::DeleteFile(sTempFileName);
 	::DeleteFile(sTempThumbFileName);
@@ -1297,12 +1307,14 @@ BOOL CVideoDeviceDoc::SendMail(	const SendMailConfigurationStruct& Config,
 								const CString& sNote,
 								CString sBody/*=_T("")*/,
 								const CString& sFileName/*=_T("")*/,
-								BOOL bShow/*=FALSE*/)
+								BOOL bShow/*=FALSE*/,
+								HANDLE* phApp/*=NULL*/)
 {
 	if (!Config.m_sHost.IsEmpty() &&
 		!Config.m_sFrom.IsEmpty() &&
 		!Config.m_sTo.IsEmpty())
 	{
+		// Prepare params
 		CString sOptions;
 		CString sConnectionTypeOption;
 		CString sSubject = Config.m_sSubject;
@@ -1334,13 +1346,37 @@ BOOL CVideoDeviceDoc::SendMail(	const SendMailConfigurationStruct& Config,
 						sBody);
 		if (::GetFileSize64(sFileName).QuadPart > 0)
 			sOptions += _T(" -attach \"") + sFileName + _T("\"");
-		HANDLE h = SendMailCall(sOptions, bShow);
-		if (h)
+
+		// Send
+		TCHAR szDrive[_MAX_DRIVE];
+		TCHAR szDir[_MAX_DIR];
+		TCHAR szProgramName[MAX_PATH];
+		if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
 		{
-			::CloseHandle(h);
-			return TRUE;
+			_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+			CString sMailerStartFile = CString(szDrive) + CString(szDir);
+			sMailerStartFile += MAILPROG_RELPATH;
+			if (::IsExistingFile(sMailerStartFile))
+			{
+				if (bShow)
+					sOptions = _T("-w ") + sOptions; // wait for a CR after sending the mail
+				HANDLE h = ::ExecAppUtf8(sMailerStartFile,
+										sOptions,
+										_T(""),
+										bShow);
+				if (h)
+				{
+					if (phApp)
+						*phApp = h;
+					else
+						::CloseHandle(h);
+					return TRUE;
+				}
+			}
 		}
 	}
+	if (phApp)
+		*phApp = NULL;
 	return FALSE;
 }
 
@@ -3688,6 +3724,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	// Snapshot
 	m_bSnapshotHistoryVideo = FALSE;
 	m_bSnapshotLiveJpegFtp = FALSE;
+	m_bSnapshotLiveJpegEmail = FALSE;
 	m_bSnapshotHistoryVideoFtp = FALSE;
 	m_sSnapshotLiveJpegName = DEFAULT_SNAPSHOT_LIVE_JPEGNAME;
 	m_sSnapshotLiveJpegThumbName = DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME;
@@ -4502,6 +4539,7 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_bObscureSource = ::IsExistingFile(sRecordAutoSaveDir + _T("\\") + CAMERA_IS_OBSCURED_FILENAME);
 	m_bSnapshotHistoryVideo = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistoryVideo"), FALSE);
 	m_bSnapshotLiveJpegFtp = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotLiveJpegFtp"), FALSE);
+	m_bSnapshotLiveJpegEmail = (BOOL)pApp->GetProfileInt(sSection, _T("SnapshotLiveJpegEmail"), FALSE);
 	m_bSnapshotHistoryVideoFtp = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistoryVideoFtp"), FALSE);
 	m_sSnapshotLiveJpegName = pApp->GetProfileString(sSection, _T("SnapshotLiveJpegName"), DEFAULT_SNAPSHOT_LIVE_JPEGNAME);
 	m_sSnapshotLiveJpegThumbName = pApp->GetProfileString(sSection, _T("SnapshotLiveJpegThumbName"), DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME);
@@ -4677,6 +4715,7 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileString(sSection, _T("RecordAutoSaveDir"), m_sRecordAutoSaveDir);
 	pApp->WriteProfileInt(sSection, _T("SnapshotHistoryVideo"), (int)m_bSnapshotHistoryVideo);
 	pApp->WriteProfileInt(sSection, _T("SnapshotLiveJpegFtp"), (int)m_bSnapshotLiveJpegFtp);
+	pApp->WriteProfileInt(sSection, _T("SnapshotLiveJpegEmail"), (int)m_bSnapshotLiveJpegEmail);
 	pApp->WriteProfileInt(sSection, _T("SnapshotHistoryVideoFtp"), (int)m_bSnapshotHistoryVideoFtp);
 	pApp->WriteProfileString(sSection, _T("SnapshotLiveJpegName"), m_sSnapshotLiveJpegName);
 	pApp->WriteProfileString(sSection, _T("SnapshotLiveJpegThumbName"), m_sSnapshotLiveJpegThumbName);
@@ -6337,31 +6376,6 @@ void CVideoDeviceDoc::MicroApacheShutdown(DWORD dwTimeoutMs)
 	while ((::GetTickCount() - dwShutdownTimeMs) < dwTimeoutMs);
 }
 
-// Attention: remember to call CloseHandle() for the returned handle if it's != NULL
-HANDLE CVideoDeviceDoc::SendMailCall(CString sParams, BOOL bShow/*=FALSE*/)
-{
-	HANDLE h = NULL;
-	TCHAR szDrive[_MAX_DRIVE];
-	TCHAR szDir[_MAX_DIR];
-	TCHAR szProgramName[MAX_PATH];
-	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
-	{
-		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-		CString sMailerStartFile = CString(szDrive) + CString(szDir);
-		sMailerStartFile += MAILPROG_RELPATH;
-		if (::IsExistingFile(sMailerStartFile))
-		{
-			if (bShow)
-				sParams = _T("-w ") + sParams; // wait for a CR after sending the mail
-			h =  ::ExecAppUtf8(	sMailerStartFile,
-								sParams,
-								_T(""),
-								bShow);
-		}
-	}
-	return h;
-}
-
 CString CVideoDeviceDoc::PhpGetConfigFileName()
 {
 	CString sAutoSaveDir = m_sRecordAutoSaveDir;
@@ -7641,14 +7655,17 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 			m_SaveSnapshotThread.m_bDetectingMinLengthMovement = m_bDetectingMinLengthMovement;
 			m_SaveSnapshotThread.m_nRefFontSize = m_nRefFontSize;
 			m_SaveSnapshotThread.m_bSnapshotLiveJpegFtp = m_bSnapshotLiveJpegFtp;
+			m_SaveSnapshotThread.m_bSnapshotLiveJpegEmail = m_bSnapshotLiveJpegEmail;
 			m_SaveSnapshotThread.m_nSnapshotThumbWidth = m_nSnapshotThumbWidth;
 			m_SaveSnapshotThread.m_nSnapshotThumbHeight = m_nSnapshotThumbHeight;
 			m_SaveSnapshotThread.m_Time = Time;
+			m_SaveSnapshotThread.m_sAssignedDeviceName = GetAssignedDeviceName();
+			m_SaveSnapshotThread.m_SendMailConfiguration = m_SendMailConfiguration;
 			m_SaveSnapshotThread.m_sSnapshotAutoSaveDir = m_sRecordAutoSaveDir;
 			::EnterCriticalSection(&m_csSnapshotConfiguration);
 			m_SaveSnapshotThread.m_sSnapshotLiveJpegName = m_sSnapshotLiveJpegName;
 			m_SaveSnapshotThread.m_sSnapshotLiveJpegThumbName = m_sSnapshotLiveJpegThumbName;
-			m_SaveSnapshotThread.m_Config = m_SnapshotFTPUploadConfiguration;
+			m_SaveSnapshotThread.m_FTPUploadConfiguration = m_SnapshotFTPUploadConfiguration;
 			::LeaveCriticalSection(&m_csSnapshotConfiguration);
 			m_SaveSnapshotThread.Start();
 		}

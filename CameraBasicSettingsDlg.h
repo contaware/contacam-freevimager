@@ -37,6 +37,7 @@ public:
 	BOOL	m_bCheckSendMailACLineMalfunction;
 	BOOL	m_bCheckSendMailDeviceOK;
 	BOOL	m_bCheckSendMailMovementDetection;
+	BOOL	m_bCheckSendMailSnapshots;
 	int		m_nComboSendMailMovementDetectionAttachment;
 	int		m_nSendMailSecBetweenMsg;
 	//}}AFX_DATA

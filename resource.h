@@ -1228,6 +1228,7 @@
 #define IDS_MULTILANG_1232              1232
 #define IDC_CHECK_SENDMAIL_ACLINE_MALFUNCTION 1232
 #define IDS_MULTILANG_1233              1233
+#define IDC_CHECK_SENDMAIL_SNAPSHOTS    1233
 #define IDS_MULTILANG_1234              1234
 #define IDC_FTP_REMOTEDIR               1234
 #define IDS_MULTILANG_1235              1235

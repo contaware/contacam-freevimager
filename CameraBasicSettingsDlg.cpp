@@ -45,6 +45,7 @@ void CCameraBasicSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_SENDMAIL_ACLINE_MALFUNCTION, m_bCheckSendMailACLineMalfunction);
 	DDX_Check(pDX, IDC_CHECK_SENDMAIL_DEVICE_OK, m_bCheckSendMailDeviceOK);
 	DDX_Check(pDX, IDC_CHECK_SENDMAIL_MOVEMENT_DETECTION, m_bCheckSendMailMovementDetection);
+	DDX_Check(pDX, IDC_CHECK_SENDMAIL_SNAPSHOTS, m_bCheckSendMailSnapshots);
 	DDX_CBIndex(pDX, IDC_ATTACHMENT, m_nComboSendMailMovementDetectionAttachment);
 	DDX_Text(pDX, IDC_EDIT_SENDMAIL_SEC_BETWEEN_MSG, m_nSendMailSecBetweenMsg);
 	DDV_MinMaxInt(pDX, m_nSendMailSecBetweenMsg, 0, INT_MAX);
@@ -212,6 +213,7 @@ BOOL CCameraBasicSettingsDlg::OnInitDialog()
 	m_bCheckSendMailACLineMalfunction = m_pDoc->m_bSendMailACLineMalfunction;
 	m_bCheckSendMailDeviceOK = m_pDoc->m_bSendMailDeviceOK;
 	m_bCheckSendMailMovementDetection = m_pDoc->m_bSendMailMovementDetection;
+	m_bCheckSendMailSnapshots = m_pDoc->m_bSnapshotLiveJpegEmail;
 	m_nComboSendMailMovementDetectionAttachment = m_pDoc->m_MovDetAttachmentType;
 	m_nSendMailSecBetweenMsg = m_pDoc->m_nMovDetSendMailSecBetweenMsg;
 	m_CurrentSendMailConfiguration = m_pDoc->m_SendMailConfiguration;
@@ -268,6 +270,8 @@ void CCameraBasicSettingsDlg::EnableDisableAllCtrls(BOOL bEnable)
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SENDMAIL_DEVICE_OK);
 	pCheck->EnableWindow(bEnable);
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SENDMAIL_MOVEMENT_DETECTION);
+	pCheck->EnableWindow(bEnable);
+	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SENDMAIL_SNAPSHOTS);
 	pCheck->EnableWindow(bEnable);
 	pComboBox = (CComboBox*)GetDlgItem(IDC_ATTACHMENT);
 	pComboBox->EnableWindow(bEnable);
@@ -458,16 +462,16 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	// Update data -> view to vars
 	UpdateData(TRUE);
 
-	// Disable mov. det.
-	BOOL bDoMovDet;
+	// Disable recording
+	BOOL bDoRecording;
 	if (m_pDoc->m_dwVideoProcessorMode)
 	{
-		bDoMovDet = TRUE;
+		bDoRecording = TRUE;
 		m_pDoc->m_dwVideoProcessorMode = 0;
 		::AfxGetApp()->WriteProfileInt(m_pDoc->GetDevicePathName(), _T("VideoProcessorMode"), m_pDoc->m_dwVideoProcessorMode);
 	}
 	else
-		bDoMovDet = FALSE;
+		bDoRecording = FALSE;
 	m_pDoc->m_SaveFrameListThread.Kill();
 	m_pDoc->OneEmptyFrameList();
 	m_pDoc->FreeMovementDetector();
@@ -542,8 +546,8 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	{
 		case 0 :
 		{
-			// Enable movement detection
-			bDoMovDet = TRUE;
+			// Enable recording
+			bDoRecording = TRUE;
 			if (m_pDoc->m_nDetectionLevel == 100)
 				m_pDoc->m_nDetectionLevel = DEFAULT_MOVDET_LEVEL;
 			if (m_pDoc->m_nMilliSecondsRecBeforeMovementBegin == 1000)
@@ -598,8 +602,8 @@ void CCameraBasicSettingsDlg::ApplySettings()
 		}
 		case 1 :
 		{
-			// Disable movement detection
-			bDoMovDet = FALSE;
+			// Disable recording
+			bDoRecording = FALSE;
 			if (m_pDoc->m_nDetectionLevel != 100)
 				m_pDoc->m_nDetectionLevel = 100;
 			if (m_pDoc->m_nMilliSecondsRecBeforeMovementBegin != 1000)
@@ -652,8 +656,8 @@ void CCameraBasicSettingsDlg::ApplySettings()
 		}
 		case 2 :
 		{
-			// Disable movement detection
-			bDoMovDet = FALSE;
+			// Disable recording
+			bDoRecording = FALSE;
 			if (m_pDoc->m_nDetectionLevel != 100)
 				m_pDoc->m_nDetectionLevel = 100;
 			if (m_pDoc->m_nMilliSecondsRecBeforeMovementBegin != 1000)
@@ -748,6 +752,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	m_pDoc->m_bSendMailACLineMalfunction = m_bCheckSendMailACLineMalfunction;
 	m_pDoc->m_bSendMailDeviceOK = m_bCheckSendMailDeviceOK;
 	m_pDoc->m_bSendMailMovementDetection = m_bCheckSendMailMovementDetection;
+	m_pDoc->m_bSnapshotLiveJpegEmail = m_bCheckSendMailSnapshots;
 	m_pDoc->m_MovDetAttachmentType = (CVideoDeviceDoc::AttachmentType)m_nComboSendMailMovementDetectionAttachment;
 	m_pDoc->m_nMovDetSendMailSecBetweenMsg = m_nSendMailSecBetweenMsg;
 	m_pDoc->m_SendMailConfiguration = m_CurrentSendMailConfiguration;
@@ -766,8 +771,8 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	// Restart watchdog thread
 	m_pDoc->m_WatchdogThread.Start();
 
-	// Do mov. det.?
-	if (bDoMovDet)
+	// Do recording?
+	if (bDoRecording)
 	{
 		m_pDoc->m_dwVideoProcessorMode = 1;
 		::AfxGetApp()->WriteProfileInt(m_pDoc->GetDevicePathName(), _T("VideoProcessorMode"), m_pDoc->m_dwVideoProcessorMode);
