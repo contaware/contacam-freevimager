@@ -618,7 +618,8 @@ void CCameraBasicSettingsDlg::ApplySettings()
 			sHeight.Format(_T("%d"), m_pDoc->m_DocRect.bottom);
 
 			// Init snapshot rate var
-			double dSnapshotRate = 300.0; // 5 Minutes
+			double dCurrentSnapshotRate = (double)(m_pDoc->m_nSnapshotRate) + (double)(m_pDoc->m_nSnapshotRateMs) / 1000.0;
+			double dSnapshotRate = dCurrentSnapshotRate > MIN_SNAPSHOT_RATE ? dCurrentSnapshotRate : 300.0; // 5 Minutes
 
 			// Init thumb vars
 			int nThumbWidth = (	m_pDoc->m_nSnapshotThumbWidth < 4 * DEFAULT_SNAPSHOT_THUMB_WIDTH / 3 &&
