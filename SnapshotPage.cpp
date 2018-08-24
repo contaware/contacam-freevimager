@@ -6,7 +6,6 @@
 #include "SnapshotPage.h"
 #include "VideoDeviceDoc.h"
 #include "VideoDeviceView.h"
-#include "FTPUploadConfigurationDlg.h"
 #include "BrowseDlg.h"
 #include "ResizingDlg.h"
 
@@ -44,9 +43,6 @@ BEGIN_MESSAGE_MAP(CSnapshotPage, CPropertyPage)
 	ON_EN_CHANGE(IDC_EDIT_SNAPSHOT_RATE, OnChangeEditSnapshotRate)
 	ON_BN_CLICKED(IDC_BUTTON_THUMB_SIZE, OnButtonThumbSize)
 	ON_BN_CLICKED(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO, OnCheckSnapshotHistoryVideo)
-	ON_BN_CLICKED(IDC_FTP_CONFIGURE, OnFtpConfigure)
-	ON_BN_CLICKED(IDC_CHECK_FTP_SNAPSHOT, OnCheckFtpSnapshot)
-	ON_BN_CLICKED(IDC_CHECK_FTP_SNAPSHOT_HISTORY_VIDEO, OnCheckFtpSnapshotHistoryVideo)
 END_MESSAGE_MAP()
 
 BOOL CSnapshotPage::OnInitDialog() 
@@ -57,14 +53,6 @@ BOOL CSnapshotPage::OnInitDialog()
 	// Snapshot History Video Check Box
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO);
 	pCheck->SetCheck(m_pDoc->m_bSnapshotHistoryVideo);
-
-	// Live Snapshot Jpeg Ftp Check Box
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_FTP_SNAPSHOT);
-	pCheck->SetCheck(m_pDoc->m_bSnapshotLiveJpegFtp);
-
-	// Snapshot History Video Ftp Check Box
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_FTP_SNAPSHOT_HISTORY_VIDEO);
-	pCheck->SetCheck(m_pDoc->m_bSnapshotHistoryVideoFtp);
 
 	// Snapshot rate
 	DisplaySnapshotRate();
@@ -152,37 +140,6 @@ void CSnapshotPage::OnCheckSnapshotHistoryVideo()
 		m_pDoc->m_bSnapshotHistoryVideo = TRUE;
 	else
 		m_pDoc->m_bSnapshotHistoryVideo = FALSE;
-}
-
-void CSnapshotPage::OnCheckFtpSnapshot() 
-{
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_FTP_SNAPSHOT);
-	if (pCheck->GetCheck())
-		m_pDoc->m_bSnapshotLiveJpegFtp = TRUE;
-	else
-		m_pDoc->m_bSnapshotLiveJpegFtp = FALSE;
-}
-
-void CSnapshotPage::OnCheckFtpSnapshotHistoryVideo() 
-{
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_FTP_SNAPSHOT_HISTORY_VIDEO);
-	if (pCheck->GetCheck())
-		m_pDoc->m_bSnapshotHistoryVideoFtp = TRUE;
-	else
-		m_pDoc->m_bSnapshotHistoryVideoFtp = FALSE;
-}
-
-void CSnapshotPage::OnFtpConfigure()
-{
-	// FTP Config Dialog
-	CFTPUploadConfigurationDlg dlg;
-	dlg.m_FTPUploadConfiguration = m_pDoc->m_SnapshotFTPUploadConfiguration;
-	if (dlg.DoModal() == IDOK)
-	{
-		::EnterCriticalSection(&m_pDoc->m_csSnapshotConfiguration);
-		m_pDoc->m_SnapshotFTPUploadConfiguration = dlg.m_FTPUploadConfiguration;
-		::LeaveCriticalSection(&m_pDoc->m_csSnapshotConfiguration);
-	}
 }
 
 #endif

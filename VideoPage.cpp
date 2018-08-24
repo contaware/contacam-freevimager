@@ -10,7 +10,6 @@
 #include "DxCapture.h"
 #include "DxVideoInputDlg.h"
 #include "ResizingDlg.h"
-#include "FTPUploadConfigurationDlg.h"
 #include "BrowseDlg.h"
 
 #ifdef _DEBUG
@@ -96,8 +95,6 @@ BEGIN_MESSAGE_MAP(CVideoPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_SAVE_VIDEO_MOVEMENT_DETECTION, OnSaveVideoMovementDetection)
 	ON_BN_CLICKED(IDC_SAVE_ANIMATEDGIF_MOVEMENT_DETECTION, OnSaveAnimGifMovementDetection)
 	ON_BN_CLICKED(IDC_ANIMATEDGIF_SIZE, OnAnimatedgifSize)
-	ON_BN_CLICKED(IDC_FTP_MOVEMENT_DETECTION, OnFtpMovementDetection)
-	ON_BN_CLICKED(IDC_FTP_CONFIGURE, OnFtpConfigure)
 	ON_BN_CLICKED(IDC_EXEC_MOVEMENT_DETECTION, OnExecMovementDetection)
 	ON_CBN_SELCHANGE(IDC_EXECMODE_MOVEMENT_DETECTION, OnSelchangeExecmodeMovementDetection)
 	ON_EN_CHANGE(IDC_EDIT_EXE, OnChangeEditExe)
@@ -269,13 +266,6 @@ BOOL CVideoPage::OnInitDialog()
 															m_pDoc->m_dwAnimatedGifHeight);
 	CButton* pButtonAnimGIFSize = (CButton*)GetDlgItem(IDC_ANIMATEDGIF_SIZE);
 	pButtonAnimGIFSize->SetWindowText(sSize);
-
-	// FTP Upload Movement Detection Check Box
-	CButton* pCheckFTPUploadMovementDetection = (CButton*)GetDlgItem(IDC_FTP_MOVEMENT_DETECTION);
-	if (m_pDoc->m_bFTPUploadMovementDetection)
-		pCheckFTPUploadMovementDetection->SetCheck(1);
-	else
-		pCheckFTPUploadMovementDetection->SetCheck(0);
 
 	// Execute Command Movement Detection
 	CButton* pCheckExecCommandMovementDetection = (CButton*)GetDlgItem(IDC_EXEC_MOVEMENT_DETECTION);
@@ -758,27 +748,6 @@ void CVideoPage::OnAnimatedgifSize()
 		CButton* pButton = (CButton*)GetDlgItem(IDC_ANIMATEDGIF_SIZE);
 		pButton->SetWindowText(sSize);
 	}
-
-	// Restart Save Frame List Thread
-	m_pDoc->m_SaveFrameListThread.Start();
-}
-
-void CVideoPage::OnFtpMovementDetection()
-{
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_FTP_MOVEMENT_DETECTION);
-	m_pDoc->m_bFTPUploadMovementDetection = pCheck->GetCheck() > 0;
-}
-
-void CVideoPage::OnFtpConfigure()
-{
-	// Stop Save Frame List Thread
-	m_pDoc->m_SaveFrameListThread.Kill();
-
-	// FTP Config Dialog
-	CFTPUploadConfigurationDlg dlg;
-	dlg.m_FTPUploadConfiguration = m_pDoc->m_MovDetFTPUploadConfiguration;
-	if (dlg.DoModal() == IDOK)
-		m_pDoc->m_MovDetFTPUploadConfiguration = dlg.m_FTPUploadConfiguration;
 
 	// Restart Save Frame List Thread
 	m_pDoc->m_SaveFrameListThread.Start();

@@ -37,9 +37,6 @@ protected:
 	afx_msg void OnChangeEditSnapshotRate();
 	afx_msg void OnButtonThumbSize();
 	afx_msg void OnCheckSnapshotHistoryVideo();
-	afx_msg void OnCheckFtpSnapshot();
-	afx_msg void OnCheckFtpSnapshotHistoryVideo();
-	afx_msg void OnFtpConfigure();
 	DECLARE_MESSAGE_MAP()
 };
 

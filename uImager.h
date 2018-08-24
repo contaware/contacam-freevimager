@@ -67,13 +67,6 @@
 #define MAILPROG_RELPATH								(CString(MAILPROG_DIR) + CString(_T("\\")) + CString(MAILPROG_FILENAME))
 #define MAILPROG_TIMEOUT_SEC							20 /* connect and read timeouts (both default to 5 sec which is too low) */
 
-// Ftp
-#define FTPPROG_DIR										_T("ftp")
-#define FTPPROG_FILENAME								_T("lftp.exe")
-#define FTPPROG_RELPATH									(CString(FTPPROG_DIR) + CString(_T("\\")) + CString(FTPPROG_FILENAME))
-#define FTPPROG_TIMEOUT_SEC								10
-#define FTPPROG_JPEGUPLOAD_WAIT_TIMEOUT_MS				10000 /* FTPPROG_JPEGUPLOAD_WAIT_TIMEOUT_MS < NETCOM_BLOCKING_TIMEOUT, see CVideoDeviceChildFrame::OnClose() */
-
 // Php, Css and icons
 #define	PHP_CONFIGNAME_EXT								_T("configuration.php")
 #define PHP_INDEXROOTDIRNAME_EXT						_T("index_rootdir.php")

@@ -81,8 +81,6 @@ protected:
 	afx_msg void OnSaveVideoMovementDetection();
 	afx_msg void OnSaveAnimGifMovementDetection();
 	afx_msg void OnAnimatedgifSize();
-	afx_msg void OnFtpMovementDetection();
-	afx_msg void OnFtpConfigure();
 	afx_msg void OnExecMovementDetection();
 	afx_msg void OnSelchangeExecmodeMovementDetection();
 	afx_msg void OnChangeEditExe();

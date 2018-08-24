@@ -65,10 +65,6 @@ BOOL CCreditsDlg::OnInitDialog()
 	// Smtp
 	CString ssmtp(_T("mailsend"));
 	ssmtp += CString(_T('\n')) + _T("http://github.com/muquit/mailsend");
-
-	// Ftp
-	CString sftp(_T("lftp"));
-	sftp += CString(_T('\n')) + _T("http://lftp.yar.ru");
 #endif
 
 	// CMDITabs
@@ -123,7 +119,6 @@ BOOL CCreditsDlg::OnInitDialog()
 #ifdef VIDEODEVICEDOC
 						sffmpeg		+ _T("\n\n") +
 						ssmtp		+ _T("\n\n") +
-						sftp		+ _T("\n\n") +
 #endif
 						smditabs	+ _T("\n\n") +
 						stoaster	+ _T("\n\n") +

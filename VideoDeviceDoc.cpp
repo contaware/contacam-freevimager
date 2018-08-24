@@ -578,37 +578,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			}
 		}
 
-		// FTP Upload
-		if (m_pDoc->m_bFTPUploadMovementDetection)
-		{
-			HANDLE hFTP;
-			CString sUploadDir = FirstTime.Format(_T("%Y")) + _T("/") + FirstTime.Format(_T("%m")) + _T("/") + FirstTime.Format(_T("%d"));
-			if (::GetFileSize64(sVideoFileName).QuadPart > 0 && ::GetFileSize64(sGIFFileName).QuadPart > 0)
-			{
-				hFTP = CVideoDeviceDoc::FTPUpload(m_pDoc->m_MovDetFTPUploadConfiguration,
-					sVideoFileName, sUploadDir + _T("/") + ::GetShortFileName(sVideoFileName),
-					sGIFFileName, sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
-				if (hFTP)
-					CloseHandle(hFTP);
-			}
-			else if (::GetFileSize64(sVideoFileName).QuadPart > 0)
-			{
-				hFTP = CVideoDeviceDoc::FTPUpload(m_pDoc->m_MovDetFTPUploadConfiguration,
-					sVideoFileName,
-					sUploadDir + _T("/") + ::GetShortFileName(sVideoFileName));
-				if (hFTP)
-					CloseHandle(hFTP);
-			}
-			else if (::GetFileSize64(sGIFFileName).QuadPart > 0)
-			{
-				hFTP = CVideoDeviceDoc::FTPUpload(m_pDoc->m_MovDetFTPUploadConfiguration,
-					sGIFFileName,
-					sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
-				if (hFTP)
-					CloseHandle(hFTP);
-			}
-		}
-
 		// Execute Command After Save
 		if (m_pDoc->m_bExecCommandMovementDetection && m_pDoc->m_nExecModeMovementDetection == 1)
 		{
@@ -1123,16 +1092,6 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 	{
 		// Copy from temp to snapshots folder
 		::CopyFile(sVideoTempFileName, sVideoFileName, FALSE);
-
-		// Ftp upload
-		if (m_bSnapshotHistoryVideoFtp)
-		{
-			CString sUploadDir(m_Time.Format(_T("%Y")) + _T("/") + m_Time.Format(_T("%m")) + _T("/") + m_Time.Format(_T("%d")));
-			HANDLE hFTP = CVideoDeviceDoc::FTPUpload(m_Config,
-				sVideoFileName, sUploadDir + _T("/") + ::GetShortFileName(sVideoFileName));
-			if (hFTP)
-				CloseHandle(hFTP);
-		}
 	}
 
 	// Set thread executed variable
@@ -1148,8 +1107,8 @@ exit:
 	return 0;
 }
 
-// Note: always first copy/ftp upload full-size file then the
-// thumb version which links to the full-size in web interface
+// Note: always first copy full-size file then the thumb
+//       version which links to the full-size in web interface
 int CVideoDeviceDoc::CSaveSnapshotThread::Work() 
 {
 	// Get uptime
@@ -1205,19 +1164,6 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	// Live
 	::CopyFile(sTempFileName, sLiveFileName, FALSE);
 	::CopyFile(sTempThumbFileName, sLiveThumbFileName, FALSE);
-	if (m_bSnapshotLiveJpegFtp)
-	{
-		HANDLE hFTP = CVideoDeviceDoc::FTPUpload(m_FTPUploadConfiguration,
-												sTempFileName, DEFAULT_SNAPSHOT_LIVE_JPEGNAME,
-												sTempThumbFileName, DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME);
-		if (hFTP)
-		{
-			if (::WaitForSingleObject(hFTP, FTPPROG_JPEGUPLOAD_WAIT_TIMEOUT_MS) == WAIT_TIMEOUT)
-				::KillApp(hFTP); // CloseHandle(hFTP) called inside this function
-			else
-				CloseHandle(hFTP);
-		}
-	}
 	if (m_bSnapshotLiveJpegEmail)
 	{
 		HANDLE hEMAIL = NULL;
@@ -1378,186 +1324,6 @@ BOOL CVideoDeviceDoc::SendMail(	const SendMailConfigurationStruct& Config,
 	if (phApp)
 		*phApp = NULL;
 	return FALSE;
-}
-
-// Attention: remember to call CloseHandle() for the returned handle if it's != NULL
-HANDLE CVideoDeviceDoc::FTPCall(CString sParams, BOOL bShow/*=FALSE*/)
-{
-	HANDLE h = NULL;
-	TCHAR szDrive[_MAX_DRIVE];
-	TCHAR szDir[_MAX_DIR];
-	TCHAR szProgramName[MAX_PATH];
-	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
-	{
-		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-		CString sFtpStartFile = CString(szDrive) + CString(szDir);
-		sFtpStartFile += FTPPROG_RELPATH;
-		if (::IsExistingFile(sFtpStartFile))
-		{
-			h =  ::ExecApp(	sFtpStartFile,
-							sParams,
-							_T(""), // to run ssh.exe correctly current/start dir is sFtpStartFile's dir
-							bShow);
-		}
-	}
-	return h;
-}
-
-// Attention: remember to call CloseHandle() for the returned handle if it's != NULL
-HANDLE CVideoDeviceDoc::FTPUpload(	const FTPUploadConfigurationStruct& Config,
-									CString sLocalFileName1,
-									CString sRemoteFileName1,
-									CString sLocalFileName2/*=_T("")*/,
-									CString sRemoteFileName2/*=_T("")*/)
-{
-	int nPos;
-
-	// Check
-	if (Config.m_sHost.IsEmpty() ||
-		(sLocalFileName1.IsEmpty() && sLocalFileName2.IsEmpty()))
-		return NULL;
-
-	// Default remote file name 1
-	if (sRemoteFileName1.IsEmpty())
-		sRemoteFileName1 = ::GetShortFileName(sLocalFileName1);
-
-	// Default remote file name 2
-	if (sRemoteFileName2.IsEmpty())
-		sRemoteFileName2 = ::GetShortFileName(sLocalFileName2);
-
-	// Adjust Local filename 1
-	sLocalFileName1.Replace(_T('\\'), _T('/'));
-	nPos = sLocalFileName1.Find(_T(':'));
-	if (nPos > 0)
-	{
-		sLocalFileName1.Delete(nPos);
-		sLocalFileName1.Insert(nPos - 1, _T("/cygdrive/"));
-	}
-
-	// Adjust Local filename 2
-	sLocalFileName2.Replace(_T('\\'), _T('/'));
-	nPos = sLocalFileName2.Find(_T(':'));
-	if (nPos > 0)
-	{
-		sLocalFileName2.Delete(nPos);
-		sLocalFileName2.Insert(nPos - 1, _T("/cygdrive/"));
-	}
-
-	// Remote filename and directory 1
-	CString sRemoteDir1(Config.m_sRemoteDir);
-	sRemoteDir1.Replace(_T('\\'), _T('/'));
-	sRemoteFileName1.Replace(_T('\\'), _T('/'));
-	if (!sRemoteDir1.IsEmpty())
-	{
-		sRemoteDir1.TrimRight(_T("/"));
-		sRemoteFileName1.TrimLeft(_T("/"));
-		sRemoteFileName1 = sRemoteDir1 + _T("/") + sRemoteFileName1;
-	}
-	nPos = sRemoteFileName1.ReverseFind(_T('/'));
-	if (nPos >= 0)
-		sRemoteDir1 = sRemoteFileName1.Left(nPos); // sRemoteDir1 with no trailing / otherwise mkdir -p says that the directory already exists
-
-	// Remote filename and directory 2
-	CString sRemoteDir2(Config.m_sRemoteDir);
-	sRemoteDir2.Replace(_T('\\'), _T('/'));
-	sRemoteFileName2.Replace(_T('\\'), _T('/'));
-	if (!sRemoteDir2.IsEmpty())
-	{
-		sRemoteDir2.TrimRight(_T("/"));
-		sRemoteFileName2.TrimLeft(_T("/"));
-		sRemoteFileName2 = sRemoteDir2 + _T("/") + sRemoteFileName2;
-	}
-	nPos = sRemoteFileName2.ReverseFind(_T('/'));
-	if (nPos >= 0)
-		sRemoteDir2 = sRemoteFileName2.Left(nPos); // sRemoteDir2 with no trailing / otherwise mkdir -p says that the directory already exists
-
-	// Remote temp filename 1
-	// Note: the xfer:use-temp-file logic fails when the target file already exists
-	//       because of the involved mv command. We are implementing the same
-	//       logic here but with a rm if the mv fails
-	CString sRemoteTempFileName1(sRemoteFileName1 + _T(".in"));
-
-	// Remote temp filename 2
-	// Note: the xfer:use-temp-file logic fails when the target file already exists
-	//       because of the involved mv command. We are implementing the same
-	//       logic here but with a rm if the mv fails
-	CString sRemoteTempFileName2(sRemoteFileName2 + _T(".in"));
-
-	// Set timeout, attempt 2 reconnection and abort the transfer if write target has a full disk
-	// Attention: do not enable net:persist-retries (setting it != 0) because of the below used
-	//            mkdir, mv and rm which can issue a 5xx message
-	CString sSets;
-	sSets.Format(_T("set net:timeout %d; set net:max-retries 3; set xfer:disk-full-fatal yes; "), FTPPROG_TIMEOUT_SEC);
-
-	// Implicit FTPS
-	CString sProto;
-	if (Config.m_nPort == 990)
-	{
-		sSets += _T("set ssl:verify-certificate no; ");
-		sSets += _T("set ftp:passive-mode on; ");
-		sProto = _T("ftps://");
-	}
-	// SSH File Transfer Protocol SFTP
-	else if (Config.m_nPort == 22)
-	{
-		sSets += _T("set sftp:auto-confirm yes; ");
-		sSets += _T("set sftp:connect-program './ssh.exe'; "); // when executing lftp.exe current directory must contain ssh.exe
-		sProto = _T("sftp://");
-	}
-	// Unencrypted or explicit FTPES (both on port 21)
-	else
-	{
-		sSets += _T("set ssl:verify-certificate no; ");
-		sSets += _T("set ftp:passive-mode on; ");
-		sProto = _T("ftp://");
-	}
-
-	// Upload to temp file creating directory if not existing, remove target and rename
-	CString sPut;
-	if (!sLocalFileName1.IsEmpty() && !sLocalFileName2.IsEmpty())
-	{
-		sPut.Format(_T("(put '%s' -o '%s' || (mkdir -p '%s'; put '%s' -o '%s'))& ")
-					_T("(put '%s' -o '%s' || (mkdir -p '%s'; put '%s' -o '%s'))& ")
-					_T("wait all; ")
-					_T("rm '%s'; mv '%s' '%s'; ")
-					_T("rm '%s'; mv '%s' '%s'; "),
-					sLocalFileName1, sRemoteTempFileName1,
-					sRemoteDir1, sLocalFileName1, sRemoteTempFileName1,
-					sLocalFileName2, sRemoteTempFileName2,
-					sRemoteDir2, sLocalFileName2, sRemoteTempFileName2,
-					sRemoteFileName1, sRemoteTempFileName1, sRemoteFileName1,
-					sRemoteFileName2, sRemoteTempFileName2, sRemoteFileName2);
-	}
-	else if (!sLocalFileName1.IsEmpty())
-	{
-		sPut.Format(_T("put '%s' -o '%s' || (mkdir -p '%s'; put '%s' -o '%s'); rm '%s'; mv '%s' '%s'; "),
-					sLocalFileName1, sRemoteTempFileName1,
-					sRemoteDir1, sLocalFileName1, sRemoteTempFileName1,
-					sRemoteFileName1, sRemoteTempFileName1, sRemoteFileName1);
-	}
-	else if (!sLocalFileName2.IsEmpty())
-	{
-		sPut.Format(_T("put '%s' -o '%s' || (mkdir -p '%s'; put '%s' -o '%s'); rm '%s'; mv '%s' '%s'; "),
-					sLocalFileName2, sRemoteTempFileName2,
-					sRemoteDir2, sLocalFileName2, sRemoteTempFileName2,
-					sRemoteFileName2, sRemoteTempFileName2, sRemoteFileName2);
-	}
-
-	// Port
-	CString sPort;
-	sPort.Format(_T("-p %d "), Config.m_nPort);
-
-	// Username and password (lftp uses anonymous if nothing supplied)
-	CString sUser;
-	if (!Config.m_sUsername.IsEmpty() && !Config.m_sPassword.IsEmpty())
-		sUser.Format(_T("-u \"%s,%s\" "), Config.m_sUsername, Config.m_sPassword);
-	else if (!Config.m_sUsername.IsEmpty() && Config.m_sPassword.IsEmpty())
-		sUser.Format(_T("-u \"%s\" "), Config.m_sUsername);
-
-	// FTP
-	CString sOptions(CString(_T("-e \"")) + sSets + sPut + _T("exit\" ") +
-					sPort + sUser + sProto + Config.m_sHost);
-	return FTPCall(sOptions);
 }
 
 UINT CVideoDeviceDoc::EffectiveCaptureAudioDeviceID()
@@ -3700,9 +3466,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 
 	// Snapshot
 	m_bSnapshotHistoryVideo = FALSE;
-	m_bSnapshotLiveJpegFtp = FALSE;
 	m_bSnapshotLiveJpegEmail = FALSE;
-	m_bSnapshotHistoryVideoFtp = FALSE;
 	m_nSnapshotRate = DEFAULT_SNAPSHOT_RATE;
 	m_nSnapshotRateMs = 0;
 	m_nSnapshotThumbWidth = DEFAULT_SNAPSHOT_THUMB_WIDTH;
@@ -3739,7 +3503,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bSaveAnimGIFMovementDetection = TRUE;
 	m_bSendMailMalfunction = TRUE;
 	m_bSendMailMovementDetection = FALSE;
-	m_bFTPUploadMovementDetection = FALSE;
 	m_bExecCommandMovementDetection = FALSE;
 	m_nExecModeMovementDetection = 0;
 	m_sExecCommandMovementDetection = _T("");
@@ -3812,18 +3575,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_SendMailConfiguration.m_sPassword = _T("");
 	m_SendMailConfiguration.m_ConnectionType = STARTTLS;
 
-	// FTP Settings
-	m_MovDetFTPUploadConfiguration.m_sHost = _T("");
-	m_MovDetFTPUploadConfiguration.m_sRemoteDir = _T("");
-	m_MovDetFTPUploadConfiguration.m_nPort = 21;
-	m_MovDetFTPUploadConfiguration.m_sUsername = _T("");
-	m_MovDetFTPUploadConfiguration.m_sPassword = _T("");
-	m_SnapshotFTPUploadConfiguration.m_sHost = _T("");
-	m_SnapshotFTPUploadConfiguration.m_sRemoteDir = _T("");
-	m_SnapshotFTPUploadConfiguration.m_nPort = 21;
-	m_SnapshotFTPUploadConfiguration.m_sUsername = _T("");
-	m_SnapshotFTPUploadConfiguration.m_sPassword = _T("");
-
 	// Init Command Execution on Detection Critical Section
 	::InitializeCriticalSection(&m_csExecCommandMovementDetection);
 
@@ -3835,9 +3586,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 
 	// Init Http Video Processing Image Data Critical Section
 	::InitializeCriticalSection(&m_csHttpProcess);
-
-	// Init Snapshot Configuration Critical Section
-	::InitializeCriticalSection(&m_csSnapshotConfiguration);
 
 	// Init Process Frame Stop Engine Critical Section
 	::InitializeCriticalSection(&m_csProcessFrameStop);
@@ -3892,7 +3640,6 @@ CVideoDeviceDoc::~CVideoDeviceDoc()
 	::DeleteCriticalSection(&m_csConnectionError);
 	::DeleteCriticalSection(&m_csAudioList);
 	::DeleteCriticalSection(&m_csProcessFrameStop);
-	::DeleteCriticalSection(&m_csSnapshotConfiguration);
 	::DeleteCriticalSection(&m_csHttpProcess);
 	::DeleteCriticalSection(&m_csHttpParams);
 	::DeleteCriticalSection(&m_csMovementDetectionsList);
@@ -4470,18 +4217,6 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_SendMailConfiguration.m_sPassword = pApp->GetSecureProfileString(sSection, _T("SendMailPasswordExportable"));
 	m_SendMailConfiguration.m_ConnectionType = (ConnectionType) pApp->GetProfileInt(sSection, _T("SendMailConnectionType"), STARTTLS);
 
-	// FTP Settings
-	m_MovDetFTPUploadConfiguration.m_sHost = pApp->GetProfileString(sSection, _T("MovDetFTPHost"), _T(""));
-	m_MovDetFTPUploadConfiguration.m_sRemoteDir = pApp->GetProfileString(sSection, _T("MovDetFTPRemoteDir"), _T(""));
-	m_MovDetFTPUploadConfiguration.m_nPort = (int) pApp->GetProfileInt(sSection, _T("MovDetFTPPort"), 21);
-	m_MovDetFTPUploadConfiguration.m_sUsername = pApp->GetSecureProfileString(sSection, _T("MovDetFTPUsernameExportable"));
-	m_MovDetFTPUploadConfiguration.m_sPassword = pApp->GetSecureProfileString(sSection, _T("MovDetFTPPasswordExportable"));
-	m_SnapshotFTPUploadConfiguration.m_sHost = pApp->GetProfileString(sSection, _T("SnapshotFTPHost"), _T(""));
-	m_SnapshotFTPUploadConfiguration.m_sRemoteDir = pApp->GetProfileString(sSection, _T("SnapshotFTPRemoteDir"), _T(""));
-	m_SnapshotFTPUploadConfiguration.m_nPort = (int) pApp->GetProfileInt(sSection, _T("SnapshotFTPPort"), 21);
-	m_SnapshotFTPUploadConfiguration.m_sUsername = pApp->GetSecureProfileString(sSection, _T("SnapshotFTPUsernameExportable"));
-	m_SnapshotFTPUploadConfiguration.m_sPassword = pApp->GetSecureProfileString(sSection, _T("SnapshotFTPPasswordExportable"));
-
 	// Networking
 	m_nHttpVideoQuality = (int) pApp->GetProfileInt(sSection, _T("HTTPVideoQuality"), HTTP_DEFAULT_VIDEO_QUALITY);
 	m_nHttpVideoSizeX = (int) pApp->GetProfileInt(sSection, _T("HTTPVideoSizeX"), HTTP_DEFAULT_VIDEO_SIZE_CX);
@@ -4509,9 +4244,7 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	sRecordAutoSaveDir.TrimRight(_T('\\'));
 	m_bObscureSource = ::IsExistingFile(sRecordAutoSaveDir + _T("\\") + CAMERA_IS_OBSCURED_FILENAME);
 	m_bSnapshotHistoryVideo = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistoryVideo"), FALSE);
-	m_bSnapshotLiveJpegFtp = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotLiveJpegFtp"), FALSE);
 	m_bSnapshotLiveJpegEmail = (BOOL)pApp->GetProfileInt(sSection, _T("SnapshotLiveJpegEmail"), FALSE);
-	m_bSnapshotHistoryVideoFtp = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistoryVideoFtp"), FALSE);
 	m_nSnapshotRate = (int) pApp->GetProfileInt(sSection, _T("SnapshotRate"), DEFAULT_SNAPSHOT_RATE);
 	m_nSnapshotRateMs = (int) pApp->GetProfileInt(sSection, _T("SnapshotRateMs"), 0);
 	m_nSnapshotThumbWidth = (int) MakeSizeMultipleOf4(pApp->GetProfileInt(sSection, _T("SnapshotThumbWidth"), DEFAULT_SNAPSHOT_THUMB_WIDTH));
@@ -4539,7 +4272,6 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_bSaveAnimGIFMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), TRUE);
 	m_bSendMailMalfunction = (BOOL)pApp->GetProfileInt(sSection, _T("SendMailMalfunction"), TRUE);
 	m_bSendMailMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SendMailMovementDetection"), FALSE);
-	m_bFTPUploadMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("FTPUploadMovementDetection"), FALSE);
 	m_bExecCommandMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("DoExecCommandMovementDetection"), FALSE);
 	m_nExecModeMovementDetection = pApp->GetProfileInt(sSection, _T("ExecModeMovementDetection"), 0);
 	
@@ -4656,18 +4388,6 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteSecureProfileString(sSection, _T("SendMailPasswordExportable"), m_SendMailConfiguration.m_sPassword);
 	pApp->WriteProfileInt(sSection, _T("SendMailConnectionType"), (int)m_SendMailConfiguration.m_ConnectionType);
 
-	// FTP Settings
-	pApp->WriteProfileString(sSection, _T("MovDetFTPHost"), m_MovDetFTPUploadConfiguration.m_sHost);
-	pApp->WriteProfileString(sSection, _T("MovDetFTPRemoteDir"), m_MovDetFTPUploadConfiguration.m_sRemoteDir);
-	pApp->WriteProfileInt(sSection, _T("MovDetFTPPort"), m_MovDetFTPUploadConfiguration.m_nPort);
-	pApp->WriteSecureProfileString(sSection, _T("MovDetFTPUsernameExportable"), m_MovDetFTPUploadConfiguration.m_sUsername);
-	pApp->WriteSecureProfileString(sSection, _T("MovDetFTPPasswordExportable"), m_MovDetFTPUploadConfiguration.m_sPassword);
-	pApp->WriteProfileString(sSection, _T("SnapshotFTPHost"), m_SnapshotFTPUploadConfiguration.m_sHost);
-	pApp->WriteProfileString(sSection, _T("SnapshotFTPRemoteDir"), m_SnapshotFTPUploadConfiguration.m_sRemoteDir);
-	pApp->WriteProfileInt(sSection, _T("SnapshotFTPPort"), m_SnapshotFTPUploadConfiguration.m_nPort);
-	pApp->WriteSecureProfileString(sSection, _T("SnapshotFTPUsernameExportable"), m_SnapshotFTPUploadConfiguration.m_sUsername);
-	pApp->WriteSecureProfileString(sSection, _T("SnapshotFTPPasswordExportable"), m_SnapshotFTPUploadConfiguration.m_sPassword);
-
 	// Networking
 	pApp->WriteProfileInt(sSection, _T("HTTPVideoQuality"), m_nHttpVideoQuality);
 	pApp->WriteProfileInt(sSection, _T("HTTPVideoSizeX"), m_nHttpVideoSizeX);
@@ -4680,9 +4400,7 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("Rotate180"), (int)m_bRotate180);
 	pApp->WriteProfileString(sSection, _T("RecordAutoSaveDir"), m_sRecordAutoSaveDir);
 	pApp->WriteProfileInt(sSection, _T("SnapshotHistoryVideo"), (int)m_bSnapshotHistoryVideo);
-	pApp->WriteProfileInt(sSection, _T("SnapshotLiveJpegFtp"), (int)m_bSnapshotLiveJpegFtp);
 	pApp->WriteProfileInt(sSection, _T("SnapshotLiveJpegEmail"), (int)m_bSnapshotLiveJpegEmail);
-	pApp->WriteProfileInt(sSection, _T("SnapshotHistoryVideoFtp"), (int)m_bSnapshotHistoryVideoFtp);
 	pApp->WriteProfileInt(sSection, _T("SnapshotRate"), m_nSnapshotRate);
 	pApp->WriteProfileInt(sSection, _T("SnapshotRateMs"), m_nSnapshotRateMs);
 	pApp->WriteProfileInt(sSection, _T("SnapshotThumbWidth"), m_nSnapshotThumbWidth);
@@ -4706,7 +4424,6 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), m_bSaveAnimGIFMovementDetection);
 	pApp->WriteProfileInt(sSection, _T("SendMailMalfunction"), m_bSendMailMalfunction);
 	pApp->WriteProfileInt(sSection, _T("SendMailMovementDetection"), m_bSendMailMovementDetection);
-	pApp->WriteProfileInt(sSection, _T("FTPUploadMovementDetection"), m_bFTPUploadMovementDetection);
 	pApp->WriteProfileInt(sSection, _T("DoExecCommandMovementDetection"), m_bExecCommandMovementDetection);
 	pApp->WriteProfileInt(sSection, _T("ExecModeMovementDetection"), m_nExecModeMovementDetection);
 		
@@ -7606,7 +7323,6 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 			m_SaveSnapshotThread.m_bShowFrameTime = m_bShowFrameTime;
 			m_SaveSnapshotThread.m_bDetectingMinLengthMovement = m_bDetectingMinLengthMovement;
 			m_SaveSnapshotThread.m_nRefFontSize = m_nRefFontSize;
-			m_SaveSnapshotThread.m_bSnapshotLiveJpegFtp = m_bSnapshotLiveJpegFtp;
 			m_SaveSnapshotThread.m_bSnapshotLiveJpegEmail = m_bSnapshotLiveJpegEmail;
 			m_SaveSnapshotThread.m_nSnapshotThumbWidth = m_nSnapshotThumbWidth;
 			m_SaveSnapshotThread.m_nSnapshotThumbHeight = m_nSnapshotThumbHeight;
@@ -7614,9 +7330,6 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 			m_SaveSnapshotThread.m_sAssignedDeviceName = GetAssignedDeviceName();
 			m_SaveSnapshotThread.m_SendMailConfiguration = m_SendMailConfiguration;
 			m_SaveSnapshotThread.m_sSnapshotAutoSaveDir = m_sRecordAutoSaveDir;
-			::EnterCriticalSection(&m_csSnapshotConfiguration);
-			m_SaveSnapshotThread.m_FTPUploadConfiguration = m_SnapshotFTPUploadConfiguration;
-			::LeaveCriticalSection(&m_csSnapshotConfiguration);
 			m_SaveSnapshotThread.Start();
 		}
 	}
@@ -7634,13 +7347,9 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 		// Start Thread if not already executed for Yesterday
 		if (m_SaveSnapshotVideoThread.m_ThreadExecutedForTime < Yesterday)
 		{
-			m_SaveSnapshotVideoThread.m_bSnapshotHistoryVideoFtp = m_bSnapshotHistoryVideoFtp;
 			m_SaveSnapshotVideoThread.m_Time = Yesterday;
 			m_SaveSnapshotVideoThread.m_sMetadataTitle = GetAssignedDeviceName() + _T(" ") + ::MakeDateLocalFormat(Yesterday);
 			m_SaveSnapshotVideoThread.m_sSnapshotAutoSaveDir = m_sRecordAutoSaveDir;
-			::EnterCriticalSection(&m_csSnapshotConfiguration);
-			m_SaveSnapshotVideoThread.m_Config = m_SnapshotFTPUploadConfiguration;
-			::LeaveCriticalSection(&m_csSnapshotConfiguration);
 			m_SaveSnapshotVideoThread.Start();
 		}
 	}

@@ -17,7 +17,6 @@
 #include "SortableFileFind.h"
 #include "HostPortDlg.h"
 #include "SendMailConfigurationDlg.h"
-#include "FTPUploadConfigurationDlg.h"
 extern "C"
 {
 #include "libavutil/opt.h"
@@ -480,12 +479,10 @@ public:
 			CSaveSnapshotVideoThread(){m_ThreadExecutedForTime = CTime(0);};
 			virtual ~CSaveSnapshotVideoThread() {Kill();};
 
-			BOOL m_bSnapshotHistoryVideoFtp;
 			CTime m_Time;
 			CString m_sMetadataTitle;
 			CTime m_ThreadExecutedForTime;
 			CString m_sSnapshotAutoSaveDir;
-			FTPUploadConfigurationStruct m_Config;
 
 		protected:
 			int Work();
@@ -504,14 +501,12 @@ public:
 			BOOL m_bShowFrameTime;
 			BOOL m_bDetectingMinLengthMovement;
 			int m_nRefFontSize;
-			BOOL m_bSnapshotLiveJpegFtp;
 			BOOL m_bSnapshotLiveJpegEmail;
 			int m_nSnapshotThumbWidth;
 			int m_nSnapshotThumbHeight;
 			CTime m_Time;
 			CString m_sAssignedDeviceName;
 			CString m_sSnapshotAutoSaveDir;
-			FTPUploadConfigurationStruct m_FTPUploadConfiguration;
 			SendMailConfigurationStruct m_SendMailConfiguration;
 
 		protected:
@@ -722,17 +717,6 @@ public:
 										int nMovDetSavesCount = 0);
 	void HideDetectionZones();
 
-	// FTP
-	// Both functions return the handle of the started lftp process
-	// (remember to call CloseHandle() for the returned handle if != NULL)
-	static HANDLE FTPCall(	CString sParams,					// command line params for lftp.exe
-							BOOL bShow = FALSE);				// show / hide the console window
-	static HANDLE FTPUpload(const FTPUploadConfigurationStruct& Config,
-							CString sLocalFileName1,			// first file to upload
-							CString sRemoteFileName1,			// remote name of first file
-							CString sLocalFileName2 = _T(""),	// optional second file to upload
-							CString sRemoteFileName2 = _T(""));	// remote name of second file
-
 	// Validate Name
 	static CString GetValidName(CString sName);
 
@@ -901,16 +885,12 @@ public:
 
 	// Snapshot Vars
 	volatile BOOL m_bSnapshotHistoryVideo;				// Snapshot history save Video
-	volatile BOOL m_bSnapshotLiveJpegFtp;				// Upload Jpeg Live snapshot files
 	volatile BOOL m_bSnapshotLiveJpegEmail;				// Email Jpeg Live snapshot file
-	volatile BOOL m_bSnapshotHistoryVideoFtp;			// Upload Video Snapshot history files
 	volatile int m_nSnapshotRate;						// Snapshot rate in seconds
 	volatile int m_nSnapshotRateMs;						// Snapshot rate in ms, effective: 1000 * m_nSnapshotRate + m_nSnapshotRateMs
 	volatile int m_nSnapshotThumbWidth;					// Snapshot thumbnail width
 	volatile int m_nSnapshotThumbHeight;				// Snapshot thumbnail height
 	volatile DWORD m_dwNextSnapshotUpTime;				// The up-time of the next snapshot
-	FTPUploadConfigurationStruct m_SnapshotFTPUploadConfiguration;
-	CRITICAL_SECTION m_csSnapshotConfiguration;			// Critical section for snapshot configurations
 
 	// Movement Detector Vars
 	volatile DWORD m_dwVideoProcessorMode;				// 0 = Off, 1 = On
@@ -930,7 +910,6 @@ public:
 	volatile BOOL m_bSaveAnimGIFMovementDetection;		// Save Movement Detections as Animated GIF
 	volatile BOOL m_bSendMailMalfunction;				// Send Email on Device Malfunction
 	volatile BOOL m_bSendMailMovementDetection;			// Send Email on Movement Detections
-	volatile BOOL m_bFTPUploadMovementDetection;		// FTP Upload Movement Detections
 	volatile BOOL m_bExecCommandMovementDetection;		// Execute Command on Movement Detection
 	volatile BOOL m_nExecModeMovementDetection;			// Determines when to execute the command
 	CString m_sExecCommandMovementDetection;			// Command to execute on Movement Detection
@@ -976,7 +955,6 @@ public:
 	CTime m_MovDetLastJPGMailTime;						// Time of last sent detection email with JPG attachment
 	CTime m_MovDetLastVideoMailTime;					// Time of last sent detection email with video attachment
 	CTime m_MovDetLastGIFMailTime;						// Time of last sent detection email with GIF attachment
-	FTPUploadConfigurationStruct m_MovDetFTPUploadConfiguration;
 
 	// Send Mail
 	SendMailConfigurationStruct m_SendMailConfiguration;

@@ -106,7 +106,6 @@
 #define IDD_SNAPSHOT                    297
 #define IDI_TIF                         297
 #define IDI_PNG                         298
-#define IDD_FTP_CONFIGURATION           299
 #define IDI_PCX                         299
 #define IDD_SETTINGS_VIDEODEVICEDOC     300
 #define IDI_EMF                         300
@@ -1214,11 +1213,9 @@
 #define IDS_MULTILANG_1226              1226
 #define IDS_MULTILANG_1227              1227
 #define IDS_MULTILANG_1228              1228
-#define IDC_FTP_CONFIGURE               1228
 #define IDS_MULTILANG_1229              1229
 #define IDC_CHECK_SENDMAIL_MOVEMENT_DETECTION 1229
 #define IDS_MULTILANG_1230              1230
-#define IDC_FTP_MOVEMENT_DETECTION      1230
 #define IDC_CHECK_SENDMAIL_MALFUNCTION  1230
 #define IDS_MULTILANG_1231              1231
 #define IDC_EXEC_MOVEMENT_DETECTION     1231
@@ -1226,7 +1223,6 @@
 #define IDS_MULTILANG_1233              1233
 #define IDC_CHECK_SENDMAIL_SNAPSHOTS    1233
 #define IDS_MULTILANG_1234              1234
-#define IDC_FTP_REMOTEDIR               1234
 #define IDS_MULTILANG_1235              1235
 #define IDS_MULTILANG_1236              1236
 #define IDS_MULTILANG_1237              1237
@@ -2157,13 +2153,11 @@
 #define IDS_STRING1771                  1771
 #define IDS_STRING1772                  1772
 #define IDS_STRING1773                  1773
-#define IDC_CHECK_FTP_SNAPSHOT          1774
 #define IDS_STRING1774                  1774
 #define IDS_STRING1775                  1775
 #define IDC_CHECK_SNAPSHOT_HISTORY_VIDEO 1776
 #define IDS_STRING1776                  1776
 #define IDS_STRING1777                  1777
-#define IDC_CHECK_FTP_SNAPSHOT_HISTORY_VIDEO 1778
 #define IDS_STRING1778                  1778
 #define IDS_STRING1779                  1779
 #define IDS_STRING1780                  1780
@@ -2958,15 +2952,8 @@
 #define IDC_STATIC2489                  2489
 #define IDC_STATIC2490                  2490
 #define IDC_STATIC2491                  2491
-#define IDC_STATIC2492                  2492
 #define IDC_STATIC2493                  2493
-#define IDC_STATIC2494                  2494
 #define IDC_STATIC2495                  2495
-#define IDC_STATIC2496                  2496
-#define IDC_STATIC2497                  2497
-#define IDC_STATIC2498                  2498
-#define IDC_STATIC2499                  2499
-#define IDC_STATIC2500                  2500
 #define IDC_CHECK_WEBSERVER             2501
 #define IDC_RADIO_MOVDET                2519
 #define IDC_RADIO_SNAPSHOT              2520

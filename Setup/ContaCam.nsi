@@ -216,11 +216,6 @@ KillMail:
   Sleep 1500					; give process some time to really stop
   StrCmp $R0 "0" KillMail 0		; check return value of KillProc (Sleep doesn't set $R0)
   
-KillFtp:
-  KillProcDLL::KillProc "lftp.exe"
-  Sleep 1500					; give process some time to really stop
-  StrCmp $R0 "0" KillFtp 0		; check return value of KillProc (Sleep doesn't set $R0)
-  
   Pop $R1
   Pop $R0
   
@@ -306,11 +301,6 @@ Section "${APPNAME_NOEXT} Program (required)"
   ; Mailer files
   SetOutPath $INSTDIR\mail
   File /r "..\mail\*.*"
-  SetOutPath $INSTDIR
-  
-  ; lftp files
-  SetOutPath $INSTDIR\ftp
-  File /r "..\ftp\*.*"
   SetOutPath $INSTDIR
   
   ; Write the installation path into the registry
@@ -486,11 +476,6 @@ KillMail:
   KillProcDLL::KillProc "mailsend.exe"
   Sleep 1500					; give process some time to really stop
   StrCmp $R0 "0" KillMail 0		; check return value of KillProc (Sleep doesn't set $R0)
-  
-KillFtp:
-  KillProcDLL::KillProc "lftp.exe"
-  Sleep 1500					; give process some time to really stop
-  StrCmp $R0 "0" KillFtp 0		; check return value of KillProc (Sleep doesn't set $R0)
   
   Pop $R1
   Pop $R0
