@@ -935,7 +935,6 @@ public:
 	volatile BOOL m_bSaveVideoMovementDetection;		// Save Movement Detections as Video File
 	volatile BOOL m_bSaveAnimGIFMovementDetection;		// Save Movement Detections as Animated GIF
 	volatile BOOL m_bSendMailMalfunction;				// Send Email on Device Malfunction
-	volatile BOOL m_bSendMailDeviceOK;					// Send Email when Device Works Properly
 	volatile BOOL m_bSendMailMovementDetection;			// Send Email on Movement Detections
 	volatile BOOL m_bFTPUploadMovementDetection;		// FTP Upload Movement Detections
 	volatile BOOL m_bExecCommandMovementDetection;		// Execute Command on Movement Detection
@@ -987,7 +986,6 @@ public:
 
 	// Send Mail
 	SendMailConfigurationStruct m_SendMailConfiguration;
-	CTime m_LastDeviceNotifyTime;
 
 	// Property Sheet Pointer
 	CCameraAdvancedSettingsPropertySheet* volatile m_pCameraAdvancedSettingsPropertySheet;

@@ -3740,7 +3740,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bSaveVideoMovementDetection = TRUE;
 	m_bSaveAnimGIFMovementDetection = TRUE;
 	m_bSendMailMalfunction = TRUE;
-	m_bSendMailDeviceOK = FALSE;
 	m_bSendMailMovementDetection = FALSE;
 	m_bFTPUploadMovementDetection = FALSE;
 	m_bExecCommandMovementDetection = FALSE;
@@ -3814,7 +3813,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_SendMailConfiguration.m_sUsername = _T("");
 	m_SendMailConfiguration.m_sPassword = _T("");
 	m_SendMailConfiguration.m_ConnectionType = STARTTLS;
-	m_LastDeviceNotifyTime = 0;
 
 	// FTP Settings
 	m_MovDetFTPUploadConfiguration.m_sHost = _T("");
@@ -4473,7 +4471,6 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_SendMailConfiguration.m_sUsername = pApp->GetSecureProfileString(sSection, _T("SendMailUsernameExportable"));
 	m_SendMailConfiguration.m_sPassword = pApp->GetSecureProfileString(sSection, _T("SendMailPasswordExportable"));
 	m_SendMailConfiguration.m_ConnectionType = (ConnectionType) pApp->GetProfileInt(sSection, _T("SendMailConnectionType"), STARTTLS);
-	m_LastDeviceNotifyTime = pApp->GetProfileInt64(sSection, _T("DeviceNotifyTime"), 0);
 
 	// FTP Settings
 	m_MovDetFTPUploadConfiguration.m_sHost = pApp->GetProfileString(sSection, _T("MovDetFTPHost"), _T(""));
@@ -4545,7 +4542,6 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_bSaveVideoMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveVideoMovementDetection"), TRUE);
 	m_bSaveAnimGIFMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), TRUE);
 	m_bSendMailMalfunction = (BOOL)pApp->GetProfileInt(sSection, _T("SendMailMalfunction"), TRUE);
-	m_bSendMailDeviceOK = (BOOL)pApp->GetProfileInt(sSection, _T("SendMailDeviceOK"), FALSE);
 	m_bSendMailMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SendMailMovementDetection"), FALSE);
 	m_bFTPUploadMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("FTPUploadMovementDetection"), FALSE);
 	m_bExecCommandMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("DoExecCommandMovementDetection"), FALSE);
@@ -4663,7 +4659,6 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteSecureProfileString(sSection, _T("SendMailUsernameExportable"), m_SendMailConfiguration.m_sUsername);
 	pApp->WriteSecureProfileString(sSection, _T("SendMailPasswordExportable"), m_SendMailConfiguration.m_sPassword);
 	pApp->WriteProfileInt(sSection, _T("SendMailConnectionType"), (int)m_SendMailConfiguration.m_ConnectionType);
-	pApp->WriteProfileInt64(sSection, _T("DeviceNotifyTime"), m_LastDeviceNotifyTime.GetTime());
 
 	// FTP Settings
 	pApp->WriteProfileString(sSection, _T("MovDetFTPHost"), m_MovDetFTPUploadConfiguration.m_sHost);
@@ -4716,7 +4711,6 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("SaveVideoMovementDetection"), m_bSaveVideoMovementDetection);
 	pApp->WriteProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), m_bSaveAnimGIFMovementDetection);
 	pApp->WriteProfileInt(sSection, _T("SendMailMalfunction"), m_bSendMailMalfunction);
-	pApp->WriteProfileInt(sSection, _T("SendMailDeviceOK"), m_bSendMailDeviceOK);
 	pApp->WriteProfileInt(sSection, _T("SendMailMovementDetection"), m_bSendMailMovementDetection);
 	pApp->WriteProfileInt(sSection, _T("FTPUploadMovementDetection"), m_bFTPUploadMovementDetection);
 	pApp->WriteProfileInt(sSection, _T("DoExecCommandMovementDetection"), m_bExecCommandMovementDetection);
@@ -7376,16 +7370,6 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 
 		// Timed Snapshot
 		Snapshot(pDib, CurrentTime);
-
-		// Device OK heartbeat
-		if (CurrentTime.GetDay() != m_LastDeviceNotifyTime.GetDay()		||
-			CurrentTime.GetMonth() != m_LastDeviceNotifyTime.GetMonth()	||
-			CurrentTime.GetYear() != m_LastDeviceNotifyTime.GetYear())
-		{
-			if (m_bSendMailDeviceOK)
-				CVideoDeviceDoc::SendMail(m_SendMailConfiguration, GetAssignedDeviceName(), CurrentTime, _T("OK"), _T(""), SaveJpegMail(pDib, CurrentTime, dwCurrentInitUpTime));
-			m_LastDeviceNotifyTime = CurrentTime;
-		}
 
 		// Add Frame Time if User Wants it
 		if (m_bShowFrameTime)

@@ -34,7 +34,6 @@ public:
 	BOOL	m_bAutorun;
 	BOOL	m_bCheckCameraCommands;
 	BOOL	m_bCheckSendMailMalfunction;
-	BOOL	m_bCheckSendMailDeviceOK;
 	BOOL	m_bCheckSendMailMovementDetection;
 	BOOL	m_bCheckSendMailSnapshots;
 	int		m_nComboSendMailMovementDetectionAttachment;
