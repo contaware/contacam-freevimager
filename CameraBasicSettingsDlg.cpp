@@ -529,10 +529,6 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	else
 		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SHOW_CAMERA_COMMANDS, _T("0"));
 
-	// Snapshot file names
-	m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTNAME, m_pDoc->m_sSnapshotLiveJpegName + _T(".jpg"));
-	m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTTHUMBNAME, m_pDoc->m_sSnapshotLiveJpegThumbName + _T(".jpg"));
-
 	// Usage
 	switch (m_nUsage)
 	{

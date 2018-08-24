@@ -93,8 +93,8 @@ class CVideoPage;
 #define MIN_SNAPSHOT_RATE					1			// one snapshot per second
 #define DEFAULT_SNAPSHOT_RATE				1			// each given seconds
 #define DEFAULT_SNAPSHOT_HISTORY_FRAMERATE	15.0		// fps
-#define DEFAULT_SNAPSHOT_LIVE_JPEGNAME		_T("snapshot")
-#define DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME	_T("snapshot_thumb")
+#define DEFAULT_SNAPSHOT_LIVE_JPEGNAME		_T("snapshot.jpg")
+#define DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME	_T("snapshot_thumb.jpg")
 #define DEFAULT_SNAPSHOT_COMPR_QUALITY		60			// 0 Worst Quality, 100 Best Quality
 #define DEFAULT_SNAPSHOT_THUMB_WIDTH		228			// Must be a multiple of 4 because of stretch and codec
 #define DEFAULT_SNAPSHOT_THUMB_HEIGHT		172			// Must be a multiple of 4 because of stretch and codec
@@ -142,8 +142,6 @@ class CVideoPage;
 #define PHPCONFIG_SUMMARYIFRAME_PHP			_T("summaryiframe.php")
 #define PHPCONFIG_SUMMARYTITLE				_T("SUMMARYTITLE")
 #define PHPCONFIG_SNAPSHOTTITLE				_T("SNAPSHOTTITLE")
-#define PHPCONFIG_SNAPSHOTNAME				_T("SNAPSHOTNAME")
-#define PHPCONFIG_SNAPSHOTTHUMBNAME			_T("SNAPSHOTTHUMBNAME")
 #define PHPCONFIG_SNAPSHOTREFRESHSEC		_T("SNAPSHOTREFRESHSEC")
 #define PHPCONFIG_SERVERPUSH_POLLRATE_MS	_T("SERVERPUSH_POLLRATE_MS")
 #define PHPCONFIG_THUMBWIDTH				_T("THUMBWIDTH")
@@ -513,8 +511,6 @@ public:
 			CTime m_Time;
 			CString m_sAssignedDeviceName;
 			CString m_sSnapshotAutoSaveDir;
-			CString m_sSnapshotLiveJpegName;
-			CString m_sSnapshotLiveJpegThumbName;
 			FTPUploadConfigurationStruct m_FTPUploadConfiguration;
 			SendMailConfigurationStruct m_SendMailConfiguration;
 
@@ -913,8 +909,6 @@ public:
 	volatile int m_nSnapshotThumbWidth;					// Snapshot thumbnail width
 	volatile int m_nSnapshotThumbHeight;				// Snapshot thumbnail height
 	volatile DWORD m_dwNextSnapshotUpTime;				// The up-time of the next snapshot
-	CString m_sSnapshotLiveJpegName;					// Live snapshot jpeg name (without .jpg extension)
-	CString m_sSnapshotLiveJpegThumbName;				// Live snapshot jpeg thumb name (without .jpg extension)
 	FTPUploadConfigurationStruct m_SnapshotFTPUploadConfiguration;
 	CRITICAL_SECTION m_csSnapshotConfiguration;			// Critical section for snapshot configurations
 

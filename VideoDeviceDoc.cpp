@@ -1158,10 +1158,10 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	// Live file names
 	CString sLiveFileName(m_sSnapshotAutoSaveDir);
 	sLiveFileName.TrimRight(_T('\\'));
-	sLiveFileName += _T("\\") + m_sSnapshotLiveJpegName + _T(".jpg");
+	sLiveFileName += CString(_T("\\")) + DEFAULT_SNAPSHOT_LIVE_JPEGNAME;
 	CString sLiveThumbFileName(m_sSnapshotAutoSaveDir);
 	sLiveThumbFileName.TrimRight(_T('\\'));
-	sLiveThumbFileName += _T("\\") + m_sSnapshotLiveJpegThumbName + _T(".jpg");
+	sLiveThumbFileName += CString(_T("\\")) + DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME;
 
 	// Init history file name
 	// Note: if m_bSnapshotHistoryVideo is TRUE, it creates also the year, month and day
@@ -1208,8 +1208,8 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	if (m_bSnapshotLiveJpegFtp)
 	{
 		HANDLE hFTP = CVideoDeviceDoc::FTPUpload(m_FTPUploadConfiguration,
-												sTempFileName, m_sSnapshotLiveJpegName + _T(".jpg"),
-												sTempThumbFileName, m_sSnapshotLiveJpegThumbName + _T(".jpg"));
+												sTempFileName, DEFAULT_SNAPSHOT_LIVE_JPEGNAME,
+												sTempThumbFileName, DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME);
 		if (hFTP)
 		{
 			if (::WaitForSingleObject(hFTP, FTPPROG_JPEGUPLOAD_WAIT_TIMEOUT_MS) == WAIT_TIMEOUT)
@@ -3703,8 +3703,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bSnapshotLiveJpegFtp = FALSE;
 	m_bSnapshotLiveJpegEmail = FALSE;
 	m_bSnapshotHistoryVideoFtp = FALSE;
-	m_sSnapshotLiveJpegName = DEFAULT_SNAPSHOT_LIVE_JPEGNAME;
-	m_sSnapshotLiveJpegThumbName = DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME;
 	m_nSnapshotRate = DEFAULT_SNAPSHOT_RATE;
 	m_nSnapshotRateMs = 0;
 	m_nSnapshotThumbWidth = DEFAULT_SNAPSHOT_THUMB_WIDTH;
@@ -4514,8 +4512,6 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_bSnapshotLiveJpegFtp = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotLiveJpegFtp"), FALSE);
 	m_bSnapshotLiveJpegEmail = (BOOL)pApp->GetProfileInt(sSection, _T("SnapshotLiveJpegEmail"), FALSE);
 	m_bSnapshotHistoryVideoFtp = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistoryVideoFtp"), FALSE);
-	m_sSnapshotLiveJpegName = pApp->GetProfileString(sSection, _T("SnapshotLiveJpegName"), DEFAULT_SNAPSHOT_LIVE_JPEGNAME);
-	m_sSnapshotLiveJpegThumbName = pApp->GetProfileString(sSection, _T("SnapshotLiveJpegThumbName"), DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME);
 	m_nSnapshotRate = (int) pApp->GetProfileInt(sSection, _T("SnapshotRate"), DEFAULT_SNAPSHOT_RATE);
 	m_nSnapshotRateMs = (int) pApp->GetProfileInt(sSection, _T("SnapshotRateMs"), 0);
 	m_nSnapshotThumbWidth = (int) MakeSizeMultipleOf4(pApp->GetProfileInt(sSection, _T("SnapshotThumbWidth"), DEFAULT_SNAPSHOT_THUMB_WIDTH));
@@ -4687,8 +4683,6 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("SnapshotLiveJpegFtp"), (int)m_bSnapshotLiveJpegFtp);
 	pApp->WriteProfileInt(sSection, _T("SnapshotLiveJpegEmail"), (int)m_bSnapshotLiveJpegEmail);
 	pApp->WriteProfileInt(sSection, _T("SnapshotHistoryVideoFtp"), (int)m_bSnapshotHistoryVideoFtp);
-	pApp->WriteProfileString(sSection, _T("SnapshotLiveJpegName"), m_sSnapshotLiveJpegName);
-	pApp->WriteProfileString(sSection, _T("SnapshotLiveJpegThumbName"), m_sSnapshotLiveJpegThumbName);
 	pApp->WriteProfileInt(sSection, _T("SnapshotRate"), m_nSnapshotRate);
 	pApp->WriteProfileInt(sSection, _T("SnapshotRateMs"), m_nSnapshotRateMs);
 	pApp->WriteProfileInt(sSection, _T("SnapshotThumbWidth"), m_nSnapshotThumbWidth);
@@ -7621,8 +7615,6 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 			m_SaveSnapshotThread.m_SendMailConfiguration = m_SendMailConfiguration;
 			m_SaveSnapshotThread.m_sSnapshotAutoSaveDir = m_sRecordAutoSaveDir;
 			::EnterCriticalSection(&m_csSnapshotConfiguration);
-			m_SaveSnapshotThread.m_sSnapshotLiveJpegName = m_sSnapshotLiveJpegName;
-			m_SaveSnapshotThread.m_sSnapshotLiveJpegThumbName = m_sSnapshotLiveJpegThumbName;
 			m_SaveSnapshotThread.m_FTPUploadConfiguration = m_SnapshotFTPUploadConfiguration;
 			::LeaveCriticalSection(&m_csSnapshotConfiguration);
 			m_SaveSnapshotThread.Start();

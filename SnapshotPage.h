@@ -35,7 +35,6 @@ protected:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnDestroy();
 	afx_msg void OnChangeEditSnapshotRate();
-	afx_msg void OnButtonSnapshotNames();
 	afx_msg void OnButtonThumbSize();
 	afx_msg void OnCheckSnapshotHistoryVideo();
 	afx_msg void OnCheckFtpSnapshot();

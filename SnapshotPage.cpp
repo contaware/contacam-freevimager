@@ -9,7 +9,6 @@
 #include "FTPUploadConfigurationDlg.h"
 #include "BrowseDlg.h"
 #include "ResizingDlg.h"
-#include "SnapshotNamesDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -48,7 +47,6 @@ BEGIN_MESSAGE_MAP(CSnapshotPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_FTP_CONFIGURE, OnFtpConfigure)
 	ON_BN_CLICKED(IDC_CHECK_FTP_SNAPSHOT, OnCheckFtpSnapshot)
 	ON_BN_CLICKED(IDC_CHECK_FTP_SNAPSHOT_HISTORY_VIDEO, OnCheckFtpSnapshotHistoryVideo)
-	ON_BN_CLICKED(IDC_BUTTON_SNAPSHOT_NAMES, OnButtonSnapshotNames)
 END_MESSAGE_MAP()
 
 BOOL CSnapshotPage::OnInitDialog() 
@@ -115,25 +113,6 @@ void CSnapshotPage::OnChangeEditSnapshotRate()
 	double dRate = _tcstod(sText.GetBuffer(0), NULL);
 	sText.ReleaseBuffer();
 	m_pDoc->SnapshotRate(dRate);
-}
-
-void CSnapshotPage::OnButtonSnapshotNames()
-{
-	// Snapshot Names Dialog
-	CSnapshotNamesDlg dlg;
-	dlg.m_sSnapshotLiveJpegName = m_pDoc->m_sSnapshotLiveJpegName;
-	dlg.m_sSnapshotLiveJpegThumbName = m_pDoc->m_sSnapshotLiveJpegThumbName;
-	if (dlg.DoModal() == IDOK)
-	{
-		::EnterCriticalSection(&m_pDoc->m_csSnapshotConfiguration);
-		if (!dlg.m_sSnapshotLiveJpegName.IsEmpty())
-			m_pDoc->m_sSnapshotLiveJpegName = dlg.m_sSnapshotLiveJpegName;
-		if (!dlg.m_sSnapshotLiveJpegThumbName.IsEmpty())
-			m_pDoc->m_sSnapshotLiveJpegThumbName = dlg.m_sSnapshotLiveJpegThumbName;
-		::LeaveCriticalSection(&m_pDoc->m_csSnapshotConfiguration);
-		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTNAME, m_pDoc->m_sSnapshotLiveJpegName + _T(".jpg"));
-		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTTHUMBNAME, m_pDoc->m_sSnapshotLiveJpegThumbName + _T(".jpg"));
-	}
 }
 
 void CSnapshotPage::ChangeThumbSize(int nNewWidth, int nNewHeight)

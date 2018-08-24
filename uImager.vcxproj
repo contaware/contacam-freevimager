@@ -1029,7 +1029,6 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="sinstance.cpp" />
-    <ClCompile Include="SnapshotNamesDlg.cpp" />
     <ClCompile Include="SnapshotPage.cpp" />
     <ClCompile Include="SoftBordersDlg.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -1389,7 +1388,6 @@
     <ClInclude Include="SettingsDlgVideoDeviceDoc.h" />
     <ClInclude Include="SharpenDlg.h" />
     <ClInclude Include="sinstance.h" />
-    <ClInclude Include="SnapshotNamesDlg.h" />
     <ClInclude Include="SnapshotPage.h" />
     <ClInclude Include="SoftBordersDlg.h" />
     <ClInclude Include="SoftenDlg.h" />
