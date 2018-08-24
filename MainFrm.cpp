@@ -88,7 +88,6 @@ END_MESSAGE_MAP()
 #ifdef VIDEODEVICEDOC
 static TCHAR sba_BUFSSIZEHelp[MAX_PATH];
 static TCHAR sba_HDHelp[MAX_PATH];
-static TCHAR sba_CPUHelp[MAX_PATH];
 #else
 static TCHAR sba_CoordinateHelp[MAX_PATH];
 #endif
@@ -98,7 +97,6 @@ static SBACTPANEINFO sba_indicators[] =
 #ifdef VIDEODEVICEDOC
 	{ ID_INDICATOR_BUFS_SIZE, sba_BUFSSIZEHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_SINGLECLICK | SBACTF_DOUBLECLICK | SBACTF_HANDCURSOR },
 	{ ID_INDICATOR_HD_USAGE, sba_HDHelp, SBACTF_AUTOFIT },
-	{ ID_INDICATOR_CPU_USAGE, sba_CPUHelp, SBACTF_AUTOFIT },
 #else
 	{ ID_INDICATOR_XCOORDINATE, sba_CoordinateHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_SINGLECLICK | SBACTF_DOUBLECLICK | SBACTF_HANDCURSOR },
 	{ ID_INDICATOR_YCOORDINATE, sba_CoordinateHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_SINGLECLICK | SBACTF_DOUBLECLICK | SBACTF_HANDCURSOR },
@@ -170,8 +168,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	sba_BUFSSIZEHelp[MAX_PATH - 1] = _T('\0');
 	_tcsncpy(sba_HDHelp, ML_STRING(1761, "HD usage"), MAX_PATH);
 	sba_HDHelp[MAX_PATH - 1] = _T('\0');
-	_tcsncpy(sba_CPUHelp, CString(APPNAME_NOEXT) + _T(": ") + ML_STRING(1762, "CPU usage"), MAX_PATH);
-	sba_CPUHelp[MAX_PATH - 1] = _T('\0');
 #else
 	_tcsncpy(sba_CoordinateHelp, ML_STRING(1768, "Click to change unit"), MAX_PATH);
 	sba_CoordinateHelp[MAX_PATH - 1] = _T('\0');
@@ -2490,11 +2486,6 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		}
 		else
 			GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_HD_USAGE), _T(" ") + sDiskStats + _T(" "));
-
-		// Show CPU Usage
-		CString sCPUUsage;
-		sCPUUsage.Format(_T(" CPU: %0.1f%% "), ::GetCPUUsage());
-		GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_CPU_USAGE), sCPUUsage);
 
 		// Toggle flash state
 		nFlashState = (nFlashState+1)%3;
