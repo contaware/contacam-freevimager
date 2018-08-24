@@ -4737,27 +4737,6 @@ BOOL CUImagerApp::IsExistingSection(const CString& sSection)
 	}
 }
 
-BOOL CUImagerApp::WriteProfileInt64(LPCTSTR lpszSection, LPCTSTR lpszEntry, __int64 nValue)
-{
-	return WriteProfileBinary(lpszSection, lpszEntry, (LPBYTE)&nValue, sizeof(nValue));
-}
-
-__int64 CUImagerApp::GetProfileInt64(LPCTSTR lpszSection, LPCTSTR lpszEntry, __int64 nDefault)
-{
-	__int64 nValue = nDefault;
-
-	LPBYTE pData = NULL;
-	UINT nBytes = 0;
-	if (GetProfileBinary(lpszSection, lpszEntry, &pData, &nBytes) && pData)
-	{
-		if (sizeof(__int64) == nBytes)
-			nValue = *((__int64*)pData);
-		delete [] pData;
-	}
-
-	return nValue;
-}
-
 void CUImagerApp::WriteSecureProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszValue)
 {
 	// Exportable (depends only on the MAGIC_KEY defined in CEncryptDecrypt.h)

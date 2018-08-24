@@ -422,8 +422,6 @@ public:
 
 	// INI file / registry additional functions
 	BOOL IsExistingSection(const CString& sSection);
-	BOOL WriteProfileInt64(LPCTSTR lpszSection, LPCTSTR lpszEntry, __int64 nValue);
-	__int64 GetProfileInt64(LPCTSTR lpszSection, LPCTSTR lpszEntry, __int64 nDefault);
 	void WriteSecureProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszValue);
 	CString GetSecureProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry);
 	
