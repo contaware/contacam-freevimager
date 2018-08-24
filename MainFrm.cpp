@@ -2496,34 +2496,6 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		sCPUUsage.Format(_T(" CPU: %0.1f%% "), ::GetCPUUsage());
 		GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_CPU_USAGE), sCPUUsage);
 
-		// Power Status
-		SYSTEM_POWER_STATUS SystemPowerStatus;
-		memset(&SystemPowerStatus, 0, sizeof(SYSTEM_POWER_STATUS));
-		if (::GetSystemPowerStatus(&SystemPowerStatus))
-		{
-			// On Battery?
-			// - ACLineStatus: 0=Offline, 1=Online, 255=Unknown status
-			// - BatteryLifePercent: Charge remaining=0..100, 255=Unknown status (like when no battery or no UPS installed)
-			if (SystemPowerStatus.ACLineStatus == 0 && SystemPowerStatus.BatteryLifePercent <= 100)
-			{
-				if (((CUImagerApp*)::AfxGetApp())->m_nBatteryOrACLine == 255)
-				{
-					::LogLine(_T("%s"), _T("AC 100-240V OFF!"));
-					((CUImagerApp*)::AfxGetApp())->m_nBatteryOrACLine = SystemPowerStatus.BatteryLifePercent;
-				}
-			}
-			// On AC Line?
-			else
-			{
-				// Back to AC Line?
-				if (((CUImagerApp*)::AfxGetApp())->m_nBatteryOrACLine <= 100)
-				{
-					::LogLine(_T("%s"), _T("AC 100-240V ON"));
-					((CUImagerApp*)::AfxGetApp())->m_nBatteryOrACLine = 255;
-				}
-			}
-		}
-
 		// Toggle flash state
 		nFlashState = (nFlashState+1)%3;
 	}

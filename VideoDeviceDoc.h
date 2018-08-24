@@ -935,7 +935,6 @@ public:
 	volatile BOOL m_bSaveVideoMovementDetection;		// Save Movement Detections as Video File
 	volatile BOOL m_bSaveAnimGIFMovementDetection;		// Save Movement Detections as Animated GIF
 	volatile BOOL m_bSendMailMalfunction;				// Send Email on Device Malfunction
-	volatile BOOL m_bSendMailACLineMalfunction;			// Send Email on AC Line Malfunction
 	volatile BOOL m_bSendMailDeviceOK;					// Send Email when Device Works Properly
 	volatile BOOL m_bSendMailMovementDetection;			// Send Email on Movement Detections
 	volatile BOOL m_bFTPUploadMovementDetection;		// FTP Upload Movement Detections

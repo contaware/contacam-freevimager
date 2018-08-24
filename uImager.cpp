@@ -151,7 +151,6 @@ CUImagerApp::CUImagerApp()
 	m_bSingleInstance = TRUE;
 	m_bServiceProcess = FALSE;
 	m_bDoStartFromService = FALSE;
-	m_nBatteryOrACLine = 255;
 #else
 	m_bSingleInstance = FALSE;
 #endif

@@ -3272,7 +3272,6 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 	// Init vars
 	CTime LastHttpReconnectTime = 0; // set time far in the past, 0 is the same as CTime(0)
 	BOOL bDeviceAlert = FALSE;
-	BOOL bACLineAlert = FALSE;
 
 	// Watch
 	for (;;)
@@ -3338,28 +3337,6 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 						if (m_pDoc->m_bSendMailMalfunction)
 							CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), CurrentTime, _T("ON"));
 						bDeviceAlert = FALSE;
-					}
-				}
-
-				// On Battery?
-				int nBatteryOrACLine = ((CUImagerApp*)::AfxGetApp())->m_nBatteryOrACLine;
-				if (nBatteryOrACLine <= 100)
-				{
-					if (!bACLineAlert)
-					{
-						if (m_pDoc->m_bSendMailACLineMalfunction)
-							CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, ::GetComputerName(), CurrentTime, _T("AC 100-240V OFF!"));
-						bACLineAlert = TRUE;
-					}
-				}
-				// On AC Line?
-				else
-				{
-					if (bACLineAlert)
-					{
-						if (m_pDoc->m_bSendMailACLineMalfunction)
-							CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, ::GetComputerName(), CurrentTime, _T("AC 100-240V ON"));
-						bACLineAlert = FALSE;
 					}
 				}
 
@@ -3763,7 +3740,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bSaveVideoMovementDetection = TRUE;
 	m_bSaveAnimGIFMovementDetection = TRUE;
 	m_bSendMailMalfunction = TRUE;
-	m_bSendMailACLineMalfunction = FALSE;
 	m_bSendMailDeviceOK = FALSE;
 	m_bSendMailMovementDetection = FALSE;
 	m_bFTPUploadMovementDetection = FALSE;
@@ -4569,7 +4545,6 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_bSaveVideoMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveVideoMovementDetection"), TRUE);
 	m_bSaveAnimGIFMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), TRUE);
 	m_bSendMailMalfunction = (BOOL)pApp->GetProfileInt(sSection, _T("SendMailMalfunction"), TRUE);
-	m_bSendMailACLineMalfunction = (BOOL)pApp->GetProfileInt(sSection, _T("SendMailACLineMalfunction"), FALSE);
 	m_bSendMailDeviceOK = (BOOL)pApp->GetProfileInt(sSection, _T("SendMailDeviceOK"), FALSE);
 	m_bSendMailMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SendMailMovementDetection"), FALSE);
 	m_bFTPUploadMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("FTPUploadMovementDetection"), FALSE);
@@ -4741,7 +4716,6 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("SaveVideoMovementDetection"), m_bSaveVideoMovementDetection);
 	pApp->WriteProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), m_bSaveAnimGIFMovementDetection);
 	pApp->WriteProfileInt(sSection, _T("SendMailMalfunction"), m_bSendMailMalfunction);
-	pApp->WriteProfileInt(sSection, _T("SendMailACLineMalfunction"), m_bSendMailACLineMalfunction);
 	pApp->WriteProfileInt(sSection, _T("SendMailDeviceOK"), m_bSendMailDeviceOK);
 	pApp->WriteProfileInt(sSection, _T("SendMailMovementDetection"), m_bSendMailMovementDetection);
 	pApp->WriteProfileInt(sSection, _T("FTPUploadMovementDetection"), m_bFTPUploadMovementDetection);
