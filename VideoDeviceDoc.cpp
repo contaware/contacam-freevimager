@@ -7605,10 +7605,10 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 		}
 
 		// Start Thread?
-		if (bDoSnapshot)
+		if (bDoSnapshot && m_bInSchedule)
 		{
 			m_SaveSnapshotThread.m_Dib = *pDib;
-			m_SaveSnapshotThread.m_bSnapshotHistoryJpeg = m_bInSchedule ? m_bSnapshotHistoryVideo : FALSE;
+			m_SaveSnapshotThread.m_bSnapshotHistoryJpeg = m_bSnapshotHistoryVideo;
 			m_SaveSnapshotThread.m_bShowFrameTime = m_bShowFrameTime;
 			m_SaveSnapshotThread.m_bDetectingMinLengthMovement = m_bDetectingMinLengthMovement;
 			m_SaveSnapshotThread.m_nRefFontSize = m_nRefFontSize;

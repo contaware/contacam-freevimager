@@ -120,9 +120,9 @@ BOOL CVideoPage::OnInitDialog()
 
 	// Init Combo Boxes
 	CComboBox* pComboBoxDetectionScheduler = (CComboBox*)GetDlgItem(IDC_COMBOBOX_DETECTION_SCHEDULER);
-	pComboBoxDetectionScheduler->AddString(ML_STRING(1874, "Recording always enabled (scheduler is off)"));
-	pComboBoxDetectionScheduler->AddString(ML_STRING(1875, "Recording enabled:"));
-	pComboBoxDetectionScheduler->AddString(ML_STRING(1876, "Recording disabled:"));
+	pComboBoxDetectionScheduler->AddString(ML_STRING(1874, "Always enabled (scheduler is off)"));
+	pComboBoxDetectionScheduler->AddString(ML_STRING(1875, "Enabled:"));
+	pComboBoxDetectionScheduler->AddString(ML_STRING(1876, "Disabled:"));
 	CComboBox* pComboBoxExexMode = (CComboBox*)GetDlgItem(IDC_EXECMODE_MOVEMENT_DETECTION);
 	pComboBoxExexMode->AddString(ML_STRING(1842, "Recording starts"));
 	pComboBoxExexMode->AddString(ML_STRING(1843, "Saving done"));
@@ -224,7 +224,7 @@ BOOL CVideoPage::OnInitDialog()
 		pCheckAudioFromSource->SetCheck(1);
 	}
 
-	// Recording Scheduler
+	// Scheduler
 	pComboBoxDetectionScheduler->SetCurSel(m_pDoc->m_nDetectionStartStop);
 	CButton* pCheckScheduler = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_SUNDAY);
 	pCheckScheduler->SetCheck(m_pDoc->m_bDetectionSunday);
