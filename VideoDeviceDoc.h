@@ -31,7 +31,7 @@ extern "C"
 class CVideoDeviceView;
 class CVideoDeviceChildFrame;
 class CDxCapture;
-class CVideoPage;
+class CCameraAdvancedSettingsDlg;
 
 // General Settings
 #define MIN_FRAMERATE						0.1			// fps
@@ -958,7 +958,7 @@ public:
 	SendMailConfigurationStruct m_SendMailConfiguration;
 
 	// Camera Advanced Settings
-	CVideoPage* volatile m_pVideoPage;
+	CCameraAdvancedSettingsDlg* volatile m_pCameraAdvancedSettingsDlg;
 
 // Protected Variables
 protected:

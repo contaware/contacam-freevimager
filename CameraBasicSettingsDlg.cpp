@@ -6,7 +6,7 @@
 #include "CameraBasicSettingsDlg.h"
 #include "VideoDeviceDoc.h"
 #include "VideoDeviceView.h"
-#include "VideoPage.h"
+#include "CameraAdvancedSettingsDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -423,16 +423,16 @@ void CCameraBasicSettingsDlg::OnSendmailConfigure()
 void CCameraBasicSettingsDlg::ApplySettingsSnapshot(int nThumbWidth, int nThumbHeight, double dSnapshotRate)
 {
 	m_pDoc->SnapshotRate(dSnapshotRate);
-	if (m_pDoc->m_pVideoPage)
+	if (m_pDoc->m_pCameraAdvancedSettingsDlg)
 	{
 		// Thumb size (this updates the controls and sets m_nSnapshotThumbWidth and m_nSnapshotThumbHeight)
-		m_pDoc->m_pVideoPage->ChangeThumbSize(nThumbWidth, nThumbHeight);
+		m_pDoc->m_pCameraAdvancedSettingsDlg->ChangeThumbSize(nThumbWidth, nThumbHeight);
 		
 		// Display snapshot rate
-		m_pDoc->m_pVideoPage->DisplaySnapshotRate();
+		m_pDoc->m_pCameraAdvancedSettingsDlg->DisplaySnapshotRate();
 
 		// Snapshot history
-		CButton* pCheck = (CButton*)m_pDoc->m_pVideoPage->GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO);
+		CButton* pCheck = (CButton*)m_pDoc->m_pCameraAdvancedSettingsDlg->GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO);
 		pCheck->SetCheck(m_pDoc->m_bSnapshotHistoryVideo ? 1 : 0);
 	}
 	else
@@ -542,12 +542,12 @@ void CCameraBasicSettingsDlg::ApplySettings()
 				m_pDoc->m_nMilliSecondsRecAfterMovementEnd = DEFAULT_POST_BUFFER_MSEC;
 			if (m_pDoc->m_nDetectionMinLengthMilliSeconds == 0)
 				m_pDoc->m_nDetectionMinLengthMilliSeconds = MOVDET_MIN_LENGTH_MSEC;
-			if (m_pDoc->m_pVideoPage)
+			if (m_pDoc->m_pCameraAdvancedSettingsDlg)
 			{
-				m_pDoc->m_pVideoPage->m_nSecondsBeforeMovementBegin = m_pDoc->m_nMilliSecondsRecBeforeMovementBegin / 1000;
-				m_pDoc->m_pVideoPage->m_nSecondsAfterMovementEnd = m_pDoc->m_nMilliSecondsRecAfterMovementEnd / 1000;
-				m_pDoc->m_pVideoPage->m_nDetectionMinLengthSeconds = m_pDoc->m_nDetectionMinLengthMilliSeconds / 1000;
-				m_pDoc->m_pVideoPage->UpdateData(FALSE); // update data from vars to view
+				m_pDoc->m_pCameraAdvancedSettingsDlg->m_nSecondsBeforeMovementBegin = m_pDoc->m_nMilliSecondsRecBeforeMovementBegin / 1000;
+				m_pDoc->m_pCameraAdvancedSettingsDlg->m_nSecondsAfterMovementEnd = m_pDoc->m_nMilliSecondsRecAfterMovementEnd / 1000;
+				m_pDoc->m_pCameraAdvancedSettingsDlg->m_nDetectionMinLengthSeconds = m_pDoc->m_nDetectionMinLengthMilliSeconds / 1000;
+				m_pDoc->m_pCameraAdvancedSettingsDlg->UpdateData(FALSE); // update data from vars to view
 			}
 
 			// Init size vars
@@ -597,12 +597,12 @@ void CCameraBasicSettingsDlg::ApplySettings()
 				m_pDoc->m_nMilliSecondsRecAfterMovementEnd = 1000;
 			if (m_pDoc->m_nDetectionMinLengthMilliSeconds != 0)
 				m_pDoc->m_nDetectionMinLengthMilliSeconds = 0;
-			if (m_pDoc->m_pVideoPage)
+			if (m_pDoc->m_pCameraAdvancedSettingsDlg)
 			{
-				m_pDoc->m_pVideoPage->m_nSecondsBeforeMovementBegin = m_pDoc->m_nMilliSecondsRecBeforeMovementBegin / 1000;
-				m_pDoc->m_pVideoPage->m_nSecondsAfterMovementEnd = m_pDoc->m_nMilliSecondsRecAfterMovementEnd / 1000;
-				m_pDoc->m_pVideoPage->m_nDetectionMinLengthSeconds = m_pDoc->m_nDetectionMinLengthMilliSeconds / 1000;
-				m_pDoc->m_pVideoPage->UpdateData(FALSE); // update data from vars to view
+				m_pDoc->m_pCameraAdvancedSettingsDlg->m_nSecondsBeforeMovementBegin = m_pDoc->m_nMilliSecondsRecBeforeMovementBegin / 1000;
+				m_pDoc->m_pCameraAdvancedSettingsDlg->m_nSecondsAfterMovementEnd = m_pDoc->m_nMilliSecondsRecAfterMovementEnd / 1000;
+				m_pDoc->m_pCameraAdvancedSettingsDlg->m_nDetectionMinLengthSeconds = m_pDoc->m_nDetectionMinLengthMilliSeconds / 1000;
+				m_pDoc->m_pCameraAdvancedSettingsDlg->UpdateData(FALSE); // update data from vars to view
 			}
 
 			// Init size vars
@@ -652,12 +652,12 @@ void CCameraBasicSettingsDlg::ApplySettings()
 				m_pDoc->m_nMilliSecondsRecAfterMovementEnd = 1000;
 			if (m_pDoc->m_nDetectionMinLengthMilliSeconds != 0)
 				m_pDoc->m_nDetectionMinLengthMilliSeconds = 0;
-			if (m_pDoc->m_pVideoPage)
+			if (m_pDoc->m_pCameraAdvancedSettingsDlg)
 			{
-				m_pDoc->m_pVideoPage->m_nSecondsBeforeMovementBegin = m_pDoc->m_nMilliSecondsRecBeforeMovementBegin / 1000;
-				m_pDoc->m_pVideoPage->m_nSecondsAfterMovementEnd = m_pDoc->m_nMilliSecondsRecAfterMovementEnd / 1000;
-				m_pDoc->m_pVideoPage->m_nDetectionMinLengthSeconds = m_pDoc->m_nDetectionMinLengthMilliSeconds / 1000;
-				m_pDoc->m_pVideoPage->UpdateData(FALSE); // update data from vars to view
+				m_pDoc->m_pCameraAdvancedSettingsDlg->m_nSecondsBeforeMovementBegin = m_pDoc->m_nMilliSecondsRecBeforeMovementBegin / 1000;
+				m_pDoc->m_pCameraAdvancedSettingsDlg->m_nSecondsAfterMovementEnd = m_pDoc->m_nMilliSecondsRecAfterMovementEnd / 1000;
+				m_pDoc->m_pCameraAdvancedSettingsDlg->m_nDetectionMinLengthSeconds = m_pDoc->m_nDetectionMinLengthMilliSeconds / 1000;
+				m_pDoc->m_pCameraAdvancedSettingsDlg->UpdateData(FALSE); // update data from vars to view
 			}
 
 			// Init size vars

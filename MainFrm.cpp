@@ -1080,7 +1080,7 @@ void CMainFrame::OnViewFiles()
 
 void CMainFrame::OnBufsSizeClick()
 {
-	PopupToaster(APPNAME_NOEXT, ML_STRING(1819, "To limit the buffer size lower the \"Split longer than\" value under Settings - Camera Advanced Settings - Video tab"), 0);
+	PopupToaster(APPNAME_NOEXT, ML_STRING(1819, "To limit the buffer size lower the \"Split longer than\" value under Settings - Camera Advanced Settings"), 0);
 }
 
 #endif

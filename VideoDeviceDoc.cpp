@@ -5,7 +5,7 @@
 #include "VideoDeviceDoc.h"
 #include "AudioInSourceDlg.h"
 #include "CameraBasicSettingsDlg.h"
-#include "VideoPage.h"
+#include "CameraAdvancedSettingsDlg.h"
 #include "Quantizer.h"
 #include "DxCapture.h"
 #include "DxVideoFormatDlg.h"
@@ -3553,7 +3553,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	}
 
 	// Camera Advanced Settings
-	m_pVideoPage = NULL;
+	m_pCameraAdvancedSettingsDlg = NULL;
 
 	// Email Settings
 	m_MovDetLastMailTime = 0;
@@ -3938,8 +3938,8 @@ void CVideoDeviceDoc::SetDocumentTitle()
 		}
 
 		// Update Camera Advanced Settings Title
-		if (m_pVideoPage)
-			m_pVideoPage->UpdateTitle();
+		if (m_pCameraAdvancedSettingsDlg)
+			m_pCameraAdvancedSettingsDlg->UpdateTitle();
 
 		// Set main title
 		if (!sWidthHeight.IsEmpty())
@@ -5258,25 +5258,25 @@ void CVideoDeviceDoc::CaptureCameraBasicSettings()
 void CVideoDeviceDoc::OnCaptureCameraAdvancedSettings() 
 {
 	// Create if First Time
-	if (!m_pVideoPage)
+	if (!m_pCameraAdvancedSettingsDlg)
 	{
-		m_pVideoPage = new CVideoPage(GetView());
-		m_pVideoPage->Show();
+		m_pCameraAdvancedSettingsDlg = new CCameraAdvancedSettingsDlg(GetView());
+		m_pCameraAdvancedSettingsDlg->Show();
 	}
 	// Toggle Visible / Invisible State
 	else
 	{
-		if (m_pVideoPage->IsWindowVisible())
-			m_pVideoPage->Hide(TRUE);
+		if (m_pCameraAdvancedSettingsDlg->IsWindowVisible())
+			m_pCameraAdvancedSettingsDlg->Hide(TRUE);
 		else
-			m_pVideoPage->Show();
+			m_pCameraAdvancedSettingsDlg->Show();
 	}
 }
 
 void CVideoDeviceDoc::OnUpdateCaptureCameraAdvancedSettings(CCmdUI* pCmdUI) 
 {
-	if (m_pVideoPage)
-		pCmdUI->SetCheck(m_pVideoPage->IsWindowVisible() ? 1 : 0);
+	if (m_pCameraAdvancedSettingsDlg)
+		pCmdUI->SetCheck(m_pCameraAdvancedSettingsDlg->IsWindowVisible() ? 1 : 0);
 	else
 		pCmdUI->SetCheck(0);
 }

@@ -482,6 +482,7 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="CameraAdvancedSettingsDlg.cpp" />
     <ClCompile Include="CameraBasicSettingsDlg.cpp" />
     <ClCompile Include="cdxCDynamicDialog.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -763,16 +764,6 @@
     <ClCompile Include="MJPEGEncoder.cpp" />
     <ClCompile Include="MlString.cpp" />
     <ClCompile Include="MonochromeConversionDlg.cpp">
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug ContaCam|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug FreeVimager|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug ContaCam|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug FreeVimager|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-    <ClCompile Include="VideoPage.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug ContaCam|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -1293,6 +1284,7 @@
     <ClInclude Include="bigalloc.h" />
     <ClInclude Include="BkgColEdit.h" />
     <ClInclude Include="BrowseDlg.h" />
+    <ClInclude Include="CameraAdvancedSettingsDlg.h" />
     <ClInclude Include="CameraBasicSettingsDlg.h" />
     <ClInclude Include="cdxCDynamicDialog.h" />
     <ClInclude Include="cdxCDynamicWnd.h" />
@@ -1336,7 +1328,6 @@
     <ClInclude Include="MlString.h" />
     <ClInclude Include="MonochromeConversionDlg.h" />
     <ClInclude Include="MotionDetHelpers.h" />
-    <ClInclude Include="VideoPage.h" />
     <ClInclude Include="MyMemDC.h" />
     <ClInclude Include="NetCom.h" />
     <ClInclude Include="NewDlg.h" />

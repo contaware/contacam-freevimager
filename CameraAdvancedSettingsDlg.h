@@ -1,9 +1,9 @@
-#if !defined(AFX_VIDEOPAGE_H__AAD75600_3201_49D1_A5D4_3AE518917430__INCLUDED_)
-#define AFX_VIDEOPAGE_H__AAD75600_3201_49D1_A5D4_3AE518917430__INCLUDED_
+#if !defined(AFX_CAMERAADVANCEDSETTINGSDLG_H__AAD75600_3201_49D1_A5D4_3AE518917430__INCLUDED_)
+#define AFX_CAMERAADVANCEDSETTINGSDLG_H__AAD75600_3201_49D1_A5D4_3AE518917430__INCLUDED_
 
 #pragma once
 
-// VideoPage.h : header file
+// CameraAdvancedSettingsDlg.h : header file
 //
 
 #ifdef VIDEODEVICEDOC
@@ -11,14 +11,14 @@
 // Forward Declaration
 class CVideoDeviceDoc;
 
-#define FRAMERATE_CHANGE_TIMEOUT	6	// In MOVDETPAGE_TIMER_MS units
+#define FRAMERATE_CHANGE_TIMEOUT	6	// In CAMERAADVANCEDSETTINGSDLG_TIMER_MS units
 
-class CVideoPage : public CDialog
+class CCameraAdvancedSettingsDlg : public CDialog
 {
 public:
 	// Construction
-	CVideoPage(CWnd* pParent);
-	~CVideoPage();
+	CCameraAdvancedSettingsDlg(CWnd* pParent);
+	~CCameraAdvancedSettingsDlg();
 
 	void Show();
 	void Hide(BOOL bSaveSettingsOnHiding);
@@ -28,7 +28,7 @@ public:
 	void ChangeThumbSize(int nNewWidth, int nNewHeight);
 
 	// Dialog data
-	enum { IDD = IDD_VIDEO };
+	enum { IDD = IDD_CAMERAADVANCEDSETTINGS };
 	int	m_nSecondsBeforeMovementBegin;
 	int	m_nSecondsAfterMovementEnd;
 	int	m_nDetectionMinLengthSeconds;
@@ -106,4 +106,4 @@ protected:
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_VIDEOPAGE_H__AAD75600_3201_49D1_A5D4_3AE518917430__INCLUDED_)
+#endif // !defined(AFX_CAMERAADVANCEDSETTINGSDLG_H__AAD75600_3201_49D1_A5D4_3AE518917430__INCLUDED_)

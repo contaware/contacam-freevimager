@@ -4,7 +4,7 @@
 #include "VideoDeviceDoc.h"
 #include "PostDelayedMessage.h"
 #include "VideoDeviceView.h"
-#include "VideoPage.h"
+#include "CameraAdvancedSettingsDlg.h"
 #include "DxCapture.h"
 #include "MyMemDC.h"
 
@@ -850,8 +850,8 @@ void CVideoDeviceView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			break;
 
 		case VK_ESCAPE :
-			if (pDoc->m_pVideoPage && pDoc->m_pVideoPage->IsWindowVisible())
-				pDoc->m_pVideoPage->Hide(TRUE);
+			if (pDoc->m_pCameraAdvancedSettingsDlg && pDoc->m_pCameraAdvancedSettingsDlg->IsWindowVisible())
+				pDoc->m_pCameraAdvancedSettingsDlg->Hide(TRUE);
 			else if (pDoc->m_nShowEditDetectionZones)
 			{
 				pDoc->HideDetectionZones();

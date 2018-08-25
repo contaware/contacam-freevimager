@@ -49,7 +49,7 @@
 #define IDD_SENDMAIL_OPEN_DOCS          182
 #define IDD_SENDMAIL_CONFIGURATION      183
 #define IDD_HOSTPORT                    185
-#define IDD_VIDEO                       187
+#define IDD_CAMERAADVANCEDSETTINGS      187
 #define IDD_REDEYE                      188
 #define IDC_ZOOMMINUS                   200
 #define IDC_ZOOMPLUS                    201

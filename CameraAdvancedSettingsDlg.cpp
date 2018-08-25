@@ -1,10 +1,10 @@
-// VideoPage.cpp : implementation file
+// CameraAdvancedSettingsDlg.cpp : implementation file
 //
 
 #include "stdafx.h"
 #include "uimager.h"
 #include "MainFrm.h"
-#include "VideoPage.h"
+#include "CameraAdvancedSettingsDlg.h"
 #include "VideoDeviceDoc.h"
 #include "VideoDeviceView.h"
 #include "DxCapture.h"
@@ -20,8 +20,8 @@ static char THIS_FILE[] = __FILE__;
 
 #ifdef VIDEODEVICEDOC
 
-CVideoPage::CVideoPage(CWnd* pParent)
-	: CDialog(CVideoPage::IDD, pParent)
+CCameraAdvancedSettingsDlg::CCameraAdvancedSettingsDlg(CWnd* pParent)
+	: CDialog(CCameraAdvancedSettingsDlg::IDD, pParent)
 {
 	CVideoDeviceView* pView = (CVideoDeviceView*)m_pParentWnd;
 	ASSERT_VALID(pView);
@@ -30,14 +30,14 @@ CVideoPage::CVideoPage(CWnd* pParent)
 	m_bInOnTimer = FALSE;
 	m_bDoChangeFrameRate = FALSE;
 	m_nFrameRateChangeTimeout = FRAMERATE_CHANGE_TIMEOUT;
-	CDialog::Create(CVideoPage::IDD, pParent);
+	CDialog::Create(CCameraAdvancedSettingsDlg::IDD, pParent);
 }
 
-CVideoPage::~CVideoPage()
+CCameraAdvancedSettingsDlg::~CCameraAdvancedSettingsDlg()
 {
 }
 
-void CVideoPage::Show()
+void CCameraAdvancedSettingsDlg::Show()
 {
 	if (!IsWindowVisible())
 	{
@@ -46,7 +46,7 @@ void CVideoPage::Show()
 	}
 }
 
-void CVideoPage::Hide(BOOL bSaveSettingsOnHiding)
+void CCameraAdvancedSettingsDlg::Hide(BOOL bSaveSettingsOnHiding)
 {
 	if (IsWindowVisible())
 	{
@@ -57,19 +57,19 @@ void CVideoPage::Hide(BOOL bSaveSettingsOnHiding)
 	}
 }
 
-void CVideoPage::DestroyOnAppExit()
+void CCameraAdvancedSettingsDlg::DestroyOnAppExit()
 {
 	if (IsWindowVisible())
 		m_pDoc->GetView()->ForceCursor(FALSE);
 	DestroyWindow(); // this calls OnDestroy() and PostNcDestroy()
 }
 
-void CVideoPage::OnClose()
+void CCameraAdvancedSettingsDlg::OnClose()
 {
 	Hide(TRUE);
 }
 
-BOOL CVideoPage::OnCommand(WPARAM wParam, LPARAM lParam)
+BOOL CCameraAdvancedSettingsDlg::OnCommand(WPARAM wParam, LPARAM lParam)
 {
 	if (HIWORD(wParam) == BN_CLICKED)
 	{
@@ -87,23 +87,23 @@ BOOL CVideoPage::OnCommand(WPARAM wParam, LPARAM lParam)
 	return CDialog::OnCommand(wParam, lParam);
 }
 
-void CVideoPage::OnDestroy()
+void CCameraAdvancedSettingsDlg::OnDestroy()
 {
 	// Kill timer
-	KillTimer(ID_TIMER_MOVDETPAGE);
+	KillTimer(ID_TIMER_CAMERAADVANCEDSETTINGSDLG);
 
 	// Base class
 	CDialog::OnDestroy();
 }
 
-void CVideoPage::PostNcDestroy()
+void CCameraAdvancedSettingsDlg::PostNcDestroy()
 {
-	m_pDoc->m_pVideoPage = NULL;
+	m_pDoc->m_pCameraAdvancedSettingsDlg = NULL;
 	delete this;
 	CDialog::PostNcDestroy();
 }
 
-void CVideoPage::DoDataExchange(CDataExchange* pDX)
+void CCameraAdvancedSettingsDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	DDX_Text(pDX, IDC_SECONDS_BEFORE_MOVEMENT_BEGIN, m_nSecondsBeforeMovementBegin);
@@ -121,7 +121,7 @@ void CVideoPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_VIDEO_COMPRESSION_QUALITY, m_VideoRecQuality);
 }
 
-BEGIN_MESSAGE_MAP(CVideoPage, CDialog)
+BEGIN_MESSAGE_MAP(CCameraAdvancedSettingsDlg, CDialog)
 	ON_WM_DESTROY()
 	ON_WM_CLOSE()
 	ON_EN_CHANGE(IDC_FRAMERATE, OnChangeFrameRate)
@@ -166,7 +166,7 @@ BEGIN_MESSAGE_MAP(CVideoPage, CDialog)
 	ON_BN_CLICKED(IDC_CHECK_WAIT_EXEC_COMMAND, OnCheckWaitExecCommand)
 END_MESSAGE_MAP()
 
-void CVideoPage::UpdateTitle()
+void CCameraAdvancedSettingsDlg::UpdateTitle()
 {
 	if (m_pDoc->GetDeviceName() != m_pDoc->GetAssignedDeviceName())
 		SetWindowText(m_pDoc->GetAssignedDeviceName() + _T(" (") + m_pDoc->GetDeviceName() + _T(")"));
@@ -174,7 +174,7 @@ void CVideoPage::UpdateTitle()
 		SetWindowText(m_pDoc->GetDeviceName());
 }
 
-BOOL CVideoPage::OnInitDialog() 
+BOOL CCameraAdvancedSettingsDlg::OnInitDialog() 
 {
 	// Init vars
 	m_nSecondsBeforeMovementBegin = m_pDoc->m_nMilliSecondsRecBeforeMovementBegin / 1000;
@@ -374,19 +374,19 @@ BOOL CVideoPage::OnInitDialog()
 		pCheckWaitExecCommandMovementDetection->SetCheck(0);
 
 	// Set Pointer to this
-	m_pDoc->m_pVideoPage = this;
+	m_pDoc->m_pCameraAdvancedSettingsDlg = this;
 	
 	// Set title
 	UpdateTitle();
 
 	// Set Timer
-	SetTimer(ID_TIMER_MOVDETPAGE, MOVDETPAGE_TIMER_MS, NULL);
+	SetTimer(ID_TIMER_CAMERAADVANCEDSETTINGSDLG, CAMERAADVANCEDSETTINGSDLG_TIMER_MS, NULL);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CVideoPage::OnChangeFrameRate()
+void CCameraAdvancedSettingsDlg::OnChangeFrameRate()
 {
 	CString sFrameRate;
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_FRAMERATE);
@@ -400,7 +400,7 @@ void CVideoPage::OnChangeFrameRate()
 	}
 }
 
-void CVideoPage::OnTimer(UINT nIDEvent)
+void CCameraAdvancedSettingsDlg::OnTimer(UINT nIDEvent)
 {
 	// m_bInOnTimer avoids that a message pumping routine (like a modal dialog)
 	// inside this OnTimer() calls OnTimer() again!
@@ -478,37 +478,37 @@ void CVideoPage::OnTimer(UINT nIDEvent)
 	CDialog::OnTimer(nIDEvent);
 }
 
-void CVideoPage::OnChangeSecondsBeforeMovementBegin()
+void CCameraAdvancedSettingsDlg::OnChangeSecondsBeforeMovementBegin()
 {
 	if (!IsEmpty(IDC_SECONDS_BEFORE_MOVEMENT_BEGIN) && UpdateData(TRUE))
 		m_pDoc->m_nMilliSecondsRecBeforeMovementBegin = m_nSecondsBeforeMovementBegin * 1000;
 }
 
-void CVideoPage::OnChangeSecondsAfterMovementEnd()
+void CCameraAdvancedSettingsDlg::OnChangeSecondsAfterMovementEnd()
 {
 	if (!IsEmpty(IDC_SECONDS_AFTER_MOVEMENT_END) && UpdateData(TRUE))
 		m_pDoc->m_nMilliSecondsRecAfterMovementEnd = m_nSecondsAfterMovementEnd * 1000;
 }
 
-void CVideoPage::OnChangeEditDetectionMinLength()
+void CCameraAdvancedSettingsDlg::OnChangeEditDetectionMinLength()
 {
 	if (!IsEmpty(IDC_EDIT_DETECTION_MIN_LENGTH) && UpdateData(TRUE))
 		m_pDoc->m_nDetectionMinLengthMilliSeconds = m_nDetectionMinLengthSeconds * 1000;
 }
 
-void CVideoPage::OnChangeEditDetectionMaxFrames()
+void CCameraAdvancedSettingsDlg::OnChangeEditDetectionMaxFrames()
 {
 	if (!IsEmpty(IDC_EDIT_DETECTION_MAX_FRAMES) && UpdateData(TRUE))
 		m_pDoc->m_nDetectionMaxFrames = m_nDetectionMaxFrames;
 }
 
-void CVideoPage::OnCheckLiveRotate180()
+void CCameraAdvancedSettingsDlg::OnCheckLiveRotate180()
 {
 	if (UpdateData(TRUE))
 		m_pDoc->m_bRotate180 = m_bRotate180;
 }
 
-void CVideoPage::OnVideoFormat()
+void CCameraAdvancedSettingsDlg::OnVideoFormat()
 {
 	// Open the video format dialog
 	m_pDoc->VideoFormatDialog();
@@ -524,7 +524,7 @@ void CVideoPage::OnVideoFormat()
 	}
 }
 
-void CVideoPage::OnVideoSource()
+void CCameraAdvancedSettingsDlg::OnVideoSource()
 {
 	if (m_pDoc->m_pDxCapture)
 	{
@@ -543,7 +543,7 @@ void CVideoPage::OnVideoSource()
 	}
 }
 
-void CVideoPage::OnVideoInput()
+void CCameraAdvancedSettingsDlg::OnVideoInput()
 {
 	// Open the video input dialog
 	if (m_pDoc->m_pDxCapture)
@@ -553,14 +553,14 @@ void CVideoPage::OnVideoInput()
 	}
 }
 
-void CVideoPage::OnVideoTuner()
+void CCameraAdvancedSettingsDlg::OnVideoTuner()
 {
 	// Open the tv tuner dialog
 	if (m_pDoc->m_pDxCapture)
 		m_pDoc->m_pDxCapture->ShowVideoTVTunerDlg();
 }
 
-void CVideoPage::OnRecAudio()
+void CCameraAdvancedSettingsDlg::OnRecAudio()
 {
 	// Stop Save Frame List Thread
 	m_pDoc->m_SaveFrameListThread.Kill();
@@ -585,13 +585,13 @@ void CVideoPage::OnRecAudio()
 	m_pDoc->m_SaveFrameListThread.Start();
 }
 
-void CVideoPage::OnCheckAudioListen()
+void CCameraAdvancedSettingsDlg::OnCheckAudioListen()
 {
 	if (UpdateData(TRUE))
 		m_pDoc->m_bAudioListen = m_bAudioListen;
 }
 
-void CVideoPage::OnRecAudioFromStream()
+void CCameraAdvancedSettingsDlg::OnRecAudioFromStream()
 {
 	// Stop Save Frame List Thread
 	m_pDoc->m_SaveFrameListThread.Kill();
@@ -606,7 +606,7 @@ void CVideoPage::OnRecAudioFromStream()
 	m_pDoc->m_SaveFrameListThread.Start();
 }
 
-void CVideoPage::OnRecAudioFromSource()
+void CCameraAdvancedSettingsDlg::OnRecAudioFromSource()
 {
 	// Stop Save Frame List Thread
 	m_pDoc->m_SaveFrameListThread.Kill();
@@ -621,7 +621,7 @@ void CVideoPage::OnRecAudioFromSource()
 	m_pDoc->m_SaveFrameListThread.Start();
 }
 
-void CVideoPage::OnAudioInput()
+void CCameraAdvancedSettingsDlg::OnAudioInput()
 {
 	m_pDoc->m_CaptureAudioThread.AudioInSourceDialog();
 }
@@ -647,13 +647,13 @@ audio-rendering endpoint devices only.
 It does not display volume controls for
 audio-capture devices.
 */
-void CVideoPage::OnAudioMixer()
+void CCameraAdvancedSettingsDlg::OnAudioMixer()
 {
 	::ShellExecute(NULL, NULL,
 		_T("control.exe"), _T("mmsys.cpl,,1"), NULL, SW_SHOWNORMAL);
 }
 
-void CVideoPage::UpdateDetectionStartStopTimes()
+void CCameraAdvancedSettingsDlg::UpdateDetectionStartStopTimes()
 {
 	if (m_pDoc->m_nDetectionStartStop > 0)
 	{
@@ -675,70 +675,70 @@ void CVideoPage::UpdateDetectionStartStopTimes()
 	}
 }
 
-void CVideoPage::OnCbnSelchangeComboboxDetectionScheduler()
+void CCameraAdvancedSettingsDlg::OnCbnSelchangeComboboxDetectionScheduler()
 {
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBOBOX_DETECTION_SCHEDULER);
 	m_pDoc->m_nDetectionStartStop = pComboBox->GetCurSel();
 	UpdateDetectionStartStopTimes();
 }
 
-void CVideoPage::OnCheckSchedulerSunday()
+void CCameraAdvancedSettingsDlg::OnCheckSchedulerSunday()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_SUNDAY);
 	pCheck->GetCheck() == 0 ? m_pDoc->m_bDetectionSunday = FALSE : m_pDoc->m_bDetectionSunday = TRUE;
 }
 
-void CVideoPage::OnCheckSchedulerMonday()
+void CCameraAdvancedSettingsDlg::OnCheckSchedulerMonday()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_MONDAY);
 	pCheck->GetCheck() == 0 ? m_pDoc->m_bDetectionMonday = FALSE : m_pDoc->m_bDetectionMonday = TRUE;
 }
 
-void CVideoPage::OnCheckSchedulerTuesday()
+void CCameraAdvancedSettingsDlg::OnCheckSchedulerTuesday()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_TUESDAY);
 	pCheck->GetCheck() == 0 ? m_pDoc->m_bDetectionTuesday = FALSE : m_pDoc->m_bDetectionTuesday = TRUE;
 }
 
-void CVideoPage::OnCheckSchedulerWednesday()
+void CCameraAdvancedSettingsDlg::OnCheckSchedulerWednesday()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_WEDNESDAY);
 	pCheck->GetCheck() == 0 ? m_pDoc->m_bDetectionWednesday = FALSE : m_pDoc->m_bDetectionWednesday = TRUE;
 }
 
-void CVideoPage::OnCheckSchedulerThursday()
+void CCameraAdvancedSettingsDlg::OnCheckSchedulerThursday()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_THURSDAY);
 	pCheck->GetCheck() == 0 ? m_pDoc->m_bDetectionThursday = FALSE : m_pDoc->m_bDetectionThursday = TRUE;
 }
 
-void CVideoPage::OnCheckSchedulerFriday()
+void CCameraAdvancedSettingsDlg::OnCheckSchedulerFriday()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_FRIDAY);
 	pCheck->GetCheck() == 0 ? m_pDoc->m_bDetectionFriday = FALSE : m_pDoc->m_bDetectionFriday = TRUE;
 }
 
-void CVideoPage::OnCheckSchedulerSaturday()
+void CCameraAdvancedSettingsDlg::OnCheckSchedulerSaturday()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_SATURDAY);
 	pCheck->GetCheck() == 0 ? m_pDoc->m_bDetectionSaturday = FALSE : m_pDoc->m_bDetectionSaturday = TRUE;
 }
 
-void CVideoPage::OnDatetimechangeTimeDailyStart(NMHDR* pNMHDR, LRESULT* pResult)
+void CCameraAdvancedSettingsDlg::OnDatetimechangeTimeDailyStart(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	if (UpdateData(TRUE))
 		UpdateDetectionStartStopTimes();
 	*pResult = 0;
 }
 
-void CVideoPage::OnDatetimechangeTimeDailyStop(NMHDR* pNMHDR, LRESULT* pResult)
+void CCameraAdvancedSettingsDlg::OnDatetimechangeTimeDailyStop(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	if (UpdateData(TRUE))
 		UpdateDetectionStartStopTimes();
 	*pResult = 0;
 }
 
-BOOL CVideoPage::IsEmpty(int nIDC)
+BOOL CCameraAdvancedSettingsDlg::IsEmpty(int nIDC)
 {
 	CString s;
 	CEdit* pEdit = (CEdit*)GetDlgItem(nIDC);
@@ -750,7 +750,7 @@ BOOL CVideoPage::IsEmpty(int nIDC)
 	return s.IsEmpty();
 }
 
-void CVideoPage::UpdateVideoQualityInfo()
+void CCameraAdvancedSettingsDlg::UpdateVideoQualityInfo()
 {
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY_INFO);
 	CString sQuality;
@@ -765,7 +765,7 @@ void CVideoPage::UpdateVideoQualityInfo()
 	pEdit->SetWindowText(sQuality);
 }
 
-void CVideoPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
+void CCameraAdvancedSettingsDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
 	if (pScrollBar)
 	{
@@ -790,19 +790,19 @@ void CVideoPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 	CDialog::OnHScroll(nSBCode, nPos, (CScrollBar*)pScrollBar);
 }
 
-void CVideoPage::OnSaveVideoMovementDetection()
+void CCameraAdvancedSettingsDlg::OnSaveVideoMovementDetection()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_SAVE_VIDEO_MOVEMENT_DETECTION);
 	m_pDoc->m_bSaveVideoMovementDetection = pCheck->GetCheck() > 0;
 }
 
-void CVideoPage::OnSaveAnimGifMovementDetection()
+void CCameraAdvancedSettingsDlg::OnSaveAnimGifMovementDetection()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_SAVE_ANIMATEDGIF_MOVEMENT_DETECTION);
 	m_pDoc->m_bSaveAnimGIFMovementDetection = pCheck->GetCheck() > 0;
 }
 
-void CVideoPage::OnAnimatedgifSize()
+void CCameraAdvancedSettingsDlg::OnAnimatedgifSize()
 {
 	// Stop Save Frame List Thread
 	m_pDoc->m_SaveFrameListThread.Kill();
@@ -828,7 +828,7 @@ void CVideoPage::OnAnimatedgifSize()
 	m_pDoc->m_SaveFrameListThread.Start();
 }
 
-void CVideoPage::DisplaySnapshotRate()
+void CCameraAdvancedSettingsDlg::DisplaySnapshotRate()
 {
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_SNAPSHOT_RATE);
 	CString sText;
@@ -841,7 +841,7 @@ void CVideoPage::DisplaySnapshotRate()
 	pEdit->SetWindowText(sText);
 }
 
-void CVideoPage::OnChangeEditSnapshotRate()
+void CCameraAdvancedSettingsDlg::OnChangeEditSnapshotRate()
 {
 	CString sText;
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_SNAPSHOT_RATE);
@@ -851,7 +851,7 @@ void CVideoPage::OnChangeEditSnapshotRate()
 	m_pDoc->SnapshotRate(dRate);
 }
 
-void CVideoPage::ChangeThumbSize(int nNewWidth, int nNewHeight)
+void CCameraAdvancedSettingsDlg::ChangeThumbSize(int nNewWidth, int nNewHeight)
 {
 	// Init thumb vars: must be a multiple of 4 for some video codecs,
 	// most efficient would be a multiple of 16 to fit the macro blocks
@@ -865,7 +865,7 @@ void CVideoPage::ChangeThumbSize(int nNewWidth, int nNewHeight)
 	pButton->SetWindowText(sSize);
 }
 
-void CVideoPage::OnButtonThumbSize()
+void CCameraAdvancedSettingsDlg::OnButtonThumbSize()
 {
 	CResizingDlg dlg(m_pDoc->m_DocRect.Width(), m_pDoc->m_DocRect.Height(),
 					m_pDoc->m_nSnapshotThumbWidth, m_pDoc->m_nSnapshotThumbHeight,
@@ -881,7 +881,7 @@ void CVideoPage::OnButtonThumbSize()
 	}
 }
 
-void CVideoPage::OnCheckSnapshotHistoryVideo()
+void CCameraAdvancedSettingsDlg::OnCheckSnapshotHistoryVideo()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO);
 	if (pCheck->GetCheck())
@@ -890,19 +890,19 @@ void CVideoPage::OnCheckSnapshotHistoryVideo()
 		m_pDoc->m_bSnapshotHistoryVideo = FALSE;
 }
 
-void CVideoPage::OnExecMovementDetection()
+void CCameraAdvancedSettingsDlg::OnExecMovementDetection()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_EXEC_MOVEMENT_DETECTION);
 	m_pDoc->m_bExecCommandMovementDetection = pCheck->GetCheck() > 0;
 }
 
-void CVideoPage::OnSelchangeExecmodeMovementDetection()
+void CCameraAdvancedSettingsDlg::OnSelchangeExecmodeMovementDetection()
 {
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_EXECMODE_MOVEMENT_DETECTION);
 	m_pDoc->m_nExecModeMovementDetection = pComboBox->GetCurSel();
 }
 
-void CVideoPage::OnChangeEditExe()
+void CCameraAdvancedSettingsDlg::OnChangeEditExe()
 {
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_EXE);
 	::EnterCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
@@ -910,7 +910,7 @@ void CVideoPage::OnChangeEditExe()
 	::LeaveCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
 }
 
-void CVideoPage::OnChangeEditParams()
+void CCameraAdvancedSettingsDlg::OnChangeEditParams()
 {
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PARAMS);
 	::EnterCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
@@ -918,7 +918,7 @@ void CVideoPage::OnChangeEditParams()
 	::LeaveCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
 }
 
-void CVideoPage::OnCheckHideExecCommand()
+void CCameraAdvancedSettingsDlg::OnCheckHideExecCommand()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_HIDE_EXEC_COMMAND);
 	::EnterCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
@@ -926,7 +926,7 @@ void CVideoPage::OnCheckHideExecCommand()
 	::LeaveCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
 }
 
-void CVideoPage::OnCheckWaitExecCommand()
+void CCameraAdvancedSettingsDlg::OnCheckWaitExecCommand()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_WAIT_EXEC_COMMAND);
 	::EnterCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);

@@ -9,7 +9,7 @@
 #include "PicturePrintPreviewView.h"
 #include "mmsystem.h"
 #include "XThemeHelper.h"
-#include "VideoPage.h"
+#include "CameraAdvancedSettingsDlg.h"
 #include "DxCapture.h"
 
 #ifdef _DEBUG
@@ -1217,8 +1217,8 @@ void CVideoDeviceChildFrame::StartShutdown1()
 	pDoc->StopProcessFrame(PROCESSFRAME_CLOSE);
 
 	// Hide without saving because already done in OnClose()
-	if (pDoc->m_pVideoPage && pDoc->m_pVideoPage->IsWindowVisible())
-		pDoc->m_pVideoPage->Hide(FALSE);
+	if (pDoc->m_pCameraAdvancedSettingsDlg && pDoc->m_pCameraAdvancedSettingsDlg->IsWindowVisible())
+		pDoc->m_pCameraAdvancedSettingsDlg->Hide(FALSE);
 }
 
 void CVideoDeviceChildFrame::StartShutdown2()
@@ -1293,9 +1293,9 @@ void CVideoDeviceChildFrame::EndShutdown()
 	}
 
 	// The next step must happen last, because it sets to NULL
-	// m_pVideoPage used inside ProcessI420Frame():
-	if (pDoc->m_pVideoPage)
-		pDoc->m_pVideoPage->DestroyOnAppExit();
+	// m_pCameraAdvancedSettingsDlg used inside ProcessI420Frame():
+	if (pDoc->m_pCameraAdvancedSettingsDlg)
+		pDoc->m_pCameraAdvancedSettingsDlg->DestroyOnAppExit();
 }
 
 BOOL CVideoDeviceChildFrame::IsShutdown1Done()
