@@ -5,8 +5,7 @@
 #include "VideoDeviceDoc.h"
 #include "AudioInSourceDlg.h"
 #include "CameraBasicSettingsDlg.h"
-#include "SnapshotPage.h"
-#include "CameraAdvancedSettingsPropertySheet.h"
+#include "VideoPage.h"
 #include "Quantizer.h"
 #include "DxCapture.h"
 #include "DxVideoFormatDlg.h"
@@ -3553,10 +3552,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 		m_pDstWaveFormat->wBitsPerSample = 0;
 	}
 
-	// Property Sheet
+	// Camera Advanced Settings
 	m_pVideoPage = NULL;
-	m_pSnapshotPage = NULL;
-	m_pCameraAdvancedSettingsPropertySheet = NULL;
 
 	// Email Settings
 	m_MovDetLastMailTime = 0;
@@ -3940,9 +3937,9 @@ void CVideoDeviceDoc::SetDocumentTitle()
 			sFormat = GetDeviceFormat();
 		}
 
-		// Update Property Sheet title
-		if (m_pCameraAdvancedSettingsPropertySheet)
-			m_pCameraAdvancedSettingsPropertySheet->UpdateTitle();
+		// Update Camera Advanced Settings Title
+		if (m_pVideoPage)
+			m_pVideoPage->UpdateTitle();
 
 		// Set main title
 		if (!sWidthHeight.IsEmpty())
@@ -5261,33 +5258,25 @@ void CVideoDeviceDoc::CaptureCameraBasicSettings()
 void CVideoDeviceDoc::OnCaptureCameraAdvancedSettings() 
 {
 	// Create if First Time
-	if (!m_pCameraAdvancedSettingsPropertySheet)
+	if (!m_pVideoPage)
 	{
-		m_pCameraAdvancedSettingsPropertySheet = new CCameraAdvancedSettingsPropertySheet(this);
-		CRect rect(0, 0, 0, 0);
-		if (!m_pCameraAdvancedSettingsPropertySheet->Create(GetView(),
-			WS_POPUP | WS_CAPTION | WS_SYSMENU))
-		{
-			m_pCameraAdvancedSettingsPropertySheet = NULL;
-			return;
-		}
-		m_pCameraAdvancedSettingsPropertySheet->CenterWindow();
-		m_pCameraAdvancedSettingsPropertySheet->Show();
+		m_pVideoPage = new CVideoPage(GetView());
+		m_pVideoPage->Show();
 	}
 	// Toggle Visible / Invisible State
 	else
 	{
-		if (m_pCameraAdvancedSettingsPropertySheet->IsWindowVisible())
-			m_pCameraAdvancedSettingsPropertySheet->Hide(TRUE);
+		if (m_pVideoPage->IsWindowVisible())
+			m_pVideoPage->Hide(TRUE);
 		else
-			m_pCameraAdvancedSettingsPropertySheet->Show();
+			m_pVideoPage->Show();
 	}
 }
 
 void CVideoDeviceDoc::OnUpdateCaptureCameraAdvancedSettings(CCmdUI* pCmdUI) 
 {
-	if (m_pCameraAdvancedSettingsPropertySheet)
-		pCmdUI->SetCheck(m_pCameraAdvancedSettingsPropertySheet->IsWindowVisible() ? 1 : 0);
+	if (m_pVideoPage)
+		pCmdUI->SetCheck(m_pVideoPage->IsWindowVisible() ? 1 : 0);
 	else
 		pCmdUI->SetCheck(0);
 }

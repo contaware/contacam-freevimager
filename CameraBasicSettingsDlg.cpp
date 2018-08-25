@@ -6,7 +6,7 @@
 #include "CameraBasicSettingsDlg.h"
 #include "VideoDeviceDoc.h"
 #include "VideoDeviceView.h"
-#include "CameraAdvancedSettingsPropertySheet.h"
+#include "VideoPage.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -423,16 +423,16 @@ void CCameraBasicSettingsDlg::OnSendmailConfigure()
 void CCameraBasicSettingsDlg::ApplySettingsSnapshot(int nThumbWidth, int nThumbHeight, double dSnapshotRate)
 {
 	m_pDoc->SnapshotRate(dSnapshotRate);
-	if (m_pDoc->m_pSnapshotPage)
+	if (m_pDoc->m_pVideoPage)
 	{
 		// Thumb size (this updates the controls and sets m_nSnapshotThumbWidth and m_nSnapshotThumbHeight)
-		m_pDoc->m_pSnapshotPage->ChangeThumbSize(nThumbWidth, nThumbHeight);
+		m_pDoc->m_pVideoPage->ChangeThumbSize(nThumbWidth, nThumbHeight);
 		
 		// Display snapshot rate
-		m_pDoc->m_pSnapshotPage->DisplaySnapshotRate();
+		m_pDoc->m_pVideoPage->DisplaySnapshotRate();
 
 		// Snapshot history
-		CButton* pCheck = (CButton*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO);
+		CButton* pCheck = (CButton*)m_pDoc->m_pVideoPage->GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO);
 		pCheck->SetCheck(m_pDoc->m_bSnapshotHistoryVideo ? 1 : 0);
 	}
 	else

@@ -13,14 +13,19 @@ class CVideoDeviceDoc;
 
 #define FRAMERATE_CHANGE_TIMEOUT	6	// In MOVDETPAGE_TIMER_MS units
 
-class CVideoPage : public CPropertyPage
+class CVideoPage : public CDialog
 {
-	DECLARE_DYNCREATE(CVideoPage)
 public:
 	// Construction
-	CVideoPage();
-	void SetDoc(CVideoDeviceDoc* pDoc);
+	CVideoPage(CWnd* pParent);
 	~CVideoPage();
+
+	void Show();
+	void Hide(BOOL bSaveSettingsOnHiding);
+	void DestroyOnAppExit();
+	void UpdateTitle();
+	void DisplaySnapshotRate();
+	void ChangeThumbSize(int nNewWidth, int nNewHeight);
 
 	// Dialog data
 	enum { IDD = IDD_VIDEO };
@@ -49,7 +54,10 @@ protected:
 	// Dialog functions
 	virtual void DoDataExchange(CDataExchange* pDX);
 	virtual BOOL OnInitDialog();
+	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
+	virtual void PostNcDestroy();
 	afx_msg void OnDestroy();
+	afx_msg void OnClose();
 	afx_msg void OnChangeFrameRate();
 	afx_msg void OnTimer(UINT nIDEvent);
 	afx_msg void OnChangeSecondsBeforeMovementBegin();
@@ -81,6 +89,9 @@ protected:
 	afx_msg void OnSaveVideoMovementDetection();
 	afx_msg void OnSaveAnimGifMovementDetection();
 	afx_msg void OnAnimatedgifSize();
+	afx_msg void OnChangeEditSnapshotRate();
+	afx_msg void OnButtonThumbSize();
+	afx_msg void OnCheckSnapshotHistoryVideo();
 	afx_msg void OnExecMovementDetection();
 	afx_msg void OnSelchangeExecmodeMovementDetection();
 	afx_msg void OnChangeEditExe();

@@ -103,7 +103,6 @@
 #define IDI_GIF                         295
 #define IDD_NEW                         296
 #define IDI_JPG                         296
-#define IDD_SNAPSHOT                    297
 #define IDI_TIF                         297
 #define IDI_PNG                         298
 #define IDI_PCX                         299

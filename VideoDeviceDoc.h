@@ -31,8 +31,6 @@ extern "C"
 class CVideoDeviceView;
 class CVideoDeviceChildFrame;
 class CDxCapture;
-class CSnapshotPage;
-class CCameraAdvancedSettingsPropertySheet;
 class CVideoPage;
 
 // General Settings
@@ -959,9 +957,7 @@ public:
 	// Send Mail
 	SendMailConfigurationStruct m_SendMailConfiguration;
 
-	// Property Sheet Pointer
-	CCameraAdvancedSettingsPropertySheet* volatile m_pCameraAdvancedSettingsPropertySheet;
-	CSnapshotPage* volatile m_pSnapshotPage;
+	// Camera Advanced Settings
 	CVideoPage* volatile m_pVideoPage;
 
 // Protected Variables

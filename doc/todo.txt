@@ -34,12 +34,12 @@ ContaCam Program
   disable motion email alerts but have them on when I'm away. It would be 
   most convenient if you could toggle between stay/away from either the 
   software or the web interface (tyler.barnes@telus.net)
-- Checkbox in Camera Settings to remove the files also from the FTP
-  server (jeanbaptiste.guyot@orange.fr)
 - Change the color and position of the date and time on the camera frame
   (toan.nguyenk@gmail.com)
 - Advanced motion scheduler with the possibility to configure times for each day
   (g.frascarolo@tiscali.it)
+- Post buffer is good to not split the detection, but should be removed at the
+  end of the record (sambul7165@gmail.com)
   
   
 ContaCam Web Interface

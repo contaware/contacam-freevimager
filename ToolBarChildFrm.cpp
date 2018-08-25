@@ -9,7 +9,7 @@
 #include "PicturePrintPreviewView.h"
 #include "mmsystem.h"
 #include "XThemeHelper.h"
-#include "CameraAdvancedSettingsPropertySheet.h"
+#include "VideoPage.h"
 #include "DxCapture.h"
 
 #ifdef _DEBUG
@@ -1216,11 +1216,9 @@ void CVideoDeviceChildFrame::StartShutdown1()
 	// Stop Processing Frames
 	pDoc->StopProcessFrame(PROCESSFRAME_CLOSE);
 
-	// Hide Window Property Sheet without saving
-	// because already done in OnClose()
-	if (pDoc->m_pCameraAdvancedSettingsPropertySheet &&
-		pDoc->m_pCameraAdvancedSettingsPropertySheet->IsWindowVisible())
-		pDoc->m_pCameraAdvancedSettingsPropertySheet->Hide(FALSE);
+	// Hide without saving because already done in OnClose()
+	if (pDoc->m_pVideoPage && pDoc->m_pVideoPage->IsWindowVisible())
+		pDoc->m_pVideoPage->Hide(FALSE);
 }
 
 void CVideoDeviceChildFrame::StartShutdown2()
@@ -1295,20 +1293,9 @@ void CVideoDeviceChildFrame::EndShutdown()
 	}
 
 	// The next step must happen last, because it sets to NULL
-	// the following pointers (used inside ProcessI420Frame()):
-	//
-	// m_pCameraAdvancedSettingsPropertySheet
-	// m_pSnapshotPage
-	// m_pVideoPage
-	//
-	if (pDoc->m_pCameraAdvancedSettingsPropertySheet)
-	{
-		// m_pCameraAdvancedSettingsPropertySheet pointer is set to NULL
-		// from the sheet class (selfdeletion)
-		// The other pointers are set to NULL
-		// by the respective OnDestroy() functions
-		pDoc->m_pCameraAdvancedSettingsPropertySheet->Close();
-	}
+	// m_pVideoPage used inside ProcessI420Frame():
+	if (pDoc->m_pVideoPage)
+		pDoc->m_pVideoPage->DestroyOnAppExit();
 }
 
 BOOL CVideoDeviceChildFrame::IsShutdown1Done()

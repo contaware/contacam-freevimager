@@ -20,33 +20,92 @@ static char THIS_FILE[] = __FILE__;
 
 #ifdef VIDEODEVICEDOC
 
-/////////////////////////////////////////////////////////////////////////////
-// CVideoPage property page
-
-IMPLEMENT_DYNCREATE(CVideoPage, CPropertyPage)
-
-CVideoPage::CVideoPage()
-	: CPropertyPage(CVideoPage::IDD)
+CVideoPage::CVideoPage(CWnd* pParent)
+	: CDialog(CVideoPage::IDD, pParent)
 {
-	m_pDoc = NULL;
+	CVideoDeviceView* pView = (CVideoDeviceView*)m_pParentWnd;
+	ASSERT_VALID(pView);
+	m_pDoc = (CVideoDeviceDoc*)pView->GetDocument();
+	ASSERT_VALID(m_pDoc);
 	m_bInOnTimer = FALSE;
 	m_bDoChangeFrameRate = FALSE;
 	m_nFrameRateChangeTimeout = FRAMERATE_CHANGE_TIMEOUT;
-}
-
-void CVideoPage::SetDoc(CVideoDeviceDoc* pDoc)
-{
-	ASSERT(pDoc);
-	m_pDoc = pDoc;
+	CDialog::Create(CVideoPage::IDD, pParent);
 }
 
 CVideoPage::~CVideoPage()
 {
 }
 
+void CVideoPage::Show()
+{
+	if (!IsWindowVisible())
+	{
+		m_pDoc->GetView()->ForceCursor();
+		ShowWindow(SW_SHOW);
+	}
+}
+
+void CVideoPage::Hide(BOOL bSaveSettingsOnHiding)
+{
+	if (IsWindowVisible())
+	{
+		if (bSaveSettingsOnHiding)
+			m_pDoc->SaveSettings();
+		ShowWindow(SW_HIDE);
+		m_pDoc->GetView()->ForceCursor(FALSE);
+	}
+}
+
+void CVideoPage::DestroyOnAppExit()
+{
+	if (IsWindowVisible())
+		m_pDoc->GetView()->ForceCursor(FALSE);
+	DestroyWindow(); // this calls OnDestroy() and PostNcDestroy()
+}
+
+void CVideoPage::OnClose()
+{
+	Hide(TRUE);
+}
+
+BOOL CVideoPage::OnCommand(WPARAM wParam, LPARAM lParam)
+{
+	if (HIWORD(wParam) == BN_CLICKED)
+	{
+		switch (LOWORD(wParam))
+		{
+		case IDOK:
+			return TRUE;
+		case IDCANCEL:
+			Hide(TRUE);
+			return TRUE;
+		default:
+			return CDialog::OnCommand(wParam, lParam);
+		}
+	}
+	return CDialog::OnCommand(wParam, lParam);
+}
+
+void CVideoPage::OnDestroy()
+{
+	// Kill timer
+	KillTimer(ID_TIMER_MOVDETPAGE);
+
+	// Base class
+	CDialog::OnDestroy();
+}
+
+void CVideoPage::PostNcDestroy()
+{
+	m_pDoc->m_pVideoPage = NULL;
+	delete this;
+	CDialog::PostNcDestroy();
+}
+
 void CVideoPage::DoDataExchange(CDataExchange* pDX)
 {
-	CPropertyPage::DoDataExchange(pDX);
+	CDialog::DoDataExchange(pDX);
 	DDX_Text(pDX, IDC_SECONDS_BEFORE_MOVEMENT_BEGIN, m_nSecondsBeforeMovementBegin);
 	DDV_MinMaxInt(pDX, m_nSecondsBeforeMovementBegin, 1, 99);
 	DDX_Text(pDX, IDC_SECONDS_AFTER_MOVEMENT_END, m_nSecondsAfterMovementEnd);
@@ -62,8 +121,9 @@ void CVideoPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_VIDEO_COMPRESSION_QUALITY, m_VideoRecQuality);
 }
 
-BEGIN_MESSAGE_MAP(CVideoPage, CPropertyPage)
+BEGIN_MESSAGE_MAP(CVideoPage, CDialog)
 	ON_WM_DESTROY()
+	ON_WM_CLOSE()
 	ON_EN_CHANGE(IDC_FRAMERATE, OnChangeFrameRate)
 	ON_WM_TIMER()
 	ON_EN_CHANGE(IDC_SECONDS_BEFORE_MOVEMENT_BEGIN, OnChangeSecondsBeforeMovementBegin)
@@ -95,6 +155,9 @@ BEGIN_MESSAGE_MAP(CVideoPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_SAVE_VIDEO_MOVEMENT_DETECTION, OnSaveVideoMovementDetection)
 	ON_BN_CLICKED(IDC_SAVE_ANIMATEDGIF_MOVEMENT_DETECTION, OnSaveAnimGifMovementDetection)
 	ON_BN_CLICKED(IDC_ANIMATEDGIF_SIZE, OnAnimatedgifSize)
+	ON_EN_CHANGE(IDC_EDIT_SNAPSHOT_RATE, OnChangeEditSnapshotRate)
+	ON_BN_CLICKED(IDC_BUTTON_THUMB_SIZE, OnButtonThumbSize)
+	ON_BN_CLICKED(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO, OnCheckSnapshotHistoryVideo)
 	ON_BN_CLICKED(IDC_EXEC_MOVEMENT_DETECTION, OnExecMovementDetection)
 	ON_CBN_SELCHANGE(IDC_EXECMODE_MOVEMENT_DETECTION, OnSelchangeExecmodeMovementDetection)
 	ON_EN_CHANGE(IDC_EDIT_EXE, OnChangeEditExe)
@@ -102,6 +165,14 @@ BEGIN_MESSAGE_MAP(CVideoPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_HIDE_EXEC_COMMAND, OnCheckHideExecCommand)
 	ON_BN_CLICKED(IDC_CHECK_WAIT_EXEC_COMMAND, OnCheckWaitExecCommand)
 END_MESSAGE_MAP()
+
+void CVideoPage::UpdateTitle()
+{
+	if (m_pDoc->GetDeviceName() != m_pDoc->GetAssignedDeviceName())
+		SetWindowText(m_pDoc->GetAssignedDeviceName() + _T(" (") + m_pDoc->GetDeviceName() + _T(")"));
+	else
+		SetWindowText(m_pDoc->GetDeviceName());
+}
 
 BOOL CVideoPage::OnInitDialog() 
 {
@@ -125,7 +196,7 @@ BOOL CVideoPage::OnInitDialog()
 	pComboBoxExexMode->AddString(ML_STRING(1843, "Saving done"));
 
 	// This calls UpdateData(FALSE)
-	CPropertyPage::OnInitDialog();
+	CDialog::OnInitDialog();
 
 	// Frame Rate
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_FRAMERATE);
@@ -267,6 +338,19 @@ BOOL CVideoPage::OnInitDialog()
 	CButton* pButtonAnimGIFSize = (CButton*)GetDlgItem(IDC_ANIMATEDGIF_SIZE);
 	pButtonAnimGIFSize->SetWindowText(sSize);
 
+	// Snapshot rate
+	DisplaySnapshotRate();
+
+	// Thumbnail Size Button
+	sSize.Format(ML_STRING(1769, "Thumbnail Size %i x %i"), m_pDoc->m_nSnapshotThumbWidth,
+															m_pDoc->m_nSnapshotThumbHeight);
+	CButton* pButtonThumbnailSize = (CButton*)GetDlgItem(IDC_BUTTON_THUMB_SIZE);
+	pButtonThumbnailSize->SetWindowText(sSize);
+
+	// Snapshot History Video Check Box
+	CButton* pCheckSnapshotHistoryVideo = (CButton*)GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO);
+	pCheckSnapshotHistoryVideo->SetCheck(m_pDoc->m_bSnapshotHistoryVideo);
+
 	// Execute Command Movement Detection
 	CButton* pCheckExecCommandMovementDetection = (CButton*)GetDlgItem(IDC_EXEC_MOVEMENT_DETECTION);
 	if (m_pDoc->m_bExecCommandMovementDetection)
@@ -289,26 +373,17 @@ BOOL CVideoPage::OnInitDialog()
 	else
 		pCheckWaitExecCommandMovementDetection->SetCheck(0);
 
-	// Set Page Pointer to this
+	// Set Pointer to this
 	m_pDoc->m_pVideoPage = this;
 	
+	// Set title
+	UpdateTitle();
+
 	// Set Timer
 	SetTimer(ID_TIMER_MOVDETPAGE, MOVDETPAGE_TIMER_MS, NULL);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
-}
-
-void CVideoPage::OnDestroy() 
-{
-	// Kill timer
-	KillTimer(ID_TIMER_MOVDETPAGE);
-
-	// Base class
-	CPropertyPage::OnDestroy();
-
-	// Set Page Pointer to NULL
-	m_pDoc->m_pVideoPage = NULL;
 }
 
 void CVideoPage::OnChangeFrameRate()
@@ -400,7 +475,7 @@ void CVideoPage::OnTimer(UINT nIDEvent)
 		// Clear flag
 		m_bInOnTimer = FALSE;
 	}
-	CPropertyPage::OnTimer(nIDEvent);
+	CDialog::OnTimer(nIDEvent);
 }
 
 void CVideoPage::OnChangeSecondsBeforeMovementBegin()
@@ -712,7 +787,7 @@ void CVideoPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 			}
 		}
 	}
-	CPropertyPage::OnHScroll(nSBCode, nPos, (CScrollBar*)pScrollBar);
+	CDialog::OnHScroll(nSBCode, nPos, (CScrollBar*)pScrollBar);
 }
 
 void CVideoPage::OnSaveVideoMovementDetection()
@@ -751,6 +826,68 @@ void CVideoPage::OnAnimatedgifSize()
 
 	// Restart Save Frame List Thread
 	m_pDoc->m_SaveFrameListThread.Start();
+}
+
+void CVideoPage::DisplaySnapshotRate()
+{
+	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_SNAPSHOT_RATE);
+	CString sText;
+	if (m_pDoc->m_nSnapshotRate >= 1)
+		sText.Format(_T("%i"), m_pDoc->m_nSnapshotRate);
+	else if (m_pDoc->m_nSnapshotRate == 0 && m_pDoc->m_nSnapshotRateMs == 0)
+		sText = _T("0");
+	else
+		sText.Format(_T("%.3f"), (double)(m_pDoc->m_nSnapshotRate) + (double)(m_pDoc->m_nSnapshotRateMs) / 1000.0);
+	pEdit->SetWindowText(sText);
+}
+
+void CVideoPage::OnChangeEditSnapshotRate()
+{
+	CString sText;
+	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_SNAPSHOT_RATE);
+	pEdit->GetWindowText(sText);
+	double dRate = _tcstod(sText.GetBuffer(0), NULL);
+	sText.ReleaseBuffer();
+	m_pDoc->SnapshotRate(dRate);
+}
+
+void CVideoPage::ChangeThumbSize(int nNewWidth, int nNewHeight)
+{
+	// Init thumb vars: must be a multiple of 4 for some video codecs,
+	// most efficient would be a multiple of 16 to fit the macro blocks
+	m_pDoc->m_nSnapshotThumbWidth = CVideoDeviceDoc::MakeSizeMultipleOf4(nNewWidth);
+	m_pDoc->m_nSnapshotThumbHeight = CVideoDeviceDoc::MakeSizeMultipleOf4(nNewHeight);
+	CString sSize;
+	sSize.Format(ML_STRING(1769, "Thumbnail Size %i x %i"),
+				m_pDoc->m_nSnapshotThumbWidth,
+				m_pDoc->m_nSnapshotThumbHeight);
+	CButton* pButton = (CButton*)GetDlgItem(IDC_BUTTON_THUMB_SIZE);
+	pButton->SetWindowText(sSize);
+}
+
+void CVideoPage::OnButtonThumbSize()
+{
+	CResizingDlg dlg(m_pDoc->m_DocRect.Width(), m_pDoc->m_DocRect.Height(),
+					m_pDoc->m_nSnapshotThumbWidth, m_pDoc->m_nSnapshotThumbHeight,
+					this);
+	if (dlg.DoModal() == IDOK)
+	{
+		ChangeThumbSize(dlg.m_nPixelsWidth, dlg.m_nPixelsHeight);
+		CString sWidth, sHeight;
+		sWidth.Format(_T("%d"), m_pDoc->m_nSnapshotThumbWidth);
+		sHeight.Format(_T("%d"), m_pDoc->m_nSnapshotThumbHeight);
+		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBWIDTH, sWidth);
+		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBHEIGHT, sHeight);
+	}
+}
+
+void CVideoPage::OnCheckSnapshotHistoryVideo()
+{
+	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO);
+	if (pCheck->GetCheck())
+		m_pDoc->m_bSnapshotHistoryVideo = TRUE;
+	else
+		m_pDoc->m_bSnapshotHistoryVideo = FALSE;
 }
 
 void CVideoPage::OnExecMovementDetection()
