@@ -555,11 +555,11 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		m_pDoc->RemoveOldestMovementDetectionList();
 
 		// Send By E-Mail
-		if (m_pDoc->m_bSendMailMovementDetection)
+		if (m_pDoc->m_bSendMailRecording)
 		{
 			if (::GetFileSize64(sVideoFileName).QuadPart > 0								&&
-				(m_pDoc->m_MovDetAttachmentType == CVideoDeviceDoc::ATTACHMENT_VIDEO		||
-				m_pDoc->m_MovDetAttachmentType == CVideoDeviceDoc::ATTACHMENT_JPG_VIDEO))
+				(m_pDoc->m_AttachmentType == CVideoDeviceDoc::ATTACHMENT_VIDEO		||
+				m_pDoc->m_AttachmentType == CVideoDeviceDoc::ATTACHMENT_JPG_VIDEO))
 			{
 				CTimeSpan TimeDiff = FirstTime - m_pDoc->m_MovDetLastVideoMailTime;
 				if (TimeDiff.GetTotalSeconds() >= (LONGLONG)m_pDoc->m_nMovDetSendMailSecBetweenMsg &&
@@ -567,8 +567,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 					m_pDoc->m_MovDetLastVideoMailTime = FirstTime;
 			}
 			else if (	::GetFileSize64(sGIFFileName).QuadPart > 0							&&
-						(m_pDoc->m_MovDetAttachmentType == CVideoDeviceDoc::ATTACHMENT_GIF	||
-						m_pDoc->m_MovDetAttachmentType == CVideoDeviceDoc::ATTACHMENT_JPG_GIF))
+						(m_pDoc->m_AttachmentType == CVideoDeviceDoc::ATTACHMENT_GIF	||
+						m_pDoc->m_AttachmentType == CVideoDeviceDoc::ATTACHMENT_JPG_GIF))
 			{
 				CTimeSpan TimeDiff = FirstTime - m_pDoc->m_MovDetLastGIFMailTime;
 				if (TimeDiff.GetTotalSeconds() >= (LONGLONG)m_pDoc->m_nMovDetSendMailSecBetweenMsg &&
@@ -1056,7 +1056,7 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 														FrameRate.den,						// Scale				
 														DEFAULT_VIDEO_QUALITY,				// Use default video quality
 														((CUImagerApp*)::AfxGetApp())->m_nCoresCount);
-							pAVRecVideo->Open(m_sMetadataTitle);
+							pAVRecVideo->Open(m_sAssignedDeviceName + _T(" ") + ::MakeDateLocalFormat(m_Time));
 						}
 
 						// Add Frame
@@ -1091,6 +1091,10 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 	{
 		// Copy from temp to snapshots folder
 		::CopyFile(sVideoTempFileName, sVideoFileName, FALSE);
+
+		// Send E-Mail
+		if (m_bSendMailSnapshotHistory)
+			CVideoDeviceDoc::SendMail(m_SendMailConfiguration, m_sAssignedDeviceName, m_Time, _T("REC"), _T(""), sVideoFileName);
 	}
 
 	// Set thread executed variable
@@ -1163,7 +1167,7 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	// Live
 	::CopyFile(sTempFileName, sLiveFileName, FALSE);
 	::CopyFile(sTempThumbFileName, sLiveThumbFileName, FALSE);
-	if (m_bSnapshotLiveJpegEmail)
+	if (m_bSendMailSnapshot)
 	{
 		HANDLE hEMAIL = NULL;
 		CVideoDeviceDoc::SendMail(m_SendMailConfiguration,
@@ -1947,9 +1951,9 @@ end_of_software_detection:
 			m_bDetectingMinLengthMovement = TRUE;
 
 			// Send E-Mail
-			if (m_bSendMailMovementDetection)
+			if (m_bSendMailRecording)
 			{
-				if (m_MovDetAttachmentType == ATTACHMENT_NONE)
+				if (m_AttachmentType == ATTACHMENT_NONE)
 				{
 					CTime RefTime = CTime::GetCurrentTime();
 					DWORD dwRefUpTime = ::timeGetTime();
@@ -1959,9 +1963,9 @@ end_of_software_detection:
 						CVideoDeviceDoc::SendMail(m_SendMailConfiguration, GetAssignedDeviceName(), Time, _T("REC")))
 						m_MovDetLastMailTime = Time;
 				}
-				else if (	m_MovDetAttachmentType == ATTACHMENT_JPG		||
-							m_MovDetAttachmentType == ATTACHMENT_JPG_VIDEO	||
-							m_MovDetAttachmentType == ATTACHMENT_JPG_GIF)
+				else if (	m_AttachmentType == ATTACHMENT_JPG			||
+							m_AttachmentType == ATTACHMENT_JPG_VIDEO	||
+							m_AttachmentType == ATTACHMENT_JPG_GIF)
 				{
 					CTime RefTime = CTime::GetCurrentTime();
 					DWORD dwRefUpTime = ::timeGetTime();
@@ -3465,7 +3469,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 
 	// Snapshot
 	m_bSnapshotHistoryVideo = FALSE;
-	m_bSnapshotLiveJpegEmail = FALSE;
+	m_bSendMailSnapshot = FALSE;
+	m_bSendMailSnapshotHistory = FALSE;
 	m_nSnapshotRate = DEFAULT_SNAPSHOT_RATE;
 	m_nSnapshotRateMs = 0;
 	m_nSnapshotThumbWidth = DEFAULT_SNAPSHOT_THUMB_WIDTH;
@@ -3501,7 +3506,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bSaveVideoMovementDetection = TRUE;
 	m_bSaveAnimGIFMovementDetection = TRUE;
 	m_bSendMailMalfunction = TRUE;
-	m_bSendMailMovementDetection = FALSE;
+	m_bSendMailRecording = FALSE;
 	m_bExecCommandMovementDetection = FALSE;
 	m_nExecModeMovementDetection = 0;
 	m_sExecCommandMovementDetection = _T("");
@@ -3560,7 +3565,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_MovDetLastJPGMailTime = 0;
 	m_MovDetLastVideoMailTime = 0;
 	m_MovDetLastGIFMailTime = 0;
-	m_MovDetAttachmentType = ATTACHMENT_NONE;
+	m_AttachmentType = ATTACHMENT_NONE;
 	m_nMovDetSendMailSecBetweenMsg = 0;
 	m_SendMailConfiguration.m_sSubject = DEFAULT_EMAIL_SUBJECT;
 	m_SendMailConfiguration.m_sTo = _T("");
@@ -4196,11 +4201,11 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	GetView()->UpdateWindowSizes(TRUE, FALSE, FALSE);
 
 	// Email Settings
-	m_MovDetAttachmentType = (AttachmentType) pApp->GetProfileInt(sSection, _T("AttachmentType"), ATTACHMENT_NONE);
-	if (m_MovDetAttachmentType < ATTACHMENT_NONE)
-		m_MovDetAttachmentType = ATTACHMENT_NONE;
-	else if (m_MovDetAttachmentType > ATTACHMENT_JPG_GIF)
-		m_MovDetAttachmentType = ATTACHMENT_JPG_GIF;
+	m_AttachmentType = (AttachmentType) pApp->GetProfileInt(sSection, _T("AttachmentType"), ATTACHMENT_NONE);
+	if (m_AttachmentType < ATTACHMENT_NONE)
+		m_AttachmentType = ATTACHMENT_NONE;
+	else if (m_AttachmentType > ATTACHMENT_JPG_GIF)
+		m_AttachmentType = ATTACHMENT_JPG_GIF;
 	m_nMovDetSendMailSecBetweenMsg = (int) pApp->GetProfileInt(sSection, _T("SendMailSecBetweenMsg"), 0);
 	m_SendMailConfiguration.m_sSubject = pApp->GetProfileString(sSection, _T("SendMailSubject"), DEFAULT_EMAIL_SUBJECT);
 	if (m_SendMailConfiguration.m_sSubject.IsEmpty())
@@ -4241,7 +4246,8 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	sRecordAutoSaveDir.TrimRight(_T('\\'));
 	m_bObscureSource = ::IsExistingFile(sRecordAutoSaveDir + _T("\\") + CAMERA_IS_OBSCURED_FILENAME);
 	m_bSnapshotHistoryVideo = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistoryVideo"), FALSE);
-	m_bSnapshotLiveJpegEmail = (BOOL)pApp->GetProfileInt(sSection, _T("SnapshotLiveJpegEmail"), FALSE);
+	m_bSendMailSnapshot = (BOOL)pApp->GetProfileInt(sSection, _T("SendMailSnapshot"), FALSE);
+	m_bSendMailSnapshotHistory = (BOOL)pApp->GetProfileInt(sSection, _T("SendMailSnapshotHistory"), FALSE);
 	m_nSnapshotRate = (int) pApp->GetProfileInt(sSection, _T("SnapshotRate"), DEFAULT_SNAPSHOT_RATE);
 	m_nSnapshotRateMs = (int) pApp->GetProfileInt(sSection, _T("SnapshotRateMs"), 0);
 	m_nSnapshotThumbWidth = (int) MakeSizeMultipleOf4(pApp->GetProfileInt(sSection, _T("SnapshotThumbWidth"), DEFAULT_SNAPSHOT_THUMB_WIDTH));
@@ -4268,7 +4274,7 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_bSaveVideoMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveVideoMovementDetection"), TRUE);
 	m_bSaveAnimGIFMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), TRUE);
 	m_bSendMailMalfunction = (BOOL)pApp->GetProfileInt(sSection, _T("SendMailMalfunction"), TRUE);
-	m_bSendMailMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SendMailMovementDetection"), FALSE);
+	m_bSendMailRecording = (BOOL) pApp->GetProfileInt(sSection, _T("SendMailMovementDetection"), FALSE);
 	m_bExecCommandMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("DoExecCommandMovementDetection"), FALSE);
 	m_nExecModeMovementDetection = pApp->GetProfileInt(sSection, _T("ExecModeMovementDetection"), 0);
 	
@@ -4373,7 +4379,7 @@ void CVideoDeviceDoc::SaveSettings()
 	SavePlacement();
 
 	// Email Settings
-	pApp->WriteProfileInt(sSection, _T("AttachmentType"), (int)m_MovDetAttachmentType);
+	pApp->WriteProfileInt(sSection, _T("AttachmentType"), (int)m_AttachmentType);
 	pApp->WriteProfileInt(sSection, _T("SendMailSecBetweenMsg"), m_nMovDetSendMailSecBetweenMsg);
 	pApp->WriteProfileString(sSection, _T("SendMailSubject"), m_SendMailConfiguration.m_sSubject);
 	pApp->WriteProfileString(sSection, _T("SendMailTo"), m_SendMailConfiguration.m_sTo);
@@ -4397,7 +4403,8 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("Rotate180"), (int)m_bRotate180);
 	pApp->WriteProfileString(sSection, _T("RecordAutoSaveDir"), m_sRecordAutoSaveDir);
 	pApp->WriteProfileInt(sSection, _T("SnapshotHistoryVideo"), (int)m_bSnapshotHistoryVideo);
-	pApp->WriteProfileInt(sSection, _T("SnapshotLiveJpegEmail"), (int)m_bSnapshotLiveJpegEmail);
+	pApp->WriteProfileInt(sSection, _T("SendMailSnapshot"), (int)m_bSendMailSnapshot);
+	pApp->WriteProfileInt(sSection, _T("SendMailSnapshotHistory"), (int)m_bSendMailSnapshotHistory);
 	pApp->WriteProfileInt(sSection, _T("SnapshotRate"), m_nSnapshotRate);
 	pApp->WriteProfileInt(sSection, _T("SnapshotRateMs"), m_nSnapshotRateMs);
 	pApp->WriteProfileInt(sSection, _T("SnapshotThumbWidth"), m_nSnapshotThumbWidth);
@@ -4420,7 +4427,7 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("SaveVideoMovementDetection"), m_bSaveVideoMovementDetection);
 	pApp->WriteProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), m_bSaveAnimGIFMovementDetection);
 	pApp->WriteProfileInt(sSection, _T("SendMailMalfunction"), m_bSendMailMalfunction);
-	pApp->WriteProfileInt(sSection, _T("SendMailMovementDetection"), m_bSendMailMovementDetection);
+	pApp->WriteProfileInt(sSection, _T("SendMailMovementDetection"), m_bSendMailRecording);
 	pApp->WriteProfileInt(sSection, _T("DoExecCommandMovementDetection"), m_bExecCommandMovementDetection);
 	pApp->WriteProfileInt(sSection, _T("ExecModeMovementDetection"), m_nExecModeMovementDetection);
 		
@@ -7312,7 +7319,7 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 			m_SaveSnapshotThread.m_bShowFrameTime = m_bShowFrameTime;
 			m_SaveSnapshotThread.m_bDetectingMinLengthMovement = m_bDetectingMinLengthMovement;
 			m_SaveSnapshotThread.m_nRefFontSize = m_nRefFontSize;
-			m_SaveSnapshotThread.m_bSnapshotLiveJpegEmail = m_bSnapshotLiveJpegEmail;
+			m_SaveSnapshotThread.m_bSendMailSnapshot = m_bSendMailSnapshot;
 			m_SaveSnapshotThread.m_nSnapshotThumbWidth = m_nSnapshotThumbWidth;
 			m_SaveSnapshotThread.m_nSnapshotThumbHeight = m_nSnapshotThumbHeight;
 			m_SaveSnapshotThread.m_Time = Time;
@@ -7337,7 +7344,9 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 		if (m_SaveSnapshotVideoThread.m_ThreadExecutedForTime < Yesterday)
 		{
 			m_SaveSnapshotVideoThread.m_Time = Yesterday;
-			m_SaveSnapshotVideoThread.m_sMetadataTitle = GetAssignedDeviceName() + _T(" ") + ::MakeDateLocalFormat(Yesterday);
+			m_SaveSnapshotVideoThread.m_sAssignedDeviceName = GetAssignedDeviceName();
+			m_SaveSnapshotVideoThread.m_bSendMailSnapshotHistory = m_bSendMailSnapshotHistory;
+			m_SaveSnapshotVideoThread.m_SendMailConfiguration = m_SendMailConfiguration;
 			m_SaveSnapshotVideoThread.m_sSnapshotAutoSaveDir = m_sRecordAutoSaveDir;
 			m_SaveSnapshotVideoThread.Start();
 		}

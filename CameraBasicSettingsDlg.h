@@ -34,9 +34,10 @@ public:
 	BOOL	m_bAutorun;
 	BOOL	m_bCheckCameraCommands;
 	BOOL	m_bCheckSendMailMalfunction;
-	BOOL	m_bCheckSendMailMovementDetection;
-	BOOL	m_bCheckSendMailSnapshots;
-	int		m_nComboSendMailMovementDetectionAttachment;
+	BOOL	m_bCheckSendMailRecording;
+	BOOL	m_bCheckSendMailSnapshot;
+	BOOL	m_bCheckSendMailSnapshotHistory;
+	int		m_nComboSendMailAttachment;
 	int		m_nSendMailSecBetweenMsg;
 	//}}AFX_DATA
 

@@ -477,9 +477,11 @@ public:
 			CSaveSnapshotVideoThread(){m_ThreadExecutedForTime = CTime(0);};
 			virtual ~CSaveSnapshotVideoThread() {Kill();};
 
-			CTime m_Time;
-			CString m_sMetadataTitle;
 			CTime m_ThreadExecutedForTime;
+			CTime m_Time;
+			CString m_sAssignedDeviceName;
+			BOOL m_bSendMailSnapshotHistory;
+			SendMailConfigurationStruct m_SendMailConfiguration;
 			CString m_sSnapshotAutoSaveDir;
 
 		protected:
@@ -499,13 +501,13 @@ public:
 			BOOL m_bShowFrameTime;
 			BOOL m_bDetectingMinLengthMovement;
 			int m_nRefFontSize;
-			BOOL m_bSnapshotLiveJpegEmail;
+			BOOL m_bSendMailSnapshot;
 			int m_nSnapshotThumbWidth;
 			int m_nSnapshotThumbHeight;
 			CTime m_Time;
 			CString m_sAssignedDeviceName;
-			CString m_sSnapshotAutoSaveDir;
 			SendMailConfigurationStruct m_SendMailConfiguration;
+			CString m_sSnapshotAutoSaveDir;
 
 		protected:
 			CMJPEGEncoder m_MJPEGEncoder;
@@ -883,7 +885,8 @@ public:
 
 	// Snapshot Vars
 	volatile BOOL m_bSnapshotHistoryVideo;				// Snapshot history save Video
-	volatile BOOL m_bSnapshotLiveJpegEmail;				// Email Jpeg Live snapshot file
+	volatile BOOL m_bSendMailSnapshot;					// Email Jpeg Live snapshot file
+	volatile BOOL m_bSendMailSnapshotHistory;			// Email snapshots history video file
 	volatile int m_nSnapshotRate;						// Snapshot rate in seconds
 	volatile int m_nSnapshotRateMs;						// Snapshot rate in ms, effective: 1000 * m_nSnapshotRate + m_nSnapshotRateMs
 	volatile int m_nSnapshotThumbWidth;					// Snapshot thumbnail width
@@ -907,7 +910,7 @@ public:
 	volatile BOOL m_bSaveVideoMovementDetection;		// Save Movement Detections as Video File
 	volatile BOOL m_bSaveAnimGIFMovementDetection;		// Save Movement Detections as Animated GIF
 	volatile BOOL m_bSendMailMalfunction;				// Send Email on Device Malfunction
-	volatile BOOL m_bSendMailMovementDetection;			// Send Email on Movement Detections
+	volatile BOOL m_bSendMailRecording;					// Send Email on Recording
 	volatile BOOL m_bExecCommandMovementDetection;		// Execute Command on Movement Detection
 	volatile BOOL m_nExecModeMovementDetection;			// Determines when to execute the command
 	CString m_sExecCommandMovementDetection;			// Command to execute on Movement Detection
@@ -947,7 +950,7 @@ public:
 	volatile BOOL m_bInSchedule;						// Updated by the UI thread each RELOAD_TIMER_MS
 	volatile int m_nMovDetFreqDiv;						// Current frequency divider
 	volatile double m_dMovDetFrameRateFreqDivCalc;		// Framerate used to calculate the current frequency divider
-	volatile AttachmentType m_MovDetAttachmentType;		// The email attachment type
+	volatile AttachmentType m_AttachmentType;			// The email attachment type
 	volatile int m_nMovDetSendMailSecBetweenMsg;		// Minimum seconds between detection emails
 	CTime m_MovDetLastMailTime;							// Time of last sent detection email with no attachment
 	CTime m_MovDetLastJPGMailTime;						// Time of last sent detection email with JPG attachment

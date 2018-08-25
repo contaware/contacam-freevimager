@@ -42,9 +42,10 @@ void CCameraBasicSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_AUTORUN, m_bAutorun);
 	DDX_Check(pDX, IDC_CHECK_CAMERACOMMANDS, m_bCheckCameraCommands);
 	DDX_Check(pDX, IDC_CHECK_SENDMAIL_MALFUNCTION, m_bCheckSendMailMalfunction);
-	DDX_Check(pDX, IDC_CHECK_SENDMAIL_MOVEMENT_DETECTION, m_bCheckSendMailMovementDetection);
-	DDX_Check(pDX, IDC_CHECK_SENDMAIL_SNAPSHOTS, m_bCheckSendMailSnapshots);
-	DDX_CBIndex(pDX, IDC_ATTACHMENT, m_nComboSendMailMovementDetectionAttachment);
+	DDX_Check(pDX, IDC_CHECK_SENDMAIL_SNAPSHOT, m_bCheckSendMailSnapshot);
+	DDX_Check(pDX, IDC_CHECK_SENDMAIL_SNAPSHOT_HISTORY, m_bCheckSendMailSnapshotHistory);
+	DDX_Check(pDX, IDC_CHECK_SENDMAIL_RECORDING, m_bCheckSendMailRecording);
+	DDX_CBIndex(pDX, IDC_ATTACHMENT, m_nComboSendMailAttachment);
 	DDX_Text(pDX, IDC_EDIT_SENDMAIL_SEC_BETWEEN_MSG, m_nSendMailSecBetweenMsg);
 	DDV_MinMaxInt(pDX, m_nSendMailSecBetweenMsg, 0, INT_MAX);
 	DDX_Text(pDX, IDC_EDIT_MAX_CAMERA_FOLDER_SIZE, m_sMaxCameraFolderSizeGB);
@@ -208,9 +209,10 @@ BOOL CCameraBasicSettingsDlg::OnInitDialog()
 			pComboBox->SetCurSel(0);
 	}
 	m_bCheckSendMailMalfunction = m_pDoc->m_bSendMailMalfunction;
-	m_bCheckSendMailMovementDetection = m_pDoc->m_bSendMailMovementDetection;
-	m_bCheckSendMailSnapshots = m_pDoc->m_bSnapshotLiveJpegEmail;
-	m_nComboSendMailMovementDetectionAttachment = m_pDoc->m_MovDetAttachmentType;
+	m_bCheckSendMailRecording = m_pDoc->m_bSendMailRecording;
+	m_bCheckSendMailSnapshot = m_pDoc->m_bSendMailSnapshot;
+	m_bCheckSendMailSnapshotHistory = m_pDoc->m_bSendMailSnapshotHistory;
+	m_nComboSendMailAttachment = m_pDoc->m_AttachmentType;
 	m_nSendMailSecBetweenMsg = m_pDoc->m_nMovDetSendMailSecBetweenMsg;
 	m_CurrentSendMailConfiguration = m_pDoc->m_SendMailConfiguration;
 
@@ -261,9 +263,11 @@ void CCameraBasicSettingsDlg::EnableDisableAllCtrls(BOOL bEnable)
 	pEdit->EnableWindow(bEnable);
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SENDMAIL_MALFUNCTION);
 	pCheck->EnableWindow(bEnable);
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SENDMAIL_MOVEMENT_DETECTION);
+	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SENDMAIL_SNAPSHOT);
 	pCheck->EnableWindow(bEnable);
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SENDMAIL_SNAPSHOTS);
+	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SENDMAIL_SNAPSHOT_HISTORY);
+	pCheck->EnableWindow(bEnable);
+	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SENDMAIL_RECORDING);
 	pCheck->EnableWindow(bEnable);
 	pComboBox = (CComboBox*)GetDlgItem(IDC_ATTACHMENT);
 	pComboBox->EnableWindow(bEnable);
@@ -734,9 +738,10 @@ void CCameraBasicSettingsDlg::ApplySettings()
 
 	// Update send mail variables
 	m_pDoc->m_bSendMailMalfunction = m_bCheckSendMailMalfunction;
-	m_pDoc->m_bSendMailMovementDetection = m_bCheckSendMailMovementDetection;
-	m_pDoc->m_bSnapshotLiveJpegEmail = m_bCheckSendMailSnapshots;
-	m_pDoc->m_MovDetAttachmentType = (CVideoDeviceDoc::AttachmentType)m_nComboSendMailMovementDetectionAttachment;
+	m_pDoc->m_bSendMailRecording = m_bCheckSendMailRecording;
+	m_pDoc->m_bSendMailSnapshot = m_bCheckSendMailSnapshot;
+	m_pDoc->m_bSendMailSnapshotHistory = m_bCheckSendMailSnapshotHistory;
+	m_pDoc->m_AttachmentType = (CVideoDeviceDoc::AttachmentType)m_nComboSendMailAttachment;
 	m_pDoc->m_nMovDetSendMailSecBetweenMsg = m_nSendMailSecBetweenMsg;
 	m_pDoc->m_SendMailConfiguration = m_CurrentSendMailConfiguration;
 
