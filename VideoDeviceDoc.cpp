@@ -7116,7 +7116,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 		else
 			::LeaveCriticalSection(&m_csDib);
 
-		// Set start time, flag, open the Camera Settings dialog and log the starting
+		// Set start time, flag, open the Camera Basic Settings dialog and log the starting
 		if (!m_bCaptureStarted)
 		{
 			// Do not invert the order of the following two assignments!

@@ -210,7 +210,7 @@ BEGIN
     POPUP "&Settings"
     BEGIN
         MENUITEM "Global Settings",             ID_FILE_SETTINGS
-        MENUITEM "Camera Settings",             ID_CAPTURE_CAMERABASICSETTINGS
+        MENUITEM "Camera Basic Settings",       ID_CAPTURE_CAMERABASICSETTINGS
         MENUITEM "Camera Advanced Settings",    ID_CAPTURE_CAMERAADVANCEDSETTINGS
         MENUITEM SEPARATOR
         MENUITEM "Normal logging",              ID_SETTINGS_LOG_NORMAL
@@ -2165,7 +2165,7 @@ END
 
 IDD_CAMERABASICSETTINGS DIALOGEX 0, 0, 418, 307
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Camera Settings"
+CAPTION "Camera Basic Settings"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Motion detection surveillance",IDC_RADIO_MOVDET,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,14,107,10
@@ -2187,7 +2187,8 @@ BEGIN
     CONTROL         "Snapshots live",IDC_CHECK_SENDMAIL_SNAPSHOT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,231,61,10
     CONTROL         "Snapshots daily history video",IDC_CHECK_SENDMAIL_SNAPSHOT_HISTORY,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,242,107,10
-    CONTROL         "Recording with",IDC_CHECK_SENDMAIL_RECORDING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,253,63,10
+    CONTROL         "Recording event with",IDC_CHECK_SENDMAIL_RECORDING,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,253,83,10
     COMBOBOX        IDC_ATTACHMENT,185,251,138,124,CBS_DROPDOWNLIST | WS_TABSTOP
     EDITTEXT        IDC_EDIT_SENDMAIL_SEC_BETWEEN_MSG,279,265,29,12,ES_AUTOHSCROLL | ES_NUMBER
     PUSHBUTTON      "To\nSubject\nServer",IDC_SENDMAIL_CONFIGURE,350,220,56,54,BS_MULTILINE
@@ -4017,8 +4018,8 @@ BEGIN
     IDS_STRING1752          "(Network cameras do not need drivers)"
     IDS_STRING1753          "2. From the Camera menu select the device you want to use"
     IDS_STRING1754          "(for network cameras supply host name or ip address, port and camera type)"
-    IDS_STRING1755          "3. Follow the Camera Settings dialog"
-    IDS_STRING1756          "(if it's not popping-up select Camera Settings from the Settings menu)"
+    IDS_STRING1755          "3. Follow the Camera Basic Settings dialog"
+    IDS_STRING1756          "(if it's not popping-up select Camera Basic Settings from the Settings menu)"
     IDS_STRING1757          "4. To watch live stream / recordings enter in Web Browser's address bar"
     IDS_STRING1758          "&Snapshooting...\tIns"
     IDS_STRING1759          "&Snapshot\tIns"
@@ -4085,7 +4086,7 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_CAPTURE_CAMERABASICSETTINGS "Camera settings\nCamera Settings"
+    ID_CAPTURE_CAMERABASICSETTINGS "Camera basic settings\nCamera Basic Settings"
     ID_EDIT_ZONE_SENSITIVITY_100 
                             "Add zones with 100% relative sensitivity\nAdd Zones with 100% Relative Sensitivity"
     ID_EDIT_ZONE_SENSITIVITY_50 

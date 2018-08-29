@@ -170,9 +170,9 @@ void CMDIClientWnd::OnPaint()
 
 	// Draw point 3.
 	rcDraw.top += nLineHeight;
-	DrawT(memDC, ML_STRING(1755, "3. Follow the Camera Settings dialog"), rcDraw);
+	DrawT(memDC, ML_STRING(1755, "3. Follow the Camera Basic Settings dialog"), rcDraw);
 	rcDraw.top += nLineHeight;
-	DrawT(memDC, _T("    ") + ML_STRING(1756, "(if it's not popping-up select Camera Settings from the Settings menu)"), rcDraw);
+	DrawT(memDC, _T("    ") + ML_STRING(1756, "(if it's not popping-up select Camera Basic Settings from the Settings menu)"), rcDraw);
 
 	// Draw point 4.
 	rcDraw.top += nLineHeight;	
