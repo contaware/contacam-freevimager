@@ -9,6 +9,8 @@ CONTACAM HISTORY
 - Manual / continuous recording is now performed by the motion
   engine (it makes no sense to have a separate continuous
   recording engine)
+- Updated internal web server to Apache 2.4.34 and PHP 5.6.37
+  (both with OpenSSL 1.0.2o)
 - To enforce security removed the possibility to delete recordings
   from the web interface
 - Using better random generators
