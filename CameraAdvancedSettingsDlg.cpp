@@ -157,7 +157,6 @@ BEGIN_MESSAGE_MAP(CCameraAdvancedSettingsDlg, CDialog)
 	ON_BN_CLICKED(IDC_ANIMATEDGIF_SIZE, OnAnimatedgifSize)
 	ON_EN_CHANGE(IDC_EDIT_SNAPSHOT_RATE, OnChangeEditSnapshotRate)
 	ON_BN_CLICKED(IDC_BUTTON_THUMB_SIZE, OnButtonThumbSize)
-	ON_BN_CLICKED(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO, OnCheckSnapshotHistoryVideo)
 	ON_BN_CLICKED(IDC_EXEC_MOVEMENT_DETECTION, OnExecMovementDetection)
 	ON_CBN_SELCHANGE(IDC_EXECMODE_MOVEMENT_DETECTION, OnSelchangeExecmodeMovementDetection)
 	ON_EN_CHANGE(IDC_EDIT_EXE, OnChangeEditExe)
@@ -333,8 +332,8 @@ BOOL CCameraAdvancedSettingsDlg::OnInitDialog()
 
 	// Animated GIF Button
 	CString sSize;
-	sSize.Format(ML_STRING(1769, "Thumbnail Size %i x %i"),	m_pDoc->m_dwAnimatedGifWidth,
-															m_pDoc->m_dwAnimatedGifHeight);
+	sSize.Format(ML_STRING(1769, "Size %i x %i"),	m_pDoc->m_dwAnimatedGifWidth,
+													m_pDoc->m_dwAnimatedGifHeight);
 	CButton* pButtonAnimGIFSize = (CButton*)GetDlgItem(IDC_ANIMATEDGIF_SIZE);
 	pButtonAnimGIFSize->SetWindowText(sSize);
 
@@ -342,14 +341,10 @@ BOOL CCameraAdvancedSettingsDlg::OnInitDialog()
 	DisplaySnapshotRate();
 
 	// Thumbnail Size Button
-	sSize.Format(ML_STRING(1769, "Thumbnail Size %i x %i"), m_pDoc->m_nSnapshotThumbWidth,
-															m_pDoc->m_nSnapshotThumbHeight);
+	sSize.Format(ML_STRING(1769, "Size %i x %i"),	m_pDoc->m_nSnapshotThumbWidth,
+													m_pDoc->m_nSnapshotThumbHeight);
 	CButton* pButtonThumbnailSize = (CButton*)GetDlgItem(IDC_BUTTON_THUMB_SIZE);
 	pButtonThumbnailSize->SetWindowText(sSize);
-
-	// Snapshot History Video Check Box
-	CButton* pCheckSnapshotHistoryVideo = (CButton*)GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO);
-	pCheckSnapshotHistoryVideo->SetCheck(m_pDoc->m_bSnapshotHistoryVideo);
 
 	// Execute Command Movement Detection
 	CButton* pCheckExecCommandMovementDetection = (CButton*)GetDlgItem(IDC_EXEC_MOVEMENT_DETECTION);
@@ -817,7 +812,7 @@ void CCameraAdvancedSettingsDlg::OnAnimatedgifSize()
 		m_pDoc->m_dwAnimatedGifHeight = CVideoDeviceDoc::MakeSizeMultipleOf4(dlg.m_nPixelsHeight);
 
 		CString sSize;
-		sSize.Format(ML_STRING(1769, "Thumbnail Size %i x %i"),
+		sSize.Format(ML_STRING(1769, "Size %i x %i"),
 					m_pDoc->m_dwAnimatedGifWidth,
 					m_pDoc->m_dwAnimatedGifHeight);
 		CButton* pButton = (CButton*)GetDlgItem(IDC_ANIMATEDGIF_SIZE);
@@ -858,7 +853,7 @@ void CCameraAdvancedSettingsDlg::ChangeThumbSize(int nNewWidth, int nNewHeight)
 	m_pDoc->m_nSnapshotThumbWidth = CVideoDeviceDoc::MakeSizeMultipleOf4(nNewWidth);
 	m_pDoc->m_nSnapshotThumbHeight = CVideoDeviceDoc::MakeSizeMultipleOf4(nNewHeight);
 	CString sSize;
-	sSize.Format(ML_STRING(1769, "Thumbnail Size %i x %i"),
+	sSize.Format(ML_STRING(1769, "Size %i x %i"),
 				m_pDoc->m_nSnapshotThumbWidth,
 				m_pDoc->m_nSnapshotThumbHeight);
 	CButton* pButton = (CButton*)GetDlgItem(IDC_BUTTON_THUMB_SIZE);
@@ -879,15 +874,6 @@ void CCameraAdvancedSettingsDlg::OnButtonThumbSize()
 		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBWIDTH, sWidth);
 		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBHEIGHT, sHeight);
 	}
-}
-
-void CCameraAdvancedSettingsDlg::OnCheckSnapshotHistoryVideo()
-{
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO);
-	if (pCheck->GetCheck())
-		m_pDoc->m_bSnapshotHistoryVideo = TRUE;
-	else
-		m_pDoc->m_bSnapshotHistoryVideo = FALSE;
 }
 
 void CCameraAdvancedSettingsDlg::OnExecMovementDetection()

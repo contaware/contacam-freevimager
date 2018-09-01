@@ -91,7 +91,6 @@ protected:
 	afx_msg void OnAnimatedgifSize();
 	afx_msg void OnChangeEditSnapshotRate();
 	afx_msg void OnButtonThumbSize();
-	afx_msg void OnCheckSnapshotHistoryVideo();
 	afx_msg void OnExecMovementDetection();
 	afx_msg void OnSelchangeExecmodeMovementDetection();
 	afx_msg void OnChangeEditExe();

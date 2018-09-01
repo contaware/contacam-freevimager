@@ -2155,7 +2155,6 @@
 #define IDS_STRING1773                  1773
 #define IDS_STRING1774                  1774
 #define IDS_STRING1775                  1775
-#define IDC_CHECK_SNAPSHOT_HISTORY_VIDEO 1776
 #define IDS_STRING1776                  1776
 #define IDS_STRING1777                  1777
 #define IDS_STRING1778                  1778

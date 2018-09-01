@@ -146,15 +146,7 @@ BOOL CCameraBasicSettingsDlg::OnInitDialog()
 	m_nRetryTimeMs = 0;
 	m_sName = m_pDoc->GetAssignedDeviceName();
 	m_bCheckCameraCommands = (m_pDoc->PhpConfigFileGetParam(PHPCONFIG_SHOW_CAMERA_COMMANDS) == _T("1"));
-	CString sInitDefaultPage = m_pDoc->PhpConfigFileGetParam(PHPCONFIG_DEFAULTPAGE);
-	if (sInitDefaultPage.CompareNoCase(PHPCONFIG_SUMMARYSNAPSHOT_PHP) == 0)
-		m_nUsage = 0;
-	else if (sInitDefaultPage.CompareNoCase(PHPCONFIG_SNAPSHOTHISTORY_PHP) == 0	||
-			sInitDefaultPage.CompareNoCase(PHPCONFIG_SNAPSHOT_PHP) == 0			||
-			sInitDefaultPage.CompareNoCase(PHPCONFIG_SNAPSHOTFULL_PHP) == 0)
-		m_nUsage = 1;
-	else
-		m_nUsage = 2;
+	m_nUsage = m_pDoc->m_nCameraUsage;
 	if (CVideoDeviceDoc::AutorunGetDeviceKey(m_pDoc->GetDevicePathName()) != _T(""))
 		m_bAutorun = TRUE;
 	else
@@ -434,10 +426,6 @@ void CCameraBasicSettingsDlg::ApplySettingsSnapshot(int nThumbWidth, int nThumbH
 		
 		// Display snapshot rate
 		m_pDoc->m_pCameraAdvancedSettingsDlg->DisplaySnapshotRate();
-
-		// Snapshot history
-		CButton* pCheck = (CButton*)m_pDoc->m_pCameraAdvancedSettingsDlg->GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO);
-		pCheck->SetCheck(m_pDoc->m_bSnapshotHistoryVideo ? 1 : 0);
 	}
 	else
 	{
@@ -581,9 +569,6 @@ void CCameraBasicSettingsDlg::ApplySettings()
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBWIDTH, sThumbWidth);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBHEIGHT, sThumbHeight);
 
-			// Disable snapshot history
-			m_pDoc->m_bSnapshotHistoryVideo = FALSE;
-
 			// Update snapshot settings
 			ApplySettingsSnapshot(nThumbWidth, nThumbHeight, dSnapshotRate);
 
@@ -635,9 +620,6 @@ void CCameraBasicSettingsDlg::ApplySettings()
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_HEIGHT, sHeight);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBWIDTH, sThumbWidth);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBHEIGHT, sThumbHeight);
-
-			// Enable snapshot history
-			m_pDoc->m_bSnapshotHistoryVideo = TRUE;
 
 			// Update snapshot settings
 			ApplySettingsSnapshot(nThumbWidth, nThumbHeight, dSnapshotRate);
@@ -691,9 +673,6 @@ void CCameraBasicSettingsDlg::ApplySettings()
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBWIDTH, sThumbWidth);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBHEIGHT, sThumbHeight);
 
-			// Disable snapshot history
-			m_pDoc->m_bSnapshotHistoryVideo = FALSE;
-
 			// Update snapshot settings
 			ApplySettingsSnapshot(nThumbWidth, nThumbHeight, dSnapshotRate);
 
@@ -702,6 +681,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 		default :
 			break;
 	}
+	m_pDoc->m_nCameraUsage = m_nUsage;
 
 	// Keep files for
 	switch (m_nComboKeepFor)

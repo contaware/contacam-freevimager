@@ -754,7 +754,7 @@ public:
 	static CString MicroApacheGetLogFileName();
 	static CString MicroApacheGetPidFileName();
 	static void MicroApacheUpdateMainFiles();
-	static BOOL MicroApacheUpdateWebFiles(CString sAutoSaveDir);
+	BOOL MicroApacheUpdateWebFiles(CString sAutoSaveDir);
 	static BOOL MicroApacheStart(DWORD dwTimeoutMs);
 	static void MicroApacheShutdown(DWORD dwTimeoutMs);
 
@@ -809,6 +809,7 @@ public:
 	CTime m_CaptureStartTime;							// Grabbing device started at this time
 	CString m_sLastConnectionError;						// Last connection error
 	CRITICAL_SECTION m_csConnectionError;				// Critical section for the connection error
+	volatile int m_nCameraUsage;						// 0: Motion detection, 1: Snapshots history, 2: Continuous recording
 	volatile BOOL m_bObscureSource;						// Flag indicating whether the source has to be obscured
 	volatile BOOL m_bShowFrameTime;						// Show / Hide Frame Time Inside the Frame (frame time is also recorded)
 	volatile int m_nRefFontSize;						// Minimum font size for frame time, detection indicator and save progress
@@ -884,7 +885,6 @@ public:
 	CStringArray m_HttpGetFrameLocations;				// Automatic camera type detection query string
 
 	// Snapshot Vars
-	volatile BOOL m_bSnapshotHistoryVideo;				// Snapshot history save Video
 	volatile BOOL m_bSendMailSnapshot;					// Email Jpeg Live snapshot file
 	volatile BOOL m_bSendMailSnapshotHistory;			// Email snapshots history video file
 	volatile int m_nSnapshotRate;						// Snapshot rate in seconds

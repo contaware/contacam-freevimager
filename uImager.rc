@@ -1121,18 +1121,16 @@ BEGIN
     CONTROL         "Full video",IDC_SAVE_VIDEO_MOVEMENT_DETECTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,19,46,10
     CONTROL         "",IDC_VIDEO_COMPRESSION_QUALITY,"msctls_trackbar32",TBS_TOP | TBS_NOTICKS | WS_TABSTOP,311,16,54,18
     CONTROL         "Small video",IDC_SAVE_ANIMATEDGIF_MOVEMENT_DETECTION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,37,52,10
-    PUSHBUTTON      "",IDC_ANIMATEDGIF_SIZE,286,35,123,14
-    EDITTEXT        IDC_EDIT_SNAPSHOT_RATE,243,77,25,12
-    PUSHBUTTON      "",IDC_BUTTON_THUMB_SIZE,286,76,123,14
-    CONTROL         "Save daily history video file",IDC_CHECK_SNAPSHOT_HISTORY_VIDEO,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,99,101,10
-    CONTROL         "Execute when",IDC_EXEC_MOVEMENT_DETECTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,138,60,10
-    COMBOBOX        IDC_EXECMODE_MOVEMENT_DETECTION,286,138,123,72,CBS_DROPDOWNLIST | WS_TABSTOP
-    EDITTEXT        IDC_EDIT_EXE,225,162,184,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_PARAMS,225,189,184,55,ES_MULTILINE | WS_VSCROLL
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,38,52,10
+    PUSHBUTTON      "",IDC_ANIMATEDGIF_SIZE,286,36,123,14
+    EDITTEXT        IDC_EDIT_SNAPSHOT_RATE,303,77,35,12
+    PUSHBUTTON      "",IDC_BUTTON_THUMB_SIZE,286,96,123,14
+    CONTROL         "Execute when",IDC_EXEC_MOVEMENT_DETECTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,137,60,10
+    COMBOBOX        IDC_EXECMODE_MOVEMENT_DETECTION,286,137,123,72,CBS_DROPDOWNLIST | WS_TABSTOP
+    EDITTEXT        IDC_EDIT_EXE,225,160,184,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_PARAMS,225,186,184,43,ES_MULTILINE | WS_VSCROLL
     CONTROL         "Hide window of executed command",IDC_CHECK_HIDE_EXEC_COMMAND,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,249,129,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,251,129,10
     CONTROL         "Only one instance of executed command",IDC_CHECK_WAIT_EXEC_COMMAND,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,263,145,10
     LTEXT           "sec",IDC_STATIC2283,123,31,11,8
@@ -1140,23 +1138,25 @@ BEGIN
     LTEXT           "From",IDC_STATIC2289,13,242,16,8
     LTEXT           "To",IDC_STATIC2290,120,242,10,8
     GROUPBOX        "Scheduler",IDC_STATIC2291,6,201,202,77
-    LTEXT           "Cmd",IDC_STATIC2299,225,152,15,8
-    LTEXT           "Params",IDC_STATIC2300,225,179,24,8
+    LTEXT           "Cmd",IDC_STATIC2299,225,150,15,8
+    LTEXT           "Params",IDC_STATIC2300,225,176,24,8
     LTEXT           "Drop shorter than",IDC_STATIC,13,45,61,11
     LTEXT           "sec",IDC_STATIC2292,123,45,11,8
     LTEXT           "Split longer than",IDC_STATIC,13,59,57,8
     LTEXT           "frames",IDC_STATIC2293,123,59,23,8
-    GROUPBOX        "Save",IDC_STATIC2288,218,5,198,50
+    GROUPBOX        "Save",IDC_STATIC2288,218,5,198,51
     LTEXT           "Pre && Post buffers",IDC_STATIC,13,31,59,8
     LTEXT           "qual.",IDC_VIDEO_COMPRESSION_QUALITY_INFO,367,19,46,8
     LTEXT           "Framerate",IDC_STATIC2155,13,17,34,8
     LTEXT           "fps",IDC_STATIC2183,123,17,11,8
     GROUPBOX        "Audio",IDC_STATIC2157,6,124,202,68
-    GROUPBOX        "Snapshot",IDC_STATIC2294,218,63,198,53
+    GROUPBOX        "Snapshot",IDC_STATIC2294,218,64,198,52
     GROUPBOX        "Command",IDC_STATIC2295,218,124,198,154
     LTEXT           "Quality",IDC_STATIC,286,19,24,8
-    LTEXT           "Each",IDC_STATIC2476,225,79,16,8
-    LTEXT           "sec",IDC_STATIC2477,271,79,14,10
+    LTEXT           "Take a snapshot each",IDC_STATIC2476,225,79,75,8
+    LTEXT           "sec",IDC_STATIC2477,345,79,14,10
+    LTEXT           "Thumbnail",IDC_STATIC2478,225,99,53,8
+    LTEXT           "%sec% %min% %hour% %day% %month% %year% %fullvideo% %smallvideo% %counter%",IDC_STATIC,225,231,184,17
 END
 
 IDD_REDEYE DIALOGEX 0, 0, 223, 268
@@ -4034,7 +4034,7 @@ BEGIN
     IDS_STRING1766          "Only ASCII characters allowed in path"
     IDS_STRING1767          "Only the ANSI character set is supported for the camera name"
     IDS_STRING1768          "Click to change unit"
-    IDS_STRING1769          "Thumbnail Size %i x %i"
+    IDS_STRING1769          "Size %i x %i"
     IDS_STRING1770          "Please Enter A Host Name"
 END
 
@@ -4086,7 +4086,8 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_CAPTURE_CAMERABASICSETTINGS "Camera basic settings\nCamera Basic Settings"
+    ID_CAPTURE_CAMERABASICSETTINGS 
+                            "Camera basic settings\nCamera Basic Settings"
     ID_EDIT_ZONE_SENSITIVITY_100 
                             "Add zones with 100% relative sensitivity\nAdd Zones with 100% Relative Sensitivity"
     ID_EDIT_ZONE_SENSITIVITY_50 

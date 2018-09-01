@@ -1126,7 +1126,7 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	sLiveThumbFileName += CString(_T("\\")) + DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME;
 
 	// Init history file name
-	// Note: if m_bSnapshotHistoryVideo is TRUE, it creates also the year, month and day
+	// Note: if m_bSnapshotHistoryJpeg is TRUE, it creates also the year, month and day
 	// directories, otherwise it just returns the file name without path
 	CString sHistoryFileName(MakeJpegHistoryFileName());
 
@@ -3437,6 +3437,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bCaptureStarted = FALSE;
 	m_bShowFrameTime = TRUE;
 	m_nRefFontSize = 9;
+	m_nCameraUsage = 2;
 	m_bObscureSource = FALSE;
 	m_dwVideoProcessorMode = 0;
 	m_dwFrameCountUp = 0U;
@@ -3468,7 +3469,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_HttpGetFrameLocations.Add(_T("/")); // first element must be valid ("/" => try home to see whether cam is reachable)
 
 	// Snapshot
-	m_bSnapshotHistoryVideo = FALSE;
 	m_bSendMailSnapshot = FALSE;
 	m_bSendMailSnapshotHistory = FALSE;
 	m_nSnapshotRate = DEFAULT_SNAPSHOT_RATE;
@@ -4245,7 +4245,6 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	CString sRecordAutoSaveDir = m_sRecordAutoSaveDir;
 	sRecordAutoSaveDir.TrimRight(_T('\\'));
 	m_bObscureSource = ::IsExistingFile(sRecordAutoSaveDir + _T("\\") + CAMERA_IS_OBSCURED_FILENAME);
-	m_bSnapshotHistoryVideo = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistoryVideo"), FALSE);
 	m_bSendMailSnapshot = (BOOL)pApp->GetProfileInt(sSection, _T("SendMailSnapshot"), FALSE);
 	m_bSendMailSnapshotHistory = (BOOL)pApp->GetProfileInt(sSection, _T("SendMailSnapshotHistory"), FALSE);
 	m_nSnapshotRate = (int) pApp->GetProfileInt(sSection, _T("SnapshotRate"), DEFAULT_SNAPSHOT_RATE);
@@ -4402,7 +4401,6 @@ void CVideoDeviceDoc::SaveSettings()
 	// All other
 	pApp->WriteProfileInt(sSection, _T("Rotate180"), (int)m_bRotate180);
 	pApp->WriteProfileString(sSection, _T("RecordAutoSaveDir"), m_sRecordAutoSaveDir);
-	pApp->WriteProfileInt(sSection, _T("SnapshotHistoryVideo"), (int)m_bSnapshotHistoryVideo);
 	pApp->WriteProfileInt(sSection, _T("SendMailSnapshot"), (int)m_bSendMailSnapshot);
 	pApp->WriteProfileInt(sSection, _T("SendMailSnapshotHistory"), (int)m_bSendMailSnapshotHistory);
 	pApp->WriteProfileInt(sSection, _T("SnapshotRate"), m_nSnapshotRate);
@@ -5759,6 +5757,17 @@ BOOL CVideoDeviceDoc::MicroApacheUpdateWebFiles(CString sAutoSaveDir)
 				::CopyFile(sName, sAutoSaveDir + sRelName, FALSE);	// Always overwrite to get new version!
 		}
 	}
+
+	// Update camera usage var
+	CString sDefaultPage = PhpConfigFileGetParam(PHPCONFIG_DEFAULTPAGE);
+	if (sDefaultPage.CompareNoCase(PHPCONFIG_SUMMARYSNAPSHOT_PHP) == 0)
+		m_nCameraUsage = 0;
+	else if (sDefaultPage.CompareNoCase(PHPCONFIG_SNAPSHOTHISTORY_PHP) == 0 ||
+			sDefaultPage.CompareNoCase(PHPCONFIG_SNAPSHOT_PHP) == 0			||
+			sDefaultPage.CompareNoCase(PHPCONFIG_SNAPSHOTFULL_PHP) == 0)
+		m_nCameraUsage = 1;
+	else
+		m_nCameraUsage = 2;
 
 	// Remove old unused files
 	::DeleteFile(sAutoSaveDir + _T("snapshotmobile.php"));
@@ -7315,7 +7324,7 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 		if (bDoSnapshot && m_bInSchedule)
 		{
 			m_SaveSnapshotThread.m_Dib = *pDib;
-			m_SaveSnapshotThread.m_bSnapshotHistoryJpeg = m_bSnapshotHistoryVideo;
+			m_SaveSnapshotThread.m_bSnapshotHistoryJpeg = (m_nCameraUsage == 1);
 			m_SaveSnapshotThread.m_bShowFrameTime = m_bShowFrameTime;
 			m_SaveSnapshotThread.m_bDetectingMinLengthMovement = m_bDetectingMinLengthMovement;
 			m_SaveSnapshotThread.m_nRefFontSize = m_nRefFontSize;
@@ -7331,7 +7340,7 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 	}
 
 	// Snapshot Video Thread
-	if (m_bSnapshotHistoryVideo && !m_SaveSnapshotVideoThread.IsAlive())
+	if (m_nCameraUsage == 1 && !m_SaveSnapshotVideoThread.IsAlive())
 	{
 		// Yesterday time
 		CTime Yesterday = Time - CTimeSpan(1, 0, 0, 0);	// - 1 day
