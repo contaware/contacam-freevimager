@@ -886,7 +886,6 @@ public:
 
 	// Snapshot Vars
 	volatile BOOL m_bSendMailSnapshot;					// Email Jpeg Live snapshot file
-	volatile BOOL m_bSendMailSnapshotHistory;			// Email snapshots history video file
 	volatile int m_nSnapshotRate;						// Snapshot rate in seconds
 	volatile int m_nSnapshotRateMs;						// Snapshot rate in ms, effective: 1000 * m_nSnapshotRate + m_nSnapshotRateMs
 	volatile int m_nSnapshotThumbWidth;					// Snapshot thumbnail width

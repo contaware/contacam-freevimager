@@ -2169,8 +2169,8 @@ CAPTION "Camera Basic Settings"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Motion detection surveillance",IDC_RADIO_MOVDET,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,14,107,10
-    CONTROL         "Snapshots with daily history video",IDC_RADIO_SNAPSHOT,
-                    "Button",BS_AUTORADIOBUTTON,16,27,123,10
+    CONTROL         "Snapshots as daily history video",IDC_RADIO_SNAPSHOT,
+                    "Button",BS_AUTORADIOBUTTON,16,27,117,10
     CONTROL         "Continuous recording (ON/OFF by the red dot toolbar button)",IDC_RADIO_MANUAL,
                     "Button",BS_AUTORADIOBUTTON,16,40,213,10
     CONTROL         "AUTOSTART\nCamera when ContaCam is executed",IDC_CHECK_AUTORUN,
@@ -2184,14 +2184,13 @@ BEGIN
     EDITTEXT        IDC_EDIT_MIN_DISK_FREE_PERCENT,152,171,35,13,ES_AUTOHSCROLL
     EDITTEXT        IDC_EDIT_MAX_CAMERA_FOLDER_SIZE,152,185,35,13,ES_AUTOHSCROLL
     CONTROL         "Camera failure",IDC_CHECK_SENDMAIL_MALFUNCTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,220,62,10
-    CONTROL         "Snapshots live",IDC_CHECK_SENDMAIL_SNAPSHOT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,231,61,10
-    CONTROL         "Snapshots daily history video",IDC_CHECK_SENDMAIL_SNAPSHOT_HISTORY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,242,107,10
+    CONTROL         "Snapshots (daily history video if enabled otherwise live snapshots)",IDC_CHECK_SENDMAIL_SNAPSHOT,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,233,225,10
     CONTROL         "Recording event with",IDC_CHECK_SENDMAIL_RECORDING,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,253,83,10
-    COMBOBOX        IDC_ATTACHMENT,185,251,138,124,CBS_DROPDOWNLIST | WS_TABSTOP
-    EDITTEXT        IDC_EDIT_SENDMAIL_SEC_BETWEEN_MSG,279,265,29,12,ES_AUTOHSCROLL | ES_NUMBER
-    PUSHBUTTON      "To\nSubject\nServer",IDC_SENDMAIL_CONFIGURE,350,220,56,54,BS_MULTILINE
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,246,136,10
+    COMBOBOX        IDC_ATTACHMENT,185,245,138,124,CBS_DROPDOWNLIST | WS_TABSTOP
+    EDITTEXT        IDC_EDIT_SENDMAIL_SEC_BETWEEN_MSG,279,258,29,12,ES_AUTOHSCROLL | ES_NUMBER
+    PUSHBUTTON      "To\nSubject\nServer",IDC_SENDMAIL_CONFIGURE,350,220,56,50,BS_MULTILINE
     PUSHBUTTON      "OK",IDOK,152,287,58,16,BS_MULTILINE
     PUSHBUTTON      "Cancel",IDCANCEL,221,287,58,16
     GROUPBOX        "1. Usage",IDC_STATIC,5,3,407,53
@@ -2209,9 +2208,9 @@ BEGIN
     LTEXT           "Maximum camera folder size\n(0.0: unlimited)",IDC_STATIC,16,183,133,16
     LTEXT           "GB",IDC_STATIC,190,187,10,8
     LTEXT           "NOTE: if the free disk space becomes low or the maximum camera folder size is reached the oldest files are deleted",IDC_STATIC,211,177,195,20
-    GROUPBOX        "5. Email",IDC_STATIC,5,208,407,74
-    LTEXT           "minimum time between recording messages",IDC_STATIC,27,265,142,8
-    LTEXT           "sec",IDC_STATIC2295,313,267,15,8
+    GROUPBOX        "5. Email",IDC_STATIC,5,208,407,67
+    LTEXT           "minimum time between recording event messages",IDC_STATIC,27,258,239,8
+    LTEXT           "sec",IDC_STATIC2295,313,260,15,8
 END
 
 IDD_RENAME DIALOG 0, 0, 186, 47

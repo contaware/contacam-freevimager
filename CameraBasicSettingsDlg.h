@@ -36,7 +36,6 @@ public:
 	BOOL	m_bCheckSendMailMalfunction;
 	BOOL	m_bCheckSendMailRecording;
 	BOOL	m_bCheckSendMailSnapshot;
-	BOOL	m_bCheckSendMailSnapshotHistory;
 	int		m_nComboSendMailAttachment;
 	int		m_nSendMailSecBetweenMsg;
 	//}}AFX_DATA

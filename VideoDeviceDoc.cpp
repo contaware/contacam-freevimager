@@ -3470,7 +3470,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 
 	// Snapshot
 	m_bSendMailSnapshot = FALSE;
-	m_bSendMailSnapshotHistory = FALSE;
 	m_nSnapshotRate = DEFAULT_SNAPSHOT_RATE;
 	m_nSnapshotRateMs = 0;
 	m_nSnapshotThumbWidth = DEFAULT_SNAPSHOT_THUMB_WIDTH;
@@ -4246,7 +4245,6 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	sRecordAutoSaveDir.TrimRight(_T('\\'));
 	m_bObscureSource = ::IsExistingFile(sRecordAutoSaveDir + _T("\\") + CAMERA_IS_OBSCURED_FILENAME);
 	m_bSendMailSnapshot = (BOOL)pApp->GetProfileInt(sSection, _T("SendMailSnapshot"), FALSE);
-	m_bSendMailSnapshotHistory = (BOOL)pApp->GetProfileInt(sSection, _T("SendMailSnapshotHistory"), FALSE);
 	m_nSnapshotRate = (int) pApp->GetProfileInt(sSection, _T("SnapshotRate"), DEFAULT_SNAPSHOT_RATE);
 	m_nSnapshotRateMs = (int) pApp->GetProfileInt(sSection, _T("SnapshotRateMs"), 0);
 	m_nSnapshotThumbWidth = (int) MakeSizeMultipleOf4(pApp->GetProfileInt(sSection, _T("SnapshotThumbWidth"), DEFAULT_SNAPSHOT_THUMB_WIDTH));
@@ -4402,7 +4400,6 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("Rotate180"), (int)m_bRotate180);
 	pApp->WriteProfileString(sSection, _T("RecordAutoSaveDir"), m_sRecordAutoSaveDir);
 	pApp->WriteProfileInt(sSection, _T("SendMailSnapshot"), (int)m_bSendMailSnapshot);
-	pApp->WriteProfileInt(sSection, _T("SendMailSnapshotHistory"), (int)m_bSendMailSnapshotHistory);
 	pApp->WriteProfileInt(sSection, _T("SnapshotRate"), m_nSnapshotRate);
 	pApp->WriteProfileInt(sSection, _T("SnapshotRateMs"), m_nSnapshotRateMs);
 	pApp->WriteProfileInt(sSection, _T("SnapshotThumbWidth"), m_nSnapshotThumbWidth);
@@ -7324,11 +7321,11 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 		if (bDoSnapshot && m_bInSchedule)
 		{
 			m_SaveSnapshotThread.m_Dib = *pDib;
-			m_SaveSnapshotThread.m_bSnapshotHistoryJpeg = (m_nCameraUsage == 1);
+			m_SaveSnapshotThread.m_bSnapshotHistoryJpeg = (m_nCameraUsage == 1); // keep jpeg snapshots for daily video creation?
 			m_SaveSnapshotThread.m_bShowFrameTime = m_bShowFrameTime;
 			m_SaveSnapshotThread.m_bDetectingMinLengthMovement = m_bDetectingMinLengthMovement;
 			m_SaveSnapshotThread.m_nRefFontSize = m_nRefFontSize;
-			m_SaveSnapshotThread.m_bSendMailSnapshot = m_bSendMailSnapshot;
+			m_SaveSnapshotThread.m_bSendMailSnapshot = (m_nCameraUsage != 1 ? m_bSendMailSnapshot : FALSE);
 			m_SaveSnapshotThread.m_nSnapshotThumbWidth = m_nSnapshotThumbWidth;
 			m_SaveSnapshotThread.m_nSnapshotThumbHeight = m_nSnapshotThumbHeight;
 			m_SaveSnapshotThread.m_Time = Time;
@@ -7354,7 +7351,7 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 		{
 			m_SaveSnapshotVideoThread.m_Time = Yesterday;
 			m_SaveSnapshotVideoThread.m_sAssignedDeviceName = GetAssignedDeviceName();
-			m_SaveSnapshotVideoThread.m_bSendMailSnapshotHistory = m_bSendMailSnapshotHistory;
+			m_SaveSnapshotVideoThread.m_bSendMailSnapshotHistory = m_bSendMailSnapshot;
 			m_SaveSnapshotVideoThread.m_SendMailConfiguration = m_SendMailConfiguration;
 			m_SaveSnapshotVideoThread.m_sSnapshotAutoSaveDir = m_sRecordAutoSaveDir;
 			m_SaveSnapshotVideoThread.Start();

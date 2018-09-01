@@ -1222,7 +1222,6 @@
 #define IDS_MULTILANG_1233              1233
 #define IDC_CHECK_SENDMAIL_SNAPSHOT     1233
 #define IDS_MULTILANG_1234              1234
-#define IDC_CHECK_SENDMAIL_SNAPSHOT_HISTORY 1234
 #define IDS_MULTILANG_1235              1235
 #define IDS_MULTILANG_1236              1236
 #define IDS_MULTILANG_1237              1237
