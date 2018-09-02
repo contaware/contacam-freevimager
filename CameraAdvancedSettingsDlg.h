@@ -92,6 +92,8 @@ protected:
 	afx_msg void OnChangeEditSnapshotRate();
 	afx_msg void OnButtonThumbSize();
 	afx_msg void OnExecMovementDetection();
+	afx_msg void OnNMClickSyslinkCmd(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnNMClickSyslinkParams(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnSelchangeExecmodeMovementDetection();
 	afx_msg void OnChangeEditExe();
 	afx_msg void OnChangeEditParams();

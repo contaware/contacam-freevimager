@@ -21,6 +21,7 @@
 #define APPMUTEXNAME									_T("ContaCamAppMutex")
 #define FAQ_ONLINE_PAGE									_T("http://www.contaware.com/contacamfaq/")
 #define MANUAL_ONLINE_PAGE								_T("http://www.contaware.com/contacammanual/")
+#define EXAMPLE_CMD_ONLINE_PAGE							_T("http://www.contaware.com/contacamexamplecmd/")
 #else
 #define APPNAME_EXT										_T("FreeVimager.exe")
 #define APPNAME_NOEXT									_T("FreeVimager")
@@ -30,7 +31,7 @@
 #define FAQ_ONLINE_PAGE									_T("http://www.contaware.com/freevimagerfaq/")
 #define MANUAL_ONLINE_PAGE								_T("http://www.contaware.com/freevimagermanual/")
 #endif
-#define APPVERSION										_T("9.0.0beta8")
+#define APPVERSION										_T("9.0.0beta9")
 
 // Company
 #define MYCOMPANY										_T("Contaware")

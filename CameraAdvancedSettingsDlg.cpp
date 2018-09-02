@@ -158,6 +158,8 @@ BEGIN_MESSAGE_MAP(CCameraAdvancedSettingsDlg, CDialog)
 	ON_EN_CHANGE(IDC_EDIT_SNAPSHOT_RATE, OnChangeEditSnapshotRate)
 	ON_BN_CLICKED(IDC_BUTTON_THUMB_SIZE, OnButtonThumbSize)
 	ON_BN_CLICKED(IDC_EXEC_MOVEMENT_DETECTION, OnExecMovementDetection)
+	ON_NOTIFY(NM_CLICK, IDC_SYSLINK_CMD, OnNMClickSyslinkCmd)
+	ON_NOTIFY(NM_CLICK, IDC_SYSLINK_PARAMS, OnNMClickSyslinkParams)
 	ON_CBN_SELCHANGE(IDC_EXECMODE_MOVEMENT_DETECTION, OnSelchangeExecmodeMovementDetection)
 	ON_EN_CHANGE(IDC_EDIT_EXE, OnChangeEditExe)
 	ON_EN_CHANGE(IDC_EDIT_PARAMS, OnChangeEditParams)
@@ -880,6 +882,24 @@ void CCameraAdvancedSettingsDlg::OnExecMovementDetection()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_EXEC_MOVEMENT_DETECTION);
 	m_pDoc->m_bExecCommandMovementDetection = pCheck->GetCheck() > 0;
+}
+
+void CCameraAdvancedSettingsDlg::OnNMClickSyslinkCmd(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	::ShellExecute(	NULL,
+					_T("open"),
+					EXAMPLE_CMD_ONLINE_PAGE,
+					NULL, NULL, SW_SHOWNORMAL);
+	*pResult = 0;
+}
+
+void CCameraAdvancedSettingsDlg::OnNMClickSyslinkParams(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	::ShellExecute(	NULL,
+					_T("open"),
+					EXAMPLE_CMD_ONLINE_PAGE,
+					NULL, NULL, SW_SHOWNORMAL);
+	*pResult = 0;
 }
 
 void CCameraAdvancedSettingsDlg::OnSelchangeExecmodeMovementDetection()
