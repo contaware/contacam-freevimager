@@ -493,9 +493,10 @@ public:
 	class CSaveSnapshotThread : public CWorkerThread
 	{
 		public:
-			CSaveSnapshotThread(){;};
+			CSaveSnapshotThread(){m_hEventArray[0] = GetKillEvent();};
 			virtual ~CSaveSnapshotThread() {Kill();};
 
+			HANDLE m_hEventArray[2];
 			CDib m_Dib;
 			BOOL m_bSnapshotHistoryJpeg;
 			BOOL m_bShowFrameTime;

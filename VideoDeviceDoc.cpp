@@ -1110,8 +1110,6 @@ exit:
 	return 0;
 }
 
-// Note: always first copy full-size file then the thumb
-//       version which links to the full-size in web interface
 int CVideoDeviceDoc::CSaveSnapshotThread::Work() 
 {
 	// Get uptime
@@ -1169,16 +1167,17 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	::CopyFile(sTempThumbFileName, sLiveThumbFileName, FALSE);
 	if (m_bSendMailSnapshot)
 	{
-		HANDLE hEMAIL = NULL;
+		HANDLE hEmailApp = NULL;
 		CVideoDeviceDoc::SendMail(m_SendMailConfiguration,
 								m_sAssignedDeviceName, m_Time, _T("REC"), _T(""),
-								sTempFileName, FALSE, &hEMAIL);
-		if (hEMAIL)
+								sTempFileName, FALSE, &hEmailApp);
+		if (hEmailApp)
 		{
-			if (::WaitForSingleObject(hEMAIL, 1000 * MAILPROG_TIMEOUT_SEC) == WAIT_TIMEOUT)
-				::KillApp(hEMAIL); // CloseHandle(hEMAIL) called inside this function 
+			m_hEventArray[1] = hEmailApp;
+			if (::WaitForMultipleObjects(2, m_hEventArray, FALSE, 1000 * MAILPROG_TIMEOUT_SEC) == (WAIT_OBJECT_0 + 1))
+				::CloseHandle(hEmailApp);
 			else
-				CloseHandle(hEMAIL);
+				::KillApp(hEmailApp); // ::CloseHandle(hEmailApp) called inside this function
 		}
 	}
 
