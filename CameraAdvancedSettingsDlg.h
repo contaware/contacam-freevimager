@@ -34,8 +34,8 @@ public:
 	int	m_nDetectionMinLengthSeconds;
 	int m_nDetectionMaxFrames;
 	BOOL m_bRotate180;
-	CTime m_DetectionStartTime;
-	CTime m_DetectionStopTime;
+	CTime m_SchedulerStartTime;
+	CTime m_SchedulerStopTime;
 	BOOL m_bAudioListen;
 	CSliderCtrl	m_VideoRecQuality;
 
@@ -49,7 +49,7 @@ protected:
 	// Helper functions
 	BOOL IsEmpty(int nIDC);
 	void UpdateVideoQualityInfo();
-	void UpdateDetectionStartStopTimes();
+	void UpdateStartStopTimes();
 
 	// Dialog functions
 	virtual void DoDataExchange(CDataExchange* pDX);
@@ -75,7 +75,7 @@ protected:
 	afx_msg void OnRecAudioFromSource();
 	afx_msg void OnAudioInput();
 	afx_msg void OnAudioMixer();
-	afx_msg void OnCbnSelchangeComboboxDetectionScheduler();
+	afx_msg void OnCbnSelchangeComboboxScheduler();
 	afx_msg void OnCheckSchedulerSunday();
 	afx_msg void OnCheckSchedulerMonday();
 	afx_msg void OnCheckSchedulerTuesday();
@@ -86,8 +86,8 @@ protected:
 	afx_msg void OnDatetimechangeTimeDailyStart(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnDatetimechangeTimeDailyStop(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
-	afx_msg void OnSaveVideoMovementDetection();
-	afx_msg void OnSaveAnimGifMovementDetection();
+	afx_msg void OnSaveVideo();
+	afx_msg void OnSaveAnimGif();
 	afx_msg void OnAnimatedgifSize();
 	afx_msg void OnChangeEditSnapshotRate();
 	afx_msg void OnButtonThumbSize();

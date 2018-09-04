@@ -330,8 +330,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		}
 
 		// Detection creation flags and File Names
-		BOOL bMakeVideo = m_pDoc->m_bSaveVideoMovementDetection;
-		BOOL bMakeGif = m_pDoc->m_bSaveAnimGIFMovementDetection;
+		BOOL bMakeVideo = m_pDoc->m_bSaveVideo;
+		BOOL bMakeGif = m_pDoc->m_bSaveAnimGIF;
 		CString sVideoFileName;
 		CVideoDeviceDoc::CreateCheckYearMonthDayDir(FirstTime, m_pDoc->m_sRecordAutoSaveDir, sVideoFileName);
 		if (!sVideoFileName.IsEmpty())
@@ -1985,7 +1985,7 @@ end_of_software_detection:
 	}
 
 	// If in detection state
-	BOOL bStoreFrame = dwVideoProcessorMode && (m_bSaveVideoMovementDetection || m_bSaveAnimGIFMovementDetection);
+	BOOL bStoreFrame = dwVideoProcessorMode && (m_bSaveVideo || m_bSaveAnimGIF);
 	BOOL bDropFrame = ((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames;
 	DWORD dwError = ERROR_SUCCESS;
 	if (m_bDetectingMovement)
@@ -3068,8 +3068,7 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 					m_pDoc->m_dwVideoProcessorMode						&&
 					m_pDoc->m_bDetectingMovement						&&
 					m_pDoc->GetNewestMovementDetectionsListCount() > 0	&&
-					(m_pDoc->m_bSaveVideoMovementDetection				||
-					m_pDoc->m_bSaveAnimGIFMovementDetection))
+					(m_pDoc->m_bSaveVideo || m_pDoc->m_bSaveAnimGIF))
 					m_pDoc->SaveFrameList(FALSE);
 
 				// Watchdog actions
@@ -3501,8 +3500,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nMilliSecondsRecAfterMovementEnd = DEFAULT_POST_BUFFER_MSEC;
 	m_nDetectionMinLengthMilliSeconds = MOVDET_MIN_LENGTH_MSEC;
 	m_nDetectionMaxFrames = MOVDET_DEFAULT_MAX_FRAMES_IN_LIST;
-	m_bSaveVideoMovementDetection = TRUE;
-	m_bSaveAnimGIFMovementDetection = TRUE;
+	m_bSaveVideo = TRUE;
+	m_bSaveAnimGIF = TRUE;
 	m_bSendMailMalfunction = TRUE;
 	m_bSendMailRecording = FALSE;
 	m_bExecCommand = FALSE;
@@ -3524,16 +3523,16 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_lMovDetYZonesCount = MOVDET_MIN_ZONES_XORY;
 	m_lMovDetTotalZones = 0;
 	m_bObscureRemovedZones = FALSE;
-	m_nDetectionStartStop = 0;
-	m_bDetectionSunday = TRUE;
-	m_bDetectionMonday = TRUE;
-	m_bDetectionTuesday = TRUE;
-	m_bDetectionWednesday = TRUE;
-	m_bDetectionThursday = TRUE;
-	m_bDetectionFriday = TRUE;
-	m_bDetectionSaturday = TRUE;
-	m_DetectionStartTime = CurrentTimeOnly;
-	m_DetectionStopTime = CurrentTimeOnly;
+	m_nSchedulerStartStop = 0;
+	m_bSchedulerSunday = TRUE;
+	m_bSchedulerMonday = TRUE;
+	m_bSchedulerTuesday = TRUE;
+	m_bSchedulerWednesday = TRUE;
+	m_bSchedulerThursday = TRUE;
+	m_bSchedulerFriday = TRUE;
+	m_bSchedulerSaturday = TRUE;
+	m_SchedulerStartTime = CurrentTimeOnly;
+	m_SchedulerStopTime = CurrentTimeOnly;
 	m_bInSchedule = FALSE;
 	m_nMovDetFreqDiv = 1;
 	m_dMovDetFrameRateFreqDivCalc = 0.0;
@@ -4267,8 +4266,8 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 		m_nDetectionMaxFrames = MOVDET_DEFAULT_MAX_FRAMES_IN_LIST; // restore the default if a strange value is set
 	m_nDetectionLevel = ValidateDetectionLevel(pApp->GetProfileInt(sSection, _T("DetectionLevel"), DEFAULT_MOVDET_LEVEL));
 	m_nCurrentDetectionZoneSize = m_nDetectionZoneSize = (int) pApp->GetProfileInt(sSection, _T("DetectionZoneSize"), 0);
-	m_bSaveVideoMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveVideoMovementDetection"), TRUE);
-	m_bSaveAnimGIFMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), TRUE);
+	m_bSaveVideo = (BOOL) pApp->GetProfileInt(sSection, _T("SaveVideoMovementDetection"), TRUE);
+	m_bSaveAnimGIF = (BOOL) pApp->GetProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), TRUE);
 	m_bSendMailMalfunction = (BOOL)pApp->GetProfileInt(sSection, _T("SendMailMalfunction"), TRUE);
 	m_bSendMailRecording = (BOOL) pApp->GetProfileInt(sSection, _T("SendMailMovementDetection"), FALSE);
 	m_bExecCommand = (BOOL) pApp->GetProfileInt(sSection, _T("DoExecCommandMovementDetection"), FALSE);
@@ -4287,18 +4286,18 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_dwVideoProcessorMode = (DWORD) MIN(1, MAX(0, pApp->GetProfileInt(sSection, _T("VideoProcessorMode"), 0)));
 	m_fVideoRecQuality = (float) CAVRec::ClipVideoQuality((float)pApp->GetProfileInt(sSection, _T("VideoRecQuality"), (int)DEFAULT_VIDEO_QUALITY));
 	m_bObscureRemovedZones = (BOOL) pApp->GetProfileInt(sSection, _T("ObscureRemovedZones"), FALSE);
-	m_nDetectionStartStop = (int) pApp->GetProfileInt(sSection, _T("DetectionStartStop"), 0);
-	m_bDetectionSunday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionSunday"), TRUE);
-	m_bDetectionMonday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionMonday"), TRUE);
-	m_bDetectionTuesday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionTuesday"), TRUE);
-	m_bDetectionWednesday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionWednesday"), TRUE);
-	m_bDetectionThursday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionThursday"), TRUE);
-	m_bDetectionFriday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionFriday"), TRUE);
-	m_bDetectionSaturday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionSaturday"), TRUE);
-	m_DetectionStartTime = CTime(2000, 1, 1,	pApp->GetProfileInt(sSection, _T("DetectionStartHour"), CurrentTime.GetHour()),
+	m_nSchedulerStartStop = (int) pApp->GetProfileInt(sSection, _T("DetectionStartStop"), 0);
+	m_bSchedulerSunday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionSunday"), TRUE);
+	m_bSchedulerMonday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionMonday"), TRUE);
+	m_bSchedulerTuesday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionTuesday"), TRUE);
+	m_bSchedulerWednesday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionWednesday"), TRUE);
+	m_bSchedulerThursday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionThursday"), TRUE);
+	m_bSchedulerFriday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionFriday"), TRUE);
+	m_bSchedulerSaturday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionSaturday"), TRUE);
+	m_SchedulerStartTime = CTime(2000, 1, 1,	pApp->GetProfileInt(sSection, _T("DetectionStartHour"), CurrentTime.GetHour()),
 												pApp->GetProfileInt(sSection, _T("DetectionStartMin"), CurrentTime.GetMinute()),
 												pApp->GetProfileInt(sSection, _T("DetectionStartSec"), CurrentTime.GetSecond()));
-	m_DetectionStopTime = CTime(2000, 1, 1,		pApp->GetProfileInt(sSection, _T("DetectionStopHour"), CurrentTime.GetHour()),
+	m_SchedulerStopTime = CTime(2000, 1, 1,		pApp->GetProfileInt(sSection, _T("DetectionStopHour"), CurrentTime.GetHour()),
 												pApp->GetProfileInt(sSection, _T("DetectionStopMin"), CurrentTime.GetMinute()),
 												pApp->GetProfileInt(sSection, _T("DetectionStopSec"), CurrentTime.GetSecond()));
 	m_bInSchedule = IsInSchedule(CurrentTime);
@@ -4418,8 +4417,8 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("DetectionMaxFrames"), m_nDetectionMaxFrames);
 	pApp->WriteProfileInt(sSection, _T("DetectionLevel"), m_nDetectionLevel);
 	pApp->WriteProfileInt(sSection, _T("DetectionZoneSize"), m_nDetectionZoneSize);
-	pApp->WriteProfileInt(sSection, _T("SaveVideoMovementDetection"), m_bSaveVideoMovementDetection);
-	pApp->WriteProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), m_bSaveAnimGIFMovementDetection);
+	pApp->WriteProfileInt(sSection, _T("SaveVideoMovementDetection"), m_bSaveVideo);
+	pApp->WriteProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), m_bSaveAnimGIF);
 	pApp->WriteProfileInt(sSection, _T("SendMailMalfunction"), m_bSendMailMalfunction);
 	pApp->WriteProfileInt(sSection, _T("SendMailMovementDetection"), m_bSendMailRecording);
 	pApp->WriteProfileInt(sSection, _T("DoExecCommandMovementDetection"), m_bExecCommand);
@@ -4441,20 +4440,20 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("VideoProcessorMode"), m_dwVideoProcessorMode);
 	pApp->WriteProfileInt(sSection, _T("VideoRecQuality"), (int)m_fVideoRecQuality);
 	pApp->WriteProfileInt(sSection, _T("ObscureRemovedZones"), (int)m_bObscureRemovedZones);
-	pApp->WriteProfileInt(sSection, _T("DetectionStartStop"), m_nDetectionStartStop);
-	pApp->WriteProfileInt(sSection, _T("DetectionSunday"), (int)m_bDetectionSunday);
-	pApp->WriteProfileInt(sSection, _T("DetectionMonday"), (int)m_bDetectionMonday);
-	pApp->WriteProfileInt(sSection, _T("DetectionTuesday"), (int)m_bDetectionTuesday);
-	pApp->WriteProfileInt(sSection, _T("DetectionWednesday"), (int)m_bDetectionWednesday);
-	pApp->WriteProfileInt(sSection, _T("DetectionThursday"), (int)m_bDetectionThursday);
-	pApp->WriteProfileInt(sSection, _T("DetectionFriday"), (int)m_bDetectionFriday);
-	pApp->WriteProfileInt(sSection, _T("DetectionSaturday"), (int)m_bDetectionSaturday);
-	pApp->WriteProfileInt(sSection, _T("DetectionStartHour"), m_DetectionStartTime.GetHour());
-	pApp->WriteProfileInt(sSection, _T("DetectionStartMin"), m_DetectionStartTime.GetMinute());
-	pApp->WriteProfileInt(sSection, _T("DetectionStartSec"), m_DetectionStartTime.GetSecond());
-	pApp->WriteProfileInt(sSection, _T("DetectionStopHour"), m_DetectionStopTime.GetHour());
-	pApp->WriteProfileInt(sSection, _T("DetectionStopMin"), m_DetectionStopTime.GetMinute());
-	pApp->WriteProfileInt(sSection, _T("DetectionStopSec"), m_DetectionStopTime.GetSecond());
+	pApp->WriteProfileInt(sSection, _T("DetectionStartStop"), m_nSchedulerStartStop);
+	pApp->WriteProfileInt(sSection, _T("DetectionSunday"), (int)m_bSchedulerSunday);
+	pApp->WriteProfileInt(sSection, _T("DetectionMonday"), (int)m_bSchedulerMonday);
+	pApp->WriteProfileInt(sSection, _T("DetectionTuesday"), (int)m_bSchedulerTuesday);
+	pApp->WriteProfileInt(sSection, _T("DetectionWednesday"), (int)m_bSchedulerWednesday);
+	pApp->WriteProfileInt(sSection, _T("DetectionThursday"), (int)m_bSchedulerThursday);
+	pApp->WriteProfileInt(sSection, _T("DetectionFriday"), (int)m_bSchedulerFriday);
+	pApp->WriteProfileInt(sSection, _T("DetectionSaturday"), (int)m_bSchedulerSaturday);
+	pApp->WriteProfileInt(sSection, _T("DetectionStartHour"), m_SchedulerStartTime.GetHour());
+	pApp->WriteProfileInt(sSection, _T("DetectionStartMin"), m_SchedulerStartTime.GetMinute());
+	pApp->WriteProfileInt(sSection, _T("DetectionStartSec"), m_SchedulerStartTime.GetSecond());
+	pApp->WriteProfileInt(sSection, _T("DetectionStopHour"), m_SchedulerStopTime.GetHour());
+	pApp->WriteProfileInt(sSection, _T("DetectionStopMin"), m_SchedulerStopTime.GetMinute());
+	pApp->WriteProfileInt(sSection, _T("DetectionStopSec"), m_SchedulerStopTime.GetSecond());
 	pApp->WriteProfileInt(sSection, _T("ShowFrameTime"), (int)m_bShowFrameTime);
 	pApp->WriteProfileInt(sSection, _T("RefFontSize"), m_nRefFontSize);
 	pApp->WriteProfileInt(sSection, _T("AnimatedGifWidth"), m_dwAnimatedGifWidth);
@@ -6565,19 +6564,19 @@ BOOL CVideoDeviceDoc::Rotate180(CDib* pDib)
 
 BOOL CVideoDeviceDoc::IsInSchedule(const CTime& Time)
 {
-	if (m_nDetectionStartStop == 0) // always enabled
+	if (m_nSchedulerStartStop == 0) // always enabled
 		return TRUE;
 
 	BOOL bInSchedule = TRUE;
 	switch (Time.GetDayOfWeek())
 	{
-		case 1: if (!m_bDetectionSunday)	bInSchedule = FALSE; break;
-		case 2: if (!m_bDetectionMonday)	bInSchedule = FALSE; break;
-		case 3: if (!m_bDetectionTuesday)	bInSchedule = FALSE; break;
-		case 4: if (!m_bDetectionWednesday)	bInSchedule = FALSE; break;
-		case 5: if (!m_bDetectionThursday)	bInSchedule = FALSE; break;
-		case 6: if (!m_bDetectionFriday)	bInSchedule = FALSE; break;
-		case 7: if (!m_bDetectionSaturday)	bInSchedule = FALSE; break;
+		case 1: if (!m_bSchedulerSunday)	bInSchedule = FALSE; break;
+		case 2: if (!m_bSchedulerMonday)	bInSchedule = FALSE; break;
+		case 3: if (!m_bSchedulerTuesday)	bInSchedule = FALSE; break;
+		case 4: if (!m_bSchedulerWednesday)	bInSchedule = FALSE; break;
+		case 5: if (!m_bSchedulerThursday)	bInSchedule = FALSE; break;
+		case 6: if (!m_bSchedulerFriday)	bInSchedule = FALSE; break;
+		case 7: if (!m_bSchedulerSaturday)	bInSchedule = FALSE; break;
 		default: break;
 	}
 	CTime timeonly(	2000,
@@ -6586,18 +6585,18 @@ BOOL CVideoDeviceDoc::IsInSchedule(const CTime& Time)
 					Time.GetHour(),
 					Time.GetMinute(),
 					Time.GetSecond());
-	if (m_DetectionStartTime <= m_DetectionStopTime)
+	if (m_SchedulerStartTime <= m_SchedulerStopTime)
 	{
-		if (timeonly < m_DetectionStartTime || timeonly > m_DetectionStopTime)
+		if (timeonly < m_SchedulerStartTime || timeonly > m_SchedulerStopTime)
 			bInSchedule = FALSE;
 	}
 	else
 	{
-		if (timeonly < m_DetectionStartTime && timeonly > m_DetectionStopTime)
+		if (timeonly < m_SchedulerStartTime && timeonly > m_SchedulerStopTime)
 			bInSchedule = FALSE;
 	}
 
-	if (m_nDetectionStartStop == 1) // enable on specified schedule
+	if (m_nSchedulerStartStop == 1) // enable on specified schedule
 		return bInSchedule;
 	else							// disable on specified schedule
 		return !bInSchedule;

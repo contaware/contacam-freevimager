@@ -894,8 +894,8 @@ public:
 	volatile int m_nMilliSecondsRecAfterMovementEnd;	// Keep Recording this amount of millisec. after det. end
 	volatile int m_nDetectionMinLengthMilliSeconds;		// Minimum detection length in ms, below this value SaveFrameList() is not called
 	volatile int m_nDetectionMaxFrames;					// Maximum number of frames for a detection sequence
-	volatile BOOL m_bSaveVideoMovementDetection;		// Save Movement Detections as Video File
-	volatile BOOL m_bSaveAnimGIFMovementDetection;		// Save Movement Detections as Animated GIF
+	volatile BOOL m_bSaveVideo;							// Save Video File
+	volatile BOOL m_bSaveAnimGIF;						// Save Animated GIF
 	volatile BOOL m_bSendMailMalfunction;				// Send Email on Device Malfunction
 	volatile BOOL m_bSendMailRecording;					// Send Email on Recording
 	volatile BOOL m_bExecCommand;						// Execute Command
@@ -922,18 +922,18 @@ public:
 	volatile LONG m_lMovDetYZonesCount;					// Number of zones in Y direction (never set to 0 to avoid division by 0)
 	volatile LONG m_lMovDetTotalZones;					// Total Number of zones (set to 0 when a (re-)init of the zones is wanted)
 	volatile BOOL m_bObscureRemovedZones;				// Removed detection zones are obscured
-	volatile int m_nDetectionStartStop;					// 0 -> Detection Alwayn on
-														// 1 -> Enable detection on specified times and days
-														// 2 -> Disable detection on specified times and days
-	volatile BOOL m_bDetectionSunday;					// Do detections on Sunday
-	volatile BOOL m_bDetectionMonday;					// Do detections on Monday
-	volatile BOOL m_bDetectionTuesday;					// Do detections on Tuesday
-	volatile BOOL m_bDetectionWednesday;				// Do detections on Wednesday
-	volatile BOOL m_bDetectionThursday;					// Do detections on Thursday
-	volatile BOOL m_bDetectionFriday;					// Do detections on Friday
-	volatile BOOL m_bDetectionSaturday;					// Do detections on Saturday
-	CTime m_DetectionStartTime;							// Daily Detection Start Time
-	CTime m_DetectionStopTime;							// Daily Detection Stop Time
+	volatile int m_nSchedulerStartStop;					// 0 -> Recording always on
+														// 1 -> Enable recording on specified times and days
+														// 2 -> Disable recording on specified times and days
+	volatile BOOL m_bSchedulerSunday;					// Scheduler Sunday
+	volatile BOOL m_bSchedulerMonday;					// Scheduler Monday
+	volatile BOOL m_bSchedulerTuesday;					// Scheduler Tuesday
+	volatile BOOL m_bSchedulerWednesday;				// Scheduler Wednesday
+	volatile BOOL m_bSchedulerThursday;					// Scheduler Thursday
+	volatile BOOL m_bSchedulerFriday;					// Scheduler Friday
+	volatile BOOL m_bSchedulerSaturday;					// Scheduler Saturday
+	CTime m_SchedulerStartTime;							// Scheduler Start Time
+	CTime m_SchedulerStopTime;							// Scheduler Stop Time
 	volatile BOOL m_bInSchedule;						// Updated by the UI thread each RELOAD_TIMER_MS
 	volatile int m_nMovDetFreqDiv;						// Current frequency divider
 	volatile double m_dMovDetFrameRateFreqDivCalc;		// Framerate used to calculate the current frequency divider

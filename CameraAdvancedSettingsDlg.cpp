@@ -115,8 +115,8 @@ void CCameraAdvancedSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_DETECTION_MAX_FRAMES, m_nDetectionMaxFrames);
 	DDV_MinMaxInt(pDX, m_nDetectionMaxFrames, 1, MOVDET_MAX_MAX_FRAMES_IN_LIST);
 	DDX_Check(pDX, IDC_CHECK_LIVE_ROTATE180, m_bRotate180);
-	DDX_DateTimeCtrl(pDX, IDC_TIME_DAILY_START, m_DetectionStartTime);
-	DDX_DateTimeCtrl(pDX, IDC_TIME_DAILY_STOP, m_DetectionStopTime);
+	DDX_DateTimeCtrl(pDX, IDC_TIME_DAILY_START, m_SchedulerStartTime);
+	DDX_DateTimeCtrl(pDX, IDC_TIME_DAILY_STOP, m_SchedulerStopTime);
 	DDX_Check(pDX, IDC_CHECK_AUDIO_LISTEN, m_bAudioListen);
 	DDX_Control(pDX, IDC_VIDEO_COMPRESSION_QUALITY, m_VideoRecQuality);
 }
@@ -141,7 +141,7 @@ BEGIN_MESSAGE_MAP(CCameraAdvancedSettingsDlg, CDialog)
 	ON_BN_CLICKED(IDC_REC_AUDIO_FROM_SOURCE, OnRecAudioFromSource)
 	ON_BN_CLICKED(IDC_AUDIO_INPUT, OnAudioInput)
 	ON_BN_CLICKED(IDC_AUDIO_MIXER, OnAudioMixer)
-	ON_CBN_SELCHANGE(IDC_COMBOBOX_DETECTION_SCHEDULER, OnCbnSelchangeComboboxDetectionScheduler)
+	ON_CBN_SELCHANGE(IDC_COMBOBOX_SCHEDULER, OnCbnSelchangeComboboxScheduler)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_SUNDAY, OnCheckSchedulerSunday)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_MONDAY, OnCheckSchedulerMonday)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_TUESDAY, OnCheckSchedulerTuesday)
@@ -152,8 +152,8 @@ BEGIN_MESSAGE_MAP(CCameraAdvancedSettingsDlg, CDialog)
 	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_DAILY_START, OnDatetimechangeTimeDailyStart)
 	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_DAILY_STOP, OnDatetimechangeTimeDailyStop)
 	ON_WM_HSCROLL()
-	ON_BN_CLICKED(IDC_SAVE_VIDEO_MOVEMENT_DETECTION, OnSaveVideoMovementDetection)
-	ON_BN_CLICKED(IDC_SAVE_ANIMATEDGIF_MOVEMENT_DETECTION, OnSaveAnimGifMovementDetection)
+	ON_BN_CLICKED(IDC_SAVE_VIDEO, OnSaveVideo)
+	ON_BN_CLICKED(IDC_SAVE_ANIMATEDGIF, OnSaveAnimGif)
 	ON_BN_CLICKED(IDC_ANIMATEDGIF_SIZE, OnAnimatedgifSize)
 	ON_EN_CHANGE(IDC_EDIT_SNAPSHOT_RATE, OnChangeEditSnapshotRate)
 	ON_BN_CLICKED(IDC_BUTTON_THUMB_SIZE, OnButtonThumbSize)
@@ -183,15 +183,15 @@ BOOL CCameraAdvancedSettingsDlg::OnInitDialog()
 	m_nDetectionMinLengthSeconds = m_pDoc->m_nDetectionMinLengthMilliSeconds / 1000;
 	m_nDetectionMaxFrames = m_pDoc->m_nDetectionMaxFrames;
 	m_bRotate180 = m_pDoc->m_bRotate180;
-	m_DetectionStartTime = m_pDoc->m_DetectionStartTime;
-	m_DetectionStopTime = m_pDoc->m_DetectionStopTime;
+	m_SchedulerStartTime = m_pDoc->m_SchedulerStartTime;
+	m_SchedulerStopTime = m_pDoc->m_SchedulerStopTime;
 	m_bAudioListen = m_pDoc->m_bAudioListen;
 
 	// Init Combo Boxes
-	CComboBox* pComboBoxDetectionScheduler = (CComboBox*)GetDlgItem(IDC_COMBOBOX_DETECTION_SCHEDULER);
-	pComboBoxDetectionScheduler->AddString(ML_STRING(1874, "Always enabled (scheduler is off)"));
-	pComboBoxDetectionScheduler->AddString(ML_STRING(1875, "Enabled:"));
-	pComboBoxDetectionScheduler->AddString(ML_STRING(1876, "Disabled:"));
+	CComboBox* pComboBoxScheduler = (CComboBox*)GetDlgItem(IDC_COMBOBOX_SCHEDULER);
+	pComboBoxScheduler->AddString(ML_STRING(1874, "Always enabled (scheduler is off)"));
+	pComboBoxScheduler->AddString(ML_STRING(1875, "Enabled:"));
+	pComboBoxScheduler->AddString(ML_STRING(1876, "Disabled:"));
 	CComboBox* pComboBoxExecCommandMode = (CComboBox*)GetDlgItem(IDC_EXEC_COMMAND_MODE);
 	pComboBoxExecCommandMode->AddString(ML_STRING(1842, "Recording start"));
 	pComboBoxExecCommandMode->AddString(ML_STRING(1843, "Recording saving done"));
@@ -295,28 +295,28 @@ BOOL CCameraAdvancedSettingsDlg::OnInitDialog()
 	}
 
 	// Scheduler
-	pComboBoxDetectionScheduler->SetCurSel(m_pDoc->m_nDetectionStartStop);
+	pComboBoxScheduler->SetCurSel(m_pDoc->m_nSchedulerStartStop);
 	CButton* pCheckScheduler = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_SUNDAY);
-	pCheckScheduler->SetCheck(m_pDoc->m_bDetectionSunday);
+	pCheckScheduler->SetCheck(m_pDoc->m_bSchedulerSunday);
 	pCheckScheduler = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_MONDAY);
-	pCheckScheduler->SetCheck(m_pDoc->m_bDetectionMonday);
+	pCheckScheduler->SetCheck(m_pDoc->m_bSchedulerMonday);
 	pCheckScheduler = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_TUESDAY);
-	pCheckScheduler->SetCheck(m_pDoc->m_bDetectionTuesday);
+	pCheckScheduler->SetCheck(m_pDoc->m_bSchedulerTuesday);
 	pCheckScheduler = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_WEDNESDAY);
-	pCheckScheduler->SetCheck(m_pDoc->m_bDetectionWednesday);
+	pCheckScheduler->SetCheck(m_pDoc->m_bSchedulerWednesday);
 	pCheckScheduler = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_THURSDAY);
-	pCheckScheduler->SetCheck(m_pDoc->m_bDetectionThursday);
+	pCheckScheduler->SetCheck(m_pDoc->m_bSchedulerThursday);
 	pCheckScheduler = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_FRIDAY);
-	pCheckScheduler->SetCheck(m_pDoc->m_bDetectionFriday);
+	pCheckScheduler->SetCheck(m_pDoc->m_bSchedulerFriday);
 	pCheckScheduler = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_SATURDAY);
-	pCheckScheduler->SetCheck(m_pDoc->m_bDetectionSaturday);
+	pCheckScheduler->SetCheck(m_pDoc->m_bSchedulerSaturday);
 
-	// Save Video Movement Detection Check Box
-	CButton* pCheckVideoSaveMovementDetection = (CButton*)GetDlgItem(IDC_SAVE_VIDEO_MOVEMENT_DETECTION);
-	if (m_pDoc->m_bSaveVideoMovementDetection)
-		pCheckVideoSaveMovementDetection->SetCheck(1);
+	// Save Video Check Box
+	CButton* pCheckVideoSave = (CButton*)GetDlgItem(IDC_SAVE_VIDEO);
+	if (m_pDoc->m_bSaveVideo)
+		pCheckVideoSave->SetCheck(1);
 	else
-		pCheckVideoSaveMovementDetection->SetCheck(0);
+		pCheckVideoSave->SetCheck(0);
 
 	// Video Compressor Quality
 	m_VideoRecQuality.SetRange((int)VIDEO_QUALITY_BEST, (int)VIDEO_QUALITY_LOW);
@@ -326,12 +326,12 @@ BOOL CCameraAdvancedSettingsDlg::OnInitDialog()
 	::SetRevertedPos(&m_VideoRecQuality, (int)m_pDoc->m_fVideoRecQuality);
 	UpdateVideoQualityInfo();
 
-	// Save Animated GIF Movement Detection Check Box
-	CButton* pCheckAnimGIFSaveMovementDetection = (CButton*)GetDlgItem(IDC_SAVE_ANIMATEDGIF_MOVEMENT_DETECTION);
-	if (m_pDoc->m_bSaveAnimGIFMovementDetection)
-		pCheckAnimGIFSaveMovementDetection->SetCheck(1);
+	// Save Animated GIF Check Box
+	CButton* pCheckAnimGIFSave = (CButton*)GetDlgItem(IDC_SAVE_ANIMATEDGIF);
+	if (m_pDoc->m_bSaveAnimGIF)
+		pCheckAnimGIFSave->SetCheck(1);
 	else
-		pCheckAnimGIFSaveMovementDetection->SetCheck(0);
+		pCheckAnimGIFSave->SetCheck(0);
 
 	// Animated GIF Button
 	CString sSize;
@@ -651,88 +651,88 @@ void CCameraAdvancedSettingsDlg::OnAudioMixer()
 		_T("control.exe"), _T("mmsys.cpl,,1"), NULL, SW_SHOWNORMAL);
 }
 
-void CCameraAdvancedSettingsDlg::UpdateDetectionStartStopTimes()
+void CCameraAdvancedSettingsDlg::UpdateStartStopTimes()
 {
-	if (m_pDoc->m_nDetectionStartStop > 0)
+	if (m_pDoc->m_nSchedulerStartStop > 0)
 	{
 		// Start Time
-		m_pDoc->m_DetectionStartTime = CTime(2000,
-			1,
-			1,
-			m_DetectionStartTime.GetHour(),
-			m_DetectionStartTime.GetMinute(),
-			m_DetectionStartTime.GetSecond());
+		m_pDoc->m_SchedulerStartTime = CTime(2000,
+											1,
+											1,
+											m_SchedulerStartTime.GetHour(),
+											m_SchedulerStartTime.GetMinute(),
+											m_SchedulerStartTime.GetSecond());
 
 		// Stop Time
-		m_pDoc->m_DetectionStopTime = CTime(2000,
-			1,
-			1,
-			m_DetectionStopTime.GetHour(),
-			m_DetectionStopTime.GetMinute(),
-			m_DetectionStopTime.GetSecond());
+		m_pDoc->m_SchedulerStopTime = CTime(2000,
+											1,
+											1,
+											m_SchedulerStopTime.GetHour(),
+											m_SchedulerStopTime.GetMinute(),
+											m_SchedulerStopTime.GetSecond());
 	}
 }
 
-void CCameraAdvancedSettingsDlg::OnCbnSelchangeComboboxDetectionScheduler()
+void CCameraAdvancedSettingsDlg::OnCbnSelchangeComboboxScheduler()
 {
-	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBOBOX_DETECTION_SCHEDULER);
-	m_pDoc->m_nDetectionStartStop = pComboBox->GetCurSel();
-	UpdateDetectionStartStopTimes();
+	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBOBOX_SCHEDULER);
+	m_pDoc->m_nSchedulerStartStop = pComboBox->GetCurSel();
+	UpdateStartStopTimes();
 }
 
 void CCameraAdvancedSettingsDlg::OnCheckSchedulerSunday()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_SUNDAY);
-	pCheck->GetCheck() == 0 ? m_pDoc->m_bDetectionSunday = FALSE : m_pDoc->m_bDetectionSunday = TRUE;
+	pCheck->GetCheck() == 0 ? m_pDoc->m_bSchedulerSunday = FALSE : m_pDoc->m_bSchedulerSunday = TRUE;
 }
 
 void CCameraAdvancedSettingsDlg::OnCheckSchedulerMonday()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_MONDAY);
-	pCheck->GetCheck() == 0 ? m_pDoc->m_bDetectionMonday = FALSE : m_pDoc->m_bDetectionMonday = TRUE;
+	pCheck->GetCheck() == 0 ? m_pDoc->m_bSchedulerMonday = FALSE : m_pDoc->m_bSchedulerMonday = TRUE;
 }
 
 void CCameraAdvancedSettingsDlg::OnCheckSchedulerTuesday()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_TUESDAY);
-	pCheck->GetCheck() == 0 ? m_pDoc->m_bDetectionTuesday = FALSE : m_pDoc->m_bDetectionTuesday = TRUE;
+	pCheck->GetCheck() == 0 ? m_pDoc->m_bSchedulerTuesday = FALSE : m_pDoc->m_bSchedulerTuesday = TRUE;
 }
 
 void CCameraAdvancedSettingsDlg::OnCheckSchedulerWednesday()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_WEDNESDAY);
-	pCheck->GetCheck() == 0 ? m_pDoc->m_bDetectionWednesday = FALSE : m_pDoc->m_bDetectionWednesday = TRUE;
+	pCheck->GetCheck() == 0 ? m_pDoc->m_bSchedulerWednesday = FALSE : m_pDoc->m_bSchedulerWednesday = TRUE;
 }
 
 void CCameraAdvancedSettingsDlg::OnCheckSchedulerThursday()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_THURSDAY);
-	pCheck->GetCheck() == 0 ? m_pDoc->m_bDetectionThursday = FALSE : m_pDoc->m_bDetectionThursday = TRUE;
+	pCheck->GetCheck() == 0 ? m_pDoc->m_bSchedulerThursday = FALSE : m_pDoc->m_bSchedulerThursday = TRUE;
 }
 
 void CCameraAdvancedSettingsDlg::OnCheckSchedulerFriday()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_FRIDAY);
-	pCheck->GetCheck() == 0 ? m_pDoc->m_bDetectionFriday = FALSE : m_pDoc->m_bDetectionFriday = TRUE;
+	pCheck->GetCheck() == 0 ? m_pDoc->m_bSchedulerFriday = FALSE : m_pDoc->m_bSchedulerFriday = TRUE;
 }
 
 void CCameraAdvancedSettingsDlg::OnCheckSchedulerSaturday()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_SATURDAY);
-	pCheck->GetCheck() == 0 ? m_pDoc->m_bDetectionSaturday = FALSE : m_pDoc->m_bDetectionSaturday = TRUE;
+	pCheck->GetCheck() == 0 ? m_pDoc->m_bSchedulerSaturday = FALSE : m_pDoc->m_bSchedulerSaturday = TRUE;
 }
 
 void CCameraAdvancedSettingsDlg::OnDatetimechangeTimeDailyStart(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	if (UpdateData(TRUE))
-		UpdateDetectionStartStopTimes();
+		UpdateStartStopTimes();
 	*pResult = 0;
 }
 
 void CCameraAdvancedSettingsDlg::OnDatetimechangeTimeDailyStop(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	if (UpdateData(TRUE))
-		UpdateDetectionStartStopTimes();
+		UpdateStartStopTimes();
 	*pResult = 0;
 }
 
@@ -788,16 +788,16 @@ void CCameraAdvancedSettingsDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* 
 	CDialog::OnHScroll(nSBCode, nPos, (CScrollBar*)pScrollBar);
 }
 
-void CCameraAdvancedSettingsDlg::OnSaveVideoMovementDetection()
+void CCameraAdvancedSettingsDlg::OnSaveVideo()
 {
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_SAVE_VIDEO_MOVEMENT_DETECTION);
-	m_pDoc->m_bSaveVideoMovementDetection = pCheck->GetCheck() > 0;
+	CButton* pCheck = (CButton*)GetDlgItem(IDC_SAVE_VIDEO);
+	m_pDoc->m_bSaveVideo = pCheck->GetCheck() > 0;
 }
 
-void CCameraAdvancedSettingsDlg::OnSaveAnimGifMovementDetection()
+void CCameraAdvancedSettingsDlg::OnSaveAnimGif()
 {
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_SAVE_ANIMATEDGIF_MOVEMENT_DETECTION);
-	m_pDoc->m_bSaveAnimGIFMovementDetection = pCheck->GetCheck() > 0;
+	CButton* pCheck = (CButton*)GetDlgItem(IDC_SAVE_ANIMATEDGIF);
+	m_pDoc->m_bSaveAnimGIF = pCheck->GetCheck() > 0;
 }
 
 void CCameraAdvancedSettingsDlg::OnAnimatedgifSize()

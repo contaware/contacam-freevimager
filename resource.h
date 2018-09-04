@@ -872,7 +872,7 @@
 #define IDS_MULTILANG_1033              1033
 #define IDC_VIDEO_SOURCE                1033
 #define IDS_MULTILANG_1034              1034
-#define IDC_SAVE_VIDEO_MOVEMENT_DETECTION 1034
+#define IDC_SAVE_VIDEO                  1034
 #define IDS_MULTILANG_1035              1035
 #define IDC_FRAMERATE                   1035
 #define IDS_MULTILANG_1036              1036
@@ -918,7 +918,7 @@
 #define IDS_MULTILANG_1056              1056
 #define IDC_EDIT_ZIPFILE_NAME           1056
 #define IDS_MULTILANG_1057              1057
-#define IDC_SAVE_ANIMATEDGIF_MOVEMENT_DETECTION 1057
+#define IDC_SAVE_ANIMATEDGIF            1057
 #define IDS_MULTILANG_1058              1058
 #define IDC_EDIT_QUALITY                1058
 #define IDS_MULTILANG_1059              1059
@@ -2969,7 +2969,7 @@
 #define IDC_EXEC_COMMAND_MODE           2542
 #define IDC_STATIC2544                  2544
 #define IDC_CAM_FOLDERS                 2545
-#define IDC_COMBOBOX_DETECTION_SCHEDULER 2545
+#define IDC_COMBOBOX_SCHEDULER          2545
 #define IDC_CHECK_SCHEDULER_SUNDAY      2547
 #define IDC_CHECK_SCHEDULER_MONDAY      2548
 #define IDC_CHECK_SCHEDULER_TUESDAY     2549
