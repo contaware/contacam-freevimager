@@ -157,10 +157,10 @@ BEGIN_MESSAGE_MAP(CCameraAdvancedSettingsDlg, CDialog)
 	ON_BN_CLICKED(IDC_ANIMATEDGIF_SIZE, OnAnimatedgifSize)
 	ON_EN_CHANGE(IDC_EDIT_SNAPSHOT_RATE, OnChangeEditSnapshotRate)
 	ON_BN_CLICKED(IDC_BUTTON_THUMB_SIZE, OnButtonThumbSize)
-	ON_BN_CLICKED(IDC_EXEC_MOVEMENT_DETECTION, OnExecMovementDetection)
+	ON_BN_CLICKED(IDC_EXEC_COMMAND, OnExecCommand)
 	ON_NOTIFY(NM_CLICK, IDC_SYSLINK_CMD, OnNMClickSyslinkCmd)
 	ON_NOTIFY(NM_CLICK, IDC_SYSLINK_PARAMS, OnNMClickSyslinkParams)
-	ON_CBN_SELCHANGE(IDC_EXECMODE_MOVEMENT_DETECTION, OnSelchangeExecmodeMovementDetection)
+	ON_CBN_SELCHANGE(IDC_EXEC_COMMAND_MODE, OnSelchangeExecCommandMode)
 	ON_EN_CHANGE(IDC_EDIT_EXE, OnChangeEditExe)
 	ON_EN_CHANGE(IDC_EDIT_PARAMS, OnChangeEditParams)
 	ON_BN_CLICKED(IDC_CHECK_HIDE_EXEC_COMMAND, OnCheckHideExecCommand)
@@ -192,9 +192,10 @@ BOOL CCameraAdvancedSettingsDlg::OnInitDialog()
 	pComboBoxDetectionScheduler->AddString(ML_STRING(1874, "Always enabled (scheduler is off)"));
 	pComboBoxDetectionScheduler->AddString(ML_STRING(1875, "Enabled:"));
 	pComboBoxDetectionScheduler->AddString(ML_STRING(1876, "Disabled:"));
-	CComboBox* pComboBoxExexMode = (CComboBox*)GetDlgItem(IDC_EXECMODE_MOVEMENT_DETECTION);
-	pComboBoxExexMode->AddString(ML_STRING(1842, "Recording starts"));
-	pComboBoxExexMode->AddString(ML_STRING(1843, "Saving done"));
+	CComboBox* pComboBoxExecCommandMode = (CComboBox*)GetDlgItem(IDC_EXEC_COMMAND_MODE);
+	pComboBoxExecCommandMode->AddString(ML_STRING(1842, "Recording start"));
+	pComboBoxExecCommandMode->AddString(ML_STRING(1843, "Recording saving done"));
+	pComboBoxExecCommandMode->AddString(ML_STRING(1844, "Live snapshots saving done"));
 
 	// This calls UpdateData(FALSE)
 	CDialog::OnInitDialog();
@@ -348,27 +349,27 @@ BOOL CCameraAdvancedSettingsDlg::OnInitDialog()
 	CButton* pButtonThumbnailSize = (CButton*)GetDlgItem(IDC_BUTTON_THUMB_SIZE);
 	pButtonThumbnailSize->SetWindowText(sSize);
 
-	// Execute Command Movement Detection
-	CButton* pCheckExecCommandMovementDetection = (CButton*)GetDlgItem(IDC_EXEC_MOVEMENT_DETECTION);
-	if (m_pDoc->m_bExecCommandMovementDetection)
-		pCheckExecCommandMovementDetection->SetCheck(1);
+	// Execute Command
+	CButton* pCheckExecCommand = (CButton*)GetDlgItem(IDC_EXEC_COMMAND);
+	if (m_pDoc->m_bExecCommand)
+		pCheckExecCommand->SetCheck(1);
 	else
-		pCheckExecCommandMovementDetection->SetCheck(0);
-	pComboBoxExexMode->SetCurSel(m_pDoc->m_nExecModeMovementDetection);
-	CEdit* pEditExecCommandMovementDetection = (CEdit*)GetDlgItem(IDC_EDIT_EXE);
-	pEditExecCommandMovementDetection->SetWindowText(m_pDoc->m_sExecCommandMovementDetection);
-	CEdit* pEditExecParamsMovementDetection = (CEdit*)GetDlgItem(IDC_EDIT_PARAMS);
-	pEditExecParamsMovementDetection->SetWindowText(m_pDoc->m_sExecParamsMovementDetection);
-	CButton* pCheckHideExecCommandMovementDetection = (CButton*)GetDlgItem(IDC_CHECK_HIDE_EXEC_COMMAND);
-	if (m_pDoc->m_bHideExecCommandMovementDetection)
-		pCheckHideExecCommandMovementDetection->SetCheck(1);
+		pCheckExecCommand->SetCheck(0);
+	pComboBoxExecCommandMode->SetCurSel(m_pDoc->m_nExecCommandMode);
+	CEdit* pEditExecCommand = (CEdit*)GetDlgItem(IDC_EDIT_EXE);
+	pEditExecCommand->SetWindowText(m_pDoc->m_sExecCommand);
+	CEdit* pEditExecParams = (CEdit*)GetDlgItem(IDC_EDIT_PARAMS);
+	pEditExecParams->SetWindowText(m_pDoc->m_sExecParams);
+	CButton* pCheckHideExecCommand = (CButton*)GetDlgItem(IDC_CHECK_HIDE_EXEC_COMMAND);
+	if (m_pDoc->m_bHideExecCommand)
+		pCheckHideExecCommand->SetCheck(1);
 	else
-		pCheckHideExecCommandMovementDetection->SetCheck(0);
-	CButton* pCheckWaitExecCommandMovementDetection = (CButton*)GetDlgItem(IDC_CHECK_WAIT_EXEC_COMMAND);
-	if (m_pDoc->m_bWaitExecCommandMovementDetection)
-		pCheckWaitExecCommandMovementDetection->SetCheck(1);
+		pCheckHideExecCommand->SetCheck(0);
+	CButton* pCheckWaitExecCommand = (CButton*)GetDlgItem(IDC_CHECK_WAIT_EXEC_COMMAND);
+	if (m_pDoc->m_bWaitExecCommand)
+		pCheckWaitExecCommand->SetCheck(1);
 	else
-		pCheckWaitExecCommandMovementDetection->SetCheck(0);
+		pCheckWaitExecCommand->SetCheck(0);
 
 	// Set Pointer to this
 	m_pDoc->m_pCameraAdvancedSettingsDlg = this;
@@ -878,10 +879,10 @@ void CCameraAdvancedSettingsDlg::OnButtonThumbSize()
 	}
 }
 
-void CCameraAdvancedSettingsDlg::OnExecMovementDetection()
+void CCameraAdvancedSettingsDlg::OnExecCommand()
 {
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_EXEC_MOVEMENT_DETECTION);
-	m_pDoc->m_bExecCommandMovementDetection = pCheck->GetCheck() > 0;
+	CButton* pCheck = (CButton*)GetDlgItem(IDC_EXEC_COMMAND);
+	m_pDoc->m_bExecCommand = pCheck->GetCheck() > 0;
 }
 
 void CCameraAdvancedSettingsDlg::OnNMClickSyslinkCmd(NMHDR* pNMHDR, LRESULT* pResult)
@@ -902,42 +903,42 @@ void CCameraAdvancedSettingsDlg::OnNMClickSyslinkParams(NMHDR* pNMHDR, LRESULT* 
 	*pResult = 0;
 }
 
-void CCameraAdvancedSettingsDlg::OnSelchangeExecmodeMovementDetection()
+void CCameraAdvancedSettingsDlg::OnSelchangeExecCommandMode()
 {
-	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_EXECMODE_MOVEMENT_DETECTION);
-	m_pDoc->m_nExecModeMovementDetection = pComboBox->GetCurSel();
+	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_EXEC_COMMAND_MODE);
+	m_pDoc->m_nExecCommandMode = pComboBox->GetCurSel();
 }
 
 void CCameraAdvancedSettingsDlg::OnChangeEditExe()
 {
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_EXE);
-	::EnterCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
-	pEdit->GetWindowText(m_pDoc->m_sExecCommandMovementDetection);
-	::LeaveCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
+	::EnterCriticalSection(&m_pDoc->m_csExecCommand);
+	pEdit->GetWindowText(m_pDoc->m_sExecCommand);
+	::LeaveCriticalSection(&m_pDoc->m_csExecCommand);
 }
 
 void CCameraAdvancedSettingsDlg::OnChangeEditParams()
 {
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PARAMS);
-	::EnterCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
-	pEdit->GetWindowText(m_pDoc->m_sExecParamsMovementDetection);
-	::LeaveCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
+	::EnterCriticalSection(&m_pDoc->m_csExecCommand);
+	pEdit->GetWindowText(m_pDoc->m_sExecParams);
+	::LeaveCriticalSection(&m_pDoc->m_csExecCommand);
 }
 
 void CCameraAdvancedSettingsDlg::OnCheckHideExecCommand()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_HIDE_EXEC_COMMAND);
-	::EnterCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
-	m_pDoc->m_bHideExecCommandMovementDetection = pCheck->GetCheck() > 0;
-	::LeaveCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
+	::EnterCriticalSection(&m_pDoc->m_csExecCommand);
+	m_pDoc->m_bHideExecCommand = pCheck->GetCheck() > 0;
+	::LeaveCriticalSection(&m_pDoc->m_csExecCommand);
 }
 
 void CCameraAdvancedSettingsDlg::OnCheckWaitExecCommand()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_WAIT_EXEC_COMMAND);
-	::EnterCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
-	m_pDoc->m_bWaitExecCommandMovementDetection = pCheck->GetCheck() > 0;
-	::LeaveCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
+	::EnterCriticalSection(&m_pDoc->m_csExecCommand);
+	m_pDoc->m_bWaitExecCommand = pCheck->GetCheck() > 0;
+	::LeaveCriticalSection(&m_pDoc->m_csExecCommand);
 }
 
 #endif

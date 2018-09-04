@@ -374,7 +374,7 @@ public:
 		public:
 			CRtspThread() { m_pDoc = NULL; m_nVideoCodecID = -1; m_nAudioCodecID = -1; m_nUnderlyingTransport = -1; };
 			virtual ~CRtspThread() {Kill();};
-			void SetDoc(CVideoDeviceDoc* pDoc) { m_pDoc = pDoc; };
+			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
 			CString m_sURL;
 			volatile int m_nVideoCodecID;			// -1 means not set 
 			volatile int m_nAudioCodecID;			// -1 means not set
@@ -474,47 +474,35 @@ public:
 	class CSaveSnapshotVideoThread : public CWorkerThread
 	{
 		public:
-			CSaveSnapshotVideoThread(){m_ThreadExecutedForTime = CTime(0);};
+			CSaveSnapshotVideoThread(){m_pDoc = NULL; m_ThreadExecutedForTime = CTime(0);};
 			virtual ~CSaveSnapshotVideoThread() {Kill();};
-
+			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
 			CTime m_ThreadExecutedForTime;
 			CTime m_Time;
-			CString m_sAssignedDeviceName;
-			BOOL m_bSendMailSnapshotHistory;
-			SendMailConfigurationStruct m_SendMailConfiguration;
-			CString m_sSnapshotAutoSaveDir;
 
 		protected:
 			int Work();
 			__forceinline CString MakeVideoHistoryFileName();
+			CVideoDeviceDoc* m_pDoc;
 	};
 
 	// The Save Snapshot Thread Class
 	class CSaveSnapshotThread : public CWorkerThread
 	{
 		public:
-			CSaveSnapshotThread(){m_hEventArray[0] = GetKillEvent();};
+			CSaveSnapshotThread(){m_pDoc = NULL; m_hEventArray[0] = GetKillEvent();};
 			virtual ~CSaveSnapshotThread() {Kill();};
-
-			HANDLE m_hEventArray[2];
+			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
 			CDib m_Dib;
-			BOOL m_bSnapshotHistoryJpeg;
-			BOOL m_bShowFrameTime;
-			BOOL m_bDetectingMinLengthMovement;
-			int m_nRefFontSize;
-			BOOL m_bSendMailSnapshot;
-			int m_nSnapshotThumbWidth;
-			int m_nSnapshotThumbHeight;
 			CTime m_Time;
-			CString m_sAssignedDeviceName;
-			SendMailConfigurationStruct m_SendMailConfiguration;
-			CString m_sSnapshotAutoSaveDir;
 
 		protected:
-			CMJPEGEncoder m_MJPEGEncoder;
-			CMJPEGEncoder m_MJPEGThumbEncoder;
 			int Work();
 			__forceinline CString MakeJpegHistoryFileName();
+			CVideoDeviceDoc* m_pDoc;
+			CMJPEGEncoder m_MJPEGEncoder;
+			CMJPEGEncoder m_MJPEGThumbEncoder;
+			HANDLE m_hEventArray[2];
 	};
 
 protected: // create from serialization only
@@ -704,19 +692,20 @@ public:
 	// Quality ranges from 0 to 100 (0: worst, 100: best)
 	static BOOL SaveJpegFast(CDib* pDib, CMJPEGEncoder* pMJPEGEncoder, const CString& sFileName, int quality);
 
-	// Movement Detection
+	// Recording
 	void CaptureRecord();
 	void MovementDetectionProcessing(	CDib* pDib,
 										DWORD dwVideoProcessorMode,
 										BOOL b1SecTick);
 	BOOL MovementDetector(CDib* pDib, int nDetectionLevel);
 	void FreeMovementDetector();
-	void ExecCommandMovementDetection(	BOOL bReplaceVars = FALSE,
-										CTime StartTime = CTime(0),
-										const CString& sVideoFileName = _T(""),
-										const CString& sGIFFileName = _T(""),
-										int nMovDetSavesCount = 0);
 	void HideDetectionZones();
+
+	// Command execution
+	void ExecCommand(BOOL bReplaceVars = FALSE,
+					CTime Time = CTime(0),
+					const CString& sFullFileName = _T(""),
+					const CString& sSmallFileName = _T(""));
 
 	// Validate Name
 	static CString GetValidName(CString sName);
@@ -886,7 +875,7 @@ public:
 	CStringArray m_HttpGetFrameLocations;				// Automatic camera type detection query string
 
 	// Snapshot Vars
-	volatile BOOL m_bSendMailSnapshot;					// Email Jpeg Live snapshot file
+	volatile BOOL m_bSendMailLiveSnapshot;				// Email Jpeg live snapshot file
 	volatile int m_nSnapshotRate;						// Snapshot rate in seconds
 	volatile int m_nSnapshotRateMs;						// Snapshot rate in ms, effective: 1000 * m_nSnapshotRate + m_nSnapshotRateMs
 	volatile int m_nSnapshotThumbWidth;					// Snapshot thumbnail width
@@ -911,14 +900,14 @@ public:
 	volatile BOOL m_bSaveAnimGIFMovementDetection;		// Save Movement Detections as Animated GIF
 	volatile BOOL m_bSendMailMalfunction;				// Send Email on Device Malfunction
 	volatile BOOL m_bSendMailRecording;					// Send Email on Recording
-	volatile BOOL m_bExecCommandMovementDetection;		// Execute Command on Movement Detection
-	volatile BOOL m_nExecModeMovementDetection;			// Determines when to execute the command
-	CString m_sExecCommandMovementDetection;			// Command to execute on Movement Detection
-	CString m_sExecParamsMovementDetection;				// Params for command execution
-	volatile BOOL m_bHideExecCommandMovementDetection;	// Hide command's window
-	volatile BOOL m_bWaitExecCommandMovementDetection;	// Wait that last command has terminated
-	HANDLE volatile m_hExecCommandMovementDetection;	// Exec command handle
-	CRITICAL_SECTION m_csExecCommandMovementDetection;	// Command Exec critical section
+	volatile BOOL m_bExecCommand;						// Execute Command
+	volatile BOOL m_nExecCommandMode;					// Determines when to execute the command
+	CString m_sExecCommand;								// Command to execute
+	CString m_sExecParams;								// Params for command execution
+	volatile BOOL m_bHideExecCommand;					// Hide command's window
+	volatile BOOL m_bWaitExecCommand;					// Wait that last command has terminated
+	HANDLE volatile m_hExecCommand;						// Exec command handle
+	CRITICAL_SECTION m_csExecCommand;					// Command Exec critical section
 	CDib* volatile m_pMovementDetectorBackgndDib;		// Moving Background Dib
 	DIBLISTLIST m_MovementDetectionsList;				// The List of Movement Detection Frame Grabbing Lists
 	CRITICAL_SECTION m_csMovementDetectionsList;		// Critical Section of the Movement Detections List

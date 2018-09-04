@@ -1217,10 +1217,10 @@
 #define IDS_MULTILANG_1230              1230
 #define IDC_CHECK_SENDMAIL_MALFUNCTION  1230
 #define IDS_MULTILANG_1231              1231
-#define IDC_EXEC_MOVEMENT_DETECTION     1231
+#define IDC_EXEC_COMMAND                1231
 #define IDS_MULTILANG_1232              1232
 #define IDS_MULTILANG_1233              1233
-#define IDC_CHECK_SENDMAIL_SNAPSHOT     1233
+#define IDC_CHECK_SENDMAIL_LIVE_SNAPSHOT 1233
 #define IDS_MULTILANG_1234              1234
 #define IDS_MULTILANG_1235              1235
 #define IDS_MULTILANG_1236              1236
@@ -2966,7 +2966,7 @@
 #define IDC_CONNECTIONTYPE              2538
 #define IDC_STATIC2539                  2539
 #define IDC_CHECK_CAMERACOMMANDS        2542
-#define IDC_EXECMODE_MOVEMENT_DETECTION 2542
+#define IDC_EXEC_COMMAND_MODE           2542
 #define IDC_STATIC2544                  2544
 #define IDC_CAM_FOLDERS                 2545
 #define IDC_COMBOBOX_DETECTION_SCHEDULER 2545

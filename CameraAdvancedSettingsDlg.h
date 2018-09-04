@@ -91,10 +91,10 @@ protected:
 	afx_msg void OnAnimatedgifSize();
 	afx_msg void OnChangeEditSnapshotRate();
 	afx_msg void OnButtonThumbSize();
-	afx_msg void OnExecMovementDetection();
+	afx_msg void OnExecCommand();
 	afx_msg void OnNMClickSyslinkCmd(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnNMClickSyslinkParams(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnSelchangeExecmodeMovementDetection();
+	afx_msg void OnSelchangeExecCommandMode();
 	afx_msg void OnChangeEditExe();
 	afx_msg void OnChangeEditParams();
 	afx_msg void OnCheckHideExecCommand();

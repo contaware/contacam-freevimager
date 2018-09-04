@@ -557,7 +557,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		// Send By E-Mail
 		if (m_pDoc->m_bSendMailRecording)
 		{
-			if (::GetFileSize64(sVideoFileName).QuadPart > 0								&&
+			if (::GetFileSize64(sVideoFileName).QuadPart > 0						&&
 				(m_pDoc->m_AttachmentType == CVideoDeviceDoc::ATTACHMENT_VIDEO		||
 				m_pDoc->m_AttachmentType == CVideoDeviceDoc::ATTACHMENT_JPG_VIDEO))
 			{
@@ -566,9 +566,9 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 					CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), FirstTime, _T("REC"), _T(""), sVideoFileName))
 					m_pDoc->m_MovDetLastVideoMailTime = FirstTime;
 			}
-			else if (	::GetFileSize64(sGIFFileName).QuadPart > 0							&&
-						(m_pDoc->m_AttachmentType == CVideoDeviceDoc::ATTACHMENT_GIF	||
-						m_pDoc->m_AttachmentType == CVideoDeviceDoc::ATTACHMENT_JPG_GIF))
+			else if (::GetFileSize64(sGIFFileName).QuadPart > 0						&&
+					(m_pDoc->m_AttachmentType == CVideoDeviceDoc::ATTACHMENT_GIF	||
+					m_pDoc->m_AttachmentType == CVideoDeviceDoc::ATTACHMENT_JPG_GIF))
 			{
 				CTimeSpan TimeDiff = FirstTime - m_pDoc->m_MovDetLastGIFMailTime;
 				if (TimeDiff.GetTotalSeconds() >= (LONGLONG)m_pDoc->m_nMovDetSendMailSecBetweenMsg &&
@@ -578,11 +578,10 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		}
 
 		// Execute Command After Save
-		if (m_pDoc->m_bExecCommandMovementDetection && m_pDoc->m_nExecModeMovementDetection == 1)
+		if (m_pDoc->m_bExecCommand && m_pDoc->m_nExecCommandMode == 1)
 		{
-			m_pDoc->ExecCommandMovementDetection(	TRUE, FirstTime,
-													sVideoFileName, sGIFFileName,
-													nMovDetSavesCount);
+			m_pDoc->ExecCommand(TRUE, FirstTime,
+								sVideoFileName, sGIFFileName);
 		}
 
 		// Increment saves count and store settings
@@ -1012,12 +1011,22 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 
 int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 {
+	ASSERT(m_pDoc);
+
 	// Init
 	CDib Dib;
 	Dib.SetShowMessageBoxOnError(FALSE);
 	CAVRec* pAVRecVideo = NULL;
 	CString sVideoFileName = MakeVideoHistoryFileName();
 	CString sVideoTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), sVideoFileName);
+
+	// Send E-Mail
+	if (m_pDoc->m_bSendMailRecording && m_pDoc->m_AttachmentType == CVideoDeviceDoc::ATTACHMENT_NONE)
+		CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), m_Time, _T("REC"));
+
+	// Execute Command
+	if (m_pDoc->m_bExecCommand && m_pDoc->m_nExecCommandMode == 0)
+		m_pDoc->ExecCommand();
 
 	// Find and process jpg snapshot history files
 	CSortableFileFind FileFind;
@@ -1056,7 +1065,7 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 														FrameRate.den,						// Scale				
 														DEFAULT_VIDEO_QUALITY,				// Use default video quality
 														((CUImagerApp*)::AfxGetApp())->m_nCoresCount);
-							pAVRecVideo->Open(m_sAssignedDeviceName + _T(" ") + ::MakeDateLocalFormat(m_Time));
+							pAVRecVideo->Open(m_pDoc->GetAssignedDeviceName() + _T(" ") + ::MakeDateLocalFormat(m_Time));
 						}
 
 						// Add Frame
@@ -1093,8 +1102,13 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 		::CopyFile(sVideoTempFileName, sVideoFileName, FALSE);
 
 		// Send E-Mail
-		if (m_bSendMailSnapshotHistory)
-			CVideoDeviceDoc::SendMail(m_SendMailConfiguration, m_sAssignedDeviceName, m_Time, _T("REC"), _T(""), sVideoFileName);
+		if (m_pDoc->m_bSendMailRecording &&
+			(m_pDoc->m_AttachmentType == CVideoDeviceDoc::ATTACHMENT_VIDEO || m_pDoc->m_AttachmentType == CVideoDeviceDoc::ATTACHMENT_JPG_VIDEO))
+			CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), m_Time, _T("REC"), _T(""), sVideoFileName);
+
+		// Execute Command
+		if (m_pDoc->m_bExecCommand && m_pDoc->m_nExecCommandMode == 1)
+			m_pDoc->ExecCommand(TRUE, m_Time, sVideoFileName);
 	}
 
 	// Set thread executed variable
@@ -1110,21 +1124,23 @@ exit:
 	return 0;
 }
 
-int CVideoDeviceDoc::CSaveSnapshotThread::Work() 
+int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 {
+	ASSERT(m_pDoc);
+
 	// Get uptime
 	DWORD dwUpTime = m_Dib.GetUpTime();
 
 	// Live file names
-	CString sLiveFileName(m_sSnapshotAutoSaveDir);
+	CString sLiveFileName(m_pDoc->m_sRecordAutoSaveDir);
 	sLiveFileName.TrimRight(_T('\\'));
 	sLiveFileName += CString(_T("\\")) + DEFAULT_SNAPSHOT_LIVE_JPEGNAME;
-	CString sLiveThumbFileName(m_sSnapshotAutoSaveDir);
+	CString sLiveThumbFileName(m_pDoc->m_sRecordAutoSaveDir);
 	sLiveThumbFileName.TrimRight(_T('\\'));
 	sLiveThumbFileName += CString(_T("\\")) + DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME;
 
 	// Init history file name
-	// Note: if m_bSnapshotHistoryJpeg is TRUE, it creates also the year, month and day
+	// Note: if m_pDoc->m_nCameraUsage == 1, it creates also the year, month and day
 	// directories, otherwise it just returns the file name without path
 	CString sHistoryFileName(MakeJpegHistoryFileName());
 
@@ -1135,27 +1151,27 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	// Resize thumb
 	CDib DibThumb;
 	DibThumb.SetShowMessageBoxOnError(FALSE); // no Message Box on Error
-	if (DibThumb.AllocateBitsFast(12, FCC('I420'), m_nSnapshotThumbWidth, m_nSnapshotThumbHeight))
+	if (DibThumb.AllocateBitsFast(12, FCC('I420'), m_pDoc->m_nSnapshotThumbWidth, m_pDoc->m_nSnapshotThumbHeight))
 	{
 		CVideoDeviceDoc::ResizeFast(&m_Dib, &DibThumb);
 		DibThumb.SetUpTime(m_Dib.GetUpTime());
 	}
 
 	// Add tags
-	if (m_bShowFrameTime)
+	if (m_pDoc->m_bShowFrameTime)
 	{
-		AddFrameTime(&m_Dib, m_Time, dwUpTime, m_nRefFontSize);
-		AddFrameTime(&DibThumb, m_Time, dwUpTime, m_nRefFontSize);
+		AddFrameTime(&m_Dib, m_Time, dwUpTime, m_pDoc->m_nRefFontSize);
+		AddFrameTime(&DibThumb, m_Time, dwUpTime, m_pDoc->m_nRefFontSize);
 	}
 	if (((CUImagerApp*)::AfxGetApp())->m_bNoDonation)
 	{
-		AddNoDonationTag(&m_Dib, m_nRefFontSize);
-		AddNoDonationTag(&DibThumb, m_nRefFontSize);
+		AddNoDonationTag(&m_Dib, m_pDoc->m_nRefFontSize);
+		AddNoDonationTag(&DibThumb, m_pDoc->m_nRefFontSize);
 	}
-	if (m_bDetectingMinLengthMovement)
+	if (m_pDoc->m_bDetectingMinLengthMovement)
 	{
-		AddRecSymbol(&m_Dib, m_nRefFontSize);
-		AddRecSymbol(&DibThumb, m_nRefFontSize);
+		AddRecSymbol(&m_Dib, m_pDoc->m_nRefFontSize);
+		AddRecSymbol(&DibThumb, m_pDoc->m_nRefFontSize);
 	}
 
 	// Save to temp location
@@ -1165,11 +1181,11 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	// Live
 	::CopyFile(sTempFileName, sLiveFileName, FALSE);
 	::CopyFile(sTempThumbFileName, sLiveThumbFileName, FALSE);
-	if (m_bSendMailSnapshot)
+	if (m_pDoc->m_bSendMailLiveSnapshot)
 	{
 		HANDLE hEmailApp = NULL;
-		CVideoDeviceDoc::SendMail(m_SendMailConfiguration,
-								m_sAssignedDeviceName, m_Time, _T("REC"), _T(""),
+		CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration,
+								m_pDoc->GetAssignedDeviceName(), m_Time, _T("REC"), _T(""),
 								sTempFileName, FALSE, &hEmailApp);
 		if (hEmailApp)
 		{
@@ -1180,10 +1196,12 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 				::KillApp(hEmailApp); // ::CloseHandle(hEmailApp) called inside this function
 		}
 	}
+	if (m_pDoc->m_bExecCommand && m_pDoc->m_nExecCommandMode == 2)
+		m_pDoc->ExecCommand(TRUE, m_Time, sLiveFileName, sLiveThumbFileName);
 
 	// We need the History jpgs to make the video file inside the snapshot video thread
 	// (history jpgs are deleted in snapshot video thread)
-	if (m_bSnapshotHistoryJpeg)
+	if (m_pDoc->m_nCameraUsage == 1)
 		::CopyFile(sTempFileName, sHistoryFileName, FALSE);
 
 	// Clean-up
@@ -1201,11 +1219,11 @@ __forceinline CString CVideoDeviceDoc::CSaveSnapshotThread::MakeJpegHistoryFileN
 	CString sTime = m_Time.Format(_T("%Y_%m_%d_%H_%M_%S"));
 
 	// Adjust Directory Name
-	CString sSnapshotDir = m_sSnapshotAutoSaveDir;
+	CString sSnapshotDir = m_pDoc->m_sRecordAutoSaveDir;
 	sSnapshotDir.TrimRight(_T('\\'));
 
 	// Create directory if necessary
-	if (sSnapshotDir != _T("") && m_bSnapshotHistoryJpeg)
+	if (sSnapshotDir != _T("") && m_pDoc->m_nCameraUsage == 1)
 	{
 		DWORD dwAttrib = ::GetFileAttributes(sSnapshotDir);
 		if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
@@ -1229,7 +1247,7 @@ __forceinline CString CVideoDeviceDoc::CSaveSnapshotVideoThread::MakeVideoHistor
 	CString sTime = m_Time.Format(_T("%Y_%m_%d"));
 
 	// Adjust Directory Name
-	CString sSnapshotDir = m_sSnapshotAutoSaveDir;
+	CString sSnapshotDir = m_pDoc->m_sRecordAutoSaveDir;
 	sSnapshotDir.TrimRight(_T('\\'));
 
 	// Create directory if necessary
@@ -1977,8 +1995,8 @@ end_of_software_detection:
 			}
 
 			// Execute Command
-			if (m_bExecCommandMovementDetection && m_nExecModeMovementDetection == 0)
-				ExecCommandMovementDetection();
+			if (m_bExecCommand && m_nExecCommandMode == 0)
+				ExecCommand();
 		}
 	}
 
@@ -2033,64 +2051,60 @@ end_of_software_detection:
 		ClearNewestFrameList();
 }
 
-void CVideoDeviceDoc::ExecCommandMovementDetection(	BOOL bReplaceVars/*=FALSE*/,
-													CTime StartTime/*=CTime(0)*/,
-													const CString& sVideoFileName/*=_T("")*/,
-													const CString& sGIFFileName/*=_T("")*/,
-													int nMovDetSavesCount/*=0*/)
+void CVideoDeviceDoc::ExecCommand(BOOL bReplaceVars/*=FALSE*/,
+								CTime Time/*=CTime(0)*/,
+								const CString& sFullFileName/*=_T("")*/,
+								const CString& sSmallFileName/*=_T("")*/)
 {
-	::EnterCriticalSection(&m_csExecCommandMovementDetection);
-	if (m_bWaitExecCommandMovementDetection)
+	::EnterCriticalSection(&m_csExecCommand);
+	if (m_bWaitExecCommand)
 	{
-		if (m_hExecCommandMovementDetection)
+		if (m_hExecCommand)
 		{
-			if (::WaitForSingleObject(m_hExecCommandMovementDetection, 0) == WAIT_OBJECT_0)
+			if (::WaitForSingleObject(m_hExecCommand, 0) == WAIT_OBJECT_0)
 			{
-				::CloseHandle(m_hExecCommandMovementDetection);
-				m_hExecCommandMovementDetection = NULL;
+				::CloseHandle(m_hExecCommand);
+				m_hExecCommand = NULL;
 			}
 		}
 	}
-	else if (m_hExecCommandMovementDetection)
+	else if (m_hExecCommand)
 	{
-		::CloseHandle(m_hExecCommandMovementDetection);
-		m_hExecCommandMovementDetection = NULL;
+		::CloseHandle(m_hExecCommand);
+		m_hExecCommand = NULL;
 	}
-	if (m_sExecCommandMovementDetection != _T("") &&
-		m_hExecCommandMovementDetection == NULL)
+	if (m_sExecCommand != _T("") && m_hExecCommand == NULL)
 	{
-		CString sExecParamsMovementDetection = m_sExecParamsMovementDetection;
+		CString sExecParams = m_sExecParams;
 		if (bReplaceVars)
 		{
 			CString sSecond, sMinute, sHour, sDay, sMonth, sYear, sMovDetSavesCount;
-			sSecond.Format(_T("%02d"), StartTime.GetSecond());
-			sMinute.Format(_T("%02d"), StartTime.GetMinute());
-			sHour.Format(_T("%02d"), StartTime.GetHour());
-			sDay.Format(_T("%02d"), StartTime.GetDay());
-			sMonth.Format(_T("%02d"), StartTime.GetMonth());
-			sYear.Format(_T("%04d"), StartTime.GetYear());
-			sMovDetSavesCount.Format(_T("%d"), nMovDetSavesCount);
-			sExecParamsMovementDetection.Replace(_T("%sec%"), sSecond);
-			sExecParamsMovementDetection.Replace(_T("%min%"), sMinute);
-			sExecParamsMovementDetection.Replace(_T("%hour%"), sHour);
-			sExecParamsMovementDetection.Replace(_T("%day%"), sDay);
-			sExecParamsMovementDetection.Replace(_T("%month%"), sMonth);
-			sExecParamsMovementDetection.Replace(_T("%year%"), sYear);
-			sExecParamsMovementDetection.Replace(_T("%fullvideo%"), sVideoFileName);
-			sExecParamsMovementDetection.Replace(_T("%smallvideo%"), sGIFFileName);
-			sExecParamsMovementDetection.Replace(_T("%counter%"), sMovDetSavesCount);
+			sSecond.Format(_T("%02d"), Time.GetSecond());
+			sMinute.Format(_T("%02d"), Time.GetMinute());
+			sHour.Format(_T("%02d"), Time.GetHour());
+			sDay.Format(_T("%02d"), Time.GetDay());
+			sMonth.Format(_T("%02d"), Time.GetMonth());
+			sYear.Format(_T("%04d"), Time.GetYear());
+			sExecParams.Replace(_T("%sec%"), sSecond);
+			sExecParams.Replace(_T("%min%"), sMinute);
+			sExecParams.Replace(_T("%hour%"), sHour);
+			sExecParams.Replace(_T("%day%"), sDay);
+			sExecParams.Replace(_T("%month%"), sMonth);
+			sExecParams.Replace(_T("%year%"), sYear);
+			sExecParams.Replace(_T("%full%"), sFullFileName);
+			sExecParams.Replace(_T("%small%"), sSmallFileName);
 		}
 		SHELLEXECUTEINFO sei;
 		memset(&sei, 0, sizeof(sei));
 		sei.cbSize = sizeof(sei);
 		sei.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
-		sei.nShow = m_bHideExecCommandMovementDetection ? SW_HIDE : SW_SHOWNORMAL;
-		sei.lpFile = m_sExecCommandMovementDetection;
-		sei.lpParameters = sExecParamsMovementDetection; 
+		sei.nShow = m_bHideExecCommand ? SW_HIDE : SW_SHOWNORMAL;
+		sei.lpFile = m_sExecCommand;
+		sei.lpParameters = sExecParams; 
 		if (::ShellExecuteEx(&sei))
-			m_hExecCommandMovementDetection = sei.hProcess;
+			m_hExecCommand = sei.hProcess;
 	}
-	::LeaveCriticalSection(&m_csExecCommandMovementDetection);
+	::LeaveCriticalSection(&m_csExecCommand);
 }
 
 BOOL CVideoDeviceDoc::ResizeFast(CDib* pSrcDib, CDib* pDstDib)
@@ -3468,7 +3482,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_HttpGetFrameLocations.Add(_T("/")); // first element must be valid ("/" => try home to see whether cam is reachable)
 
 	// Snapshot
-	m_bSendMailSnapshot = FALSE;
+	m_bSendMailLiveSnapshot = FALSE;
 	m_nSnapshotRate = DEFAULT_SNAPSHOT_RATE;
 	m_nSnapshotRateMs = 0;
 	m_nSnapshotThumbWidth = DEFAULT_SNAPSHOT_THUMB_WIDTH;
@@ -3482,6 +3496,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_WatchdogThread.SetDoc(this);
 	m_DeleteThread.SetDoc(this);
 	m_SaveFrameListThread.SetDoc(this);
+	m_SaveSnapshotThread.SetDoc(this);
+	m_SaveSnapshotVideoThread.SetDoc(this);
 
 	// Recording
 	m_sRecordAutoSaveDir = _T("");
@@ -3505,13 +3521,13 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bSaveAnimGIFMovementDetection = TRUE;
 	m_bSendMailMalfunction = TRUE;
 	m_bSendMailRecording = FALSE;
-	m_bExecCommandMovementDetection = FALSE;
-	m_nExecModeMovementDetection = 0;
-	m_sExecCommandMovementDetection = _T("");
-	m_sExecParamsMovementDetection = _T("");
-	m_bHideExecCommandMovementDetection = FALSE;
-	m_bWaitExecCommandMovementDetection = FALSE;
-	m_hExecCommandMovementDetection = NULL;
+	m_bExecCommand = FALSE;
+	m_nExecCommandMode = 0;
+	m_sExecCommand = _T("");
+	m_sExecParams = _T("");
+	m_bHideExecCommand = FALSE;
+	m_bWaitExecCommand = FALSE;
+	m_hExecCommand = NULL;
 	m_nDetectionLevel = DEFAULT_MOVDET_LEVEL;
 	m_nCurrentDetectionZoneSize = m_nDetectionZoneSize = 0;
 	m_dwAnimatedGifWidth = MOVDET_ANIMGIF_DEFAULT_WIDTH;
@@ -3576,7 +3592,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_SendMailConfiguration.m_ConnectionType = STARTTLS;
 
 	// Init Command Execution on Detection Critical Section
-	::InitializeCriticalSection(&m_csExecCommandMovementDetection);
+	::InitializeCriticalSection(&m_csExecCommand);
 
 	// Init Movement Detections List Critical Section
 	::InitializeCriticalSection(&m_csMovementDetectionsList);
@@ -3643,11 +3659,11 @@ CVideoDeviceDoc::~CVideoDeviceDoc()
 	::DeleteCriticalSection(&m_csHttpProcess);
 	::DeleteCriticalSection(&m_csHttpParams);
 	::DeleteCriticalSection(&m_csMovementDetectionsList);
-	::DeleteCriticalSection(&m_csExecCommandMovementDetection);
-	if (m_hExecCommandMovementDetection)
+	::DeleteCriticalSection(&m_csExecCommand);
+	if (m_hExecCommand)
 	{
-		::CloseHandle(m_hExecCommandMovementDetection);
-		m_hExecCommandMovementDetection = NULL;
+		::CloseHandle(m_hExecCommand);
+		m_hExecCommand = NULL;
 	}
 	if (m_pProcessFrameDib)
 	{
@@ -4243,7 +4259,7 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	CString sRecordAutoSaveDir = m_sRecordAutoSaveDir;
 	sRecordAutoSaveDir.TrimRight(_T('\\'));
 	m_bObscureSource = ::IsExistingFile(sRecordAutoSaveDir + _T("\\") + CAMERA_IS_OBSCURED_FILENAME);
-	m_bSendMailSnapshot = (BOOL)pApp->GetProfileInt(sSection, _T("SendMailSnapshot"), FALSE);
+	m_bSendMailLiveSnapshot = (BOOL)pApp->GetProfileInt(sSection, _T("SendMailLiveSnapshot"), FALSE);
 	m_nSnapshotRate = (int) pApp->GetProfileInt(sSection, _T("SnapshotRate"), DEFAULT_SNAPSHOT_RATE);
 	m_nSnapshotRateMs = (int) pApp->GetProfileInt(sSection, _T("SnapshotRateMs"), 0);
 	m_nSnapshotThumbWidth = (int) MakeSizeMultipleOf4(pApp->GetProfileInt(sSection, _T("SnapshotThumbWidth"), DEFAULT_SNAPSHOT_THUMB_WIDTH));
@@ -4271,19 +4287,19 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_bSaveAnimGIFMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), TRUE);
 	m_bSendMailMalfunction = (BOOL)pApp->GetProfileInt(sSection, _T("SendMailMalfunction"), TRUE);
 	m_bSendMailRecording = (BOOL) pApp->GetProfileInt(sSection, _T("SendMailMovementDetection"), FALSE);
-	m_bExecCommandMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("DoExecCommandMovementDetection"), FALSE);
-	m_nExecModeMovementDetection = pApp->GetProfileInt(sSection, _T("ExecModeMovementDetection"), 0);
+	m_bExecCommand = (BOOL) pApp->GetProfileInt(sSection, _T("DoExecCommandMovementDetection"), FALSE);
+	m_nExecCommandMode = pApp->GetProfileInt(sSection, _T("ExecModeMovementDetection"), 0);
 	
 	// Attention: GetPrivateProfileString() used by GetProfileString() for INI files strips quotes!
-	m_sExecCommandMovementDetection = pApp->GetProfileString(sSection, _T("ExecCommandMovementDetection"), _T(""));
-	m_sExecCommandMovementDetection.Replace(_T("%singlequote%"), _T("\'"));
-	m_sExecCommandMovementDetection.Replace(_T("%doublequote%"), _T("\""));
-	m_sExecParamsMovementDetection = pApp->GetProfileString(sSection, _T("ExecParamsMovementDetection"), _T(""));
-	m_sExecParamsMovementDetection.Replace(_T("%singlequote%"), _T("\'"));
-	m_sExecParamsMovementDetection.Replace(_T("%doublequote%"), _T("\""));
+	m_sExecCommand = pApp->GetProfileString(sSection, _T("ExecCommandMovementDetection"), _T(""));
+	m_sExecCommand.Replace(_T("%singlequote%"), _T("\'"));
+	m_sExecCommand.Replace(_T("%doublequote%"), _T("\""));
+	m_sExecParams = pApp->GetProfileString(sSection, _T("ExecParamsMovementDetection"), _T(""));
+	m_sExecParams.Replace(_T("%singlequote%"), _T("\'"));
+	m_sExecParams.Replace(_T("%doublequote%"), _T("\""));
 
-	m_bHideExecCommandMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("HideExecCommandMovementDetection"), FALSE);
-	m_bWaitExecCommandMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("WaitExecCommandMovementDetection"), FALSE);
+	m_bHideExecCommand = (BOOL) pApp->GetProfileInt(sSection, _T("HideExecCommandMovementDetection"), FALSE);
+	m_bWaitExecCommand = (BOOL) pApp->GetProfileInt(sSection, _T("WaitExecCommandMovementDetection"), FALSE);
 	m_dwVideoProcessorMode = (DWORD) MIN(1, MAX(0, pApp->GetProfileInt(sSection, _T("VideoProcessorMode"), 0)));
 	m_fVideoRecQuality = (float) CAVRec::ClipVideoQuality((float)pApp->GetProfileInt(sSection, _T("VideoRecQuality"), (int)DEFAULT_VIDEO_QUALITY));
 	m_bObscureRemovedZones = (BOOL) pApp->GetProfileInt(sSection, _T("ObscureRemovedZones"), FALSE);
@@ -4398,7 +4414,7 @@ void CVideoDeviceDoc::SaveSettings()
 	// All other
 	pApp->WriteProfileInt(sSection, _T("Rotate180"), (int)m_bRotate180);
 	pApp->WriteProfileString(sSection, _T("RecordAutoSaveDir"), m_sRecordAutoSaveDir);
-	pApp->WriteProfileInt(sSection, _T("SendMailSnapshot"), (int)m_bSendMailSnapshot);
+	pApp->WriteProfileInt(sSection, _T("SendMailLiveSnapshot"), (int)m_bSendMailLiveSnapshot);
 	pApp->WriteProfileInt(sSection, _T("SnapshotRate"), m_nSnapshotRate);
 	pApp->WriteProfileInt(sSection, _T("SnapshotRateMs"), m_nSnapshotRateMs);
 	pApp->WriteProfileInt(sSection, _T("SnapshotThumbWidth"), m_nSnapshotThumbWidth);
@@ -4422,22 +4438,22 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), m_bSaveAnimGIFMovementDetection);
 	pApp->WriteProfileInt(sSection, _T("SendMailMalfunction"), m_bSendMailMalfunction);
 	pApp->WriteProfileInt(sSection, _T("SendMailMovementDetection"), m_bSendMailRecording);
-	pApp->WriteProfileInt(sSection, _T("DoExecCommandMovementDetection"), m_bExecCommandMovementDetection);
-	pApp->WriteProfileInt(sSection, _T("ExecModeMovementDetection"), m_nExecModeMovementDetection);
+	pApp->WriteProfileInt(sSection, _T("DoExecCommandMovementDetection"), m_bExecCommand);
+	pApp->WriteProfileInt(sSection, _T("ExecModeMovementDetection"), m_nExecCommandMode);
 		
 	// Attention: GetPrivateProfileString() used by GetProfileString() for INI files
 	// strips quotes -> encode quotes here!
-	CString sExecCommandMovementDetection(m_sExecCommandMovementDetection); 
-	sExecCommandMovementDetection.Replace(_T("\'"), _T("%singlequote%"));
-	sExecCommandMovementDetection.Replace(_T("\""), _T("%doublequote%"));
-	pApp->WriteProfileString(sSection, _T("ExecCommandMovementDetection"), sExecCommandMovementDetection);
-	CString sExecParamsMovementDetection(m_sExecParamsMovementDetection); 
-	sExecParamsMovementDetection.Replace(_T("\'"), _T("%singlequote%"));
-	sExecParamsMovementDetection.Replace(_T("\""), _T("%doublequote%"));
-	pApp->WriteProfileString(sSection, _T("ExecParamsMovementDetection"), sExecParamsMovementDetection);
+	CString sExecCommand(m_sExecCommand); 
+	sExecCommand.Replace(_T("\'"), _T("%singlequote%"));
+	sExecCommand.Replace(_T("\""), _T("%doublequote%"));
+	pApp->WriteProfileString(sSection, _T("ExecCommandMovementDetection"), sExecCommand);
+	CString sExecParams(m_sExecParams); 
+	sExecParams.Replace(_T("\'"), _T("%singlequote%"));
+	sExecParams.Replace(_T("\""), _T("%doublequote%"));
+	pApp->WriteProfileString(sSection, _T("ExecParamsMovementDetection"), sExecParams);
 		
-	pApp->WriteProfileInt(sSection, _T("HideExecCommandMovementDetection"), m_bHideExecCommandMovementDetection);
-	pApp->WriteProfileInt(sSection, _T("WaitExecCommandMovementDetection"), m_bWaitExecCommandMovementDetection);
+	pApp->WriteProfileInt(sSection, _T("HideExecCommandMovementDetection"), m_bHideExecCommand);
+	pApp->WriteProfileInt(sSection, _T("WaitExecCommandMovementDetection"), m_bWaitExecCommand);
 	pApp->WriteProfileInt(sSection, _T("VideoProcessorMode"), m_dwVideoProcessorMode);
 	pApp->WriteProfileInt(sSection, _T("VideoRecQuality"), (int)m_fVideoRecQuality);
 	pApp->WriteProfileInt(sSection, _T("ObscureRemovedZones"), (int)m_bObscureRemovedZones);
@@ -7320,17 +7336,7 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 		if (bDoSnapshot && m_bInSchedule)
 		{
 			m_SaveSnapshotThread.m_Dib = *pDib;
-			m_SaveSnapshotThread.m_bSnapshotHistoryJpeg = (m_nCameraUsage == 1); // keep jpeg snapshots for daily video creation?
-			m_SaveSnapshotThread.m_bShowFrameTime = m_bShowFrameTime;
-			m_SaveSnapshotThread.m_bDetectingMinLengthMovement = m_bDetectingMinLengthMovement;
-			m_SaveSnapshotThread.m_nRefFontSize = m_nRefFontSize;
-			m_SaveSnapshotThread.m_bSendMailSnapshot = (m_nCameraUsage != 1 ? m_bSendMailSnapshot : FALSE);
-			m_SaveSnapshotThread.m_nSnapshotThumbWidth = m_nSnapshotThumbWidth;
-			m_SaveSnapshotThread.m_nSnapshotThumbHeight = m_nSnapshotThumbHeight;
 			m_SaveSnapshotThread.m_Time = Time;
-			m_SaveSnapshotThread.m_sAssignedDeviceName = GetAssignedDeviceName();
-			m_SaveSnapshotThread.m_SendMailConfiguration = m_SendMailConfiguration;
-			m_SaveSnapshotThread.m_sSnapshotAutoSaveDir = m_sRecordAutoSaveDir;
 			m_SaveSnapshotThread.Start();
 		}
 	}
@@ -7349,10 +7355,6 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 		if (m_SaveSnapshotVideoThread.m_ThreadExecutedForTime < Yesterday)
 		{
 			m_SaveSnapshotVideoThread.m_Time = Yesterday;
-			m_SaveSnapshotVideoThread.m_sAssignedDeviceName = GetAssignedDeviceName();
-			m_SaveSnapshotVideoThread.m_bSendMailSnapshotHistory = m_bSendMailSnapshot;
-			m_SaveSnapshotVideoThread.m_SendMailConfiguration = m_SendMailConfiguration;
-			m_SaveSnapshotVideoThread.m_sSnapshotAutoSaveDir = m_sRecordAutoSaveDir;
 			m_SaveSnapshotVideoThread.Start();
 		}
 	}

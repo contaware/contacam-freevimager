@@ -35,7 +35,7 @@ public:
 	BOOL	m_bCheckCameraCommands;
 	BOOL	m_bCheckSendMailMalfunction;
 	BOOL	m_bCheckSendMailRecording;
-	BOOL	m_bCheckSendMailSnapshot;
+	BOOL	m_bCheckSendMailLiveSnapshot;
 	int		m_nComboSendMailAttachment;
 	int		m_nSendMailSecBetweenMsg;
 	//}}AFX_DATA
