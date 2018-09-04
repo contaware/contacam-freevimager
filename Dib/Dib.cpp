@@ -347,10 +347,18 @@ DWORD CDib::BitsToSharedMemory()
 	// Calculate Shared Memory Size
 	DWORD dwSharedMemorySize = CalcSharedMemorySize();
 
-	// Create mapping
+	// Create file mapping
 	//
-	// Windows limits the sum of all types of handles to 16x1024x1024 per-process, that
-	// consumes 128 MB on 32 bit systems or 256 MB on 64 bit system of Paged Pool memory.
+	// RAM is a limited resource, whereas for most practical purposes, virtual memory is
+	// unlimited. There can be many processes, and each 32-bit process has its own 2 GB of private
+	// virtual address space. When the memory being used by all the existing processes exceeds
+	// the available RAM, the operating system moves pages (4-KB pieces) of one or more virtual
+	// address spaces to the computer's hard disk. This frees that RAM frame for other uses.
+	//
+	// CreateFileMapping creates a file mapping object of a specified size that is also backed
+	// by the system paging file, which means that "if the system needs to page this memory out,
+	// it will store it in the system paging file, otherwise it remains in RAM". This is
+	// exactly what happens also to regular memory allocated by HeapAlloc and VirtualAlloc.
 	//
 	// By default, page files are system-managed. This means that the page files increase /
 	// decrease based on the amount of physical memory installed and when the system
@@ -364,8 +372,15 @@ DWORD CDib::BitsToSharedMemory()
 	// The maximum of physical memory + paging files is 16TB on 32 bit systems with PAE
 	// enabled (usually all systems that have DEP enabled) and 16TB on all 64 bit systems.
 	//
-	// https://blogs.technet.microsoft.com/markrussinovich/2009/09/29/pushing-the-limits-of-windows-handles/
+	// Windows limits the sum of all types of handles to 16x1024x1024 per-process, that
+	// consumes 128 MB on 32 bit systems or 256 MB on 64 bit system of Paged Pool memory.
+	// -> we have enough handles that we can use and they will not consume too much memory!
+	//
+	// References
+	// https://blogs.msdn.microsoft.com/oldnewthing/20130301-00/?p=5093
+	// https://support.microsoft.com/en-us/help/2160852/ram-virtual-memory-pagefile-and-memory-management-in-windows
 	// https://support.microsoft.com/en-us/kb/2860880
+	// https://blogs.technet.microsoft.com/markrussinovich/2009/09/29/pushing-the-limits-of-windows-handles/
 	HANDLE mapping = ::CreateFileMapping(	INVALID_HANDLE_VALUE,	// in shared memory
 											NULL,					// default security
 											PAGE_READWRITE,			// read/write access
