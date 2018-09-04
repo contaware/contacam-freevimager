@@ -490,7 +490,7 @@ public:
 	class CSaveSnapshotThread : public CWorkerThread
 	{
 		public:
-			CSaveSnapshotThread(){m_pDoc = NULL; m_hEventArray[0] = GetKillEvent();};
+			CSaveSnapshotThread(){m_pDoc = NULL;};
 			virtual ~CSaveSnapshotThread() {Kill();};
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
 			CDib m_Dib;
@@ -502,7 +502,6 @@ public:
 			CVideoDeviceDoc* m_pDoc;
 			CMJPEGEncoder m_MJPEGEncoder;
 			CMJPEGEncoder m_MJPEGThumbEncoder;
-			HANDLE m_hEventArray[2];
 	};
 
 protected: // create from serialization only
@@ -755,8 +754,7 @@ public:
 						const CString& sNote,				// sNote is replaced in subject if %note% present
 						CString sBody = _T(""),				// if no body given use the format "name: date time note"
 						const CString& sFileName = _T(""),	// attachment
-						BOOL bShow = FALSE,					// show / hide the console window
-						HANDLE* phApp = NULL);				// remember to call CloseHandle() for the returned handle if != NULL
+						BOOL bShow = FALSE);				// show / hide the console window
 
 	// Php config file manipulation
 	CString PhpGetConfigFileName();

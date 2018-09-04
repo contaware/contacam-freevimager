@@ -1179,23 +1179,13 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	CVideoDeviceDoc::SaveJpegFast(&DibThumb, &m_MJPEGThumbEncoder, sTempThumbFileName, DEFAULT_SNAPSHOT_COMPR_QUALITY);
 	
 	// Live
+	// Attention: the user is responsible to make sure that the mail program
+	//            and the executed program are fast enough to avoid that the
+	//            passed live snapshots get overwritten with the next shot!
 	::CopyFile(sTempFileName, sLiveFileName, FALSE);
 	::CopyFile(sTempThumbFileName, sLiveThumbFileName, FALSE);
 	if (m_pDoc->m_bSendMailLiveSnapshot)
-	{
-		HANDLE hEmailApp = NULL;
-		CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration,
-								m_pDoc->GetAssignedDeviceName(), m_Time, _T("REC"), _T(""),
-								sTempFileName, FALSE, &hEmailApp);
-		if (hEmailApp)
-		{
-			m_hEventArray[1] = hEmailApp;
-			if (::WaitForMultipleObjects(2, m_hEventArray, FALSE, 1000 * MAILPROG_TIMEOUT_SEC) == (WAIT_OBJECT_0 + 1))
-				::CloseHandle(hEmailApp);
-			else
-				::KillApp(hEmailApp); // ::CloseHandle(hEmailApp) called inside this function
-		}
-	}
+		CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), m_Time, _T("REC"), _T(""), sLiveFileName);
 	if (m_pDoc->m_bExecCommand && m_pDoc->m_nExecCommandMode == 2)
 		m_pDoc->ExecCommand(TRUE, m_Time, sLiveFileName, sLiveThumbFileName);
 
@@ -1273,8 +1263,7 @@ BOOL CVideoDeviceDoc::SendMail(	const SendMailConfigurationStruct& Config,
 								const CString& sNote,
 								CString sBody/*=_T("")*/,
 								const CString& sFileName/*=_T("")*/,
-								BOOL bShow/*=FALSE*/,
-								HANDLE* phApp/*=NULL*/)
+								BOOL bShow/*=FALSE*/)
 {
 	if (!Config.m_sHost.IsEmpty() &&
 		!Config.m_sFrom.IsEmpty() &&
@@ -1332,17 +1321,12 @@ BOOL CVideoDeviceDoc::SendMail(	const SendMailConfigurationStruct& Config,
 										bShow);
 				if (h)
 				{
-					if (phApp)
-						*phApp = h;
-					else
-						::CloseHandle(h);
+					::CloseHandle(h);
 					return TRUE;
 				}
 			}
 		}
 	}
-	if (phApp)
-		*phApp = NULL;
 	return FALSE;
 }
 

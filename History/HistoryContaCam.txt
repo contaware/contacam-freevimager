@@ -11,6 +11,9 @@ CONTACAM HISTORY
   recording engine)
 - Updated internal web server to Apache 2.4.34 and PHP 5.6.37
   (both with OpenSSL 1.0.2o)
+- Removed direct FTP support, command execution has been enhanced
+  and examples are provided so that it's possible to upload with
+  any command line tool
 - To enforce security removed the possibility to delete recordings
   from the web interface
 - Using better random generators
