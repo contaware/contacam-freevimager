@@ -7392,8 +7392,7 @@ void CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 	// Make FileName
 	CString sFileName = MakeJpegManualSnapshotFileName(Time);
 
-	// Do not overwrite existing because of the
-	// below posted open document message
+	// Do not overwrite existing because of below PopupToaster()
 	if (::IsExistingFile(sFileName))
 	{
 		m_bDoEditSnapshot = FALSE;
@@ -7415,6 +7414,8 @@ void CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 		AddNoDonationTag(&Dib, m_nRefFontSize);
 
 	// Save to JPEG File
+	// (for manual snapshots use better quality with DEFAULT_JPEGCOMPRESSION
+	// instead of DEFAULT_SNAPSHOT_COMPR_QUALITY)
 	CMJPEGEncoder MJPEGEncoder;
 	BOOL res = CVideoDeviceDoc::SaveJpegFast(&Dib, &MJPEGEncoder, sFileName, DEFAULT_JPEGCOMPRESSION);
 
@@ -7446,26 +7447,8 @@ CString CVideoDeviceDoc::SaveJpegMail(CDib* pDib, const CTime& RefTime, DWORD dw
 	if (::IsExistingFile(sFileName))
 		return sFileName;
 
-	// Shrink?
-	CDib Dib;
-	DWORD dwShrinkWidth, dwShrinkHeight;
-	if (::CalcShrink(	pDib->GetWidth(), pDib->GetHeight(),
-						MOVDET_MAX_SNAPSHOT_SIZE, FALSE,
-						dwShrinkWidth, dwShrinkHeight))
-	{
-		Dib.SetShowMessageBoxOnError(FALSE); // no Message Box on Error
-		if (Dib.AllocateBitsFast(12, FCC('I420'), dwShrinkWidth, dwShrinkHeight))
-		{
-			CVideoDeviceDoc::ResizeFast(pDib, &Dib);
-			Dib.SetUpTime(pDib->GetUpTime());
-		}
-	}
-	else
-		Dib = *pDib;
-
-	// Check
-	if (!Dib.IsValid())
-		return _T("");
+	// Dib
+	CDib Dib(*pDib);
 
 	// Add frame time
 	if (m_bShowFrameTime)
@@ -7477,7 +7460,7 @@ CString CVideoDeviceDoc::SaveJpegMail(CDib* pDib, const CTime& RefTime, DWORD dw
 
 	// Save to JPEG File
 	CMJPEGEncoder MJPEGEncoder;
-	if (CVideoDeviceDoc::SaveJpegFast(&Dib, &MJPEGEncoder, sFileName, DEFAULT_JPEGCOMPRESSION))
+	if (CVideoDeviceDoc::SaveJpegFast(&Dib, &MJPEGEncoder, sFileName, DEFAULT_SNAPSHOT_COMPR_QUALITY))
 		return sFileName;
 	else
 		return _T("");

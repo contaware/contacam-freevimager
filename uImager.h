@@ -123,9 +123,6 @@
 #define DEFAULT_JPEGCOMPRESSION							80
 #endif
 
-// Maximum size of movement detection snapshot used for mail attachment
-#define	MOVDET_MAX_SNAPSHOT_SIZE						640
-
 // Default settings for auto shrink
 #define	AUTO_SHRINK_MAX_SIZE							1024
 
