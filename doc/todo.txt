@@ -1,10 +1,3 @@
-Both
-----
-- When views are tiled and resizing mainframe then resize also childs
-- Add double-quotes to ContaCam.exe file path under:
-  HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run
-
-
 FreeVimager Program
 -------------------
 - ...
@@ -41,11 +34,3 @@ ContaCam Program
 - Post buffer is good to not split the detection, but should be removed at the
   end of the record (sambul7165@gmail.com)
   
-  
-ContaCam Web Interface
-----------------------
-- Number of detections in index.php at the bottom of each preview for
-  quick reference on which cameras have had detections in last 24 hours
-  (pauls583@yahoo.com.au)
-- In index.php when clicking on live thumb open fullscreen and when
-  clicking text open detections (matthewn_02@yahoo.com)

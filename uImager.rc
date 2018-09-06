@@ -115,9 +115,9 @@ BEGIN
     BEGIN
         MENUITEM "Global Settings",             ID_FILE_SETTINGS
         MENUITEM SEPARATOR
-        MENUITEM "Normal logging",              ID_SETTINGS_LOG_NORMAL
-        MENUITEM "Verbose logging",             ID_SETTINGS_LOG_VERBOSE
-        MENUITEM "Debug logging",               ID_SETTINGS_LOG_ALL_MESSAGES
+        MENUITEM "Normal Logging",              ID_SETTINGS_LOG_NORMAL
+        MENUITEM "Verbose Logging",             ID_SETTINGS_LOG_VERBOSE
+        MENUITEM "Debug Logging",               ID_SETTINGS_LOG_ALL_MESSAGES
         MENUITEM SEPARATOR
         MENUITEM "Config/Log Files",            ID_SETTINGS_BROWSE_CONFIGLOG_FILES
     END
@@ -213,9 +213,9 @@ BEGIN
         MENUITEM "Camera Basic Settings",       ID_CAPTURE_CAMERABASICSETTINGS
         MENUITEM "Camera Advanced Settings",    ID_CAPTURE_CAMERAADVANCEDSETTINGS
         MENUITEM SEPARATOR
-        MENUITEM "Normal logging",              ID_SETTINGS_LOG_NORMAL
-        MENUITEM "Verbose logging",             ID_SETTINGS_LOG_VERBOSE
-        MENUITEM "Debug logging",               ID_SETTINGS_LOG_ALL_MESSAGES
+        MENUITEM "Normal Logging",              ID_SETTINGS_LOG_NORMAL
+        MENUITEM "Verbose Logging",             ID_SETTINGS_LOG_VERBOSE
+        MENUITEM "Debug Logging",               ID_SETTINGS_LOG_ALL_MESSAGES
         MENUITEM SEPARATOR
         MENUITEM "Config/Log Files",            ID_SETTINGS_BROWSE_CONFIGLOG_FILES
     END
@@ -445,9 +445,9 @@ BEGIN
     BEGIN
         MENUITEM "Global Settings",             ID_FILE_SETTINGS
         MENUITEM SEPARATOR
-        MENUITEM "Normal logging",              ID_SETTINGS_LOG_NORMAL
-        MENUITEM "Verbose logging",             ID_SETTINGS_LOG_VERBOSE
-        MENUITEM "Debug logging",               ID_SETTINGS_LOG_ALL_MESSAGES
+        MENUITEM "Normal Logging",              ID_SETTINGS_LOG_NORMAL
+        MENUITEM "Verbose Logging",             ID_SETTINGS_LOG_VERBOSE
+        MENUITEM "Debug Logging",               ID_SETTINGS_LOG_ALL_MESSAGES
         MENUITEM SEPARATOR
         MENUITEM "Config/Log Files",            ID_SETTINGS_BROWSE_CONFIGLOG_FILES
     END
@@ -486,8 +486,8 @@ IDR_CONTEXT_ZONES MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
-        MENUITEM "Add All",                     ID_EDIT_ADDALL
-        MENUITEM "Remove All",                  ID_EDIT_REMOVEALL
+        MENUITEM "Add All Zones",               ID_EDIT_ADDALL
+        MENUITEM "Remove All Zones",            ID_EDIT_REMOVEALL
         MENUITEM SEPARATOR
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
     END
@@ -763,18 +763,18 @@ IDR_CONTEXT_ADD_REMOVE_ZONES MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
-        MENUITEM "Add (100%)",                  ID_EDIT_ZONE_SENSITIVITY_100
-        MENUITEM "Add (50%)",                   ID_EDIT_ZONE_SENSITIVITY_50
-        MENUITEM "Add (25%)",                   ID_EDIT_ZONE_SENSITIVITY_25
-        MENUITEM "Add (10%)",                   ID_EDIT_ZONE_SENSITIVITY_10
-        MENUITEM "Add (5%)",                    ID_EDIT_ZONE_SENSITIVITY_5
+        MENUITEM "Add Zones Tool (100% relative sensitivity)", ID_EDIT_ZONE_SENSITIVITY_100
+        MENUITEM "Add Zones Tool (50% relative sensitivity)",  ID_EDIT_ZONE_SENSITIVITY_50
+        MENUITEM "Add Zones Tool (25% relative sensitivity)",  ID_EDIT_ZONE_SENSITIVITY_25
+        MENUITEM "Add Zones Tool (10% relative sensitivity)",  ID_EDIT_ZONE_SENSITIVITY_10
+        MENUITEM "Add Zones Tool (5% relative sensitivity)",   ID_EDIT_ZONE_SENSITIVITY_5
         MENUITEM SEPARATOR
-        MENUITEM "Remove",                      ID_EDIT_ZONE_REMOVE
-        MENUITEM "Obscure removed",             ID_EDIT_ZONE_OBSCURE_REMOVED
+        MENUITEM "Remove Zones Tool",                     ID_EDIT_ZONE_REMOVE
+        MENUITEM "Obscure Removed Zones (privacy mask)",  ID_EDIT_ZONE_OBSCURE_REMOVED
         MENUITEM SEPARATOR
-        MENUITEM "Big",                         ID_EDIT_ZONE_BIG
-        MENUITEM "Medium",                      ID_EDIT_ZONE_MEDIUM
-        MENUITEM "Small",                       ID_EDIT_ZONE_SMALL
+        MENUITEM "Big Zones Size",                        ID_EDIT_ZONE_BIG
+        MENUITEM "Medium Zones Size",                     ID_EDIT_ZONE_MEDIUM
+        MENUITEM "Small Zones Size",                      ID_EDIT_ZONE_SMALL
     END
 END
 
@@ -3442,9 +3442,9 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_EDIT_ZONE_REMOVE     "Remove zones\nRemove Zones"
-    ID_EDIT_ADDALL          "Add all\nAdd All"
-    ID_EDIT_REMOVEALL       "Remove all\nRemove All"
+    ID_EDIT_ZONE_REMOVE     "Enable tool to remove zones\nEnable Tool to Remove Zones"
+    ID_EDIT_ADDALL          "Add all zones\nAdd All Zones"
+    ID_EDIT_REMOVEALL       "Remove all zones\nRemove All Zones"
     ID_CAPTURE_NETWORK      "Network / IP camera\nNetwork / IP Camera"
     ID_CAPTURE_RECORD       "Recording ON / OFF\nRecord"
     ID_VIEW_ALL_NEXT_PICTURE 
@@ -4087,15 +4087,15 @@ BEGIN
     ID_CAPTURE_CAMERABASICSETTINGS 
                             "Camera basic settings\nCamera Basic Settings"
     ID_EDIT_ZONE_SENSITIVITY_100 
-                            "Add zones with 100% relative sensitivity\nAdd Zones with 100% Relative Sensitivity"
+                            "Enable tool to add zones with 100% relative motion sensitivity\nEnable Tool to Add Zones with 100% Relative Motion Sensitivity"
     ID_EDIT_ZONE_SENSITIVITY_50 
-                            "Add zones with 50% relative sensitivity\nAdd Zones with 50% Relative Sensitivity"
+                            "Enable tool to add zones with 50% relative motion sensitivity\nEnable Tool to Add Zones with 50% Relative Motion Sensitivity"
     ID_EDIT_ZONE_SENSITIVITY_25 
-                            "Add zones with 25% relative sensitivity\nAdd Zones with 25% Relative Sensitivity"
+                            "Enable tool to add zones with 25% relative motion sensitivity\nEnable Tool to Add Zones with 25% Relative Motion Sensitivity"
     ID_EDIT_ZONE_SENSITIVITY_10 
-                            "Add zones with 10% relative sensitivity\nAdd Zones with 10% Relative Sensitivity"
+                            "Enable tool to add zones with 10% relative motion sensitivity\nEnable Tool to Add Zones with 10% Relative Motion Sensitivity"
     ID_EDIT_ZONE_SENSITIVITY_5 
-                            "Add zones with 5% relative sensitivity\nAdd Zones with 5% Relative Sensitivity"
+                            "Enable tool to add zones with 5% relative motion sensitivity\nEnable Tool to Add Zones with 5% Relative Motion Sensitivity"
     ID_FILE_EXTRACT         "Extract all pages/frames\nExtract Pages/Frames"
     ID_EDIT_SCREENSHOT      "Take a screenshot\nScreenshot"
 END
@@ -4157,14 +4157,10 @@ END
 STRINGTABLE
 BEGIN
     ID_EDIT_ZONE_BIG        "Big zones size\nBig Zones Size"
-END
-
-STRINGTABLE
-BEGIN
     ID_EDIT_ZONE_MEDIUM     "Medium zones size\nMedium Zones Size"
     ID_EDIT_ZONE_SMALL      "Small zones size\nSmall Zones Size"
     ID_EDIT_ZONE_OBSCURE_REMOVED 
-                            "Obscure removed zones\nObscure Removed Zones"
+                            "Obscure removed zones (privacy mask)\nObscure Removed Zones (Privacy Mask)"
 END
 
 #endif    // English (United States) resources
