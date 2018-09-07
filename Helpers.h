@@ -233,19 +233,6 @@ CSIDL_CDBURN_AREA				CD Burn area
 */
 extern CString GetSpecialFolderPath(int nSpecialFolder);
 
-// Application execute/kill pair
-extern HANDLE ExecApp(											// close the returned process handle when not needed anymore
-						const CString& sFileName,				// program fullpath
-						const CString& sParams = _T(""),		// parameters
-						const CString& sStartDirectory = _T(""),// application start directory, if not provided program's directory is used
-						BOOL bShow = TRUE);						// show application window
-extern HANDLE ExecAppUtf8(										// close the returned process handle when not needed anymore
-						const CString& sFileName,				// program fullpath
-						const CString& sParams = _T(""),		// parameters which are converted to Utf-8 by this function
-						const CString& sStartDirectory = _T(""),// application start directory, if not provided program's directory is used
-						BOOL bShow = TRUE);						// show application window
-extern void KillApp(HANDLE& hProcess);							// this closes the process handle and sets it to NULL
-
 // Kill process by PID
 extern BOOL KillProcByPID(DWORD dwProcID);
 

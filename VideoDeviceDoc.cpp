@@ -1300,7 +1300,7 @@ BOOL CVideoDeviceDoc::SendMail(	const SendMailConfigurationStruct& Config,
 						Config.m_sPassword,
 						sBody);
 		if (::GetFileSize64(sFileName).QuadPart > 0)
-			sOptions += _T(" -attach \"") + sFileName + _T("\"");
+			sOptions += _T(" -attach \"") + ::GetASCIICompatiblePath(sFileName) + _T("\"");
 
 		// Send
 		TCHAR szDrive[_MAX_DRIVE];
@@ -1315,15 +1315,45 @@ BOOL CVideoDeviceDoc::SendMail(	const SendMailConfigurationStruct& Config,
 			{
 				if (bShow)
 					sOptions = _T("-w ") + sOptions; // wait for a CR after sending the mail
-				HANDLE h = ::ExecAppUtf8(sMailerStartFile,
-										sOptions,
-										_T(""),
-										bShow);
-				if (h)
-				{
-					::CloseHandle(h);
-					return TRUE;
-				}
+
+				// Start mailsend.exe
+				//
+				// Note: do not use ShellExecuteEx because it creates a separate thread
+				//       and does not return until that thread completes. During this time
+				//       ShellExecuteEx will pump window messages to prevent windows
+				//       owned by the calling thread from appearing hung. 
+				//       We also need the STARTF_FORCEOFFFEEDBACK flag which is not available
+				//       with ShellExecuteEx, this flag avoids showing the busy cursor while
+				//       starting the mailsend.exe process.
+				//       The CreateProcessA() ANSI version is called so that the passed utf8
+				//       command line remains untouched!
+				STARTUPINFOA si;
+				PROCESS_INFORMATION pi;
+				memset(&si, 0, sizeof(si));
+				memset(&pi, 0, sizeof(pi));
+				si.cb = sizeof(si);
+				si.dwFlags =	STARTF_FORCEOFFFEEDBACK |	// do not display the busy cursor
+								STARTF_USESHOWWINDOW;		// use the following wShowWindow
+				si.wShowWindow = bShow ? SW_SHOW : SW_HIDE;
+				CStringA sAsciiMailerStartFile(::GetASCIICompatiblePath(sMailerStartFile));
+				CStringA sAsciiDir(::GetASCIICompatiblePath(::GetDriveAndDirName(sMailerStartFile)));
+				LPBYTE pUTF8Options = NULL;
+				::ToUTF8(sOptions, &pUTF8Options); // utf8 allows any character in subject and body
+				char lpCommandLine[32768];
+				strcpy_s(lpCommandLine, "\"");
+				strcat_s(lpCommandLine, sAsciiMailerStartFile);
+				strcat_s(lpCommandLine, "\" ");
+				strcat_s(lpCommandLine, (LPCSTR)pUTF8Options);
+				BOOL bStarted = ::CreateProcessA(sAsciiMailerStartFile, lpCommandLine,
+												NULL, NULL, FALSE, NORMAL_PRIORITY_CLASS, NULL,
+												sAsciiDir, &si, &pi);
+				if (pUTF8Options)
+					delete[] pUTF8Options;
+				if (pi.hProcess)
+					::CloseHandle(pi.hProcess);
+				if (pi.hThread)
+					::CloseHandle(pi.hThread);
+				return bStarted;
 			}
 		}
 	}
