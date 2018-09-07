@@ -2059,6 +2059,7 @@ void CVideoDeviceDoc::ExecCommand(BOOL bReplaceVars/*=FALSE*/,
 	}
 	if (m_sExecCommand != _T("") && m_hExecCommand == NULL)
 	{
+		// Replace variables
 		CString sExecParams = m_sExecParams;
 		if (bReplaceVars)
 		{
@@ -2078,15 +2079,32 @@ void CVideoDeviceDoc::ExecCommand(BOOL bReplaceVars/*=FALSE*/,
 			sExecParams.Replace(_T("%full%"), sFullFileName);
 			sExecParams.Replace(_T("%small%"), sSmallFileName);
 		}
-		SHELLEXECUTEINFO sei;
-		memset(&sei, 0, sizeof(sei));
-		sei.cbSize = sizeof(sei);
-		sei.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
-		sei.nShow = m_bHideExecCommand ? SW_HIDE : SW_SHOWNORMAL;
-		sei.lpFile = m_sExecCommand;
-		sei.lpParameters = sExecParams; 
-		if (::ShellExecuteEx(&sei))
-			m_hExecCommand = sei.hProcess;
+		
+		// Execute command
+		//
+		// Note: do not use ShellExecuteEx because it creates a separate thread
+		//       and does not return until that thread completes. During this time
+		//       ShellExecuteEx will pump window messages to prevent windows
+		//       owned by the calling thread from appearing hung. 
+		//       We also need the STARTF_FORCEOFFFEEDBACK flag which is not available
+		//       with ShellExecuteEx, this flag avoids showing the busy cursor while
+		//       starting the given process.
+		STARTUPINFO si;
+		PROCESS_INFORMATION pi;
+		memset(&si, 0, sizeof(si));
+		memset(&pi, 0, sizeof(pi));
+		si.cb = sizeof(si);
+		si.dwFlags =	STARTF_FORCEOFFFEEDBACK |	// do not display the busy cursor
+						STARTF_USESHOWWINDOW;		// use the following wShowWindow
+		si.wShowWindow = m_bHideExecCommand ? SW_HIDE : SW_SHOWNORMAL;
+		TCHAR lpCommandLine[32768];
+		_tcscpy_s(lpCommandLine, _T("\"") + m_sExecCommand + _T("\"") + _T(" ") + sExecParams);
+		::CreateProcess(m_sExecCommand, lpCommandLine,
+						NULL, NULL, FALSE, NORMAL_PRIORITY_CLASS, NULL,
+						::GetDriveAndDirName(m_sExecCommand), &si, &pi);
+		m_hExecCommand = pi.hProcess;
+		if (pi.hThread)
+			::CloseHandle(pi.hThread);
 	}
 	::LeaveCriticalSection(&m_csExecCommand);
 }
@@ -5945,17 +5963,22 @@ BOOL CVideoDeviceDoc::MicroApacheStart(DWORD dwTimeoutMs)
 		return FALSE;
 	
 	// Start mapache.exe
+	//
 	// Note: do not use ShellExecuteEx because it creates a separate thread
 	//       and does not return until that thread completes. During this time
 	//       ShellExecuteEx will pump window messages to prevent windows
 	//       owned by the calling thread from appearing hung. We do not want
 	//       that messages are pumped when starting ContaCam!
+	//       We also need the STARTF_FORCEOFFFEEDBACK flag, which is not available
+	//       with ShellExecuteEx, this flag avoids showing the busy cursor while
+	//       starting the mapache.exe process.
 	STARTUPINFO si;
 	PROCESS_INFORMATION pi;
 	memset(&si, 0, sizeof(si));
 	memset(&pi, 0, sizeof(pi));
 	si.cb = sizeof(si);
-	si.dwFlags = STARTF_USESHOWWINDOW;
+	si.dwFlags =	STARTF_FORCEOFFFEEDBACK |	// do not display the busy cursor
+					STARTF_USESHOWWINDOW;		// use the following wShowWindow
 	si.wShowWindow = SW_HIDE;
 	TCHAR lpCommandLine[32768];
 	_tcscpy_s(lpCommandLine, _T("\"") + sMicroapacheStartFile + _T("\"") + _T(" ") + sParams);
