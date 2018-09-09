@@ -1136,14 +1136,21 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		CVideoDeviceDoc::MicroApacheUpdateMainFiles();
 
 		// Start Micro Apache
-		// Note: make sure the web server is running because the below devices
-		//       autorun which can connect to localhost's push.php or poll.php
-		if (m_bStartMicroApache && !CVideoDeviceDoc::MicroApacheStart(MICROAPACHE_TIMEOUT_MS))
+		// Note: make sure the web server is running because one of the below started
+		//       devices could take the feed from localhost's push.php or poll.php
+		if (m_bStartMicroApache)
 		{
-			sMsg = ML_STRING(1475, "Failed to start the web server");
-			if (!m_bServiceProcess)
-				::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, sMsg, 0);
-			::LogLine(_T("%s"), sMsg);
+			// Make sure nothing is left over from an abruptly terminated ContaCam
+			CVideoDeviceDoc::MicroApacheShutdown(MICROAPACHE_TIMEOUT_MS);
+
+			// Go
+			if (!CVideoDeviceDoc::MicroApacheStart(MICROAPACHE_TIMEOUT_MS))
+			{
+				sMsg = ML_STRING(1475, "Failed to start the web server");
+				if (!m_bServiceProcess)
+					::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, sMsg, 0);
+				::LogLine(_T("%s"), sMsg);
+			}
 		}
 
 		// Autorun devices with a delay of m_dwFirstStartDelayMs
