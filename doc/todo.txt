@@ -33,4 +33,4 @@ ContaCam Program
   (g.frascarolo@tiscali.it)
 - Post buffer is good to not split the detection, but should be removed at the
   end of the record (sambul7165@gmail.com)
-  
+- Execute cmd and params separate for snapshots and recs
