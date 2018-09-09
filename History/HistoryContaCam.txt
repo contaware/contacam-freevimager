@@ -1,22 +1,23 @@
 CONTACAM HISTORY
 
-9.0.0 (Month XXth 2018)
+9.0.0 (September 9th 2018)
 
 - ContaCam is now DONATIONWARE
-- Privacy mask option: removed detection zones are obscured
+- Privacy mask option: removed detection zones can be obscured
 - Document tabs have got a close button
+- Simpler Camera Advanced Settings dialog
 - Dropped .avi video file support, always saving in .mp4 
 - Manual / continuous recording is now performed by the motion
   engine (it makes no sense to have a separate continuous
   recording engine)
 - Updated internal web server to Apache 2.4.34 and PHP 5.6.37
   (both with OpenSSL 1.0.2o)
+- Using better random generators
 - Removed direct FTP support, command execution has been enhanced
   and examples are provided so that it's possible to upload with
   any command line tool
 - To enforce security removed the possibility to delete recordings
   from the web interface
-- Using better random generators
 - Removed the possibility to hide the toolbars because they
   provide important commands not available elsewhere
 - Removed the possibility to hide the statusbar because it

@@ -1,6 +1,6 @@
 TRANSLATIONS HISTORY
 
-9.0.0 (Month XXth 2018)
+9.0.0 (September 9th 2018)
 
 - Updated Xmp, Iptc and Exif strings to have only one \t
   (1621 - 1715)
