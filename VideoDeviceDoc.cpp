@@ -6094,8 +6094,10 @@ void CVideoDeviceDoc::MicroApacheShutdown(DWORD dwTimeoutMs)
 	// Kill if shutdown signalisation failed
 	if (!bShutdownSignaled)
 	{
-		if (!::KillProcByPID(dwPid)) // this function correctly fails if passing 0
-			::EnumKillProcByName(MICROAPACHE_FILENAME, TRUE);
+		// Kill the parent process (the apache child terminates when there is no parent)
+		// Note: KillProcByPID() correctly fails if passing 0
+		if (!::KillProcByPID(dwPid))
+			::EnumKillProcByName(MICROAPACHE_FILENAME, TRUE); // kill by name
 	}
 
 	// Wait a max of dwTimeoutMs
