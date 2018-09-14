@@ -1,5 +1,9 @@
 TRANSLATIONS HISTORY
 
+9.0.1 (October xth 2018)
+
+- Minor changes
+  
 9.0.0 (September 9th 2018)
 
 - Updated Xmp, Iptc and Exif strings to have only one \t

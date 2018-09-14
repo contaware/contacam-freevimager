@@ -1,5 +1,9 @@
 FREEVIMAGER HISTORY
 
+9.0.1 (October xth 2018)
+
+- ...
+
 9.0.0 (September 9th 2018)
 
 - FreeVimager is now DONATIONWARE
