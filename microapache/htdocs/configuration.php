@@ -36,6 +36,9 @@ define ("LANGUAGEFILEPATH","languages/english.php");
 // Set the Style
 define ("STYLEFILEPATH","styles/darkgray.css");
 
+// Show / hide the trash command
+define ("SHOW_TRASH_COMMAND","0");    // 0 = Hide , 1 = Show
+
 // Show / hide the camera commands
 define ("SHOW_CAMERA_COMMANDS","0");  // 0 = Hide , 1 = Show
 
