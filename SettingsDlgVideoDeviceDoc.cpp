@@ -376,7 +376,7 @@ void CSettingsDlgVideoDeviceDoc::OnButtonDocRoot()
 
 	// Pop-up browse for folder dialog
 	CString sNewMicroApacheDocRoot = m_sMicroApacheDocRoot;
-	CBrowseDlg dlg(	::AfxGetMainFrame(),
+	CBrowseDlg dlg(	this,
 					&sNewMicroApacheDocRoot,
 					ML_STRING(1871, "Move all camera folders to selected directory") + _T("\n") + sMsg,
 					TRUE);
