@@ -253,6 +253,11 @@ public:
 			volatile BOOL m_bOldVersion;
 
 		protected:
+			int FindHttpHeader(	const CString& sFieldNameLowerCase,
+								const CString& sMsgLowerCase);
+			BOOL CheckHttpHeaderValue(	const CString& sFieldValueLowerCase,
+										int nOffset,
+										const CString& sMsgLowerCase);
 			BOOL ParseSingle(	BOOL bLastCall,
 								int nSize,
 								const CString& sMsg,

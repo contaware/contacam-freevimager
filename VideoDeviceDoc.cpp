@@ -4701,14 +4701,15 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 		
 		m_HttpGetFrameLocations.Add(CString(_T("/image.cgi?mode=http")) +
 									_T("&id=") + HTTP_USERNAME_PLACEHOLDER + 
-									_T("&passwd=") + HTTP_PASSWORD_PLACEHOLDER);	// Intellinet
+									_T("&passwd=") + HTTP_PASSWORD_PLACEHOLDER);// Intellinet
 
 		m_HttpGetFrameLocations.Add(CString(_T("/cgi-bin/CGIProxy.fcgi?cmd=setSubStreamFormat&format=1")) +
 									_T("&usr=") + HTTP_USERNAME_PLACEHOLDER + 
-									_T("&pwd=") + HTTP_PASSWORD_PLACEHOLDER);		// Enable MJPG for Foscam HD
+									_T("&pwd=") + HTTP_PASSWORD_PLACEHOLDER);	// Foscam HD, enable MJPG stream
 		m_HttpGetFrameLocations.Add(CString(_T("/cgi-bin/CGIStream.cgi?cmd=GetMJStream")) +
 									_T("&usr=") + HTTP_USERNAME_PLACEHOLDER + 
-									_T("&pwd=") + HTTP_PASSWORD_PLACEHOLDER);		// Foscam HD (mjpeg stream is VGA resolution @ 15fps)
+									_T("&pwd=") + HTTP_PASSWORD_PLACEHOLDER);	// Foscam HD, get MJPG stream in VGA resolution only
+																				// (ATTENTION: when getting the MJPG stream Foscam doesn't url-decode the usr & pwd params)
 	}
 	// JPEG
 	else if (m_nNetworkDeviceTypeMode == OTHERONE_CP)
@@ -9491,6 +9492,52 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::HasResolution(const CSize& Size)
 }
 
 /*
+HTTP Header Field
+-----------------
+field-name ":" OWS field-value
+- OWS is optional white spaces
+- No whitespaces are allowed between the field-name and the colon
+- Reference: https://greenbytes.de/tech/webdav/draft-ietf-httpbis-p1-messaging-21.html#rfc.section.3.2
+*/
+int CVideoDeviceDoc::CHttpParseProcess::FindHttpHeader(	const CString& sFieldNameLowerCase,
+														const CString& sMsgLowerCase)
+{
+	int nOffset = sMsgLowerCase.Find(sFieldNameLowerCase + _T(":"));
+	if (nOffset >= 0)
+	{
+		// Skip header name and colon
+		nOffset += sFieldNameLowerCase.GetLength() + 1;
+
+		// Skip optional spaces
+		int nLenght = sMsgLowerCase.GetLength();
+		while (nOffset < nLenght && _istspace(sMsgLowerCase[nOffset]))
+			nOffset++;
+
+		// Return beginning of header value
+		return nOffset;
+	}
+	else
+		return -1;
+}
+BOOL CVideoDeviceDoc::CHttpParseProcess::CheckHttpHeaderValue(	const CString& sFieldValueLowerCase,
+																int nOffset,
+																const CString& sMsgLowerCase)
+{
+	// Check
+	if (nOffset < 0)
+		return FALSE;
+
+	// Compare
+	int nLenght = sMsgLowerCase.GetLength();
+	int nValueLength = sFieldValueLowerCase.GetLength();
+	if (nLenght - nOffset >= nValueLength &&
+		wmemcmp((LPCWSTR)sMsgLowerCase + nOffset, (LPCWSTR)sFieldValueLowerCase, nValueLength) == 0) // correctly returns 0 in case that nValueLength is 0
+		return TRUE;
+	else
+		return FALSE;
+}
+
+/*
 HTTP defines the sequence CRLF as the end-of-line marker
 for all protocol elements except the Entity-Body.
 The end-of-line marker within an Entity-Body is defined by
@@ -9616,14 +9663,14 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 		// Connection Keep Alive?
 		if (m_bOldVersion)
 		{
-			if (sMsgLowerCase.Find(_T("connection: keep-alive"), 0) >= 0)
+			if (CheckHttpHeaderValue(_T("keep-alive"), FindHttpHeader(_T("connection"), sMsgLowerCase), sMsgLowerCase))
 				m_bConnectionKeepAlive = TRUE;
 			else
 				m_bConnectionKeepAlive = FALSE;
 		}
 		else
 		{
-			if (sMsgLowerCase.Find(_T("connection: close"), 0) >= 0)
+			if (CheckHttpHeaderValue(_T("close"), FindHttpHeader(_T("connection"), sMsgLowerCase), sMsgLowerCase))
 				m_bConnectionKeepAlive = FALSE;
 			else	
 				m_bConnectionKeepAlive = TRUE;
@@ -9635,8 +9682,15 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 			// Set flag
 			m_bAuthorized = TRUE;
 
+			// Find content-type
+			if ((nPos = FindHttpHeader(_T("content-type"), sMsgLowerCase)) < 0)
+			{
+				delete[] pMsg;
+				return FALSE; // Do not call Processor
+			}
+
 			// Multipart image
-			if ((nPos = sMsgLowerCase.Find(_T("content-type: multipart/x-mixed-replace"), 0)) >= 0)
+			if (CheckHttpHeaderValue(_T("multipart/x-mixed-replace"), nPos, sMsgLowerCase))
 			{
 				if ((nPos = sMsgLowerCase.Find(_T("boundary="), nPos)) < 0)
 				{
@@ -9680,7 +9734,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 				return res;
 			}
 			// Single image
-			else if ((nPos = sMsgLowerCase.Find(_T("content-type: image/jpeg"), 0)) >= 0)
+			else if (CheckHttpHeaderValue(_T("image/jpeg"), nPos, sMsgLowerCase))
 			{
 				// Flag
 				m_bFirstProcessing = TRUE;
@@ -9693,7 +9747,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 				return res;
 			}
 			// Text
-			else if ((nPos = sMsgLowerCase.Find(_T("content-type: text/plain"), 0)) >= 0)
+			else if (CheckHttpHeaderValue(_T("text/plain"), nPos, sMsgLowerCase))
 			{
 				if ((m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE_SP	||
 					m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE_CP)	&&
@@ -9811,7 +9865,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 				return FALSE; // Do not call Processor
 			}
 			// Html
-			else if ((nPos = sMsgLowerCase.Find(_T("content-type: text/html"), 0)) >= 0)
+			else if (CheckHttpHeaderValue(_T("text/html"), nPos, sMsgLowerCase))
 			{
 				if ((m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE_SP	||
 					m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE_CP)	&&
