@@ -194,7 +194,7 @@ BOOL CCameraAdvancedSettingsDlg::OnInitDialog()
 	CComboBox* pComboBoxExecCommandMode = (CComboBox*)GetDlgItem(IDC_EXEC_COMMAND_MODE);
 	pComboBoxExecCommandMode->AddString(ML_STRING(1842, "Recording start"));
 	pComboBoxExecCommandMode->AddString(ML_STRING(1843, "Recording saving done"));
-	pComboBoxExecCommandMode->AddString(ML_STRING(1844, "Live snapshots saving done"));
+	pComboBoxExecCommandMode->AddString(ML_STRING(1844, "Snapshot"));
 
 	// This calls UpdateData(FALSE)
 	CDialog::OnInitDialog();
@@ -753,7 +753,7 @@ void CCameraAdvancedSettingsDlg::UpdateVideoQualityInfo()
 	CString sQuality;
 	switch (::GetRevertedPos(&m_VideoRecQuality))
 	{
-		case 2: sQuality = ML_STRING(1545, "Best (lossless)"); break;
+		case 2: sQuality = ML_STRING(1545, "Best"); break;
 		case 3: sQuality = ML_STRING(1544, "Very Good"); break;
 		case 4: sQuality = ML_STRING(1543, "Good"); break;
 		case 5: sQuality = ML_STRING(1542, "Medium"); break;

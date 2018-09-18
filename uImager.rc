@@ -109,7 +109,7 @@ BEGIN
     BEGIN
         MENUITEM "&Network / IP Camera",        ID_CAPTURE_NETWORK
         MENUITEM SEPARATOR
-        MENUITEM "&Remove Camera(s)",           ID_EDIT_DELETE
+        MENUITEM "&Remove Cameras",             ID_EDIT_DELETE
     END
     POPUP "&Settings"
     BEGIN
@@ -203,7 +203,7 @@ BEGIN
     BEGIN
         MENUITEM "&Network / IP Camera",        ID_CAPTURE_NETWORK
         MENUITEM SEPARATOR
-        MENUITEM "&Remove Camera(s)",           ID_EDIT_DELETE
+        MENUITEM "&Remove Cameras",             ID_EDIT_DELETE
         MENUITEM SEPARATOR
         MENUITEM "&Snapshot\tIns",              ID_EDIT_SNAPSHOT
     END
@@ -3799,7 +3799,7 @@ BEGIN
     IDS_STRING1542          "Medium"
     IDS_STRING1543          "Good"
     IDS_STRING1544          "Very Good"
-    IDS_STRING1545          "Best (lossless)"
+    IDS_STRING1545          "Best"
     IDS_STRING1548          "Other Camera"
 END
 
@@ -4055,7 +4055,7 @@ END
 STRINGTABLE
 BEGIN
     IDS_STRING1801          "REMOVE CAMERAS"
-    IDS_STRING1803          "1. Choose Remove Camera(s) from the Camera menu"
+    IDS_STRING1803          "1. Choose Remove Cameras from the Camera menu"
 END
 
 STRINGTABLE
@@ -4105,7 +4105,7 @@ STRINGTABLE
 BEGIN
     IDS_STRING1842          "Recording start"
     IDS_STRING1843          "Recording saving done"
-    IDS_STRING1844          "Live snapshots saving done"
+    IDS_STRING1844          "Snapshot"
     IDS_STRING1849          "Saved"
     IDS_STRING1850          "Save Failed!"
     IDS_STRING1852          "Name"

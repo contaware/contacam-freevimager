@@ -223,7 +223,7 @@ void CMDIClientWnd::OnPaint()
 
 	// Draw point 1.
 	rcDraw.top += nLineHeight;
-	DrawT(memDC, ML_STRING(1803, "1. Choose Remove Camera(s) from the Camera menu"), rcDraw);
+	DrawT(memDC, ML_STRING(1803, "1. Choose Remove Cameras from the Camera menu"), rcDraw);
 #endif
 
 	// Clean-Up
