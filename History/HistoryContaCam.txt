@@ -1,9 +1,10 @@
 CONTACAM HISTORY
 
-9.0.1 (October xth 2018)
+9.0.1 (September 19th 2018)
 
 - Fixed the HTTP header fields parser to allow any number of
   spaces after the colon (also 0 spaces like used by Foscam)
+- Translations done
 - Re-added the possibility to delete recordings from the web
   interface
   
