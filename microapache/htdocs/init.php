@@ -22,7 +22,8 @@ if (!isset($path_parts['filename']))
 $style_postfix = $path_parts['filename'];
 
 // Current protocol
-if (!empty($_SERVER['HTTPS']) && (strtolower($_SERVER['HTTPS']) != 'off'))
+if ((!empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) != 'off') ||
+	(!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https'))
 	$scheme = 'https';
 else
 	$scheme = 'http';
