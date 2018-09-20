@@ -736,7 +736,10 @@ LONG CMainFrame::OnThreadSafePopupToaster(WPARAM wparam, LPARAM lparam)
 	// Show Toaster?
 	if (!m_bLastToasterDone)
 	{
+		// Close
 		CloseToaster();
+
+		// Create
 		m_pToaster = new CToasterWnd(sTitle, sText);
 		if (dwWaitTimeMs > 0)
 		{
@@ -746,13 +749,29 @@ LONG CMainFrame::OnThreadSafePopupToaster(WPARAM wparam, LPARAM lparam)
 		}
 		else
 			m_pToaster->m_bOnlyCloseOnUser = TRUE;
+
+		// Icon
 		m_pToaster->m_TitleIcon = static_cast<HICON>(LoadImage(AfxGetResourceHandle(), MAKEINTRESOURCE(IDR_MAINFRAME), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR));
+
+		// Clickable?
 		m_pToaster->m_bIconHot = FALSE;
 		m_pToaster->m_bTitleHot = FALSE;
 		m_pToaster->m_bTextHot = CToasterNotificationLink::IsClickable(m_pToaster->m_sText);
+
+		// Get default UI font
+		// Attention: do not use the obsolete way: defaultGUIFont.Attach(GetStockObject(DEFAULT_GUI_FONT))
 		CFont defaultGUIFont;
-		defaultGUIFont.Attach(GetStockObject(DEFAULT_GUI_FONT));
+		NONCLIENTMETRICS ncm = {sizeof(NONCLIENTMETRICS)};
+		VERIFY(::SystemParametersInfo(SPI_GETNONCLIENTMETRICS, ncm.cbSize, &ncm, 0));
+		defaultGUIFont.CreateFontIndirect(&(ncm.lfMessageFont));
+
+		// Title font
 		LOGFONT lf;
+		defaultGUIFont.GetLogFont(&lf);
+		lf.lfWeight = FW_BOLD;
+		m_pToaster->m_fontTitle.CreateFontIndirect(&lf);
+
+		// Message text
 		defaultGUIFont.GetLogFont(&lf);
 		if (m_pToaster->m_bTextHot)
 		{
@@ -761,10 +780,16 @@ LONG CMainFrame::OnThreadSafePopupToaster(WPARAM wparam, LPARAM lparam)
 			lf.lfUnderline = TRUE;
 		}
 		m_pToaster->m_fontText.CreateFontIndirect(&lf);
+
+		// Size
 		m_pToaster->m_nWidth = ::SystemDPIScale(360);
 		m_pToaster->m_nHeight = ::SystemDPIScale(80);
+
+		// Background
 		m_pToaster->m_colorBackground = RGB(0xD4, 0xD0, 0xC8);
 		m_pToaster->m_colorGradient = RGB(0xF5, 0xF5, 0xF5);
+
+		// Show
 		if (!m_pToaster->Show())
 			m_pToaster = NULL; // we do not need to delete m_pToaster because CToasterWnd is self deleting
 	}

@@ -55,6 +55,7 @@ private:
   bool       m_bTop;
   BOOL       m_bTracking;
   int        m_nCloseHotTabIndex;
+  CFont      m_Font;
 
 protected:
   CRect GetCloseBkgRect(int nTabIndex);

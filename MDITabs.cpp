@@ -256,7 +256,10 @@ void CMDITabs::Create(CFrameWnd* pMainFrame, DWORD dwStyle)
 
   CTabCtrl::Create(WS_CHILD|WS_VISIBLE|(m_bTop?0:TCS_BOTTOM)|TCS_SINGLELINE|TCS_FOCUSNEVER|TCS_FORCEICONLEFT|WS_CLIPSIBLINGS, CRect(0, 0, 0, 0), pMainFrame, 42);
   ModifyStyleEx(0, WS_EX_CLIENTEDGE);
-  SendMessage(WM_SETFONT, WPARAM(GetStockObject(DEFAULT_GUI_FONT)), 0);
+  NONCLIENTMETRICS ncm = {sizeof(NONCLIENTMETRICS)};
+  VERIFY(::SystemParametersInfo(SPI_GETNONCLIENTMETRICS, ncm.cbSize, &ncm, 0));
+  m_Font.CreateFontIndirect(&(ncm.lfMessageFont));
+  SetFont(&m_Font, FALSE);
 
   HWND wnd;
   for (wnd = ::GetTopWindow(*pMainFrame); wnd; wnd = ::GetNextWindow(wnd, GW_HWNDNEXT))
