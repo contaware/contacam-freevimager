@@ -568,6 +568,7 @@ public:
 		PANASONIC_RTSP = 1160,			// Panasonic RTSP
 		PIXORD_RTSP = 1170,				// Pixord RTSP
 		PLANET_RTSP = 1180,				// Planet RTSP
+		REOLINK_RTSP = 1185,			// Reolink RTSP
 		SAMSUNG_RTSP = 1190,			// Samsung RTSP
 		SONY_RTSP = 1200,				// Sony RTSP
 		SRICAM_RTSP = 1205,				// Sricam RTSP

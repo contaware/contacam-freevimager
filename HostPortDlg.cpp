@@ -84,6 +84,7 @@ BOOL CHostPortDlg::OnInitDialog()
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Pixord (") + ML_STRING(1865, "HTTP motion jpeg") + _T(")")), (DWORD)CVideoDeviceDoc::PIXORD_SP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Pixord (") + ML_STRING(1866, "HTTP jpeg snapshots") + _T(")")), (DWORD)CVideoDeviceDoc::PIXORD_CP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Planet (RTSP)")), (DWORD)CVideoDeviceDoc::PLANET_RTSP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Reolink (RTSP)")), (DWORD)CVideoDeviceDoc::REOLINK_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Samsung (RTSP)")), (DWORD)CVideoDeviceDoc::SAMSUNG_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Sony (RTSP)")), (DWORD)CVideoDeviceDoc::SONY_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Sricam (RTSP)")), (DWORD)CVideoDeviceDoc::SRICAM_RTSP);

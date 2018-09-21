@@ -8533,6 +8533,7 @@ void CVideoDeviceDoc::ConnectRtsp()
 		case PANASONIC_RTSP:		sQuery = _T("/MediaInput/h264"); break;
 		case PIXORD_RTSP:			sQuery = _T("/v00"); break;
 		case PLANET_RTSP:			sQuery = _T("/stream1"); break;
+		case REOLINK_RTSP:			sQuery = _T("/h264Preview_01_main"); break;
 		case SAMSUNG_RTSP:			sQuery = _T("/profile1/media.smp"); break;
 		case SONY_RTSP:				sQuery = _T("/media/video1"); break;
 		case SRICAM_RTSP:			sQuery = _T("/onvif1"); break;
