@@ -1,5 +1,9 @@
 TRANSLATIONS HISTORY
 
+9.0.3 (October 1st 2018)
+
+- Minor changes
+
 9.0.1 (September 19th 2018)
 
 - Minor changes

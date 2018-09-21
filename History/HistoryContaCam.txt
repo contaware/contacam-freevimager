@@ -1,5 +1,9 @@
 CONTACAM HISTORY
 
+9.0.3 (October 1st 2018)
+
+- Updated Tabs and bottom-right popup Message Box fonts
+
 9.0.1 (September 19th 2018)
 
 - Fixed the HTTP header fields parser to allow any number of
