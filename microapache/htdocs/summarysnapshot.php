@@ -48,13 +48,16 @@ if ($selected_day < 10)
 else
 	$selected_day_string = "$selected_day";
 
-// Max thumbs per page
-$max_per_page = MAX_PER_PAGE;
+// Max files per page, pages count and page offset
+$max_per_page = (int)MAX_PER_PAGE;
+$pages = 1; // initialized later on
 $page_offset = 0;
-if (isset($_GET['pageoffset']))	{// Thumbs offset
+if (isset($_GET['pageoffset']))	{
 	$page_offset = (int)$_GET['pageoffset'];
 	if ($page_offset < 0)
 		$page_offset = 0;
+	$page_offset = (int)(floor($page_offset / $max_per_page) * $max_per_page);
+	// upper bound corrected later on
 }
 ?>
 <script type="text/javascript">
@@ -115,53 +118,45 @@ function PrintNoFilesDate() {
 }
 function PrintPageNavigation() {
 	global $file_array; 	// all the files
+	global $pages;			// total pages amount
 	global $max_per_page;	// the configured maximum number of displayed files per page
 	global $page_offset;	// page offset parameter passed to script
 	global $params;			// all the parameters passed to script
 	global $scriptname;		// script name
 	
-	// Calculate the total pages amount
-	$pages = 1;
-	if (!empty($file_array)) {
-		$pages_float = (float)count($file_array) / (float)$max_per_page;
-		$pages = floor($pages_float);
-		if (($pages_float - $pages) > 0.0)
-			$pages++;
-	}
-	
-	// Show pages navigation if more than a page available or if a page offset is given
-	if ($pages > 1 || $page_offset > 0) {
+	// Show pages navigation if more than a page available
+	if ($pages > 1) {
 		echo "<div style=\"text-align: center\">" . PAGES . " [\n";
 		$current_page_offset = 0;
 		$file_time_array = array_values($file_array);
 		for ($page=1 ; $page <= $pages ; $page++) {
 			$file_date = getdate($file_time_array[$current_page_offset]);
-			$file_timestamp = sprintf("%02d:%02d", $file_date['hours'], $file_date['minutes']);
+			$page_text = sprintf("%d(%02d:%02d)", $page, $file_date['hours'], $file_date['minutes']);
 			if ($page == 1) {
 				if ($current_page_offset == $page_offset) {
 					if ($params == "")
-						echo " <a class=\"highlight\" href=\"$scriptname\">$file_timestamp</a>\n";
+						echo " <a class=\"highlight\" href=\"$scriptname\">$page_text</a>\n";
 					else
-						echo " <a class=\"highlight\" href=\"$scriptname" . $params . "\">$file_timestamp</a>\n";
+						echo " <a class=\"highlight\" href=\"$scriptname" . $params . "\">$page_text</a>\n";
 				}
 				else {
 					if ($params == "")
-						echo " <a href=\"$scriptname\">$file_timestamp</a>\n";
+						echo " <a href=\"$scriptname\">$page_text</a>\n";
 					else
-						echo " <a href=\"$scriptname" . $params . "\">$file_timestamp</a>\n";
+						echo " <a href=\"$scriptname" . $params . "\">$page_text</a>\n";
 				}
 			} else {
 				if ($current_page_offset == $page_offset) {
 					if ($params == "")
-						echo " <a class=\"highlight\" href=\"$scriptname?pageoffset=$current_page_offset\">$file_timestamp</a>\n";
+						echo " <a class=\"highlight\" href=\"$scriptname?pageoffset=$current_page_offset\">$page_text</a>\n";
 					else
-						echo " <a class=\"highlight\" href=\"$scriptname" . $params . "&amp;pageoffset=$current_page_offset\">$file_timestamp</a>\n";
+						echo " <a class=\"highlight\" href=\"$scriptname" . $params . "&amp;pageoffset=$current_page_offset\">$page_text</a>\n";
 				}
 				else {
 					if ($params == "")
-						echo " <a href=\"$scriptname?pageoffset=$current_page_offset\">$file_timestamp</a>\n";
+						echo " <a href=\"$scriptname?pageoffset=$current_page_offset\">$page_text</a>\n";
 					else
-						echo " <a href=\"$scriptname" . $params . "&amp;pageoffset=$current_page_offset\">$file_timestamp</a>\n";
+						echo " <a href=\"$scriptname" . $params . "&amp;pageoffset=$current_page_offset\">$page_text</a>\n";
 				}
 			}
 			$current_page_offset += $max_per_page;
@@ -267,6 +262,18 @@ if ($handle = @opendir($dir)) {
 			asort($file_array);
 		else
 			arsort($file_array);
+		
+		// Pages count
+		$pages_float = (float)count($file_array) / (float)$max_per_page;
+		$pages = floor($pages_float);
+		if (($pages_float - $pages) > 0.0)
+			$pages++;
+		settype($pages, 'int');
+	
+		// Correct maximum page offset
+		$max_page_offset = ($pages - 1) * $max_per_page;
+		if ($page_offset > $max_page_offset)
+			$page_offset = $max_page_offset;
 		
 		// Get html query string of mp4s pointed by gifs
 		$pos = 0;
