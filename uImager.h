@@ -86,7 +86,7 @@
 // Note: two cameras saving at the same time is a good value
 // for RAM usage (H.264 consumes a lot of heap memory while
 // encoding) and optimal threads distribution
-#define MOVDET_MAX_SIMULTANEOUS_SAVINGS					2
+#define MAX_SIMULTANEOUS_SAVINGS						2
 
 // Service
 #define CONTACAMSERVICE_NOTINSTALLED					0
@@ -354,9 +354,9 @@ public:
 	// CONTACAMSERVICE_CONTROL_END_PROC
 	static DWORD ControlContaCamService(int nMsg);
 
-	// Movement detection save reservation queue
-	BOOL MovDetSaveReservation(DWORD dwId);
-	void MovDetSaveReservationRemove(DWORD dwId);
+	// Save reservation queue
+	BOOL SaveReservation(DWORD dwId);
+	void SaveReservationRemove(DWORD dwId);
 
 	// Enumerate all configured (in registry or ini file) devices
 	void EnumConfiguredDevicePathNames(CStringArray& DevicePathNames);
@@ -555,10 +555,10 @@ public:
 	// movement detection frames in case of memory problems
 	volatile BOOL m_bMovDetDropFrames;
 
-	// Movement detection save reservation queue
-	typedef CList<DWORD,DWORD> MOVDETSAVERESERVATIONQUEUE;
-	MOVDETSAVERESERVATIONQUEUE m_MovDetSaveReservationQueue;
-	CRITICAL_SECTION m_csMovDetSaveReservation;
+	// Save reservation queue
+	typedef CList<DWORD,DWORD> SAVERESERVATIONQUEUE;
+	SAVERESERVATIONQUEUE m_SaveReservationQueue;
+	CRITICAL_SECTION m_csSaveReservation;
 
 	// Service
 	// - Window placement store/restore disabled if this set

@@ -147,7 +147,7 @@ CUImagerApp::CUImagerApp()
 	m_nMicroApachePort = MICROAPACHE_DEFAULT_PORT;
 	m_nMicroApachePortSSL = MICROAPACHE_DEFAULT_PORT_SSL;
 	m_bMovDetDropFrames = FALSE;
-	::InitializeCriticalSection(&m_csMovDetSaveReservation);
+	::InitializeCriticalSection(&m_csSaveReservation);
 	m_bSingleInstance = TRUE;
 	m_bServiceProcess = FALSE;
 	m_bDoStartFromService = FALSE;
@@ -188,7 +188,7 @@ CUImagerApp::CUImagerApp()
 CUImagerApp::~CUImagerApp()
 {
 #ifdef VIDEODEVICEDOC
-	::DeleteCriticalSection(&m_csMovDetSaveReservation);
+	::DeleteCriticalSection(&m_csSaveReservation);
 #endif
 }
 
@@ -2272,30 +2272,30 @@ DWORD CUImagerApp::ControlContaCamService(int nMsg)
 	return dwError;
 }
 
-BOOL CUImagerApp::MovDetSaveReservation(DWORD dwId)
+BOOL CUImagerApp::SaveReservation(DWORD dwId)
 {
 	int i;
 
 	// Enter critical section
-	::EnterCriticalSection(&m_csMovDetSaveReservation);
+	::EnterCriticalSection(&m_csSaveReservation);
 
-	// Go if we are in the first MOVDET_MAX_SIMULTANEOUS_SAVINGS
-	POSITION pos = m_MovDetSaveReservationQueue.GetHeadPosition();
-	for (i = 0 ; i < MIN(MOVDET_MAX_SIMULTANEOUS_SAVINGS, m_MovDetSaveReservationQueue.GetCount()) ; i++)
+	// Go if we are in the first MAX_SIMULTANEOUS_SAVINGS
+	POSITION pos = m_SaveReservationQueue.GetHeadPosition();
+	for (i = 0 ; i < MIN(MAX_SIMULTANEOUS_SAVINGS, m_SaveReservationQueue.GetCount()) ; i++)
 	{
-		if (m_MovDetSaveReservationQueue.GetNext(pos) == dwId)
+		if (m_SaveReservationQueue.GetNext(pos) == dwId)
 		{
-			::LeaveCriticalSection(&m_csMovDetSaveReservation);
+			::LeaveCriticalSection(&m_csSaveReservation);
 			return TRUE;
 		}
 	}
 
 	// See whether we have to add the id to queue
 	BOOL bPresent = FALSE;
-	pos = m_MovDetSaveReservationQueue.GetHeadPosition();
-	for (i = 0 ; i < m_MovDetSaveReservationQueue.GetCount() ; i++)
+	pos = m_SaveReservationQueue.GetHeadPosition();
+	for (i = 0 ; i < m_SaveReservationQueue.GetCount() ; i++)
 	{
-		if (m_MovDetSaveReservationQueue.GetNext(pos) == dwId)
+		if (m_SaveReservationQueue.GetNext(pos) == dwId)
 		{
 			bPresent = TRUE;
 			break;
@@ -2304,53 +2304,53 @@ BOOL CUImagerApp::MovDetSaveReservation(DWORD dwId)
 	if (!bPresent)
 	{
 		// Add to Tail
-		m_MovDetSaveReservationQueue.AddTail(dwId);
+		m_SaveReservationQueue.AddTail(dwId);
 	
-		// Go if we are in the first MOVDET_MAX_SIMULTANEOUS_SAVINGS
-		pos = m_MovDetSaveReservationQueue.GetHeadPosition();
-		for (i = 0 ; i < MIN(MOVDET_MAX_SIMULTANEOUS_SAVINGS, m_MovDetSaveReservationQueue.GetCount()) ; i++)
+		// Go if we are in the first MAX_SIMULTANEOUS_SAVINGS
+		pos = m_SaveReservationQueue.GetHeadPosition();
+		for (i = 0 ; i < MIN(MAX_SIMULTANEOUS_SAVINGS, m_SaveReservationQueue.GetCount()) ; i++)
 		{
-			if (m_MovDetSaveReservationQueue.GetNext(pos) == dwId)
+			if (m_SaveReservationQueue.GetNext(pos) == dwId)
 			{
-				::LeaveCriticalSection(&m_csMovDetSaveReservation);
+				::LeaveCriticalSection(&m_csSaveReservation);
 				return TRUE;
 			}
 		}
 	}
 
 	// Leave critical section
-	::LeaveCriticalSection(&m_csMovDetSaveReservation);
+	::LeaveCriticalSection(&m_csSaveReservation);
 
 	return FALSE;
 }
 
-void CUImagerApp::MovDetSaveReservationRemove(DWORD dwId)
+void CUImagerApp::SaveReservationRemove(DWORD dwId)
 {
 	int i = 0;
 
 	// Enter critical section
-	::EnterCriticalSection(&m_csMovDetSaveReservation);
+	::EnterCriticalSection(&m_csSaveReservation);
 
 	// Loop
-	POSITION pos = m_MovDetSaveReservationQueue.GetHeadPosition();
-	while (i < m_MovDetSaveReservationQueue.GetCount())
+	POSITION pos = m_SaveReservationQueue.GetHeadPosition();
+	while (i < m_SaveReservationQueue.GetCount())
 	{
 		POSITION prevpos = pos;
-		if (m_MovDetSaveReservationQueue.GetNext(pos) == dwId)
+		if (m_SaveReservationQueue.GetNext(pos) == dwId)
 		{
 			// Remove
-			m_MovDetSaveReservationQueue.RemoveAt(prevpos);
+			m_SaveReservationQueue.RemoveAt(prevpos);
 
 			// Reset
 			i = 0;
-			pos = m_MovDetSaveReservationQueue.GetHeadPosition();
+			pos = m_SaveReservationQueue.GetHeadPosition();
 		}
 		else
 			i++;
 	}
 
 	// Leave critical section
-	::LeaveCriticalSection(&m_csMovDetSaveReservation);
+	::LeaveCriticalSection(&m_csSaveReservation);
 }
 
 #endif

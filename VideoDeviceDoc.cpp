@@ -204,7 +204,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		do
 		{
 			// Remove our old reservation
-			((CUImagerApp*)::AfxGetApp())->MovDetSaveReservationRemove(dwCurrentThreadId);
+			((CUImagerApp*)::AfxGetApp())->SaveReservationRemove(dwCurrentThreadId);
 
 			// Poll lists count and reservation position
 			while (TRUE)
@@ -212,14 +212,14 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				// Continue to the empty lists remover?
 				::EnterCriticalSection(&m_pDoc->m_csMovementDetectionsList);
 				if (m_pDoc->m_MovementDetectionsList.GetCount() >= 2 &&
-					((CUImagerApp*)::AfxGetApp())->MovDetSaveReservation(dwCurrentThreadId))
+					((CUImagerApp*)::AfxGetApp())->SaveReservation(dwCurrentThreadId))
 					break;
 				::LeaveCriticalSection(&m_pDoc->m_csMovementDetectionsList);
 
 				// Shutdown?
-				if (::WaitForSingleObject(GetKillEvent(), MOVDET_SAVEFRAMES_POLL) == WAIT_OBJECT_0)
+				if (::WaitForSingleObject(GetKillEvent(), CAN_SAVE_POLL_MS) == WAIT_OBJECT_0)
 				{
-					((CUImagerApp*)::AfxGetApp())->MovDetSaveReservationRemove(dwCurrentThreadId);
+					((CUImagerApp*)::AfxGetApp())->SaveReservationRemove(dwCurrentThreadId);
 					::DeleteDir(sTempDetectionDir);
 					return 0;
 				}
@@ -286,7 +286,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			{
 				if (::WaitForSingleObject(GetKillEvent(), 10U) == WAIT_OBJECT_0)
 				{
-					((CUImagerApp*)::AfxGetApp())->MovDetSaveReservationRemove(dwCurrentThreadId);
+					((CUImagerApp*)::AfxGetApp())->SaveReservationRemove(dwCurrentThreadId);
 					::DeleteDir(sTempDetectionDir);
 					return 0;
 				}
@@ -390,7 +390,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				AVRecVideo.Close();
 				::DeleteFile(sVideoTempFileName);
 				m_nSaveProgress = 100;
-				((CUImagerApp*)::AfxGetApp())->MovDetSaveReservationRemove(dwCurrentThreadId);
+				((CUImagerApp*)::AfxGetApp())->SaveReservationRemove(dwCurrentThreadId);
 				::DeleteDir(sTempDetectionDir);
 				return 0;
 			}
@@ -1016,9 +1016,14 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 	// Init
 	CDib Dib;
 	Dib.SetShowMessageBoxOnError(FALSE);
+	DWORD dwCurrentThreadId = ::GetCurrentThreadId();
 	CAVRec* pAVRecVideo = NULL;
 	CString sVideoFileName = MakeVideoHistoryFileName();
 	CString sVideoTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), sVideoFileName);
+	CSortableFileFind FileFind;
+	FileFind.AddAllowedExtension(_T("jpg"));
+	CString sDir(::GetDriveAndDirName(sVideoFileName));
+	sDir.TrimRight(_T('\\'));
 
 	// Send E-Mail
 	if (m_pDoc->m_bSendMailRecording && m_pDoc->m_AttachmentType == CVideoDeviceDoc::ATTACHMENT_NONE)
@@ -1028,11 +1033,14 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 	if (m_pDoc->m_bExecCommand && m_pDoc->m_nExecCommandMode == 0)
 		m_pDoc->ExecCommand();
 
+	// Can we start saving?
+	while (((CUImagerApp*)::AfxGetApp())->SaveReservation(dwCurrentThreadId) == FALSE)
+	{
+		if (::WaitForSingleObject(GetKillEvent(), CAN_SAVE_POLL_MS) == WAIT_OBJECT_0)
+			goto exit;
+	}
+
 	// Find and process jpg snapshot history files
-	CSortableFileFind FileFind;
-	FileFind.AddAllowedExtension(_T("jpg"));
-	CString sDir(::GetDriveAndDirName(sVideoFileName));
-	sDir.TrimRight(_T('\\'));
 	if (FileFind.Init(sDir + _T("\\*")))
 	{
 		for (int pos = 0 ; pos < FileFind.GetFilesCount() ; pos++)
@@ -1120,6 +1128,7 @@ exit:
 	if (pAVRecVideo)
 		delete pAVRecVideo;
 	::DeleteFile(sVideoTempFileName);
+	((CUImagerApp*)::AfxGetApp())->SaveReservationRemove(dwCurrentThreadId);
 
 	return 0;
 }

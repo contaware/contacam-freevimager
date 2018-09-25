@@ -58,6 +58,7 @@ class CCameraAdvancedSettingsDlg;
 #define MIN_DISK_FREE_PERMILLION			50000		// 5%
 #define DEFAULT_EMAIL_SUBJECT				_T("%name%: %date% %time% %note%")
 #define PLACEMENT_THRESHOLD_PIXELS			50			// to make sure that the saved placement is visible
+#define CAN_SAVE_POLL_MS					1000U		// ms
 
 // Frame tag, thumb message and draw message
 #define FRAMETAG_REFWIDTH					640
@@ -108,7 +109,6 @@ class CCameraAdvancedSettingsDlg;
 #define MOVDET_MIN_ZONES_XORY				4			// Minimum number of zones in X or Y direction
 #define MOVDET_ZONE_FORMAT					_T("DoMovementDetection%03i")
 #define MOVDET_ZONES_BLOCK_FORMAT			_T("MovDetZones%i")
-#define MOVDET_SAVEFRAMES_POLL				1000U		// ms
 #define MOVDET_DEFAULT_MAX_FRAMES_IN_LIST	1000		// Default maximum frames per list
 #define MOVDET_MAX_MAX_FRAMES_IN_LIST		14999		// Upper limit for the maximum frames per list
 #define MOVDET_SAVE_MIN_FRAMERATE_RATIO		0.3			// Min ratio between calculated (last - first) and m_dEffectiveFrameRate
