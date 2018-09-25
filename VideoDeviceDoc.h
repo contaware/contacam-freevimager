@@ -94,6 +94,7 @@ class CCameraAdvancedSettingsDlg;
 #define DEFAULT_SNAPSHOT_LIVE_JPEGNAME		_T("snapshot.jpg")
 #define DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME	_T("snapshot_thumb.jpg")
 #define DEFAULT_SNAPSHOT_COMPR_QUALITY		60			// 0 Worst Quality, 100 Best Quality
+#define GOOD_SNAPSHOT_COMPR_QUALITY			90			// 0 Worst Quality, 100 Best Quality
 #define DEFAULT_SNAPSHOT_THUMB_WIDTH		228			// Must be a multiple of 4 because of stretch and codec
 #define DEFAULT_SNAPSHOT_THUMB_HEIGHT		172			// Must be a multiple of 4 because of stretch and codec
 #define DEFAULT_SERVERPUSH_POLLRATE_MS		200			// ms

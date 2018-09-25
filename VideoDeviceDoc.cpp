@@ -1201,7 +1201,7 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	// We need the History jpgs to make the video file inside the snapshot video thread
 	// (history jpgs are deleted in snapshot video thread)
 	if (m_pDoc->m_nCameraUsage == 1)
-		::CopyFile(sTempFileName, sHistoryFileName, FALSE);
+		CVideoDeviceDoc::SaveJpegFast(&m_Dib, &m_MJPEGEncoder, sHistoryFileName, GOOD_SNAPSHOT_COMPR_QUALITY);
 
 	// Clean-up
 	::DeleteFile(sTempFileName);
@@ -7470,10 +7470,8 @@ void CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 		AddNoDonationTag(&Dib, m_nRefFontSize);
 
 	// Save to JPEG File
-	// (for manual snapshots use better quality with DEFAULT_JPEGCOMPRESSION
-	// instead of DEFAULT_SNAPSHOT_COMPR_QUALITY)
 	CMJPEGEncoder MJPEGEncoder;
-	BOOL res = CVideoDeviceDoc::SaveJpegFast(&Dib, &MJPEGEncoder, sFileName, DEFAULT_JPEGCOMPRESSION);
+	BOOL res = CVideoDeviceDoc::SaveJpegFast(&Dib, &MJPEGEncoder, sFileName, GOOD_SNAPSHOT_COMPR_QUALITY);
 
 	// Clear flag
 	m_bDoEditSnapshot = FALSE;
