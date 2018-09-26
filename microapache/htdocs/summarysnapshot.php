@@ -246,6 +246,18 @@ if ($handle = @opendir($dir)) {
 		$path_parts = pathinfo($file);
 		if (is_file("$dir/$file")) {
 			list($file_prefix, $file_year, $file_month, $file_day, $file_hour, $file_min, $file_sec, $file_postfix) = sscanf($file, "%[a-z,A-Z]_%d_%d_%d_%d_%d_%d_%[a-z,A-Z]");
+			if (!isset($file_year))
+				$file_year = 2000;
+			if (!isset($file_month))
+				$file_month = 1;
+			if (!isset($file_day))
+				$file_day = 1;
+			if (!isset($file_hour))
+				$file_hour = 0;
+			if (!isset($file_min))
+				$file_min = 0;
+			if (!isset($file_sec))
+				$file_sec = 0;
 			$hasgif = is_file($dir."/".basename($file, ".".$path_parts['extension']).".gif");
 			if ($path_parts['extension'] == 'gif' ||				// Gif thumb
 				($path_parts['extension'] == 'mp4' && !$hasgif)) {	// Mp4 without Gif thumb
@@ -325,8 +337,13 @@ if ($handle = @opendir($dir)) {
 					else
 						echo "<a href=\"#\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"download.php?embed=yes&amp;file=$gifuri_get\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a>";
 				}
-				else if ($path_parts['extension'] == 'mp4')
-					echo strtoupper($file_prefix) . "<br /><a href=\"mp4.php?file=$mp4uri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\" >$file_timestamp</a>";
+				else if ($path_parts['extension'] == 'mp4') {
+					$file_prefix_upper = strtoupper($file_prefix);
+					if ($file_prefix_upper == 'SHOT')
+						echo "REC<br /><a href=\"mp4.php?file=$mp4uri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\" >" . FULLDAY . "</a>";
+					else
+						echo "$file_prefix_upper<br /><a href=\"mp4.php?file=$mp4uri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\" >$file_timestamp</a>";
+				}
 				if ($show_trash_command)
 					echo "<a class=\"trashbuttons\" href=\"recycle.php?year=$selected_year_string&amp;month=$selected_month_string&amp;day=$selected_day_string&amp;filenamenoext=$filenamenoext&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\">&#x2718;&nbsp;</a>";
 				echo "</span>";

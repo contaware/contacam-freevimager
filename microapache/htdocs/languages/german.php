@@ -11,3 +11,4 @@ define("NOFILESFOR","Kein File für");
 define("PAGES","Seiten");
 define("IMAGERELOADIN","Bild lädt in");
 define("SECONDS","Sekunden");
+define("FULLDAY","Ganzen Tag");

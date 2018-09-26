@@ -11,3 +11,4 @@ define("NOFILESFOR","Không có tệp trong");
 define("PAGES","trang");
 define("IMAGERELOADIN","Ảnh sẽ nạp lại sau");
 define("SECONDS","giây");
+define("FULLDAY","Cả ngày");
