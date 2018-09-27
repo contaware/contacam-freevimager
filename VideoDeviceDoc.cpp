@@ -609,7 +609,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 
 		// Log error
 		if (dwLoadDetFrameErrorCode != ERROR_SUCCESS)
-			::LogLine(_T("%s"), ML_STRING(1815, "OUT OF MEMORY / OVERLOAD (while retrieving from buffer): dropping frames"));
+			::LogLine(ML_STRING(1815, "OUT OF MEMORY / OVERLOAD (0x%08X): dropping frames"), dwLoadDetFrameErrorCode);
 	}
 	ASSERT(FALSE); // should never end up here...
 	return 0;
@@ -2066,7 +2066,7 @@ end_of_software_detection:
 	if (dwError != ERROR_SUCCESS)
 	{
 		((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = bDropFrame = TRUE;
-		::LogLine(_T("%s"), ML_STRING(1817, "OUT OF MEMORY / OVERLOAD (while storing to buffer): dropping frames"));
+		::LogLine(ML_STRING(1815, "OUT OF MEMORY / OVERLOAD (0x%08X): dropping frames"), dwError);
 	}
 
 	// Drop frames
@@ -7773,7 +7773,7 @@ __forceinline CDib* CVideoDeviceDoc::AllocDetFrame(CDib* pDib)
 
 __forceinline DWORD CVideoDeviceDoc::AddNewFrameToNewestList(BOOL bMarkStart, CDib* pDib)
 {
-	DWORD dwError = 0x20000010;	// custom error code
+	DWORD dwError = 0x20100000;	// custom error code
 	if (pDib)
 	{
 		::EnterCriticalSection(&m_csMovementDetectionsList);
@@ -7822,7 +7822,7 @@ __forceinline DWORD CVideoDeviceDoc::AddNewFrameToNewestList(BOOL bMarkStart, CD
 
 __forceinline DWORD CVideoDeviceDoc::AddNewFrameToNewestListAndShrink(CDib* pDib)
 {
-	DWORD dwError = 0x20000011;	// custom error code
+	DWORD dwError = 0x20110000;	// custom error code
 	if (pDib)
 	{
 		::EnterCriticalSection(&m_csMovementDetectionsList);

@@ -335,14 +335,15 @@ void CDib::FreeList(CDib::LIST& l)
 
 #ifdef VIDEODEVICEDOC
 // Note: Error codes are 32-bit values (bit 31 is the most significant bit).
-//       Bit 29 is reserved for application-defined error codes.
+//       Bit 29 is reserved for application-defined error codes, no system
+//       error code has this bit set!
 DWORD CDib::BitsToSharedMemory()
 {
 	// Check
 	if (m_hBitsSharedMemory)
-		return 0x20000001;	// custom error code
+		return 0x20010000;	// custom error code
 	if (m_dwSharedMemorySize > 0)
-		return 0x20000002;	// custom error code
+		return 0x20020000;	// custom error code
 
 	// Calculate Shared Memory Size
 	DWORD dwSharedMemorySize = CalcSharedMemorySize();
@@ -388,7 +389,7 @@ DWORD CDib::BitsToSharedMemory()
 											dwSharedMemorySize,		// maximum object size (low-order DWORD)
 											NULL);					// no name for mapping object
 	if (mapping == NULL)
-		return ::GetLastError();
+		return (::GetLastError() | 0x20030000); // add a custom error code so we know it comes from CreateFileMapping()
 
 	// Map
 	void* region = ::MapViewOfFile(	mapping,				// handle to map object
@@ -398,7 +399,7 @@ DWORD CDib::BitsToSharedMemory()
 									dwSharedMemorySize);	// number of bytes to map
 	if (region == NULL)
 	{
-		DWORD dwLastError = ::GetLastError();
+		DWORD dwLastError = (::GetLastError() | 0x20040000); // add a custom error code so we know it comes from MapViewOfFile()
 		::CloseHandle(mapping);	// free if we cannot map into address space
 		return dwLastError;
 	}
@@ -460,9 +461,9 @@ DWORD CDib::SharedMemoryToBits()
 {
 	// Check
 	if (!m_hBitsSharedMemory)
-		return 0x20000005;	// custom error code
+		return 0x20050000;	// custom error code
 	if (m_dwSharedMemorySize == 0)
-		return 0x20000006;	// custom error code
+		return 0x20060000;	// custom error code
 
 	// Map
 	void* region = ::MapViewOfFile(	m_hBitsSharedMemory,	// handle to map object
@@ -471,7 +472,7 @@ DWORD CDib::SharedMemoryToBits()
 									0,						// offset low, the offset must be a multiple of the allocation granularity
 									m_dwSharedMemorySize);	// number of bytes to map
 	if (region == NULL)
-		return ::GetLastError();
+		return (::GetLastError() | 0x20070000); // add a custom error code so we know it comes from MapViewOfFile()
 
 	// Copy image bits
 	LPBYTE p = (LPBYTE)region;
@@ -485,7 +486,7 @@ DWORD CDib::SharedMemoryToBits()
 		if (!m_pBits)
 		{
 			::UnmapViewOfFile(region);
-			return 0x20000007;	// custom error code
+			return 0x20080000;	// custom error code
 		}
 		memcpy(m_pBits, p, GetImageSize());
 		p += GetImageSize();
@@ -506,7 +507,7 @@ DWORD CDib::SharedMemoryToBits()
 			if (!UserBuf.m_pBuf)
 			{
 				::UnmapViewOfFile(region);
-				return 0x20000008;	// custom error code
+				return 0x20090000;	// custom error code
 			}
 			memcpy(UserBuf.m_pBuf, p, UserBuf.m_dwSize);
 			p += UserBuf.m_dwSize;
