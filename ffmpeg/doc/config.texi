@@ -906,8 +906,8 @@
 @c @set config-ac3-fixed-decoder no
 @c @set config-alac-decoder no
 @c @set config-als-decoder no
-@c @set config-amrnb-decoder no
-@c @set config-amrwb-decoder no
+@set config-amrnb-decoder yes
+@set config-amrwb-decoder yes
 @c @set config-ape-decoder no
 @c @set config-atrac1-decoder no
 @c @set config-atrac3-decoder no
