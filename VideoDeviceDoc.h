@@ -91,7 +91,7 @@ class CCameraAdvancedSettingsDlg;
 #define MIN_SNAPSHOT_RATE					1			// one snapshot per second
 #define DEFAULT_SNAPSHOT_RATE				1			// each given seconds
 #define DEFAULT_SNAPSHOT_HISTORY_RATE		30			// each given seconds
-#define DEFAULT_SNAPSHOT_HISTORY_FRAMERATE	15.0		// fps
+#define DEFAULT_SNAPSHOT_HISTORY_FRAMERATE	30			// fps
 #define DEFAULT_SNAPSHOT_LIVE_JPEGNAME		_T("snapshot.jpg")
 #define DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME	_T("snapshot_thumb.jpg")
 #define DEFAULT_SNAPSHOT_COMPR_QUALITY		60			// 0 Worst Quality, 100 Best Quality
@@ -887,6 +887,7 @@ public:
 	volatile int m_nSnapshotRate;						// Snapshot rate in seconds
 	volatile int m_nSnapshotRateMs;						// Snapshot rate in ms, effective: 1000 * m_nSnapshotRate + m_nSnapshotRateMs
 	volatile int m_nSnapshotHistoryRate;				// Snapshot history rate in seconds
+	volatile int m_nSnapshotHistoryFrameRate;			// Snapshot history video framerate
 	volatile int m_nSnapshotThumbWidth;					// Snapshot thumbnail width
 	volatile int m_nSnapshotThumbHeight;				// Snapshot thumbnail height
 	volatile DWORD m_dwNextSnapshotUpTime;				// The up-time of the next snapshot

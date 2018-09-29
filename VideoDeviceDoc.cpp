@@ -1059,7 +1059,7 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 						// Open
 						if (!pAVRecVideo->IsOpen())
 						{
-							AVRational FrameRate = av_d2q(DEFAULT_SNAPSHOT_HISTORY_FRAMERATE, MAX_SIZE_FOR_RATIONAL);
+							AVRational FrameRate = av_d2q((double)m_pDoc->m_nSnapshotHistoryFrameRate, MAX_SIZE_FOR_RATIONAL);
 							BITMAPINFOHEADER DstBmi;
 							memset(&DstBmi, 0, sizeof(BITMAPINFOHEADER));
 							DstBmi.biSize = sizeof(BITMAPINFOHEADER);
@@ -3529,6 +3529,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nSnapshotRate = DEFAULT_SNAPSHOT_RATE;
 	m_nSnapshotRateMs = 0;
 	m_nSnapshotHistoryRate = DEFAULT_SNAPSHOT_HISTORY_RATE;
+	m_nSnapshotHistoryFrameRate = DEFAULT_SNAPSHOT_HISTORY_FRAMERATE;
 	m_nSnapshotThumbWidth = DEFAULT_SNAPSHOT_THUMB_WIDTH;
 	m_nSnapshotThumbHeight = DEFAULT_SNAPSHOT_THUMB_HEIGHT;
 	m_dwNextSnapshotUpTime = 0U;
@@ -4307,6 +4308,7 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_nSnapshotRate = (int) pApp->GetProfileInt(sSection, _T("SnapshotRate"), DEFAULT_SNAPSHOT_RATE);
 	m_nSnapshotRateMs = (int) pApp->GetProfileInt(sSection, _T("SnapshotRateMs"), 0);
 	m_nSnapshotHistoryRate = (int)pApp->GetProfileInt(sSection, _T("SnapshotHistoryRate"), DEFAULT_SNAPSHOT_HISTORY_RATE);
+	m_nSnapshotHistoryFrameRate = (int)pApp->GetProfileInt(sSection, _T("SnapshotHistoryFrameRate"), DEFAULT_SNAPSHOT_HISTORY_FRAMERATE);
 	m_nSnapshotThumbWidth = (int) MakeSizeMultipleOf4(pApp->GetProfileInt(sSection, _T("SnapshotThumbWidth"), DEFAULT_SNAPSHOT_THUMB_WIDTH));
 	m_nSnapshotThumbHeight = (int) MakeSizeMultipleOf4(pApp->GetProfileInt(sSection, _T("SnapshotThumbHeight"), DEFAULT_SNAPSHOT_THUMB_HEIGHT));
 	m_bCaptureAudio = (BOOL) pApp->GetProfileInt(sSection, _T("CaptureAudio"), FALSE);
@@ -4463,6 +4465,7 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("SnapshotRate"), m_nSnapshotRate);
 	pApp->WriteProfileInt(sSection, _T("SnapshotRateMs"), m_nSnapshotRateMs);
 	pApp->WriteProfileInt(sSection, _T("SnapshotHistoryRate"), m_nSnapshotHistoryRate);
+	pApp->WriteProfileInt(sSection, _T("SnapshotHistoryFrameRate"), m_nSnapshotHistoryFrameRate);
 	pApp->WriteProfileInt(sSection, _T("SnapshotThumbWidth"), m_nSnapshotThumbWidth);
 	pApp->WriteProfileInt(sSection, _T("SnapshotThumbHeight"), m_nSnapshotThumbHeight);
 	pApp->WriteProfileInt(sSection, _T("CaptureAudio"), m_bCaptureAudio);
