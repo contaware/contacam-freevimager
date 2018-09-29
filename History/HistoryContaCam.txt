@@ -3,6 +3,8 @@ CONTACAM HISTORY
 9.0.3 (October 1st 2018)
 
 - Updated Tabs and bottom-right popup Message Box fonts
+- Merged the "Snapshots as daily history video" usage into the
+  "Motion detection surveillance" usage 
 
 9.0.1 (September 19th 2018)
 
