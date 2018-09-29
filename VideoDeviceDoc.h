@@ -90,6 +90,7 @@ class CCameraAdvancedSettingsDlg;
 // Snapshot
 #define MIN_SNAPSHOT_RATE					1			// one snapshot per second
 #define DEFAULT_SNAPSHOT_RATE				1			// each given seconds
+#define DEFAULT_SNAPSHOT_HISTORY_RATE		30			// each given seconds
 #define DEFAULT_SNAPSHOT_HISTORY_FRAMERATE	15.0		// fps
 #define DEFAULT_SNAPSHOT_LIVE_JPEGNAME		_T("snapshot.jpg")
 #define DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME	_T("snapshot_thumb.jpg")
@@ -497,10 +498,11 @@ public:
 	class CSaveSnapshotThread : public CWorkerThread
 	{
 		public:
-			CSaveSnapshotThread(){m_pDoc = NULL;};
+			CSaveSnapshotThread(){m_pDoc = NULL; m_LastSnapshotHistoryTime = CTime(0);};
 			virtual ~CSaveSnapshotThread() {Kill();};
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
 			CDib m_Dib;
+			CTime m_LastSnapshotHistoryTime;
 			CTime m_Time;
 
 		protected:
@@ -805,7 +807,7 @@ public:
 	CTime m_CaptureStartTime;							// Grabbing device started at this time
 	CString m_sLastConnectionError;						// Last connection error
 	CRITICAL_SECTION m_csConnectionError;				// Critical section for the connection error
-	volatile int m_nCameraUsage;						// 0: Motion detection, 1: Snapshots history, 2: Continuous recording
+	volatile int m_nCameraUsage;						// 0: Motion detection and daily snapshots history, 1: Continuous/manual recording
 	volatile BOOL m_bObscureSource;						// Flag indicating whether the source has to be obscured
 	volatile BOOL m_bShowFrameTime;						// Show / Hide Frame Time Inside the Frame (frame time is also recorded)
 	volatile int m_nRefFontSize;						// Minimum font size for frame time, detection indicator and save progress
@@ -884,6 +886,7 @@ public:
 	volatile BOOL m_bSendMailLiveSnapshot;				// Email Jpeg live snapshot file
 	volatile int m_nSnapshotRate;						// Snapshot rate in seconds
 	volatile int m_nSnapshotRateMs;						// Snapshot rate in ms, effective: 1000 * m_nSnapshotRate + m_nSnapshotRateMs
+	volatile int m_nSnapshotHistoryRate;				// Snapshot history rate in seconds
 	volatile int m_nSnapshotThumbWidth;					// Snapshot thumbnail width
 	volatile int m_nSnapshotThumbHeight;				// Snapshot thumbnail height
 	volatile DWORD m_dwNextSnapshotUpTime;				// The up-time of the next snapshot

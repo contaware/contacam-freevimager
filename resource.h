@@ -2954,7 +2954,6 @@
 #define IDC_STATIC2495                  2495
 #define IDC_CHECK_WEBSERVER             2501
 #define IDC_RADIO_MOVDET                2519
-#define IDC_RADIO_SNAPSHOT              2520
 #define IDC_RADIO_MANUAL                2521
 #define IDC_COMBO_KEEPFOR               2523
 #define IDC_EDIT_NAME                   2524

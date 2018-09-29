@@ -231,8 +231,6 @@ void CCameraBasicSettingsDlg::EnableDisableAllCtrls(BOOL bEnable)
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_RADIO_MOVDET);
 	pCheck->EnableWindow(bEnable);
-	pCheck = (CButton*)GetDlgItem(IDC_RADIO_SNAPSHOT);
-	pCheck->EnableWindow(bEnable);
 	pCheck = (CButton*)GetDlgItem(IDC_RADIO_MANUAL);
 	pCheck->EnableWindow(bEnable);
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_AUTORUN);
@@ -581,58 +579,6 @@ void CCameraBasicSettingsDlg::ApplySettings()
 			break;
 		}
 		case 1 :
-		{
-			// Disable recording
-			bDoRecording = FALSE;
-			if (m_pDoc->m_nDetectionLevel != 100)
-				m_pDoc->m_nDetectionLevel = 100;
-			if (m_pDoc->m_nMilliSecondsRecBeforeMovementBegin != 1000)
-				m_pDoc->m_nMilliSecondsRecBeforeMovementBegin = 1000;
-			if (m_pDoc->m_nMilliSecondsRecAfterMovementEnd != 1000)
-				m_pDoc->m_nMilliSecondsRecAfterMovementEnd = 1000;
-			if (m_pDoc->m_nDetectionMinLengthMilliSeconds != 0)
-				m_pDoc->m_nDetectionMinLengthMilliSeconds = 0;
-			if (m_pDoc->m_pCameraAdvancedSettingsDlg)
-			{
-				m_pDoc->m_pCameraAdvancedSettingsDlg->m_nSecondsBeforeMovementBegin = m_pDoc->m_nMilliSecondsRecBeforeMovementBegin / 1000;
-				m_pDoc->m_pCameraAdvancedSettingsDlg->m_nSecondsAfterMovementEnd = m_pDoc->m_nMilliSecondsRecAfterMovementEnd / 1000;
-				m_pDoc->m_pCameraAdvancedSettingsDlg->m_nDetectionMinLengthSeconds = m_pDoc->m_nDetectionMinLengthMilliSeconds / 1000;
-				m_pDoc->m_pCameraAdvancedSettingsDlg->UpdateData(FALSE); // update data from vars to view
-			}
-
-			// Init size vars
-			CString sWidth, sHeight;
-			sWidth.Format(_T("%d"), m_pDoc->m_DocRect.right);
-			sHeight.Format(_T("%d"), m_pDoc->m_DocRect.bottom);
-
-			// Init snapshot rate var
-			double dCurrentSnapshotRate = (double)(m_pDoc->m_nSnapshotRate) + (double)(m_pDoc->m_nSnapshotRateMs) / 1000.0;
-			double dSnapshotRate = dCurrentSnapshotRate > MIN_SNAPSHOT_RATE ? dCurrentSnapshotRate : 300.0; // 5 Minutes
-
-			// Init thumb vars
-			int nThumbWidth = (	m_pDoc->m_nSnapshotThumbWidth < 4 * DEFAULT_SNAPSHOT_THUMB_WIDTH / 3 &&
-								m_pDoc->m_nSnapshotThumbWidth > 2 * DEFAULT_SNAPSHOT_THUMB_WIDTH / 3) ?
-								m_pDoc->m_nSnapshotThumbWidth : DEFAULT_SNAPSHOT_THUMB_WIDTH;
-			int nThumbHeight = (m_pDoc->m_nSnapshotThumbHeight < 4 * DEFAULT_SNAPSHOT_THUMB_HEIGHT / 3 &&
-								m_pDoc->m_nSnapshotThumbHeight > 2 * DEFAULT_SNAPSHOT_THUMB_HEIGHT / 3) ?
-								m_pDoc->m_nSnapshotThumbHeight : DEFAULT_SNAPSHOT_THUMB_HEIGHT;
-			CString sThumbWidth, sThumbHeight;
-			sThumbWidth.Format(_T("%d"), nThumbWidth);
-			sThumbHeight.Format(_T("%d"), nThumbHeight);
-
-			// Update configuration.php
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SNAPSHOTHISTORY_PHP);
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_WIDTH, sWidth);
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_HEIGHT, sHeight);
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBWIDTH, sThumbWidth);
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBHEIGHT, sThumbHeight);
-
-			// Update snapshot settings
-			ApplySettingsSnapshot(nThumbWidth, nThumbHeight, dSnapshotRate);
-
-			break;
-		}
-		case 2 :
 		{
 			// Disable recording
 			bDoRecording = FALSE;
