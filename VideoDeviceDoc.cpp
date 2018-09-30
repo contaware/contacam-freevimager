@@ -1105,11 +1105,6 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 		// Copy from temp to snapshots folder
 		::CopyFile(sVideoTempFileName, sVideoFileName, FALSE);
 
-		// Send E-Mail
-		if (m_pDoc->m_bSendMailRecording &&
-			(m_pDoc->m_AttachmentType == CVideoDeviceDoc::ATTACHMENT_VIDEO || m_pDoc->m_AttachmentType == CVideoDeviceDoc::ATTACHMENT_JPG_VIDEO))
-			CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), m_Time, _T("REC"), _T(""), sVideoFileName);
-
 		// Execute Command
 		if (m_pDoc->m_bExecCommand && m_pDoc->m_nExecCommandMode == 1)
 			m_pDoc->ExecCommand(TRUE, m_Time, sVideoFileName);
