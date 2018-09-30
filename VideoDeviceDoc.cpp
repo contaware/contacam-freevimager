@@ -1184,13 +1184,11 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	CVideoDeviceDoc::SaveJpegFast(&DibThumb, &m_MJPEGThumbEncoder, sTempThumbFileName, DEFAULT_SNAPSHOT_COMPR_QUALITY);
 	
 	// Live
-	// Attention: the user is responsible to make sure that the mail program
-	//            and the executed program are fast enough to avoid that the
-	//            passed live snapshots get overwritten with the next shot!
+	// Attention: the user is responsible to make sure that the executed
+	//            program is fast enough to avoid that the passed live
+	//            snapshots get overwritten with the next shot!
 	::CopyFile(sTempFileName, sLiveFileName, FALSE);
 	::CopyFile(sTempThumbFileName, sLiveThumbFileName, FALSE);
-	if (m_pDoc->m_bSendMailLiveSnapshot)
-		CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), m_Time, _T("REC"), _T(""), sLiveFileName);
 	if (m_pDoc->m_bExecCommand && m_pDoc->m_nExecCommandMode == 2)
 		m_pDoc->ExecCommand(TRUE, m_Time, sLiveFileName, sLiveThumbFileName);
 
@@ -3521,7 +3519,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_HttpGetFrameLocations.Add(_T("/")); // first element must be valid ("/" => try home to see whether cam is reachable)
 
 	// Snapshot
-	m_bSendMailLiveSnapshot = FALSE;
 	m_nSnapshotRate = DEFAULT_SNAPSHOT_RATE;
 	m_nSnapshotRateMs = 0;
 	m_nSnapshotHistoryRate = DEFAULT_SNAPSHOT_HISTORY_RATE;
@@ -4300,7 +4297,6 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	CString sRecordAutoSaveDir = m_sRecordAutoSaveDir;
 	sRecordAutoSaveDir.TrimRight(_T('\\'));
 	m_bObscureSource = ::IsExistingFile(sRecordAutoSaveDir + _T("\\") + CAMERA_IS_OBSCURED_FILENAME);
-	m_bSendMailLiveSnapshot = (BOOL)pApp->GetProfileInt(sSection, _T("SendMailLiveSnapshot"), FALSE);
 	m_nSnapshotRate = (int) pApp->GetProfileInt(sSection, _T("SnapshotRate"), DEFAULT_SNAPSHOT_RATE);
 	m_nSnapshotRateMs = (int) pApp->GetProfileInt(sSection, _T("SnapshotRateMs"), 0);
 	m_nSnapshotHistoryRate = (int)pApp->GetProfileInt(sSection, _T("SnapshotHistoryRate"), DEFAULT_SNAPSHOT_HISTORY_RATE);
@@ -4457,7 +4453,6 @@ void CVideoDeviceDoc::SaveSettings()
 	// All other
 	pApp->WriteProfileInt(sSection, _T("Rotate180"), (int)m_bRotate180);
 	pApp->WriteProfileString(sSection, _T("RecordAutoSaveDir"), m_sRecordAutoSaveDir);
-	pApp->WriteProfileInt(sSection, _T("SendMailLiveSnapshot"), (int)m_bSendMailLiveSnapshot);
 	pApp->WriteProfileInt(sSection, _T("SnapshotRate"), m_nSnapshotRate);
 	pApp->WriteProfileInt(sSection, _T("SnapshotRateMs"), m_nSnapshotRateMs);
 	pApp->WriteProfileInt(sSection, _T("SnapshotHistoryRate"), m_nSnapshotHistoryRate);

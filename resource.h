@@ -1220,7 +1220,6 @@
 #define IDC_EXEC_COMMAND                1231
 #define IDS_MULTILANG_1232              1232
 #define IDS_MULTILANG_1233              1233
-#define IDC_CHECK_SENDMAIL_LIVE_SNAPSHOT 1233
 #define IDS_MULTILANG_1234              1234
 #define IDS_MULTILANG_1235              1235
 #define IDS_MULTILANG_1236              1236

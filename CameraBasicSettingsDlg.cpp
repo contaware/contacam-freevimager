@@ -43,7 +43,6 @@ void CCameraBasicSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_TRASHCOMMAND, m_bCheckTrashCommand);
 	DDX_Check(pDX, IDC_CHECK_CAMERACOMMANDS, m_bCheckCameraCommands);
 	DDX_Check(pDX, IDC_CHECK_SENDMAIL_MALFUNCTION, m_bCheckSendMailMalfunction);
-	DDX_Check(pDX, IDC_CHECK_SENDMAIL_LIVE_SNAPSHOT, m_bCheckSendMailLiveSnapshot);
 	DDX_Check(pDX, IDC_CHECK_SENDMAIL_RECORDING, m_bCheckSendMailRecording);
 	DDX_CBIndex(pDX, IDC_ATTACHMENT, m_nComboSendMailAttachment);
 	DDX_Text(pDX, IDC_EDIT_SENDMAIL_SEC_BETWEEN_MSG, m_nSendMailSecBetweenMsg);
@@ -52,7 +51,6 @@ void CCameraBasicSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_MIN_DISK_FREE_PERCENT, m_sMinDiskFreePercent);
 	//}}AFX_DATA_MAP
 }
-
 
 BEGIN_MESSAGE_MAP(CCameraBasicSettingsDlg, CDialog)
 	//{{AFX_MSG_MAP(CCameraBasicSettingsDlg)
@@ -203,7 +201,6 @@ BOOL CCameraBasicSettingsDlg::OnInitDialog()
 	}
 	m_bCheckSendMailMalfunction = m_pDoc->m_bSendMailMalfunction;
 	m_bCheckSendMailRecording = m_pDoc->m_bSendMailRecording;
-	m_bCheckSendMailLiveSnapshot = m_pDoc->m_bSendMailLiveSnapshot;
 	m_nComboSendMailAttachment = m_pDoc->m_AttachmentType;
 	m_nSendMailSecBetweenMsg = m_pDoc->m_nMovDetSendMailSecBetweenMsg;
 	m_CurrentSendMailConfiguration = m_pDoc->m_SendMailConfiguration;
@@ -254,8 +251,6 @@ void CCameraBasicSettingsDlg::EnableDisableAllCtrls(BOOL bEnable)
 	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_MIN_DISK_FREE_PERCENT);
 	pEdit->EnableWindow(bEnable);
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SENDMAIL_MALFUNCTION);
-	pCheck->EnableWindow(bEnable);
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SENDMAIL_LIVE_SNAPSHOT);
 	pCheck->EnableWindow(bEnable);
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SENDMAIL_RECORDING);
 	pCheck->EnableWindow(bEnable);
@@ -671,7 +666,6 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	// Update send mail variables
 	m_pDoc->m_bSendMailMalfunction = m_bCheckSendMailMalfunction;
 	m_pDoc->m_bSendMailRecording = m_bCheckSendMailRecording;
-	m_pDoc->m_bSendMailLiveSnapshot = m_bCheckSendMailLiveSnapshot;
 	m_pDoc->m_AttachmentType = (CVideoDeviceDoc::AttachmentType)m_nComboSendMailAttachment;
 	m_pDoc->m_nMovDetSendMailSecBetweenMsg = m_nSendMailSecBetweenMsg;
 	m_pDoc->m_SendMailConfiguration = m_CurrentSendMailConfiguration;

@@ -884,7 +884,6 @@ public:
 	CStringArray m_HttpGetFrameLocations;				// Automatic camera type detection query string
 
 	// Snapshot Vars
-	volatile BOOL m_bSendMailLiveSnapshot;				// Email Jpeg live snapshot file
 	volatile int m_nSnapshotRate;						// Snapshot rate in seconds
 	volatile int m_nSnapshotRateMs;						// Snapshot rate in ms, effective: 1000 * m_nSnapshotRate + m_nSnapshotRateMs
 	volatile int m_nSnapshotHistoryRate;				// Snapshot history rate in seconds
