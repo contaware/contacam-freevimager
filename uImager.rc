@@ -4104,6 +4104,7 @@ BEGIN
     IDS_STRING1842          "Recording start"
     IDS_STRING1843          "Recording saving done"
     IDS_STRING1844          "Snapshot"
+    IDS_STRING1845          "Daily summary"
     IDS_STRING1849          "Saved"
     IDS_STRING1850          "Save Failed!"
     IDS_STRING1852          "Name"

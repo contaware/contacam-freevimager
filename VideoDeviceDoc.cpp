@@ -577,12 +577,9 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			}
 		}
 
-		// Execute Command After Save
+		// Execute Command
 		if (m_pDoc->m_bExecCommand && m_pDoc->m_nExecCommandMode == 1)
-		{
-			m_pDoc->ExecCommand(TRUE, FirstTime,
-								sVideoFileName, sGIFFileName);
-		}
+			m_pDoc->ExecCommand(TRUE, FirstTime, sVideoFileName, sGIFFileName);
 
 		// Increment saves count and store settings
 		nMovDetSavesCount++;
@@ -1106,7 +1103,7 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 		::CopyFile(sVideoTempFileName, sVideoFileName, FALSE);
 
 		// Execute Command
-		if (m_pDoc->m_bExecCommand && m_pDoc->m_nExecCommandMode == 1)
+		if (m_pDoc->m_bExecCommand && m_pDoc->m_nExecCommandMode == 3)
 			m_pDoc->ExecCommand(TRUE, m_Time, sVideoFileName);
 	}
 
@@ -1178,12 +1175,14 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	CVideoDeviceDoc::SaveJpegFast(&m_Dib, &m_MJPEGEncoder, sTempFileName, DEFAULT_SNAPSHOT_COMPR_QUALITY);
 	CVideoDeviceDoc::SaveJpegFast(&DibThumb, &m_MJPEGThumbEncoder, sTempThumbFileName, DEFAULT_SNAPSHOT_COMPR_QUALITY);
 	
-	// Live
+	// Go Live
+	::CopyFile(sTempFileName, sLiveFileName, FALSE);
+	::CopyFile(sTempThumbFileName, sLiveThumbFileName, FALSE);
+
+	// Execute Command
 	// Attention: the user is responsible to make sure that the executed
 	//            program is fast enough to avoid that the passed live
 	//            snapshots get overwritten with the next shot!
-	::CopyFile(sTempFileName, sLiveFileName, FALSE);
-	::CopyFile(sTempThumbFileName, sLiveThumbFileName, FALSE);
 	if (m_pDoc->m_bExecCommand && m_pDoc->m_nExecCommandMode == 2)
 		m_pDoc->ExecCommand(TRUE, m_Time, sLiveFileName, sLiveThumbFileName);
 
