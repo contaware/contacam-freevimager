@@ -39,7 +39,3 @@ ContaCam Program
   from the webcam microphone would stop getting captured until that second person
   logged out. This is under Windows 10; I tried running ContaCam as a Service and
   it made no difference to this problem (shep@bostin.com)
-- Join Snapshots history with motion detection, present as link "00:00-23:59"
-  (Day Summary) which points to the .mp4, if somebody wants only the summary just
-  disable motion detection, if somebody doesn't want the summary switch to manual
-  mode and enable the motion detection
