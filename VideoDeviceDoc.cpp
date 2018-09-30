@@ -1025,13 +1025,9 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 	CString sDir(::GetDriveAndDirName(sVideoFileName));
 	sDir.TrimRight(_T('\\'));
 
-	// Send E-Mail
-	if (m_pDoc->m_bSendMailRecording && m_pDoc->m_AttachmentType == CVideoDeviceDoc::ATTACHMENT_NONE)
-		CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), m_Time, _T("REC"));
-
-	// Execute Command
-	if (m_pDoc->m_bExecCommand && m_pDoc->m_nExecCommandMode == 0)
-		m_pDoc->ExecCommand();
+	// Wait enough time to make sure the snapshot thread finished with the last jpg snapshot history file of the day that ended
+	if (::WaitForSingleObject(GetKillEvent(), SNAPSHOT_VIDEO_THREAD_STARTUP_DELAY_MS) == WAIT_OBJECT_0)
+		goto exit;
 
 	// Can we start saving?
 	while (((CUImagerApp*)::AfxGetApp())->SaveReservation(dwCurrentThreadId) == FALSE)
@@ -1119,9 +1115,9 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 			m_pDoc->ExecCommand(TRUE, m_Time, sVideoFileName);
 	}
 
-	// Set thread executed variable
+	// Set task completion time
 	// (if thread is killed this var is not set, that's the correct behavior)
-	m_ThreadExecutedForTime = m_Time;
+	m_TaskCompletedForTime = m_Time;
 
 exit:
 	// Clean-up
@@ -7414,7 +7410,7 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 							0, 0, 0);					// Back to midnight
 
 		// Start Thread if not already executed for Yesterday
-		if (m_SaveSnapshotVideoThread.m_ThreadExecutedForTime < Yesterday)
+		if (m_SaveSnapshotVideoThread.m_TaskCompletedForTime < Yesterday)
 		{
 			m_SaveSnapshotVideoThread.m_Time = Yesterday;
 			m_SaveSnapshotVideoThread.Start();

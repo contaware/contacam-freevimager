@@ -34,151 +34,152 @@ class CDxCapture;
 class CCameraAdvancedSettingsDlg;
 
 // General Settings
-#define MIN_FRAMERATE						0.1			// fps
-#define MAX_FRAMERATE						95.0		// fps
-#define PROCESS_MAX_FRAMETIME				15000U		// ms, make sure that: 1000 / MIN_FRAMERATE < PROCESS_MAX_FRAMETIME
-#define DEFAULT_FRAMERATE					10.0		// fps
-#define HTTPSERVERPUSH_DEFAULT_FRAMERATE	4.0			// fps
-#define HTTPSERVERPUSH_EDIMAX_DEFAULT_FRAMERATE	3.0		// fps
-#define HTTPCLIENTPOLL_DEFAULT_FRAMERATE	1.0			// fps
-#define MAX_DEVICE_AUTORUN_KEYS				128			// Maximum number of devices that can autorun at start-up
-#define ACTIVE_VIDEO_STREAM					0			// Video stream 0 for recording and detection
-#define ACTIVE_AUDIO_STREAM					0			// Audio stream 0 for recording and detection
-#define	FILES_DELETE_INTERVAL_MIN			600000	 	// in ms -> 10min
-#define	FILES_DELETE_INTERVAL_MAX			900000		// in ms -> 15min
-#define AUDIO_IN_MIN_BUF_SIZE				256			// bytes
-#define AUDIO_MAX_LIST_SIZE					1024		// make sure that: 1 / MIN_FRAMERATE < AUDIO_IN_MIN_BUF_SIZE * AUDIO_MAX_LIST_SIZE / 11025
-														// (see CCaptureAudioThread::OpenInAudio())
-#define AUDIO_UNCOMPRESSED_BUFS_COUNT		16			// Number of audio buffers
-#define AUDIO_RECONNECTION_DELAY			1000U		// ms
-#define FRAME_USER_FLAG_MOTION				0x01		// mark the frame as a motion frame
-#define FRAME_USER_FLAG_START				0x02		// mark the frame as being the first frame of the detection sequence
-#define FRAME_USER_FLAG_END					0x04		// mark the frame as being the last frame of the detection sequence
-#define DEFAULT_DEL_RECS_OLDER_THAN_DAYS	31			// by default delete recordings older than a month
-#define MIN_DISK_FREE_PERMILLION			50000		// 5%
-#define DEFAULT_EMAIL_SUBJECT				_T("%name%: %date% %time% %note%")
-#define PLACEMENT_THRESHOLD_PIXELS			50			// to make sure that the saved placement is visible
-#define CAN_SAVE_POLL_MS					1000U		// ms
+#define MIN_FRAMERATE							0.1				// fps
+#define MAX_FRAMERATE							95.0			// fps
+#define PROCESS_MAX_FRAMETIME					15000U			// ms, make sure that: 1000 / MIN_FRAMERATE < PROCESS_MAX_FRAMETIME
+#define DEFAULT_FRAMERATE						10.0			// fps
+#define HTTPSERVERPUSH_DEFAULT_FRAMERATE		4.0				// fps
+#define HTTPSERVERPUSH_EDIMAX_DEFAULT_FRAMERATE	3.0				// fps
+#define HTTPCLIENTPOLL_DEFAULT_FRAMERATE		1.0				// fps
+#define MAX_DEVICE_AUTORUN_KEYS					128				// Maximum number of devices that can autorun at start-up
+#define ACTIVE_VIDEO_STREAM						0				// Video stream 0 for recording and detection
+#define ACTIVE_AUDIO_STREAM						0				// Audio stream 0 for recording and detection
+#define	FILES_DELETE_INTERVAL_MIN				600000	 		// in ms -> 10min
+#define	FILES_DELETE_INTERVAL_MAX				900000			// in ms -> 15min
+#define AUDIO_IN_MIN_BUF_SIZE					256				// bytes
+#define AUDIO_MAX_LIST_SIZE						1024			// make sure that: 1 / MIN_FRAMERATE < AUDIO_IN_MIN_BUF_SIZE * AUDIO_MAX_LIST_SIZE / 11025
+																// (see CCaptureAudioThread::OpenInAudio())
+#define AUDIO_UNCOMPRESSED_BUFS_COUNT			16				// Number of audio buffers
+#define AUDIO_RECONNECTION_DELAY				1000U			// ms
+#define FRAME_USER_FLAG_MOTION					0x01			// mark the frame as a motion frame
+#define FRAME_USER_FLAG_START					0x02			// mark the frame as being the first frame of the detection sequence
+#define FRAME_USER_FLAG_END						0x04			// mark the frame as being the last frame of the detection sequence
+#define DEFAULT_DEL_RECS_OLDER_THAN_DAYS		31				// by default delete recordings older than a month
+#define MIN_DISK_FREE_PERMILLION				50000			// 5%
+#define DEFAULT_EMAIL_SUBJECT					_T("%name%: %date% %time% %note%")
+#define PLACEMENT_THRESHOLD_PIXELS				50				// to make sure that the saved placement is visible
+#define CAN_SAVE_POLL_MS						1000U			// ms
 
 // Frame tag, thumb message and draw message
-#define FRAMETAG_REFWIDTH					640
-#define FRAMETAG_REFHEIGHT					480
-#define FRAMETIME_COLOR						RGB(0,0xFF,0)
-#define FRAMEDATE_COLOR						RGB(0x80,0x80,0xFF)
-#define FRAMECOUNT_COLOR					RGB(0xFF,0xFF,0xFF)
-#define THUMBMESSAGE_FONTSIZE				8
-#define DRAW_BKG_COLOR						RGB(0,0,0)
-#define DRAW_MESSAGE_COLOR					RGB(0xFF,0xFF,0xFF)
-#define REC_MESSAGE_COLOR					RGB(0xFF,0,0)
-#define NODONATION_MESSAGE_COLOR            RGB(255,228,18)
+#define FRAMETAG_REFWIDTH						640
+#define FRAMETAG_REFHEIGHT						480
+#define FRAMETIME_COLOR							RGB(0,0xFF,0)
+#define FRAMEDATE_COLOR							RGB(0x80,0x80,0xFF)
+#define FRAMECOUNT_COLOR						RGB(0xFF,0xFF,0xFF)
+#define THUMBMESSAGE_FONTSIZE					8
+#define DRAW_BKG_COLOR							RGB(0,0,0)
+#define DRAW_MESSAGE_COLOR						RGB(0xFF,0xFF,0xFF)
+#define REC_MESSAGE_COLOR						RGB(0xFF,0,0)
+#define NODONATION_MESSAGE_COLOR				RGB(255,228,18)
 
 // Process Frame Stop Engine
-#define PROCESSFRAME_MAX_RETRY_TIME			3500		// maximum retry time in ms for Process Frame Stop Engine
-#define PROCESSFRAME_CAMERABASICSETTINGS	0x01
-#define PROCESSFRAME_DXFORMATDIALOG			0x02
-#define PROCESSFRAME_DVFORMATDIALOG			0x04
-#define PROCESSFRAME_CHANGEFRAMERATE		0x08
-#define PROCESSFRAME_DXOPEN					0x10
-#define PROCESSFRAME_DXREPLUGGED			0x20
-#define PROCESSFRAME_CLOSE					0x40
+#define PROCESSFRAME_MAX_RETRY_TIME				3500			// maximum retry time in ms for Process Frame Stop Engine
+#define PROCESSFRAME_CAMERABASICSETTINGS		0x01
+#define PROCESSFRAME_DXFORMATDIALOG				0x02
+#define PROCESSFRAME_DVFORMATDIALOG				0x04
+#define PROCESSFRAME_CHANGEFRAMERATE			0x08
+#define PROCESSFRAME_DXOPEN						0x10
+#define PROCESSFRAME_DXREPLUGGED				0x20
+#define PROCESSFRAME_CLOSE						0x40
 
 // Watch Dog
-#define WATCHDOG_CHECK_TIME					1000U		// ms
-#define WATCHDOG_THRESHOLD					30000U		// ms, make sure that: 1000 / MIN_FRAMERATE < WATCHDOG_THRESHOLD
-#define WATCHDOG_MALFUNCTION_THRESHOLD		135000U		// ms, make sure that: WATCHDOG_THRESHOLD < WATCHDOG_MALFUNCTION_THRESHOLD
+#define WATCHDOG_CHECK_TIME						1000U			// ms
+#define WATCHDOG_THRESHOLD						30000U			// ms, make sure that: 1000 / MIN_FRAMERATE < WATCHDOG_THRESHOLD
+#define WATCHDOG_MALFUNCTION_THRESHOLD			135000U			// ms, make sure that: WATCHDOG_THRESHOLD < WATCHDOG_MALFUNCTION_THRESHOLD
 
 // Snapshot
-#define MIN_SNAPSHOT_RATE					1			// one snapshot per second
-#define DEFAULT_SNAPSHOT_RATE				1			// each given seconds
-#define DEFAULT_SNAPSHOT_HISTORY_RATE		30			// each given seconds
-#define DEFAULT_SNAPSHOT_HISTORY_FRAMERATE	30			// fps
-#define DEFAULT_SNAPSHOT_LIVE_JPEGNAME		_T("snapshot.jpg")
-#define DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME	_T("snapshot_thumb.jpg")
-#define DEFAULT_SNAPSHOT_COMPR_QUALITY		60			// 0 Worst Quality, 100 Best Quality
-#define GOOD_SNAPSHOT_COMPR_QUALITY			90			// 0 Worst Quality, 100 Best Quality
-#define DEFAULT_SNAPSHOT_THUMB_WIDTH		228			// Must be a multiple of 4 because of stretch and codec
-#define DEFAULT_SNAPSHOT_THUMB_HEIGHT		172			// Must be a multiple of 4 because of stretch and codec
-#define DEFAULT_SERVERPUSH_POLLRATE_MS		200			// ms
+#define MIN_SNAPSHOT_RATE						1				// one snapshot per second
+#define DEFAULT_SNAPSHOT_RATE					1				// each given seconds
+#define DEFAULT_SNAPSHOT_HISTORY_RATE			30				// each given seconds
+#define DEFAULT_SNAPSHOT_HISTORY_FRAMERATE		30				// fps
+#define	SNAPSHOT_VIDEO_THREAD_STARTUP_DELAY_MS	300000	 		// in ms -> 5min
+#define DEFAULT_SNAPSHOT_LIVE_JPEGNAME			_T("snapshot.jpg")
+#define DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME		_T("snapshot_thumb.jpg")
+#define DEFAULT_SNAPSHOT_COMPR_QUALITY			60				// 0 Worst Quality, 100 Best Quality
+#define GOOD_SNAPSHOT_COMPR_QUALITY				90				// 0 Worst Quality, 100 Best Quality
+#define DEFAULT_SNAPSHOT_THUMB_WIDTH			228				// Must be a multiple of 4 because of stretch and codec
+#define DEFAULT_SNAPSHOT_THUMB_HEIGHT			172				// Must be a multiple of 4 because of stretch and codec
+#define DEFAULT_SERVERPUSH_POLLRATE_MS			200				// ms
 
 // Movement Detection
-#define DEFAULT_PRE_BUFFER_MSEC				3000		// ms
-#define DEFAULT_POST_BUFFER_MSEC			5000		// ms
-#define MOVDET_MIN_LENGTH_MSEC				1000		// Default minimum detection length in ms, below this value frames are not saved
-#define MOVDET_MIN_LENGTH_SAVESPEED_MSEC	8000U		// Saving speed calculation only for frame sequences longer than this value
-#define DEFAULT_MOVDET_LEVEL				50			// Detection level default value (0 = Off .. 99 = Max Sensitivity, 100 = Continuous Recording)
-#define MOVDET_MAX_ZONES_BLOCK_SIZE			1024		// Subdivide settings in blocks (MOVDET_MAX_ZONES must be a multiple of this)
-#define MOVDET_MAX_ZONES					8192		// Maximum number of zones
-#define MOVDET_MIN_ZONES_XORY				4			// Minimum number of zones in X or Y direction
-#define MOVDET_ZONE_FORMAT					_T("DoMovementDetection%03i")
-#define MOVDET_ZONES_BLOCK_FORMAT			_T("MovDetZones%i")
-#define MOVDET_DEFAULT_MAX_FRAMES_IN_LIST	1000		// Default maximum frames per list
-#define MOVDET_MAX_MAX_FRAMES_IN_LIST		14999		// Upper limit for the maximum frames per list
-#define MOVDET_SAVE_MIN_FRAMERATE_RATIO		0.3			// Min ratio between calculated (last - first) and m_dEffectiveFrameRate
-#define MOVDET_TIMEOUT						1000U		// Timeout in ms for detection zones
-#define MOVDET_ANIMGIF_MAX_FRAMES			60			// Maximum number of frames per animated gif
-#define MOVDET_ANIMGIF_MAX_LENGTH			6000.0		// ms, MOVDET_ANIMGIF_MAX_LENGTH / MOVDET_ANIMGIF_MAX_FRAMES must be >= 100
-#define MOVDET_ANIMGIF_DELAY				500.0		// ms (frame time)
-#define MOVDET_ANIMGIF_FIRST_FRAME_DELAY	1000		// ms (first frame time)
-#define MOVDET_ANIMGIF_LAST_FRAME_DELAY		1000		// ms (last frame time)
-#define MOVDET_ANIMGIF_DIFF_MINLEVEL		10			// determines the "inter-frame-compression" of animated gifs
-														// higher values better compression but worse quality
-#define MOVDET_ANIMGIF_DEFAULT_WIDTH		128			// Default animated gif width (must be a multiple of 4 for stretch)
-#define MOVDET_ANIMGIF_DEFAULT_HEIGHT		96			// Default animated gif height (must be a multiple of 4 for stretch)
-#define MOVDET_DETECTING_ZONES_COLOR		RGB(0xFF,0x00,0x00)
-#define MOVDET_SELECTED_ZONES_COLOR			RGB(0x00,0x00,0xFF)
-#define MOVDET_SENSITIVITY_BKGCOLOR			RGB(0xEE,0xEE,0xEE)
-#define MOVDET_MIX_THRESHOLD				4.0			// Above this engine frequency switch from 3To1 to the 7To1 mixer
-#define MOVDET_WANTED_FREQ					5.0			// Wanted motion detection engine frequency (calculations / sec)
-														// Half of DEFAULT_FRAMERATE
+#define DEFAULT_PRE_BUFFER_MSEC					3000			// ms
+#define DEFAULT_POST_BUFFER_MSEC				5000			// ms
+#define MOVDET_MIN_LENGTH_MSEC					1000			// Default minimum detection length in ms, below this value frames are not saved
+#define MOVDET_MIN_LENGTH_SAVESPEED_MSEC		8000U			// Saving speed calculation only for frame sequences longer than this value
+#define DEFAULT_MOVDET_LEVEL					50				// Detection level default value (0 = Off .. 99 = Max Sensitivity, 100 = Continuous Recording)
+#define MOVDET_MAX_ZONES_BLOCK_SIZE				1024			// Subdivide settings in blocks (MOVDET_MAX_ZONES must be a multiple of this)
+#define MOVDET_MAX_ZONES						8192			// Maximum number of zones
+#define MOVDET_MIN_ZONES_XORY					4				// Minimum number of zones in X or Y direction
+#define MOVDET_ZONE_FORMAT						_T("DoMovementDetection%03i")
+#define MOVDET_ZONES_BLOCK_FORMAT				_T("MovDetZones%i")
+#define MOVDET_DEFAULT_MAX_FRAMES_IN_LIST		1000			// Default maximum frames per list
+#define MOVDET_MAX_MAX_FRAMES_IN_LIST			14999			// Upper limit for the maximum frames per list
+#define MOVDET_SAVE_MIN_FRAMERATE_RATIO			0.3				// Min ratio between calculated (last - first) and m_dEffectiveFrameRate
+#define MOVDET_TIMEOUT							1000U			// Timeout in ms for detection zones
+#define MOVDET_ANIMGIF_MAX_FRAMES				60				// Maximum number of frames per animated gif
+#define MOVDET_ANIMGIF_MAX_LENGTH				6000.0			// ms, MOVDET_ANIMGIF_MAX_LENGTH / MOVDET_ANIMGIF_MAX_FRAMES must be >= 100
+#define MOVDET_ANIMGIF_DELAY					500.0			// ms (frame time)
+#define MOVDET_ANIMGIF_FIRST_FRAME_DELAY		1000			// ms (first frame time)
+#define MOVDET_ANIMGIF_LAST_FRAME_DELAY			1000			// ms (last frame time)
+#define MOVDET_ANIMGIF_DIFF_MINLEVEL			10				// determines the "inter-frame-compression" of animated gifs
+																// higher values better compression but worse quality
+#define MOVDET_ANIMGIF_DEFAULT_WIDTH			128				// Default animated gif width (must be a multiple of 4 for stretch)
+#define MOVDET_ANIMGIF_DEFAULT_HEIGHT			96				// Default animated gif height (must be a multiple of 4 for stretch)
+#define MOVDET_DETECTING_ZONES_COLOR			RGB(0xFF,0x00,0x00)
+#define MOVDET_SELECTED_ZONES_COLOR				RGB(0x00,0x00,0xFF)
+#define MOVDET_SENSITIVITY_BKGCOLOR				RGB(0xEE,0xEE,0xEE)
+#define MOVDET_MIX_THRESHOLD					4.0				// Above this engine frequency switch from 3To1 to the 7To1 mixer
+#define MOVDET_WANTED_FREQ						5.0				// Wanted motion detection engine frequency (calculations / sec)
+																// Half of DEFAULT_FRAMERATE
 
 // configuration.php
-#define PHPCONFIG_VERSION					_T("VERSION")
-#define PHPCONFIG_DEFAULTPAGE				_T("DEFAULTPAGE")
-#define PHPCONFIG_SUMMARYSNAPSHOT_PHP		_T("summarysnapshot.php")
-#define PHPCONFIG_SNAPSHOT_PHP				_T("snapshot.php")
-#define PHPCONFIG_SNAPSHOTFULL_PHP			_T("snapshotfull.php")
-#define PHPCONFIG_SNAPSHOTHISTORY_PHP		_T("snapshothistory.php")
-#define PHPCONFIG_SUMMARYIFRAME_PHP			_T("summaryiframe.php")
-#define PHPCONFIG_SUMMARYTITLE				_T("SUMMARYTITLE")
-#define PHPCONFIG_SNAPSHOTTITLE				_T("SNAPSHOTTITLE")
-#define PHPCONFIG_SNAPSHOTREFRESHSEC		_T("SNAPSHOTREFRESHSEC")
-#define PHPCONFIG_SERVERPUSH_POLLRATE_MS	_T("SERVERPUSH_POLLRATE_MS")
-#define PHPCONFIG_THUMBWIDTH				_T("THUMBWIDTH")
-#define PHPCONFIG_THUMBHEIGHT				_T("THUMBHEIGHT")
-#define PHPCONFIG_WIDTH						_T("WIDTH")
-#define PHPCONFIG_HEIGHT					_T("HEIGHT")
-#define PHPCONFIG_MAX_PER_PAGE				_T("MAX_PER_PAGE")
-#define PHPCONFIG_SHOW_TRASH_COMMAND		_T("SHOW_TRASH_COMMAND")
-#define PHPCONFIG_SHOW_CAMERA_COMMANDS		_T("SHOW_CAMERA_COMMANDS")
-#define PHPCONFIG_LANGUAGEFILEPATH			_T("LANGUAGEFILEPATH")
-#define PHPCONFIG_STYLEFILEPATH				_T("STYLEFILEPATH")
-#define PHPCONFIG_MIN_THUMSPERPAGE			7
-#define PHPCONFIG_MAX_THUMSPERPAGE			39
-#define PHPCONFIG_DEFAULT_THUMSPERPAGE		27
+#define PHPCONFIG_VERSION						_T("VERSION")
+#define PHPCONFIG_DEFAULTPAGE					_T("DEFAULTPAGE")
+#define PHPCONFIG_SUMMARYSNAPSHOT_PHP			_T("summarysnapshot.php")
+#define PHPCONFIG_SNAPSHOT_PHP					_T("snapshot.php")
+#define PHPCONFIG_SNAPSHOTFULL_PHP				_T("snapshotfull.php")
+#define PHPCONFIG_SNAPSHOTHISTORY_PHP			_T("snapshothistory.php")
+#define PHPCONFIG_SUMMARYIFRAME_PHP				_T("summaryiframe.php")
+#define PHPCONFIG_SUMMARYTITLE					_T("SUMMARYTITLE")
+#define PHPCONFIG_SNAPSHOTTITLE					_T("SNAPSHOTTITLE")
+#define PHPCONFIG_SNAPSHOTREFRESHSEC			_T("SNAPSHOTREFRESHSEC")
+#define PHPCONFIG_SERVERPUSH_POLLRATE_MS		_T("SERVERPUSH_POLLRATE_MS")
+#define PHPCONFIG_THUMBWIDTH					_T("THUMBWIDTH")
+#define PHPCONFIG_THUMBHEIGHT					_T("THUMBHEIGHT")
+#define PHPCONFIG_WIDTH							_T("WIDTH")
+#define PHPCONFIG_HEIGHT						_T("HEIGHT")
+#define PHPCONFIG_MAX_PER_PAGE					_T("MAX_PER_PAGE")
+#define PHPCONFIG_SHOW_TRASH_COMMAND			_T("SHOW_TRASH_COMMAND")
+#define PHPCONFIG_SHOW_CAMERA_COMMANDS			_T("SHOW_CAMERA_COMMANDS")
+#define PHPCONFIG_LANGUAGEFILEPATH				_T("LANGUAGEFILEPATH")
+#define PHPCONFIG_STYLEFILEPATH					_T("STYLEFILEPATH")
+#define PHPCONFIG_MIN_THUMSPERPAGE				7
+#define PHPCONFIG_MAX_THUMSPERPAGE				39
+#define PHPCONFIG_DEFAULT_THUMSPERPAGE			27
 
 // Networking
-#define DEFAULT_HTTP_PORT					80
-#define DEFAULT_RTSP_PORT					554
-#define DEFAULT_CONNECTION_TIMEOUT			60			// in sec
-#define HTTP_MAX_HEADER_SIZE				1400		// bytes
-#define HTTP_MAX_MULTIPART_BOUNDARY			128			// boundary string buffer size in bytes
-#define HTTP_MIN_MULTIPART_SIZE				256			// minimum size of a multipart content
-#define HTTP_MAX_MULTIPART_SIZE				8388608		// 8 MB		
-#define HTTP_DEFAULT_VIDEO_QUALITY			30			// 0 Best Quality, 100 Worst Quality
-#define HTTP_DEFAULT_VIDEO_SIZE_CX			640			// pixels
-#define HTTP_DEFAULT_VIDEO_SIZE_CY			480			// pixels
-#define HTTP_MAXPOLLS_ALARM1				30			// Maximum polling connections: alarm level 1
-#define HTTP_MAXPOLLS_ALARM2				40			// Maximum polling connections: alarm level 2
-#define HTTP_MAXPOLLS_ALARM3				50			// Maximum polling connections: alarm level 3
-#define HTTP_THREAD_DEFAULT_DELAY			500U		// ms
-#define HTTP_THREAD_MIN_DELAY_ALARM1		100U		// ms
-#define HTTP_THREAD_MIN_DELAY_ALARM2		400U		// ms
-#define HTTP_THREAD_MIN_DELAY_ALARM3		1000U		// ms
-#define HTTP_THREAD_MAX_DELAY_ALARM			((DWORD)(1000.0 / MIN_FRAMERATE)) // ms
-#define HTTP_MIN_KEEPALIVE_REQUESTS			50			// Keep-alive support check
-#define HTTP_USERNAME_PLACEHOLDER			_T("[USERNAME]") // only use letters, numbers, uri unreserved or uri reserved chars
-#define HTTP_PASSWORD_PLACEHOLDER			_T("[PASSWORD]") // only use letters, numbers, uri unreserved or uri reserved chars
-#define RTSP_SOCKET_TIMEOUT					15000000	// timeout in microseconds of socket I/O operations
+#define DEFAULT_HTTP_PORT						80
+#define DEFAULT_RTSP_PORT						554
+#define DEFAULT_CONNECTION_TIMEOUT				60				// in sec
+#define HTTP_MAX_HEADER_SIZE					1400			// bytes
+#define HTTP_MAX_MULTIPART_BOUNDARY				128				// boundary string buffer size in bytes
+#define HTTP_MIN_MULTIPART_SIZE					256				// minimum size of a multipart content
+#define HTTP_MAX_MULTIPART_SIZE					8388608			// 8 MB		
+#define HTTP_DEFAULT_VIDEO_QUALITY				30				// 0 Best Quality, 100 Worst Quality
+#define HTTP_DEFAULT_VIDEO_SIZE_CX				640				// pixels
+#define HTTP_DEFAULT_VIDEO_SIZE_CY				480				// pixels
+#define HTTP_MAXPOLLS_ALARM1					30				// Maximum polling connections: alarm level 1
+#define HTTP_MAXPOLLS_ALARM2					40				// Maximum polling connections: alarm level 2
+#define HTTP_MAXPOLLS_ALARM3					50				// Maximum polling connections: alarm level 3
+#define HTTP_THREAD_DEFAULT_DELAY				500U			// ms
+#define HTTP_THREAD_MIN_DELAY_ALARM1			100U			// ms
+#define HTTP_THREAD_MIN_DELAY_ALARM2			400U			// ms
+#define HTTP_THREAD_MIN_DELAY_ALARM3			1000U			// ms
+#define HTTP_THREAD_MAX_DELAY_ALARM				((DWORD)(1000.0 / MIN_FRAMERATE)) // ms
+#define HTTP_MIN_KEEPALIVE_REQUESTS				50				// Keep-alive support check
+#define HTTP_USERNAME_PLACEHOLDER				_T("[USERNAME]")// only use letters, numbers, uri unreserved or uri reserved chars
+#define HTTP_PASSWORD_PLACEHOLDER				_T("[PASSWORD]")// only use letters, numbers, uri unreserved or uri reserved chars
+#define RTSP_SOCKET_TIMEOUT						15000000		// timeout in microseconds of socket I/O operations
 
 
 // The Document Class
@@ -482,10 +483,10 @@ public:
 	class CSaveSnapshotVideoThread : public CWorkerThread
 	{
 		public:
-			CSaveSnapshotVideoThread(){m_pDoc = NULL; m_ThreadExecutedForTime = CTime(0);};
+			CSaveSnapshotVideoThread(){m_pDoc = NULL; m_TaskCompletedForTime = CTime(0);};
 			virtual ~CSaveSnapshotVideoThread() {Kill();};
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
-			CTime m_ThreadExecutedForTime;
+			CTime m_TaskCompletedForTime;
 			CTime m_Time;
 
 		protected:
