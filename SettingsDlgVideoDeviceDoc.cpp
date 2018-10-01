@@ -403,7 +403,7 @@ void CSettingsDlgVideoDeviceDoc::OnButtonDocRoot()
 		// Fail if sNewMicroApacheDocRoot is not an ASCII path
 		if (!::IsASCIICompatiblePath(sNewMicroApacheDocRoot))
 		{
-			::AfxMessageBox(ML_STRING(1766, "Only ASCII characters allowed in path"), MB_OK | MB_ICONERROR);
+			::AfxMessageBox(ML_STRING(1766, "Only letters, numbers or spaces are allowed"), MB_OK | MB_ICONERROR);
 			return;
 		}
 

@@ -315,7 +315,7 @@ void CCameraBasicSettingsDlg::Rename()
 	{
 		// Error Message
 		EndWaitCursor();
-		::AfxMessageBox(ML_STRING(1767, "Only the ANSI character set is supported for the camera name"), MB_OK | MB_ICONERROR);
+		::AfxMessageBox(ML_STRING(1766, "Only letters, numbers or spaces are allowed"), MB_OK | MB_ICONERROR);
 		BeginWaitCursor();
 		
 		// Restore old name
