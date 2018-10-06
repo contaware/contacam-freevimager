@@ -56,7 +56,6 @@ protected:
 	int m_nRetryTimeMs;
 	void EnableDisableAllCtrls(BOOL bEnable);
 	void Rename();
-	void ApplySettingsSnapshot(int nThumbWidth, int nThumbHeight, double dSnapshotRate);
 	void ApplySettings();
 	// Generated message map functions
 	//{{AFX_MSG(CCameraBasicSettingsDlg)

@@ -409,25 +409,6 @@ void CCameraBasicSettingsDlg::OnSendmailConfigure()
 		m_CurrentSendMailConfiguration = dlg.m_SendMailConfiguration;
 }
 
-void CCameraBasicSettingsDlg::ApplySettingsSnapshot(int nThumbWidth, int nThumbHeight, double dSnapshotRate)
-{
-	m_pDoc->SnapshotRate(dSnapshotRate);
-	if (m_pDoc->m_pCameraAdvancedSettingsDlg)
-	{
-		// Thumb size (this updates the controls and sets m_nSnapshotThumbWidth and m_nSnapshotThumbHeight)
-		m_pDoc->m_pCameraAdvancedSettingsDlg->ChangeThumbSize(nThumbWidth, nThumbHeight);
-		
-		// Display snapshot rate
-		m_pDoc->m_pCameraAdvancedSettingsDlg->DisplaySnapshotRate();
-	}
-	else
-	{
-		// Thumb size
-		m_pDoc->m_nSnapshotThumbWidth = CVideoDeviceDoc::MakeSizeMultipleOf4(nThumbWidth);
-		m_pDoc->m_nSnapshotThumbHeight = CVideoDeviceDoc::MakeSizeMultipleOf4(nThumbHeight);
-	}
-}
-
 void CCameraBasicSettingsDlg::ApplySettings()
 {
 	// Reset vars
@@ -541,35 +522,8 @@ void CCameraBasicSettingsDlg::ApplySettings()
 				m_pDoc->m_pCameraAdvancedSettingsDlg->UpdateData(FALSE); // update data from vars to view
 			}
 
-			// Init size vars
-			CString sWidth, sHeight;
-			sWidth.Format(_T("%d"), m_pDoc->m_DocRect.right);
-			sHeight.Format(_T("%d"), m_pDoc->m_DocRect.bottom);
-
-			// Init snapshot rate var
-			double dCurrentSnapshotRate = (double)(m_pDoc->m_nSnapshotRate) + (double)(m_pDoc->m_nSnapshotRateMs) / 1000.0;
-			double dSnapshotRate = dCurrentSnapshotRate < MIN_SNAPSHOT_RATE ? dCurrentSnapshotRate : MIN_SNAPSHOT_RATE;
-
-			// Init thumb vars
-			int nThumbWidth = (	m_pDoc->m_nSnapshotThumbWidth < 4 * DEFAULT_SNAPSHOT_THUMB_WIDTH / 3 &&
-								m_pDoc->m_nSnapshotThumbWidth > 2 * DEFAULT_SNAPSHOT_THUMB_WIDTH / 3) ?
-								m_pDoc->m_nSnapshotThumbWidth : DEFAULT_SNAPSHOT_THUMB_WIDTH;
-			int nThumbHeight = (m_pDoc->m_nSnapshotThumbHeight < 4 * DEFAULT_SNAPSHOT_THUMB_HEIGHT / 3 &&
-								m_pDoc->m_nSnapshotThumbHeight > 2 * DEFAULT_SNAPSHOT_THUMB_HEIGHT / 3) ?
-								m_pDoc->m_nSnapshotThumbHeight : DEFAULT_SNAPSHOT_THUMB_HEIGHT;
-			CString sThumbWidth, sThumbHeight;
-			sThumbWidth.Format(_T("%d"), nThumbWidth);
-			sThumbHeight.Format(_T("%d"), nThumbHeight);
-
 			// Update configuration.php
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SUMMARYSNAPSHOT_PHP);
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_WIDTH, sWidth);
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_HEIGHT, sHeight);
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBWIDTH, sThumbWidth);
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBHEIGHT, sThumbHeight);
-
-			// Update snapshot settings
-			ApplySettingsSnapshot(nThumbWidth, nThumbHeight, dSnapshotRate);
 
 			break;
 		}
@@ -593,35 +547,8 @@ void CCameraBasicSettingsDlg::ApplySettings()
 				m_pDoc->m_pCameraAdvancedSettingsDlg->UpdateData(FALSE); // update data from vars to view
 			}
 
-			// Init size vars
-			CString sWidth, sHeight;
-			sWidth.Format(_T("%d"), m_pDoc->m_DocRect.right);
-			sHeight.Format(_T("%d"), m_pDoc->m_DocRect.bottom);
-
-			// Init snapshot rate var
-			double dCurrentSnapshotRate = (double)(m_pDoc->m_nSnapshotRate) + (double)(m_pDoc->m_nSnapshotRateMs) / 1000.0;
-			double dSnapshotRate = dCurrentSnapshotRate < MIN_SNAPSHOT_RATE ? dCurrentSnapshotRate : MIN_SNAPSHOT_RATE;
-
-			// Init thumb vars
-			int nThumbWidth = (	m_pDoc->m_nSnapshotThumbWidth < 4 * DEFAULT_SNAPSHOT_THUMB_WIDTH / 3 &&
-								m_pDoc->m_nSnapshotThumbWidth > 2 * DEFAULT_SNAPSHOT_THUMB_WIDTH / 3) ?
-								m_pDoc->m_nSnapshotThumbWidth : DEFAULT_SNAPSHOT_THUMB_WIDTH;
-			int nThumbHeight = (m_pDoc->m_nSnapshotThumbHeight < 4 * DEFAULT_SNAPSHOT_THUMB_HEIGHT / 3 &&
-								m_pDoc->m_nSnapshotThumbHeight > 2 * DEFAULT_SNAPSHOT_THUMB_HEIGHT / 3) ?
-								m_pDoc->m_nSnapshotThumbHeight : DEFAULT_SNAPSHOT_THUMB_HEIGHT;
-			CString sThumbWidth, sThumbHeight;
-			sThumbWidth.Format(_T("%d"), nThumbWidth);
-			sThumbHeight.Format(_T("%d"), nThumbHeight);
-
 			// Update configuration.php
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SUMMARYIFRAME_PHP);
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_WIDTH, sWidth);
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_HEIGHT, sHeight);
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBWIDTH, sThumbWidth);
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBHEIGHT, sThumbHeight);
-
-			// Update snapshot settings
-			ApplySettingsSnapshot(nThumbWidth, nThumbHeight, dSnapshotRate);
 
 			break;
 		}

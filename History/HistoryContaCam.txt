@@ -3,8 +3,10 @@ CONTACAM HISTORY
 9.0.5 (Month XXth 2018)
 
 - Scheduler is now only for the recordings and not for the
-  snapshots (scheduling for the snapshots can be achieved
-  with a batch script executed on snapshot)
+  snapshots (scheduling for the snapshots can be achieved with
+  a batch script executed on snapshot)
+- Do not revert snapshot thumb size and rate in Camera Basic
+  Settings dialog
 
 9.0.3 (October 1st 2018)
 
