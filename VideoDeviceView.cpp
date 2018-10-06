@@ -591,7 +591,7 @@ void CVideoDeviceView::OnDraw(CDC* pDC)
 		else if (!pDoc->m_bInSchedule)
 		{
 			::DrawBigText(	MemDC.GetSafeHdc(), CRect(0, 0, rcClient.Width(), rcClient.Height()),
-							ML_STRING(1879, "OFF (by scheduler)"), DRAW_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT,
+							ML_STRING(1879, "REC OFF (by scheduler)"), DRAW_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT,
 							OPAQUE, DRAW_BKG_COLOR);
 		}
 	}

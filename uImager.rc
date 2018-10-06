@@ -4146,7 +4146,7 @@ BEGIN
     IDS_STRING1875          "Enabled:"
     IDS_STRING1876          "Disabled:"
     IDS_STRING1877          "Save: %d%%"
-    IDS_STRING1879          "OFF (by scheduler)"
+    IDS_STRING1879          "REC OFF (by scheduler)"
     IDS_STRING1880          "No Attachment"
     IDS_STRING1881          "Snapshot"
     IDS_STRING1882          "Saved Small Video"
