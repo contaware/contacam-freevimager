@@ -7380,7 +7380,7 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 		}
 
 		// Start Thread?
-		if (bDoSnapshot && m_bInSchedule)
+		if (bDoSnapshot)
 		{
 			m_SaveSnapshotThread.m_Dib = *pDib;
 			m_SaveSnapshotThread.m_Time = Time;
