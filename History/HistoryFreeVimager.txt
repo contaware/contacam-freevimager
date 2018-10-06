@@ -1,5 +1,9 @@
 FREEVIMAGER HISTORY
 
+9.0.5 (Month XXth 2018)
+
+- ...
+
 9.0.3 (October 1st 2018)
 
 - Updated Tabs and bottom-right popup Message Box fonts
