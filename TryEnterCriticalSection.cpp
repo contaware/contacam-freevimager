@@ -38,7 +38,7 @@ CTryEnterCriticalSection::CTryEnterCriticalSection()
 			m_fpTryEnterCriticalSection = NULL;
 			::FreeLibrary(m_hKernel32);
 			m_hKernel32 = NULL;
-			m_hMutex = ::CreateMutex(NULL, FALSE, _T(""));
+			m_hMutex = ::CreateMutex(NULL, FALSE, NULL);
 		}
 	}
 	else
@@ -48,7 +48,7 @@ CTryEnterCriticalSection::CTryEnterCriticalSection()
 			::FreeLibrary(m_hKernel32);
 			m_hKernel32 = NULL;
 		}
-		m_hMutex = ::CreateMutex(NULL, FALSE, _T(""));
+		m_hMutex = ::CreateMutex(NULL, FALSE, NULL);
 	}
 }
 
@@ -75,6 +75,6 @@ void CTryEnterCriticalSection::EnableTimeout()
 		m_hKernel32 = NULL;
 	}
 	if (m_hMutex == NULL)
-		m_hMutex = ::CreateMutex(NULL, FALSE, _T(""));
+		m_hMutex = ::CreateMutex(NULL, FALSE, NULL);
 }
 
