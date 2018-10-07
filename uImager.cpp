@@ -148,6 +148,7 @@ CUImagerApp::CUImagerApp()
 	m_nMicroApachePortSSL = MICROAPACHE_DEFAULT_PORT_SSL;
 	m_bMovDetDropFrames = FALSE;
 	::InitializeCriticalSection(&m_csSaveReservation);
+	m_hMutexSaveSnapshotVideo = ::CreateMutex(NULL, FALSE, NULL);
 	m_bSingleInstance = TRUE;
 	m_bServiceProcess = FALSE;
 	m_bDoStartFromService = FALSE;
@@ -189,6 +190,7 @@ CUImagerApp::~CUImagerApp()
 {
 #ifdef VIDEODEVICEDOC
 	::DeleteCriticalSection(&m_csSaveReservation);
+	::CloseHandle(m_hMutexSaveSnapshotVideo);
 #endif
 }
 

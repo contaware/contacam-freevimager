@@ -560,6 +560,10 @@ public:
 	SAVERESERVATIONQUEUE m_SaveReservationQueue;
 	CRITICAL_SECTION m_csSaveReservation;
 
+	// Only one snapshot video thread running at the time
+	// (to save heap memory and CPU time)
+	HANDLE m_hMutexSaveSnapshotVideo;
+
 	// Service
 	// - Window placement store/restore disabled if this set
 	// - Start/stop ContaCam.exe from service disabled if this set
