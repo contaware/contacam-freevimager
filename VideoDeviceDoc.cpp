@@ -187,9 +187,9 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 	CTime FirstTime(0);
 	CTime LastTime(0);
 	DWORD dwCurrentThreadId = ::GetCurrentThreadId();
-	CString sTempDetectionDir;
-	sTempDetectionDir.Format(_T("Detection%X"), dwCurrentThreadId);
-	sTempDetectionDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + sTempDetectionDir;
+	CString sTempRecordingDir;
+	sTempRecordingDir.Format(_T("Recording%X"), dwCurrentThreadId);
+	sTempRecordingDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + sTempRecordingDir;
 
 	// Save loop
 	for (;;)
@@ -220,7 +220,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				if (::WaitForSingleObject(GetKillEvent(), CAN_SAVE_POLL_MS) == WAIT_OBJECT_0)
 				{
 					((CUImagerApp*)::AfxGetApp())->SaveReservationRemove(dwCurrentThreadId);
-					::DeleteDir(sTempDetectionDir);
+					::DeleteDir(sTempRecordingDir);
 					return 0;
 				}
 			}
@@ -287,7 +287,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				if (::WaitForSingleObject(GetKillEvent(), 10U) == WAIT_OBJECT_0)
 				{
 					((CUImagerApp*)::AfxGetApp())->SaveReservationRemove(dwCurrentThreadId);
-					::DeleteDir(sTempDetectionDir);
+					::DeleteDir(sTempRecordingDir);
 					return 0;
 				}
 			}
@@ -300,7 +300,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		CString sFirstTime(FirstTime.Format(_T("%Y_%m_%d_%H_%M_%S")));
 
 		// Load the saves counter and reset it if entering a new day.
-		// A detection sequence is composed of 1 or more movies, where the first
+		// A sequence is composed of 1 or more movies, where the first
 		// one starts with a '[' and the last one ends with a ']'.
 		CString sSection(m_pDoc->GetDevicePathName());
 		int nMovDetSavesCount = ::AfxGetApp()->GetProfileInt(sSection, _T("MovDetSavesCount"), 1);
@@ -339,12 +339,12 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		CString sGIFFileName(sVideoFileName);
 		sVideoFileName += _T("rec_") + sFirstTime + DEFAULT_VIDEO_FILEEXT;
 		sGIFFileName += _T("rec_") + sFirstTime + _T(".gif");
-		CString sVideoTempFileName(sTempDetectionDir + _T("\\") + ::GetShortFileName(sVideoFileName));
-		CString sGIFTempFileName(sTempDetectionDir + _T("\\") + ::GetShortFileName(sGIFFileName));
+		CString sVideoTempFileName(sTempRecordingDir + _T("\\") + ::GetShortFileName(sVideoFileName));
+		CString sGIFTempFileName(sTempRecordingDir + _T("\\") + ::GetShortFileName(sGIFFileName));
 
 		// Make sure our temporary folder is existing
 		// (some temporary folder managers may delete it if not used for some time)
-		if (!::CreateDir(sTempDetectionDir)) // it does not fail if already existing
+		if (!::CreateDir(sTempRecordingDir)) // it does not fail if already existing
 			::ShowErrorMsg(::GetLastError(), FALSE);
 
 		// Init the Video File
@@ -391,7 +391,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				::DeleteFile(sVideoTempFileName);
 				m_nSaveProgress = 100;
 				((CUImagerApp*)::AfxGetApp())->SaveReservationRemove(dwCurrentThreadId);
-				::DeleteDir(sTempDetectionDir);
+				::DeleteDir(sTempRecordingDir);
 				return 0;
 			}
 
