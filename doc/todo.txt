@@ -39,3 +39,6 @@ ContaCam Program
   from the webcam microphone would stop getting captured until that second person
   logged out. This is under Windows 10; I tried running ContaCam as a Service and
   it made no difference to this problem (shep@bostin.com)
+- Suggestion to make priority configurable: "High, Normal or Low" in Global Settings
+  dialog (admin@denied.gr)
+  

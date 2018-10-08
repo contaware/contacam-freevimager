@@ -9,8 +9,8 @@ please translate all of them.
 How to proceed:
 
 1. Download
-http://www.contaware.com/downloads/tools/appTranslatorTESetup.exe
-http://www.contaware.com/downloads/translations/ContaCam-X.Y.Z-LAN.zip
+https://www.contaware.com/downloads/tools/appTranslatorTESetup.exe
+https://www.contaware.com/downloads/translations/ContaCam-X.Y.Z-LAN.zip
 install the translation application and unzip the project file
 
 2. Start the installed translator application and open the .apt
@@ -26,10 +26,9 @@ especially for menus (there are duplicated items, it's normal)
   remember to update the values under both Menus and Accelerators
 - In the String Table respect/keep the new lines
 
-5. Press the Build Target File to create the output exe,
-test it sometimes by double-clicking on it and
-in Settings - Global Settings... dialog uncheck 'Start with Windows'
-and uncheck 'Tray Icon'
+5. Press the Build Target File to create the output exe, test it
+sometimes by double-clicking on it and in Settings - Global Settings
+dialog uncheck 'Start with Windows' and uncheck 'Tray Icon'
 
 6. When done send me back the .apt file
 
