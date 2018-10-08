@@ -1,8 +1,7 @@
 Copyright (C) 2018 Oliver Pfister <http://www.contaware.com/>
 
 This program is Donationware, it is requested to donate $10 USD per
-installation to cover the costs of software development. As a bonus
-you get email support and access to the source code.
+installation to cover the costs of software development.
 
 This program is under the terms of the following GNU General Public
 License, or any later version:
