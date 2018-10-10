@@ -223,7 +223,12 @@ protected:
 	void ChangeCoordinatesUnit();
 #endif
 	static BOOL GetDiskStats(CString& sDiskStats, LPCTSTR lpszPath, int nMinDiskFreePermillion);
-	void PrintHeapBlocks(FILE* pf, WORD wFlags, __int64 Data, __int64 Overhead, __int64 Count);
+	typedef struct {
+		LPVOID lpFirstBlock;
+		LPVOID lpLastBlock;
+	} HEAPREGION;
+	typedef CArray<HEAPREGION, HEAPREGION> HEAPREGIONARRAY;
+	BOOL IsAddressInHeapRegion(LPVOID p, HEAPREGIONARRAY& Regions);
 #ifdef VIDEODEVICEDOC
 	double GetMaxOverallQueueSizeGB();
 	void CleanupFileMenu(CMenu* pPopupMenu);
