@@ -16,6 +16,7 @@ CToasterWnd 1.18
       m_rectClose = CRect(rectClient.left + m_nWidth - ::SystemDPIScale(26), ::SystemDPIScale(5), rectClient.left + m_nWidth - ::SystemDPIScale(13), ::SystemDPIScale(18));
   else
       m_rectClose = CRect(rectClient.right - ::SystemDPIScale(26), ::SystemDPIScale(5), rectClient.right - ::SystemDPIScale(13), ::SystemDPIScale(18));
+- On some systems GetCursorPos() fails for addresses > 2GB -> replaced it with my GetSafeCursorPos()
 
 
 CColourPopup

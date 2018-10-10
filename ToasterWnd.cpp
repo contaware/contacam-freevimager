@@ -1031,7 +1031,7 @@ void CToasterWnd::OnTimer(UINT_PTR nIDEvent)
         GetWindowRect(&rectWindow);
 
         CPoint cursorPos;
-        GetCursorPos(&cursorPos);
+		::GetSafeCursorPos(&cursorPos);
         if (!m_bWaitOnMouseOver || !rectWindow.PtInRect(cursorPos))
         {
           if (m_actualAnimationStyle != NoAnimation)
@@ -1597,7 +1597,7 @@ void CToasterWnd::OnMouseMove(UINT nFlags, CPoint point)
   //See if we are over the close button and if so make it "hot"
   //and force a redraw of it
   CPoint ptCursor;
-  GetCursorPos(&ptCursor);
+  ::GetSafeCursorPos(&ptCursor);
   ScreenToClient(&ptCursor);
   BOOL bNewCloseHot = m_rectClose.PtInRect(ptCursor);
   if (bNewCloseHot != m_bCloseHot)
