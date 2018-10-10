@@ -787,9 +787,14 @@ void CVideoDeviceView::OnTimer(UINT nIDEvent)
 	{
 		case ID_TIMER_RELOAD :
 		{
+			CString sSection(pDoc->GetDevicePathName());
+
 			// Load detection on/off from registry/ini file
-			pDoc->m_dwVideoProcessorMode = (DWORD) MIN(1, MAX(0, ::AfxGetApp()->GetProfileInt(pDoc->GetDevicePathName(), _T("VideoProcessorMode"), 0)));
+			pDoc->m_dwVideoProcessorMode = (DWORD) MIN(1, MAX(0, ::AfxGetApp()->GetProfileInt(sSection, _T("VideoProcessorMode"), 0)));
 			
+			// Load detection level from registry/ini file
+			pDoc->m_nDetectionLevel = CVideoDeviceDoc::ValidateDetectionLevel(::AfxGetApp()->GetProfileInt(sSection, _T("DetectionLevel"), DEFAULT_MOVDET_LEVEL));
+
 			// Load video source obscuration state
 			CString sRecordAutoSaveDir = pDoc->m_sRecordAutoSaveDir;
 			sRecordAutoSaveDir.TrimRight(_T('\\'));
