@@ -2185,12 +2185,7 @@ BOOL CMainFrame::IsAddressInHeapRegion(LPVOID p, HEAPREGIONARRAY& Regions)
 void CMainFrame::LogSysUsage()
 {
 	// Heap walk to temp binary file
-	HANDLE heap = (HANDLE)::_get_heap_handle();
-	CString sConfigFilesDir(CUImagerApp::GetConfigFilesDir());
-	sConfigFilesDir.TrimRight(_T('\\'));
-	CString sHeapLogFileName(sConfigFilesDir + _T("\\") + HEAP_LOGNAME_EXT);
-	CString sHeapTempLogFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), sHeapLogFileName);
-	CString sHeapTempBinFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), ::GetFileNameNoExt(sHeapLogFileName) + _T(".bin"));
+	CString sHeapTempBinFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), HEAP_LOGNAME_EXT);
 	HANDLE hHeapTempBinFile = ::CreateFile(	sHeapTempBinFileName,
 											GENERIC_WRITE,
 											FILE_SHARE_READ, NULL, CREATE_ALWAYS,
@@ -2199,6 +2194,7 @@ void CMainFrame::LogSysUsage()
 		return;
 	PROCESS_HEAP_ENTRY HeapEntry;
 	::memset(&HeapEntry, 0, sizeof(HeapEntry));
+	HANDLE heap = (HANDLE)::_get_heap_handle();
 	if (::HeapLock(heap))
 	{
 		while (::HeapWalk(heap, &HeapEntry))
@@ -2210,7 +2206,7 @@ void CMainFrame::LogSysUsage()
 	}
 	::CloseHandle(hHeapTempBinFile);
 
-	// Make a human readable heap log file
+	// Get Heap Usage
 	hHeapTempBinFile = ::CreateFile(sHeapTempBinFileName,
 									GENERIC_READ,
 									FILE_SHARE_READ, NULL, OPEN_EXISTING,
@@ -2220,15 +2216,7 @@ void CMainFrame::LogSysUsage()
 		::DeleteFile(sHeapTempBinFileName);
 		return;
 	}
-	FILE* pHeapTempLogFile = ::_tfopen(sHeapTempLogFileName, _T("w"));
-	if (!pHeapTempLogFile)
-	{
-		::CloseHandle(hHeapTempBinFile);
-		::DeleteFile(sHeapTempBinFileName);
-		return;
-	}
 	DWORD NumberOfBytesRead;
-	int i = 0;
 	HEAPREGIONARRAY HeapRegions;
 	while (::ReadFile(hHeapTempBinFile, (LPVOID)&HeapEntry, sizeof(HeapEntry), &NumberOfBytesRead, NULL) && NumberOfBytesRead == sizeof(HeapEntry))
 	{
@@ -2239,27 +2227,18 @@ void CMainFrame::LogSysUsage()
 		// is always set to 0.
 		if ((HeapEntry.wFlags & PROCESS_HEAP_REGION) != 0)
 		{
-			::_ftprintf(pHeapTempLogFile,
-						_T("REGION %03d\n  Address: 0x%08IX - 0x%08IX(excluded)\n  Size: %s\n"),
-						++i, (size_t)HeapEntry.Region.lpFirstBlock, (size_t)HeapEntry.Region.lpLastBlock,
-						(LPCTSTR)::FormatBytes((size_t)HeapEntry.Region.lpLastBlock - (size_t)HeapEntry.Region.lpFirstBlock));
 			HEAPREGION r;
 			r.lpFirstBlock = HeapEntry.Region.lpFirstBlock;	// pointer to the first valid memory block in this heap region
 			r.lpLastBlock = HeapEntry.Region.lpLastBlock;	// pointer to the first invalid memory block in this heap region
 			HeapRegions.Add(r);
 		}	
 	}
-	::_ftprintf(pHeapTempLogFile, _T("\n"));
-	ULONGLONG ullUncommittedFreeData = 0;
-	ULONGLONG ullUncommittedFreeOverhead = 0;
 	ULONGLONG ullAllocatedData = 0;
 	ULONGLONG ullAllocatedOverhead = 0;
-	ULONGLONG ullAllocatedMoveableData = 0;
-	ULONGLONG ullAllocatedMoveableOverhead = 0;
-	ULONGLONG ullAllocatedDDEShareData = 0;
-	ULONGLONG ullAllocatedDDEShareOverhead = 0;
 	ULONGLONG ullAllocatedBigData = 0;
 	ULONGLONG ullAllocatedBigOverhead = 0;
+	ULONGLONG ullUncommittedFreeData = 0;
+	ULONGLONG ullUncommittedFreeOverhead = 0;
 	ULONGLONG ullCommittedFreeData = 0;
 	ULONGLONG ullCommittedFreeOverhead = 0;
 	::SetFilePointer(hHeapTempBinFile, 0, NULL, FILE_BEGIN);
@@ -2270,88 +2249,46 @@ void CMainFrame::LogSysUsage()
 		{
 			if ((HeapEntry.wFlags & PROCESS_HEAP_ENTRY_BUSY) != 0)
 			{
-				::_ftprintf(pHeapTempLogFile, _T("USED"));
 				ullAllocatedData += HeapEntry.cbData;
 				ullAllocatedOverhead += HeapEntry.cbOverhead;
-				if (IsAddressInHeapRegion((LPBYTE)HeapEntry.lpData + HeapEntry.cbData / 2, // take the middle and not the beginning because of possible alignment differences
+				if (!IsAddressInHeapRegion((LPBYTE)HeapEntry.lpData + HeapEntry.cbData / 2, // take the middle and not the beginning because of possible alignment differences
 										HeapRegions))
-				{
-					// A block can be moved when it has been allocated with
-					// LMEM_MOVEABLE (LocalAlloc) or GMEM_MOVEABLE (GlocalAlloc).
-					// Block.hMem is the handle of the moveable memory block.
-					if ((HeapEntry.wFlags & PROCESS_HEAP_ENTRY_MOVEABLE) != 0)
-					{
-						::_ftprintf(pHeapTempLogFile, _T(" (moveable with handle 0x%08IX)"), (size_t)HeapEntry.Block.hMem);
-						ullAllocatedMoveableData += HeapEntry.cbData;
-						ullAllocatedMoveableOverhead += HeapEntry.cbOverhead;
-					}
-
-					// Unlike Windows version 3.x, this memory is not shared globally.
-					// However, this flag is available for compatibility purposes.
-					// It may be used by some applications to enhance the performance
-					// of DDE operations and should, therefore, be specified if the memory
-					// is to be used for DDE.
-					if ((HeapEntry.wFlags & PROCESS_HEAP_ENTRY_DDESHARE) != 0)
-					{
-						::_ftprintf(pHeapTempLogFile, _T(" (dde)"));
-						ullAllocatedDDEShareData += HeapEntry.cbData;
-						ullAllocatedDDEShareOverhead += HeapEntry.cbOverhead;
-					}
-				}
-				else
 				{
 					// Big heap blocks are not directly managed by the heap,
 					// they are allocated with VirtualAlloc and their data pointer 
 					// do not point to a PROCESS_HEAP_REGION
-					::_ftprintf(pHeapTempLogFile, _T(" (big)"));
 					ullAllocatedBigData += HeapEntry.cbData;
 					ullAllocatedBigOverhead += HeapEntry.cbOverhead;
 				}
-				::_ftprintf(pHeapTempLogFile, _T("\n"));
+
+				// Older unused flags for non-big blocks
+				//
+				// PROCESS_HEAP_ENTRY_MOVEABLE
+				// A block can be moved when it has been allocated with
+				// LMEM_MOVEABLE (LocalAlloc) or GMEM_MOVEABLE (GlocalAlloc).
+				// Block.hMem is the handle of the moveable memory block.
+				//
+				// PROCESS_HEAP_ENTRY_DDESHARE
+				// Unlike Windows version 3.x, this memory is not shared globally.
+				// However, this flag is available for compatibility purposes.
+				// It may be used by some applications to enhance the performance
+				// of DDE operations and should, therefore, be specified if the memory
+				// is to be used for DDE.
 			}
 			else if ((HeapEntry.wFlags & PROCESS_HEAP_UNCOMMITTED_RANGE) != 0)
 			{
-				::_ftprintf(pHeapTempLogFile, _T("FREE UNCOMMITTED\n"));
 				ullUncommittedFreeData += HeapEntry.cbData;
 				ullUncommittedFreeOverhead += HeapEntry.cbOverhead;
 			}
 			else
 			{
-				::_ftprintf(pHeapTempLogFile, _T("FREE COMMITTED\n"));
 				ullCommittedFreeData += HeapEntry.cbData;
 				ullCommittedFreeOverhead += HeapEntry.cbOverhead;
 			}
-			::_ftprintf(pHeapTempLogFile,
-						_T("  Address: 0x%08IX\n  Size: %s\n  Overhead: %s\n\n"),
-						(size_t)HeapEntry.lpData,
-						(LPCTSTR)::FormatBytes(HeapEntry.cbData),
-						(LPCTSTR)::FormatBytes(HeapEntry.cbOverhead));
 		}
 	}
-	ULONG heap_info = 0;
-	CString sHeapType(_T("unknown"));
-	if (::HeapQueryInformation(heap, HeapCompatibilityInformation, &heap_info, sizeof(heap_info), NULL))
-	{
-		switch (heap_info)
-		{
-			case 0:		sHeapType = _T("regular"); break;
-			case 1:		sHeapType = _T("look-asides"); break;
-			case 2:		sHeapType = _T("LFH"); break;
-			default:	break;
-		}
-	}
-	::_ftprintf(pHeapTempLogFile, _T("Overall Data+Overhead:\n"));
-	::_ftprintf(pHeapTempLogFile, _T("USED %s+%s (total)\n"), (LPCTSTR)::FormatBytes(ullAllocatedData), (LPCTSTR)::FormatBytes(ullAllocatedOverhead));
-	::_ftprintf(pHeapTempLogFile, _T("     %s+%s (moveable)\n"), (LPCTSTR)::FormatBytes(ullAllocatedMoveableData), (LPCTSTR)::FormatBytes(ullAllocatedMoveableOverhead));
-	::_ftprintf(pHeapTempLogFile, _T("     %s+%s (dde)\n"), (LPCTSTR)::FormatBytes(ullAllocatedDDEShareData), (LPCTSTR)::FormatBytes(ullAllocatedDDEShareOverhead));
-	::_ftprintf(pHeapTempLogFile, _T("     %s+%s (big)\n"), (LPCTSTR)::FormatBytes(ullAllocatedBigData), (LPCTSTR)::FormatBytes(ullAllocatedBigOverhead));
-	::_ftprintf(pHeapTempLogFile, _T("FREE %s+%s (committed)\n"), (LPCTSTR)::FormatBytes(ullCommittedFreeData), (LPCTSTR)::FormatBytes(ullCommittedFreeOverhead));
-	::_ftprintf(pHeapTempLogFile, _T("FREE %s+%s (uncommitted)\n"), (LPCTSTR)::FormatBytes(ullUncommittedFreeData), (LPCTSTR)::FormatBytes(ullUncommittedFreeOverhead));
 	::CloseHandle(hHeapTempBinFile);
-	::fclose(pHeapTempLogFile);
 	::DeleteFile(sHeapTempBinFileName);
-	::DeleteFile(sHeapLogFileName);
-	::MoveFile(sHeapTempLogFileName, sHeapLogFileName);
 
 	// Get HD Usage
 #ifdef VIDEODEVICEDOC
@@ -2391,7 +2328,7 @@ void CMainFrame::LogSysUsage()
 		_T("%s | ")
 		_T("CPU: %0.1f%% | ")
 		_T("VMEM: used=%s(max %s) res=%s(max %s) free=%s(max %s) frag=%0.1f%% regions=%I64u | ")
-		_T("HEAP(%s): used=%s (%s moveable, %s dde, %s big), free(committed)=%s, free(uncommitted)=%s"),
+		_T("HEAP: used=%s (%s big), free(committed)=%s, free(uncommitted)=%s"),
 #ifdef VIDEODEVICEDOC
 		(double)(CDib::m_llOverallSharedMemoryBytes >> 20) / 1024.0, ML_STRING(1826, "GB"),
 		GetMaxOverallQueueSizeGB(), ML_STRING(1826, "GB"),
@@ -2403,10 +2340,7 @@ void CMainFrame::LogSysUsage()
 		::FormatBytes(ullReserved), ::FormatBytes(ullMaxReserved),
 		::FormatBytes(ullFree), ::FormatBytes(ullMaxFree),
 		dFragmentation, ullRegions,
-		sHeapType,
 		::FormatBytes(ullAllocatedData + ullAllocatedOverhead),
-		::FormatBytes(ullAllocatedMoveableData + ullAllocatedMoveableOverhead),
-		::FormatBytes(ullAllocatedDDEShareData + ullAllocatedDDEShareOverhead),
 		::FormatBytes(ullAllocatedBigData + ullAllocatedBigOverhead),
 		::FormatBytes(ullCommittedFreeData + ullCommittedFreeOverhead),
 		::FormatBytes(ullUncommittedFreeData + ullUncommittedFreeOverhead));

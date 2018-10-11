@@ -31,7 +31,7 @@
 #define FAQ_ONLINE_PAGE									_T("http://www.contaware.com/freevimagerfaq/")
 #define MANUAL_ONLINE_PAGE								_T("http://www.contaware.com/freevimagermanual/")
 #endif
-#define APPVERSION										_T("9.0.5beta5")
+#define APPVERSION										_T("9.0.5beta6")
 
 // Company
 #define MYCOMPANY										_T("Contaware")
@@ -44,7 +44,7 @@
 // Log files
 #define LOGNAME_EXT										_T("log.txt")
 #define MAX_LOG_FILE_SIZE								33554432 /* 32MB */
-#define HEAP_LOGNAME_EXT								_T("heap_log.txt")
+#define HEAP_LOGNAME_EXT								_T("heap_log.bin")
 
 /////////////////////////////////////////////////////////////////////////////
 
