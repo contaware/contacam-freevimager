@@ -294,6 +294,10 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 		//   ~270 MB with medium, ~130 MB with veryfast and ~65 MB with ultrafast
 		av_opt_set(pCodecCtx->priv_data, "preset", "veryfast", 0);
 
+		// It is not necessary to set the level with av_opt_set(pCodecCtx->priv_data, "level", "6", 0)
+		// because that's done automatically. The lowest possible level is chosen depending from the
+		// video resolution and frame-rate.
+
 		// Disable 256-bit and 512-bit instructions because mingw doesn't support 32-bytes and 64-bytes
 		// stack alignment on Windows
 		// Attention: remember to disable newer SIMD instructions when recompiling x264 (see x264.h)
