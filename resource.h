@@ -3226,6 +3226,7 @@
 #define ID_FONTSIZE_14                  33527
 #define ID_FONTSIZE_15                  33528
 #define ID_FONTSIZE_16                  33529
+#define ID_SENSITIVITY_0                33530
 #define ID_SENSITIVITY_10               33532
 #define ID_SENSITIVITY_20               33534
 #define ID_SENSITIVITY_30               33536

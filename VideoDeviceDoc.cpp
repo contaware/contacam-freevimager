@@ -51,6 +51,8 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	//{{AFX_MSG_MAP(CVideoDeviceDoc)
 	ON_COMMAND(ID_CAPTURE_RECORD, OnCaptureRecord)
 	ON_UPDATE_COMMAND_UI(ID_CAPTURE_RECORD, OnUpdateCaptureRecord)
+	ON_COMMAND(ID_SENSITIVITY_0, OnMovDetSensitivity0)
+	ON_UPDATE_COMMAND_UI(ID_SENSITIVITY_0, OnUpdateMovDetSensitivity0)
 	ON_COMMAND(ID_SENSITIVITY_10, OnMovDetSensitivity10)
 	ON_UPDATE_COMMAND_UI(ID_SENSITIVITY_10, OnUpdateMovDetSensitivity10)
 	ON_COMMAND(ID_SENSITIVITY_20, OnMovDetSensitivity20)
@@ -1828,7 +1830,22 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, DWORD dwVideoProce
 	// Software Detection
 	if (bDoSoftwareDetection)
 	{
-		if (nDetectionLevel == 100)
+		if (nDetectionLevel == 0)
+		{
+			if (m_pDifferencingDib)
+			{
+				delete m_pDifferencingDib;
+				m_pDifferencingDib = NULL;
+			}
+			if (m_pMovementDetectorBackgndDib)
+			{
+				delete m_pMovementDetectorBackgndDib;
+				m_pMovementDetectorBackgndDib = NULL;
+			}
+			for (int i = 0; i < m_lMovDetTotalZones; i++)
+				m_MovementDetections[i] = 0;
+		}
+		else if (nDetectionLevel == 100)
 		{
 			if (m_pDifferencingDib)
 			{
@@ -4184,11 +4201,11 @@ int CVideoDeviceDoc::ValidateRefFontSize(int nRefFontSize)
 	return nRefFontSize;
 }
 
-// Valid values: 10,20,30,40,50,60,70,80,90,100
+// Valid values: 0,10,20,30,40,50,60,70,80,90,100
 int CVideoDeviceDoc::ValidateDetectionLevel(int nDetectionLevel)
 {
-	if (nDetectionLevel < 10)
-		nDetectionLevel = 10;
+	if (nDetectionLevel < 0)
+		nDetectionLevel = 0;
 	else if (nDetectionLevel > 100)
 		nDetectionLevel = 100;
 	return (nDetectionLevel / 10) * 10;
@@ -5031,6 +5048,17 @@ void CVideoDeviceDoc::CaptureRecord()
 {
 	m_dwVideoProcessorMode = !m_dwVideoProcessorMode;
 	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("VideoProcessorMode"), m_dwVideoProcessorMode);
+}
+
+void CVideoDeviceDoc::OnMovDetSensitivity0()
+{
+	m_nDetectionLevel = 0;
+	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
+}
+
+void CVideoDeviceDoc::OnUpdateMovDetSensitivity0(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(m_nDetectionLevel == 0 ? 1 : 0);
 }
 
 void CVideoDeviceDoc::OnMovDetSensitivity10()

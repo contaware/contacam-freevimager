@@ -728,6 +728,7 @@ IDR_CONTEXT_SENSITIVITY MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
+	    MENUITEM "OFF",                         ID_SENSITIVITY_0
         MENUITEM "Motion Sensitivity 10",       ID_SENSITIVITY_10
         MENUITEM "Motion Sensitivity 20",       ID_SENSITIVITY_20
         MENUITEM "Motion Sensitivity 30",       ID_SENSITIVITY_30

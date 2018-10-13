@@ -897,7 +897,7 @@ public:
 	int m_nShowEditDetectionZones;						// Edit Detection zones, 0: disabled, 1: add, 2: remove
 	volatile BOOL m_bDetectingMovement;					// Flag indicating a Detection
 	volatile BOOL m_bDetectingMinLengthMovement;		// Flag indicating a Movement of at least m_nDetectionMinLengthMilliSeconds
-	volatile int m_nDetectionLevel;						// 10 = Min Sensitivity, 20, 30, 40, 50, 60, 70, 80, 90 = Max Sensitivity, 100 = Continuous Recording
+	volatile int m_nDetectionLevel;						// 0 = Off, 10 = Min Sensitivity, 20, 30, 40, 50, 60, 70, 80, 90 = Max Sensitivity, 100 = Continuous Recording
 	volatile int m_nDetectionZoneSize;					// Configured detection zone size: 0->Big, 1->Medium, 2->Small
 	volatile int m_nCurrentDetectionZoneSize;			// Current detection zone size: 0->Big, 1->Medium, 2->Small
 	volatile DWORD m_dwFirstDetFrameUpTime;				// Uptime of first movement detection frame
@@ -996,6 +996,8 @@ protected:
 	//{{AFX_MSG(CVideoDeviceDoc)
 	afx_msg void OnCaptureRecord();
 	afx_msg void OnUpdateCaptureRecord(CCmdUI* pCmdUI);
+	afx_msg void OnMovDetSensitivity0();
+	afx_msg void OnUpdateMovDetSensitivity0(CCmdUI* pCmdUI);
 	afx_msg void OnMovDetSensitivity10();
 	afx_msg void OnUpdateMovDetSensitivity10(CCmdUI* pCmdUI);
 	afx_msg void OnMovDetSensitivity20();
