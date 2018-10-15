@@ -6358,12 +6358,8 @@ BOOL CVideoDeviceDoc::PhpConfigFileSetParam(const CString& sParam, const CString
 		sConfig.Insert(nIndexInsert, _T("\r\n") + sDefine + _T(" (\"") + sParam + _T("\",\"") + sValue + _T("\");"));
 		return PhpSaveConfigFile(sConfig);
 	}
-	// If also not found -> add <?php and insert after it
 	else
-	{
-		sConfig.Insert(0, _T("<?php\r\n") + sDefine + _T(" (\"") + sParam + _T("\",\"") + sValue + _T("\");"));
-		return PhpSaveConfigFile(sConfig);
-	}
+		return FALSE;
 }
 
 CString CVideoDeviceDoc::PhpConfigFileGetParam(const CString& sParam)
