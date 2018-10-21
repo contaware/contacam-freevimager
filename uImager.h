@@ -356,7 +356,7 @@ public:
 	static DWORD ControlContaCamService(int nMsg);
 
 	// Save reservation queue
-	BOOL SaveReservation(DWORD dwId);
+	BOOL SaveReservation(DWORD dwId, BOOL bLowPriority = FALSE);
 	void SaveReservationRemove(DWORD dwId);
 
 	// Enumerate all configured (in registry or ini file) devices
@@ -560,10 +560,6 @@ public:
 	typedef CList<DWORD,DWORD> SAVERESERVATIONQUEUE;
 	SAVERESERVATIONQUEUE m_SaveReservationQueue;
 	CRITICAL_SECTION m_csSaveReservation;
-
-	// Only one snapshot video thread running at the time
-	// (to save heap memory and CPU time)
-	HANDLE m_hMutexSaveSnapshotVideo;
 
 	// Service
 	// - Window placement store/restore disabled if this set

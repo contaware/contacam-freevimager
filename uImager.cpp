@@ -148,7 +148,6 @@ CUImagerApp::CUImagerApp()
 	m_nMicroApachePortSSL = MICROAPACHE_DEFAULT_PORT_SSL;
 	m_bMovDetDropFrames = FALSE;
 	::InitializeCriticalSection(&m_csSaveReservation);
-	m_hMutexSaveSnapshotVideo = ::CreateMutex(NULL, FALSE, NULL);
 	m_bSingleInstance = TRUE;
 	m_bServiceProcess = FALSE;
 	m_bDoStartFromService = FALSE;
@@ -190,7 +189,6 @@ CUImagerApp::~CUImagerApp()
 {
 #ifdef VIDEODEVICEDOC
 	::DeleteCriticalSection(&m_csSaveReservation);
-	::CloseHandle(m_hMutexSaveSnapshotVideo);
 #endif
 }
 
@@ -2274,43 +2272,33 @@ DWORD CUImagerApp::ControlContaCamService(int nMsg)
 	return dwError;
 }
 
-BOOL CUImagerApp::SaveReservation(DWORD dwId)
+BOOL CUImagerApp::SaveReservation(DWORD dwId, BOOL bLowPriority/*=FALSE*/)
 {
 	int i;
 
 	// Enter critical section
 	::EnterCriticalSection(&m_csSaveReservation);
 
-	// Go if we are in the first MAX_SIMULTANEOUS_SAVINGS
+	// Are we already in the queue?
 	POSITION pos = m_SaveReservationQueue.GetHeadPosition();
-	for (i = 0 ; i < MIN(MAX_SIMULTANEOUS_SAVINGS, m_SaveReservationQueue.GetCount()) ; i++)
+	for (i = 0; i < m_SaveReservationQueue.GetCount(); i++)
 	{
 		if (m_SaveReservationQueue.GetNext(pos) == dwId)
 		{
 			::LeaveCriticalSection(&m_csSaveReservation);
-			return TRUE;
+			return (i < MAX_SIMULTANEOUS_SAVINGS); // saving position?
 		}
 	}
-
-	// See whether we have to add the id to queue
-	BOOL bPresent = FALSE;
-	pos = m_SaveReservationQueue.GetHeadPosition();
-	for (i = 0 ; i < m_SaveReservationQueue.GetCount() ; i++)
-	{
-		if (m_SaveReservationQueue.GetNext(pos) == dwId)
-		{
-			bPresent = TRUE;
-			break;
-		}
-	}    
-	if (!bPresent)
+	
+	// Add to Tail if not low priority or if queue is empty
+	if (!bLowPriority || m_SaveReservationQueue.GetCount() == 0)
 	{
 		// Add to Tail
 		m_SaveReservationQueue.AddTail(dwId);
-	
+
 		// Go if we are in the first MAX_SIMULTANEOUS_SAVINGS
 		pos = m_SaveReservationQueue.GetHeadPosition();
-		for (i = 0 ; i < MIN(MAX_SIMULTANEOUS_SAVINGS, m_SaveReservationQueue.GetCount()) ; i++)
+		for (i = 0; i < MIN(MAX_SIMULTANEOUS_SAVINGS, m_SaveReservationQueue.GetCount()); i++)
 		{
 			if (m_SaveReservationQueue.GetNext(pos) == dwId)
 			{

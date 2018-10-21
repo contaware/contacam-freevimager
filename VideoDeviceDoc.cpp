@@ -1015,6 +1015,7 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 	// Init
 	CDib Dib;
 	Dib.SetShowMessageBoxOnError(FALSE);
+	DWORD dwCurrentThreadId = ::GetCurrentThreadId();
 	CAVRec* pAVRecVideo = NULL;
 	CString sVideoFileName = MakeVideoHistoryFileName();
 	CString sVideoTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), sVideoFileName);
@@ -1022,20 +1023,17 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 	FileFind.AddAllowedExtension(_T("jpg"));
 	CString sDir(::GetDriveAndDirName(sVideoFileName));
 	sDir.TrimRight(_T('\\'));
-	BOOL bMutexEntered = FALSE;
-	HANDLE hEventArray[2];
-	hEventArray[0] = GetKillEvent();
-	hEventArray[1] = ((CUImagerApp*)::AfxGetApp())->m_hMutexSaveSnapshotVideo;
 
 	// Wait enough time to make sure the snapshot thread finished with the last jpg snapshot history file of the day that ended
 	if (::WaitForSingleObject(GetKillEvent(), SNAPSHOT_VIDEO_THREAD_STARTUP_DELAY_MS) == WAIT_OBJECT_0)
 		goto exit;
 
-	// Can we start saving?
-	if (::WaitForMultipleObjects(2, hEventArray, FALSE, INFINITE) == WAIT_OBJECT_0 + 1)
-		bMutexEntered = TRUE;
-	else
-		goto exit;
+	// We start saving only if there are no other recordings queued (low priority flag)
+	while (((CUImagerApp*)::AfxGetApp())->SaveReservation(dwCurrentThreadId, TRUE) == FALSE)
+	{
+		if (::WaitForSingleObject(GetKillEvent(), CAN_SAVE_POLL_MS) == WAIT_OBJECT_0)
+			goto exit;
+	}
 
 	// Find and process jpg snapshot history files
 	if (FileFind.Init(sDir + _T("\\*")))
@@ -1120,8 +1118,7 @@ exit:
 	if (pAVRecVideo)
 		delete pAVRecVideo;
 	::DeleteFile(sVideoTempFileName);
-	if (bMutexEntered)
-		::ReleaseMutex(((CUImagerApp*)::AfxGetApp())->m_hMutexSaveSnapshotVideo);
+	((CUImagerApp*)::AfxGetApp())->SaveReservationRemove(dwCurrentThreadId);
 
 	return 0;
 }
