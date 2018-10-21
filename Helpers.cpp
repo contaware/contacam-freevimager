@@ -2255,8 +2255,13 @@ void GetMemoryStats(ULONGLONG* pRegions/*=NULL*/,
 	ULONGLONG sum_free = 0, max_free = 0;
 	ULONGLONG sum_reserve = 0, max_reserve = 0;
 	ULONGLONG sum_commit = 0, max_commit = 0;
-	while (VirtualQuery(memory_info.BaseAddress, &memory_info, sizeof(memory_info)))	// it stops when passing >= 0x7fff0000 and for
-	{																					// LARGEADDRESSAWARE it stops at 0xffff0000
+	// For 32-bit apps the following holds:
+	// - If app is not LARGEADDRESSAWARE then VirtualQuery() stops at 0x7fff0000
+	// - If app is LARGEADDRESSAWARE and OS is 64-bit it stops at 0xffff0000 
+	// - If app is LARGEADDRESSAWARE and OS is 32-bit LARGEADDRESSAWARE
+	//   (as admin run bcdedit /set IncreaseUserVa 3072 and reboot) it stops at 0xbfff0000
+	while (VirtualQuery(memory_info.BaseAddress, &memory_info, sizeof(memory_info)))
+	{
 		++region;
 		switch (memory_info.State)
 		{
