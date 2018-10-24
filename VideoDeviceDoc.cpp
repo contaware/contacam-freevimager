@@ -2321,9 +2321,15 @@ BOOL CVideoDeviceDoc::SaveJpegFast(CDib* pDib, CMJPEGEncoder* pMJPEGEncoder, con
 	qscale = Round(pow(1.02083, (double)(170 - quality)) - 2.233); // from 0 .. 100 -> 31 .. 2
 
 	// JPEG encode
-	dwEncodedLen = pMJPEGEncoder->Encode(qscale, // 2: best quality, 31: worst quality
+	// Note: as we are a 32-bit application and as the video resolutions get bigger and bigger,
+	// we can incur into a virtual memory address space fragmentation problem especially if many threads
+	// are running interleaved and allocating blocks that do not fit into the heap (blocks bigger than
+	// 512 KB are gotten from normal VM which is quite prone to fragmentation). So we better set the
+	// threads count to 1, later on when we get a 64-bit application we can set the threads count to:
+	// ((CUImagerApp*)::AfxGetApp())->m_nCoresCount
+	dwEncodedLen = pMJPEGEncoder->Encode(qscale,	// 2: best quality, 31: worst quality
 										&DstBmi, pJ420Buf,
-										((CUImagerApp*)::AfxGetApp())->m_nCoresCount);
+										1);			// threads count
 	if (dwEncodedLen == 0U)
 		goto exit;
 
