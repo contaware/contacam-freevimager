@@ -292,6 +292,8 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 		// - slower presets use more RAM because of the increasing complexity
 		//   of the used algorithms, for example a Full HD video encoding uses
 		//   ~270 MB with medium, ~130 MB with veryfast and ~65 MB with ultrafast
+		// - for each additional thread a Full HD video uses ~4 MB more RAM
+		//   (nThreadCount * 4 MB)
 		av_opt_set(pCodecCtx->priv_data, "preset", "veryfast", 0);
 
 		// It is not necessary to set the level with av_opt_set(pCodecCtx->priv_data, "level", "6", 0)
