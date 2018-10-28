@@ -525,8 +525,8 @@ public:
 	// ATTENTION: DO NOT CHANGE THE ASSOCIATED NUMBERS!
 	// (SP: Server Push, CP: Client Poll, RTSP: Realtime streaming protocol)
 	typedef enum {
-		OTHERONE_SP = 0,				// Other HTTP motion jpeg devices
-		OTHERONE_CP,					// Other HTTP jpeg snapshots devices
+		GENERIC_SP = 0,					// Generic HTTP motion jpeg devices
+		GENERIC_CP,						// Generic HTTP jpeg snapshots devices
 		AXIS_SP,						// Axis HTTP motion jpeg
 		AXIS_CP,						// Axis HTTP jpeg snapshots
 		PANASONIC_SP,					// Panasonic HTTP motion jpeg
@@ -541,11 +541,11 @@ public:
 		FOSCAM_CP,						// Foscam HTTP jpeg snapshots
 		// Add more http devices here...
 		URL_RTSP = 1000,				// URL RTSP
-		OTHERONE_1_RTSP = 1010,			// Other 1 RTSP device
-		OTHERONE_2_RTSP = 1011,			// Other 2 RTSP device
-		OTHERONE_3_RTSP = 1012,			// Other 3 RTSP device
-		OTHERONE_4_RTSP = 1013,			// Other 4 RTSP device
-		OTHERONE_5_RTSP = 1014,			// Other 5 RTSP device
+		GENERIC_1_RTSP = 1010,			// Generic 1 RTSP device
+		GENERIC_2_RTSP = 1011,			// Generic 2 RTSP device
+		GENERIC_3_RTSP = 1012,			// Generic 3 RTSP device
+		GENERIC_4_RTSP = 1013,			// Generic 4 RTSP device
+		GENERIC_5_RTSP = 1014,			// Generic 5 RTSP device
 		SEVENLINKS_RTSP = 1015,			// 7Links RTSP
 		ABUS_RTSP = 1020,				// Abus RTSP
 		ACTI_RTSP = 1030,				// ACTi RTSP
@@ -587,6 +587,7 @@ public:
 		UOKOO_RTSP = 1237,				// Uokoo RTSP
 		VIVOTEK_RTSP = 1240,			// Vivotek RTSP
 		VSTARCAM_RTSP = 1242,			// VStarCam RTSP
+		WANSCAM_RTSP =  1243,			// Wanscam RTSP
 		WANSVIEW_RTSP = 1244,			// Wansview RTSP
 		XIAOMI_RTSP = 1245,				// Xiaomi RTSP
 		YCAM_RTSP = 1250,				// Y-cam RTSP

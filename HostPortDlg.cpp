@@ -41,13 +41,13 @@ BOOL CHostPortDlg::OnInitDialog()
 
 	// Init Device Type Mode Combo Box
 	CComboBox* pComboBoxDevTypeMode = (CComboBox*)GetDlgItem(IDC_COMBO_DEVICETYPEMODE);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Other Camera") + _T(" /11 (RTSP)")), (DWORD)CVideoDeviceDoc::OTHERONE_1_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Other Camera") + _T(" /onvif1 (RTSP)")), (DWORD)CVideoDeviceDoc::OTHERONE_2_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Other Camera") + _T(" /live/ch0 (RTSP)")), (DWORD)CVideoDeviceDoc::OTHERONE_3_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Other Camera") + _T(" /ch01.264 (RTSP)")), (DWORD)CVideoDeviceDoc::OTHERONE_4_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Other Camera") + _T(" /channel=1&stream=0.sdp (RTSP)")), (DWORD)CVideoDeviceDoc::OTHERONE_5_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Other Camera") + _T(" (") + ML_STRING(1865, "HTTP motion jpeg") + _T(")")), (DWORD)CVideoDeviceDoc::OTHERONE_SP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Other Camera") + _T(" (") + ML_STRING(1866, "HTTP jpeg snapshots") + _T(")")), (DWORD)CVideoDeviceDoc::OTHERONE_CP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Generic") + _T(" /11 (RTSP)")), (DWORD)CVideoDeviceDoc::GENERIC_1_RTSP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Generic") + _T(" /onvif1 (RTSP)")), (DWORD)CVideoDeviceDoc::GENERIC_2_RTSP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Generic") + _T(" /live/ch0 (RTSP)")), (DWORD)CVideoDeviceDoc::GENERIC_3_RTSP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Generic") + _T(" /ch01.264 (RTSP)")), (DWORD)CVideoDeviceDoc::GENERIC_4_RTSP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Generic") + _T(" /channel=1&stream=0.sdp (RTSP)")), (DWORD)CVideoDeviceDoc::GENERIC_5_RTSP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Generic") + _T(" (") + ML_STRING(1865, "HTTP motion jpeg") + _T(")")), (DWORD)CVideoDeviceDoc::GENERIC_SP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Generic") + _T(" (") + ML_STRING(1866, "HTTP jpeg snapshots") + _T(")")), (DWORD)CVideoDeviceDoc::GENERIC_CP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("7Links (RTSP)")), (DWORD)CVideoDeviceDoc::SEVENLINKS_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Abus (RTSP)")), (DWORD)CVideoDeviceDoc::ABUS_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("ACTi (RTSP)")), (DWORD)CVideoDeviceDoc::ACTI_RTSP);
@@ -101,6 +101,7 @@ BOOL CHostPortDlg::OnInitDialog()
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Uokoo (RTSP)")), (DWORD)CVideoDeviceDoc::UOKOO_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Vivotek (RTSP)")), (DWORD)CVideoDeviceDoc::VIVOTEK_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("VStarCam (RTSP)")), (DWORD)CVideoDeviceDoc::VSTARCAM_RTSP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Wanscam (RTSP)")), (DWORD)CVideoDeviceDoc::WANSCAM_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Wansview (RTSP)")), (DWORD)CVideoDeviceDoc::WANSVIEW_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Xiaomi (RTSP)")), (DWORD)CVideoDeviceDoc::XIAOMI_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Y-cam (RTSP)")), (DWORD)CVideoDeviceDoc::YCAM_RTSP);
@@ -188,7 +189,7 @@ BOOL CHostPortDlg::OnInitDialog()
 	{
 		m_Hosts.InsertAt(0, _T(""));
 		m_Ports.InsertAt(0, (DWORD)DEFAULT_RTSP_PORT);
-		m_DeviceTypeModes.InsertAt(0, (DWORD)CVideoDeviceDoc::OTHERONE_1_RTSP);
+		m_DeviceTypeModes.InsertAt(0, (DWORD)CVideoDeviceDoc::GENERIC_1_RTSP);
 	}
 
 	// Find the last selected index and populate the hosts CComboBox
@@ -393,7 +394,7 @@ void CHostPortDlg::ParseUrl(const CString& sInHost,
 	sOutGetFrameVideoHost.TrimRight();
 	nOutGetFrameVideoPort = (bUrlHttp || bUrlRtsp) ? nUrlPort : nInPort;
 	if (bUrlHttp)
-		nOutDeviceTypeMode = CVideoDeviceDoc::OTHERONE_CP;
+		nOutDeviceTypeMode = CVideoDeviceDoc::GENERIC_CP;
 	else if (bUrlRtsp)
 		nOutDeviceTypeMode = CVideoDeviceDoc::URL_RTSP;
 	else
@@ -421,7 +422,7 @@ void CHostPortDlg::MakeUrl(	const CString& sInGetFrameVideoHost,
 			else
 				sOutHost.Format(_T("rtsp://%s%s"), sInGetFrameVideoHost, sInGetFrameLocation);
 			nOutPort = nInGetFrameVideoPort;
-			nOutDeviceTypeMode = CVideoDeviceDoc::OTHERONE_1_RTSP;
+			nOutDeviceTypeMode = CVideoDeviceDoc::GENERIC_1_RTSP;
 		}
 		// HTTP
 		else
@@ -442,7 +443,7 @@ void CHostPortDlg::MakeUrl(	const CString& sInGetFrameVideoHost,
 					sOutHost.Format(_T("http://%s%s"), sInGetFrameVideoHost, sInGetFrameLocation);
 			}
 			nOutPort = nInGetFrameVideoPort;
-			nOutDeviceTypeMode = CVideoDeviceDoc::OTHERONE_CP;
+			nOutDeviceTypeMode = CVideoDeviceDoc::GENERIC_CP;
 		}
 	}
 	else
@@ -711,7 +712,7 @@ void CHostPortDlg::LoadHistory()
 	m_nPort = dwPort;
 
 	// Device Type and Mode
-	m_nDeviceTypeMode = (DWORD)pApp->GetProfileInt(sSection, _T("DeviceTypeModeHistory0"), CVideoDeviceDoc::OTHERONE_1_RTSP);
+	m_nDeviceTypeMode = (DWORD)pApp->GetProfileInt(sSection, _T("DeviceTypeModeHistory0"), CVideoDeviceDoc::GENERIC_1_RTSP);
 }
 
 void CHostPortDlg::SaveHistory()

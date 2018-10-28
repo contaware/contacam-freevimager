@@ -3527,7 +3527,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_pHttpVideoParseProcess = NULL;
 	m_sGetFrameVideoHost = _T("");
 	m_nGetFrameVideoPort = DEFAULT_HTTP_PORT;
-	m_nNetworkDeviceTypeMode = OTHERONE_SP;
+	m_nNetworkDeviceTypeMode = GENERIC_SP;
 	m_bPreferTcpforRtsp = FALSE;
 	m_nHttpVideoQuality = HTTP_DEFAULT_VIDEO_QUALITY;
 	m_nHttpVideoSizeX = HTTP_DEFAULT_VIDEO_SIZE_CX;
@@ -3809,7 +3809,7 @@ BOOL CVideoDeviceDoc::ParseNetworkDevicePathName(	const CString& sDevicePathName
 		CString sNetworkDeviceTypeMode = sAddress.Right(sAddress.GetLength() - i - 1);
 		NetworkDeviceTypeMode nNetworkDeviceTypeMode = (NetworkDeviceTypeMode)_tcstol(sNetworkDeviceTypeMode.GetBuffer(0), NULL, 10);
 		sNetworkDeviceTypeMode.ReleaseBuffer();
-		if (nNetworkDeviceTypeMode >= OTHERONE_SP && nNetworkDeviceTypeMode < LAST_DEVICE)
+		if (nNetworkDeviceTypeMode >= GENERIC_SP && nNetworkDeviceTypeMode < LAST_DEVICE)
 			nOutNetworkDeviceTypeMode = nNetworkDeviceTypeMode;
 		else
 			return FALSE;
@@ -4657,7 +4657,7 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 		m_HttpGetFrameLocations.RemoveAt(m_HttpGetFrameLocations.GetUpperBound());
 
 	// MJPEG
-	if (m_nNetworkDeviceTypeMode == OTHERONE_SP)
+	if (m_nNetworkDeviceTypeMode == GENERIC_SP)
 	{
 		m_HttpGetFrameLocations.Add(_T("/videostream.cgi"));				// 7Links, Acromedia, Agasio, AirLink, Apexis, Aztech, BiQu, BSTI, cowKey,
 																			// CVLM, Dericam, EasyN, EasySE, Elro, Eminent, ENSIDIO, EyeSight, EZCam,
@@ -4738,7 +4738,7 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 																				// (ATTENTION: when getting the MJPG stream Foscam doesn't url-decode the usr & pwd params)
 	}
 	// JPEG
-	else if (m_nNetworkDeviceTypeMode == OTHERONE_CP)
+	else if (m_nNetworkDeviceTypeMode == GENERIC_CP)
 	{
 		m_HttpGetFrameLocations.Add(_T("/snapshot.jpg"));					// Aviosys, BluePix, Compro, Digitus, EasyN, Edimax, Eminent, GadSpot,
 																			// Gembird, GKB, Goscam, Hama, Hungtek, Intellinet, LevelOne, LogiLink,
@@ -4813,8 +4813,8 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 	}
 
 	// Finally add the mixed commands (it depends from the maker whether those commands return JPEG or MJPEG)
-	if (m_nNetworkDeviceTypeMode == OTHERONE_SP ||
-		m_nNetworkDeviceTypeMode == OTHERONE_CP)
+	if (m_nNetworkDeviceTypeMode == GENERIC_SP ||
+		m_nNetworkDeviceTypeMode == GENERIC_CP)
 	{
 		m_HttpGetFrameLocations.Add(_T("/GetData.cgi"));					// Active, ALinking, Asante, ASIP, Asoni, Aviosys, Aviptek, BVUSA,
 																			// Defender, GadSpot, Grand, Hesavision, Hunt, INVID, Lorex, Lupus,
@@ -4840,8 +4840,8 @@ double CVideoDeviceDoc::GetDefaultNetworkFrameRate(NetworkDeviceTypeMode nNetwor
 {
 	switch(nNetworkDeviceTypeMode)
 	{
-		case OTHERONE_SP :	return HTTPSERVERPUSH_DEFAULT_FRAMERATE;
-		case OTHERONE_CP :	return HTTPCLIENTPOLL_DEFAULT_FRAMERATE;
+		case GENERIC_SP :	return HTTPSERVERPUSH_DEFAULT_FRAMERATE;
+		case GENERIC_CP :	return HTTPCLIENTPOLL_DEFAULT_FRAMERATE;
 		case AXIS_SP :		return HTTPSERVERPUSH_DEFAULT_FRAMERATE;
 		case AXIS_CP :		return HTTPCLIENTPOLL_DEFAULT_FRAMERATE;
 		case PANASONIC_SP :	return HTTPSERVERPUSH_DEFAULT_FRAMERATE;
@@ -5410,8 +5410,8 @@ void CVideoDeviceDoc::VideoFormatDialog()
 							SW_SHOWNORMAL);
 			EndWaitCursor();
 		}
-		else if (	m_nNetworkDeviceTypeMode == OTHERONE_SP	||
-					m_nNetworkDeviceTypeMode == OTHERONE_CP	||
+		else if (	m_nNetworkDeviceTypeMode == GENERIC_SP	||
+					m_nNetworkDeviceTypeMode == GENERIC_CP	||
 					m_nNetworkDeviceTypeMode == TPLINK_SP	||
 					m_nNetworkDeviceTypeMode == TPLINK_CP)
 		{
@@ -8420,8 +8420,8 @@ void CVideoDeviceDoc::ConnectHttp()
 	// Init Video
 	switch (m_nNetworkDeviceTypeMode)
 	{
-		case OTHERONE_SP :	// Other HTTP motion jpeg devices
-		case OTHERONE_CP :	// Other HTTP jpeg snapshots devices
+		case GENERIC_SP :	// Generic HTTP motion jpeg devices
+		case GENERIC_CP :	// Generic HTTP jpeg snapshots devices
 			// Format not yet known because there are ambivalent connection strings in m_HttpGetFrameLocations
 			m_pHttpVideoParseProcess->m_FormatType = CHttpParseProcess::FORMATVIDEO_UNKNOWN;
 			m_nHttpGetFrameLocationPos = 0;
@@ -8533,18 +8533,19 @@ void CVideoDeviceDoc::ConnectRtsp()
 			sQuery = m_HttpGetFrameLocations[0];
 			break;
 
-		case OTHERONE_1_RTSP:		// Ctronics, Escam, FDT, HooToo, IdeaNext, INSTAR, KKmoon, Microseven, SV3C, Wanscam, Wansview, WBox	
+		case GENERIC_1_RTSP:		// Ctronics, Escam, FDT, HooToo, IdeaNext, INSTAR, KKmoon, Microseven, SV3C, Wansview, WBox
+		case WANSCAM_RTSP:
 			sQuery = _T("/11");
 			break;
 
-		case OTHERONE_2_RTSP:		// Escam, iZtouch, Techege
+		case GENERIC_2_RTSP:		// Escam, iZtouch, Techege
 		case DIGOO_RTSP:
 		case HIKAM_RTSP:
 		case SRICAM_RTSP:			
 			sQuery = _T("/onvif1");
 			break;
 
-		case OTHERONE_3_RTSP:
+		case GENERIC_3_RTSP:
 		case GEMBIRD_RTSP:
 		case KUCAM_RTSP:
 		case NEXGADGET_RTSP:
@@ -8553,12 +8554,12 @@ void CVideoDeviceDoc::ConnectRtsp()
 			sQuery = _T("/live/ch0");
 			break;
 
-		case OTHERONE_4_RTSP:		// Chinavasion, Cotier, Ctronics, Escam, Xvision
+		case GENERIC_4_RTSP:		// Chinavasion, Cotier, Ctronics, Escam, Xvision
 		case FALCONEYE_RTSP:		
 			sQuery = m_bPreferTcpforRtsp ? _T("/ch01.264?ptype=tcp") : _T("/ch01.264?ptype=udp");
 			break;
 
-		case OTHERONE_5_RTSP:		
+		case GENERIC_5_RTSP:		
 			sQuery = CString(_T("/user=")) + (m_sHttpGetFrameUsername.IsEmpty() ? _T("admin") : ::UrlEncode(m_sHttpGetFrameUsername, TRUE)) +
 					_T("&password=") + ::UrlEncode(m_sHttpGetFramePassword, TRUE) + 
 					_T("&channel=1&stream=0.sdp");
@@ -8916,8 +8917,8 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 	::EnterCriticalSection(&m_pDoc->m_csHttpParams);
 	switch (m_pDoc->m_nNetworkDeviceTypeMode)
 	{
-		case OTHERONE_SP :	// Other HTTP motion jpeg devices
-		case OTHERONE_CP :	// Other HTTP jpeg snapshots devices
+		case GENERIC_SP :	// Generic HTTP motion jpeg devices
+		case GENERIC_CP :	// Generic HTTP jpeg snapshots devices
 		{
 			if (m_pDoc->m_nHttpGetFrameLocationPos < m_pDoc->m_HttpGetFrameLocations.GetSize())
 				sLocation = m_pDoc->m_HttpGetFrameLocations[m_pDoc->m_nHttpGetFrameLocationPos];
@@ -9901,8 +9902,8 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 			// Text
 			else if (CheckHttpHeaderValue(_T("text/plain"), nPos, sMsgLowerCase))
 			{
-				if ((m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE_SP	||
-					m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE_CP)	&&
+				if ((m_pDoc->m_nNetworkDeviceTypeMode == GENERIC_SP	||
+					m_pDoc->m_nNetworkDeviceTypeMode == GENERIC_CP)	&&
 					++m_pDoc->m_nHttpGetFrameLocationPos < m_pDoc->m_HttpGetFrameLocations.GetSize())
 				{
 					// Empty the buffers, so that parser stops calling us!
@@ -10019,8 +10020,8 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 			// Html
 			else if (CheckHttpHeaderValue(_T("text/html"), nPos, sMsgLowerCase))
 			{
-				if ((m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE_SP	||
-					m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE_CP)	&&
+				if ((m_pDoc->m_nNetworkDeviceTypeMode == GENERIC_SP	||
+					m_pDoc->m_nNetworkDeviceTypeMode == GENERIC_CP)	&&
 					++m_pDoc->m_nHttpGetFrameLocationPos < m_pDoc->m_HttpGetFrameLocations.GetSize())
 				{
 					// Empty the buffers, so that parser stops calling us!
@@ -10216,8 +10217,8 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 		}
 		else
 		{
-			if ((m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE_SP	||
-				m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE_CP)	&&
+			if ((m_pDoc->m_nNetworkDeviceTypeMode == GENERIC_SP	||
+				m_pDoc->m_nNetworkDeviceTypeMode == GENERIC_CP)	&&
 				++m_pDoc->m_nHttpGetFrameLocationPos < m_pDoc->m_HttpGetFrameLocations.GetSize())
 			{
 				// Empty the buffers, so that parser stops calling us!
