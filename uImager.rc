@@ -1123,7 +1123,7 @@ BEGIN
     CONTROL         "",IDC_VIDEO_COMPRESSION_QUALITY,"msctls_trackbar32",TBS_TOP | TBS_NOTICKS | WS_TABSTOP,311,16,54,18
     CONTROL         "Small video",IDC_SAVE_ANIMATEDGIF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,38,52,10
     PUSHBUTTON      "",IDC_ANIMATEDGIF_SIZE,286,36,123,14
-    EDITTEXT        IDC_EDIT_SNAPSHOT_RATE,303,77,35,12
+    EDITTEXT        IDC_EDIT_SNAPSHOT_RATE,286,77,35,12
     PUSHBUTTON      "",IDC_BUTTON_THUMB_SIZE,286,96,123,14
     CONTROL         "Execute on",IDC_EXEC_COMMAND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,137,58,10
     COMBOBOX        IDC_EXEC_COMMAND_MODE,286,136,123,72,CBS_DROPDOWNLIST | WS_TABSTOP
@@ -1138,22 +1138,22 @@ BEGIN
     GROUPBOX        "Video",IDC_STATIC2286,6,5,202,111
     LTEXT           "From",IDC_STATIC2289,13,242,16,8
     LTEXT           "To",IDC_STATIC2290,120,242,10,8
-    GROUPBOX        "Scheduler",IDC_STATIC2291,6,201,202,77
+    GROUPBOX        "Recording Scheduler",IDC_STATIC2291,6,201,202,77
     LTEXT           "Drop shorter than",IDC_STATIC,13,45,61,11
     LTEXT           "sec",IDC_STATIC2292,123,45,11,8
     LTEXT           "Split longer than",IDC_STATIC,13,59,57,8
     LTEXT           "frames",IDC_STATIC2293,123,59,23,8
-    GROUPBOX        "Save",IDC_STATIC2288,218,5,198,51
+    GROUPBOX        "Recording Save",IDC_STATIC2288,218,5,198,51
     LTEXT           "Pre && Post buffers",IDC_STATIC,13,31,59,8
     LTEXT           "qual.",IDC_VIDEO_COMPRESSION_QUALITY_INFO,367,19,46,8
     LTEXT           "Framerate",IDC_STATIC2155,13,17,34,8
     LTEXT           "fps",IDC_STATIC2183,123,17,11,8
     GROUPBOX        "Audio",IDC_STATIC2157,6,124,202,68
-    GROUPBOX        "Snapshot",IDC_STATIC2294,218,64,198,52
+    GROUPBOX        "Live Snapshot",IDC_STATIC2294,218,64,198,52
     GROUPBOX        "Command",IDC_STATIC2295,218,124,198,154
     LTEXT           "Quality",IDC_STATIC,286,19,24,8
-    LTEXT           "Take a snapshot each",IDC_STATIC2476,225,79,75,8
-    LTEXT           "sec",IDC_STATIC2477,345,79,14,10
+    LTEXT           "Take each",IDC_STATIC2476,225,79,47,8
+    LTEXT           "sec",IDC_STATIC2477,328,79,14,10
     LTEXT           "Thumbnail",IDC_STATIC2478,225,99,53,8
     LTEXT           "%sec% %min% %hour% %day% %month% %year% %full% %small%",IDC_STATIC,225,231,184,17
     LTEXT           "Cmd",IDC_STATIC,225,150,15,8
@@ -4020,7 +4020,7 @@ STRINGTABLE
 BEGIN
     IDS_STRING1842          "Recording start"
     IDS_STRING1843          "Recording saving done"
-    IDS_STRING1844          "Snapshot"
+    IDS_STRING1844          "Live snapshot"
     IDS_STRING1845          "Daily summary"
     IDS_STRING1849          "Saved"
     IDS_STRING1850          "Save Failed!"

@@ -194,7 +194,7 @@ BOOL CCameraAdvancedSettingsDlg::OnInitDialog()
 	CComboBox* pComboBoxExecCommandMode = (CComboBox*)GetDlgItem(IDC_EXEC_COMMAND_MODE);
 	pComboBoxExecCommandMode->AddString(ML_STRING(1842, "Recording start"));
 	pComboBoxExecCommandMode->AddString(ML_STRING(1843, "Recording saving done"));
-	pComboBoxExecCommandMode->AddString(ML_STRING(1844, "Snapshot"));
+	pComboBoxExecCommandMode->AddString(ML_STRING(1844, "Live snapshot"));
 	pComboBoxExecCommandMode->AddString(ML_STRING(1845, "Daily summary"));
 
 	// This calls UpdateData(FALSE)
