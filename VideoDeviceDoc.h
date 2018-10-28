@@ -541,7 +541,11 @@ public:
 		FOSCAM_CP,						// Foscam HTTP jpeg snapshots
 		// Add more http devices here...
 		URL_RTSP = 1000,				// URL RTSP
-		OTHERONE_RTSP = 1010,			// Other RTSP device
+		OTHERONE_1_RTSP = 1010,			// Other 1 RTSP device
+		OTHERONE_2_RTSP = 1011,			// Other 2 RTSP device
+		OTHERONE_3_RTSP = 1012,			// Other 3 RTSP device
+		OTHERONE_4_RTSP = 1013,			// Other 4 RTSP device
+		OTHERONE_5_RTSP = 1014,			// Other 5 RTSP device
 		SEVENLINKS_RTSP = 1015,			// 7Links RTSP
 		ABUS_RTSP = 1020,				// Abus RTSP
 		ACTI_RTSP = 1030,				// ACTi RTSP
