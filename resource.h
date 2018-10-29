@@ -1967,7 +1967,6 @@
 #define IDS_STRING1675                  1675
 #define IDS_STRING1676                  1676
 #define IDS_STRING1677                  1677
-#define IDC_CHECK_LIVE_ROTATE180        1677
 #define IDC_CHECK_AUTORUN               1678
 #define IDS_STRING1678                  1678
 #define IDS_STRING1679                  1679
@@ -2957,6 +2956,8 @@
 #define IDC_REC_AUDIO_FROM_SOURCE       2573
 #define IDC_EDIT_DONOR_EMAIL            2574
 #define IDC_SYSLINK_PARAMS_HELP         2575
+#define IDC_CHECK_FLIP_H                2576
+#define IDC_CHECK_FLIP_V                2577
 #define ID_EDIT_ROTATE_FLIP             32778
 #define ID_FILE_SELECTTWAINSOURCE       32779
 #define ID_FILE_ACQUIRE                 32780
@@ -3210,7 +3211,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1502
 #define _APS_NEXT_COMMAND_VALUE         33555
-#define _APS_NEXT_CONTROL_VALUE         2576
+#define _APS_NEXT_CONTROL_VALUE         2578
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -33,7 +33,8 @@ public:
 	int	m_nSecondsAfterMovementEnd;
 	int	m_nDetectionMinLengthSeconds;
 	int m_nDetectionMaxFrames;
-	BOOL m_bRotate180;
+	BOOL m_bFlipH;
+	BOOL m_bFlipV;
 	CTime m_SchedulerStartTime;
 	CTime m_SchedulerStopTime;
 	BOOL m_bAudioListen;
@@ -64,7 +65,8 @@ protected:
 	afx_msg void OnChangeSecondsAfterMovementEnd();
 	afx_msg void OnChangeEditDetectionMinLength();
 	afx_msg void OnChangeEditDetectionMaxFrames();
-	afx_msg void OnCheckLiveRotate180();
+	afx_msg void OnCheckFlipH();
+	afx_msg void OnCheckFlipV();
 	afx_msg void OnVideoFormat();
 	afx_msg void OnVideoSource();
 	afx_msg void OnVideoInput();

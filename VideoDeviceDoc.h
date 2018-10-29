@@ -800,7 +800,8 @@ protected:
 // Public Variables
 public:
 	// General Vars
-	volatile BOOL m_bRotate180;							// Rotate Video by 180°
+	volatile BOOL m_bFlipH;								// Flip video horizontally
+	volatile BOOL m_bFlipV;								// Flip video vertically
 	volatile double m_dFrameRate;						// Set Capture Frame Rate
 	volatile double m_dEffectiveFrameRate;				// Current calculated Frame Rate
 	volatile LONG m_lEffectiveDataRate;					// Current calculated Data Rate in bytes / sec

@@ -3487,7 +3487,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_pFrame = NULL;
 	m_dwStopProcessFrame = 0U;
 	m_dwProcessFrameStopped = 0U;
-	m_bRotate180 = FALSE;
+	m_bFlipH = FALSE;
+	m_bFlipV = FALSE;
 	memset(&m_CaptureBMI, 0, sizeof(BITMAPINFOFULL));
 	memset(&m_ProcessFrameBMI, 0, sizeof(BITMAPINFOFULL));
 	m_dwLastVideoWidth = 0;
@@ -4297,7 +4298,8 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_bPreferTcpforRtsp = (BOOL) pApp->GetProfileInt(sSection, _T("PreferTcpforRtsp"), FALSE);
 
 	// All other
-	m_bRotate180 = (BOOL) pApp->GetProfileInt(sSection, _T("Rotate180"), FALSE);
+	m_bFlipH = (BOOL)pApp->GetProfileInt(sSection, _T("FlipH"), FALSE);
+	m_bFlipV = (BOOL)pApp->GetProfileInt(sSection, _T("FlipV"), FALSE);
 	m_sRecordAutoSaveDir = pApp->GetProfileString(sSection, _T("RecordAutoSaveDir"), _T(""));
 	if (m_sRecordAutoSaveDir.IsEmpty())
 	{
@@ -4468,7 +4470,8 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("PreferTcpforRtsp"), m_bPreferTcpforRtsp);
 
 	// All other
-	pApp->WriteProfileInt(sSection, _T("Rotate180"), (int)m_bRotate180);
+	pApp->WriteProfileInt(sSection, _T("FlipH"), (int)m_bFlipH);
+	pApp->WriteProfileInt(sSection, _T("FlipV"), (int)m_bFlipV);
 	pApp->WriteProfileString(sSection, _T("RecordAutoSaveDir"), m_sRecordAutoSaveDir);
 	pApp->WriteProfileInt(sSection, _T("SnapshotRate"), m_nSnapshotRate);
 	pApp->WriteProfileInt(sSection, _T("SnapshotRateMs"), m_nSnapshotRateMs);
@@ -7201,12 +7204,11 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 		// Clear the user flag from any previous content
 		pDib->SetUserFlag(0);
 
-		// Rotate by 180°
-		if (m_bRotate180)
-		{
+		// Flip
+		if (m_bFlipH)
 			FlipH(pDib);
+		if (m_bFlipV)
 			FlipV(pDib);
-		}
 
 		// Obscure the video source
 		if (m_bObscureSource)

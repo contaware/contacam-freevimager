@@ -114,7 +114,8 @@ void CCameraAdvancedSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDV_MinMaxInt(pDX, m_nDetectionMinLengthSeconds, 0, 99);
 	DDX_Text(pDX, IDC_EDIT_DETECTION_MAX_FRAMES, m_nDetectionMaxFrames);
 	DDV_MinMaxInt(pDX, m_nDetectionMaxFrames, 1, MOVDET_MAX_MAX_FRAMES_IN_LIST);
-	DDX_Check(pDX, IDC_CHECK_LIVE_ROTATE180, m_bRotate180);
+	DDX_Check(pDX, IDC_CHECK_FLIP_H, m_bFlipH);
+	DDX_Check(pDX, IDC_CHECK_FLIP_V, m_bFlipV);
 	DDX_DateTimeCtrl(pDX, IDC_TIME_DAILY_START, m_SchedulerStartTime);
 	DDX_DateTimeCtrl(pDX, IDC_TIME_DAILY_STOP, m_SchedulerStopTime);
 	DDX_Check(pDX, IDC_CHECK_AUDIO_LISTEN, m_bAudioListen);
@@ -130,7 +131,8 @@ BEGIN_MESSAGE_MAP(CCameraAdvancedSettingsDlg, CDialog)
 	ON_EN_CHANGE(IDC_SECONDS_AFTER_MOVEMENT_END, OnChangeSecondsAfterMovementEnd)
 	ON_EN_CHANGE(IDC_EDIT_DETECTION_MIN_LENGTH, OnChangeEditDetectionMinLength)
 	ON_EN_CHANGE(IDC_EDIT_DETECTION_MAX_FRAMES, OnChangeEditDetectionMaxFrames)
-	ON_BN_CLICKED(IDC_CHECK_LIVE_ROTATE180, OnCheckLiveRotate180)
+	ON_BN_CLICKED(IDC_CHECK_FLIP_H, OnCheckFlipH)
+	ON_BN_CLICKED(IDC_CHECK_FLIP_V, OnCheckFlipV)
 	ON_BN_CLICKED(IDC_VIDEO_FORMAT, OnVideoFormat)
 	ON_BN_CLICKED(IDC_VIDEO_SOURCE, OnVideoSource)
 	ON_BN_CLICKED(IDC_VIDEO_INPUT, OnVideoInput)
@@ -181,7 +183,8 @@ BOOL CCameraAdvancedSettingsDlg::OnInitDialog()
 	m_nSecondsAfterMovementEnd = m_pDoc->m_nMilliSecondsRecAfterMovementEnd / 1000;
 	m_nDetectionMinLengthSeconds = m_pDoc->m_nDetectionMinLengthMilliSeconds / 1000;
 	m_nDetectionMaxFrames = m_pDoc->m_nDetectionMaxFrames;
-	m_bRotate180 = m_pDoc->m_bRotate180;
+	m_bFlipH = m_pDoc->m_bFlipH;
+	m_bFlipV = m_pDoc->m_bFlipV;
 	m_SchedulerStartTime = m_pDoc->m_SchedulerStartTime;
 	m_SchedulerStopTime = m_pDoc->m_SchedulerStopTime;
 	m_bAudioListen = m_pDoc->m_bAudioListen;
@@ -500,10 +503,16 @@ void CCameraAdvancedSettingsDlg::OnChangeEditDetectionMaxFrames()
 		m_pDoc->m_nDetectionMaxFrames = m_nDetectionMaxFrames;
 }
 
-void CCameraAdvancedSettingsDlg::OnCheckLiveRotate180()
+void CCameraAdvancedSettingsDlg::OnCheckFlipH()
 {
 	if (UpdateData(TRUE))
-		m_pDoc->m_bRotate180 = m_bRotate180;
+		m_pDoc->m_bFlipH = m_bFlipH;
+}
+
+void CCameraAdvancedSettingsDlg::OnCheckFlipV()
+{
+	if (UpdateData(TRUE))
+		m_pDoc->m_bFlipV = m_bFlipV;
 }
 
 void CCameraAdvancedSettingsDlg::OnVideoFormat()
