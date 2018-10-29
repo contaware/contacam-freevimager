@@ -676,7 +676,8 @@ public:
 	void ProcessNV12Frame(LPBYTE pData, DWORD dwSize, BOOL bFlipUV);
 	void ProcessM420Frame(LPBYTE pData, DWORD dwSize);
 	void ProcessI420Frame(LPBYTE pData, DWORD dwSize);
-	static BOOL Rotate180(CDib* pDib);
+	static BOOL FlipH(CDib* pDib);
+	static BOOL FlipV(CDib* pDib);
 	BOOL IsInSchedule(const CTime& Time);
 
 	// To Start / Stop Frame Processing and Avoid Dead-Locks!

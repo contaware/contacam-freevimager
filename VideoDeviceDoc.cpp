@@ -6590,68 +6590,213 @@ void CVideoDeviceDoc::AddRecSymbol(CDib* pDib, int nRefFontSize)
 							DRAW_BKG_COLOR);
 }
 
-BOOL CVideoDeviceDoc::Rotate180(CDib* pDib)
+// Inspired by https://github.com/Wunkolo/qreverse/
+// Note: when migrating to a 64-bit application we can add _byteswap_uint64()
+BOOL CVideoDeviceDoc::FlipH(CDib* pDib)
 {
 	// Check
 	if (!pDib || !pDib->GetBMI() || !pDib->GetBits())
 		return FALSE;
-	
-	BYTE pix;
-	int CurLine;
-	int nHeight2 = pDib->GetHeight() / 2;
-	int nHeight4 = nHeight2 / 2;
-	int nWidth2 = pDib->GetWidth() / 2;
-	LPBYTE lpSrcBitsY = pDib->GetBits();
-	LPBYTE lpDstBitsY = lpSrcBitsY + (pDib->GetHeight() - 1) * pDib->GetWidth();
-	LPBYTE lpSrcBitsU = pDib->GetBits() + pDib->GetHeight() * pDib->GetWidth();
-	LPBYTE lpDstBitsU = lpSrcBitsU + (nHeight2 - 1) * nWidth2;
-	LPBYTE lpSrcBitsV = pDib->GetBits() + pDib->GetHeight() * pDib->GetWidth() + nHeight2 * nWidth2;
-	LPBYTE lpDstBitsV = lpSrcBitsV + (nHeight2 - 1) * nWidth2;
 
-	// Rotate Y
-	// pDib->GetHeight() needs to be divisible by 2,
-	// otherwise the middle line is not rotated!
-	for (CurLine = 0 ; CurLine < nHeight2 ; CurLine++)
+	BYTE ucSingle;
+	WORD wStart, wEnd;
+	DWORD dwStart, dwEnd;
+	int nCurLine;
+	int nWidth = pDib->GetWidth();
+	int nWidth2 = nWidth / 2;
+	int nWidth4 = nWidth2 / 2;
+	int nWidth8 = nWidth4 / 2;
+	int nWidth16 = nWidth8 / 2;
+	int nHeight = pDib->GetHeight();
+	int nHeight2 = nHeight / 2;
+	LPBYTE lpBitsY = pDib->GetBits();
+	LPBYTE lpBitsU = pDib->GetBits() + nWidth * nHeight;
+	LPBYTE lpBitsV = pDib->GetBits() + nWidth * nHeight + nWidth2 * nHeight2;
+
+	// Horizontal Flip Y
+	for (nCurLine = 0; nCurLine < nHeight; nCurLine++)
 	{
-		for (int i = 0 ; i < (int)pDib->GetWidth() ; i++)
+		int i = 0;
+
+		for (int j = i / 4; j < nWidth8; j++) // j = (i / 4) is the DWORD index
 		{
-			pix = lpSrcBitsY[i];
-			lpSrcBitsY[i] = lpDstBitsY[pDib->GetWidth() - i - 1];
-			lpDstBitsY[pDib->GetWidth() - i - 1] = pix;
+			// Get swapped versions of start and end
+			dwStart = _byteswap_ulong(*(LPDWORD)&lpBitsY[i]);
+			dwEnd = _byteswap_ulong(*(LPDWORD)&lpBitsY[nWidth - i - 4]);
+
+			// Place them at their position
+			*(LPDWORD)&lpBitsY[i] = dwEnd;
+			*(LPDWORD)&lpBitsY[nWidth - i - 4] = dwStart;
+
+			// Four elements at a time
+			i += 4;
 		}
-		lpDstBitsY -= pDib->GetWidth();
-		lpSrcBitsY += pDib->GetWidth();
+
+		for (int j = i / 2; j < nWidth4; j++) // j = (i / 2) is the WORD index
+		{
+			// Get swapped versions of start and end
+			wStart = _byteswap_ushort(*(LPWORD)&lpBitsY[i]);
+			wEnd = _byteswap_ushort(*(LPWORD)&lpBitsY[nWidth - i - 2]);
+
+			// Place them at their position
+			*(LPWORD)&lpBitsY[i] = wEnd;
+			*(LPWORD)&lpBitsY[nWidth - i - 2] = wStart;
+
+			// Two elements at a time
+			i += 2;
+		}
+
+		for (; i < nWidth2; i++) // i is the BYTE index
+		{
+			ucSingle = lpBitsY[i];
+			lpBitsY[i] = lpBitsY[nWidth - i - 1];
+			lpBitsY[nWidth - i - 1] = ucSingle;
+		}
+
+		lpBitsY += nWidth;
 	}
 
-	// Rotate U
-	// pDib->GetHeight() needs to be divisible by 4,
-	// otherwise the middle line is not rotated!
-	for (CurLine = 0 ; CurLine < nHeight4 ; CurLine++)
+	// Horizontal Flip U
+	for (nCurLine = 0; nCurLine < nHeight2; nCurLine++)
 	{
-		for (int i = 0 ; i < nWidth2 ; i++)
+		int i = 0;
+
+		for (int j = i / 4; j < nWidth16; j++) // j = (i / 4) is the DWORD index
 		{
-			pix = lpSrcBitsU[i];
-			lpSrcBitsU[i] = lpDstBitsU[nWidth2 - i - 1];
-			lpDstBitsU[nWidth2 - i - 1] = pix;
+			// Get swapped versions of start and end
+			dwStart = _byteswap_ulong(*(LPDWORD)&lpBitsU[i]);
+			dwEnd = _byteswap_ulong(*(LPDWORD)&lpBitsU[nWidth2 - i - 4]);
+
+			// Place them at their position
+			*(LPDWORD)&lpBitsU[i] = dwEnd;
+			*(LPDWORD)&lpBitsU[nWidth2 - i - 4] = dwStart;
+
+			// Four elements at a time
+			i += 4;
 		}
+
+		for (int j = i / 2; j < nWidth8; j++) // j = (i / 2) is the WORD index
+		{
+			// Get swapped versions of start and end
+			wStart = _byteswap_ushort(*(LPWORD)&lpBitsU[i]);
+			wEnd = _byteswap_ushort(*(LPWORD)&lpBitsU[nWidth2 - i - 2]);
+
+			// Place them at their position
+			*(LPWORD)&lpBitsU[i] = wEnd;
+			*(LPWORD)&lpBitsU[nWidth2 - i - 2] = wStart;
+
+			// Two elements at a time
+			i += 2;
+		}
+
+		for (; i < nWidth4; i++) // i is the BYTE index
+		{
+			ucSingle = lpBitsU[i];
+			lpBitsU[i] = lpBitsU[nWidth2 - i - 1];
+			lpBitsU[nWidth2 - i - 1] = ucSingle;
+		}
+
+		lpBitsU += nWidth2;
+	}
+
+	// Horizontal Flip V
+	for (nCurLine = 0; nCurLine < nHeight2; nCurLine++)
+	{
+		int i = 0;
+
+		for (int j = i / 4; j < nWidth16; j++) // j = (i / 4) is the DWORD index
+		{
+			// Get swapped versions of start and end
+			dwStart = _byteswap_ulong(*(LPDWORD)&lpBitsV[i]);
+			dwEnd = _byteswap_ulong(*(LPDWORD)&lpBitsV[nWidth2 - i - 4]);
+
+			// Place them at their position
+			*(LPDWORD)&lpBitsV[i] = dwEnd;
+			*(LPDWORD)&lpBitsV[nWidth2 - i - 4] = dwStart;
+
+			// Four elements at a time
+			i += 4;
+		}
+
+		for (int j = i / 2; j < nWidth8; j++) // j = (i / 2) is the WORD index
+		{
+			// Get swapped versions of start and end
+			wStart = _byteswap_ushort(*(LPWORD)&lpBitsV[i]);
+			wEnd = _byteswap_ushort(*(LPWORD)&lpBitsV[nWidth2 - i - 2]);
+
+			// Place them at their position
+			*(LPWORD)&lpBitsV[i] = wEnd;
+			*(LPWORD)&lpBitsV[nWidth2 - i - 2] = wStart;
+
+			// Two elements at a time
+			i += 2;
+		}
+
+		for (; i < nWidth4; i++) // i is the BYTE index
+		{
+			ucSingle = lpBitsV[i];
+			lpBitsV[i] = lpBitsV[nWidth2 - i - 1];
+			lpBitsV[nWidth2 - i - 1] = ucSingle;
+		}
+
+		lpBitsV += nWidth2;
+	}
+
+	return TRUE;
+}
+
+BOOL CVideoDeviceDoc::FlipV(CDib* pDib)
+{
+	// Check
+	if (!pDib || !pDib->GetBMI() || !pDib->GetBits())
+		return FALSE;
+
+	int nCurLine;
+	int nWidth = pDib->GetWidth();
+	int nWidth2 = nWidth / 2;
+	int nHeight = pDib->GetHeight();
+	int nHeight2 = nHeight / 2;
+	int nHeight4 = nHeight2 / 2;
+	LPBYTE lpSrcBitsY = pDib->GetBits();
+	LPBYTE lpDstBitsY = lpSrcBitsY + nWidth * (nHeight - 1);
+	LPBYTE lpSrcBitsU = pDib->GetBits() + nWidth * nHeight;
+	LPBYTE lpDstBitsU = lpSrcBitsU + nWidth2 * (nHeight2 - 1);
+	LPBYTE lpSrcBitsV = pDib->GetBits() + nWidth * nHeight + nWidth2 * nHeight2;
+	LPBYTE lpDstBitsV = lpSrcBitsV + nWidth2 * (nHeight2 - 1);
+	LPBYTE pTemp = new BYTE[nWidth];
+
+	// Vertical Flip Y
+	for (nCurLine = 0; nCurLine < nHeight2; nCurLine++)
+	{
+		memmove(pTemp, lpSrcBitsY, nWidth);
+		memmove(lpSrcBitsY, lpDstBitsY, nWidth);
+		memmove(lpDstBitsY, pTemp, nWidth);
+		lpDstBitsY -= nWidth;
+		lpSrcBitsY += nWidth;
+	}
+
+	// Vertical Flip U
+	for (nCurLine = 0; nCurLine < nHeight4; nCurLine++)
+	{
+		memmove(pTemp, lpSrcBitsU, nWidth2);
+		memmove(lpSrcBitsU, lpDstBitsU, nWidth2);
+		memmove(lpDstBitsU, pTemp, nWidth2);
 		lpDstBitsU -= nWidth2;
 		lpSrcBitsU += nWidth2;
 	}
 
-	// Rotate V
-	// pDib->GetHeight() needs to be divisible by 4,
-	// otherwise the middle line is not rotated!
-	for (CurLine = 0 ; CurLine < nHeight4 ; CurLine++)
+	// Vertical Flip V
+	for (nCurLine = 0; nCurLine < nHeight4; nCurLine++)
 	{
-		for (int i = 0 ; i < nWidth2 ; i++)
-		{
-			pix = lpSrcBitsV[i];
-			lpSrcBitsV[i] = lpDstBitsV[nWidth2 - i - 1];
-			lpDstBitsV[nWidth2 - i - 1] = pix;
-		}
+		memmove(pTemp, lpSrcBitsV, nWidth2);
+		memmove(lpSrcBitsV, lpDstBitsV, nWidth2);
+		memmove(lpDstBitsV, pTemp, nWidth2);
 		lpDstBitsV -= nWidth2;
 		lpSrcBitsV += nWidth2;
 	}
+
+	// Clean-up
+	delete[] pTemp;
 
 	return TRUE;
 }
@@ -7056,9 +7201,12 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 		// Clear the user flag from any previous content
 		pDib->SetUserFlag(0);
 
-		// Rotate by 180° if divisible by 4
-		if (m_bRotate180 && (pDib->GetHeight() & 3) == 0)
-			Rotate180(pDib);
+		// Rotate by 180°
+		if (m_bRotate180)
+		{
+			FlipH(pDib);
+			FlipV(pDib);
+		}
 
 		// Obscure the video source
 		if (m_bObscureSource)
