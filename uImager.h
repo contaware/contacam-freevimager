@@ -83,11 +83,10 @@
 #define DEFAULT_FIRSTSTART_DELAY_MS						0U
 
 // Maximum number of simultaneous savings
-// Note: one camera saving at the same time is a good value
+// Note: two cameras saving at the same time is a good value
 // for RAM usage (H.264 consumes a lot of heap memory while
-// encoding) and optimal threads distribution (H.264 encoder
-// is configured to use all cores when saving)
-#define MAX_SIMULTANEOUS_SAVINGS						1
+// encoding) and optimal threads distribution
+#define MAX_SIMULTANEOUS_SAVINGS						2
 
 // Service
 #define CONTACAMSERVICE_NOTINSTALLED					0
