@@ -1990,8 +1990,7 @@ BOOL CUImagerApp::IsDoc(CDocument* pDoc)
 
 BOOL CUImagerApp::IsPictureSizeBig(DWORD dwImageSize)
 {
-	if (((dwImageSize >> 20) < (DWORD)(g_nOSUsablePhysRamMB / 2)) &&
-		(dwImageSize < BIG_PICTURE_SIZE_LIMIT))
+	if (dwImageSize < BIG_PICTURE_SIZE_LIMIT)
 		return FALSE;
 	else
 		return TRUE;
