@@ -3984,6 +3984,7 @@ BEGIN
     IDS_STRING1818          "Aborting"
     IDS_STRING1819          "To limit the buffer size lower the ""Split longer than"" value under Settings - Camera Advanced Settings"
     IDS_STRING1820          "usable"
+    IDS_STRING1821          "addressable"
     IDS_STRING1822          "Fit"
     IDS_STRING1823          "Fit Big"
 END

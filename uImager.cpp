@@ -1264,10 +1264,10 @@ BOOL CAboutDlg::OnInitDialog()
 
 	// Total Physical Memory
 	CString sPhysMemMB;
-	if (g_nInstalledPhysRamMB >= (g_nAvailablePhysRamMB + 16)) // allow some margin
-		sPhysMemMB.Format(_T("RAM  %d ") + ML_STRING(1825, "MB") + _T(" (") + ML_STRING(1820, "usable") + _T(" %d ") + ML_STRING(1825, "MB") + _T(")"), g_nInstalledPhysRamMB, g_nAvailablePhysRamMB);
-	else
-		sPhysMemMB.Format(_T("RAM  %d ") + ML_STRING(1825, "MB"), g_nInstalledPhysRamMB);
+	sPhysMemMB.Format(	_T("RAM  %d ") + ML_STRING(1825, "MB") + _T(" (") +
+						ML_STRING(1820, "usable") + _T(" %d ") + ML_STRING(1825, "MB") + _T(", ") +
+						ML_STRING(1821, "addressable") + _T(" %d ") + ML_STRING(1825, "MB") + _T(")"),
+						g_nPCInstalledPhysRamMB, g_nOSUsablePhysRamMB, g_nAppUsableAddressSpaceMB);
 	CEdit* pPhysMemMB = (CEdit*)GetDlgItem(IDC_PHYSMEM);
 	pPhysMemMB->SetWindowText(sPhysMemMB);
 
@@ -1990,7 +1990,7 @@ BOOL CUImagerApp::IsDoc(CDocument* pDoc)
 
 BOOL CUImagerApp::IsPictureSizeBig(DWORD dwImageSize)
 {
-	if (((dwImageSize >> 20) < (DWORD)(g_nAvailablePhysRamMB / 2)) &&
+	if (((dwImageSize >> 20) < (DWORD)(g_nOSUsablePhysRamMB / 2)) &&
 		(dwImageSize < BIG_PICTURE_SIZE_LIMIT))
 		return FALSE;
 	else

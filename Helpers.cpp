@@ -48,8 +48,9 @@ BOOL g_bSSE = FALSE;
 BOOL g_bSSE2 = FALSE;
 BOOL g_b3DNOW = FALSE;
 DWORD g_dwAllocationGranularity = 65536;
-int g_nInstalledPhysRamMB = 2048;
-int g_nAvailablePhysRamMB = 2048;
+int g_nPCInstalledPhysRamMB = 2048;
+int g_nOSUsablePhysRamMB = 2048;
+int g_nAppUsableAddressSpaceMB = 2047;
 static int g_nNumProcessors = 1;
 static ULONGLONG g_ullLastCPUUsageMeasureTime = 0;
 static ULONGLONG g_ullLastProcKernelTime = 0;
@@ -60,7 +61,6 @@ static LONG g_lTempFilesCount = 0;
 #define CPU_FEATURE_SSE2	0x0004
 #define CPU_FEATURE_3DNOW	0x0008
 int GetCpuInstr();
-int GetTotPhysMemMB(BOOL bInstalled);
 void InitHelpers()
 {
 	// Get System DPI
@@ -91,11 +91,24 @@ void InitHelpers()
 	memset(&sysInfo, 0, sizeof(sysInfo));
 	GetSystemInfo(&sysInfo);
 	g_dwAllocationGranularity = sysInfo.dwAllocationGranularity;
-	g_nInstalledPhysRamMB = GetTotPhysMemMB(TRUE);
-	g_nAvailablePhysRamMB = GetTotPhysMemMB(FALSE);
 	g_nNumProcessors = sysInfo.dwNumberOfProcessors;
-	GetCPUUsage();	// this initializes g_ullLastCPUUsageMeasureTime,
-					// g_ullLastProcKernelTime and g_ullLastProcUserTime
+	GetCPUUsage(); // this initializes g_ullLastCPUUsageMeasureTime, g_ullLastProcKernelTime and g_ullLastProcUserTime
+	MEMORYSTATUSEX MemoryStatusEx;
+	MemoryStatusEx.dwLength = sizeof(MemoryStatusEx);
+	GlobalMemoryStatusEx(&MemoryStatusEx);
+	g_nPCInstalledPhysRamMB = g_nOSUsablePhysRamMB = (int)(MemoryStatusEx.ullTotalPhys >> 20);
+	g_nAppUsableAddressSpaceMB = (int)(MemoryStatusEx.ullTotalVirtual >> 20);
+	HINSTANCE h = LoadLibrary(_T("kernel32.dll"));
+	if (h)
+	{
+		typedef BOOL(WINAPI * FPGETPHYSICALLYINSTALLEDSYSTEMMEMORY)(PULONGLONG TotalMemoryInKilobytes);
+		FPGETPHYSICALLYINSTALLEDSYSTEMMEMORY fpGetPhysicallyInstalledSystemMemory;
+		ULONGLONG ullTotalMemoryInKilobytes;
+		if ((fpGetPhysicallyInstalledSystemMemory = (FPGETPHYSICALLYINSTALLEDSYSTEMMEMORY)GetProcAddress(h, "GetPhysicallyInstalledSystemMemory")) &&
+			fpGetPhysicallyInstalledSystemMemory(&ullTotalMemoryInKilobytes))
+			g_nPCInstalledPhysRamMB = (int)(ullTotalMemoryInKilobytes >> 10);
+		FreeLibrary(h);
+	}
 }
 
 /*
@@ -2195,51 +2208,6 @@ double GetCPUUsage()
 	return dPercent;
 }
 
-static int GetTotPhysMemMB(BOOL bInstalled)
-{
-	/* The GetPhysicallyInstalledSystemMemory function retrieves
-	the amount of physically installed RAM from the computer's
-	SMBIOS firmware tables. This can differ from the amount reported
-	by the GlobalMemoryStatusEx function, which sets the ullTotalPhys
-	member of the MEMORYSTATUSEX structure to the amount of physical
-	memory that is available for the operating system to use. The amount
-	of memory available to the operating system can be less than the
-	amount of memory physically installed in the computer because the
-	BIOS and some drivers may reserve memory as I/O regions for
-	memory-mapped devices, making the memory unavailable to the
-	operating system and applications. */
-	typedef BOOL (WINAPI * FPGLOBALMEMORYSTATUSEX)(LPMEMORYSTATUSEX lpBuffer);
-	typedef BOOL (WINAPI * FPGETPHYSICALLYINSTALLEDSYSTEMMEMORY)(PULONGLONG TotalMemoryInKilobytes);
-	HINSTANCE h = LoadLibrary(_T("kernel32.dll"));
-	if (!h)
-		return 0;
-	FPGETPHYSICALLYINSTALLEDSYSTEMMEMORY fpGetPhysicallyInstalledSystemMemory;
-	FPGLOBALMEMORYSTATUSEX fpGlobalMemoryStatusEx;
-	ULONGLONG ullTotalMemoryInKilobytes;
-	MEMORYSTATUSEX MemoryStatusEx;
-	MemoryStatusEx.dwLength = sizeof(MemoryStatusEx);
-	if (bInstalled &&
-		(fpGetPhysicallyInstalledSystemMemory = (FPGETPHYSICALLYINSTALLEDSYSTEMMEMORY)GetProcAddress(h, "GetPhysicallyInstalledSystemMemory")) &&
-		fpGetPhysicallyInstalledSystemMemory(&ullTotalMemoryInKilobytes))
-	{
-		FreeLibrary(h);
-		return (int)(ullTotalMemoryInKilobytes >> 10);
-	}
-	else if ((fpGlobalMemoryStatusEx = (FPGLOBALMEMORYSTATUSEX)GetProcAddress(h, "GlobalMemoryStatusEx")) &&
-			fpGlobalMemoryStatusEx(&MemoryStatusEx))
-	{
-		FreeLibrary(h);
-		return (int)(MemoryStatusEx.ullTotalPhys >> 20);
-	}
-	else
-	{
-		MEMORYSTATUS MemoryStatus;
-		GlobalMemoryStatus(&MemoryStatus);
-		FreeLibrary(h);
-		return (int)(MemoryStatus.dwTotalPhys >> 20);
-	}
-}
-
 void GetMemoryStats(ULONGLONG* pRegions/*=NULL*/,
 					ULONGLONG* pFree/*=NULL*/,
 					ULONGLONG* pReserved/*=NULL*/,
@@ -2301,20 +2269,6 @@ void GetMemoryStats(ULONGLONG* pRegions/*=NULL*/,
 	if (pMaxReserved) *pMaxReserved = max_reserve;
 	if (pMaxCommitted) *pMaxCommitted = max_commit;
 	if (pFragmentation) *pFragmentation = dFragmentation;
-}
-
-int GetVirtualMemUsedMB()
-{
-	PROCESS_MEMORY_COUNTERS_EX pmc;
-    GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
-	return (int)(pmc.PrivateUsage >> 20);
-}
-
-int GetPhysicalMemUsedMB()
-{
-	PROCESS_MEMORY_COUNTERS_EX pmc;
-    GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
-	return (int)(pmc.WorkingSetSize >> 20);
 }
 
 ULONGLONG GetDiskTotalSize(LPCTSTR lpszPath)

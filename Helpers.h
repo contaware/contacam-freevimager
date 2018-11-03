@@ -24,8 +24,9 @@ extern BOOL g_bSSE;
 extern BOOL g_bSSE2;
 extern BOOL g_b3DNOW;
 extern DWORD g_dwAllocationGranularity;
-extern int g_nInstalledPhysRamMB;
-extern int g_nAvailablePhysRamMB;
+extern int g_nPCInstalledPhysRamMB;
+extern int g_nOSUsablePhysRamMB;
+extern int g_nAppUsableAddressSpaceMB;
 
 // Call This Before Using the following Functions!
 extern void InitHelpers();
@@ -291,19 +292,6 @@ extern void GetMemoryStats(	ULONGLONG* pRegions = NULL,
 							ULONGLONG* pMaxReserved = NULL,
 							ULONGLONG* pMaxCommitted = NULL,
 							double* pFragmentation = NULL);
-
-// Private bytes (Commit Size or VM Size in Explorer / PrivateUsage or 
-// PagefileUsage of PROCESS_MEMORY_COUNTERS_EX) is the portion of a 
-// processes virtual address space that has been committed for private use 
-// (it does not include shared memory address space)
-extern int GetVirtualMemUsedMB(); // returns PROCESS_MEMORY_COUNTERS_EX.PrivateUsage
-
-// Working set (Working Set (Memory) or Mem Usage in Explorer / 
-// WorkingSetSize of PROCESS_MEMORY_COUNTERS_EX) is the amount of physical 
-// memory in use by a process. Due to memory sharing there will be some 
-// double counting in this value (Private Working Set is not counting the
-// shared amount but is not available in PROCESS_MEMORY_COUNTERS_EX)
-extern int GetPhysicalMemUsedMB(); // returns PROCESS_MEMORY_COUNTERS_EX.WorkingSetSize
 
 // Disk total size and available free space.
 // Pass a drive letter (like "c:"), a directory path

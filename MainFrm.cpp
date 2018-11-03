@@ -2332,7 +2332,7 @@ void CMainFrame::LogSysUsage()
 #ifdef VIDEODEVICEDOC
 		(double)(CDib::m_llOverallSharedMemoryBytes >> 20) / 1024.0, ML_STRING(1826, "GB"),
 		GetMaxOverallQueueSizeGB(), ML_STRING(1826, "GB"),
-		(double)g_nAvailablePhysRamMB / 1024.0, ML_STRING(1826, "GB"),
+		(double)g_nOSUsablePhysRamMB / 1024.0, ML_STRING(1826, "GB"),
 #endif
 		sDiskStats,
 		::GetCPUUsage(),
@@ -2366,7 +2366,7 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 
 		// Show Maximum Overall Buffers Size
 		double dMaxOverallQueueSizeGB = GetMaxOverallQueueSizeGB();
-		double dRamGB = (double)g_nAvailablePhysRamMB / 1024.0;
+		double dRamGB = (double)g_nOSUsablePhysRamMB / 1024.0;
 		if (dMaxOverallQueueSizeGB > dRamGB)
 		{
 			if (nFlashState == 2)
