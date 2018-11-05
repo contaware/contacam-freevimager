@@ -2683,7 +2683,10 @@ int CVideoDeviceDoc::CRtspThread::Work()
 		// discarded.
 		// SO_RCVBUF is set by the OS to 8K for Win7 or older and to 64K for newer. ffmpeg inits it
 		// to UDP_MAX_PKT_SIZE. The user can change it with the "buffer_size" option.
-		av_dict_set_int(&opts, "buffer_size", 1048576, 0); // 1MB
+		// Note: the 'circular_buffer_size' option was set but it is not supported warning is emitted
+		//       in udp.c. This warning cannot be removed, but is not interfering with the setting of
+		//       the following 'buffer_size' which is something different.
+		av_dict_set_int(&opts, "buffer_size", 10485760, 0); // 10 MB should be enough for 4K cams
 
 		// Open rtsp
 		CStringA sAnsiURL(m_sURL);
