@@ -278,11 +278,6 @@ extern CString GetUserName();
 // Get the local NetBIOS computer name
 extern CString GetComputerName();
 
-// Returns current process' cpu usage in percent
-// Note: not thread safe, call only from one thread
-//       and let some time pass between calls!
-extern double GetCPUUsage();
-
 // Get Memory Stats
 extern void GetMemoryStats(	ULONGLONG* pRegions = NULL,
 							ULONGLONG* pFree = NULL,

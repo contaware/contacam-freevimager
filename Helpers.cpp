@@ -51,10 +51,6 @@ DWORD g_dwAllocationGranularity = 65536;
 int g_nPCInstalledPhysRamMB = 2048;
 int g_nOSUsablePhysRamMB = 2048;
 int g_nAppUsableAddressSpaceMB = 2047;
-static int g_nNumProcessors = 1;
-static ULONGLONG g_ullLastCPUUsageMeasureTime = 0;
-static ULONGLONG g_ullLastProcKernelTime = 0;
-static ULONGLONG g_ullLastProcUserTime = 0;
 static LONG g_lTempFilesCount = 0;
 #define CPU_FEATURE_MMX		0x0001
 #define CPU_FEATURE_SSE		0x0002
@@ -91,8 +87,6 @@ void InitHelpers()
 	memset(&sysInfo, 0, sizeof(sysInfo));
 	GetSystemInfo(&sysInfo);
 	g_dwAllocationGranularity = sysInfo.dwAllocationGranularity;
-	g_nNumProcessors = sysInfo.dwNumberOfProcessors;
-	GetCPUUsage(); // this initializes g_ullLastCPUUsageMeasureTime, g_ullLastProcKernelTime and g_ullLastProcUserTime
 	MEMORYSTATUSEX MemoryStatusEx;
 	MemoryStatusEx.dwLength = sizeof(MemoryStatusEx);
 	GlobalMemoryStatusEx(&MemoryStatusEx);
@@ -2176,36 +2170,6 @@ CString GetComputerName()
 		return CString(szComputerName);
 	else
 		return _T("");
-}
-
-double GetCPUUsage()
-{
-	// Current time
-	FILETIME CPUUsageMeasureTime;
-	GetSystemTimeAsFileTime(&CPUUsageMeasureTime);
-	ULONGLONG ullCPUUsageMeasureTime = (((ULONGLONG)CPUUsageMeasureTime.dwHighDateTime) << 32) + CPUUsageMeasureTime.dwLowDateTime;
-    
-	// Process times
-	FILETIME ProcCreateTime, ProcExitTime, ProcKernelTime, ProcUserTime;
-	GetProcessTimes(GetCurrentProcess(), &ProcCreateTime, &ProcExitTime, &ProcKernelTime, &ProcUserTime);
-	ULONGLONG ullProcKernelTime = (((ULONGLONG)ProcKernelTime.dwHighDateTime) << 32) + ProcKernelTime.dwLowDateTime;
-	ULONGLONG ullProcUserTime = (((ULONGLONG)ProcUserTime.dwHighDateTime) << 32) + ProcUserTime.dwLowDateTime;
-
-	// Calculate percentage
-	double dPercent = (double)((ullProcKernelTime - g_ullLastProcKernelTime) + (ullProcUserTime - g_ullLastProcUserTime));
-	dPercent /= (ullCPUUsageMeasureTime - g_ullLastCPUUsageMeasureTime);
-	dPercent /= g_nNumProcessors;
-	dPercent *= 100.0;
-	dPercent = MIN(dPercent, 100.0);
-	dPercent = MAX(dPercent, 0.0);
-
-	// Store for next call
-	g_ullLastCPUUsageMeasureTime = ullCPUUsageMeasureTime;
-	g_ullLastProcUserTime = ullProcUserTime;
-	g_ullLastProcKernelTime = ullProcKernelTime;
-    
-	// Return value
-	return dPercent;
 }
 
 void GetMemoryStats(ULONGLONG* pRegions/*=NULL*/,

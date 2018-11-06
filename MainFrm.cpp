@@ -2304,6 +2304,18 @@ void CMainFrame::LogSysUsage()
 	::CloseHandle(hHeapTempBinFile);
 	::DeleteFile(sHeapTempBinFileName);
 
+	// Get Virtual Memory Usage
+	ULONGLONG ullRegions; ULONGLONG ullFree; ULONGLONG ullReserved; ULONGLONG ullCommitted;
+	ULONGLONG ullMaxFree; ULONGLONG ullMaxReserved; ULONGLONG ullMaxCommitted; double dFragmentation;
+	::GetMemoryStats(&ullRegions, &ullFree, &ullReserved, &ullCommitted,
+					&ullMaxFree, &ullMaxReserved, &ullMaxCommitted, &dFragmentation);
+
+	// Get Recording Buffers Usage
+#ifdef VIDEODEVICEDOC
+	CString sBufStats;
+	GetRecBufStats(sBufStats);
+#endif
+
 	// Get HD Usage
 #ifdef VIDEODEVICEDOC
 	int nMinDiskFreePermillion = 0;
@@ -2326,34 +2338,20 @@ void CMainFrame::LogSysUsage()
 	GetDiskStats(sDiskStats, ((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), 0);
 #endif
 
-	// Get Virtual Memory Usage
-	ULONGLONG ullRegions; ULONGLONG ullFree; ULONGLONG ullReserved; ULONGLONG ullCommitted;
-	ULONGLONG ullMaxFree; ULONGLONG ullMaxReserved; ULONGLONG ullMaxCommitted; double dFragmentation;
-	::GetMemoryStats(	&ullRegions, &ullFree, &ullReserved, &ullCommitted,
-						&ullMaxFree, &ullMaxReserved, &ullMaxCommitted, &dFragmentation);
-
-	// Get Recording Buffers Usage
-#ifdef VIDEODEVICEDOC
-	CString sBufStats;
-	GetRecBufStats(sBufStats);
-#endif
-
 	// Message
-	::LogLine(	
+	::LogLine(
+		_T("%s | ")
 #ifdef VIDEODEVICEDOC
 		_T("%s | ")
-		_T("RAM: %0.1f%s | ")
 #endif
-		_T("%s | ")
-		_T("CPU: %0.1f%% | ")
+		_T("RAM: %0.1f%s | ")
 		_T("VMEM: used=%s(max %s) res=%s(max %s) free=%s(max %s) frag=%0.1f%% regions=%I64u | ")
 		_T("HEAP: used=%s (%s big), free(committed)=%s, free(uncommitted)=%s"),
+		sDiskStats,
 #ifdef VIDEODEVICEDOC
 		sBufStats,
-		(double)g_nOSUsablePhysRamMB / 1024.0, ML_STRING(1826, "GB"),
 #endif
-		sDiskStats,
-		::GetCPUUsage(),
+		(double)g_nOSUsablePhysRamMB / 1024.0, ML_STRING(1826, "GB"),
 		::FormatBytes(ullCommitted), ::FormatBytes(ullMaxCommitted),
 		::FormatBytes(ullReserved), ::FormatBytes(ullMaxReserved),
 		::FormatBytes(ullFree), ::FormatBytes(ullMaxFree),
