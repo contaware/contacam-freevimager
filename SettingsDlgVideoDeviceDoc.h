@@ -48,9 +48,13 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CSettingsDlgVideoDeviceDoc)
 	enum { IDD = IDD_SETTINGS_VIDEODEVICEDOC };
-	BOOL	m_bTrayIcon;
 	BOOL	m_bAutostart;
+	BOOL	m_bTrayIcon;
+	BOOL	m_bStartFromService;
 	BOOL	m_bTopMost;
+	int		m_nFirstStartDelay;
+	int     m_nSimultaneousSavingsIndex;
+	CString m_sMicroApacheDocRoot;
 	BOOL	m_bStartMicroApache;
 	int		m_nMicroApachePort;
 	int		m_nMicroApachePortSSL;
@@ -58,9 +62,6 @@ public:
 	CString	m_sMicroApachePassword;
 	CString	m_sMicroApacheCertFileSSL;
 	CString	m_sMicroApacheKeyFileSSL;
-	CString m_sMicroApacheDocRoot;
-	BOOL	m_bStartFromService;
-	int		m_nFirstStartDelay;
 	//}}AFX_DATA
 
 // Overrides

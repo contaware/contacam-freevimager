@@ -142,6 +142,7 @@ CUImagerApp::CUImagerApp()
 	m_pVideoDeviceDocTemplate = NULL;
 	m_bAutostartsExecuted = FALSE;
 	m_dwFirstStartDelayMs = DEFAULT_FIRSTSTART_DELAY_MS;
+	m_nSimultaneousSavings = DEFAULT_SIMULTANEOUS_SAVINGS;
 	m_bMovFragmented = FALSE;
 	m_bStartMicroApache = FALSE;
 	m_nMicroApachePort = MICROAPACHE_DEFAULT_PORT;
@@ -2285,7 +2286,7 @@ BOOL CUImagerApp::SaveReservation(DWORD dwId, BOOL bLowPriority/*=FALSE*/)
 		if (m_SaveReservationQueue.GetNext(pos) == dwId)
 		{
 			::LeaveCriticalSection(&m_csSaveReservation);
-			return (i < MAX_SIMULTANEOUS_SAVINGS); // saving position?
+			return (i < m_nSimultaneousSavings); // saving position?
 		}
 	}
 	
@@ -2295,9 +2296,9 @@ BOOL CUImagerApp::SaveReservation(DWORD dwId, BOOL bLowPriority/*=FALSE*/)
 		// Add to Tail
 		m_SaveReservationQueue.AddTail(dwId);
 
-		// Go if we are in the first MAX_SIMULTANEOUS_SAVINGS
+		// Go if we are in the first m_nSimultaneousSavings
 		pos = m_SaveReservationQueue.GetHeadPosition();
-		for (i = 0; i < MIN(MAX_SIMULTANEOUS_SAVINGS, m_SaveReservationQueue.GetCount()); i++)
+		for (i = 0; i < MIN(m_nSimultaneousSavings, m_SaveReservationQueue.GetCount()); i++)
 		{
 			if (m_SaveReservationQueue.GetNext(pos) == dwId)
 			{
@@ -3419,6 +3420,9 @@ void CUImagerApp::LoadSettings(UINT showCmd/*=SW_SHOWNORMAL*/)
 #ifdef VIDEODEVICEDOC
 	// Wait time before autostarting first device
 	m_dwFirstStartDelayMs = (DWORD)GetProfileInt(sSection, _T("FirstStartDelayMs"), DEFAULT_FIRSTSTART_DELAY_MS);
+
+	// Simultaneous savings
+	m_nSimultaneousSavings = GetProfileInt(sSection, _T("SimultaneousSavings"), DEFAULT_SIMULTANEOUS_SAVINGS);
 
 	// mov/mp4 saving fragmented
 	m_bMovFragmented = (BOOL)GetProfileInt(sSection, _T("MovFragmented"), FALSE);
