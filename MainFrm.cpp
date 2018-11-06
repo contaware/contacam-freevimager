@@ -76,7 +76,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_MESSAGE(WM_AUTORUN_VIDEODEVICES, OnAutorunVideoDevices)
 	ON_COMMAND(ID_VIEW_WEB, OnViewWeb)
 	ON_COMMAND(ID_VIEW_FILES, OnViewFiles)
-	ON_COMMAND(ID_INDICATOR_BUFS_SIZE, OnBufsSizeClick)
+	ON_COMMAND(ID_INDICATOR_BUF_USAGE, OnBufUsageClick)
 #else
 	ON_COMMAND(ID_INDICATOR_XCOORDINATE, OnXCoordinatesDoubleClick)
 	ON_COMMAND(ID_INDICATOR_YCOORDINATE, OnYCoordinatesDoubleClick)
@@ -86,7 +86,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 END_MESSAGE_MAP()
 
 #ifdef VIDEODEVICEDOC
-static TCHAR sba_BUFSSIZEHelp[MAX_PATH];
+static TCHAR sba_BUFUSAGEHelp[MAX_PATH];
 static TCHAR sba_HDHelp[MAX_PATH];
 #else
 static TCHAR sba_CoordinateHelp[MAX_PATH];
@@ -95,7 +95,7 @@ static SBACTPANEINFO sba_indicators[] =
 {
 	{ ID_SEPARATOR, _T(""), SBACTF_NORMAL },		// status line indicator
 #ifdef VIDEODEVICEDOC
-	{ ID_INDICATOR_BUFS_SIZE, sba_BUFSSIZEHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_SINGLECLICK | SBACTF_DOUBLECLICK | SBACTF_HANDCURSOR },
+	{ ID_INDICATOR_BUF_USAGE, sba_BUFUSAGEHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_SINGLECLICK | SBACTF_DOUBLECLICK | SBACTF_HANDCURSOR },
 	{ ID_INDICATOR_HD_USAGE, sba_HDHelp, SBACTF_AUTOFIT },
 #else
 	{ ID_INDICATOR_XCOORDINATE, sba_CoordinateHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_SINGLECLICK | SBACTF_DOUBLECLICK | SBACTF_HANDCURSOR },
@@ -164,8 +164,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	// Create Statusbar
 #ifdef VIDEODEVICEDOC
-	_tcsncpy(sba_BUFSSIZEHelp, ML_STRING(1763, "Maximum overall buffers size\n(click for more information)"), MAX_PATH);
-	sba_BUFSSIZEHelp[MAX_PATH - 1] = _T('\0');
+	_tcsncpy(sba_BUFUSAGEHelp, ML_STRING(1763, "Rec buffers usage\n(click for more information)"), MAX_PATH);
+	sba_BUFUSAGEHelp[MAX_PATH - 1] = _T('\0');
 	_tcsncpy(sba_HDHelp, ML_STRING(1761, "HD usage"), MAX_PATH);
 	sba_HDHelp[MAX_PATH - 1] = _T('\0');
 #else
@@ -1103,9 +1103,9 @@ void CMainFrame::OnViewFiles()
 					SW_SHOWNORMAL);
 }
 
-void CMainFrame::OnBufsSizeClick()
+void CMainFrame::OnBufUsageClick()
 {
-	PopupToaster(APPNAME_NOEXT, ML_STRING(1819, "To limit the buffer size lower the \"Split longer than\" value under Settings - Camera Advanced Settings"), 0);
+	PopupToaster(APPNAME_NOEXT, ML_STRING(1819, "To reduce the max usage lower the \"Split longer than\" value under Settings - Camera Advanced Settings"), 0);
 }
 
 #endif
@@ -2128,20 +2128,34 @@ void CMainFrame::OnViewAllNextPicture()
 }
 
 #ifdef VIDEODEVICEDOC
-double CMainFrame::GetMaxOverallQueueSizeGB()
+BOOL CMainFrame::GetRecBufStats(CString& sBufStats)
 {
-	// Maximum Overall Queue Size
-	LONGLONG llMaxOverallQueueSizeMB = 0;
+	// Maximum buffers size
+	LONGLONG llMaxOverallQueueSize = 0;
 	CUImagerMultiDocTemplate* pVideoDeviceDocTemplate = ((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate();
 	POSITION posVideoDeviceDoc = pVideoDeviceDocTemplate->GetFirstDocPosition();
 	while (posVideoDeviceDoc)
 	{
 		CVideoDeviceDoc* pVideoDeviceDoc = (CVideoDeviceDoc*)(pVideoDeviceDocTemplate->GetNextDoc(posVideoDeviceDoc));
 		if (pVideoDeviceDoc && pVideoDeviceDoc->m_dwVideoProcessorMode)
-			llMaxOverallQueueSizeMB += (LONGLONG)pVideoDeviceDoc->m_ProcessFrameBMI.bmiHeader.biSizeImage * (LONGLONG)pVideoDeviceDoc->m_nDetectionMaxFrames;
+			llMaxOverallQueueSize += (LONGLONG)pVideoDeviceDoc->m_ProcessFrameBMI.bmiHeader.biSizeImage * (LONGLONG)pVideoDeviceDoc->m_nDetectionMaxFrames;
 	}
-	llMaxOverallQueueSizeMB >>= 20;
-	return (double)llMaxOverallQueueSizeMB / 1024.0;
+	double dMaxOverallQueueSizeGB = (double)(llMaxOverallQueueSize >> 20) / 1024.0;
+
+	// Commit size
+	MEMORYSTATUSEX MemoryStatusEx;
+	MemoryStatusEx.dwLength = sizeof(MemoryStatusEx);
+	::GlobalMemoryStatusEx(&MemoryStatusEx);
+	double dOverallCommitSizeGB = (double)((CDib::m_llOverallSharedMemoryBytes + MemoryStatusEx.ullAvailPageFile) >> 20) / 1024.0;
+
+	// Format stats
+	sBufStats.Format(_T("BUF: %0.1f/%0.1f") + ML_STRING(1826, "GB") + _T("(max %0.1f") + ML_STRING(1826, "GB") + _T(")"),
+					(double)(CDib::m_llOverallSharedMemoryBytes >> 20) / 1024.0,
+					dOverallCommitSizeGB,
+					dMaxOverallQueueSizeGB);
+
+	// return TRUE to alert!
+	return (dOverallCommitSizeGB < dMaxOverallQueueSizeGB);
 }
 #endif
 
@@ -2318,11 +2332,16 @@ void CMainFrame::LogSysUsage()
 	::GetMemoryStats(	&ullRegions, &ullFree, &ullReserved, &ullCommitted,
 						&ullMaxFree, &ullMaxReserved, &ullMaxCommitted, &dFragmentation);
 
+	// Get Recording Buffers Usage
+#ifdef VIDEODEVICEDOC
+	CString sBufStats;
+	GetRecBufStats(sBufStats);
+#endif
+
 	// Message
 	::LogLine(	
 #ifdef VIDEODEVICEDOC
-		_T("BUF USAGE: %0.1f%s | ")
-		_T("BUF SIZE: %0.1f%s | ")
+		_T("%s | ")
 		_T("RAM: %0.1f%s | ")
 #endif
 		_T("%s | ")
@@ -2330,8 +2349,7 @@ void CMainFrame::LogSysUsage()
 		_T("VMEM: used=%s(max %s) res=%s(max %s) free=%s(max %s) frag=%0.1f%% regions=%I64u | ")
 		_T("HEAP: used=%s (%s big), free(committed)=%s, free(uncommitted)=%s"),
 #ifdef VIDEODEVICEDOC
-		(double)(CDib::m_llOverallSharedMemoryBytes >> 20) / 1024.0, ML_STRING(1826, "GB"),
-		GetMaxOverallQueueSizeGB(), ML_STRING(1826, "GB"),
+		sBufStats,
 		(double)g_nOSUsablePhysRamMB / 1024.0, ML_STRING(1826, "GB"),
 #endif
 		sDiskStats,
@@ -2364,28 +2382,17 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		if (((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames && CDib::m_llOverallSharedMemoryBytes == 0)
 			((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = FALSE;
 
-		// Show Maximum Overall Buffers Size
-		double dMaxOverallQueueSizeGB = GetMaxOverallQueueSizeGB();
-		double dRamGB = (double)g_nOSUsablePhysRamMB / 1024.0;
-		if (dMaxOverallQueueSizeGB > dRamGB)
+		// Show BUF Usage
+		CString sBufStats;
+		if (GetRecBufStats(sBufStats))
 		{
 			if (nFlashState == 2)
-				GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_BUFS_SIZE), _T(""));
+				GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_BUF_USAGE), _T(""));
 			else
-			{
-				CString sDetBufsSize;
-				sDetBufsSize.Format(_T(" *** BUF: %0.1f") + ML_STRING(1826, "GB") + _T(" > RAM: %0.1f") + ML_STRING(1826, "GB") + _T(" *** "),
-									dMaxOverallQueueSizeGB, dRamGB);
-				GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_BUFS_SIZE), sDetBufsSize);
-			}
+				GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_BUF_USAGE), _T(" *** ") + sBufStats + _T(" *** "));
 		}
 		else
-		{
-			CString sDetBufsSize;
-			sDetBufsSize.Format(_T(" BUF: %0.1f") + ML_STRING(1826, "GB") + _T(" "),
-								dMaxOverallQueueSizeGB);
-			GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_BUFS_SIZE), sDetBufsSize);
-		}
+			GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_BUF_USAGE), _T(" ") + sBufStats + _T(" "));
 
 		// Show HD Usage
 		CString sSaveDir = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;

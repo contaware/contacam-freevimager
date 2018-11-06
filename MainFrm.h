@@ -230,7 +230,7 @@ protected:
 	typedef CArray<HEAPREGION, HEAPREGION> HEAPREGIONARRAY;
 	BOOL IsAddressInHeapRegion(LPVOID p, HEAPREGIONARRAY& Regions);
 #ifdef VIDEODEVICEDOC
-	double GetMaxOverallQueueSizeGB();
+	BOOL GetRecBufStats(CString& sBufStats);
 	void CleanupFileMenu(CMenu* pPopupMenu);
 	void PopulateCaptureMenu(CMenu* pPopupMenu);
 #endif
@@ -277,7 +277,7 @@ protected:
 	afx_msg LONG OnAutorunVideoDevices(WPARAM wparam, LPARAM lparam);
 	afx_msg void OnViewWeb();
 	afx_msg void OnViewFiles();
-	afx_msg void OnBufsSizeClick();
+	afx_msg void OnBufUsageClick();
 #else
 	afx_msg void OnXCoordinatesDoubleClick();
 	afx_msg void OnYCoordinatesDoubleClick();
