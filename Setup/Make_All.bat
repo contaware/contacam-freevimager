@@ -45,6 +45,7 @@ mkdir .\%CURRENTVERSION%\italian
 mkdir .\%CURRENTVERSION%\russian
 mkdir .\%CURRENTVERSION%\bulgarian
 mkdir .\%CURRENTVERSION%\vietnamese
+mkdir .\%CURRENTVERSION%\spanish
 
 REM Move the 7-zipped source code
 echo Move source code
@@ -69,6 +70,8 @@ echo Copy FreeVimagerBgr.exe
 copy ..\Translation\FreeVimagerBGR.exe .\%CURRENTVERSION%\bulgarian\FreeVimager-%CURRENTVERSION%-Portable-Bgr.exe
 echo Copy FreeVimagerVit.exe
 copy ..\Translation\FreeVimagerVIT.exe .\%CURRENTVERSION%\vietnamese\FreeVimager-%CURRENTVERSION%-Portable-Vit.exe
+echo Copy FreeVimagerEsn.exe
+copy ..\Translation\FreeVimagerESN.exe .\%CURRENTVERSION%\spanish\FreeVimager-%CURRENTVERSION%-Portable-Esn.exe
 
 REM Make all the different ContaCam installers
 echo NSIS make ContaCam installer
@@ -89,6 +92,9 @@ move .\ContaCam-%CURRENTVERSION%-Setup-Bgr.exe .\%CURRENTVERSION%\bulgarian\
 echo NSIS make ContaCamVit installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Vietnamese ContaCam.nsi
 move .\ContaCam-%CURRENTVERSION%-Setup-Vit.exe .\%CURRENTVERSION%\vietnamese\
+echo NSIS make ContaCamEsn installer
+"%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Spanish ContaCam.nsi
+move .\ContaCam-%CURRENTVERSION%-Setup-Esn.exe .\%CURRENTVERSION%\spanish\
 
 REM Make all the different FreeVimager installers
 echo NSIS make FreeVimager installer
@@ -109,6 +115,9 @@ move .\FreeVimager-%CURRENTVERSION%-Setup-Bgr.exe .\%CURRENTVERSION%\bulgarian\
 echo NSIS make FreeVimagerVit installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Vietnamese FreeVimager.nsi
 move .\FreeVimager-%CURRENTVERSION%-Setup-Vit.exe .\%CURRENTVERSION%\vietnamese\
+echo NSIS make FreeVimagerEsn installer
+"%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Spanish FreeVimager.nsi
+move .\FreeVimager-%CURRENTVERSION%-Setup-Esn.exe .\%CURRENTVERSION%\spanish\
 
 REM exit
 :batchpause
