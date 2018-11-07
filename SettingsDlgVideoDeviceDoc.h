@@ -53,7 +53,7 @@ public:
 	BOOL	m_bStartFromService;
 	BOOL	m_bTopMost;
 	int		m_nFirstStartDelay;
-	int     m_nSimultaneousSavingsIndex;
+	int     m_nSimultaneousSavingIndex;
 	CString m_sMicroApacheDocRoot;
 	BOOL	m_bStartMicroApache;
 	int		m_nMicroApachePort;

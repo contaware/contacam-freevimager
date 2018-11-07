@@ -2958,7 +2958,7 @@
 #define IDC_SYSLINK_PARAMS_HELP         2575
 #define IDC_CHECK_FLIP_H                2576
 #define IDC_CHECK_FLIP_V                2577
-#define IDC_COMBO_SIMULTANEOUS_SAVINGS  2578
+#define IDC_COMBO_SIMULTANEOUS_SAVING   2578
 #define ID_EDIT_ROTATE_FLIP             32778
 #define ID_FILE_SELECTTWAINSOURCE       32779
 #define ID_FILE_ACQUIRE                 32780

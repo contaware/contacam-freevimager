@@ -82,11 +82,11 @@
 // Default wait time before autostarting first device
 #define DEFAULT_FIRSTSTART_DELAY_MS						0U
 
-// Default number of simultaneous savings
+// Default number of simultaneous saving
 // Note: two cameras saving at the same time is a good value
 // for RAM usage (H.264 consumes a lot of heap memory while
 // encoding) and optimal threads distribution
-#define DEFAULT_SIMULTANEOUS_SAVINGS					2
+#define DEFAULT_SIMULTANEOUS_SAVING						2
 
 // Service
 #define CONTACAMSERVICE_NOTINSTALLED					0
@@ -530,8 +530,8 @@ public:
 	// Wait time before autostarting first device
 	volatile DWORD m_dwFirstStartDelayMs;
 
-	// Simultaneous savings
-	volatile int m_nSimultaneousSavings;
+	// Simultaneous saving
+	volatile int m_nSimultaneousSaving;
 
 	// mov/mp4 saving fragmented
 	volatile BOOL m_bMovFragmented;
