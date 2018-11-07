@@ -164,7 +164,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	// Create Statusbar
 #ifdef VIDEODEVICEDOC
-	_tcsncpy(sba_BUFUSAGEHelp, ML_STRING(1763, "Rec buffers usage\n(click for more information)"), MAX_PATH);
+	_tcsncpy(sba_BUFUSAGEHelp, ML_STRING(1763, "REC buffers usage\n(click for more information)"), MAX_PATH);
 	sba_BUFUSAGEHelp[MAX_PATH - 1] = _T('\0');
 	_tcsncpy(sba_HDHelp, ML_STRING(1761, "HD usage"), MAX_PATH);
 	sba_HDHelp[MAX_PATH - 1] = _T('\0');
