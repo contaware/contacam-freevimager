@@ -41,4 +41,7 @@ ContaCam Program
   it made no difference to this problem (shep@bostin.com)
 - Suggestion to make priority configurable: "High, Normal or Low" in Global Settings
   dialog (admin@denied.gr)
+- Pollable SendMailMovementDetection (nmclachlan@gmail.com)
+  Pollable DoExecCommandMovementDetection (johnliber@gmail.com)
+  (I do not know whether it is a good thing to add more and more pollable settings...)
   
