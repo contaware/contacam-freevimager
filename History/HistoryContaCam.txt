@@ -1,9 +1,11 @@
 CONTACAM HISTORY
 
-9.0.5 (Month XXth 2018)
+9.0.5 (November 7th 2018)
 
 - Support additional Generic RTSP devices
 - Increased the rtsp/udp receiving buffer size from 1 MB to 10 MB
+- Building the application with LARGEADDRESSAWARE set to have up to
+  the double of address space
 - Added support for flipping video horizontally and vertically
   (rotating by 180° can be achieved by enabling both flips)
 - Scheduler is now only for the recordings and not for the
