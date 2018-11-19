@@ -8878,7 +8878,7 @@ void CVideoDeviceDoc::ConnectRtsp()
 
 BOOL CVideoDeviceDoc::CHttpParseProcess::SendRawRequest(CString sRequest)
 {
-	// Store last request
+	// Store last request untouched (before url decoding + encoding)
 	m_sLastRequest = sRequest;
 
 	// Url encode uri inside request and insert eventual credentials
@@ -8898,9 +8898,10 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRawRequest(CString sRequest)
 			// (this happens when copying from IE address bar and pasting into ContaCam)
 			sUri = ::UrlDecode(sUri);
 
-			// Do not encode reserved chars like '?' or '&' or '=' used by uri parameters
-			// or '[' and ']' found in HTTP_USERNAME_PLACEHOLDER or
-			// HTTP_PASSWORD_PLACEHOLDER and replaced below
+			// Do not encode reserved chars like '?' or '&' or '=' used by uri parameters or '[' and ']'
+			// found in HTTP_USERNAME_PLACEHOLDER or HTTP_PASSWORD_PLACEHOLDER and replaced below.
+			// ATTENTION: never provide credentials directly in url, use the placeholders so that the
+			//            url encoding of the credentials can be performed correctly below!
 			sUri = ::UrlEncode(sUri, FALSE);
 
 			// Replace uri parameters placeholders with fully url encoded username and password

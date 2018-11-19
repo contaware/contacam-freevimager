@@ -367,7 +367,7 @@ extern BOOL IsASCIICompatiblePath(const CString& sPath);
 extern CString GetASCIICompatiblePath(const CString& sPath);
 
 // Url encode given string according to RFC 3986
-// set bEncodeReserved to TRUE if encoding GET values
+// set bEncodeReserved to TRUE if encoding GET parameter values
 // set bEncodeReserved to FALSE if encoding an entire URL
 extern CString UrlEncode(const CString& s, BOOL bEncodeReserved);
 
