@@ -1,5 +1,9 @@
 FREEVIMAGER HISTORY
 
+9.0.7 (December Xth 2018)
+
+- ...
+
 9.0.5 (November 7th 2018)
 
 - Building the application with LARGEADDRESSAWARE set to have up to
