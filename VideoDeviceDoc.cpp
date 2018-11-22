@@ -117,56 +117,35 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
-BOOL CVideoDeviceDoc::CreateCheckYearMonthDayDir(CTime Time, CString sBaseDir, CString& sYearMonthDayDir)
+void CVideoDeviceDoc::CreateBaseYearMonthDaySubDir(CString sBaseDir, CTime Time, CString sSubDir, CString& sBaseYearMonthDaySubDir)
 {
 	// Remove Trailing '\'
 	sBaseDir.TrimRight(_T('\\'));
+	
+	// Remove Leading and Trailing '\'
+	sSubDir.Trim(_T('\\'));
 
-	// The Dir Strings
-	CString sYear = Time.Format(_T("%Y"));
-	CString sMonth = Time.Format(_T("%m"));
-	CString sDay = Time.Format(_T("%d"));
-
-	// Check Passed Dir
-	DWORD dwAttrib = ::GetFileAttributes(sBaseDir);
-	if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
-		return FALSE;
-
-	// Create Year Dir if not existing
-	dwAttrib = ::GetFileAttributes(sBaseDir + _T("\\") + sYear);
-	if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
+	// Create if not already existing
+	if (!sBaseDir.IsEmpty())
 	{
-		if (!::CreateDir(sBaseDir + _T("\\") + sYear))
+		CString sDir(sBaseDir + _T("\\") + Time.Format(_T("%Y")) + _T("\\") + Time.Format(_T("%m")) + _T("\\") + Time.Format(_T("%d")));
+		if (!sSubDir.IsEmpty())
+			sDir += _T("\\") + sSubDir;
+		if (!::IsExistingDir(sDir))
 		{
-			::ShowErrorMsg(::GetLastError(), FALSE);
-			return FALSE;
+			if (!::CreateDir(sDir))
+			{
+				sBaseYearMonthDaySubDir = _T("");
+				::ShowErrorMsg(::GetLastError(), FALSE);
+			}
+			else
+				sBaseYearMonthDaySubDir = sDir;
 		}
+		else
+			sBaseYearMonthDaySubDir = sDir;
 	}
-
-	// Create Month Dir if not existing
-	dwAttrib = ::GetFileAttributes(sBaseDir + _T("\\") + sYear + _T("\\") + sMonth);
-	if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
-	{
-		if (!::CreateDir(sBaseDir + _T("\\") + sYear + _T("\\") + sMonth))
-		{
-			::ShowErrorMsg(::GetLastError(), FALSE);
-			return FALSE;
-		}
-	}
-
-	// Create Day Dir if not existing
-	dwAttrib = ::GetFileAttributes(sBaseDir + _T("\\") + sYear + _T("\\") + sMonth + _T("\\") + sDay);
-	if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
-	{
-		if (!::CreateDir(sBaseDir + _T("\\") + sYear + _T("\\") + sMonth + _T("\\") + sDay))
-		{
-			::ShowErrorMsg(::GetLastError(), FALSE);
-			return FALSE;
-		}
-	}
-
-	sYearMonthDayDir = sBaseDir + _T("\\") + sYear + _T("\\") + sMonth + _T("\\") + sDay;
-	return TRUE;
+	else
+		sBaseYearMonthDaySubDir = _T("");
 }
 
 void CVideoDeviceDoc::CSaveFrameListThread::LoadDetFrame(CDib* pDib, DWORD& dwUpdatedIfErrorNoSuccess)
@@ -335,7 +314,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		BOOL bMakeVideo = m_pDoc->m_bSaveVideo;
 		BOOL bMakeGif = m_pDoc->m_bSaveAnimGIF;
 		CString sVideoFileName;
-		CVideoDeviceDoc::CreateCheckYearMonthDayDir(FirstTime, m_pDoc->m_sRecordAutoSaveDir, sVideoFileName);
+		CVideoDeviceDoc::CreateBaseYearMonthDaySubDir(m_pDoc->m_sRecordAutoSaveDir, FirstTime, _T(""), sVideoFileName);
 		if (!sVideoFileName.IsEmpty())
 			sVideoFileName += _T("\\");
 		CString sGIFFileName(sVideoFileName);
@@ -1036,7 +1015,7 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 	}
 
 	// Find and process jpg snapshot history files
-	if (FileFind.Init(sDir + _T("\\*")))
+	if (FileFind.Init(sDir + _T("\\") + DEFAULT_SNAPSHOT_HISTORY_FOLDER + _T("\\*")))
 	{
 		for (int pos = 0 ; pos < FileFind.GetFilesCount() ; pos++)
 		{
@@ -1080,9 +1059,6 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 						}
 					}
 				}
-
-				// Delete unwanted history jpg files
-				::DeleteFile(FileFind.GetFileName(pos));
 			}
 
 			// Do Exit?
@@ -1101,6 +1077,9 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 	// If video has been created
 	if (::IsExistingFile(sVideoTempFileName))
 	{
+		// Remove folder
+		::DeleteDir(sDir + _T("\\") + DEFAULT_SNAPSHOT_HISTORY_FOLDER);
+
 		// Copy from temp to snapshots folder
 		::CopyFile(sVideoTempFileName, sVideoFileName, FALSE);
 
@@ -1139,8 +1118,9 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	sLiveThumbFileName += CString(_T("\\")) + DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME;
 
 	// Init history file name
-	// Note: if m_pDoc->m_nCameraUsage == 0, it creates also the year, month and day
-	// directories, otherwise it just returns the file name without path
+	// Note: if m_pDoc->m_nCameraUsage == 0
+	//       it creates also year\month\day\DEFAULT_SNAPSHOT_HISTORY_FOLDER
+	//       otherwise it just returns the file name without path
 	CString sHistoryFileName(MakeJpegHistoryFileName());
 
 	// Temp file names
@@ -1205,58 +1185,37 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 
 __forceinline CString CVideoDeviceDoc::CSaveSnapshotThread::MakeJpegHistoryFileName()
 {
-	CString sYearMonthDayDir(_T(""));
+	CString sBaseYearMonthDaySubDir;
 
 	// Snapshot time
 	CString sTime = m_Time.Format(_T("%Y_%m_%d_%H_%M_%S"));
 
-	// Adjust Directory Name
-	CString sSnapshotDir = m_pDoc->m_sRecordAutoSaveDir;
-	sSnapshotDir.TrimRight(_T('\\'));
-
 	// Create directory if necessary
-	if (sSnapshotDir != _T("") && m_pDoc->m_nCameraUsage == 0)
-	{
-		DWORD dwAttrib = ::GetFileAttributes(sSnapshotDir);
-		if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
-			::CreateDir(sSnapshotDir);
-		if (!CVideoDeviceDoc::CreateCheckYearMonthDayDir(m_Time, sSnapshotDir, sYearMonthDayDir))
-			return _T("");
-	}
+	if (m_pDoc->m_nCameraUsage == 0)
+		CVideoDeviceDoc::CreateBaseYearMonthDaySubDir(m_pDoc->m_sRecordAutoSaveDir, m_Time, DEFAULT_SNAPSHOT_HISTORY_FOLDER, sBaseYearMonthDaySubDir);
 
 	// Return file name
-	if (sYearMonthDayDir == _T(""))
+	if (sBaseYearMonthDaySubDir.IsEmpty())
 		return _T("shot_") + sTime + _T(".jpg");
 	else
-		return sYearMonthDayDir + _T("\\") + _T("shot_") + sTime + _T(".jpg");
+		return sBaseYearMonthDaySubDir + _T("\\") + _T("shot_") + sTime + _T(".jpg");
 }
 
 __forceinline CString CVideoDeviceDoc::CSaveSnapshotVideoThread::MakeVideoHistoryFileName()
 {
-	CString sYearMonthDayDir(_T(""));
+	CString sBaseYearMonthDayDir;
 
 	// Snapshots time
 	CString sTime = m_Time.Format(_T("%Y_%m_%d"));
 
-	// Adjust Directory Name
-	CString sSnapshotDir = m_pDoc->m_sRecordAutoSaveDir;
-	sSnapshotDir.TrimRight(_T('\\'));
-
-	// Create directory if necessary
-	if (sSnapshotDir != _T(""))
-	{
-		DWORD dwAttrib = ::GetFileAttributes(sSnapshotDir);
-		if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
-			::CreateDir(sSnapshotDir);
-		if (!CVideoDeviceDoc::CreateCheckYearMonthDayDir(m_Time, sSnapshotDir, sYearMonthDayDir))
-			return _T("");
-	}
+	// Create directory
+	CVideoDeviceDoc::CreateBaseYearMonthDaySubDir(m_pDoc->m_sRecordAutoSaveDir, m_Time, _T(""), sBaseYearMonthDayDir);
 
 	// Return file name
-	if (sYearMonthDayDir == _T(""))
+	if (sBaseYearMonthDayDir.IsEmpty())
 		return _T("shot_") + sTime + DEFAULT_VIDEO_FILEEXT;
 	else
-		return sYearMonthDayDir + _T("\\") + _T("shot_") + sTime + DEFAULT_VIDEO_FILEEXT;
+		return sBaseYearMonthDayDir + _T("\\") + _T("shot_") + sTime + DEFAULT_VIDEO_FILEEXT;
 }
 
 BOOL CVideoDeviceDoc::SendMail(	const SendMailConfigurationStruct& Config,
@@ -4975,58 +4934,36 @@ void CVideoDeviceDoc::OpenNetVideoDevice(CHostPortDlg* pDlg)
 
 CString CVideoDeviceDoc::MakeJpegManualSnapshotFileName(const CTime& Time)
 {
-	CString sYearMonthDayDir(_T(""));
+	CString sBaseYearMonthDayDir;
 
 	// Snapshot time
 	CString sTime = Time.Format(_T("%Y_%m_%d_%H_%M_%S"));
 
-	// Adjust Directory Name
-	CString sSnapshotAutoSaveDir = m_sRecordAutoSaveDir;
-	sSnapshotAutoSaveDir.TrimRight(_T('\\'));
-
-	// Create directory if necessary
-	if (sSnapshotAutoSaveDir != _T(""))
-	{
-		DWORD dwAttrib = ::GetFileAttributes(sSnapshotAutoSaveDir);
-		if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
-			::CreateDir(sSnapshotAutoSaveDir);
-		if (!CVideoDeviceDoc::CreateCheckYearMonthDayDir(Time, sSnapshotAutoSaveDir, sYearMonthDayDir))
-			return _T("");
-	}
+	// Create directory
+	CreateBaseYearMonthDaySubDir(m_sRecordAutoSaveDir, Time, _T(""), sBaseYearMonthDayDir);
 
 	// Return file name
-	if (sYearMonthDayDir == _T(""))
+	if (sBaseYearMonthDayDir.IsEmpty())
 		return _T("manualshot_") + sTime + _T(".jpg");
 	else
-		return sYearMonthDayDir + _T("\\") + _T("manualshot_") + sTime + _T(".jpg");
+		return sBaseYearMonthDayDir + _T("\\") + _T("manualshot_") + sTime + _T(".jpg");
 }
 
 CString CVideoDeviceDoc::MakeJpegMailSnapshotFileName(const CTime& Time)
 {
-	CString sYearMonthDayDir(_T(""));
+	CString sBaseYearMonthDayDir;
 
 	// Snapshot time
 	CString sTime = Time.Format(_T("%Y_%m_%d_%H_%M_%S"));
 
-	// Adjust Directory Name
-	CString sSnapshotAutoSaveDir = m_sRecordAutoSaveDir;
-	sSnapshotAutoSaveDir.TrimRight(_T('\\'));
-
-	// Create directory if necessary
-	if (sSnapshotAutoSaveDir != _T(""))
-	{
-		DWORD dwAttrib = ::GetFileAttributes(sSnapshotAutoSaveDir);
-		if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
-			::CreateDir(sSnapshotAutoSaveDir);
-		if (!CVideoDeviceDoc::CreateCheckYearMonthDayDir(Time, sSnapshotAutoSaveDir, sYearMonthDayDir))
-			return _T("");
-	}
+	// Create directory
+	CreateBaseYearMonthDaySubDir(m_sRecordAutoSaveDir, Time, _T(""), sBaseYearMonthDayDir);
 
 	// Return file name
-	if (sYearMonthDayDir == _T(""))
+	if (sBaseYearMonthDayDir.IsEmpty())
 		return _T("mailshot_") + sTime + _T(".jpg");
 	else
-		return sYearMonthDayDir + _T("\\") + _T("mailshot_") + sTime + _T(".jpg");
+		return sBaseYearMonthDayDir + _T("\\") + _T("mailshot_") + sTime + _T(".jpg");
 }
 
 void CVideoDeviceDoc::WaveInitFormat(WORD wCh, DWORD dwSampleRate, WORD wBitsPerSample, LPWAVEFORMATEX pWaveFormat)

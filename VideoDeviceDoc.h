@@ -93,6 +93,7 @@ class CCameraAdvancedSettingsDlg;
 #define DEFAULT_SNAPSHOT_HISTORY_RATE			30				// each given seconds
 #define DEFAULT_SNAPSHOT_HISTORY_FRAMERATE		30				// fps
 #define	SNAPSHOT_VIDEO_THREAD_STARTUP_DELAY_MS	300000	 		// in ms -> 5min
+#define DEFAULT_SNAPSHOT_HISTORY_FOLDER			_T("dailysummary_files")
 #define DEFAULT_SNAPSHOT_LIVE_JPEGNAME			_T("snapshot.jpg")
 #define DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME		_T("snapshot_thumb.jpg")
 #define DEFAULT_SNAPSHOT_COMPR_QUALITY			60				// 0 Worst Quality, 100 Best Quality
@@ -618,7 +619,7 @@ public:
 	void SetView(CVideoDeviceView* pView) {m_pView = pView;};
 	CVideoDeviceChildFrame* GetFrame() const {return m_pFrame;};
 	void SetFrame(CVideoDeviceChildFrame* pFrame) {m_pFrame = pFrame;};
-	static BOOL CreateCheckYearMonthDayDir(CTime Time, CString sBaseDir, CString& sYearMonthDayDir);
+	static void CreateBaseYearMonthDaySubDir(CString sBaseDir, CTime Time, CString sSubDir, CString& sBaseYearMonthDaySubDir);
 
 	// Open Dx Video Device
 	void OpenDxVideoDevice(int nId, CString sDevicePathName, CString sDeviceName);
