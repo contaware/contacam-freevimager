@@ -135,8 +135,8 @@ void CVideoDeviceDoc::CreateBaseYearMonthDaySubDir(CString sBaseDir, CTime Time,
 		{
 			if (!::CreateDir(sDir))
 			{
-				sBaseYearMonthDaySubDir = _T("");
 				::ShowErrorMsg(::GetLastError(), FALSE);
+				sBaseYearMonthDaySubDir = _T("");
 			}
 			else
 				sBaseYearMonthDaySubDir = sDir;
