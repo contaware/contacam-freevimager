@@ -2,7 +2,6 @@
 #include "wininet.h"
 #include "Winnetwk.h"
 #include "Helpers.h"
-#include "Round.h"
 #include "Rpc.h"
 #include <lmcons.h>
 #include <math.h>
@@ -1021,13 +1020,13 @@ CString FormatBytes(ULONGLONG ullBytes)
 {
 	CString sBytes;
 	if (ullBytes >= (1024 * 1024 * 1024))
-		sBytes.Format(_T("%0.1f") + ML_STRING(1826, "GB"), (double)(ullBytes >> 20) / 1024.0);
+		sBytes.Format(CString(_T("%0.1f")) + ML_STRING(1826, "GB"), (double)(ullBytes >> 20) / 1024.0);
 	else if (ullBytes >= (1024 * 1024))
-		sBytes.Format(_T("%0.1f") + ML_STRING(1825, "MB"), (double)(ullBytes >> 10) / 1024.0);
+		sBytes.Format(CString(_T("%0.1f")) + ML_STRING(1825, "MB"), (double)(ullBytes >> 10) / 1024.0);
 	else if (ullBytes >= 1024)
-		sBytes.Format(_T("%0.1f") + ML_STRING(1243, "KB"), (double)ullBytes / 1024.0);
+		sBytes.Format(CString(_T("%0.1f")) + ML_STRING(1243, "KB"), (double)ullBytes / 1024.0);
 	else
-		sBytes.Format(_T("%I64u") + ML_STRING(1244, "Bytes"), ullBytes);
+		sBytes.Format(CString(_T("%I64u")) + ML_STRING(1244, "Bytes"), ullBytes);
 	return sBytes;
 }
 
@@ -2685,70 +2684,6 @@ BOOL IsFontSupported(LPCTSTR szFontFamily)
 	EnumFontFamiliesEx(hDC, &lf, (FONTENUMPROC)EnumFontFamExProc, (LPARAM)&lParam, 0);
 	ReleaseDC(NULL, hDC);
 	return (BOOL)lParam;
-}
-
-int DrawBigText(HDC hDC,
-				CRect rc,
-				LPCTSTR szText,
-				COLORREF crTextColor,
-				int nMaxFontSize/*=72*/,
-				UINT uAlign/*=DT_CENTER | DT_VCENTER*/,
-				int nBkMode/*=TRANSPARENT*/,
-				COLORREF crBkColor/*=RGB(0,0,0)*/)
-{
-	// Check
-	if (!hDC)
-		return 0;
-
-	// Vars
-	HFONT hFont;
-	HFONT hOldFont = NULL;
-	LOGFONT lf;
-	int nUsedHeightPix;
-	nMaxFontSize = MAX(nMaxFontSize, 8); // 8 is min font size
-
-	// Set colors and mode
-	COLORREF crOldTextColor = SetTextColor(hDC, crTextColor);
-	int nOldBkMode = SetBkMode(hDC, nBkMode);
-	COLORREF crOldBkColor = SetBkColor(hDC, crBkColor);
-
-	// Calc. Font Size
-	while (TRUE)
-	{
-		memset(&lf, 0, sizeof(lf));
-		_tcscpy(lf.lfFaceName, g_szDefaultFontFace);
-		lf.lfHeight = -MulDiv(nMaxFontSize, GetDeviceCaps(hDC, LOGPIXELSY), 72);
-		lf.lfWeight = FW_MEDIUM;
-		lf.lfItalic = 0;
-		lf.lfUnderline = 0;
-		hFont = CreateFontIndirect(&lf);
-		CRect rcText(0,0,0,0);
-		hOldFont = (HFONT)SelectObject(hDC, hFont);
-		nUsedHeightPix = DrawText(hDC, szText, -1, rcText, DT_CALCRECT | DT_SINGLELINE | DT_NOCLIP);
-		if (rcText.Width() > rc.Width())
-		{
-			if (nMaxFontSize == 8) // 8 is min font size
-				break;
-			nMaxFontSize = MAX(Round((double)nMaxFontSize * (double)rc.Width() /
-								(1.3 * (double)rcText.Width())), 8);
-			SelectObject(hDC, hOldFont);
-			DeleteObject(hFont);
-		}
-		else
-			break;
-	}
-
-	// Draw Message
-	DrawText(hDC, szText, -1, rc, uAlign | DT_NOCLIP | DT_SINGLELINE);
-	
-	// Restore and clean-up
-	SetBkColor(hDC, crOldBkColor);
-	SetBkMode(hDC, nOldBkMode);
-	SetTextColor(hDC, crOldTextColor);
-	SelectObject(hDC, hOldFont);
-	DeleteObject(hFont);
-
-	return nUsedHeightPix;
 }
 
 int GetRevertedPos(CSliderCtrl* pSliderCtrl)

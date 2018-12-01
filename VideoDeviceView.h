@@ -24,6 +24,13 @@ public:
 
 protected:
 	DECLARE_DYNCREATE(CVideoDeviceView)
+	// Draw big single line text, if text doesn't fit in given rc width
+	// then a smaller font size is chosen (minimum used font size is 8 points)	
+	// returns: the used height in pixels (0 if an error occurred)
+	static int DrawBigText(	HDC hDC, CRect rc, LPCTSTR szText, COLORREF crTextColor,
+							int nMaxFontSize = 72,					// max. font size in points
+							UINT uAlign = DT_CENTER | DT_VCENTER,	// DT_TOP, DT_BOTTOM, DT_LEFT, DT_RIGHT, DT_CENTER, DT_VCENTER
+							int nBkMode = TRANSPARENT, COLORREF crBkColor = RGB(0, 0, 0));
 	__forceinline void DrawZoneSensitivity(int i, HDC hDC, const RECT& rcDetZone, int n, HBRUSH hBkgndBrush);
 	void DrawZones(HDC hDC);
 	BOOL ReOpenDxDevice();

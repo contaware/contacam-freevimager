@@ -43,6 +43,7 @@
 #include "MlString.h"
 #include "MMSystem.h"
 #include "Helpers.h"
+#include "Round.h"
 #include "TraceLogFile.h"
 #include "Performance.h"
 #include "appconst.h"

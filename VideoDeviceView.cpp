@@ -536,6 +536,70 @@ BOOL CVideoDeviceView::OnEraseBkgnd(CDC* pDC)
 	return TRUE;
 }
 
+int CVideoDeviceView::DrawBigText(	HDC hDC,
+									CRect rc,
+									LPCTSTR szText,
+									COLORREF crTextColor,
+									int nMaxFontSize/*=72*/,
+									UINT uAlign/*=DT_CENTER | DT_VCENTER*/,
+									int nBkMode/*=TRANSPARENT*/,
+									COLORREF crBkColor/*=RGB(0,0,0)*/)
+{
+	// Check
+	if (!hDC)
+		return 0;
+
+	// Vars
+	HFONT hFont;
+	HFONT hOldFont = NULL;
+	LOGFONT lf;
+	int nUsedHeightPix;
+	nMaxFontSize = MAX(nMaxFontSize, 8); // 8 is min font size
+
+	// Set colors and mode
+	COLORREF crOldTextColor = ::SetTextColor(hDC, crTextColor);
+	int nOldBkMode = ::SetBkMode(hDC, nBkMode);
+	COLORREF crOldBkColor = ::SetBkColor(hDC, crBkColor);
+
+	// Calc. Font Size
+	while (TRUE)
+	{
+		memset(&lf, 0, sizeof(lf));
+		_tcscpy(lf.lfFaceName, g_szDefaultFontFace);
+		lf.lfHeight = -MulDiv(nMaxFontSize, ::GetDeviceCaps(hDC, LOGPIXELSY), 72);
+		lf.lfWeight = FW_MEDIUM;
+		lf.lfItalic = 0;
+		lf.lfUnderline = 0;
+		hFont = ::CreateFontIndirect(&lf);
+		CRect rcText(0, 0, 0, 0);
+		hOldFont = (HFONT)::SelectObject(hDC, hFont);
+		nUsedHeightPix = ::DrawText(hDC, szText, -1, rcText, DT_CALCRECT | DT_SINGLELINE | DT_NOCLIP);
+		if (rcText.Width() > rc.Width())
+		{
+			if (nMaxFontSize == 8) // 8 is min font size
+				break;
+			nMaxFontSize = MAX(Round((double)nMaxFontSize * (double)rc.Width() /
+							(1.3 * (double)rcText.Width())), 8);
+			::SelectObject(hDC, hOldFont);
+			::DeleteObject(hFont);
+		}
+		else
+			break;
+	}
+
+	// Draw Message
+	::DrawText(hDC, szText, -1, rc, uAlign | DT_NOCLIP | DT_SINGLELINE);
+
+	// Restore and clean-up
+	::SetBkColor(hDC, crOldBkColor);
+	::SetBkMode(hDC, nOldBkMode);
+	::SetTextColor(hDC, crOldTextColor);
+	::SelectObject(hDC, hOldFont);
+	::DeleteObject(hFont);
+
+	return nUsedHeightPix;
+}
+
 void CVideoDeviceView::OnDraw(CDC* pDC)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
@@ -575,24 +639,26 @@ void CVideoDeviceView::OnDraw(CDC* pDC)
 		{
 			CString sProgress;
 			sProgress.Format(ML_STRING(1877, "Save: %d%%"), pDoc->m_SaveFrameListThread.GetSaveProgress());
-			::DrawBigText(	MemDC.GetSafeHdc(), CRect(0, 0, rcClient.Width(), rcClient.Height()),
-							sProgress, DRAW_MESSAGE_COLOR, nMaxFontSize, DT_TOP | DT_RIGHT,
-							OPAQUE, DRAW_BKG_COLOR);
+			DrawBigText(MemDC.GetSafeHdc(), CRect(0, 0, rcClient.Width(), rcClient.Height()),
+						sProgress,
+						DRAW_MESSAGE_COLOR, nMaxFontSize, DT_TOP | DT_RIGHT,
+						OPAQUE, DRAW_BKG_COLOR);
 		}
 
 		// Draw REC dot symbol
 		if (pDoc->m_bDetectingMinLengthMovement)
 		{
-			::DrawBigText(	MemDC.GetSafeHdc(), CRect(0, 0, rcClient.Width(), rcClient.Height()),
-							_T("\u25cf"), // note: if using more than 16 bits, use a uppercase U (for example \U0001F3C3)
-							REC_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT);
+			DrawBigText(MemDC.GetSafeHdc(), CRect(0, 0, rcClient.Width(), rcClient.Height()),
+						_T("\u25cf"), // note: if using more than 16 bits, use a uppercase U (for example \U0001F3C3)
+						REC_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT);
 		}
 		// Draw REC OFF (by scheduler)
 		else if (!pDoc->m_bInSchedule)
 		{
-			::DrawBigText(	MemDC.GetSafeHdc(), CRect(0, 0, rcClient.Width(), rcClient.Height()),
-							ML_STRING(1879, "REC OFF (by scheduler)"), DRAW_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT,
-							OPAQUE, DRAW_BKG_COLOR);
+			DrawBigText(MemDC.GetSafeHdc(), CRect(0, 0, rcClient.Width(), rcClient.Height()),
+						ML_STRING(1879, "REC OFF (by scheduler)"),
+						DRAW_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT,
+						OPAQUE, DRAW_BKG_COLOR);
 		}
 	}
 	else

@@ -4,8 +4,6 @@
 #pragma once
 
 #include "WinReg.h"
-#include "WorkerThread.h"
-#include "Round.h"
 
 #ifndef MAX
 #  define MAX(a,b)  ((a) > (b) ? (a) : (b))
@@ -386,20 +384,6 @@ extern BOOL IntersectsValidMonitor(LPCRECT lpRect);
 
 // Checks whether the given font is available in the system
 extern BOOL IsFontSupported(LPCTSTR szFontFamily);
-
-// Draw big single line Arial text, if text doesn't fit in given rc width
-// then a smaller font size is chosen (minimum used font size is 8 points)
-// nMaxFontSize:	max. font size in points
-// uAlign:			DT_TOP, DT_BOTTOM, DT_LEFT, DT_RIGHT, DT_CENTER, DT_VCENTER
-// returns:			the used height in pixels (0 if an error occurred)
-extern int DrawBigText(	HDC hDC,
-						CRect rc,
-						LPCTSTR szText,
-						COLORREF crTextColor,
-						int nMaxFontSize = 72,
-						UINT uAlign = DT_CENTER | DT_VCENTER,
-						int nBkMode = TRANSPARENT,
-						COLORREF crBkColor = RGB(0,0,0));
 
 // For vertical sliders
 class CSliderCtrl;
