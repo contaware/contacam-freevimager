@@ -32,7 +32,7 @@ extern int g_nAppUsableAddressSpaceMB;
 extern void InitHelpers();
 
 // System DPI Scale
-__forceinline int SystemDPIScale(int n) { return MulDiv(n, g_nSystemDPI, 96); };
+extern int SystemDPIScale(int n);
 
 /*
 c:\mydir1\mydir2\hello.jpeg
@@ -247,7 +247,7 @@ extern HANDLE ExecApp(	const CString& sFileName,
 						BOOL bShow = TRUE,							// show application window?
 						BOOL bWaitTillDone = FALSE,
 						DWORD dwWaitMillisecondsTimeout = INFINITE);
-extern void KillApp(HANDLE& hProcess);								// after killing the app, the process handle is closed and set to NULL
+extern void KillApp(HANDLE& hProcess);								// after killing the app, the function closes and sets hProcess to NULL
 
 // Ini file Functions
 extern UINT GetProfileIniInt(LPCTSTR lpszSection, LPCTSTR lpszEntry, int nDefault, LPCTSTR lpszProfileName);
@@ -304,47 +304,7 @@ extern ULONGLONG GetDiskAvailableFreeSpace(LPCTSTR lpszPath);
 extern ULONGLONG GetDiskUsedSpace(LPCTSTR lpszPath);
 
 // Is it a positive numeric string (0, 1, 2, ...)?
-__forceinline BOOL IsNumeric(const CString& s)
-{
-	if (s.IsEmpty())
-		return FALSE;
-	for (int i = 0 ; i < s.GetLength() ; i++)
-	{
-		if (!_istdigit(s[i])) // if not 0 – 9
-			return FALSE;
-	}
-	return TRUE;
-}
-
-// Tiff check functions
-__forceinline BOOL IsTIFFExt(CString sExt)
-{
-	sExt.TrimLeft(_T('.'));
-	return ((sExt.CompareNoCase(_T("tif")) == 0)	||
-			(sExt.CompareNoCase(_T("tiff")) == 0)	||
-			(sExt.CompareNoCase(_T("jfx")) == 0)	||
-			IsNumeric(sExt));	// some scan/fax programs save multi-page tiffs
-								// using numeric extensions (.001, .002, ...)
-								// which indicate the page count
-}
-__forceinline BOOL IsTIFF(const CString& sFileName)
-{
-	return IsTIFFExt(GetFileExt(sFileName));
-}
-
-// Jpeg check functions
-__forceinline BOOL IsJPEGExt(CString sExt)
-{
-	sExt.TrimLeft(_T('.'));
-	return ((sExt.CompareNoCase(_T("jpg")) == 0)	||
-			(sExt.CompareNoCase(_T("jpeg")) == 0)	||
-			(sExt.CompareNoCase(_T("jpe")) == 0)	||
-			(sExt.CompareNoCase(_T("thm")) == 0));
-}
-__forceinline BOOL IsJPEG(const CString& sFileName)
-{
-	return IsJPEGExt(GetFileExt(sFileName));
-}
+extern BOOL IsNumeric(const CString& s);
 
 // Line-Break Handling
 extern void MakeLineBreakCR(CString& s);

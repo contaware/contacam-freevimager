@@ -2480,11 +2480,11 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 	{
 		dlgFile.m_ofn.nFilterIndex = 3;
 	}
-	else if (::IsJPEGExt(defextension))
+	else if (CDib::IsJPEGExt(defextension))
 	{
 		dlgFile.m_ofn.nFilterIndex = 4;
 	}
-	else if (::IsTIFFExt(defextension))
+	else if (CDib::IsTIFFExt(defextension))
 	{
 		dlgFile.m_ofn.nFilterIndex = 5;
 	}
@@ -2608,7 +2608,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 							TRUE);
 			EndWaitCursor();
 		}
-		else if (::IsJPEGExt(extension))
+		else if (CDib::IsJPEGExt(extension))
 		{
 			BeginWaitCursor();
 			if (m_pDib->HasAlpha() && m_pDib->GetBitCount() == 32)
@@ -2616,7 +2616,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 				Dib = *m_pDib;
 				Dib.RenderAlphaWithSrcBackground();
 				Dib.SetAlpha(FALSE);
-				if (!::IsJPEGExt(defextension))
+				if (!CDib::IsJPEGExt(defextension))
 				{
 					// Clear Orientation
 					Dib.GetExifInfo()->Orientation = 1;
@@ -2654,7 +2654,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 			}
 			else
 			{
-				if (!::IsJPEGExt(defextension))
+				if (!CDib::IsJPEGExt(defextension))
 				{
 					// Clear Orientation
 					int nOrientation = m_pDib->GetExifInfo()->Orientation;
@@ -2694,11 +2694,11 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 			}
 			EndWaitCursor();
 		}
-		else if (::IsTIFFExt(extension))
+		else if (CDib::IsTIFFExt(extension))
 		{
 			BeginWaitCursor();
 			int nTiffCompression;
-			if (::IsTIFFExt(defextension))
+			if (CDib::IsTIFFExt(defextension))
 				nTiffCompression = m_pDib->m_FileInfo.m_nCompression;
 			else
 			{
@@ -3453,7 +3453,7 @@ BOOL CPictureDoc::Save()
 							TRUE);
 			EndWaitCursor();
 		}
-		else if (::IsJPEGExt(extension))
+		else if (CDib::IsJPEGExt(extension))
 		{
 			BeginWaitCursor();
 			res = m_pDib->SaveJPEG(	m_sFileName,
@@ -3474,7 +3474,7 @@ BOOL CPictureDoc::Save()
 			}
 			EndWaitCursor();
 		}
-		else if (::IsTIFFExt(extension))
+		else if (CDib::IsTIFFExt(extension))
 		{
 			BeginWaitCursor();
 			int nOrientation = m_pDib->GetExifInfo()->Orientation;
@@ -4779,7 +4779,7 @@ BOOL CPictureDoc::LoadPicture(CDib *volatile *ppDib,
 
 		// Set flag which would be otherwise set
 		// in CJpegThread started by JPEGGet()
-		if (!m_bDoJPEGGet || !::IsJPEG(m_sFileName))
+		if (!m_bDoJPEGGet || !CDib::IsJPEG(m_sFileName))
 			m_bCancelLoadFullJpegTransitionAllowed = TRUE;
 
 		// Update Info if dialog is open
@@ -4951,7 +4951,7 @@ BOOL CPictureDoc::Rotate90cw()
 
 		// Check for JPEG Extensions and make sure the file has not been modified
 		BOOL bLosslessDone = FALSE;
-		if (::IsJPEG(m_sFileName) && !IsModified() && !m_bPrintPreviewMode)
+		if (CDib::IsJPEG(m_sFileName) && !IsModified() && !m_bPrintPreviewMode)
 		{
 			// Kill Jpeg Thread
 			m_JpegThread.Kill();
@@ -5043,7 +5043,7 @@ BOOL CPictureDoc::Rotate90ccw()
 
 		// Check for JPEG Extensions and make sure the file has not been modified
 		BOOL bLosslessDone = FALSE;
-		if (::IsJPEG(m_sFileName) && !IsModified() && !m_bPrintPreviewMode)
+		if (CDib::IsJPEG(m_sFileName) && !IsModified() && !m_bPrintPreviewMode)
 		{
 			// Kill Jpeg Thread
 			m_JpegThread.Kill();
@@ -5135,7 +5135,7 @@ BOOL CPictureDoc::Rotate180()
 
 		// Check for JPEG Extensions and make sure the file has not been modified
 		BOOL bLosslessDone = FALSE;
-		if (::IsJPEG(m_sFileName) && !IsModified() && !m_bPrintPreviewMode)
+		if (CDib::IsJPEG(m_sFileName) && !IsModified() && !m_bPrintPreviewMode)
 		{
 			// Kill Jpeg Thread
 			m_JpegThread.Kill();
@@ -5240,7 +5240,7 @@ void CPictureDoc::OnEditRotateFlip()
 int CPictureDoc::LossLessRotateFlip(BOOL bShowMessageBoxOnError, CRotationFlippingDlg* pDlg) 
 {
 	// Check for JPEG Extensions
-	if (::IsJPEG(m_sFileName))
+	if (CDib::IsJPEG(m_sFileName))
 	{
 		// Make sure the File is saved before doing a lossless jpeg transformations
 		switch (pDlg->m_TransformationType)
@@ -6641,7 +6641,7 @@ void CPictureDoc::OnUpdateEditNegative(CCmdUI* pCmdUI)
 
 void CPictureDoc::OnEditUpdateExifthumb() 
 {
-	if (::IsJPEG(m_sFileName))
+	if (CDib::IsJPEG(m_sFileName))
 	{
 		if (IsModified())
 		{
@@ -6686,7 +6686,7 @@ void CPictureDoc::OnUpdateEditUpdateExifthumb(CCmdUI* pCmdUI)
 	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_UPDATE_EXIFTHUMB) &&
 					DoEnableCommand() &&
-					::IsJPEG(m_sFileName) &&
+					CDib::IsJPEG(m_sFileName) &&
 					m_pDib->GetExifInfo()->bHasExif &&
 					m_pDib->GetExifInfo()->ThumbnailPointer);
 }
@@ -6695,7 +6695,7 @@ void CPictureDoc::OnEditAddExifthumb()
 {
 	const BOOL bShowMessageBoxOnError = TRUE;
 
-	if (::IsJPEG(m_sFileName))
+	if (CDib::IsJPEG(m_sFileName))
 	{
 		if (IsModified())
 		{
@@ -6769,7 +6769,7 @@ void CPictureDoc::OnUpdateEditAddExifthumb(CCmdUI* pCmdUI)
 	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_ADD_EXIFTHUMB) &&
 					DoEnableCommand() &&
-					::IsJPEG(m_sFileName) &&
+					CDib::IsJPEG(m_sFileName) &&
 					(!m_pDib->GetExifInfo()->bHasExif ||
 					!m_pDib->GetExifInfo()->ThumbnailPointer));
 }
@@ -6778,7 +6778,7 @@ void CPictureDoc::OnEditRemoveExifthumb()
 {
 	const BOOL bShowMessageBoxOnError = TRUE;
 
-	if (::IsJPEG(m_sFileName))
+	if (CDib::IsJPEG(m_sFileName))
 	{
 		if (IsModified())
 		{
@@ -6854,7 +6854,7 @@ void CPictureDoc::OnUpdateEditRemoveExifthumb(CCmdUI* pCmdUI)
 	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_REMOVE_EXIFTHUMB) &&
 					DoEnableCommand() &&
-					::IsJPEG(m_sFileName) &&
+					CDib::IsJPEG(m_sFileName) &&
 					m_pDib->GetExifInfo()->bHasExif &&
 					m_pDib->GetExifInfo()->ThumbnailPointer);
 }
@@ -6863,7 +6863,7 @@ void CPictureDoc::OnEditClearExifOrientate()
 {
 	const BOOL bShowMessageBoxOnError = TRUE;
 
-	if (::IsJPEG(m_sFileName))
+	if (CDib::IsJPEG(m_sFileName))
 	{
 		if (IsModified())
 		{
@@ -6911,7 +6911,7 @@ void CPictureDoc::OnUpdateEditClearExifOrientate(CCmdUI* pCmdUI)
 	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_CLEAR_EXIF_ORIENTATE) &&
 					DoEnableCommand() &&
-					::IsJPEG(m_sFileName) &&
+					CDib::IsJPEG(m_sFileName) &&
 					CDib::DoAutoOrientate(m_pDib));
 }
 
@@ -6919,7 +6919,7 @@ void CPictureDoc::OnEditRemoveExif()
 {
 	const BOOL bShowMessageBoxOnError = TRUE;
 
-	if (::IsJPEG(m_sFileName))
+	if (CDib::IsJPEG(m_sFileName))
 	{
 		if (IsModified())
 		{
@@ -7006,7 +7006,7 @@ void CPictureDoc::OnUpdateEditRemoveExif(CCmdUI* pCmdUI)
 	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_REMOVE_EXIF) &&
 					DoEnableCommand() &&
-					::IsJPEG(m_sFileName) &&
+					CDib::IsJPEG(m_sFileName) &&
 					(m_pDib && m_pDib->GetExifInfo()->bHasExifSection));
 }
 
@@ -7014,7 +7014,7 @@ void CPictureDoc::OnEditRemoveIcc()
 {
 	const BOOL bShowMessageBoxOnError = TRUE;
 
-	if (::IsJPEG(m_sFileName))
+	if (CDib::IsJPEG(m_sFileName))
 	{
 		if (IsModified())
 		{
@@ -7101,7 +7101,7 @@ void CPictureDoc::OnUpdateEditRemoveIcc(CCmdUI* pCmdUI)
 	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_REMOVE_ICC) &&
 					DoEnableCommand() &&
-					::IsJPEG(m_sFileName) &&
+					CDib::IsJPEG(m_sFileName) &&
 					(m_pDib && m_pDib->GetMetadata()->HasIcc()));	
 }
 
@@ -7109,7 +7109,7 @@ void CPictureDoc::OnEditRemoveXmp()
 {
 	const BOOL bShowMessageBoxOnError = TRUE;
 
-	if (::IsJPEG(m_sFileName))
+	if (CDib::IsJPEG(m_sFileName))
 	{
 		if (IsModified())
 		{
@@ -7196,7 +7196,7 @@ void CPictureDoc::OnUpdateEditRemoveXmp(CCmdUI* pCmdUI)
 	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_REMOVE_XMP) &&
 					DoEnableCommand() &&
-					::IsJPEG(m_sFileName) &&
+					CDib::IsJPEG(m_sFileName) &&
 					(m_pDib && m_pDib->GetMetadata()->HasXmp()));
 }
 
@@ -7204,7 +7204,7 @@ void CPictureDoc::OnEditRemoveJfif()
 {
 	const BOOL bShowMessageBoxOnError = TRUE;
 
-	if (::IsJPEG(m_sFileName))
+	if (CDib::IsJPEG(m_sFileName))
 	{
 		if (IsModified())
 		{
@@ -7291,7 +7291,7 @@ void CPictureDoc::OnUpdateEditRemoveJfif(CCmdUI* pCmdUI)
 	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_REMOVE_JFIF) &&
 					DoEnableCommand() &&
-					::IsJPEG(m_sFileName) &&
+					CDib::IsJPEG(m_sFileName) &&
 					(m_pDib && m_pDib->GetMetadata()->HasJfif()));
 }
 
@@ -7299,7 +7299,7 @@ void CPictureDoc::OnEditRemoveIptc()
 {
 	const BOOL bShowMessageBoxOnError = TRUE;
 
-	if (::IsJPEG(m_sFileName))
+	if (CDib::IsJPEG(m_sFileName))
 	{
 		if (IsModified())
 		{
@@ -7386,7 +7386,7 @@ void CPictureDoc::OnUpdateEditRemoveIptc(CCmdUI* pCmdUI)
 	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_REMOVE_IPTC) &&
 					DoEnableCommand() &&
-					::IsJPEG(m_sFileName) &&
+					CDib::IsJPEG(m_sFileName) &&
 					(m_pDib && m_pDib->GetMetadata()->HasIptcLegacy()));	
 }
 
@@ -7394,7 +7394,7 @@ void CPictureDoc::OnEditRemoveOtherApp()
 {
 	const BOOL bShowMessageBoxOnError = TRUE;
 
-	if (::IsJPEG(m_sFileName))
+	if (CDib::IsJPEG(m_sFileName))
 	{
 		if (IsModified())
 		{
@@ -7511,7 +7511,7 @@ void CPictureDoc::OnUpdateEditRemoveOtherApp(CCmdUI* pCmdUI)
 	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_REMOVE_OTHERAPP) &&
 					DoEnableCommand() &&
-					::IsJPEG(m_sFileName) &&
+					CDib::IsJPEG(m_sFileName) &&
 					(m_pDib && m_pDib->GetMetadata()->HasOtherAppSections()));
 }
 
@@ -7519,7 +7519,7 @@ void CPictureDoc::OnEditRemoveCom()
 {
 	const BOOL bShowMessageBoxOnError = TRUE;
 
-	if (::IsJPEG(m_sFileName))
+	if (CDib::IsJPEG(m_sFileName))
 	{
 		if (IsModified())
 		{
@@ -7606,7 +7606,7 @@ void CPictureDoc::OnUpdateEditRemoveCom(CCmdUI* pCmdUI)
 	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_REMOVE_COM) &&
 					DoEnableCommand() &&
-					::IsJPEG(m_sFileName) &&
+					CDib::IsJPEG(m_sFileName) &&
 					(m_pDib && m_pDib->GetMetadata()->HasCom()));
 }
 
@@ -8162,7 +8162,7 @@ void CPictureDoc::OnUpdatePlayRandom(CCmdUI* pCmdUI)
 
 void CPictureDoc::JPEGGet()
 {
-	if (::IsJPEG(m_sFileName))
+	if (CDib::IsJPEG(m_sFileName))
 	{
 		// Get JPEG Pixel Alignment
 		CDib::JPEGGetPixelAlignment(	m_sFileName,
@@ -8340,7 +8340,7 @@ void CPictureDoc::UpdateImageInfo(BOOL bUpdateFileInfoOnly/*=FALSE*/)
 			}
 			s+=t;
 
-			if (::IsJPEG(m_sFileName) && m_bDoJPEGGet)
+			if (CDib::IsJPEG(m_sFileName) && m_bDoJPEGGet)
 			{
 				if (bDpi)
 				{
@@ -8553,7 +8553,7 @@ void CPictureDoc::UpdateImageInfo(BOOL bUpdateFileInfoOnly/*=FALSE*/)
 		}
 
 		// Update Metadata Edit Buttons
-		BOOL bFileMayHaveMetadata = ::IsJPEG(m_sFileName) || ::IsTIFF(m_sFileName);
+		BOOL bFileMayHaveMetadata = CDib::IsJPEG(m_sFileName) || CDib::IsTIFF(m_sFileName);
 		CButton* pButton = (CButton*)m_pImageInfoDlg->GetDlgItem(IDC_BUTTON_EXPORT_METADATA);
 		pButton->EnableWindow(bFileMayHaveMetadata);
 		pButton = (CButton*)m_pImageInfoDlg->GetDlgItem(IDC_BUTTON_IMPORT_METADATA);
@@ -9027,7 +9027,7 @@ void CPictureDoc::EditCrop()
 
 void CPictureDoc::OnEditCropLossless() 
 {
-	if (::IsJPEG(m_sFileName))
+	if (CDib::IsJPEG(m_sFileName))
 	{
 		if (m_bCrop)
 			DoCropRect();
@@ -9062,7 +9062,7 @@ void CPictureDoc::OnUpdateEditCropLossless(CCmdUI* pCmdUI)
 					!m_pSoftenDlg										&&
 					!m_pSoftBordersDlg									&&
 					!m_pHLSDlg											&&
-					::IsJPEG(m_sFileName)								&&
+					CDib::IsJPEG(m_sFileName)							&&
 					m_DocRect.Width() >= m_nPixelAlignX					&&
 					m_DocRect.Height() >= m_nPixelAlignY				&&
 					!m_bPrintPreviewMode);
@@ -9175,10 +9175,10 @@ BOOL CPictureDoc::CopyDelCrop(BOOL bShowMessageBoxOnError, BOOL bCopy, BOOL bDel
 		// check for JPEG Extensions,
 		// make sure the file has not been modified
 		// and we are not copying and not deleting
-		if (m_bLosslessCrop			&&
-			::IsJPEG(m_sFileName)	&&
-			!IsModified()			&&
-			!bCopy					&&
+		if (m_bLosslessCrop				&&
+			CDib::IsJPEG(m_sFileName)	&&
+			!IsModified()				&&
+			!bCopy						&&
 			!bDel)
 		{	
 			CString sCroppedFileName;
@@ -9877,7 +9877,7 @@ void CPictureDoc::ViewMap()
 		}
 
 		// Use comment, filename or user's country
-		if (sQuery == _T("") && ::IsJPEG(m_sFileName) && m_pDib->GetMetadata())
+		if (sQuery == _T("") && CDib::IsJPEG(m_sFileName) && m_pDib->GetMetadata())
 		{
 			sQuery = ::FromUTF8((const unsigned char*)(LPCSTR)(m_pDib->GetMetadata()->m_sJpegComment),
 								m_pDib->GetMetadata()->m_sJpegComment.GetLength());

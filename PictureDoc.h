@@ -379,7 +379,7 @@ public:
 	__forceinline BOOL IsMultiPageTIFF()
 			{return 	m_pDib &&
 						m_pDib->m_FileInfo.m_nImageCount > 1 &&
-						::IsTIFF(m_sFileName);};
+						CDib::IsTIFF(m_sFileName);};
 
 	// Gets the Pixel Alignment and starts the Jpeg Thread
 	// (compression calculation and full size jpeg load)

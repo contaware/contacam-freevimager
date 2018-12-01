@@ -1327,6 +1327,10 @@ public:
 	// 4bpp and 8bpp			-> COMPRESSION_LZW
 	// 16bpp, 24bpp and 32bpp	-> COMPRESSION_JPEG
 	//
+
+	static BOOL IsTIFFExt(CString sExt);
+	static BOOL IsTIFF(const CString& sFileName);
+
 	BOOL LoadTIFF(	LPCTSTR lpszPathName,
 					int nPageNum = 0,					// Load the given page
 					BOOL bOnlyHeader = FALSE,
@@ -1432,6 +1436,9 @@ public:
 									BOOL bProgressSend = TRUE);
 
 	// JPEG Support
+	static BOOL IsJPEGExt(CString sExt);
+	static BOOL IsJPEG(const CString& sFileName);
+
 	BOOL LoadJPEG(LPCTSTR lpszPathName,
 					int ScaleFactor = 1,				// ScaleFactor(=making the image smaller) can be 1,2,4 or 8
 					BOOL bFast = FALSE,					// bFast=TRUE selects a fast but sloppy decoding

@@ -62,6 +62,22 @@ if (TIFFGetField(tif, TIFFTAG_EXIFIFD, &exifoffset))
 }
 */
 
+BOOL CDib::IsTIFFExt(CString sExt)
+{
+	sExt.TrimLeft(_T('.'));
+	return ((sExt.CompareNoCase(_T("tif")) == 0) ||
+			(sExt.CompareNoCase(_T("tiff")) == 0) ||
+			(sExt.CompareNoCase(_T("jfx")) == 0) ||
+			::IsNumeric(sExt));	// some scan/fax programs save multi-page tiffs
+								// using numeric extensions (.001, .002, ...)
+								// which indicate the page count
+}
+
+BOOL CDib::IsTIFF(const CString& sFileName)
+{
+	return IsTIFFExt(::GetFileExt(sFileName));
+}
+
 BOOL CDib::LoadTIFF(LPCTSTR lpszPathName,
 					int nPageNum/*=0*/,
 					BOOL bOnlyHeader/*=FALSE*/,
@@ -1882,7 +1898,7 @@ BOOL CDib::SaveMultiPageTIFF(	LPCTSTR lpszSavePathName,
 								CWorkerThread* pThread/*=NULL*/)
 {
 	// Check File Name
-	if (::IsTIFF(lpszOrigPathName))
+	if (IsTIFF(lpszOrigPathName))
 	{
 		// Temporary file if Save & Orig. File Name are the same
 		CString sSaveFileName = lpszSavePathName;
@@ -2062,7 +2078,7 @@ BOOL CDib::TIFFWriteMetadata(LPCTSTR szFileName, LPCTSTR szTempDir)
 	CString str;
 
 	// Check File Name
-	if (::IsTIFF(szFileName))
+	if (IsTIFF(szFileName))
 	{
 		// Temporary Dst File
 		CString sTempFileName = ::MakeTempFileName(szTempDir, szFileName);
@@ -2268,7 +2284,7 @@ BOOL CDib::TIFFCopy(LPCTSTR szInFileName,
 					BOOL bReencodeYCbCrJpegs/*=FALSE*/)				// YCbCr Jpegs inside Tiff are not supported by Tiff2Pdf
 {				
 	// Check File Name
-	if (::IsTIFF(szInFileName))
+	if (IsTIFF(szInFileName))
 	{
 		// Get Input Metadata
 		CDib Dib;
@@ -2440,7 +2456,7 @@ BOOL CDib::TIFFCopyAllPages(LPCTSTR szInFileName,
 							BOOL bReencodeYCbCrJpegs/*=FALSE*/)				// YCbCr Jpegs inside Tiff are not supported by Tiff2Pdf
 {
 	// Check File Name
-	if (::IsTIFF(szInFileName))
+	if (IsTIFF(szInFileName))
 	{
 		// Get Input Metadata
 		CDib Dib;
@@ -2495,7 +2511,7 @@ BOOL CDib::TIFFDeletePage(	int nDeletePageNum,
 							LPCTSTR szTempDir)
 {
 	// Check File Name
-	if (::IsTIFF(szFileName))
+	if (IsTIFF(szFileName))
 	{
 		// Temporary Dst File
 		CString sTempFileName = ::MakeTempFileName(szTempDir, szFileName);
@@ -2564,7 +2580,7 @@ CString CDib::TIFFExtractPages(	LPCTSTR szDstFileName,
 								BOOL bProgressSend/*=TRUE*/)
 {
 	// Check File Names
-	if (::IsTIFF(szDstFileName) && ::IsTIFF(szSrcFileName))
+	if (IsTIFF(szDstFileName) && IsTIFF(szSrcFileName))
 	{
 		// Get Input Metadata
 		CDib Dib;

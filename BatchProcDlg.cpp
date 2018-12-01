@@ -291,7 +291,7 @@ int CBatchProcDlg::CProcessThread::Work()
 																	sDstFileName,
 																	m_dwMaxSize,
 																	m_bMaxSizePercent,
-																	::IsJPEG(sDstFileName) ?
+																	CDib::IsJPEG(sDstFileName) ?
 																	m_nJpegQuality :
 																	m_nTiffJpegQuality,
 																	m_bForceJpegQuality,
@@ -318,7 +318,7 @@ int CBatchProcDlg::CProcessThread::Work()
 				else
 				{
 					// Special Processing for Jpeg Files
-					if (::IsJPEG(sDstFileName))
+					if (CDib::IsJPEG(sDstFileName))
 					{
 						JpegProcessing(	(nShrinkPictureRes == 1) ? TRUE : FALSE,
 										sDstFileName,
@@ -326,7 +326,7 @@ int CBatchProcDlg::CProcessThread::Work()
 					}
 
 					// Special Processing for Tiff Files
-					if (::IsTIFF(sDstFileName))
+					if (CDib::IsTIFF(sDstFileName))
 					{
 						TiffProcessing(sDstFileName);
 					}
@@ -461,7 +461,7 @@ void CBatchProcDlg::CProcessThread::CloseOutputFile(bool bException)
 			m_pAnimGifSave = NULL;
 		}
 	}
-	else if (::IsTIFF(m_pDlg->m_sOutputFileName))
+	else if (CDib::IsTIFF(m_pDlg->m_sOutputFileName))
 	{
 		if (m_TiffOutFile)
 		{
@@ -548,7 +548,7 @@ void CBatchProcDlg::CProcessThread::AddToOutputFile(int nFilesCount,
 			if (!m_pAnimGifSave->SaveAsAnimGIF(&m_Dib, ::Round(1000.0 / m_dFrameRate)))
 				throw (int)0;
 		}
-		else if (::IsTIFF(m_pDlg->m_sOutputFileName))
+		else if (CDib::IsTIFF(m_pDlg->m_sOutputFileName))
 		{
 			AddToOutputTiff(nFilesCount,
 							sFileName,
@@ -568,7 +568,7 @@ void CBatchProcDlg::CProcessThread::AddToOutputTiff(int nFilesCount,
 													CString sInFileName,
 													CString sOutFileName)
 {
-	if (::IsTIFF(sInFileName))
+	if (CDib::IsTIFF(sInFileName))
 	{
 		if (m_bTiffForceCompression)
 		{
@@ -629,7 +629,7 @@ void CBatchProcDlg::CProcessThread::AddToOutputTiff(int nFilesCount,
 
 		// Decide about the Compression Type
 		int nCompression = m_nTiffCompression;
-		if (::IsTIFF(sInFileName) && !m_bTiffForceCompression)
+		if (CDib::IsTIFF(sInFileName) && !m_bTiffForceCompression)
 			nCompression = m_Dib.m_FileInfo.m_nCompression;
 
 		// Save Multi-Page TIFF
@@ -679,7 +679,7 @@ void CBatchProcDlg::CProcessThread::AddToOutputPdf(	int nFilesCount,
 													CString sInFileName,
 													CString sOutFileName)
 {
-	if (::IsTIFF(sInFileName))
+	if (CDib::IsTIFF(sInFileName))
 	{
 		if (m_bTiffForceCompression)
 		{
@@ -759,7 +759,7 @@ void CBatchProcDlg::CProcessThread::AddToOutputPdf(	int nFilesCount,
 
 		// Decide about the Compression Type
 		int nCompression = m_nTiffCompression;
-		if (::IsTIFF(sInFileName) && !m_bTiffForceCompression)
+		if (CDib::IsTIFF(sInFileName) && !m_bTiffForceCompression)
 			nCompression = m_Dib.m_FileInfo.m_nCompression;
 
 		// Save Multi-Page TIFF
@@ -1908,7 +1908,7 @@ void CBatchProcDlg::OnButtonDstFile()
 		{
 			fd.m_ofn.nFilterIndex = 2;
 		}
-		else if (::IsTIFFExt(defextension))
+		else if (CDib::IsTIFFExt(defextension))
 		{
 			fd.m_ofn.nFilterIndex = 3;
 		}

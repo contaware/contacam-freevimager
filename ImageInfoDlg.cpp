@@ -409,12 +409,12 @@ void CImageInfoDlg::SetEditMetadataText()
 	BOOL bEnableIptc = FALSE;
 
 	// Enable Comment
-	if (::IsJPEG(m_pDoc->m_sFileName) ||
+	if (CDib::IsJPEG(m_pDoc->m_sFileName) ||
 		::GetFileExt(m_pDoc->m_sFileName) == _T(".gif"))
 		bEnableComment = TRUE;
 
 	// Enable Iptc
-	if (::IsJPEG(m_pDoc->m_sFileName) || ::IsTIFF(m_pDoc->m_sFileName))
+	if (CDib::IsJPEG(m_pDoc->m_sFileName) || CDib::IsTIFF(m_pDoc->m_sFileName))
 		bEnableIptc = TRUE;
 
 	switch (m_nMetadataType)
@@ -840,7 +840,7 @@ BOOL CImageInfoDlg::SaveMetadata()
 	// Save Comment
 	if (m_sOrigComment != m_sCurrentComment)
 	{
-		if (::IsJPEG(m_pDoc->m_sFileName))
+		if (CDib::IsJPEG(m_pDoc->m_sFileName))
 		{
 			BeginWaitCursor();
 
@@ -930,7 +930,7 @@ BOOL CImageInfoDlg::SaveMetadata()
 	// may be cleared but the auto sync. of Keywords or Supplemental
 	// Categories could have set the metadata edit box with the merged
 	// Keywords or Supplemental Categories.
-	if (::IsJPEG(m_pDoc->m_sFileName))
+	if (CDib::IsJPEG(m_pDoc->m_sFileName))
 	{
 		BeginWaitCursor();
 
@@ -1022,7 +1022,7 @@ BOOL CImageInfoDlg::SaveMetadata()
 			return FALSE;
 		}
 	}
-	else if (::IsTIFF(m_pDoc->m_sFileName))
+	else if (CDib::IsTIFF(m_pDoc->m_sFileName))
 	{
 		BeginWaitCursor();
 
@@ -1238,12 +1238,12 @@ BOOL CImageInfoDlg::ExportXmp(LPCTSTR lpszFileName)
 	{
 		CMetadata Metadata;
 		Metadata.m_IptcFromXmpInfo = m_CurrentIptc;
-		if (::IsTIFF(m_pDoc->m_sFileName))
+		if (CDib::IsTIFF(m_pDoc->m_sFileName))
 		{
 			if (!Metadata.UpdateXmpData(_T("image/tiff")))
 				return FALSE;
 		}
-		else if (::IsJPEG(m_pDoc->m_sFileName))
+		else if (CDib::IsJPEG(m_pDoc->m_sFileName))
 		{
 			if (!Metadata.UpdateXmpData(_T("image/jpeg")))
 				return FALSE;
@@ -2562,7 +2562,7 @@ void CImageInfoDlg::UpdateMetadata()
 	m_pDoc->m_bMetadataModified = FALSE;
 
 	// Jpeg
-	if (::IsJPEG(m_pDoc->m_sFileName))
+	if (CDib::IsJPEG(m_pDoc->m_sFileName))
 	{
 		CString sJpegComment = ::FromUTF8(	(const unsigned char*)(LPCSTR)(m_pDoc->m_pDib->GetMetadata()->m_sJpegComment),
 											m_pDoc->m_pDib->GetMetadata()->m_sJpegComment.GetLength());
@@ -2573,7 +2573,7 @@ void CImageInfoDlg::UpdateMetadata()
 	}
 
 	// Tiff
-	if (::IsTIFF(m_pDoc->m_sFileName))
+	if (CDib::IsTIFF(m_pDoc->m_sFileName))
 	{
 		GetIptc();
 	}

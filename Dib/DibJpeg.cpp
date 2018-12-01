@@ -49,6 +49,20 @@ static void jpeg_error_load(j_common_ptr pcinfo)
 	throw (int)JPEG_E_LIBJPEG_LOAD;
 }
 
+BOOL CDib::IsJPEGExt(CString sExt)
+{
+	sExt.TrimLeft(_T('.'));
+	return ((sExt.CompareNoCase(_T("jpg")) == 0) ||
+			(sExt.CompareNoCase(_T("jpeg")) == 0) ||
+			(sExt.CompareNoCase(_T("jpe")) == 0) ||
+			(sExt.CompareNoCase(_T("thm")) == 0));
+}
+
+BOOL CDib::IsJPEG(const CString& sFileName)
+{
+	return IsJPEGExt(::GetFileExt(sFileName));
+}
+
 // Possible values for ScaleFactore are : 1,2,4,8
 // (example: 4 means that the image width and height are divided by 4)
 // This scaling feature is nice to display Thumbnails
@@ -3157,7 +3171,7 @@ BOOL CDib::JPEGGetPixelAlignment(LPCTSTR lpszPathName,
 
 BOOL CDib::JPEGLoadMetadata(LPCTSTR lpszPathName)
 {
-	if (!::IsJPEG(lpszPathName))
+	if (!IsJPEG(lpszPathName))
 		return FALSE;
 
 	// Open File
@@ -3467,7 +3481,7 @@ BOOL CDib::JPEGWriteSection(int SectionType,						// Like: M_JFIF, M_EXIF_XMP or
 							LPBYTE pData,
 							BOOL bShowMessageBoxOnError)
 {
-	if (::IsJPEG(szFileName))
+	if (IsJPEG(szFileName))
 	{
 		// Temporary File
 		CString sTempFileName = ::MakeTempFileName(szTempDir, szFileName);
@@ -3536,7 +3550,7 @@ BOOL CDib::AddEXIFThumbnail(LPCTSTR lpszInPathName,
 	try
 	{
 		// Check filenames
-		if (!::IsJPEG(lpszInPathName) || !::IsJPEG(lpszOutPathName))
+		if (!IsJPEG(lpszInPathName) || !IsJPEG(lpszOutPathName))
 			throw 0;
 
 		// Is Out File Read-Only?
@@ -3861,7 +3875,7 @@ BOOL CDib::RemoveEXIFThumbnail(	LPCTSTR lpszInPathName,
 	try
 	{
 		// Check filenames
-		if (!::IsJPEG(lpszInPathName) || !::IsJPEG(lpszOutPathName))
+		if (!IsJPEG(lpszInPathName) || !IsJPEG(lpszOutPathName))
 			throw 0;
 
 		// Is Out File Read-Only?
@@ -4054,7 +4068,7 @@ BOOL CDib::JPEGAddSection(	int SectionType,
 	try
 	{
 		// Check filenames
-		if (!::IsJPEG(lpszInPathName) || !::IsJPEG(lpszOutPathName))
+		if (!IsJPEG(lpszInPathName) || !IsJPEG(lpszOutPathName))
 			throw 0;
 
 		// Is Out File Read-Only?
@@ -4240,7 +4254,7 @@ BOOL CDib::JPEGReplaceSection(	int SectionType,
 	try
 	{
 		// Check filenames
-		if (!::IsJPEG(lpszInPathName) || !::IsJPEG(lpszOutPathName))
+		if (!IsJPEG(lpszInPathName) || !IsJPEG(lpszOutPathName))
 			throw 0;
 
 		// Is Out File Read-Only?
@@ -4443,7 +4457,7 @@ BOOL CDib::JPEGRemoveSection(	int SectionType,
 	try
 	{
 		// Check filenames
-		if (!::IsJPEG(lpszInPathName) || !::IsJPEG(lpszOutPathName))
+		if (!IsJPEG(lpszInPathName) || !IsJPEG(lpszOutPathName))
 			throw 0;
 
 		// Is Out File Read-Only?
@@ -4606,7 +4620,7 @@ BOOL CDib::JPEGRemoveSections(	int SectionTypeStart,
 	try
 	{
 		// Check filenames
-		if (!::IsJPEG(lpszInPathName) || !::IsJPEG(lpszOutPathName))
+		if (!IsJPEG(lpszInPathName) || !IsJPEG(lpszOutPathName))
 			throw 0;
 
 		// Is Out File Read-Only?
@@ -4736,7 +4750,7 @@ BOOL CDib::JPEGWriteEXIFInplace(LPCTSTR lpszPathName)
 {
 	const bool bDoWrite = true;
 
-	if (!::IsJPEG(lpszPathName))
+	if (!IsJPEG(lpszPathName))
 		return FALSE;
 
 	DWORD dwAttrib = ::GetFileAttributes(lpszPathName);
@@ -4830,7 +4844,7 @@ BOOL CDib::CreatePreviewDibFromJPEG(	LPCTSTR lpszPathName,
 		return FALSE;
 
 	// Check for jpg filename
-	if (!::IsJPEG(lpszPathName))
+	if (!IsJPEG(lpszPathName))
 		return FALSE;
 
 	// Load header to get the picture size and orientation
@@ -4937,7 +4951,7 @@ BOOL CDib::CreateThumbnailDibFromJPEG(	LPCTSTR lpszPathName,
 		return FALSE;
 
 	// Check for jpg filename
-	if (!::IsJPEG(lpszPathName))
+	if (!IsJPEG(lpszPathName))
 		return FALSE;
 
 	// Load header to get the picture size and orientation
@@ -5039,7 +5053,7 @@ BOOL CDib::JPEGSetOrientationInplace(LPCTSTR szFileName,
 									int nNewOrientation,
 									BOOL bShowMessageBoxOnError)
 {
-	if (::IsJPEG(szFileName))
+	if (IsJPEG(szFileName))
 	{
 		CDib Dib;
 		Dib.SetShowMessageBoxOnError(bShowMessageBoxOnError);
@@ -5061,7 +5075,7 @@ BOOL CDib::JPEGSetOleDateTimeInplace(	LPCTSTR szFileName,
 										const COleDateTime& Time,
 										BOOL bShowMessageBoxOnError)
 {
-	if (::IsJPEG(szFileName))
+	if (IsJPEG(szFileName))
 	{
 		CDib Dib;
 		Dib.SetShowMessageBoxOnError(bShowMessageBoxOnError);
@@ -5081,7 +5095,7 @@ BOOL CDib::JPEGSetDateTimeInplace(	LPCTSTR szFileName,
 									const CTime& Time,
 									BOOL bShowMessageBoxOnError)
 {
-	if (::IsJPEG(szFileName))
+	if (IsJPEG(szFileName))
 	{
 		CDib Dib;
 		Dib.SetShowMessageBoxOnError(bShowMessageBoxOnError);
@@ -5103,7 +5117,7 @@ BOOL CDib::JPEGAutoOrientate(	LPCTSTR szFileName,
 								CWnd* pProgressWnd/*=NULL*/,
 								BOOL bProgressSend/*=TRUE*/)
 {
-	if (::IsJPEG(szFileName))
+	if (IsJPEG(szFileName))
 	{
 		CDib Dib;
 		Dib.SetShowMessageBoxOnError(bShowMessageBoxOnError);
@@ -5198,7 +5212,7 @@ BOOL CDib::JPEGWriteComment(LPCTSTR szFileName,
 							LPCSTR szComment,
 							BOOL bShowMessageBoxOnError)
 {
-	if (::IsJPEG(szFileName))
+	if (IsJPEG(szFileName))
 	{
 		// Temporary File
 		CString sTempFileName = ::MakeTempFileName(szTempDir, szFileName);

@@ -3127,7 +3127,7 @@ BOOL CDib::LoadImage(LPCTSTR lpszPathName,
 						bProgressSend,
 						pThread);
 	}
-	else if (::IsJPEGExt(sExt))
+	else if (IsJPEGExt(sExt))
 	{
 		if (bOnlyHeader || (nMaxSizeX <= 0 && nMaxSizeY <= 0))
 			return LoadJPEG(lpszPathName,				// Loads jpg as BMI + bits
@@ -3171,7 +3171,7 @@ BOOL CDib::LoadImage(LPCTSTR lpszPathName,
 				return TRUE;
 		}
 	}
-	else if (::IsTIFFExt(sExt))
+	else if (IsTIFFExt(sExt))
 	{
 		return LoadTIFF(lpszPathName,					// Loads tif as BMI + bits
 						nPageNum,						// Load the given page

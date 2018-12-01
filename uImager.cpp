@@ -1627,7 +1627,7 @@ BOOL CUImagerApp::PasteToFile(LPCTSTR lpszFileName, COLORREF crBackgroundColor/*
 	if (!Dib.IsValid())
 		Dib.AllocateBits(32, BI_RGB, 1, 1, crBackgroundColor);
 	CString sExt = ::GetFileExt(lpszFileName);
-	if (::IsJPEGExt(sExt))
+	if (CDib::IsJPEGExt(sExt))
 	{
 		if (Dib.HasAlpha() && Dib.GetBitCount() == 32)
 		{
@@ -1638,7 +1638,7 @@ BOOL CUImagerApp::PasteToFile(LPCTSTR lpszFileName, COLORREF crBackgroundColor/*
 	}
 	else if (sExt == _T(".png"))
 		return CPictureDoc::SavePNG(lpszFileName, &Dib, FALSE);
-	else if (::IsTIFFExt(sExt))
+	else if (CDib::IsTIFFExt(sExt))
 		return Dib.SaveTIFF(lpszFileName, COMPRESSION_LZW);
 	else if (sExt == _T(".gif"))
 		return CPictureDoc::SaveGIF(lpszFileName, &Dib);
@@ -2833,8 +2833,8 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 		(CDib::IsAnimatedGIF(szSrcFileName, FALSE)						||
 
 		(!bShrinkPictureSize											&&
-		!(::IsJPEG(szSrcFileName) && bForceJpegQuality)					&&
-		!(::IsTIFF(szSrcFileName) && bTiffForceCompression))))
+		!(CDib::IsJPEG(szSrcFileName) && bForceJpegQuality)				&&
+		!(CDib::IsTIFF(szSrcFileName) && bTiffForceCompression))))
 	{
 		if (!::CopyFile(szSrcFileName, szDstFileName, FALSE))
 		{
@@ -2860,8 +2860,8 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 	// Work On All Pages of a Multi-Page TIFF?
 	if (bWorkOnAllPages							&&
 		(SrcDib.m_FileInfo.m_nImageCount > 1)	&&
-		::IsTIFF(szSrcFileName)					&&
-		::IsTIFF(szDstFileName))
+		CDib::IsTIFF(szSrcFileName)				&&
+		CDib::IsTIFF(szDstFileName))
 	{
 		return ShrinkPictureMultiPage(	szSrcFileName,
 										szDstFileName,
@@ -2952,8 +2952,8 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 			// - Not Jpeg with Force Quality
 			//   and not Tiff with Force Compression
 			//   and Same Extension
-			if (!(::IsJPEG(szSrcFileName) && bForceJpegQuality) &&
-				!(::IsTIFF(szSrcFileName) && bTiffForceCompression) &&
+			if (!(CDib::IsJPEG(szSrcFileName) && bForceJpegQuality) &&
+				!(CDib::IsTIFF(szSrcFileName) && bTiffForceCompression) &&
 				(::GetFileExt(szSrcFileName) == ::GetFileExt(szDstFileName)))
 			{
 				if (!::CopyFile(szSrcFileName, szDstFileName, FALSE))
@@ -3013,7 +3013,7 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 	CString sDstExt = ::GetFileExt(szDstFileName);
 	sSrcExt.MakeLower();
 	sDstExt.MakeLower();
-	if (::IsJPEGExt(sDstExt))
+	if (CDib::IsJPEGExt(sDstExt))
 	{
 		// Flatten
 		if (pSaveDib->HasAlpha() && pSaveDib->GetBitCount() == 32)
@@ -3022,7 +3022,7 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 			pSaveDib->SetAlpha(FALSE);
 		}
 
-		if (::IsJPEGExt(sSrcExt))
+		if (CDib::IsJPEGExt(sSrcExt))
 		{
 			if (!pSaveDib->SaveJPEG(szDstFileName,
 									dwJpegQuality,
@@ -3055,9 +3055,9 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 				return 0;
 		}
 	}
-	else if (::IsTIFFExt(sDstExt))
+	else if (CDib::IsTIFFExt(sDstExt))
 	{
-		if (::IsTIFFExt(sSrcExt))
+		if (CDib::IsTIFFExt(sSrcExt))
 		{
 			if (SrcDib.m_FileInfo.m_nImageCount > 1)
 			{
@@ -3325,9 +3325,9 @@ CString CUImagerApp::ShrinkGetDstExt(CString sSrcExt)
 
 	if ((sSrcExt == _T("bmp")) || (sSrcExt == _T("dib")) ||
 		(sSrcExt == _T("emf")) || (sSrcExt == _T("pcx")) ||
-		::IsJPEGExt(sSrcExt))
+		CDib::IsJPEGExt(sSrcExt))
 		return _T(".jpg");
-	else if (::IsTIFFExt(sSrcExt))
+	else if (CDib::IsTIFFExt(sSrcExt))
 		return _T(".tif");
 	else if (sSrcExt == _T("gif"))
 		return _T(".gif");
@@ -3856,8 +3856,8 @@ BOOL CUImagerApp::IsSupportedPictureFile(CString sFileName)
 		(sExt == _T(".png"))	||
 		(sExt == _T(".pcx"))	||
 		(sExt == _T(".gif"))	||
-		::IsJPEGExt(sExt)		||
-		::IsTIFFExt(sExt))
+		CDib::IsJPEGExt(sExt)	||
+		CDib::IsTIFFExt(sExt))
 		return TRUE;
 	else
 		return FALSE;
@@ -4390,9 +4390,9 @@ BOOL CUImagerApp::AssociateFileType(CString sExt)
 		::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",17"));
 	else if (sExtNoPoint == _T("gif"))
 		::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",18"));
-	else if (::IsJPEGExt(sExtNoPoint))
+	else if (CDib::IsJPEGExt(sExtNoPoint))
 		::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",19"));
-	else if (::IsTIFFExt(sExtNoPoint))
+	else if (CDib::IsTIFFExt(sExtNoPoint))
 		::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",20"));
 	else if (sExtNoPoint == _T("png"))
 		::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",21"));

@@ -105,6 +105,11 @@ void InitHelpers()
 	}
 }
 
+int SystemDPIScale(int n)
+{
+	return MulDiv(n, g_nSystemDPI, 96);
+}
+
 /*
 c:\mydir1\mydir2\hello.jpeg
 ---------------------------
@@ -2211,6 +2216,18 @@ ULONGLONG GetDiskUsedSpace(LPCTSTR lpszPath)
 		return 0;
 	else
 		return TotalNumberOfBytesAvailableToCaller.QuadPart - FreeBytesAvailableToCaller.QuadPart;
+}
+
+BOOL IsNumeric(const CString& s)
+{
+	if (s.IsEmpty())
+		return FALSE;
+	for (int i = 0; i < s.GetLength(); i++)
+	{
+		if (!_istdigit(s[i])) // if not 0 – 9
+			return FALSE;
+	}
+	return TRUE;
 }
 
 void MakeLineBreakCR(CString& s)
