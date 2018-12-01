@@ -8,6 +8,7 @@
 #include "BrowseDlg.h"
 #include "SettingsDlgVideoDeviceDoc.h"
 #include "NoVistaFileDlg.h"
+#include "GetDirContentSize.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -128,7 +129,9 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsInit()
 			{
 				_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
 				CString sContaCamServicePath = CString(szDrive) + CString(szDir) + SERVICENAME_EXT;
-				::ExecHiddenApp(sContaCamServicePath, _T("-u"), TRUE, CONTACAMSERVICE_TIMEOUT);
+				HANDLE h = ::ExecApp(sContaCamServicePath, _T("-u"), _T(""), FALSE, TRUE, CONTACAMSERVICE_TIMEOUT);
+				if (h)
+					CloseHandle(h);
 			}
 		}
 	}

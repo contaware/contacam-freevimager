@@ -934,103 +934,6 @@ BOOL DeleteDir(LPCTSTR szDirName)
 		return FALSE;
 }
 
-// Recursively Calculate the Dir Tree Size,
-// optionally returns the files count
-#define GETDIRCONTENTSIZE_FREE \
-if (pInfo) delete pInfo;\
-if (name) delete [] name;
-ULARGE_INTEGER GetDirContentSize(LPCTSTR szDirName,
-								 int* pFilesCount/*=NULL*/,
-								 CWorkerThread* pThread/*=NULL*/)
-{
-	HANDLE hp;
-	BOOL bBackslashEnding;
-	ULARGE_INTEGER Size, SizeReturned;
-	Size.QuadPart = 0;
-	SizeReturned.QuadPart = 0;
-
-	// Check
-	if (szDirName == NULL || _tcslen(szDirName) == 0)
-		return Size;
-
-	// Allocate on heap because we are a recursive function,
-	// using the stack can overflow the stack!
-	WIN32_FIND_DATA* pInfo = NULL;
-	TCHAR* name = NULL;
-	pInfo = new WIN32_FIND_DATA;
-	if (!pInfo)
-	{
-		GETDIRCONTENTSIZE_FREE;
-		return Size;
-	}
-	name = new TCHAR[MAX_PATH];
-	if (!name)
-	{
-		GETDIRCONTENTSIZE_FREE;
-		return Size;
-	}
-	if (_tcslen(szDirName) > MAX_PATH - 5) // Make sure we have some chars left to add '\\' and '*' and to avoid an auto-recursion!
-	{
-		GETDIRCONTENTSIZE_FREE;
-		return Size;
-	}
-	if (szDirName[_tcslen(szDirName) - 1] == _T('\\'))
-	{
-		bBackslashEnding = TRUE;
-		_sntprintf(name, MAX_PATH - 1, _T("%s*"), szDirName);
-		name[MAX_PATH - 1] = _T('\0');
-	}
-	else
-	{
-		bBackslashEnding = FALSE;
-		_sntprintf(name, MAX_PATH - 1, _T("%s\\*"), szDirName);
-		name[MAX_PATH - 1] = _T('\0');
-	}
-    hp = FindFirstFile(name, pInfo);
-    if (!hp || (hp == INVALID_HANDLE_VALUE))
-	{
-		GETDIRCONTENTSIZE_FREE;
-        return Size;
-	}
-    do
-    {
-		// Do Exit?
-		if (pThread && pThread->DoExit())
-			break;
-        if (pInfo->cFileName[1] == _T('\0') &&
-			pInfo->cFileName[0] == _T('.'))
-            continue;
-        else if (	pInfo->cFileName[2] == _T('\0')	&&
-					pInfo->cFileName[1] == _T('.')	&&
-					pInfo->cFileName[0] == _T('.'))
-            continue;
-		if (bBackslashEnding)
-			_sntprintf(name, MAX_PATH - 1, _T("%s%s"), szDirName, pInfo->cFileName);
-		else
-			_sntprintf(name, MAX_PATH - 1, _T("%s\\%s"), szDirName, pInfo->cFileName);
-		name[MAX_PATH - 1] = _T('\0');
-		if (pInfo->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-		{
-			SizeReturned = GetDirContentSize(name, pFilesCount, pThread);
-		}
-		else
-		{
-			SizeReturned.QuadPart = (((ULONGLONG)pInfo->nFileSizeHigh) << 32) +
-									(ULONGLONG)pInfo->nFileSizeLow;
-			if (pFilesCount)
-				(*pFilesCount)++;
-		}
-		Size.QuadPart += SizeReturned.QuadPart;
-    }
-    while (FindNextFile(hp, pInfo));
-
-	// Clean-up
-	FindClose(hp);
-	GETDIRCONTENTSIZE_FREE;
-	
-	return Size;
-}
-
 // Shell deletion
 BOOL DeleteToRecycleBin(LPCTSTR szName)
 {
@@ -1050,6 +953,25 @@ BOOL DeleteToRecycleBin(LPCTSTR szName)
 	FileOp.wFunc = FO_DELETE;
 
 	return (SHFileOperation(&FileOp) == 0);
+}
+
+void DeleteFileWildcard(LPCTSTR lpFileName)
+{
+	CString sDriveAndDir = GetDriveAndDirName(lpFileName);
+	WIN32_FIND_DATA Info;
+	HANDLE hFileSearch = FindFirstFile(lpFileName, &Info);
+	if (hFileSearch && hFileSearch != INVALID_HANDLE_VALUE)
+	{
+		// Delete found files
+		do
+		{
+			if ((Info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != FILE_ATTRIBUTE_DIRECTORY)
+				DeleteFile(sDriveAndDir + Info.cFileName);
+		} while (FindNextFile(hFileSearch, &Info));
+
+		// Close
+		FindClose(hFileSearch);
+	}
 }
 
 CString FormatIntegerNumber(const CString& sNumber)
@@ -1545,37 +1467,38 @@ int EnumKillProcByName(const CString& sProcessName, BOOL bKill/*=FALSE*/)
 	return iCount;
 }
 
-BOOL ExecHiddenApp(	const CString& sFileName,
-					const CString& sParams/*=_T("")*/,
-					BOOL bWaitTillDone/*=FALSE*/,
-					DWORD dwWaitMillisecondsTimeout/*=INFINITE*/)
+HANDLE ExecApp(	const CString& sFileName,
+				const CString& sParams/*=_T("")*/,
+				const CString& sStartDirectory/*=_T("")*/,
+				BOOL bShow/*=TRUE*/,
+				BOOL bWaitTillDone/*=FALSE*/,
+				DWORD dwWaitMillisecondsTimeout/*=INFINITE*/)
 {
 	SHELLEXECUTEINFO sei;
 	memset(&sei, 0, sizeof(sei));
 	sei.cbSize = sizeof(sei);
 	sei.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
-	sei.nShow = SW_HIDE;
+	sei.nShow = bShow ? SW_SHOW : SW_HIDE;
 	sei.lpFile = sFileName;
-	CString sDir = GetDriveAndDirName(sFileName);
-	sei.lpDirectory = sDir;
 	sei.lpParameters = sParams;
-	BOOL res = ShellExecuteEx(&sei);
-	if (res)
+	CString sDir(GetDriveAndDirName(sFileName));
+	if (sStartDirectory.IsEmpty())
+		sei.lpDirectory = sDir;
+	else
+		sei.lpDirectory = sStartDirectory;
+	if (ShellExecuteEx(&sei) && bWaitTillDone && sei.hProcess)
+		WaitForSingleObject(sei.hProcess, dwWaitMillisecondsTimeout);
+	return sei.hProcess;
+}
+
+void KillApp(HANDLE& hProcess)
+{
+	if (hProcess)
 	{
-		if (bWaitTillDone)
-		{
-			if (sei.hProcess)
-			{
-				if (WaitForSingleObject(sei.hProcess, dwWaitMillisecondsTimeout) != WAIT_OBJECT_0)
-					res = FALSE;
-			}
-			else
-				res = FALSE;
-		}
+		TerminateProcess(hProcess, 0);
+		CloseHandle(hProcess); // close handle to avoid ERROR_NO_SYSTEM_RESOURCES
+		hProcess = NULL;
 	}
-	if (sei.hProcess)
-		CloseHandle(sei.hProcess);
-	return res;
 }
 
 UINT GetProfileIniInt(LPCTSTR lpszSection, LPCTSTR lpszEntry, int nDefault, LPCTSTR lpszProfileName)
@@ -2271,28 +2194,23 @@ ULONGLONG GetDiskAvailableFreeSpace(LPCTSTR lpszPath)
 		return FreeBytesAvailableToCaller.QuadPart;
 }
 
-CString FileNameToMime(LPCTSTR lpszFileName)
+ULONGLONG GetDiskUsedSpace(LPCTSTR lpszPath)
 {
-	CString sExt = GetFileExt(lpszFileName);
+	// Must include trailing backslash and does not have to specify the root dir
+	CString sPath(lpszPath);
+	sPath.TrimRight(_T('\\'));
+	sPath += _T("\\");
 
-	if (IsJPEGExt(sExt))
-		return _T("image/jpeg");
-	else if (IsTIFFExt(sExt))
-		return _T("image/tiff");
-	else if (sExt == _T(".bmp")	|| sExt == _T(".dib"))
-		return _T("image/bmp");
-	else if (sExt == _T(".gif"))
-		return _T("image/gif");
-	else if (sExt == _T(".png"))
-		return _T("image/png");
-	else if (sExt == _T(".avi")	|| sExt == _T(".divx"))
-		return _T("video/avi");
-	else if (sExt == _T(".mp4"))
-		return _T("video/mp4");
-	else if (sExt == _T(".mov"))
-		return _T("video/quicktime");
+	// Receives the number of free bytes on disk available to caller
+	ULARGE_INTEGER FreeBytesAvailableToCaller;
+	ULARGE_INTEGER TotalNumberOfBytesAvailableToCaller;
+	if (!GetDiskFreeSpaceEx(sPath,
+		&FreeBytesAvailableToCaller,
+		&TotalNumberOfBytesAvailableToCaller,
+		NULL))
+		return 0;
 	else
-		return _T(""); 
+		return TotalNumberOfBytesAvailableToCaller.QuadPart - FreeBytesAvailableToCaller.QuadPart;
 }
 
 void MakeLineBreakCR(CString& s)
@@ -2709,25 +2627,6 @@ CString GetUuidCString()
 		return _T("");
 }
 
-int __cdecl CompareNatural(const CString* pstr1, const CString* pstr2)
-{
-	if (pstr1 == NULL || pstr2 == NULL)
-		return 0;
-	LPCWSTR pwstr1 = (LPCWSTR)(*pstr1);
-	LPCWSTR pwstr2 = (LPCWSTR)(*pstr2);
-	return StrCmpLogicalW(pwstr1, pwstr2);
-}
-
-BOOL InStringArray(const CString& s, const CStringArray& arr)
-{
-	for (int i = 0 ; i < arr.GetSize() ; i++)
-	{
-		if (s.CompareNoCase(arr[i]) == 0)
-			return TRUE;
-	}
-	return FALSE;
-}
-
 BOOL GetSafeCursorPos(LPPOINT lpPoint)
 {
 	if (lpPoint)
@@ -2833,67 +2732,6 @@ int DrawBigText(HDC hDC,
 	DeleteObject(hFont);
 
 	return nUsedHeightPix;
-}
-
-BOOL CalcShrink(	DWORD dwOrigWidth,
-					DWORD dwOrigHeight,
-					DWORD dwMaxSize,
-					BOOL bMaxSizePercent,
-					DWORD& dwShrinkWidth,
-					DWORD& dwShrinkHeight)
-{
-	// Init
-	BOOL bDoShrink = FALSE;
-	dwShrinkWidth = dwOrigWidth;
-	dwShrinkHeight = dwOrigHeight;
-
-	// Check
-	if (dwOrigWidth == 0 || dwOrigHeight == 0)
-		return FALSE;
-
-	// Calc. aspect ratio
-	double dAspectRatio = (double)dwOrigWidth / (double)dwOrigHeight;
-
-	// Landscape
-	if (dwOrigWidth > dwOrigHeight)
-	{
-		// From Percent to Pixels
-		DWORD dwMaxSizePercent;
-		if (bMaxSizePercent)
-		{
-			dwMaxSizePercent = dwMaxSize;
-			dwMaxSize = (DWORD)Round(dwMaxSize / 100.0 * dwOrigWidth);
-		}
-		
-		// Resize to dwMaxSize x XYZ
-		if (dwOrigWidth > dwMaxSize)
-		{
-			bDoShrink = TRUE;
-			dwShrinkWidth = dwMaxSize;
-			dwShrinkHeight = (DWORD)Round(dwMaxSize / dAspectRatio);
-		}
-	}
-	// Portrait
-	else
-	{
-		// From Percent to Pixels
-		DWORD dwMaxSizePercent;
-		if (bMaxSizePercent)
-		{
-			dwMaxSizePercent = dwMaxSize;
-			dwMaxSize = (DWORD)Round(dwMaxSize / 100.0 * dwOrigHeight);
-		}
-
-		// Resize to XYZ x dwMaxSize
-		if (dwOrigHeight > dwMaxSize)
-		{
-			bDoShrink = TRUE;
-			dwShrinkWidth = (DWORD)Round(dwMaxSize * dAspectRatio);
-			dwShrinkHeight = dwMaxSize;
-		}
-	}
-
-	return bDoShrink;
 }
 
 int GetRevertedPos(CSliderCtrl* pSliderCtrl)

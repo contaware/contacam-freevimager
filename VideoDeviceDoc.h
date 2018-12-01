@@ -638,6 +638,7 @@ public:
 
 	// Frame Tags
 	static CTime CalcTime(DWORD dwUpTime, const CTime& RefTime, DWORD dwRefUpTime);
+	static int ScaleFont(int nWidth, int nHeight, int nMinRefFontSize, int nMinRefWidth, int nMinRefHeight);
 	static void AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime, int nRefFontSize);
 	static void AddFrameCount(CDib* pDib, const CString& sCount, int nRefFontSize);
 	static void AddNoDonationTag(CDib* pDib, int nRefFontSize);

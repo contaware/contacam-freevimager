@@ -664,6 +664,7 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="GetDirContentSize.cpp" />
     <ClCompile Include="GifAnimationThread.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -1307,6 +1308,7 @@
     <ClInclude Include="DxVideoFormatDlg.h" />
     <ClInclude Include="DxVideoInputDlg.h" />
     <ClInclude Include="EnumPrinters.h" />
+    <ClInclude Include="GetDirContentSize.h" />
     <ClInclude Include="GifAnimationThread.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="HelpersAudio.h" />

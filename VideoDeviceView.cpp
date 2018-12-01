@@ -566,9 +566,9 @@ void CVideoDeviceView::OnDraw(CDC* pDC)
 			DrawZones(MemDC.GetSafeHdc());
 
 		// Calc. font size
-		int nMaxFontSize = ::ScaleFont(	rcClient.Width(), rcClient.Height(),
-										pDoc->m_nRefFontSize,
-										FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
+		int nMaxFontSize = CVideoDeviceDoc::ScaleFont(	rcClient.Width(), rcClient.Height(),
+														pDoc->m_nRefFontSize,
+														FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
 
 		// Draw Save progress
 		if (pDoc->m_SaveFrameListThread.GetSaveProgress() < 100)

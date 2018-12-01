@@ -12,6 +12,7 @@
 #include "SaveFileDlg.h"
 #include "Tiff2Pdf.h"
 #include "NoVistaFileDlg.h"
+#include "GetDirContentSize.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

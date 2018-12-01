@@ -130,10 +130,8 @@ extern BOOL MergeDirContent(LPCTSTR szFromDir,
 							int* pFilesCount = NULL);			// optional files count
 extern BOOL DeleteDir(LPCTSTR szDirName);
 extern BOOL DeleteDirContent(LPCTSTR szDirName);
-extern ULARGE_INTEGER GetDirContentSize(LPCTSTR szDirName, 
-										int* pFilesCount = NULL, // optional files count
-										CWorkerThread* pThread = NULL);
 extern BOOL DeleteToRecycleBin(LPCTSTR szName); // delete file or directory
+extern void DeleteFileWildcard(LPCTSTR lpFileName); // delete file only with wildcard (* or ?) in filename.ext part of the full path
 
 // Format Integer Number
 extern CString FormatIntegerNumber(const CString& sNumber);
@@ -241,11 +239,15 @@ extern BOOL KillProcByPID(DWORD dwProcID);
 // returns the number of found processes
 extern int EnumKillProcByName(const CString& sProcessName, BOOL bKill = FALSE);
 
-// Execute an app with hidden window (working for both console and windowed apps)
-extern BOOL ExecHiddenApp(	const CString& sFileName,
-							const CString& sParams = _T(""),
-							BOOL bWaitTillDone = FALSE,
-							DWORD dwWaitMillisecondsTimeout = INFINITE);
+// ShellExecuteEx() given sFileName
+// Attention: always CloseHandle() the returned process handle when != NULL
+extern HANDLE ExecApp(	const CString& sFileName,
+						const CString& sParams = _T(""),
+						const CString& sStartDirectory = _T(""),	// application start directory, if not provided program's directory is used
+						BOOL bShow = TRUE,							// show application window?
+						BOOL bWaitTillDone = FALSE,
+						DWORD dwWaitMillisecondsTimeout = INFINITE);
+extern void KillApp(HANDLE& hProcess);								// after killing the app, the process handle is closed and set to NULL
 
 // Ini file Functions
 extern UINT GetProfileIniInt(LPCTSTR lpszSection, LPCTSTR lpszEntry, int nDefault, LPCTSTR lpszProfileName);
@@ -275,7 +277,13 @@ extern void AlertUser(HWND hWnd);
 // Get the current user name
 extern CString GetUserName();
 
-// Get the local NetBIOS computer name
+/*
+Get the local NetBIOS computer name
+Minimum length 	1
+Maximum length 	15
+Disallowed characters (like for files/folders):
+\ / : * ? " < > |
+*/
 extern CString GetComputerName();
 
 // Get Memory Stats
@@ -288,11 +296,12 @@ extern void GetMemoryStats(	ULONGLONG* pRegions = NULL,
 							ULONGLONG* pMaxCommitted = NULL,
 							double* pFragmentation = NULL);
 
-// Disk total size and available free space.
+// Disk size functions
 // Pass a drive letter (like "c:"), a directory path
-// (it has not to be the root dir) or a UNC path
+// (must not necessarily be the root dir) or a UNC path
 extern ULONGLONG GetDiskTotalSize(LPCTSTR lpszPath);
 extern ULONGLONG GetDiskAvailableFreeSpace(LPCTSTR lpszPath);
+extern ULONGLONG GetDiskUsedSpace(LPCTSTR lpszPath);
 
 // Is it a positive numeric string (0, 1, 2, ...)?
 __forceinline BOOL IsNumeric(const CString& s)
@@ -336,9 +345,6 @@ __forceinline BOOL IsJPEG(const CString& sFileName)
 {
 	return IsJPEGExt(GetFileExt(sFileName));
 }
-
-// File Name to Mime
-extern CString FileNameToMime(LPCTSTR lpszFileName);
 
 // Line-Break Handling
 extern void MakeLineBreakCR(CString& s);
@@ -410,12 +416,6 @@ Note: 'Native' is Little Endian on Microsoft platforms
 extern CString UuidToCString(const UUID* pUuid); // uuid/guid struct to CString
 extern CString GetUuidCString(); // generate a uuid/guid CString
 
-// Natural order string comparision function
-extern int __cdecl CompareNatural(const CString* pstr1, const CString* pstr2);
-
-// Is the given string in the supplied array (case insensitive)?
-extern BOOL InStringArray(const CString& s, const CStringArray& arr);
-
 // On some systems GetCursorPos() fails for addresses > 2GB,
 // better to use GetCursorInfo() which is called by this wrapper
 // (this bug appears to be fixed in Windows 7 and higher)
@@ -423,28 +423,6 @@ extern BOOL GetSafeCursorPos(LPPOINT lpPoint);
 
 // Does the given rectangle intersect a valid monitor?
 extern BOOL IntersectsValidMonitor(LPCRECT lpRect);
-
-// Scale a font size starting from a minimum reference
-__forceinline int ScaleFont(int nWidth, int nHeight,
-							int nMinRefFontSize,
-							int nMinRefWidth, int nMinRefHeight)
-{
-	// Check
-	if (nMinRefWidth <= 0 || nMinRefHeight <= 0)
-		return nMinRefFontSize;
-
-	// Scale
-	double dFactorX = (double)nWidth / nMinRefWidth;
-	if (dFactorX < 1.0)
-		dFactorX = 1.0;
-	double dFactorY = (double)nHeight / nMinRefHeight;
-	if (dFactorY < 1.0)
-		dFactorY = 1.0;
-	if (dFactorX > dFactorY)
-		return Round(nMinRefFontSize * dFactorX);
-	else
-		return Round(nMinRefFontSize * dFactorY);
-}
 
 // Checks whether the given font is available in the system
 extern BOOL IsFontSupported(LPCTSTR szFontFamily);
@@ -462,16 +440,6 @@ extern int DrawBigText(	HDC hDC,
 						UINT uAlign = DT_CENTER | DT_VCENTER,
 						int nBkMode = TRANSPARENT,
 						COLORREF crBkColor = RGB(0,0,0));
-
-// Calculates the shrink size keeping the aspect ratio
-// supply a maximum size in pixels or percent
-// returns TRUE if shrinking is necessary
-extern BOOL CalcShrink(	DWORD dwOrigWidth,
-						DWORD dwOrigHeight,
-						DWORD dwMaxSize,
-						BOOL bMaxSizePercent,
-						DWORD& dwShrinkWidth,
-						DWORD& dwShrinkHeight);
 
 // For vertical sliders
 class CSliderCtrl;

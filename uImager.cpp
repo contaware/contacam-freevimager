@@ -28,6 +28,7 @@
 #include "YuvToYuv.h"
 #include "sinstance.h"
 #include "CEncryptDecrypt.h"
+#include "SortableStringArray.h"
 #include <atlbase.h>
 #include <signal.h>
 #include <gdiplus.h>
@@ -2663,7 +2664,7 @@ void CUImagerApp::ShrinkOpenDocs(LPCTSTR szDstDirPath,
 	BeginWaitCursor();
 
 	// Keep track of all added file names to avoid duplicates
-	CStringArray DstFileNames;
+	CSortableStringArray DstFileNames;
 
 	// Picture Docs
 	CUImagerMultiDocTemplate* curTemplate = GetPictureDocTemplate();
@@ -2688,7 +2689,7 @@ void CUImagerApp::ShrinkOpenDocs(LPCTSTR szDstDirPath,
 		sDstFileName = sDstFileName.Mid(sSrcDirPath.GetLength() + 1);
 		CString sOrigDstFileName = sDstFileName;
 		int i = 0;
-		while (::InStringArray(sDstFileName, DstFileNames))
+		while (DstFileNames.InStringArrayNoCase(sDstFileName))
 			sDstFileName.Format(_T("%s(%d)%s"), ::GetFileNameNoExt(sOrigDstFileName), ++i, ::GetFileExt(sOrigDstFileName));
 		DstFileNames.Add(sDstFileName);
 		sDstFileName = sDstDirPath + _T("\\") + sDstFileName;
@@ -2732,6 +2733,67 @@ void CUImagerApp::ShrinkOpenDocs(LPCTSTR szDstDirPath,
 	// Done
 	EndWaitCursor();
 	::AfxGetMainFrame()->StatusText();
+}
+
+BOOL CUImagerApp::CalcShrink(DWORD dwOrigWidth,
+							DWORD dwOrigHeight,
+							DWORD dwMaxSize,
+							BOOL bMaxSizePercent,
+							DWORD& dwShrinkWidth,
+							DWORD& dwShrinkHeight)
+{
+	// Init
+	BOOL bDoShrink = FALSE;
+	dwShrinkWidth = dwOrigWidth;
+	dwShrinkHeight = dwOrigHeight;
+
+	// Check
+	if (dwOrigWidth == 0 || dwOrigHeight == 0)
+		return FALSE;
+
+	// Calc. aspect ratio
+	double dAspectRatio = (double)dwOrigWidth / (double)dwOrigHeight;
+
+	// Landscape
+	if (dwOrigWidth > dwOrigHeight)
+	{
+		// From Percent to Pixels
+		DWORD dwMaxSizePercent;
+		if (bMaxSizePercent)
+		{
+			dwMaxSizePercent = dwMaxSize;
+			dwMaxSize = (DWORD)Round(dwMaxSize / 100.0 * dwOrigWidth);
+		}
+
+		// Resize to dwMaxSize x XYZ
+		if (dwOrigWidth > dwMaxSize)
+		{
+			bDoShrink = TRUE;
+			dwShrinkWidth = dwMaxSize;
+			dwShrinkHeight = (DWORD)Round(dwMaxSize / dAspectRatio);
+		}
+	}
+	// Portrait
+	else
+	{
+		// From Percent to Pixels
+		DWORD dwMaxSizePercent;
+		if (bMaxSizePercent)
+		{
+			dwMaxSizePercent = dwMaxSize;
+			dwMaxSize = (DWORD)Round(dwMaxSize / 100.0 * dwOrigHeight);
+		}
+
+		// Resize to XYZ x dwMaxSize
+		if (dwOrigHeight > dwMaxSize)
+		{
+			bDoShrink = TRUE;
+			dwShrinkWidth = (DWORD)Round(dwMaxSize * dAspectRatio);
+			dwShrinkHeight = dwMaxSize;
+		}
+	}
+
+	return bDoShrink;
 }
 
 // Return Value:
@@ -2819,12 +2881,12 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 	if (bShrinkPictureSize)
 	{
 		// Calc. Shrink
-		BOOL bDoShrink = ::CalcShrink(	SrcDib.GetWidth(),
-										SrcDib.GetHeight(),
-										dwMaxSize,
-										bMaxSizePercent,
-										dwShrinkWidth,
-										dwShrinkHeight);
+		BOOL bDoShrink = CalcShrink(SrcDib.GetWidth(),
+									SrcDib.GetHeight(),
+									dwMaxSize,
+									bMaxSizePercent,
+									dwShrinkWidth,
+									dwShrinkHeight);
 
 		// Shrink
 		if (bDoShrink)
@@ -3185,12 +3247,12 @@ int CUImagerApp::ShrinkPictureMultiPage(LPCTSTR szSrcFileName,
 		if (bShrinkPictureSize)
 		{
 			// Calc Shrink
-			BOOL bDoShrink = ::CalcShrink(	a[a.GetUpperBound()]->GetWidth(),
-											a[a.GetUpperBound()]->GetHeight(),
-											dwMaxSize,
-											bMaxSizePercent,
-											dwShrinkWidth,
-											dwShrinkHeight);
+			BOOL bDoShrink = CalcShrink(a[a.GetUpperBound()]->GetWidth(),
+										a[a.GetUpperBound()]->GetHeight(),
+										dwMaxSize,
+										bMaxSizePercent,
+										dwShrinkWidth,
+										dwShrinkHeight);
 
 			// Shrink
 			if (bDoShrink)

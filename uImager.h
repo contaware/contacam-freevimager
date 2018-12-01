@@ -630,6 +630,16 @@ protected:
 	// File Type (extension) is not supported
 	void  FileTypeNotSupportedMessageBox(LPCTSTR lpszFileName);
 
+	// Calculates the shrink size keeping the aspect ratio
+	// supply a maximum size in pixels or percent
+	// returns TRUE if shrinking is necessary
+	static BOOL CalcShrink(	DWORD dwOrigWidth,
+							DWORD dwOrigHeight,
+							DWORD dwMaxSize,
+							BOOL bMaxSizePercent,
+							DWORD& dwShrinkWidth,
+							DWORD& dwShrinkHeight);
+
 	// Return Value:
 	// 0  : Error
 	// 1  : Ok

@@ -5,6 +5,7 @@
 #include "uimager.h"
 #include "HostPortDlg.h"
 #include "VideoDeviceDoc.h"
+#include "SortableStringArray.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

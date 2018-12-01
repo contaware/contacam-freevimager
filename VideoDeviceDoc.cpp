@@ -19,6 +19,7 @@
 #include "Psapi.h"
 #include "NoVistaFileDlg.h"
 #include "YuvToYuv.h"
+#include "GetDirContentSize.h"
 #include <random>
 
 #ifdef _DEBUG
@@ -6419,6 +6420,28 @@ CTime CVideoDeviceDoc::CalcTime(DWORD dwUpTime, const CTime& RefTime, DWORD dwRe
 	}
 }
 
+// Scale a font size starting from a minimum reference
+int CVideoDeviceDoc::ScaleFont(	int nWidth, int nHeight,
+								int nMinRefFontSize,
+								int nMinRefWidth, int nMinRefHeight)
+{
+	// Check
+	if (nMinRefWidth <= 0 || nMinRefHeight <= 0)
+		return nMinRefFontSize;
+
+	// Scale
+	double dFactorX = (double)nWidth / nMinRefWidth;
+	if (dFactorX < 1.0)
+		dFactorX = 1.0;
+	double dFactorY = (double)nHeight / nMinRefHeight;
+	if (dFactorY < 1.0)
+		dFactorY = 1.0;
+	if (dFactorX > dFactorY)
+		return Round(nMinRefFontSize * dFactorX);
+	else
+		return Round(nMinRefFontSize * dFactorY);
+}
+
 void CVideoDeviceDoc::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime, int nRefFontSize)
 {
 	// Check
@@ -6433,7 +6456,7 @@ void CVideoDeviceDoc::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime,
 	rcRect.bottom = pDib->GetHeight();
 
 	CFont Font;
-	int nFontSize = ::ScaleFont(rcRect.right, rcRect.bottom, nRefFontSize, FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
+	int nFontSize = ScaleFont(rcRect.right, rcRect.bottom, nRefFontSize, FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
 	Font.CreatePointFont(	nFontSize * 10,			// font height in tenths of a point
 							g_szDefaultFontFace);	// typeface name of the font
 
@@ -6469,7 +6492,7 @@ void CVideoDeviceDoc::AddFrameCount(CDib* pDib, const CString& sCount, int nRefF
 	rcRect.bottom = pDib->GetHeight();
 
 	CFont Font;
-	int nFontSize = ::ScaleFont(rcRect.right, rcRect.bottom, nRefFontSize, FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
+	int nFontSize = ScaleFont(rcRect.right, rcRect.bottom, nRefFontSize, FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
 	Font.CreatePointFont(nFontSize * 10, g_szDefaultFontFace);
 
 	pDib->AddSingleLineText(sCount,
@@ -6494,7 +6517,7 @@ void CVideoDeviceDoc::AddNoDonationTag(CDib* pDib, int nRefFontSize)
 	rcRect.bottom = pDib->GetHeight();
 
 	CFont Font;
-	int nFontSize = ::ScaleFont(rcRect.right, rcRect.bottom, nRefFontSize, FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
+	int nFontSize = ScaleFont(rcRect.right, rcRect.bottom, nRefFontSize, FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
 	Font.CreatePointFont(nFontSize * 10, g_szDefaultFontFace);
 	CString sNoDonation(ML_STRING(1734, "NO DONATION: see Help menu"));
 	if (sNoDonation.GetLength() < 10)
@@ -6521,7 +6544,7 @@ void CVideoDeviceDoc::AddRecSymbol(CDib* pDib, int nRefFontSize)
 	rcRect.bottom = pDib->GetHeight();
 
 	CFont Font;
-	int nFontSize = ::ScaleFont(rcRect.right, rcRect.bottom, nRefFontSize, FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
+	int nFontSize = ScaleFont(rcRect.right, rcRect.bottom, nRefFontSize, FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
 	Font.CreatePointFont(nFontSize * 10, g_szDefaultFontFace);
 
 	pDib->AddSingleLineText(_T("\u25cf"), // note: if using more than 16 bits, use a uppercase U (for example \U0001F3C3)
