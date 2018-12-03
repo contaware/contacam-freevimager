@@ -240,11 +240,12 @@ extern int EnumKillProcByName(const CString& sProcessName, BOOL bKill = FALSE);
 // ShellExecuteEx() given sFileName
 // Attention: always CloseHandle() the returned process handle when != NULL
 extern HANDLE ExecApp(	const CString& sFileName,
-						const CString& sParams = _T(""),
+						const CString& sParams = _T(""),			// parameters
 						const CString& sStartDirectory = _T(""),	// application start directory, if not provided program's directory is used
 						BOOL bShow = TRUE,							// show application window?
-						BOOL bWaitTillDone = FALSE,
-						DWORD dwWaitMillisecondsTimeout = INFINITE);
+						BOOL bElevated = FALSE,						// run the given app with elevated privileges?
+						BOOL bWaitTillDone = FALSE,					// do not return until done?
+						DWORD dwWaitMillisecondsTimeout = INFINITE);// timeout in ms for the above wait
 extern void KillApp(HANDLE& hProcess);								// after killing the app, the function closes and sets hProcess to NULL
 
 // Ini file Functions

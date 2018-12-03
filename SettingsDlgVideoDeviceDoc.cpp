@@ -129,7 +129,7 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsInit()
 			{
 				_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
 				CString sContaCamServicePath = CString(szDrive) + CString(szDir) + SERVICENAME_EXT;
-				HANDLE h = ::ExecApp(sContaCamServicePath, _T("-u"), _T(""), FALSE, TRUE, CONTACAMSERVICE_TIMEOUT);
+				HANDLE h = ::ExecApp(sContaCamServicePath, _T("-u"), _T(""), FALSE, FALSE, TRUE, CONTACAMSERVICE_TIMEOUT);
 				if (h)
 					CloseHandle(h);
 			}

@@ -1475,6 +1475,7 @@ HANDLE ExecApp(	const CString& sFileName,
 				const CString& sParams/*=_T("")*/,
 				const CString& sStartDirectory/*=_T("")*/,
 				BOOL bShow/*=TRUE*/,
+				BOOL bElevated/*=FALSE*/,
 				BOOL bWaitTillDone/*=FALSE*/,
 				DWORD dwWaitMillisecondsTimeout/*=INFINITE*/)
 {
@@ -1483,6 +1484,8 @@ HANDLE ExecApp(	const CString& sFileName,
 	sei.cbSize = sizeof(sei);
 	sei.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
 	sei.nShow = bShow ? SW_SHOW : SW_HIDE;
+	if (bElevated)
+		sei.lpVerb = _T("runas");
 	sei.lpFile = sFileName;
 	sei.lpParameters = sParams;
 	CString sDir(GetDriveAndDirName(sFileName));
