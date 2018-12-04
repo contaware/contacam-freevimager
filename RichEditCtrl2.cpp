@@ -98,8 +98,7 @@ void CRichEditCtrl2::OnEnLink(NMHDR* pNMHDR, LRESULT* pResult)
 			SetSel(pEnLink->chrg);
 			CString sURL = GetSelText();
 			SetSel(pEnLink->chrg.cpMin, pEnLink->chrg.cpMin);
-			SHELLEXECUTEINFO sei;
-			memset(&sei, 0, sizeof(sei));
+			SHELLEXECUTEINFO sei = {};
 			sei.cbSize = sizeof(sei);
 			sei.fMask = SEE_MASK_NOASYNC;
 			if (AfxGetMainWnd()->GetSafeHwnd())
