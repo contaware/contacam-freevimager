@@ -1073,7 +1073,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		GUID* pActivePolicyGuid = NULL;
 		if (::PowerGetActiveScheme(NULL, &pActivePolicyGuid) == ERROR_SUCCESS)
 		{
-			SYSTEM_POWER_CAPABILITIES SystemPowerCapabilities = { 0 };
+			SYSTEM_POWER_CAPABILITIES SystemPowerCapabilities = {};
 			::GetPwrCapabilities(&SystemPowerCapabilities);
 			const GUID subGUID = GUID_SLEEP_SUBGROUP;
 

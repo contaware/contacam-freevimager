@@ -4939,7 +4939,7 @@ int CBatchProcDlg::GetComCtl32MajorVersion()
 			::GetProcAddress(hModComCtl, "DllGetVersion"));
         if (pDLLGETVERSION)
         {
-            DLLVERSIONINFO dvi = {0};
+            DLLVERSIONINFO dvi = {};
             dvi.cbSize = sizeof dvi;
             if (pDLLGETVERSION(&dvi) == NOERROR)
             {

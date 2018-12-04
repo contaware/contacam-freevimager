@@ -82,8 +82,7 @@ void InitHelpers()
 		g_b3DNOW = TRUE;
 
 	// System Info
-	SYSTEM_INFO sysInfo;
-	memset(&sysInfo, 0, sizeof(sysInfo));
+	SYSTEM_INFO sysInfo = {};
 	GetSystemInfo(&sysInfo);
 	g_dwAllocationGranularity = sysInfo.dwAllocationGranularity;
 	MEMORYSTATUSEX MemoryStatusEx;
@@ -946,8 +945,7 @@ BOOL DeleteToRecycleBin(LPCTSTR szName)
 	pFrom[MAX_PATH - 1] = _T('\0');		// if szName to big make sure pFrom is NULL terminated
 	pFrom[MAX_PATH] = _T('\0');			// if szName to big make sure pFrom is double NULL terminated
 
-	SHFILEOPSTRUCT FileOp;
-	memset(&FileOp, 0, sizeof(SHFILEOPSTRUCT)); 
+	SHFILEOPSTRUCT FileOp = {};
     FileOp.pFrom = pFrom;
     FileOp.pTo = NULL; 
     FileOp.fFlags = FOF_ALLOWUNDO | FOF_SILENT | FOF_NOCONFIRMATION;
@@ -962,7 +960,7 @@ BOOL DeleteToRecycleBin(LPCTSTR szName)
 void DeleteFileWildcard(LPCTSTR lpFileName)
 {
 	CString sDriveAndDir = GetDriveAndDirName(lpFileName);
-	WIN32_FIND_DATA Info = {0};
+	WIN32_FIND_DATA Info;
 	HANDLE hFind = FindFirstFile(lpFileName, &Info);
 	if (hFind && hFind != INVALID_HANDLE_VALUE)
 	{
@@ -1264,7 +1262,7 @@ ULARGE_INTEGER GetFileSize64(LPCTSTR lpszFileName)
 {
 	ULARGE_INTEGER Size;
 	Size.QuadPart = 0;
-	WIN32_FIND_DATA Info = {0};
+	WIN32_FIND_DATA Info;
 	HANDLE hFind = FindFirstFile(lpszFileName, &Info);
 	if (hFind && hFind != INVALID_HANDLE_VALUE)
 	{
@@ -1279,7 +1277,7 @@ ULARGE_INTEGER GetFileSize64Wildcard(LPCTSTR lpszFileName)
 {
 	ULARGE_INTEGER Size;
 	Size.QuadPart = 0;
-	WIN32_FIND_DATA Info = {0};
+	WIN32_FIND_DATA Info;
 	HANDLE hFind = FindFirstFile(lpszFileName, &Info);
 	if (hFind && hFind != INVALID_HANDLE_VALUE)
 	{
@@ -1307,7 +1305,7 @@ BOOL GetFileTime(	LPCTSTR lpszFileName,
 					LPFILETIME lpLastAccessTime,
 					LPFILETIME lpLastWriteTime)
 {
-	WIN32_FIND_DATA Info = {0};
+	WIN32_FIND_DATA Info;
 	HANDLE hFind = FindFirstFile(lpszFileName, &Info);
 	if (hFind && hFind != INVALID_HANDLE_VALUE)
 	{
@@ -1368,7 +1366,7 @@ BOOL GetFileStatus(LPCTSTR lpszFileName, CFileStatus& rStatus)
 		return FALSE;
 	}
 
-	WIN32_FIND_DATA Info = {0};
+	WIN32_FIND_DATA Info;
 	HANDLE hFind = FindFirstFile((LPTSTR)lpszFileName, &Info);
 	if (!hFind || hFind == INVALID_HANDLE_VALUE)
 		return FALSE;
@@ -1414,7 +1412,7 @@ BOOL GetFileStatus(LPCTSTR lpszFileName, CFileStatus& rStatus)
 
 CString GetSpecialFolderPath(int nSpecialFolder)
 {
-	TCHAR path[MAX_PATH] = {0};
+	TCHAR path[MAX_PATH] = {};
 	SHGetSpecialFolderPath(NULL, path, nSpecialFolder, FALSE);
 	return CString(path);
 }
@@ -1504,8 +1502,7 @@ HANDLE ExecApp(	const CString& sFileName,
 				BOOL bWaitTillDone/*=FALSE*/,
 				DWORD dwWaitMillisecondsTimeout/*=INFINITE*/)
 {
-	SHELLEXECUTEINFO sei;
-	memset(&sei, 0, sizeof(sei));
+	SHELLEXECUTEINFO sei = {};
 	sei.cbSize = sizeof(sei);
 	sei.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
 	sei.nShow = bShow ? SW_SHOW : SW_HIDE;
@@ -2136,8 +2133,7 @@ void GetMemoryStats(ULONGLONG* pRegions/*=NULL*/,
 					ULONGLONG* pMaxCommitted/*=NULL*/,
 					double* pFragmentation/*=NULL*/)
 {
-	MEMORY_BASIC_INFORMATION memory_info;
-	memset(&memory_info, 0, sizeof(memory_info));
+	MEMORY_BASIC_INFORMATION memory_info = {};
 	ULONGLONG region = 0;
 	ULONGLONG sum_free = 0, max_free = 0;
 	ULONGLONG sum_reserve = 0, max_reserve = 0;
@@ -2675,7 +2671,7 @@ BOOL GetSafeCursorPos(LPPOINT lpPoint)
 {
 	if (lpPoint)
 	{
-		CURSORINFO ci = {0};
+		CURSORINFO ci = {};
 		ci.cbSize = sizeof(ci);
 		if (GetCursorInfo(&ci))
 		{
@@ -2705,7 +2701,7 @@ static int CALLBACK EnumFontFamExProc(const LOGFONT *lpelfe /*lpelfe*/, const TE
 BOOL IsFontSupported(LPCTSTR szFontFamily)
 {
 	HDC hDC = GetDC(NULL);
-	LOGFONT lf = { 0 };
+	LOGFONT lf = {};
 	lf.lfCharSet = DEFAULT_CHARSET;
 	_tcscpy(lf.lfFaceName, szFontFamily);
 	LPARAM lParam = 0;

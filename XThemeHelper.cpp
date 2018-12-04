@@ -171,7 +171,7 @@ int CXThemeHelper::GetComCtl32Version()
         pDLLGETVERSION = (DLLGETVERSION)(::GetProcAddress(hModComCtl, "DllGetVersion"));
         if (pDLLGETVERSION)
         {
-            DLLVERSIONINFO dvi = {0};
+            DLLVERSIONINFO dvi = {};
             dvi.cbSize = sizeof dvi;
             if (pDLLGETVERSION(&dvi) == NOERROR)
                 ret = dvi.dwMajorVersion;
