@@ -594,7 +594,7 @@ BOOL CopyDirContent(LPCTSTR szFromDir,
 
 	// Copy
     hp = FindFirstFile(srcname, pInfo);
-    if (!hp || (hp == INVALID_HANDLE_VALUE))
+    if (!hp || hp == INVALID_HANDLE_VALUE)
 	{
 		COPYDIRCONTENT_FREE;
         return FALSE;
@@ -726,7 +726,7 @@ BOOL MergeDirContent(	LPCTSTR szFromDir,
 
 	// Merge
     hp = FindFirstFile(srcname, pInfo);
-    if (!hp || (hp == INVALID_HANDLE_VALUE))
+    if (!hp || hp == INVALID_HANDLE_VALUE)
 	{
 		MERGEDIRCONTENT_FREE;
         return FALSE;
@@ -839,7 +839,7 @@ BOOL DeleteDirContent(LPCTSTR szDirName)
 		name[MAX_PATH - 1] = _T('\0');
 	}
     hp = FindFirstFile(name, pInfo);
-    if (!hp || (hp == INVALID_HANDLE_VALUE))
+    if (!hp || hp == INVALID_HANDLE_VALUE)
 	{
 		DELETEDIRCONTENT_FREE;
         return FALSE;
@@ -962,19 +962,19 @@ BOOL DeleteToRecycleBin(LPCTSTR szName)
 void DeleteFileWildcard(LPCTSTR lpFileName)
 {
 	CString sDriveAndDir = GetDriveAndDirName(lpFileName);
-	WIN32_FIND_DATA Info;
-	HANDLE hFileSearch = FindFirstFile(lpFileName, &Info);
-	if (hFileSearch && hFileSearch != INVALID_HANDLE_VALUE)
+	WIN32_FIND_DATA Info = {0};
+	HANDLE hFind = FindFirstFile(lpFileName, &Info);
+	if (hFind && hFind != INVALID_HANDLE_VALUE)
 	{
 		// Delete found files
 		do
 		{
 			if ((Info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != FILE_ATTRIBUTE_DIRECTORY)
 				DeleteFile(sDriveAndDir + Info.cFileName);
-		} while (FindNextFile(hFileSearch, &Info));
+		} while (FindNextFile(hFind, &Info));
 
 		// Close
-		FindClose(hFileSearch);
+		FindClose(hFind);
 	}
 }
 
@@ -1264,13 +1264,39 @@ ULARGE_INTEGER GetFileSize64(LPCTSTR lpszFileName)
 {
 	ULARGE_INTEGER Size;
 	Size.QuadPart = 0;
-	WIN32_FIND_DATA fileinfo;
-	memset(&fileinfo, 0, sizeof(WIN32_FIND_DATA));
-	HANDLE hFind = FindFirstFile(lpszFileName, &fileinfo);
-	if (hFind != INVALID_HANDLE_VALUE)
+	WIN32_FIND_DATA Info = {0};
+	HANDLE hFind = FindFirstFile(lpszFileName, &Info);
+	if (hFind && hFind != INVALID_HANDLE_VALUE)
 	{
-		Size.LowPart = fileinfo.nFileSizeLow;
-		Size.HighPart = fileinfo.nFileSizeHigh;
+		Size.LowPart = Info.nFileSizeLow;
+		Size.HighPart = Info.nFileSizeHigh;
+		FindClose(hFind);
+	}
+	return Size;
+}
+
+ULARGE_INTEGER GetFileSize64Wildcard(LPCTSTR lpszFileName)
+{
+	ULARGE_INTEGER Size;
+	Size.QuadPart = 0;
+	WIN32_FIND_DATA Info = {0};
+	HANDLE hFind = FindFirstFile(lpszFileName, &Info);
+	if (hFind && hFind != INVALID_HANDLE_VALUE)
+	{
+		// Get all wanted files
+		do
+		{
+			if ((Info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != FILE_ATTRIBUTE_DIRECTORY)
+			{
+				ULARGE_INTEGER SizeSingle;
+				SizeSingle.LowPart = Info.nFileSizeLow;
+				SizeSingle.HighPart = Info.nFileSizeHigh;
+				Size.QuadPart += SizeSingle.QuadPart;
+			}
+		}
+		while (FindNextFile(hFind, &Info));
+
+		// Close
 		FindClose(hFind);
 	}
 	return Size;
@@ -1281,17 +1307,16 @@ BOOL GetFileTime(	LPCTSTR lpszFileName,
 					LPFILETIME lpLastAccessTime,
 					LPFILETIME lpLastWriteTime)
 {
-	WIN32_FIND_DATA fileinfo;
-	memset(&fileinfo, 0, sizeof(WIN32_FIND_DATA));
-	HANDLE hFind = FindFirstFile(lpszFileName, &fileinfo);
-	if (hFind != INVALID_HANDLE_VALUE)
+	WIN32_FIND_DATA Info = {0};
+	HANDLE hFind = FindFirstFile(lpszFileName, &Info);
+	if (hFind && hFind != INVALID_HANDLE_VALUE)
 	{
 		if (lpCreationTime)
-			*lpCreationTime = fileinfo.ftCreationTime;
+			*lpCreationTime = Info.ftCreationTime;
 		if (lpLastAccessTime)
-			*lpLastAccessTime = fileinfo.ftLastAccessTime;
+			*lpLastAccessTime = Info.ftLastAccessTime;
 		if (lpLastWriteTime)
-			*lpLastWriteTime = fileinfo.ftLastWriteTime;
+			*lpLastWriteTime = Info.ftLastWriteTime;
 		FindClose(hFind);
 		return TRUE;
 	}
@@ -1343,38 +1368,38 @@ BOOL GetFileStatus(LPCTSTR lpszFileName, CFileStatus& rStatus)
 		return FALSE;
 	}
 
-	WIN32_FIND_DATA findFileData;
-	HANDLE hFind = FindFirstFile((LPTSTR)lpszFileName, &findFileData);
-	if (hFind == INVALID_HANDLE_VALUE)
+	WIN32_FIND_DATA Info = {0};
+	HANDLE hFind = FindFirstFile((LPTSTR)lpszFileName, &Info);
+	if (!hFind || hFind == INVALID_HANDLE_VALUE)
 		return FALSE;
 	VERIFY(FindClose(hFind));
 
 	// strip attribute of NORMAL bit, our API doesn't have a "normal" bit.
 	rStatus.m_attribute = (BYTE)
-		(findFileData.dwFileAttributes & ~FILE_ATTRIBUTE_NORMAL);
+		(Info.dwFileAttributes & ~FILE_ATTRIBUTE_NORMAL);
 
 	// Old Buggy MFC Code!!!
 	// get just the low DWORD of the file size
-	//ASSERT(findFileData.nFileSizeHigh == 0);
-	//rStatus.m_size = (LONG)findFileData.nFileSizeLow;
+	//ASSERT(Info.nFileSizeHigh == 0);
+	//rStatus.m_size = (LONG)Info.nFileSizeLow;
 
 	// Get the Correct Size
-	rStatus.m_size = (ULONGLONG)findFileData.nFileSizeLow |
-					((ULONGLONG)findFileData.nFileSizeHigh) << 32;
+	rStatus.m_size = (ULONGLONG)Info.nFileSizeLow |
+					((ULONGLONG)Info.nFileSizeHigh) << 32;
 
 	// convert times as appropriate
-	if (CTime::IsValidFILETIME(findFileData.ftCreationTime))
-		rStatus.m_ctime = CTime(findFileData.ftCreationTime);
+	if (CTime::IsValidFILETIME(Info.ftCreationTime))
+		rStatus.m_ctime = CTime(Info.ftCreationTime);
 	else
 		rStatus.m_ctime = CTime();
 
-	if (CTime::IsValidFILETIME(findFileData.ftLastAccessTime))
-		rStatus.m_atime = CTime(findFileData.ftLastAccessTime);
+	if (CTime::IsValidFILETIME(Info.ftLastAccessTime))
+		rStatus.m_atime = CTime(Info.ftLastAccessTime);
 	else
 		rStatus.m_atime = CTime();
 
-	if (CTime::IsValidFILETIME(findFileData.ftLastWriteTime))
-		rStatus.m_mtime = CTime(findFileData.ftLastWriteTime);
+	if (CTime::IsValidFILETIME(Info.ftLastWriteTime))
+		rStatus.m_mtime = CTime(Info.ftLastWriteTime);
 	else
 		rStatus.m_mtime = CTime();
 

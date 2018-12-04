@@ -161,6 +161,7 @@ extern BOOL AreSamePath(const CString& sPath1, const CString& sPath2);
 
 // File Size
 extern ULARGE_INTEGER GetFileSize64(LPCTSTR lpszFileName);
+extern ULARGE_INTEGER GetFileSize64Wildcard(LPCTSTR lpszFileName);
 
 // Get File Times
 extern BOOL GetFileTime(LPCTSTR lpszFileName,
