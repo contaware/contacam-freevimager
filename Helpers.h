@@ -387,9 +387,4 @@ extern BOOL IntersectsValidMonitor(LPCRECT lpRect);
 // Checks whether the given font is available in the system
 extern BOOL IsFontSupported(LPCTSTR szFontFamily);
 
-// For vertical sliders
-class CSliderCtrl;
-extern int GetRevertedPos(CSliderCtrl* pSliderCtrl);
-extern void SetRevertedPos(CSliderCtrl* pSliderCtrl, int nPos);
-
 #endif // !defined(AFX_HELPERS_H__8FD88286_7192_47B9_B311_4C2F27BF8B85__INCLUDED_)

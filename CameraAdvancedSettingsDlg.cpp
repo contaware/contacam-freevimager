@@ -326,7 +326,7 @@ BOOL CCameraAdvancedSettingsDlg::OnInitDialog()
 	m_VideoRecQuality.SetPageSize(1);
 	m_VideoRecQuality.SetLineSize(1);
 	m_pDoc->m_fVideoRecQuality = CAVRec::ClipVideoQuality(m_pDoc->m_fVideoRecQuality);
-	::SetRevertedPos(&m_VideoRecQuality, (int)m_pDoc->m_fVideoRecQuality);
+	SetRevertedPos(&m_VideoRecQuality, (int)m_pDoc->m_fVideoRecQuality);
 	UpdateVideoQualityInfo();
 
 	// Save Animated GIF Check Box
@@ -745,6 +745,20 @@ void CCameraAdvancedSettingsDlg::OnDatetimechangeTimeDailyStop(NMHDR* pNMHDR, LR
 	*pResult = 0;
 }
 
+int CCameraAdvancedSettingsDlg::GetRevertedPos(CSliderCtrl* pSliderCtrl)
+{
+	if (pSliderCtrl)
+		return pSliderCtrl->GetRangeMin() + (pSliderCtrl->GetRangeMax() - pSliderCtrl->GetPos());
+	else
+		return 0;
+}
+
+void CCameraAdvancedSettingsDlg::SetRevertedPos(CSliderCtrl* pSliderCtrl, int nPos)
+{
+	if (pSliderCtrl)
+		pSliderCtrl->SetPos(pSliderCtrl->GetRangeMin() + (pSliderCtrl->GetRangeMax() - nPos));
+}
+
 BOOL CCameraAdvancedSettingsDlg::IsEmpty(int nIDC)
 {
 	CString s;
@@ -761,7 +775,7 @@ void CCameraAdvancedSettingsDlg::UpdateVideoQualityInfo()
 {
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY_INFO);
 	CString sQuality;
-	switch (::GetRevertedPos(&m_VideoRecQuality))
+	switch (GetRevertedPos(&m_VideoRecQuality))
 	{
 		case 2: sQuality = ML_STRING(1545, "Best"); break;
 		case 3: sQuality = ML_STRING(1544, "Very Good"); break;
@@ -789,7 +803,7 @@ void CCameraAdvancedSettingsDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* 
 		{
 			if (pSlider->GetDlgCtrlID() == IDC_VIDEO_COMPRESSION_QUALITY)
 			{
-				m_pDoc->m_fVideoRecQuality = (float)::GetRevertedPos(&m_VideoRecQuality);
+				m_pDoc->m_fVideoRecQuality = (float)GetRevertedPos(&m_VideoRecQuality);
 				UpdateVideoQualityInfo();
 			}
 		}

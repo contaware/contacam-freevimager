@@ -66,28 +66,28 @@ BOOL CHLSDlgModeless::OnInitDialog()
 	pSlider->SetTicFreq(1);
 	pSlider->SetLineSize(1);
 	pSlider->SetPageSize(10);
-	::SetRevertedPos(pSlider, 0);
+	SetRevertedPos(pSlider, 0);
 
 	pSlider = (CSliderCtrl*)GetDlgItem(IDC_SLIDER_CONTRAST);
 	pSlider->SetRange(-50, 50, TRUE);
 	pSlider->SetTicFreq(1);
 	pSlider->SetLineSize(1);
 	pSlider->SetPageSize(10);
-	::SetRevertedPos(pSlider, 0);
+	SetRevertedPos(pSlider, 0);
 
 	pSlider = (CSliderCtrl*)GetDlgItem(IDC_SLIDER_SATURATION);
 	pSlider->SetRange(-100, 100, TRUE);
 	pSlider->SetTicFreq(2);
 	pSlider->SetLineSize(1);
 	pSlider->SetPageSize(10);
-	::SetRevertedPos(pSlider, 0);
+	SetRevertedPos(pSlider, 0);
 
 	pSlider = (CSliderCtrl*)GetDlgItem(IDC_SLIDER_HUE);
 	pSlider->SetRange(-180, 180, TRUE);
 	pSlider->SetTicFreq(4);
 	pSlider->SetLineSize(1);
 	pSlider->SetPageSize(10);
-	::SetRevertedPos(pSlider, 0);
+	SetRevertedPos(pSlider, 0);
 
 	// Current Monitor's Max Edge
 	CSize szMonitor = ::AfxGetMainFrame()->GetMonitorSize();
@@ -157,13 +157,13 @@ void CHLSDlgModeless::OnButtonUndo()
 	// Reset sliders
 	CSliderCtrl* pSlider;
 	pSlider = (CSliderCtrl*)GetDlgItem(IDC_SLIDER_BRIGHTNESS);
-	::SetRevertedPos(pSlider, 0);
+	SetRevertedPos(pSlider, 0);
 	pSlider = (CSliderCtrl*)GetDlgItem(IDC_SLIDER_CONTRAST);
-	::SetRevertedPos(pSlider, 0);
+	SetRevertedPos(pSlider, 0);
 	pSlider = (CSliderCtrl*)GetDlgItem(IDC_SLIDER_SATURATION);
-	::SetRevertedPos(pSlider, 0);
+	SetRevertedPos(pSlider, 0);
 	pSlider = (CSliderCtrl*)GetDlgItem(IDC_SLIDER_HUE);
-	::SetRevertedPos(pSlider, 0);
+	SetRevertedPos(pSlider, 0);
 
 	// Undo Preview Dib
 	if (pDoc->m_pDib->GetPreviewDib())
@@ -185,19 +185,19 @@ void CHLSDlgModeless::AdjustColor(BOOL bEnableUndo)
 	// Work on Preview Dib
 	if (pDoc->m_pDib->GetPreviewDib())
 	{
-		pDoc->m_pDib->GetPreviewDib()->AdjustImage(	::GetRevertedPos((CSliderCtrl*)GetDlgItem(IDC_SLIDER_BRIGHTNESS)),
-													::GetRevertedPos((CSliderCtrl*)GetDlgItem(IDC_SLIDER_CONTRAST)),
-													::GetRevertedPos((CSliderCtrl*)GetDlgItem(IDC_SLIDER_SATURATION)),
-													::GetRevertedPos((CSliderCtrl*)GetDlgItem(IDC_SLIDER_HUE)),
+		pDoc->m_pDib->GetPreviewDib()->AdjustImage(	GetRevertedPos((CSliderCtrl*)GetDlgItem(IDC_SLIDER_BRIGHTNESS)),
+													GetRevertedPos((CSliderCtrl*)GetDlgItem(IDC_SLIDER_CONTRAST)),
+													GetRevertedPos((CSliderCtrl*)GetDlgItem(IDC_SLIDER_SATURATION)),
+													GetRevertedPos((CSliderCtrl*)GetDlgItem(IDC_SLIDER_HUE)),
 													bEnableUndo);
 	}
 	// Work on Full Size Dib
 	else
 	{
-		pDoc->m_pDib->AdjustImage(	::GetRevertedPos((CSliderCtrl*)GetDlgItem(IDC_SLIDER_BRIGHTNESS)),
-									::GetRevertedPos((CSliderCtrl*)GetDlgItem(IDC_SLIDER_CONTRAST)),
-									::GetRevertedPos((CSliderCtrl*)GetDlgItem(IDC_SLIDER_SATURATION)),
-									::GetRevertedPos((CSliderCtrl*)GetDlgItem(IDC_SLIDER_HUE)),
+		pDoc->m_pDib->AdjustImage(	GetRevertedPos((CSliderCtrl*)GetDlgItem(IDC_SLIDER_BRIGHTNESS)),
+									GetRevertedPos((CSliderCtrl*)GetDlgItem(IDC_SLIDER_CONTRAST)),
+									GetRevertedPos((CSliderCtrl*)GetDlgItem(IDC_SLIDER_SATURATION)),
+									GetRevertedPos((CSliderCtrl*)GetDlgItem(IDC_SLIDER_HUE)),
 									bEnableUndo);
 	}
 }
@@ -229,20 +229,34 @@ void CHLSDlgModeless::OnCheckShowOriginal()
 	pDoc->InvalidateAllViews(FALSE);
 }
 
+int CHLSDlgModeless::GetRevertedPos(CSliderCtrl* pSliderCtrl)
+{
+	if (pSliderCtrl)
+		return pSliderCtrl->GetRangeMin() + (pSliderCtrl->GetRangeMax() - pSliderCtrl->GetPos());
+	else
+		return 0;
+}
+
+void CHLSDlgModeless::SetRevertedPos(CSliderCtrl* pSliderCtrl, int nPos)
+{
+	if (pSliderCtrl)
+		pSliderCtrl->SetPos(pSliderCtrl->GetRangeMin() + (pSliderCtrl->GetRangeMax() - nPos));
+}
+
 BOOL CHLSDlgModeless::IsModified()
 {
 	CSliderCtrl* pSlider;
 	pSlider = (CSliderCtrl*)GetDlgItem(IDC_SLIDER_BRIGHTNESS);
-	if (::GetRevertedPos(pSlider) != 0)
+	if (GetRevertedPos(pSlider) != 0)
 		return TRUE;
 	pSlider = (CSliderCtrl*)GetDlgItem(IDC_SLIDER_CONTRAST);
-	if (::GetRevertedPos(pSlider) != 0)
+	if (GetRevertedPos(pSlider) != 0)
 		return TRUE;
 	pSlider = (CSliderCtrl*)GetDlgItem(IDC_SLIDER_SATURATION);
-	if (::GetRevertedPos(pSlider) != 0)
+	if (GetRevertedPos(pSlider) != 0)
 		return TRUE;
 	pSlider = (CSliderCtrl*)GetDlgItem(IDC_SLIDER_HUE);
-	if (::GetRevertedPos(pSlider) != 0)
+	if (GetRevertedPos(pSlider) != 0)
 		return TRUE;
 	return FALSE;
 }

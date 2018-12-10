@@ -48,6 +48,8 @@ protected:
 	int m_nFrameRateChangeTimeout;
 
 	// Helper functions
+	static int GetRevertedPos(CSliderCtrl* pSliderCtrl);
+	static void SetRevertedPos(CSliderCtrl* pSliderCtrl, int nPos);
 	BOOL IsEmpty(int nIDC);
 	void UpdateVideoQualityInfo();
 	void UpdateStartStopTimes();

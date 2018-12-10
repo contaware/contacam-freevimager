@@ -37,6 +37,8 @@ public:
 
 // Implementation
 protected:
+	static int GetRevertedPos(CSliderCtrl* pSliderCtrl);
+	static void SetRevertedPos(CSliderCtrl* pSliderCtrl, int nPos);
 	BOOL IsModified();
 	void DoIt();
 	void AdjustColor(BOOL bEnableUndo);
