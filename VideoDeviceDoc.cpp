@@ -4685,6 +4685,8 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 
 		m_HttpGetFrameLocations.Add(_T("/cgi-bin/cmd/system?GET_STREAM"));	// ACTi
 
+		m_HttpGetFrameLocations.Add(_T("/media/?action=stream"));			// A-Tion, Tenvis
+
 		m_HttpGetFrameLocations.Add(_T("/control/faststream.jpg?stream=full"));	// Mobotix
 
 		m_HttpGetFrameLocations.Add(_T("/Streaming/channels/1/httppreview"));	// Hikvision, ABUS (set main-stream to MJPEG in web interface)
@@ -4757,6 +4759,8 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 		
 		m_HttpGetFrameLocations.Add(_T("/cgi-bin/viewer/video.jpg"));		// ABUS, D-Link, Toshiba, Vivotek
 		
+		m_HttpGetFrameLocations.Add(_T("/media/?action=snapshot"));			// A-Tion, Tenvis
+
 		m_HttpGetFrameLocations.Add(_T("/record/current.jpg"));				// Mobotix
 		
 		m_HttpGetFrameLocations.Add(_T("/cgi-bin/getimage.cgi?motion=0"));	// GadSpot
