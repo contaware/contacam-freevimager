@@ -552,7 +552,12 @@ void CColourPopup::OnLButtonUp(UINT nFlags, CPoint point)
     CWnd::OnLButtonUp(nFlags, point);
 
     DWORD pos = GetMessagePos();
-    point = CPoint(LOWORD(pos), HIWORD(pos));
+    point = CPoint(GET_X_LPARAM(pos), GET_Y_LPARAM(pos));	// Do not use the LOWORD or HIWORD macros to extract the
+															// x- and y- coordinates of the cursor position because
+															// these macros return incorrect results on systems with
+															// multiple monitors. Systems with multiple monitors can
+															// have negative x- and y- coordinates, and LOWORD and
+															// HIWORD treat the coordinates as unsigned quantities.
 
     if (m_WindowRect.PtInRect(point))
         EndSelection(CPN_SELENDOK);
