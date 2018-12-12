@@ -3685,11 +3685,11 @@ void CPictureView::OnLButtonDown(UINT nFlags, CPoint point)
 			pDoc->m_pRedEyeDlg->GetWindowRect(&rcDlg);
 			CPoint ptShowDlg;
 
-			// Stay close to the click
+			// Display the dialog near the click point
 			if (point.x > (rcWork.left + rcWork.Width() / 2))
-				ptShowDlg.x = point.x - rcDlg.Width() - 50; // to the left of click point
+				ptShowDlg.x = point.x - rcDlg.Width() - rcDlg.Width() / 5;	// to the left of the click point
 			else
-				ptShowDlg.x = point.x + 50;					// to the right of click point
+				ptShowDlg.x = point.x + rcDlg.Width() / 5;					// to the right of the click point
 
 			// In the Monitor's Work area Vertical Middle
 			ptShowDlg.y = rcWork.top + (rcWork.Height() / 2) - (rcDlg.Height() / 2);
