@@ -1260,23 +1260,19 @@ BOOL AreSamePath(const CString& sPath1, const CString& sPath2)
 
 ULARGE_INTEGER GetFileSize64(LPCTSTR lpszFileName)
 {
-	ULARGE_INTEGER Size;
-	Size.QuadPart = 0;
-	WIN32_FIND_DATA Info;
-	HANDLE hFind = FindFirstFile(lpszFileName, &Info);
-	if (hFind && hFind != INVALID_HANDLE_VALUE)
+	ULARGE_INTEGER Size = {};
+	WIN32_FILE_ATTRIBUTE_DATA Info;
+	if (GetFileAttributesEx(lpszFileName, GetFileExInfoStandard, (LPVOID)&Info))
 	{
 		Size.LowPart = Info.nFileSizeLow;
 		Size.HighPart = Info.nFileSizeHigh;
-		FindClose(hFind);
 	}
 	return Size;
 }
 
 ULARGE_INTEGER GetFileSize64Wildcard(LPCTSTR lpszFileName)
 {
-	ULARGE_INTEGER Size;
-	Size.QuadPart = 0;
+	ULARGE_INTEGER Size = {};
 	WIN32_FIND_DATA Info;
 	HANDLE hFind = FindFirstFile(lpszFileName, &Info);
 	if (hFind && hFind != INVALID_HANDLE_VALUE)
