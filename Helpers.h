@@ -175,11 +175,6 @@ extern BOOL SetFileTime(LPCTSTR lpszFileName,
 						LPFILETIME lpLastAccessTime,
 						LPFILETIME lpLastWriteTime);
 
-// Get File Status, do not use for file size because with
-// old MFC Versions the size of CFileStatus is limited to 4GB.
-// -> Use GetFileSize64()
-extern BOOL GetFileStatus(LPCTSTR lpszFileName, CFileStatus& rStatus);
-
 // Wrapper for SHGetSpecialFolderPath, returns the path with no trailing backslash
 /*
 CSIDL_ALTSTARTUP				File system directory that corresponds to the user's nonlocalized Startup program group. 

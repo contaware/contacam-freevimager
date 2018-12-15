@@ -226,10 +226,12 @@ void CPreviewFileDlg::OnFolderChange()
 CString CPreviewFileDlg::GetCreationFileTime(CString sFileName)
 {
 	CFileStatus FileStatus;
-	if (::GetFileStatus(sFileName, FileStatus))
+	if (CFile::GetStatus(sFileName, FileStatus))
+	{
 		return	::MakeDateLocalFormat(FileStatus.m_ctime) +
 				_T(" ") +
 				::MakeTimeLocalFormat(FileStatus.m_ctime, TRUE);
+	}
 	else
 		return _T("");		
 }

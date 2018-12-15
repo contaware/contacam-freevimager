@@ -1350,7 +1350,7 @@ void COsdDlg::UpdateDisplay()
 
 			// Get File Time
 			CFileStatus FileStatus;
-			BOOL bFileTimesOk = ::GetFileStatus(m_pDoc->m_sFileName, FileStatus);
+			BOOL bFileTimesOk = CFile::GetStatus(m_pDoc->m_sFileName, FileStatus);
 			if (bFileTimesOk)
 			{
 				t =	::MakeDateLocalFormat(FileStatus.m_ctime, TRUE) +

@@ -414,78 +414,6 @@ bool CZipArchive::CloseFile(LPCTSTR lpszFilePath)
 	return bRet;
 }
 
-// Original MFC Version is ASSERTING with Files > 4GB
-bool CZipArchive::GetFileStatus(LPCTSTR lpszFileName, CFileStatus& rStatus)
-{
-	ASSERT( lpszFileName != NULL );
-
-	if ( lpszFileName == NULL ) 
-	{
-		return false;
-	}
-
-	if ( lstrlen(lpszFileName) >= _MAX_PATH )
-	{
-		ASSERT(FALSE); // MFC requires paths with length < _MAX_PATH
-		return false;
-	}
-
-	WIN32_FIND_DATA findFileData;
-	HANDLE hFind = FindFirstFile((LPTSTR)lpszFileName, &findFileData);
-	if (hFind == INVALID_HANDLE_VALUE)
-		return false;
-	VERIFY(FindClose(hFind));
-
-	// strip attribute of NORMAL bit, our API doesn't have a "normal" bit.
-	rStatus.m_attribute = (BYTE)
-		(findFileData.dwFileAttributes & ~FILE_ATTRIBUTE_NORMAL);
-
-	// Old Buggy MFC Code!!!
-	// get just the low DWORD of the file size
-	//ASSERT(findFileData.nFileSizeHigh == 0);
-	//rStatus.m_size = (LONG)findFileData.nFileSizeLow;
-
-	// Get the Correct Size
-	rStatus.m_size = (ULONGLONG)findFileData.nFileSizeLow |
-					((ULONGLONG)findFileData.nFileSizeHigh) << 32;
-
-	// convert times as appropriate
-	if (CTime::IsValidFILETIME(findFileData.ftCreationTime))
-	{
-		rStatus.m_ctime = CTime(findFileData.ftCreationTime);
-	}
-	else
-	{
-		rStatus.m_ctime = CTime();
-	}
-
-	if (CTime::IsValidFILETIME(findFileData.ftLastAccessTime))
-	{
-		rStatus.m_atime = CTime(findFileData.ftLastAccessTime);
-	}
-	else
-	{
-		rStatus.m_atime = CTime();
-	}
-
-	if (CTime::IsValidFILETIME(findFileData.ftLastWriteTime))
-	{
-		rStatus.m_mtime = CTime(findFileData.ftLastWriteTime);
-	}
-	else
-	{
-		rStatus.m_mtime = CTime();
-	}
-
-	if (rStatus.m_ctime.GetTime() == 0)
-		rStatus.m_ctime = rStatus.m_mtime;
-
-	if (rStatus.m_atime.GetTime() == 0)
-		rStatus.m_atime = rStatus.m_mtime;
-
-	return true;
-}
-
 bool CZipArchive::OpenNewFile(CFileHeader & header, int iLevel, LPCTSTR lpszFilePath)
 {
 	if (IsClosed())
@@ -516,7 +444,7 @@ bool CZipArchive::OpenNewFile(CFileHeader & header, int iLevel, LPCTSTR lpszFile
 	if (lpszFilePath)
 	{
 		CFileStatus fs;
-		if (!GetFileStatus(lpszFilePath, fs))
+		if (!CFile::GetStatus(lpszFilePath, fs))
 			bRet = false;
 		else
 		{

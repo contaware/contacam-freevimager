@@ -3962,14 +3962,14 @@ void CBatchProcDlg::OnButtonListSelectall()
 CTime CBatchProcDlg::GetCreatedFileTime(CString sFileName)
 {
 	CFileStatus FileStatus;
-	::GetFileStatus(sFileName, FileStatus);
+	CFile::GetStatus(sFileName, FileStatus);
 	return FileStatus.m_ctime;
 }
 
 CTime CBatchProcDlg::GetModifiedFileTime(CString sFileName)
 {
 	CFileStatus FileStatus;
-	::GetFileStatus(sFileName, FileStatus);
+	CFile::GetStatus(sFileName, FileStatus);
 	return FileStatus.m_mtime;
 }
 

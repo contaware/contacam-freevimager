@@ -8325,7 +8325,7 @@ void CPictureDoc::UpdateImageInfo(BOOL bUpdateFileInfoOnly/*=FALSE*/)
 
 			// Get File Time
 			CFileStatus FileStatus;
-			BOOL bFileTimesOk = ::GetFileStatus(m_sFileName, FileStatus);
+			BOOL bFileTimesOk = CFile::GetStatus(m_sFileName, FileStatus);
 			if (bFileTimesOk)
 			{
 				t =	ML_STRING(1310, "Date: ") +

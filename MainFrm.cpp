@@ -2161,7 +2161,9 @@ BOOL CMainFrame::GetRecBufStats(CString& sBufStats)
 
 BOOL CMainFrame::GetDiskStats(CString& sDiskStats, LPCTSTR lpszPath, int nMinDiskFreePermillion)
 {
-	// Must include trailing backslash and does not have to specify the root dir
+	// - GetDiskFreeSpaceEx's lpDirectoryName must include a trailing backslash
+	// - GetDiskFreeSpaceEx's lpDirectoryName does not have to specify the
+	//   root directory (the function accepts any directory on a disk)
 	CString sPath(lpszPath);
 	sPath.TrimRight(_T('\\'));
 	sPath += _T("\\");

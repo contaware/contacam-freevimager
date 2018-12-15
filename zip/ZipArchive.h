@@ -408,9 +408,6 @@ public:
 //		with the given index
 	bool IsFileDirectory(WORD uIndex);
 
-	// Get the File Status
-	static bool GetFileStatus(LPCTSTR lpszFileName, CFileStatus& rStatus);
-
 // Function name	: FindFile
 // Description	    : find the file in the archive
 // Return type		: int

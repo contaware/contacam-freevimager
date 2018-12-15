@@ -1346,66 +1346,6 @@ BOOL SetFileTime(	LPCTSTR lpszFileName,
 	return res;
 }
 
-// Get File Status, do not use for file size because with
-// old MFC Versions the size of CFileStatus is limited to 4GB.
-// -> Use GetFileSize64()
-//
-// Note: The original CFile::GetStatus() is ASSERTING with Files > 4GB
-BOOL GetFileStatus(LPCTSTR lpszFileName, CFileStatus& rStatus)
-{
-	if (lpszFileName == NULL) 
-		return FALSE;
-
-	if (lstrlen(lpszFileName) >= _MAX_PATH)
-	{
-		ASSERT(FALSE); // MFC requires paths with length < _MAX_PATH
-		return FALSE;
-	}
-
-	WIN32_FIND_DATA Info;
-	HANDLE hFind = FindFirstFile((LPTSTR)lpszFileName, &Info);
-	if (!hFind || hFind == INVALID_HANDLE_VALUE)
-		return FALSE;
-	VERIFY(FindClose(hFind));
-
-	// strip attribute of NORMAL bit, our API doesn't have a "normal" bit.
-	rStatus.m_attribute = (BYTE)
-		(Info.dwFileAttributes & ~FILE_ATTRIBUTE_NORMAL);
-
-	// Old Buggy MFC Code!!!
-	// get just the low DWORD of the file size
-	//ASSERT(Info.nFileSizeHigh == 0);
-	//rStatus.m_size = (LONG)Info.nFileSizeLow;
-
-	// Get the Correct Size
-	rStatus.m_size = (ULONGLONG)Info.nFileSizeLow |
-					((ULONGLONG)Info.nFileSizeHigh) << 32;
-
-	// convert times as appropriate
-	if (CTime::IsValidFILETIME(Info.ftCreationTime))
-		rStatus.m_ctime = CTime(Info.ftCreationTime);
-	else
-		rStatus.m_ctime = CTime();
-
-	if (CTime::IsValidFILETIME(Info.ftLastAccessTime))
-		rStatus.m_atime = CTime(Info.ftLastAccessTime);
-	else
-		rStatus.m_atime = CTime();
-
-	if (CTime::IsValidFILETIME(Info.ftLastWriteTime))
-		rStatus.m_mtime = CTime(Info.ftLastWriteTime);
-	else
-		rStatus.m_mtime = CTime();
-
-	if (rStatus.m_ctime.GetTime() == 0)
-		rStatus.m_ctime = rStatus.m_mtime;
-
-	if (rStatus.m_atime.GetTime() == 0)
-		rStatus.m_atime = rStatus.m_mtime;
-
-	return TRUE;
-}
-
 CString GetSpecialFolderPath(int nSpecialFolder)
 {
 	TCHAR path[MAX_PATH] = {};
@@ -2184,7 +2124,9 @@ void GetMemoryStats(ULONGLONG* pRegions/*=NULL*/,
 
 ULONGLONG GetDiskTotalSize(LPCTSTR lpszPath)
 {
-	// Must include trailing backslash and does not have to specify the root dir
+	// - GetDiskFreeSpaceEx's lpDirectoryName must include a trailing backslash
+	// - GetDiskFreeSpaceEx's lpDirectoryName does not have to specify the
+	//   root directory (the function accepts any directory on a disk)
 	CString sPath(lpszPath);
 	sPath.TrimRight(_T('\\'));
 	sPath += _T("\\");
@@ -2202,7 +2144,9 @@ ULONGLONG GetDiskTotalSize(LPCTSTR lpszPath)
 
 ULONGLONG GetDiskAvailableFreeSpace(LPCTSTR lpszPath)
 {
-	// Must include trailing backslash and does not have to specify the root dir
+	// - GetDiskFreeSpaceEx's lpDirectoryName must include a trailing backslash
+	// - GetDiskFreeSpaceEx's lpDirectoryName does not have to specify the
+	//   root directory (the function accepts any directory on a disk)
 	CString sPath(lpszPath);
 	sPath.TrimRight(_T('\\'));
 	sPath += _T("\\");
@@ -2220,7 +2164,9 @@ ULONGLONG GetDiskAvailableFreeSpace(LPCTSTR lpszPath)
 
 ULONGLONG GetDiskUsedSpace(LPCTSTR lpszPath)
 {
-	// Must include trailing backslash and does not have to specify the root dir
+	// - GetDiskFreeSpaceEx's lpDirectoryName must include a trailing backslash
+	// - GetDiskFreeSpaceEx's lpDirectoryName does not have to specify the
+	//   root directory (the function accepts any directory on a disk)
 	CString sPath(lpszPath);
 	sPath.TrimRight(_T('\\'));
 	sPath += _T("\\");
@@ -2229,9 +2175,9 @@ ULONGLONG GetDiskUsedSpace(LPCTSTR lpszPath)
 	ULARGE_INTEGER FreeBytesAvailableToCaller;
 	ULARGE_INTEGER TotalNumberOfBytesAvailableToCaller;
 	if (!GetDiskFreeSpaceEx(sPath,
-		&FreeBytesAvailableToCaller,
-		&TotalNumberOfBytesAvailableToCaller,
-		NULL))
+							&FreeBytesAvailableToCaller,
+							&TotalNumberOfBytesAvailableToCaller,
+							NULL))
 		return 0;
 	else
 		return TotalNumberOfBytesAvailableToCaller.QuadPart - FreeBytesAvailableToCaller.QuadPart;
