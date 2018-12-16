@@ -1261,11 +1261,11 @@ BOOL AreSamePath(const CString& sPath1, const CString& sPath2)
 ULARGE_INTEGER GetFileSize64(LPCTSTR lpszFileName)
 {
 	ULARGE_INTEGER Size = {};
-	WIN32_FILE_ATTRIBUTE_DATA Info;
-	if (GetFileAttributesEx(lpszFileName, GetFileExInfoStandard, (LPVOID)&Info))
+	WIN32_FILE_ATTRIBUTE_DATA InfoAttr;
+	if (GetFileAttributesEx(lpszFileName, GetFileExInfoStandard, (LPVOID)&InfoAttr))
 	{
-		Size.LowPart = Info.nFileSizeLow;
-		Size.HighPart = Info.nFileSizeHigh;
+		Size.LowPart = InfoAttr.nFileSizeLow;
+		Size.HighPart = InfoAttr.nFileSizeHigh;
 	}
 	return Size;
 }
@@ -1273,22 +1273,29 @@ ULARGE_INTEGER GetFileSize64(LPCTSTR lpszFileName)
 ULARGE_INTEGER GetFileSize64Wildcard(LPCTSTR lpszFileName)
 {
 	ULARGE_INTEGER Size = {};
-	WIN32_FIND_DATA Info;
-	HANDLE hFind = FindFirstFile(lpszFileName, &Info);
+	WIN32_FIND_DATA InfoFind;
+	HANDLE hFind = FindFirstFile(lpszFileName, &InfoFind);
 	if (hFind && hFind != INVALID_HANDLE_VALUE)
 	{
 		// Get all wanted files
+		CString sDriveAndDir = GetDriveAndDirName(lpszFileName);
 		do
 		{
-			if ((Info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != FILE_ATTRIBUTE_DIRECTORY)
+			if ((InfoFind.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != FILE_ATTRIBUTE_DIRECTORY)
 			{
-				ULARGE_INTEGER SizeSingle;
-				SizeSingle.LowPart = Info.nFileSizeLow;
-				SizeSingle.HighPart = Info.nFileSizeHigh;
-				Size.QuadPart += SizeSingle.QuadPart;
+				// Note: we do not use InfoFind.nFileSizeLow and InfoFind.nFileSizeHigh
+				//       because if the file is open elsewhere they return an outdated size!
+				WIN32_FILE_ATTRIBUTE_DATA InfoAttr;
+				if (GetFileAttributesEx(sDriveAndDir + InfoFind.cFileName, GetFileExInfoStandard, (LPVOID)&InfoAttr))
+				{
+					ULARGE_INTEGER SizeSingle;
+					SizeSingle.LowPart = InfoAttr.nFileSizeLow;
+					SizeSingle.HighPart = InfoAttr.nFileSizeHigh;
+					Size.QuadPart += SizeSingle.QuadPart;
+				}
 			}
 		}
-		while (FindNextFile(hFind, &Info));
+		while (FindNextFile(hFind, &InfoFind));
 
 		// Close
 		FindClose(hFind);
@@ -1301,17 +1308,15 @@ BOOL GetFileTime(	LPCTSTR lpszFileName,
 					LPFILETIME lpLastAccessTime,
 					LPFILETIME lpLastWriteTime)
 {
-	WIN32_FIND_DATA Info;
-	HANDLE hFind = FindFirstFile(lpszFileName, &Info);
-	if (hFind && hFind != INVALID_HANDLE_VALUE)
+	WIN32_FILE_ATTRIBUTE_DATA InfoAttr;
+	if (GetFileAttributesEx(lpszFileName, GetFileExInfoStandard, (LPVOID)&InfoAttr))
 	{
 		if (lpCreationTime)
-			*lpCreationTime = Info.ftCreationTime;
+			*lpCreationTime = InfoAttr.ftCreationTime;
 		if (lpLastAccessTime)
-			*lpLastAccessTime = Info.ftLastAccessTime;
+			*lpLastAccessTime = InfoAttr.ftLastAccessTime;
 		if (lpLastWriteTime)
-			*lpLastWriteTime = Info.ftLastWriteTime;
-		FindClose(hFind);
+			*lpLastWriteTime = InfoAttr.ftLastWriteTime;
 		return TRUE;
 	}
 	else
