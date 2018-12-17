@@ -957,25 +957,6 @@ BOOL DeleteToRecycleBin(LPCTSTR szName)
 	return (SHFileOperation(&FileOp) == 0);
 }
 
-void DeleteFileWildcard(LPCTSTR lpFileName)
-{
-	CString sDriveAndDir = GetDriveAndDirName(lpFileName);
-	WIN32_FIND_DATA Info;
-	HANDLE hFind = FindFirstFile(lpFileName, &Info);
-	if (hFind && hFind != INVALID_HANDLE_VALUE)
-	{
-		// Delete found files
-		do
-		{
-			if ((Info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != FILE_ATTRIBUTE_DIRECTORY)
-				DeleteFile(sDriveAndDir + Info.cFileName);
-		} while (FindNextFile(hFind, &Info));
-
-		// Close
-		FindClose(hFind);
-	}
-}
-
 CString FormatIntegerNumber(const CString& sNumber)
 {
 	// Format
@@ -1266,39 +1247,6 @@ ULARGE_INTEGER GetFileSize64(LPCTSTR lpszFileName)
 	{
 		Size.LowPart = InfoAttr.nFileSizeLow;
 		Size.HighPart = InfoAttr.nFileSizeHigh;
-	}
-	return Size;
-}
-
-ULARGE_INTEGER GetFileSize64Wildcard(LPCTSTR lpszFileName)
-{
-	ULARGE_INTEGER Size = {};
-	WIN32_FIND_DATA InfoFind;
-	HANDLE hFind = FindFirstFile(lpszFileName, &InfoFind);
-	if (hFind && hFind != INVALID_HANDLE_VALUE)
-	{
-		// Get all wanted files
-		CString sDriveAndDir = GetDriveAndDirName(lpszFileName);
-		do
-		{
-			if ((InfoFind.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != FILE_ATTRIBUTE_DIRECTORY)
-			{
-				// Note: we do not use InfoFind.nFileSizeLow and InfoFind.nFileSizeHigh
-				//       because if the file is open elsewhere they return an outdated size!
-				WIN32_FILE_ATTRIBUTE_DATA InfoAttr;
-				if (GetFileAttributesEx(sDriveAndDir + InfoFind.cFileName, GetFileExInfoStandard, (LPVOID)&InfoAttr))
-				{
-					ULARGE_INTEGER SizeSingle;
-					SizeSingle.LowPart = InfoAttr.nFileSizeLow;
-					SizeSingle.HighPart = InfoAttr.nFileSizeHigh;
-					Size.QuadPart += SizeSingle.QuadPart;
-				}
-			}
-		}
-		while (FindNextFile(hFind, &InfoFind));
-
-		// Close
-		FindClose(hFind);
 	}
 	return Size;
 }

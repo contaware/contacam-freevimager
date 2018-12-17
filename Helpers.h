@@ -129,7 +129,6 @@ extern BOOL MergeDirContent(LPCTSTR szFromDir,
 extern BOOL DeleteDir(LPCTSTR szDirName);
 extern BOOL DeleteDirContent(LPCTSTR szDirName);
 extern BOOL DeleteToRecycleBin(LPCTSTR szName); // delete file or directory
-extern void DeleteFileWildcard(LPCTSTR lpFileName); // delete file only with wildcard (* or ?) in filename.ext part of the full path
 
 // Format Integer Number
 extern CString FormatIntegerNumber(const CString& sNumber);
@@ -161,7 +160,6 @@ extern BOOL AreSamePath(const CString& sPath1, const CString& sPath2);
 
 // File Size
 extern ULARGE_INTEGER GetFileSize64(LPCTSTR lpszFileName);
-extern ULARGE_INTEGER GetFileSize64Wildcard(LPCTSTR lpszFileName);
 
 // Get File Times
 extern BOOL GetFileTime(LPCTSTR lpszFileName,
