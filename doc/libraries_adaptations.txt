@@ -275,7 +275,8 @@ libpng 1.2.59
 AVIR image resizing algorithm designed by Aleksey Vaneev
 --------------------------------------------------------
 
-Using avir.h from avir-master.zip
+- The code is thread-safe
+- Using avir.h from avir-master.zip
 https://github.com/avaneev/avir
 
 
