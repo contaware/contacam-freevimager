@@ -554,7 +554,7 @@ bool CAVRec::Open(const CString& sMetadataTitle)
 	{
 		if ((ret = avio_open(&m_pFormatCtx->pb, m_pFormatCtx->filename, AVIO_FLAG_WRITE)) < 0)
 		{
-			::LogLine(_T("avio_open() failed with error code: %d"), ret);
+			::LogLine(_T("avio_open(\"%s\") failed with error code: %d"), CString(m_pFormatCtx->filename), ret);
 			return false;
 		}
 		else
@@ -576,7 +576,7 @@ bool CAVRec::Open(const CString& sMetadataTitle)
 	// Write the stream header, if any
 	if ((ret = avformat_write_header(m_pFormatCtx, NULL)) < 0)
 	{
-		::LogLine(_T("avformat_write_header() failed with error code: %d"), ret);
+		::LogLine(_T("avformat_write_header(\"%s\") failed with error code: %d"), CString(m_pFormatCtx->filename), ret);
 		return false;
 	}
 	else
