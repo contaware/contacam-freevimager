@@ -106,7 +106,7 @@ function doServerPush($file,$type,$poll) {
 			clearstatcache();
 			
 			// Sleep
-			usleep($poll); // this function works on windows starting from php 5.0.0
+			usleep($poll);
 			
 			// Every 10 seconds, force it to re-evaluate if the user has disconnected
 			// (connection_aborted does not know until this happens)
@@ -118,13 +118,8 @@ function doServerPush($file,$type,$poll) {
 				flush();
 			}
 			
-			// Poll the filesystem until the file changes, then send the update.
-			// The file time resolution is 1 second, so in case of sub-second
-			// refresh do not wait and send with the given $poll rate
-			if (SNAPSHOTREFRESHSEC >= 1)
-				$wait = !connection_aborted() && $lastupdate == @filemtime($file);
-			else
-				$wait = false;
+			// Poll the filesystem until the file changes, then send the update
+			$wait = !connection_aborted() && $lastupdate == @filemtime($file);
 		} while ($wait);
 	} while (!connection_aborted()); // if aborts are ignored, exit anyway to avoid endless threads
 }
