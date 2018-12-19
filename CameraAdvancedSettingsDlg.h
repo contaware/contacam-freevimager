@@ -24,7 +24,6 @@ public:
 	void Hide(BOOL bSaveSettingsOnHiding);
 	void DestroyOnAppExit();
 	void UpdateTitle();
-	void DisplaySnapshotRate();
 	void ChangeThumbSize(int nNewWidth, int nNewHeight);
 
 	// Dialog data

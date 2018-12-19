@@ -3501,7 +3501,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 
 	// Snapshot
 	m_nSnapshotRate = DEFAULT_SNAPSHOT_RATE;
-	m_nSnapshotRateMs = 0;
 	m_nSnapshotHistoryRate = DEFAULT_SNAPSHOT_HISTORY_RATE;
 	m_nSnapshotHistoryFrameRate = DEFAULT_SNAPSHOT_HISTORY_FRAMERATE;
 	m_nSnapshotThumbWidth = DEFAULT_SNAPSHOT_THUMB_WIDTH;
@@ -4279,8 +4278,7 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	CString sRecordAutoSaveDir = m_sRecordAutoSaveDir;
 	sRecordAutoSaveDir.TrimRight(_T('\\'));
 	m_bObscureSource = ::IsExistingFile(sRecordAutoSaveDir + _T("\\") + CAMERA_IS_OBSCURED_FILENAME);
-	m_nSnapshotRate = (int) pApp->GetProfileInt(sSection, _T("SnapshotRate"), DEFAULT_SNAPSHOT_RATE);
-	m_nSnapshotRateMs = (int) pApp->GetProfileInt(sSection, _T("SnapshotRateMs"), 0);
+	m_nSnapshotRate = MAX(1, pApp->GetProfileInt(sSection, _T("SnapshotRate"), DEFAULT_SNAPSHOT_RATE));
 	m_nSnapshotHistoryRate = (int)pApp->GetProfileInt(sSection, _T("SnapshotHistoryRate"), DEFAULT_SNAPSHOT_HISTORY_RATE);
 	m_nSnapshotHistoryFrameRate = (int)pApp->GetProfileInt(sSection, _T("SnapshotHistoryFrameRate"), DEFAULT_SNAPSHOT_HISTORY_FRAMERATE);
 	m_nSnapshotThumbWidth = (int) MakeSizeMultipleOf4(pApp->GetProfileInt(sSection, _T("SnapshotThumbWidth"), DEFAULT_SNAPSHOT_THUMB_WIDTH));
@@ -4437,7 +4435,6 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("FlipV"), (int)m_bFlipV);
 	pApp->WriteProfileString(sSection, _T("RecordAutoSaveDir"), m_sRecordAutoSaveDir);
 	pApp->WriteProfileInt(sSection, _T("SnapshotRate"), m_nSnapshotRate);
-	pApp->WriteProfileInt(sSection, _T("SnapshotRateMs"), m_nSnapshotRateMs);
 	pApp->WriteProfileInt(sSection, _T("SnapshotHistoryRate"), m_nSnapshotHistoryRate);
 	pApp->WriteProfileInt(sSection, _T("SnapshotHistoryFrameRate"), m_nSnapshotHistoryFrameRate);
 	pApp->WriteProfileInt(sSection, _T("SnapshotThumbWidth"), m_nSnapshotThumbWidth);
@@ -7453,40 +7450,6 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 	}
 }
 
-void CVideoDeviceDoc::SnapshotRate(double dRate)
-{
-	CString sText;
-	double dRateFloor = floor(dRate);
-	int nRate = (int)dRateFloor;
-	int nRateMs = Round(1000.0 * (dRate - dRateFloor));
-
-	// Set seconds rate
-	if (nRate >= 0)
-	{
-		sText.Format(_T("%d"), nRate);
-		m_nSnapshotRate = nRate;
-	}
-	else
-	{
-		sText.Format(_T("%d"), DEFAULT_SNAPSHOT_RATE);
-		m_nSnapshotRate = DEFAULT_SNAPSHOT_RATE;
-	}
-	PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTREFRESHSEC, sText);
-
-	// Set milliseconds rate
-	if (nRate == 0 && nRateMs != 0) // rate values in range ]0.0,1.0[
-	{
-		sText.Format(_T("%d"), nRateMs);
-		m_nSnapshotRateMs = nRateMs;
-	}
-	else
-	{
-		sText.Format(_T("%d"), DEFAULT_SERVERPUSH_POLLRATE_MS);
-		m_nSnapshotRateMs = 0;
-	}
-	PhpConfigFileSetParam(PHPCONFIG_SERVERPUSH_POLLRATE_MS, sText);
-}
-
 void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 {
 	// Snapshot Thread
@@ -7498,7 +7461,7 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 		int nFrameTime = Round(1000.0 / m_dFrameRate);
 		if (m_dEffectiveFrameRate > 0.0)
 			nFrameTime = Round(1000.0 / m_dEffectiveFrameRate);
-		int nSnapshotRateMs = 1000 * m_nSnapshotRate + m_nSnapshotRateMs;
+		int nSnapshotRateMs = 1000 * m_nSnapshotRate;
 		if (nFrameTime >= nSnapshotRateMs)
 		{
 			m_dwNextSnapshotUpTime = dwUpTime;

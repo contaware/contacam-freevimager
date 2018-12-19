@@ -204,11 +204,11 @@ BOOL CCameraAdvancedSettingsDlg::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	// Frame Rate
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_FRAMERATE);
+	CEdit* pEditFrameRate = (CEdit*)GetDlgItem(IDC_FRAMERATE);
 	if (m_pDoc->m_pDxCapture)
 	{
 		if (m_pDoc->m_pDxCapture->GetFrameRate() <= 0.0) // cannot be set
-			pEdit->EnableWindow(FALSE);
+			pEditFrameRate->EnableWindow(FALSE);
 	}
 	else if (m_pDoc->m_pVideoNetCom)
 	{
@@ -219,16 +219,16 @@ BOOL CCameraAdvancedSettingsDlg::OnInitDialog()
 			m_pDoc->m_nNetworkDeviceTypeMode != CVideoDeviceDoc::EDIMAX_SP	&&
 			m_pDoc->m_nNetworkDeviceTypeMode != CVideoDeviceDoc::PIXORD_SP	&&
 			m_pDoc->m_nNetworkDeviceTypeMode != CVideoDeviceDoc::FOSCAM_SP)
-			pEdit->EnableWindow(FALSE);
+			pEditFrameRate->EnableWindow(FALSE);
 	}
 	else
-		pEdit->EnableWindow(FALSE);
+		pEditFrameRate->EnableWindow(FALSE);
 	CString sFrameRate;
 	sFrameRate.Format(_T("%0.1f"), m_pDoc->m_dFrameRate);
-	if (pEdit->IsWindowEnabled())
-		pEdit->SetWindowText(sFrameRate);
+	if (pEditFrameRate->IsWindowEnabled())
+		pEditFrameRate->SetWindowText(sFrameRate);
 	else
-		pEdit->SetWindowText(_T(""));
+		pEditFrameRate->SetWindowText(_T(""));
 
 	// Enable Format Button?
 	CButton* pButton = (CButton*)GetDlgItem(IDC_VIDEO_FORMAT);
@@ -344,7 +344,10 @@ BOOL CCameraAdvancedSettingsDlg::OnInitDialog()
 	pButtonAnimGIFSize->SetWindowText(sSize);
 
 	// Snapshot rate
-	DisplaySnapshotRate();
+	CEdit* pEditSnapshotRate = (CEdit*)GetDlgItem(IDC_EDIT_SNAPSHOT_RATE);
+	CString sSnapshotRate;
+	sSnapshotRate.Format(_T("%d"), m_pDoc->m_nSnapshotRate);
+	pEditSnapshotRate->SetWindowText(sSnapshotRate);
 
 	// Thumbnail Size Button
 	sSize.Format(ML_STRING(1769, "Size %i x %i"),	m_pDoc->m_nSnapshotThumbWidth,
@@ -849,27 +852,14 @@ void CCameraAdvancedSettingsDlg::OnAnimatedgifSize()
 	m_pDoc->m_SaveFrameListThread.Start();
 }
 
-void CCameraAdvancedSettingsDlg::DisplaySnapshotRate()
-{
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_SNAPSHOT_RATE);
-	CString sText;
-	if (m_pDoc->m_nSnapshotRate >= 1)
-		sText.Format(_T("%i"), m_pDoc->m_nSnapshotRate);
-	else if (m_pDoc->m_nSnapshotRate == 0 && m_pDoc->m_nSnapshotRateMs == 0)
-		sText = _T("0");
-	else
-		sText.Format(_T("%.3f"), (double)(m_pDoc->m_nSnapshotRate) + (double)(m_pDoc->m_nSnapshotRateMs) / 1000.0);
-	pEdit->SetWindowText(sText);
-}
-
 void CCameraAdvancedSettingsDlg::OnChangeEditSnapshotRate()
 {
-	CString sText;
+	CString sSnapshotRate;
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_SNAPSHOT_RATE);
-	pEdit->GetWindowText(sText);
-	double dRate = _tcstod(sText.GetBuffer(0), NULL);
-	sText.ReleaseBuffer();
-	m_pDoc->SnapshotRate(dRate);
+	pEdit->GetWindowText(sSnapshotRate);
+	m_pDoc->m_nSnapshotRate = MAX(1, _tcstol(sSnapshotRate, NULL, 10));
+	sSnapshotRate.Format(_T("%d"), m_pDoc->m_nSnapshotRate);
+	m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTREFRESHSEC, sSnapshotRate);
 }
 
 void CCameraAdvancedSettingsDlg::ChangeThumbSize(int nNewWidth, int nNewHeight)
