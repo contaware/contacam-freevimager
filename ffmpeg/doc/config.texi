@@ -1216,7 +1216,7 @@
 @c @set config-h263-demuxer no
 @c @set config-h264-demuxer no
 @c @set config-hevc-demuxer no
-@c @set config-hls-demuxer no
+@set config-hls-demuxer yes
 @c @set config-hnm-demuxer no
 @c @set config-ico-demuxer no
 @c @set config-idcin-demuxer no
