@@ -1391,9 +1391,10 @@ void CPicturePrintPreviewView::UpdateStatusText()
 	double dBottomMargin = (double)(PageSize.cy - DibPrint.bottom);
 	if (((CUImagerApp*)::AfxGetApp())->m_nCoordinateUnit == COORDINATES_PIX)
 	{
-		s.Format(	_T("W=%dpx , H=%dpx (l=%d,t=%d,r=%d,b=%d)"),
+		s.Format(	ML_STRING(1234, "W=%dpx , H=%dpx , W/H=%0.2f (l=%d,t=%d,r=%d,b=%d)"),
 					DibPrint.right - DibPrint.left,
 					DibPrint.bottom - DibPrint.top,
+					(double)(DibPrint.right - DibPrint.left) / (double)(DibPrint.bottom - DibPrint.top),
 					DibPrint.left,
 					DibPrint.top,
 					PageSize.cx - DibPrint.right,
@@ -1407,9 +1408,10 @@ void CPicturePrintPreviewView::UpdateStatusText()
 		dBottom /= m_sizePrinterPPI.cy;
 		dRightMargin /= m_sizePrinterPPI.cx;
 		dBottomMargin /= m_sizePrinterPPI.cy;
-		s.Format(	_T("W=%0.2fin , H=%0.2fin (l=%0.2f,t=%0.2f,r=%0.2f,b=%0.2f)"),
+		s.Format(	ML_STRING(1236, "W=%0.2fin , H=%0.2fin , W/H=%0.2f (l=%0.2f,t=%0.2f,r=%0.2f,b=%0.2f)"),
 					dRight - dLeft,
 					dBottom - dTop,
+					(dRight - dLeft) / (dBottom - dTop),
 					dLeft,
 					dTop,
 					dRightMargin,
@@ -1423,9 +1425,10 @@ void CPicturePrintPreviewView::UpdateStatusText()
 		dBottom = dBottom * 2.54 / m_sizePrinterPPI.cy;
 		dRightMargin = dRightMargin * 2.54 / m_sizePrinterPPI.cx;
 		dBottomMargin = dBottomMargin * 2.54 / m_sizePrinterPPI.cy;
-		s.Format(	_T("W=%0.2fcm , H=%0.2fcm (l=%0.2f,t=%0.2f,r=%0.2f,b=%0.2f)"),
+		s.Format(	ML_STRING(1237, "W=%0.2fcm , H=%0.2fcm , W/H=%0.2f (l=%0.2f,t=%0.2f,r=%0.2f,b=%0.2f)"),
 					dRight - dLeft,
 					dBottom - dTop,
+					(dRight - dLeft) / (dBottom - dTop),
 					dLeft,
 					dTop,
 					dRightMargin,

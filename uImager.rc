@@ -1121,7 +1121,7 @@ BEGIN
     CONTROL         "Fr",IDC_CHECK_SCHEDULER_FRIDAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,153,263,27,10
     CONTROL         "Sa",IDC_CHECK_SCHEDULER_SATURDAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,181,263,25,10
     CONTROL         "Full video",IDC_SAVE_VIDEO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,19,46,10
-    CONTROL         "",IDC_VIDEO_COMPRESSION_QUALITY,"msctls_trackbar32",TBS_TOP | TBS_NOTICKS | WS_TABSTOP,311,16,54,18
+    CONTROL         "",IDC_VIDEO_COMPRESSION_QUALITY,"msctls_trackbar32",TBS_TOP | TBS_NOTICKS | WS_TABSTOP,311,17,54,18
     CONTROL         "Small video",IDC_SAVE_ANIMATEDGIF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,38,52,10
     PUSHBUTTON      "",IDC_ANIMATEDGIF_SIZE,286,36,123,14
     EDITTEXT        IDC_EDIT_SNAPSHOT_RATE,286,77,35,12,ES_AUTOHSCROLL | ES_NUMBER
@@ -1146,13 +1146,13 @@ BEGIN
     LTEXT           "frames",IDC_STATIC2293,123,59,23,8
     GROUPBOX        "Recording Save",IDC_STATIC2288,218,5,198,51
     LTEXT           "Pre && Post buffers",IDC_STATIC,13,31,59,8
-    LTEXT           "qual.",IDC_VIDEO_COMPRESSION_QUALITY_INFO,367,19,46,8
+    LTEXT           "qual.",IDC_VIDEO_COMPRESSION_QUALITY_INFO,367,20,46,8
     LTEXT           "Framerate",IDC_STATIC2155,13,17,34,8
     LTEXT           "fps",IDC_STATIC2183,123,17,11,8
     GROUPBOX        "Audio",IDC_STATIC2157,6,124,202,68
     GROUPBOX        "Live Snapshot",IDC_STATIC2294,218,64,198,52
     GROUPBOX        "Command",IDC_STATIC2295,218,124,198,154
-    LTEXT           "Quality",IDC_STATIC,286,19,24,8
+    LTEXT           "Quality",IDC_STATIC,286,20,24,8
     LTEXT           "Take each",IDC_STATIC2476,225,79,47,8
     LTEXT           "sec",IDC_STATIC2477,328,79,14,10
     LTEXT           "Thumbnail",IDC_STATIC2478,225,99,53,8
@@ -3095,10 +3095,10 @@ STRINGTABLE
 BEGIN
     IDS_MULTILANG_1232      "No Redeye with Hue: %0.1f° , Red/Green: %0.1f "
     IDS_MULTILANG_1233      "Hue: %0.1f° "
-    IDS_MULTILANG_1234      "W=%dpx , H=%dpx , W/H=%0.2f (l=%d,t=%d,r=%d,b=%d) "
+    IDS_MULTILANG_1234      "W=%dpx , H=%dpx , W/H=%0.2f (l=%d,t=%d,r=%d,b=%d)"
     IDS_MULTILANG_1235      "*** CTRL Lock Ratio, ENTER Apply, ESC Cancel ***"
-    IDS_MULTILANG_1236      "W=%0.2fin , H=%0.2fin , W/H=%0.2f (l=%0.2f,t=%0.2f,r=%0.2f,b=%0.2f) "
-    IDS_MULTILANG_1237      "W=%0.2fcm , H=%0.2fcm , W/H=%0.2f (l=%0.2f,t=%0.2f,r=%0.2f,b=%0.2f) "
+    IDS_MULTILANG_1236      "W=%0.2fin , H=%0.2fin , W/H=%0.2f (l=%0.2f,t=%0.2f,r=%0.2f,b=%0.2f)"
+    IDS_MULTILANG_1237      "W=%0.2fcm , H=%0.2fcm , W/H=%0.2f (l=%0.2f,t=%0.2f,r=%0.2f,b=%0.2f)"
     IDS_MULTILANG_1239      " , %dx%d , %s , Image: %d %s"
     IDS_MULTILANG_1241      " , File %i of %i in Directories, Frame %i of %i, %dx%d , %s , File: %d %s"
     IDS_MULTILANG_1242      " , File %i of %i in Directory, Frame %i of %i, %dx%d , %s , File: %d %s"
@@ -3631,7 +3631,7 @@ STRINGTABLE
 BEGIN
     ID_EDIT_CLEAR           "Erase the selection\nErase"
     ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
-    ID_EDIT_COPY            "Copy document to the Clipboard\nCopy"
+    ID_EDIT_COPY            "Copy to the Clipboard\nCopy"
     ID_EDIT_CUT             "Cut the selection and put it on the Clipboard\nCut"
     ID_EDIT_FIND            "Find the specified text\nFind"
     ID_EDIT_PASTE           "Insert Clipboard contents\nPaste"
