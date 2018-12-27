@@ -1,8 +1,11 @@
 CONTACAM HISTORY
 
-9.0.7 (December Xth 2018)
+9.0.7 (December 27th 2018)
 
+- The web interface full screen image maintains the aspect ratio
+  (not supported by IE)
 - Store the temporary daily summary snapshots in a subfolder
+- Removed the possibility to have "snapshot each" under 1 second
 
 9.0.5 (November 7th 2018)
 

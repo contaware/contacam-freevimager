@@ -44,4 +44,9 @@ ContaCam Program
 - Pollable SendMailMovementDetection (nmclachlan@gmail.com)
   Pollable DoExecCommandMovementDetection (johnliber@gmail.com)
   (I do not know whether it is a good thing to add more and more pollable settings...)
-  
+- Implement the classic grid display for cameras overview (harmi11@gmail.com)
+- Opera mobile can't play video records from web server page. I made also tests with other
+  sources of mp4 and also with them there are problems. So we wait that Opera fixes it
+  (a_adashkevich@mail.ru)
+- Support connecting to a .m3u8 streaming server also known as HLS (HTTP Live Streaming)
+  (frak@snakebite.com)
