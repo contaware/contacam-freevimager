@@ -1501,9 +1501,9 @@ void COsdDlg::UpdateDisplay()
 			m_pDoc->m_pDib->GetExifInfo()->Flash >= 0)
 		{
 			if (m_pDoc->m_pDib->GetExifInfo()->Flash & 1)
-				t = ML_STRING(1712, "Flash: yes");
+				t = _T("Flash: yes");
 			else
-				t = ML_STRING(1713, "Flash: no");
+				t = _T("Flash: no");
 			if (t != _T(""))
 				m_ExifArray.Add(t);
 		}

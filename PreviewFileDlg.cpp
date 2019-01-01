@@ -321,9 +321,9 @@ LONG CPreviewFileDlg::OnLoadDone(WPARAM wparam, LPARAM lparam)
 			if (pDib->GetExifInfo()->Flash >= 0)
 			{
 				if (pDib->GetExifInfo()->Flash & 1)
-					t = ML_STRING(1714, "Flash:\tyes\r\n");
+					t = _T("Flash:\tyes\r\n");
 				else
-					t = ML_STRING(1715, "Flash:\tno\r\n");
+					t = _T("Flash:\tno\r\n");
 				s+=t;
 			}
 
