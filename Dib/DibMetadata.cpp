@@ -2636,17 +2636,11 @@ void CMetadata::Put16m(void* Short, unsigned short PutValue)
 	((unsigned char *)Short)[1] = (unsigned char)PutValue;
 }
 
-/*--------------------------------------------------------------------------
-   Convert a 16 bit unsigned value from file's native unsigned char order
---------------------------------------------------------------------------*/
 unsigned short CMetadata::Get16u(void* Short)
 {
      return (unsigned short)Get16s(Short);
 }
-////////////////////////////////////////////////////////////////////////////////
-/*--------------------------------------------------------------------------
-   Convert a 16 bit unsigned value from file's native unsigned char order
---------------------------------------------------------------------------*/
+
 short CMetadata::Get16s(void* Short)
 {
     if (m_bMotorolaOrder)
@@ -2659,9 +2653,6 @@ short CMetadata::Get16s(void* Short)
     }
 }
 
-/*--------------------------------------------------------------------------
-   Convert a 16 bit unsigned value from file's native byte order
-//------------------------------------------------------------------------*/
 void CMetadata::Put16s(void* Short, short PutValue)
 {
     if (m_bMotorolaOrder)
@@ -2676,9 +2667,6 @@ void CMetadata::Put16s(void* Short, short PutValue)
     }
 }
 
-/*--------------------------------------------------------------------------
-   Convert a 16 bit unsigned value from file's native byte order
-//------------------------------------------------------------------------*/
 void CMetadata::Put16u(void* Short, unsigned short PutValue)
 {
     if (m_bMotorolaOrder)
@@ -2693,9 +2681,6 @@ void CMetadata::Put16u(void* Short, unsigned short PutValue)
     }
 }
 
-/*--------------------------------------------------------------------------
-   Convert a 32 bit signed value from file's native unsigned char order
---------------------------------------------------------------------------*/
 long CMetadata::Get32s(void* Long)
 {
     if (m_bMotorolaOrder)
@@ -2710,17 +2695,11 @@ long CMetadata::Get32s(void* Long)
     }
 }
 
-/*--------------------------------------------------------------------------
-   Convert a 32 bit unsigned value from file's native unsigned char order
---------------------------------------------------------------------------*/
 unsigned long CMetadata::Get32u(void* Long)
 {
     return (unsigned long)Get32s(Long);
 }
 
-/*--------------------------------------------------------------------------
-   Convert a 32 bit unsigned value from file's native byte order
-//------------------------------------------------------------------------*/
 void CMetadata::Put32s(void* Long, long PutValue)
 {
     if (m_bMotorolaOrder)
@@ -2739,9 +2718,6 @@ void CMetadata::Put32s(void* Long, long PutValue)
     }
 }
 
-/*--------------------------------------------------------------------------
-   Convert a 32 bit unsigned value from file's native byte order
-//------------------------------------------------------------------------*/
 void CMetadata::Put32u(void* Long, unsigned long PutValue)
 {
     if (m_bMotorolaOrder)
