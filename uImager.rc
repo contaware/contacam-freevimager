@@ -3911,6 +3911,7 @@ END
 
 STRINGTABLE
 BEGIN
+    IDS_STRING1712          "Ambient Temperature:\t%.1f°C\r\n"
     IDS_STRING1721          "1 Day"
     IDS_STRING1722          "2 Days"
     IDS_STRING1723          "3 Days"

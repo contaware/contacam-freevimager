@@ -229,6 +229,7 @@
 #define TAG_ISO_EQUIVALENT			0x8827 // = EXIFTAG_ISOSPEEDRATINGS
 #define TAG_COMPRESSION_LEVEL		0x9102
 #define TAG_LIGHT_SOURCE			0x9208
+#define TAG_AMBIENT_TEMPERATURE		0x9400
 
 /////////////////////////////////////////////////
 // The Exif Format in Jpeg
@@ -313,6 +314,18 @@ assuming Photoshop has the ability to write TIFF byteorder that is non-native to
 the machine, otherwise this is not an issue.)
 */
 
+/////////////////////////////////////////////////
+// Add a new IFD0 Exif SubDir entry
+/*
+1. Add a hex define under "Exif Specific Tags" (DibMetadata.h)
+2. Add a var to EXIFINFO (DibMetadata.h)
+3. Unset values other than 0 must be init in CMetadata::CMetadata() and CMetadata::Free() (DibMetadata.cpp)
+4. Add two if entries in CMetadata::MakeExifSection() (DibMetadata.cpp)
+5. Add a switch entry to CMetadata::ParseTIFFDir() (DibMetadata.cpp)
+6. Add a decimal define under "EXIF tags" (tiff.h)
+7. Add a exifFieldInfo[] entry (tif_dirinfo.c)
+8. Add a switch entry to TIFFGetExifField() (DibTiff.cpp)
+*/
 class CMetadata
 {
 public:
@@ -324,11 +337,7 @@ public:
 		unsigned int Size;
 	};
 
-	// All fields are 0 if not set, except flash and WhiteBalance which are -1.
-	//
-	// The following thumbnail datas have a default value
-	// which may differ from 0 set before parsing:
-	// dYCbCrCoeff, dRefBW and YCbCrSubSampling
+	// Exif
 	struct EXIFINFO
 	{
 		// Flags
@@ -378,6 +387,7 @@ public:
 		float Yresolution;
 		float ResolutionUnit;
 		float Brightness;
+		float AmbientTemperature;		// NAN if not set
 
 		// Calculated, it's not from a Tag!
 		float CCDWidth;

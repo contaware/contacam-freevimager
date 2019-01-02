@@ -3701,6 +3701,7 @@ BOOL CDib::AddEXIFThumbnail(LPCTSTR lpszInPathName,
 					Dib.GetExifInfo()->FocalplaneYRes = 1500.0f;
 					Dib.GetExifInfo()->FocalplaneUnits = 0.001f;
 					Dib.GetExifInfo()->Brightness = 5.0f;
+					Dib.GetExifInfo()->AmbientTemperature = 25.0f;
 					*/
 
 					// Create Simple Exif Section with Thumbnail

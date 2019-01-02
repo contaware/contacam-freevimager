@@ -1755,6 +1755,12 @@ void CImageInfoDlg::DisplayMetadata()
 		   }
 		}
 
+		if (!isnan(m_pDoc->m_pDib->GetExifInfo()->AmbientTemperature))
+		{
+			t.Format(ML_STRING(1712, "Ambient Temperature:\t%.1f°C\r\n"), m_pDoc->m_pDib->GetExifInfo()->AmbientTemperature);
+			s += t;
+		}
+
 		// Gps
 		if (m_pDoc->m_pDib->GetExifInfo()->bGpsInfoPresent)
 		{

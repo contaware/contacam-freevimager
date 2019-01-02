@@ -95,6 +95,7 @@ CMetadata::CMetadata()
 	memset(&m_ExifInfo, 0, sizeof(EXIFINFO));
 	m_ExifInfo.WhiteBalance = -1;
 	m_ExifInfo.Flash = -1;
+	m_ExifInfo.AmbientTemperature = NAN;
 	m_ExifInfo.GpsLat[GPS_DEGREE] = -1.0f;
 	m_ExifInfo.GpsLat[GPS_MINUTES] = -1.0f;
 	m_ExifInfo.GpsLat[GPS_SECONDS] = -1.0f;
@@ -378,6 +379,7 @@ void CMetadata::Free()
 	memset(&m_ExifInfo, 0, sizeof(EXIFINFO));
 	m_ExifInfo.WhiteBalance = -1;
 	m_ExifInfo.Flash = -1;
+	m_ExifInfo.AmbientTemperature = NAN;
 	m_ExifInfo.GpsLat[GPS_DEGREE] = -1.0f;
 	m_ExifInfo.GpsLat[GPS_MINUTES] = -1.0f;
 	m_ExifInfo.GpsLat[GPS_SECONDS] = -1.0f;
@@ -996,6 +998,8 @@ int CMetadata::MakeExifSection(LPBYTE Section,
 	if (m_ExifInfo.FocalplaneUnits)
 		IFD0ExifSubDirEntries++;
 	if (m_ExifInfo.Brightness)
+		IFD0ExifSubDirEntries++;
+	if (!isnan(m_ExifInfo.AmbientTemperature))
 		IFD0ExifSubDirEntries++;
 	if (m_ExifInfo.UserComment[0])
 		IFD0ExifSubDirEntries++;
@@ -1717,6 +1721,28 @@ int CMetadata::MakeExifSection(LPBYTE Section,
 		// Copy Data
 		POSCHECK(PosData+7);
 		nNum = (int)(m_ExifInfo.Brightness * 10000.0f);
+		nDen = 10000;
+		Put32s((void*)(&Section[PosData]), nNum);
+		PosData += 4;
+		Put32s((void*)(&Section[PosData]), nDen);
+		PosData += 4;
+	}
+
+	// TAG_AMBIENT_TEMPERATURE
+	if (!isnan(m_ExifInfo.AmbientTemperature))
+	{
+		Put16u(&Section[Pos], TAG_AMBIENT_TEMPERATURE);	// Tag
+		Pos += 2;
+		Put16u(&Section[Pos], FMT_SRATIONAL);			// Type
+		Pos += 2;
+		Put32u(&Section[Pos], 1);						// Components Count
+		Pos += 4;
+		Put32u(&Section[Pos], PosData - Base);			// Value Ptr
+		Pos += 4;
+
+		// Copy Data
+		POSCHECK(PosData + 7);
+		nNum = (int)(m_ExifInfo.AmbientTemperature * 10000.0f);
 		nDen = 10000;
 		Put32s((void*)(&Section[PosData]), nNum);
 		PosData += 4;
@@ -2996,6 +3022,10 @@ bool CMetadata::ParseTIFFDir(	int nIFD,
 
 			case TAG_BRIGHTNESS:
 				pExifInfo->Brightness = (float)ConvertFromAnyFormat(ValuePtr, Format);
+				break;
+
+			case TAG_AMBIENT_TEMPERATURE:
+				pExifInfo->AmbientTemperature = (float)ConvertFromAnyFormat(ValuePtr, Format);
 				break;
 
             case TAG_FOCALLENGTH:

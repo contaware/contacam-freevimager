@@ -1018,6 +1018,13 @@ int TIFFGetExifField(void* userdata, TIFF* tif, ttag_t tag, ...)
 				bSet = 1;
 			}
 			break;
+		case EXIFTAG_AMBIENT_TEMPERATURE:
+			if (!isnan(pExifInfo->AmbientTemperature))
+			{
+				*va_arg(ap, float*) = pExifInfo->AmbientTemperature;
+				bSet = 1;
+			}
+			break;
 		case EXIFTAG_USERCOMMENT :
 			if (pExifInfo->UserComment[0])
 			{

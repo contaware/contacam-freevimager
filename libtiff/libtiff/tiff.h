@@ -610,6 +610,7 @@ typedef	enum {
 #define EXIFTAG_SUBSECTIME		37520	/* DateTime subseconds */
 #define EXIFTAG_SUBSECTIMEORIGINAL	37521	/* DateTimeOriginal subseconds */
 #define EXIFTAG_SUBSECTIMEDIGITIZED	37522	/* DateTimeDigitized subseconds */
+#define EXIFTAG_AMBIENT_TEMPERATURE 37888	/* AmbientTemperature */
 #define EXIFTAG_FLASHPIXVERSION		40960	/* Supported Flashpix version */
 #define EXIFTAG_COLORSPACE		40961	/* Color space information */
 #define EXIFTAG_PIXELXDIMENSION		40962	/* Valid image width */

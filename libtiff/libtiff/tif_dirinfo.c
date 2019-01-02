@@ -447,6 +447,8 @@ exifFieldInfo[] = {
       1,	0,	"SubSecTimeOriginal" },
     { EXIFTAG_SUBSECTIMEDIGITIZED,-1, -1,	TIFF_ASCII,	FIELD_CUSTOM,
       1,	0,	"SubSecTimeDigitized" },
+    { EXIFTAG_AMBIENT_TEMPERATURE,	1, 1,	TIFF_SRATIONAL,	FIELD_CUSTOM,
+	  1,	0,	"AmbientTemperature" },
     { EXIFTAG_FLASHPIXVERSION,	4, 4,		TIFF_UNDEFINED,	FIELD_CUSTOM,
       1,	0,	"FlashpixVersion" },
     { EXIFTAG_PIXELXDIMENSION,	1, 1,		TIFF_LONG,	FIELD_CUSTOM,
