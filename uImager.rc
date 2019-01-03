@@ -836,7 +836,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,15,10,20,20
     LTEXT           "Unknown",IDC_VERSION,154,49,136,8,SS_NOPREFIX
-    LTEXT           "Copyright © 2003 - 2018 Contaware.com, Switzerland",IDC_STATIC2141,62,213,181,8
+    LTEXT           "Copyright © 2003 - 2019 Contaware.com, Switzerland",IDC_STATIC2141,62,213,181,8
     DEFPUSHBUTTON   "OK",IDOK,125,196,50,14,WS_GROUP
     LTEXT           "Version:",IDC_STATIC2142,15,49,39,8
     LTEXT           "",IDC_APPNAME,74,17,216,8
