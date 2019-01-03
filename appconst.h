@@ -31,7 +31,7 @@
 #define FAQ_ONLINE_PAGE									_T("http://www.contaware.com/freevimagerfaq/")
 #define MANUAL_ONLINE_PAGE								_T("http://www.contaware.com/freevimagermanual/")
 #endif
-#define APPVERSION										_T("9.0.7")
+#define APPVERSION										_T("9.0.9beta1")
 
 // Company
 #define MYCOMPANY										_T("Contaware")
