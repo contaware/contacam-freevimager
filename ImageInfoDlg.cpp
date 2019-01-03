@@ -1824,9 +1824,9 @@ void CImageInfoDlg::DisplayMetadata()
 				m_pDoc->m_pDib->GetExifInfo()->GpsTime[GPS_MINUTES] >= 0.0f	&&
 				m_pDoc->m_pDib->GetExifInfo()->GpsTime[GPS_SECONDS] >= 0.0f)
 			{
-				t.Format(_T("GPS time (UTC):\t%.0f:%.0f:%.0f\r\n"),	m_pDoc->m_pDib->GetExifInfo()->GpsTime[GPS_HOUR],
-																	m_pDoc->m_pDib->GetExifInfo()->GpsTime[GPS_MINUTES],
-																	m_pDoc->m_pDib->GetExifInfo()->GpsTime[GPS_SECONDS]);
+				t.Format(_T("GPS time (UTC):\t%02.0f:%02.0f:%02.0f\r\n"),	m_pDoc->m_pDib->GetExifInfo()->GpsTime[GPS_HOUR],
+																			m_pDoc->m_pDib->GetExifInfo()->GpsTime[GPS_MINUTES],
+																			m_pDoc->m_pDib->GetExifInfo()->GpsTime[GPS_SECONDS]);
 				s+=t;
 			}
 			if (m_pDoc->m_pDib->GetExifInfo()->GpsMapDatum[0])
