@@ -1773,9 +1773,12 @@ void CImageInfoDlg::DisplayMetadata()
 			s += t;
 		}
 
-		if (!isnan(m_pDoc->m_pDib->GetExifInfo()->WaterDepth) && m_pDoc->m_pDib->GetExifInfo()->WaterDepth > 0.0f)
+		if (!isnan(m_pDoc->m_pDib->GetExifInfo()->WaterDepth))
 		{
-			t.Format(ML_STRING(1715, "Water depth:\t%.1fm\r\n"), m_pDoc->m_pDib->GetExifInfo()->WaterDepth);
+			t.Format(ML_STRING(1715, "Water depth:\t%.1fm\r\n"),
+				m_pDoc->m_pDib->GetExifInfo()->WaterDepth == 0.0f ?
+				0.0f : // avoid ugly -0.0m display
+				m_pDoc->m_pDib->GetExifInfo()->WaterDepth);
 			s += t;
 		}
 
