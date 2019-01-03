@@ -230,6 +230,9 @@
 #define TAG_COMPRESSION_LEVEL		0x9102
 #define TAG_LIGHT_SOURCE			0x9208
 #define TAG_AMBIENT_TEMPERATURE		0x9400
+#define TAG_HUMIDITY				0x9401
+#define TAG_PRESSURE				0x9402
+#define TAG_WATERDEPTH				0x9403
 
 /////////////////////////////////////////////////
 // The Exif Format in Jpeg
@@ -387,7 +390,10 @@ public:
 		float Yresolution;
 		float ResolutionUnit;
 		float Brightness;
-		float AmbientTemperature;		// NAN if not set
+		float AmbientTemperature;		// ambient temperature in °C, NAN if not set
+		float Humidity;					// ambient relative humidity in percent, NAN if not set
+		float Pressure;					// air pressure in hPa or mbar, NAN if not set
+		float WaterDepth;				// depth under water in meters, negative for above water, NAN if not set
 
 		// Calculated, it's not from a Tag!
 		float CCDWidth;

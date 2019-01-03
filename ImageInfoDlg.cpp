@@ -1757,7 +1757,25 @@ void CImageInfoDlg::DisplayMetadata()
 
 		if (!isnan(m_pDoc->m_pDib->GetExifInfo()->AmbientTemperature))
 		{
-			t.Format(ML_STRING(1712, "Ambient Temperature:\t%.1f°C\r\n"), m_pDoc->m_pDib->GetExifInfo()->AmbientTemperature);
+			t.Format(ML_STRING(1712, "Temperature:\t%.1f°C\r\n"), m_pDoc->m_pDib->GetExifInfo()->AmbientTemperature);
+			s += t;
+		}
+
+		if (!isnan(m_pDoc->m_pDib->GetExifInfo()->Humidity))
+		{
+			t.Format(ML_STRING(1713, "Humidity:\t%.0f%%\r\n"), m_pDoc->m_pDib->GetExifInfo()->Humidity);
+			s += t;
+		}
+
+		if (!isnan(m_pDoc->m_pDib->GetExifInfo()->Pressure))
+		{
+			t.Format(ML_STRING(1714, "Pressure:\t%.0fmbar\r\n"), m_pDoc->m_pDib->GetExifInfo()->Pressure);
+			s += t;
+		}
+
+		if (!isnan(m_pDoc->m_pDib->GetExifInfo()->WaterDepth) && m_pDoc->m_pDib->GetExifInfo()->WaterDepth > 0.0f)
+		{
+			t.Format(ML_STRING(1715, "Water depth:\t%.1fm\r\n"), m_pDoc->m_pDib->GetExifInfo()->WaterDepth);
 			s += t;
 		}
 

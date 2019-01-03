@@ -1018,10 +1018,31 @@ int TIFFGetExifField(void* userdata, TIFF* tif, ttag_t tag, ...)
 				bSet = 1;
 			}
 			break;
-		case EXIFTAG_AMBIENT_TEMPERATURE:
+		case EXIFTAG_AMBIENT_TEMPERATURE :
 			if (!isnan(pExifInfo->AmbientTemperature))
 			{
 				*va_arg(ap, float*) = pExifInfo->AmbientTemperature;
+				bSet = 1;
+			}
+			break;
+		case EXIFTAG_HUMIDITY :
+			if (!isnan(pExifInfo->Humidity))
+			{
+				*va_arg(ap, float*) = pExifInfo->Humidity;
+				bSet = 1;
+			}
+			break;
+		case EXIFTAG_PRESSURE :
+			if (!isnan(pExifInfo->Pressure))
+			{
+				*va_arg(ap, float*) = pExifInfo->Pressure;
+				bSet = 1;
+			}
+			break;
+		case EXIFTAG_WATERDEPTH :
+			if (!isnan(pExifInfo->WaterDepth))
+			{
+				*va_arg(ap, float*) = pExifInfo->WaterDepth;
 				bSet = 1;
 			}
 			break;

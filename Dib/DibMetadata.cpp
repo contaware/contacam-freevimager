@@ -96,6 +96,9 @@ CMetadata::CMetadata()
 	m_ExifInfo.WhiteBalance = -1;
 	m_ExifInfo.Flash = -1;
 	m_ExifInfo.AmbientTemperature = NAN;
+	m_ExifInfo.Humidity = NAN;
+	m_ExifInfo.Pressure = NAN;
+	m_ExifInfo.WaterDepth = NAN;
 	m_ExifInfo.GpsLat[GPS_DEGREE] = -1.0f;
 	m_ExifInfo.GpsLat[GPS_MINUTES] = -1.0f;
 	m_ExifInfo.GpsLat[GPS_SECONDS] = -1.0f;
@@ -380,6 +383,9 @@ void CMetadata::Free()
 	m_ExifInfo.WhiteBalance = -1;
 	m_ExifInfo.Flash = -1;
 	m_ExifInfo.AmbientTemperature = NAN;
+	m_ExifInfo.Humidity = NAN;
+	m_ExifInfo.Pressure = NAN;
+	m_ExifInfo.WaterDepth = NAN;
 	m_ExifInfo.GpsLat[GPS_DEGREE] = -1.0f;
 	m_ExifInfo.GpsLat[GPS_MINUTES] = -1.0f;
 	m_ExifInfo.GpsLat[GPS_SECONDS] = -1.0f;
@@ -1000,6 +1006,12 @@ int CMetadata::MakeExifSection(LPBYTE Section,
 	if (m_ExifInfo.Brightness)
 		IFD0ExifSubDirEntries++;
 	if (!isnan(m_ExifInfo.AmbientTemperature))
+		IFD0ExifSubDirEntries++;
+	if (!isnan(m_ExifInfo.Humidity))
+		IFD0ExifSubDirEntries++;
+	if (!isnan(m_ExifInfo.Pressure))
+		IFD0ExifSubDirEntries++;
+	if (!isnan(m_ExifInfo.WaterDepth))
 		IFD0ExifSubDirEntries++;
 	if (m_ExifInfo.UserComment[0])
 		IFD0ExifSubDirEntries++;
@@ -1743,6 +1755,72 @@ int CMetadata::MakeExifSection(LPBYTE Section,
 		// Copy Data
 		POSCHECK(PosData + 7);
 		nNum = (int)(m_ExifInfo.AmbientTemperature * 10000.0f);
+		nDen = 10000;
+		Put32s((void*)(&Section[PosData]), nNum);
+		PosData += 4;
+		Put32s((void*)(&Section[PosData]), nDen);
+		PosData += 4;
+	}
+
+	// TAG_HUMIDITY
+	if (!isnan(m_ExifInfo.Humidity))
+	{
+		Put16u(&Section[Pos], TAG_HUMIDITY);			// Tag
+		Pos += 2;
+		Put16u(&Section[Pos], FMT_URATIONAL);			// Type
+		Pos += 2;
+		Put32u(&Section[Pos], 1);						// Components Count
+		Pos += 4;
+		Put32u(&Section[Pos], PosData - Base);			// Value Ptr
+		Pos += 4;
+
+		// Copy Data
+		POSCHECK(PosData + 7);
+		dwNum = (DWORD)(m_ExifInfo.Humidity * 10000.0f);
+		dwDen = 10000;
+		Put32u((void*)(&Section[PosData]), dwNum);
+		PosData += 4;
+		Put32u((void*)(&Section[PosData]), dwDen);
+		PosData += 4;
+	}
+
+	// TAG_PRESSURE
+	if (!isnan(m_ExifInfo.Pressure))
+	{
+		Put16u(&Section[Pos], TAG_PRESSURE);			// Tag
+		Pos += 2;
+		Put16u(&Section[Pos], FMT_URATIONAL);			// Type
+		Pos += 2;
+		Put32u(&Section[Pos], 1);						// Components Count
+		Pos += 4;
+		Put32u(&Section[Pos], PosData - Base);			// Value Ptr
+		Pos += 4;
+
+		// Copy Data
+		POSCHECK(PosData + 7);
+		dwNum = (DWORD)(m_ExifInfo.Pressure * 10000.0f);
+		dwDen = 10000;
+		Put32u((void*)(&Section[PosData]), dwNum);
+		PosData += 4;
+		Put32u((void*)(&Section[PosData]), dwDen);
+		PosData += 4;
+	}
+
+	// TAG_WATERDEPTH
+	if (!isnan(m_ExifInfo.WaterDepth))
+	{
+		Put16u(&Section[Pos], TAG_WATERDEPTH);			// Tag
+		Pos += 2;
+		Put16u(&Section[Pos], FMT_SRATIONAL);			// Type
+		Pos += 2;
+		Put32u(&Section[Pos], 1);						// Components Count
+		Pos += 4;
+		Put32u(&Section[Pos], PosData - Base);			// Value Ptr
+		Pos += 4;
+
+		// Copy Data
+		POSCHECK(PosData + 7);
+		nNum = (int)(m_ExifInfo.WaterDepth * 10000.0f);
 		nDen = 10000;
 		Put32s((void*)(&Section[PosData]), nNum);
 		PosData += 4;
@@ -3002,6 +3080,18 @@ bool CMetadata::ParseTIFFDir(	int nIFD,
 
 			case TAG_AMBIENT_TEMPERATURE:
 				pExifInfo->AmbientTemperature = (float)ConvertFromAnyFormat(ValuePtr, Format);
+				break;
+
+			case TAG_HUMIDITY:
+				pExifInfo->Humidity = (float)ConvertFromAnyFormat(ValuePtr, Format);
+				break;
+
+			case TAG_PRESSURE:
+				pExifInfo->Pressure = (float)ConvertFromAnyFormat(ValuePtr, Format);
+				break;
+
+			case TAG_WATERDEPTH:
+				pExifInfo->WaterDepth = (float)ConvertFromAnyFormat(ValuePtr, Format);
 				break;
 
             case TAG_FOCALLENGTH:
