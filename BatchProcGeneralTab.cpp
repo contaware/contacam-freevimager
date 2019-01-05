@@ -73,15 +73,15 @@ BOOL CBatchProcGeneralTab::OnInitDialog()
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_EXTENSION);
 	if (pComboBox)
 	{
-		pComboBox->AddString(ML_STRING(1506, "No Image Extension Change"));
-		pComboBox->AddString(ML_STRING(1507, "Auto Optimize Image Extensions"));
-		pComboBox->AddString(ML_STRING(1508, "Convert All Images To Jpeg"));
-		pComboBox->AddString(ML_STRING(1509, "Convert All Images To Png"));
-		pComboBox->AddString(ML_STRING(1510, "Convert All Images To Gif"));
-		pComboBox->AddString(ML_STRING(1511, "Convert All Images To Tiff"));
-		pComboBox->AddString(ML_STRING(1512, "Convert All Images To Bmp"));
-		pComboBox->AddString(ML_STRING(1513, "Convert All Images To Pcx"));
-		pComboBox->AddString(ML_STRING(1711, "Convert All Images To Emf"));
+		pComboBox->AddString(ML_STRING(1505, "No Image Extension Change"));
+		pComboBox->AddString(ML_STRING(1506, "Auto Optimize Image Extensions"));
+		pComboBox->AddString(ML_STRING(1507, "Convert All Images To Jpeg"));
+		pComboBox->AddString(ML_STRING(1508, "Convert All Images To Png"));
+		pComboBox->AddString(ML_STRING(1509, "Convert All Images To Gif"));
+		pComboBox->AddString(ML_STRING(1510, "Convert All Images To Tiff"));
+		pComboBox->AddString(ML_STRING(1511, "Convert All Images To Bmp"));
+		pComboBox->AddString(ML_STRING(1512, "Convert All Images To Pcx"));
+		pComboBox->AddString(ML_STRING(1513, "Convert All Images To Emf"));
 	}
 
 	CTabPageSSL::OnInitDialog();

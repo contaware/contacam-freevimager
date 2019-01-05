@@ -3702,14 +3702,15 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_STRING1506          "No Image Extension Change"
-    IDS_STRING1507          "Auto Optimize Image Extensions"
-    IDS_STRING1508          "Convert All Images To Jpeg"
-    IDS_STRING1509          "Convert All Images To Png"
-    IDS_STRING1510          "Convert All Images To Gif"
-    IDS_STRING1511          "Convert All Images To Tiff"
-    IDS_STRING1512          "Convert All Images To Bmp"
-    IDS_STRING1513          "Convert All Images To Pcx"
+    IDS_STRING1505          "No Image Extension Change"
+    IDS_STRING1506          "Auto Optimize Image Extensions"
+    IDS_STRING1507          "Convert All Images To Jpeg"
+    IDS_STRING1508          "Convert All Images To Png"
+    IDS_STRING1509          "Convert All Images To Gif"
+    IDS_STRING1510          "Convert All Images To Tiff"
+    IDS_STRING1511          "Convert All Images To Bmp"
+    IDS_STRING1512          "Convert All Images To Pcx"
+    IDS_STRING1513          "Convert All Images To Emf"
     IDS_STRING1514          "Update EXIF Thumb if Necessary"
     IDS_STRING1515          "Update EXIF Thumbnail"
     IDS_STRING1516          "Add / Update EXIF Thumbnail"
@@ -3906,14 +3907,13 @@ BEGIN
     IDS_STRING1708          "Jpeg thumbnail:\t%ix%i\r\n"
     IDS_STRING1709          "RGB thumbnail:\t%ix%i\r\n"
     IDS_STRING1710          "YCbCr thumbnail:\t%ix%i\r\n"
-    IDS_STRING1711          "Convert All Images To Emf"
 END
 
 STRINGTABLE
 BEGIN
     IDS_STRING1712          "Temperature:\t%.1f°C\r\n"
     IDS_STRING1713          "Humidity:\t%.0f%%\r\n"
-    IDS_STRING1714          "Pressure:\t%.0fmbar\r\n"
+    IDS_STRING1714          "Pressure:\t%.0fmbar"
     IDS_STRING1715          "Water depth:\t%.1fm\r\n"
     IDS_STRING1721          "1 Day"
     IDS_STRING1722          "2 Days"

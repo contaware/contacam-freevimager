@@ -1769,8 +1769,15 @@ void CImageInfoDlg::DisplayMetadata()
 
 		if (!isnan(m_pDoc->m_pDib->GetExifInfo()->Pressure))
 		{
-			t.Format(ML_STRING(1714, "Pressure:\t%.0fmbar\r\n"), m_pDoc->m_pDib->GetExifInfo()->Pressure);
-			s += t;
+			t.Format(ML_STRING(1714, "Pressure:\t%.0fmbar"), m_pDoc->m_pDib->GetExifInfo()->Pressure); s+=t;
+			if (isnan(m_pDoc->m_pDib->GetExifInfo()->WaterDepth) || m_pDoc->m_pDib->GetExifInfo()->WaterDepth <= 0.0)
+			{
+				// CRC Handbook (see doc\PressureAltitude_Derived.pdf)
+				double dPressurePa = 100.0 * (double)MIN(m_pDoc->m_pDib->GetExifInfo()->Pressure, 1013.25f);
+				double dCalcAltitudeMeter = 44331.5 - 4946.62 * pow(dPressurePa, 0.190263);
+				t.Format(_T(" (~%dm)"), Round(dCalcAltitudeMeter)); s += t;
+			}
+			s += _T("\r\n");
 		}
 
 		if (!isnan(m_pDoc->m_pDib->GetExifInfo()->WaterDepth))
