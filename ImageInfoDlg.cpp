@@ -1758,13 +1758,13 @@ void CImageInfoDlg::DisplayMetadata()
 		if (!isnan(m_pDoc->m_pDib->GetExifInfo()->AmbientTemperature))
 		{
 			t.Format(ML_STRING(1712, "Temperature:\t%.1f°C\r\n"), m_pDoc->m_pDib->GetExifInfo()->AmbientTemperature);
-			s += t;
+			s+=t;
 		}
 
 		if (!isnan(m_pDoc->m_pDib->GetExifInfo()->Humidity))
 		{
 			t.Format(ML_STRING(1713, "Humidity:\t%.0f%%\r\n"), m_pDoc->m_pDib->GetExifInfo()->Humidity);
-			s += t;
+			s+=t;
 		}
 
 		if (!isnan(m_pDoc->m_pDib->GetExifInfo()->Pressure))
@@ -1775,9 +1775,9 @@ void CImageInfoDlg::DisplayMetadata()
 				// CRC Handbook (see doc\PressureAltitude_Derived.pdf)
 				double dPressurePa = 100.0 * (double)MIN(m_pDoc->m_pDib->GetExifInfo()->Pressure, 1013.25f);
 				double dCalcAltitudeMeter = 44331.5 - 4946.62 * pow(dPressurePa, 0.190263);
-				t.Format(_T(" (~%dm)"), Round(dCalcAltitudeMeter)); s += t;
+				t.Format(_T(" (~%dm)"), Round(dCalcAltitudeMeter)); s+=t;
 			}
-			s += _T("\r\n");
+			s+=_T("\r\n");
 		}
 
 		if (!isnan(m_pDoc->m_pDib->GetExifInfo()->WaterDepth))
@@ -1786,62 +1786,60 @@ void CImageInfoDlg::DisplayMetadata()
 				m_pDoc->m_pDib->GetExifInfo()->WaterDepth == 0.0f ?
 				0.0f : // avoid ugly -0.0m display
 				m_pDoc->m_pDib->GetExifInfo()->WaterDepth);
-			s += t;
+			s+=t;
 		}
 
 		// Gps
 		if (m_pDoc->m_pDib->GetExifInfo()->bGpsInfoPresent)
 		{
-#ifdef _DEBUG
-			t.Format(_T("GPS version:\t%u%u%u%u\r\n"),	(unsigned int)m_pDoc->m_pDib->GetExifInfo()->GpsVersion[0],
-														(unsigned int)m_pDoc->m_pDib->GetExifInfo()->GpsVersion[1],
-														(unsigned int)m_pDoc->m_pDib->GetExifInfo()->GpsVersion[2],
-														(unsigned int)m_pDoc->m_pDib->GetExifInfo()->GpsVersion[3]);
-			s+=t;
-#endif
-			if (m_pDoc->m_pDib->GetExifInfo()->GpsLat[GPS_DEGREE]  >= 0.0f	&&
+			CString sGps;
+			if (m_pDoc->m_pDib->GetExifInfo()->GpsLat[GPS_DEGREE] >= 0.0f	&&
 				m_pDoc->m_pDib->GetExifInfo()->GpsLat[GPS_MINUTES] >= 0.0f	&&
 				m_pDoc->m_pDib->GetExifInfo()->GpsLat[GPS_SECONDS] >= 0.0f	&&
 				m_pDoc->m_pDib->GetExifInfo()->GpsLatRef[0])
 			{
-				t.Format(_T("GPS latitude:\t%s %.0f° %.0f\' %.1f\"\r\n"),CString(m_pDoc->m_pDib->GetExifInfo()->GpsLatRef),
-																		m_pDoc->m_pDib->GetExifInfo()->GpsLat[GPS_DEGREE],
-																		m_pDoc->m_pDib->GetExifInfo()->GpsLat[GPS_MINUTES],
-																		m_pDoc->m_pDib->GetExifInfo()->GpsLat[GPS_SECONDS]);
-				s+=t;
+				t.Format(_T("%s %.0f° %.0f\' %.1f\""),
+					CString(m_pDoc->m_pDib->GetExifInfo()->GpsLatRef),
+					m_pDoc->m_pDib->GetExifInfo()->GpsLat[GPS_DEGREE],
+					m_pDoc->m_pDib->GetExifInfo()->GpsLat[GPS_MINUTES],
+					m_pDoc->m_pDib->GetExifInfo()->GpsLat[GPS_SECONDS]);
+				sGps += t + _T("  ");
 			}
-			if (m_pDoc->m_pDib->GetExifInfo()->GpsLong[GPS_DEGREE]  >= 0.0f	&&
+			if (m_pDoc->m_pDib->GetExifInfo()->GpsLong[GPS_DEGREE] >= 0.0f	&&
 				m_pDoc->m_pDib->GetExifInfo()->GpsLong[GPS_MINUTES] >= 0.0f	&&
 				m_pDoc->m_pDib->GetExifInfo()->GpsLong[GPS_SECONDS] >= 0.0f &&
 				m_pDoc->m_pDib->GetExifInfo()->GpsLongRef[0])
 			{
-				t.Format(_T("GPS longitude:\t%s %.0f° %.0f\' %.1f\"\r\n"),CString(m_pDoc->m_pDib->GetExifInfo()->GpsLongRef),
-																		m_pDoc->m_pDib->GetExifInfo()->GpsLong[GPS_DEGREE],
-																		m_pDoc->m_pDib->GetExifInfo()->GpsLong[GPS_MINUTES],
-																		m_pDoc->m_pDib->GetExifInfo()->GpsLong[GPS_SECONDS]);
-				s+=t;
+				t.Format(_T("%s %.0f° %.0f\' %.1f\""),
+					CString(m_pDoc->m_pDib->GetExifInfo()->GpsLongRef),
+					m_pDoc->m_pDib->GetExifInfo()->GpsLong[GPS_DEGREE],
+					m_pDoc->m_pDib->GetExifInfo()->GpsLong[GPS_MINUTES],
+					m_pDoc->m_pDib->GetExifInfo()->GpsLong[GPS_SECONDS]);
+				sGps += t + _T("  ");
 			}
 			if (m_pDoc->m_pDib->GetExifInfo()->GpsAlt >= 0.0f &&
 				m_pDoc->m_pDib->GetExifInfo()->GpsAltRef >= 0)
 			{
 				if (m_pDoc->m_pDib->GetExifInfo()->GpsAltRef == 1)		// Below Sea Level
-					t.Format(_T("GPS altitude:\t-%.1fm\r\n"), m_pDoc->m_pDib->GetExifInfo()->GpsAlt);
+					t.Format(_T("-%.1fm"), m_pDoc->m_pDib->GetExifInfo()->GpsAlt);
 				else													// Above Sea Level
-					t.Format(_T("GPS altitude:\t%.1fm\r\n"), m_pDoc->m_pDib->GetExifInfo()->GpsAlt);
-				s+=t;
+					t.Format(_T("%.1fm"), m_pDoc->m_pDib->GetExifInfo()->GpsAlt);
+				sGps += t + _T("  ");
 			}
-			if (m_pDoc->m_pDib->GetExifInfo()->GpsTime[GPS_HOUR]	>= 0.0f	&&
+			if (m_pDoc->m_pDib->GetExifInfo()->GpsTime[GPS_HOUR] >= 0.0f	&&
 				m_pDoc->m_pDib->GetExifInfo()->GpsTime[GPS_MINUTES] >= 0.0f	&&
 				m_pDoc->m_pDib->GetExifInfo()->GpsTime[GPS_SECONDS] >= 0.0f)
 			{
-				t.Format(_T("GPS time (UTC):\t%02.0f:%02.0f:%02.0f\r\n"),	m_pDoc->m_pDib->GetExifInfo()->GpsTime[GPS_HOUR],
-																			m_pDoc->m_pDib->GetExifInfo()->GpsTime[GPS_MINUTES],
-																			m_pDoc->m_pDib->GetExifInfo()->GpsTime[GPS_SECONDS]);
-				s+=t;
+				t.Format(_T("%02.0f:%02.0f:%02.0f (UTC)"),
+					m_pDoc->m_pDib->GetExifInfo()->GpsTime[GPS_HOUR],
+					m_pDoc->m_pDib->GetExifInfo()->GpsTime[GPS_MINUTES],
+					m_pDoc->m_pDib->GetExifInfo()->GpsTime[GPS_SECONDS]);
+				sGps += t + _T("  ");
 			}
-			if (m_pDoc->m_pDib->GetExifInfo()->GpsMapDatum[0])
+			if (!sGps.IsEmpty())
 			{
-				t.Format(_T("GPS map datum:\t%s\r\n"), CString(m_pDoc->m_pDib->GetExifInfo()->GpsMapDatum));
+				sGps.TrimRight(_T(' '));
+				t.Format(_T("GPS:\t%s\r\n"), sGps);
 				s+=t;
 			}
 		}
