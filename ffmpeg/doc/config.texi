@@ -748,7 +748,7 @@
 @c @set config-indeo5-decoder no
 @c @set config-interplay-video-decoder no
 @c @set config-jpeg2000-decoder no
-@c @set config-jpegls-decoder no
+@set config-jpegls-decoder yes
 @c @set config-jv-decoder no
 @c @set config-kgv1-decoder no
 @c @set config-kmvc-decoder no
@@ -759,7 +759,7 @@
 @c @set config-mdec-decoder no
 @c @set config-mimic-decoder no
 @set config-mjpeg-decoder yes
-@c @set config-mjpegb-decoder no
+@set config-mjpegb-decoder yes
 @c @set config-mmvideo-decoder no
 @c @set config-motionpixels-decoder no
 @c @set config-mpeg-xvmc-decoder no
