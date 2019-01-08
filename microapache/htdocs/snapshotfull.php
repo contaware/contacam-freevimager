@@ -68,7 +68,6 @@ img#campictureid {
 	display: block;
 	width: 100%;
 	height: 100%;
-	object-fit: contain;
 	left: 0;
 	top: 0;
 }
@@ -81,7 +80,10 @@ if (isset($_GET['clickurl']))
 	$clickurl = $_GET['clickurl'];
 else
 	$clickurl = getParentUrl();
-echo "<img id=\"campictureid\" src=\"" . htmlspecialchars($pollfilename . time()) . "\" onclick=\"window.top.location.href = '" . htmlspecialchars($clickurl) . "';\" alt=\"Snapshot Image\" />\n";
+if ($full_stretch)
+	echo "<img id=\"campictureid\" src=\"" . htmlspecialchars($pollfilename . time()) . "\" onclick=\"window.top.location.href = '" . htmlspecialchars($clickurl) . "';\" alt=\"Snapshot Image\" />\n";
+else
+	echo "<img style=\"object-fit: contain\" id=\"campictureid\" src=\"" . htmlspecialchars($pollfilename . time()) . "\" onclick=\"window.top.location.href = '" . htmlspecialchars($clickurl) . "';\" alt=\"Snapshot Image\" />\n";
 echo "<script type=\"text/javascript\">\n";
 echo "//<![CDATA[\n";
 echo "startClock();\n";

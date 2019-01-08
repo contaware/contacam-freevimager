@@ -28,6 +28,12 @@ if ((!empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) != 'off') ||
 else
 	$scheme = 'http';
 
+// Full stretch
+if (defined('FULL_STRETCH'))
+	$full_stretch = FULL_STRETCH;
+else
+	$full_stretch = 0;
+
 // Trash command
 if (defined('SHOW_TRASH_COMMAND'))
 	$show_trash_command = SHOW_TRASH_COMMAND;

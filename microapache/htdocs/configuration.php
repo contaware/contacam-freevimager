@@ -36,6 +36,9 @@ define ("LANGUAGEFILEPATH","languages/english.php");
 // Set the Style
 define ("STYLEFILEPATH","styles/darkgray.css");
 
+// Enable / disable full stretch
+define ("FULL_STRETCH","0");          // 0 = Keep aspect ratio , 1 = Full stretch
+
 // Show / hide the trash command
 define ("SHOW_TRASH_COMMAND","0");    // 0 = Hide , 1 = Show
 

@@ -40,6 +40,7 @@ void CCameraBasicSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_NAME, m_sName);
 	DDX_Radio(pDX, IDC_RADIO_MOVDET, m_nUsage);
 	DDX_Check(pDX, IDC_CHECK_AUTORUN, m_bAutorun);
+	DDX_Check(pDX, IDC_CHECK_FULL_STRETCH, m_bCheckFullStretch);
 	DDX_Check(pDX, IDC_CHECK_TRASHCOMMAND, m_bCheckTrashCommand);
 	DDX_Check(pDX, IDC_CHECK_CAMERACOMMANDS, m_bCheckCameraCommands);
 	DDX_Check(pDX, IDC_CHECK_SENDMAIL_MALFUNCTION, m_bCheckSendMailMalfunction);
@@ -143,6 +144,7 @@ BOOL CCameraBasicSettingsDlg::OnInitDialog()
 	m_bDoApplySettings = FALSE;
 	m_nRetryTimeMs = 0;
 	m_sName = m_pDoc->GetAssignedDeviceName();
+	m_bCheckFullStretch = (m_pDoc->PhpConfigFileGetParam(PHPCONFIG_FULL_STRETCH) == _T("1"));
 	m_bCheckTrashCommand = (m_pDoc->PhpConfigFileGetParam(PHPCONFIG_SHOW_TRASH_COMMAND) == _T("1"));
 	m_bCheckCameraCommands = (m_pDoc->PhpConfigFileGetParam(PHPCONFIG_SHOW_CAMERA_COMMANDS) == _T("1"));
 	m_nUsage = m_pDoc->m_nCameraUsage;
@@ -240,6 +242,8 @@ void CCameraBasicSettingsDlg::EnableDisableAllCtrls(BOOL bEnable)
 	pComboBox->EnableWindow(bEnable);
 	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_THUMBSPERPAGE);
 	pComboBox->EnableWindow(bEnable);
+	pCheck = (CButton*)GetDlgItem(IDC_CHECK_FULL_STRETCH);
+	pCheck->EnableWindow(bEnable);
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_TRASHCOMMAND);
 	pCheck->EnableWindow(bEnable);
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_CAMERACOMMANDS);
@@ -487,6 +491,12 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	if (sMaxPerPage != _T(""))
 		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_MAX_PER_PAGE, sMaxPerPage);
 	
+	// Full stretch
+	if (m_bCheckFullStretch)
+		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_FULL_STRETCH, _T("1"));
+	else
+		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_FULL_STRETCH, _T("0"));
+
 	// Trash command
 	if (m_bCheckTrashCommand)
 		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SHOW_TRASH_COMMAND, _T("1"));

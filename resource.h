@@ -2923,6 +2923,7 @@
 #define IDC_CONNECTIONTYPE              2538
 #define IDC_STATIC2539                  2539
 #define IDC_CHECK_TRASHCOMMAND          2540
+#define IDC_CHECK_FULL_STRETCH          2541
 #define IDC_CHECK_CAMERACOMMANDS        2542
 #define IDC_EXEC_COMMAND_MODE           2542
 #define IDC_STATIC2544                  2544
