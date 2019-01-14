@@ -4,6 +4,8 @@ CONTACAM HISTORY
 
 - The web interface full screen live snapshot image can now be
   configured to either maintain the aspect ratio or to fully stretch
+- Do not adapt the frame time font size when the DPI changes, this
+  because connecting through RDP can modify the DPI automatically
 
 9.0.7 (December 27th 2018)
 

@@ -816,7 +816,7 @@ public:
 	volatile int m_nCameraUsage;						// 0: Motion detection and daily snapshots history, 1: Continuous/manual recording
 	volatile BOOL m_bObscureSource;						// Flag indicating whether the source has to be obscured
 	volatile BOOL m_bShowFrameTime;						// Show / Hide Frame Time Inside the Frame (frame time is also recorded)
-	volatile int m_nRefFontSize;						// Minimum font size for frame time, detection indicator and save progress
+	volatile int m_nRefFontSize;						// Minimum font size for frame time, rec indicator and save progress
 	volatile BOOL m_bDoEditCopy;						// Copy Frame to Clipboard in ProcessI420Frame()
 	volatile BOOL m_bDoEditSnapshot;					// Manual Snapshot Frame to file
 	volatile DWORD m_dwFrameCountUp;					// Captured Frames Count-Up, it can wrap around!
