@@ -14,7 +14,7 @@ static char THIS_FILE[] = __FILE__;
 	pLF = (LOGFONT*)calloc(1, sizeof(LOGFONT));
 	_tcscpy(pLF->lfFaceName, _T("Times New Roman"));
 	pLF->lfHeight=64;
-	pLF->lfWeight=FW_MEDIUM;;
+	pLF->lfWeight=FW_NORMAL;
 	pLF->lfItalic=1;
 	pLF->lfUnderline=0;
 	Font.CreateFontIndirect(pLF);
