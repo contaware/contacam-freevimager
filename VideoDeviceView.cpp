@@ -566,10 +566,8 @@ int CVideoDeviceView::DrawBigText(	HDC hDC,
 	{
 		memset(&lf, 0, sizeof(lf));
 		_tcscpy(lf.lfFaceName, g_szDefaultFontFace);
-		lf.lfHeight = -MulDiv(nMaxFontSize, ::GetDeviceCaps(hDC, LOGPIXELSY), 72);
-		lf.lfWeight = FW_MEDIUM;
-		lf.lfItalic = 0;
-		lf.lfUnderline = 0;
+		lf.lfHeight = -MulDiv(nMaxFontSize, 96, 72); // use 96 and not GetDeviceCaps(hDC, LOGPIXELSY) otherwise it scales with DPI changes!
+		lf.lfWeight = FW_NORMAL;
 		hFont = ::CreateFontIndirect(&lf);
 		CRect rcText(0, 0, 0, 0);
 		hOldFont = (HFONT)::SelectObject(hDC, hFont);

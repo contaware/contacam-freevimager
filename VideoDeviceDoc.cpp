@@ -6449,18 +6449,26 @@ void CVideoDeviceDoc::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime,
 	if (!pDib)
 		return;
 
+	// Calc. date and time
 	RefTime = CalcTime(pDib->GetUpTime(), RefTime, dwRefUpTime);
+
+	// Calc. rectangle
 	CRect rcRect;
 	rcRect.left = 0;
 	rcRect.top = 0;
 	rcRect.right = pDib->GetWidth();
 	rcRect.bottom = pDib->GetHeight();
 
+	// Create font
 	CFont Font;
 	int nFontSize = ScaleFont(rcRect.right, rcRect.bottom, nRefFontSize, FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
-	Font.CreatePointFont(	nFontSize * 10,			// font height in tenths of a point
-							g_szDefaultFontFace);	// typeface name of the font
+	LOGFONT lf = {};
+	_tcscpy(lf.lfFaceName, g_szDefaultFontFace);
+	lf.lfHeight = -MulDiv(nFontSize, 96, 72); // use 96 and not GetDeviceCaps(hDC, LOGPIXELSY) otherwise it scales with DPI changes!
+	lf.lfWeight = FW_NORMAL;
+	Font.CreateFontIndirect(&lf);
 
+	// Time text
 	CString sTime = ::MakeTimeLocalFormat(RefTime, TRUE);
 	pDib->AddSingleLineText(sTime,
 							rcRect,
@@ -6470,6 +6478,7 @@ void CVideoDeviceDoc::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime,
 							OPAQUE,
 							DRAW_BKG_COLOR);
 
+	// Date text
 	CString sDate = ::MakeDateLocalFormat(RefTime);
 	pDib->AddSingleLineText(sDate,
 							rcRect,
@@ -6486,16 +6495,23 @@ void CVideoDeviceDoc::AddFrameCount(CDib* pDib, const CString& sCount, int nRefF
 	if (!pDib)
 		return;
 
+	// Calc. rectangle
 	CRect rcRect;
 	rcRect.left = 0;
 	rcRect.top = 0;
 	rcRect.right = pDib->GetWidth();
 	rcRect.bottom = pDib->GetHeight();
 
+	// Create font
 	CFont Font;
 	int nFontSize = ScaleFont(rcRect.right, rcRect.bottom, nRefFontSize, FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
-	Font.CreatePointFont(nFontSize * 10, g_szDefaultFontFace);
+	LOGFONT lf = {};
+	_tcscpy(lf.lfFaceName, g_szDefaultFontFace);
+	lf.lfHeight = -MulDiv(nFontSize, 96, 72); // use 96 and not GetDeviceCaps(hDC, LOGPIXELSY) otherwise it scales with DPI changes!
+	lf.lfWeight = FW_NORMAL;
+	Font.CreateFontIndirect(&lf);
 
+	// Frame count text
 	pDib->AddSingleLineText(sCount,
 							rcRect,
 							&Font,
@@ -6511,15 +6527,23 @@ void CVideoDeviceDoc::AddNoDonationTag(CDib* pDib, int nRefFontSize)
 	if (!pDib)
 		return;
 
+	// Calc. rectangle
 	CRect rcRect;
 	rcRect.left = 0;
 	rcRect.top = 0;
 	rcRect.right = pDib->GetWidth();
 	rcRect.bottom = pDib->GetHeight();
 
+	// Create font
 	CFont Font;
 	int nFontSize = ScaleFont(rcRect.right, rcRect.bottom, nRefFontSize, FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
-	Font.CreatePointFont(nFontSize * 10, g_szDefaultFontFace);
+	LOGFONT lf = {};
+	_tcscpy(lf.lfFaceName, g_szDefaultFontFace);
+	lf.lfHeight = -MulDiv(nFontSize, 96, 72); // use 96 and not GetDeviceCaps(hDC, LOGPIXELSY) otherwise it scales with DPI changes!
+	lf.lfWeight = FW_NORMAL;
+	Font.CreateFontIndirect(&lf);
+
+	// No donation text
 	CString sNoDonation(ML_STRING(1734, "NO DONATION: see Help menu"));
 	if (sNoDonation.GetLength() < 10)
 		sNoDonation = _T("NO DONATION: see Help menu");
@@ -6538,16 +6562,23 @@ void CVideoDeviceDoc::AddRecSymbol(CDib* pDib, int nRefFontSize)
 	if (!pDib)
 		return;
 
+	// Calc. rectangle
 	CRect rcRect;
 	rcRect.left = 0;
 	rcRect.top = 0;
 	rcRect.right = pDib->GetWidth();
 	rcRect.bottom = pDib->GetHeight();
 
+	// Create font
 	CFont Font;
 	int nFontSize = ScaleFont(rcRect.right, rcRect.bottom, nRefFontSize, FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
-	Font.CreatePointFont(nFontSize * 10, g_szDefaultFontFace);
+	LOGFONT lf = {};
+	_tcscpy(lf.lfFaceName, g_szDefaultFontFace);
+	lf.lfHeight = -MulDiv(nFontSize, 96, 72); // use 96 and not GetDeviceCaps(hDC, LOGPIXELSY) otherwise it scales with DPI changes!
+	lf.lfWeight = FW_NORMAL;
+	Font.CreateFontIndirect(&lf);
 
+	// Record symbol
 	pDib->AddSingleLineText(_T("\u25cf"), // note: if using more than 16 bits, use a uppercase U (for example \U0001F3C3)
 							rcRect,
 							&Font,
