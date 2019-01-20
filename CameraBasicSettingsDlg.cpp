@@ -226,6 +226,15 @@ void CCameraBasicSettingsDlg::OnDestroy()
 	CDialog::OnDestroy();
 }
 
+/* Could also use:
+EnableWindow(bEnable); // Enable/Disable also dialog itself
+CWnd* pwndChild = GetWindow(GW_CHILD);
+while (pwndChild)
+{
+	pwndChild->EnableWindow(bEnable);
+	pwndChild = pwndChild->GetNextWindow();
+}
+*/
 void CCameraBasicSettingsDlg::EnableDisableAllCtrls(BOOL bEnable)
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_RADIO_MOVDET);
