@@ -1082,7 +1082,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			DWORD dwStandbyTimeout = 0;
 			if (SystemPowerCapabilities.SystemS1 || SystemPowerCapabilities.SystemS2 || SystemPowerCapabilities.SystemS3)
 			{
-				// This function can return a value other than 0 also if SystemS1, SystemS2 and SystemS3 are all FALSE!
+				// The if-check is necessary because PowerReadACValueIndex can return a value other than 0 also if SystemS1, SystemS2 and SystemS3 are all FALSE
 				::PowerReadACValueIndex(NULL, pActivePolicyGuid, &subGUID, &activeGUID, &dwStandbyTimeout);
 			}
 
@@ -1092,16 +1092,23 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			//   (powercfg /h /type full)
 			// - Reduced: only supports fast startup (hiberboot)
 			//   (first run powercfg /h /size 0 and then powercfg /h /type reduced)
+#ifndef HIBERFILE_TYPE_REDUCED
+#define HIBERFILE_TYPE_REDUCED    0x01
+#endif
+#ifdef NTDDI_WINTHRESHOLD // only defined when using Windows 10 SDK or higher
 #if (NTDDI_VERSION < NTDDI_WINTHRESHOLD)
-			BYTE HiberFileType = SystemPowerCapabilities.spare3[0];		// that's 0 in systems older than Windows 10
+			BYTE HiberFileType = SystemPowerCapabilities.spare3[0];		// in Windows 10 it's HiberFileType in older system it is set to 0
 #else
 			BYTE HiberFileType = SystemPowerCapabilities.HiberFileType;	// added in Windows 10
+#endif
+#else
+			BYTE HiberFileType = SystemPowerCapabilities.spare3[0];		// in Windows 10 it's HiberFileType in older system it is set to 0
 #endif
 			activeGUID = GUID_HIBERNATE_TIMEOUT;
 			DWORD dwHibernateTimeout = 0;
 			if (SystemPowerCapabilities.SystemS4 && SystemPowerCapabilities.HiberFilePresent && HiberFileType != HIBERFILE_TYPE_REDUCED)
 			{
-				// The above check is necessary because PowerReadACValueIndex can return a value other than 0 also if
+				// The if-check is necessary because PowerReadACValueIndex can return a value other than 0 also if
 				// SystemS4 == FALSE or
 				// HiberFilePresent == FALSE or
 				// HiberFileType == HIBERFILE_TYPE_REDUCED
