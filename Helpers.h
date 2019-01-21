@@ -207,7 +207,6 @@ CSIDL_INTERNET					Virtual folder representing the Internet.
 CSIDL_INTERNET_CACHE			File system directory that serves as a common repository for temporary Internet files. 
 CSIDL_NETHOOD					File system directory containing objects that appear in the network neighborhood. 
 CSIDL_NETWORK					Network Neighborhood virtual folder representing the top level of the network hierarchy. 
-CSIDL_PERSONAL					File system directory that serves as a common repository for documents. 
 CSIDL_PRINTERS					Virtual folder containing installed printers. 
 CSIDL_PRINTHOOD					File system directory that serves as a common repository for printer links. 
 CSIDL_PROGRAMS					File system directory that contains the user's program groups (which are also file system directories). 
@@ -217,6 +216,7 @@ CSIDL_STARTMENU					File system directory containing Start menu items.
 CSIDL_STARTUP					File system directory that corresponds to the user's Startup program group.
 								The system starts these programs whenever any user logs onto Windows NT or starts Windows 95. 
 CSIDL_TEMPLATES					File system directory that serves as a common repository for document templates.
+CSIDL_MYDOCUMENTS				My Documents (same as CSIDL_PERSONAL).
 CSIDL_MYVIDEO					My Videos folder
 CSIDL_MYMUSIC					My Music folder
 CSIDL_MYPICTURES				My Pictures folder
