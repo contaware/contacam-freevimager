@@ -638,7 +638,7 @@ public:
 	// Frame Tags
 	static CTime CalcTime(DWORD dwUpTime, const CTime& RefTime, DWORD dwRefUpTime);
 	static int ScaleFont(int nWidth, int nHeight, int nMinRefFontSize, int nMinRefWidth, int nMinRefHeight);
-	static void AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime, int nRefFontSize);
+	static void AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime, int nRefFontSize, BOOL bShowFrameUptime);
 	static void AddFrameCount(CDib* pDib, const CString& sCount, int nRefFontSize);
 	static void AddNoDonationTag(CDib* pDib, int nRefFontSize);
 	static void AddRecSymbol(CDib* pDib, int nRefFontSize);
@@ -815,7 +815,8 @@ public:
 	CRITICAL_SECTION m_csConnectionError;				// Critical section for the connection error
 	volatile int m_nCameraUsage;						// 0: Motion detection and daily snapshots history, 1: Continuous/manual recording
 	volatile BOOL m_bObscureSource;						// Flag indicating whether the source has to be obscured
-	volatile BOOL m_bShowFrameTime;						// Show / Hide Frame Time Inside the Frame (frame time is also recorded)
+	volatile BOOL m_bShowFrameTime;						// Show / Hide Frame Time Inside the Frame (frame time is also recorded in the file)
+	volatile BOOL m_bShowFrameUptime;					// Show / Hide Frame Uptime Inside the Frame (frame uptime is also recorded in the file)
 	volatile int m_nRefFontSize;						// Minimum font size for frame time, rec indicator and save progress
 	volatile BOOL m_bDoEditCopy;						// Copy Frame to Clipboard in ProcessI420Frame()
 	volatile BOOL m_bDoEditSnapshot;					// Manual Snapshot Frame to file
@@ -1027,6 +1028,8 @@ protected:
 	afx_msg void OnCaptureCameraAdvancedSettings();
 	afx_msg void OnViewFrametime();
 	afx_msg void OnUpdateViewFrametime(CCmdUI* pCmdUI);
+	afx_msg void OnViewFrameUptime();
+	afx_msg void OnUpdateViewFrameUptime(CCmdUI* pCmdUI);
 	afx_msg void OnFileClose();
 	afx_msg void OnUpdateCaptureCameraAdvancedSettings(CCmdUI* pCmdUI);
 	afx_msg void OnEditZone();

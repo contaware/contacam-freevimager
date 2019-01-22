@@ -79,6 +79,8 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_COMMAND(ID_CAPTURE_CAMERAADVANCEDSETTINGS, OnCaptureCameraAdvancedSettings)
 	ON_COMMAND(ID_VIEW_FRAMETIME, OnViewFrametime)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FRAMETIME, OnUpdateViewFrametime)
+	ON_COMMAND(ID_VIEW_FRAMEUPTIME, OnViewFrameUptime)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_FRAMEUPTIME, OnUpdateViewFrameUptime)
 	ON_COMMAND(ID_FILE_CLOSE, OnFileClose)
 	ON_UPDATE_COMMAND_UI(ID_CAPTURE_CAMERAADVANCEDSETTINGS, OnUpdateCaptureCameraAdvancedSettings)
 	ON_COMMAND(ID_EDIT_ZONE, OnEditZone)
@@ -388,7 +390,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				// Add Frame Tags
 				if (m_pDoc->m_bShowFrameTime)
 				{
-					AddFrameTime(pDib, RefTime, dwRefUpTime, m_pDoc->m_nRefFontSize);
+					AddFrameTime(pDib, RefTime, dwRefUpTime, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
 					AddFrameCount(pDib, sMovDetSavesCount, m_pDoc->m_nRefFontSize);
 				}
 
@@ -739,7 +741,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors
 		// Add frame tags to include its colors
 		if (m_pDoc->m_bShowFrameTime)
 		{
-			AddFrameTime(&DibForPalette, RefTime, dwRefUpTime, m_pDoc->m_nRefFontSize);
+			AddFrameTime(&DibForPalette, RefTime, dwRefUpTime, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
 			AddFrameCount(&DibForPalette, sMovDetSavesCount, m_pDoc->m_nRefFontSize);
 		}
 
@@ -803,7 +805,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveSingleGif(	CDib* pDib,
 		// Add Frame Tags
 		if (m_pDoc->m_bShowFrameTime)
 		{
-			AddFrameTime(pDib, RefTime, dwRefUpTime, m_pDoc->m_nRefFontSize);
+			AddFrameTime(pDib, RefTime, dwRefUpTime, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
 			AddFrameCount(pDib, sMovDetSavesCount, m_pDoc->m_nRefFontSize);
 		}
 
@@ -858,7 +860,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::To255Colors(CDib* pDib,
 		// Add Frame Tags
 		if (m_pDoc->m_bShowFrameTime)
 		{
-			AddFrameTime(pDib, RefTime, dwRefUpTime, m_pDoc->m_nRefFontSize);
+			AddFrameTime(pDib, RefTime, dwRefUpTime, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
 			AddFrameCount(pDib, sMovDetSavesCount, m_pDoc->m_nRefFontSize);
 		}
 
@@ -1140,8 +1142,8 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	// Add tags
 	if (m_pDoc->m_bShowFrameTime)
 	{
-		AddFrameTime(&m_Dib, m_Time, dwUpTime, m_pDoc->m_nRefFontSize);
-		AddFrameTime(&DibThumb, m_Time, dwUpTime, m_pDoc->m_nRefFontSize);
+		AddFrameTime(&m_Dib, m_Time, dwUpTime, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
+		AddFrameTime(&DibThumb, m_Time, dwUpTime, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
 	}
 	if (((CUImagerApp*)::AfxGetApp())->m_bNoDonation)
 	{
@@ -3467,6 +3469,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bPlacementLoaded = FALSE;
 	m_bCaptureStarted = FALSE;
 	m_bShowFrameTime = TRUE;
+	m_bShowFrameUptime = FALSE;
 	m_nRefFontSize = 9;
 	m_nCameraUsage = 1;
 	m_bObscureSource = FALSE;
@@ -4338,6 +4341,7 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 												pApp->GetProfileInt(sSection, _T("DetectionStopSec"), CurrentTime.GetSecond()));
 	m_bInSchedule = IsInSchedule(CurrentTime);
 	m_bShowFrameTime = (BOOL) pApp->GetProfileInt(sSection, _T("ShowFrameTime"), TRUE);
+	m_bShowFrameUptime = (BOOL)pApp->GetProfileInt(sSection, _T("ShowFrameUptime"), FALSE);
 	m_nRefFontSize = ValidateRefFontSize(pApp->GetProfileInt(sSection, _T("RefFontSize"), 9));
 	m_dwAnimatedGifWidth = (DWORD) MakeSizeMultipleOf4(pApp->GetProfileInt(sSection, _T("AnimatedGifWidth"), MOVDET_ANIMGIF_DEFAULT_WIDTH));
 	m_dwAnimatedGifHeight = (DWORD) MakeSizeMultipleOf4(pApp->GetProfileInt(sSection, _T("AnimatedGifHeight"), MOVDET_ANIMGIF_DEFAULT_HEIGHT));
@@ -4492,6 +4496,7 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("DetectionStopMin"), m_SchedulerStopTime.GetMinute());
 	pApp->WriteProfileInt(sSection, _T("DetectionStopSec"), m_SchedulerStopTime.GetSecond());
 	pApp->WriteProfileInt(sSection, _T("ShowFrameTime"), (int)m_bShowFrameTime);
+	pApp->WriteProfileInt(sSection, _T("ShowFrameUptime"), (int)m_bShowFrameUptime);
 	pApp->WriteProfileInt(sSection, _T("RefFontSize"), m_nRefFontSize);
 	pApp->WriteProfileInt(sSection, _T("AnimatedGifWidth"), m_dwAnimatedGifWidth);
 	pApp->WriteProfileInt(sSection, _T("AnimatedGifHeight"), m_dwAnimatedGifHeight);
@@ -6443,7 +6448,7 @@ int CVideoDeviceDoc::ScaleFont(	int nWidth, int nHeight,
 		return Round(nMinRefFontSize * dFactorY);
 }
 
-void CVideoDeviceDoc::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime, int nRefFontSize)
+void CVideoDeviceDoc::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime, int nRefFontSize, BOOL bShowFrameUptime)
 {
 	// Check
 	if (!pDib)
@@ -6469,7 +6474,27 @@ void CVideoDeviceDoc::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime,
 	Font.CreateFontIndirect(&lf);
 
 	// Time text
-	CString sTime = ::MakeTimeLocalFormat(RefTime, TRUE);
+	CString sTime;
+	if (bShowFrameUptime)
+	{
+		DWORD dwTickCount = pDib->GetUpTime();
+		const DWORD dwMillisecondsPerDay = 24U * 60U * 60U * 1000U;
+		DWORD dwDays = dwTickCount / dwMillisecondsPerDay;
+		dwTickCount = dwTickCount % dwMillisecondsPerDay;
+		const DWORD dwMillisecondsPerHour = 60U * 60U * 1000U;
+		DWORD dwHours = dwTickCount / dwMillisecondsPerHour;
+		dwTickCount = dwTickCount % dwMillisecondsPerHour;
+		const DWORD dwMillisecondsPerMin = 60U * 1000U;
+		DWORD dwMin = dwTickCount / dwMillisecondsPerMin;
+		dwTickCount = dwTickCount % dwMillisecondsPerMin;
+		const DWORD dwMillisecondsPerSec = 1000U;
+		DWORD dwSec = dwTickCount / dwMillisecondsPerSec;
+		dwTickCount = dwTickCount % dwMillisecondsPerSec;
+		sTime.Format(_T(" (%u:%02u:%02u:%02u.%03u)"), dwDays, dwHours, dwMin, dwSec, dwTickCount);
+		sTime = ::MakeTimeLocalFormat(RefTime, TRUE) + sTime;
+	}
+	else
+		sTime = ::MakeTimeLocalFormat(RefTime, TRUE);
 	pDib->AddSingleLineText(sTime,
 							rcRect,
 							&Font,
@@ -7323,7 +7348,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 
 		// Add Frame Time if User Wants it
 		if (m_bShowFrameTime)
-			AddFrameTime(pDib, CurrentTime, dwCurrentInitUpTime, m_nRefFontSize);
+			AddFrameTime(pDib, CurrentTime, dwCurrentInitUpTime, m_nRefFontSize, m_bShowFrameUptime);
 
 		// Add "NO DONATION" tag
 		if (((CUImagerApp*)::AfxGetApp())->m_bNoDonation)
@@ -7562,7 +7587,7 @@ BOOL CVideoDeviceDoc::EditCopy(CDib* pDib, const CTime& Time)
 
 	// Add frame time
 	if (m_bShowFrameTime)
-		AddFrameTime(&Dib, Time, dwUpTime, m_nRefFontSize);
+		AddFrameTime(&Dib, Time, dwUpTime, m_nRefFontSize, m_bShowFrameUptime);
 
 	// Add "NO DONATION" tag
 	if (((CUImagerApp*)::AfxGetApp())->m_bNoDonation)
@@ -7597,7 +7622,7 @@ void CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 
 	// Add frame time
 	if (m_bShowFrameTime)
-		AddFrameTime(&Dib, Time, dwUpTime, m_nRefFontSize);
+		AddFrameTime(&Dib, Time, dwUpTime, m_nRefFontSize, m_bShowFrameUptime);
 
 	// Add "NO DONATION" tag
 	if (((CUImagerApp*)::AfxGetApp())->m_bNoDonation)
@@ -7640,7 +7665,7 @@ CString CVideoDeviceDoc::SaveJpegMail(CDib* pDib, const CTime& RefTime, DWORD dw
 
 	// Add frame time
 	if (m_bShowFrameTime)
-		AddFrameTime(&Dib, RefTime, dwRefUpTime, m_nRefFontSize);
+		AddFrameTime(&Dib, RefTime, dwRefUpTime, m_nRefFontSize, m_bShowFrameUptime);
 
 	// Add "NO DONATION" tag
 	if (((CUImagerApp*)::AfxGetApp())->m_bNoDonation)
@@ -8068,6 +8093,17 @@ void CVideoDeviceDoc::OnViewFrametime()
 void CVideoDeviceDoc::OnUpdateViewFrametime(CCmdUI* pCmdUI) 
 {
 	pCmdUI->SetCheck(m_bShowFrameTime ? 1 : 0);	
+}
+
+void CVideoDeviceDoc::OnViewFrameUptime()
+{
+	m_bShowFrameUptime = !m_bShowFrameUptime;
+	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("ShowFrameUptime"), m_bShowFrameUptime);
+}
+
+void CVideoDeviceDoc::OnUpdateViewFrameUptime(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(m_bShowFrameUptime ? 1 : 0);
 }
 
 void CVideoDeviceDoc::HideDetectionZones()

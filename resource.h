@@ -2987,6 +2987,7 @@
 #define ID_PLAY_SLIDESHOW               32850
 #define ID_STOP_SLIDESHOW               32851
 #define ID_VIEW_FRAMETIME               32855
+#define ID_VIEW_FRAMEUPTIME             32856
 #define ID_FILE_INFO                    32858
 #define ID_PLAY_TRANSITION_OFF          32859
 #define ID_PLAY_TRANSITION_RANDOM       32860

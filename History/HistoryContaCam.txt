@@ -6,6 +6,7 @@ CONTACAM HISTORY
   configured to either maintain the aspect ratio or to fully stretch
 - Do not adapt the frame time font size when the DPI changes, this
   because connecting through RDP can modify the DPI automatically
+- Possibility to display the system uptime in each frame
 
 9.0.7 (December 27th 2018)
 

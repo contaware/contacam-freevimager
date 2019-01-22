@@ -746,6 +746,8 @@ IDR_CONTEXT_FONTSIZE MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
+        MENUITEM "Show Uptime",                 ID_VIEW_FRAMEUPTIME
+        MENUITEM SEPARATOR
         MENUITEM "4",                           ID_FONTSIZE_4
         MENUITEM "5",                           ID_FONTSIZE_5
         MENUITEM "6",                           ID_FONTSIZE_6
