@@ -731,6 +731,7 @@ public:
 	void SaveZonesSettings();
 	static int ValidateRefFontSize(int nRefFontSize);
 	static int ValidateDetectionLevel(int nDetectionLevel);
+	static int ValidateSnapshotRate(int nSnapshotRate);
 	static int MakeSizeMultipleOf4(int nSize);
 	void LoadSettings(	double dDefaultFrameRate,
 						BOOL bDefaultCaptureAudioFromStream,

@@ -4180,6 +4180,46 @@ int CVideoDeviceDoc::ValidateDetectionLevel(int nDetectionLevel)
 	return (nDetectionLevel / 10) * 10;
 }
 
+int CVideoDeviceDoc::ValidateSnapshotRate(int nSnapshotRate)
+{
+	if (nSnapshotRate >= 3600)
+		return 3600;				// 1 hour
+	else if (nSnapshotRate >= 1800)
+		return 1800;				// 30 minutes
+	else if (nSnapshotRate >= 900)
+		return 900;					// 15 minutes
+	else if (nSnapshotRate >= 600)
+		return 600;					// 10 minutes
+	else if (nSnapshotRate >= 300)
+		return 300;					// 5 minutes
+	else if (nSnapshotRate >= 240)
+		return 240;					// 4 minutes
+	else if (nSnapshotRate >= 180)
+		return 180;					// 3 minutes
+	else if (nSnapshotRate >= 120)
+		return 120;					// 2 minutes
+	else if (nSnapshotRate >= 60)
+		return 60;					// 1 minute
+	else if (nSnapshotRate >= 30)
+		return 30;					// 30 seconds
+	else if (nSnapshotRate >= 15)
+		return 15;					// 15 seconds
+	else if (nSnapshotRate >= 10)
+		return 10;					// 10 seconds
+	else if (nSnapshotRate >= 5)
+		return 5;					// 5 seconds
+	else if (nSnapshotRate >= 4)
+		return 4;					// 4 seconds
+	else if (nSnapshotRate >= 3)
+		return 3;					// 3 seconds
+	else if (nSnapshotRate >= 2)
+		return 2;					// 2 seconds
+	else if (nSnapshotRate >= 1)
+		return 1;					// 1 second
+	else
+		return 0;					// Fast
+}
+
 int CVideoDeviceDoc::MakeSizeMultipleOf4(int nSize)
 {
 	if (nSize <= 4)
@@ -4281,7 +4321,7 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	CString sRecordAutoSaveDir = m_sRecordAutoSaveDir;
 	sRecordAutoSaveDir.TrimRight(_T('\\'));
 	m_bObscureSource = ::IsExistingFile(sRecordAutoSaveDir + _T("\\") + CAMERA_IS_OBSCURED_FILENAME);
-	m_nSnapshotRate = MAX(0, pApp->GetProfileInt(sSection, _T("SnapshotRate"), DEFAULT_SNAPSHOT_RATE));
+	m_nSnapshotRate = ValidateSnapshotRate(pApp->GetProfileInt(sSection, _T("SnapshotRate"), DEFAULT_SNAPSHOT_RATE));
 	m_nSnapshotHistoryRate = (int)pApp->GetProfileInt(sSection, _T("SnapshotHistoryRate"), DEFAULT_SNAPSHOT_HISTORY_RATE);
 	m_nSnapshotHistoryFrameRate = (int)pApp->GetProfileInt(sSection, _T("SnapshotHistoryFrameRate"), DEFAULT_SNAPSHOT_HISTORY_FRAMERATE);
 	m_nSnapshotThumbWidth = (int) MakeSizeMultipleOf4(pApp->GetProfileInt(sSection, _T("SnapshotThumbWidth"), DEFAULT_SNAPSHOT_THUMB_WIDTH));

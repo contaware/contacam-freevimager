@@ -157,7 +157,7 @@ BEGIN_MESSAGE_MAP(CCameraAdvancedSettingsDlg, CDialog)
 	ON_BN_CLICKED(IDC_SAVE_VIDEO, OnSaveVideo)
 	ON_BN_CLICKED(IDC_SAVE_ANIMATEDGIF, OnSaveAnimGif)
 	ON_BN_CLICKED(IDC_ANIMATEDGIF_SIZE, OnAnimatedgifSize)
-	ON_EN_CHANGE(IDC_EDIT_SNAPSHOT_RATE, OnChangeEditSnapshotRate)
+	ON_CBN_SELCHANGE(IDC_COMBO_SNAPSHOT_RATE, OnSelchangeSnapshotRate)
 	ON_BN_CLICKED(IDC_BUTTON_THUMB_SIZE, OnButtonThumbSize)
 	ON_BN_CLICKED(IDC_EXEC_COMMAND, OnExecCommand)
 	ON_NOTIFY(NM_CLICK, IDC_SYSLINK_PARAMS_HELP, OnNMClickSyslinkParamsHelp)
@@ -194,6 +194,25 @@ BOOL CCameraAdvancedSettingsDlg::OnInitDialog()
 	pComboBoxScheduler->AddString(ML_STRING(1874, "Always enabled (scheduler is off)"));
 	pComboBoxScheduler->AddString(ML_STRING(1875, "Enabled:"));
 	pComboBoxScheduler->AddString(ML_STRING(1876, "Disabled:"));
+	CComboBox* pComboBoxSnapshotRate = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOT_RATE);
+	pComboBoxSnapshotRate->SetItemData(pComboBoxSnapshotRate->AddString(ML_STRING(1888, "Fast")), 0);
+	pComboBoxSnapshotRate->SetItemData(pComboBoxSnapshotRate->AddString(ML_STRING(1889, "1 second")), 1);
+	pComboBoxSnapshotRate->SetItemData(pComboBoxSnapshotRate->AddString(ML_STRING(1890, "2 seconds")), 2);
+	pComboBoxSnapshotRate->SetItemData(pComboBoxSnapshotRate->AddString(ML_STRING(1891, "3 seconds")), 3);
+	pComboBoxSnapshotRate->SetItemData(pComboBoxSnapshotRate->AddString(ML_STRING(1892, "4 seconds")), 4);
+	pComboBoxSnapshotRate->SetItemData(pComboBoxSnapshotRate->AddString(ML_STRING(1893, "5 seconds")), 5);
+	pComboBoxSnapshotRate->SetItemData(pComboBoxSnapshotRate->AddString(ML_STRING(1894, "10 seconds")), 10);
+	pComboBoxSnapshotRate->SetItemData(pComboBoxSnapshotRate->AddString(ML_STRING(1895, "15 seconds")), 15);
+	pComboBoxSnapshotRate->SetItemData(pComboBoxSnapshotRate->AddString(ML_STRING(1896, "30 seconds")), 30);
+	pComboBoxSnapshotRate->SetItemData(pComboBoxSnapshotRate->AddString(ML_STRING(1897, "1 minute")), 60);
+	pComboBoxSnapshotRate->SetItemData(pComboBoxSnapshotRate->AddString(ML_STRING(1898, "2 minutes")), 120);
+	pComboBoxSnapshotRate->SetItemData(pComboBoxSnapshotRate->AddString(ML_STRING(1899, "3 minutes")), 180);
+	pComboBoxSnapshotRate->SetItemData(pComboBoxSnapshotRate->AddString(ML_STRING(1900, "4 minutes")), 240);
+	pComboBoxSnapshotRate->SetItemData(pComboBoxSnapshotRate->AddString(ML_STRING(1901, "5 minutes")), 300);
+	pComboBoxSnapshotRate->SetItemData(pComboBoxSnapshotRate->AddString(ML_STRING(1902, "10 minutes")), 600);
+	pComboBoxSnapshotRate->SetItemData(pComboBoxSnapshotRate->AddString(ML_STRING(1903, "15 minutes")), 900);
+	pComboBoxSnapshotRate->SetItemData(pComboBoxSnapshotRate->AddString(ML_STRING(1904, "30 minutes")), 1800);
+	pComboBoxSnapshotRate->SetItemData(pComboBoxSnapshotRate->AddString(ML_STRING(1905, "1 hour")), 3600);
 	CComboBox* pComboBoxExecCommandMode = (CComboBox*)GetDlgItem(IDC_EXEC_COMMAND_MODE);
 	pComboBoxExecCommandMode->AddString(ML_STRING(1842, "Recording start"));
 	pComboBoxExecCommandMode->AddString(ML_STRING(1843, "Recording saving done"));
@@ -344,10 +363,14 @@ BOOL CCameraAdvancedSettingsDlg::OnInitDialog()
 	pButtonAnimGIFSize->SetWindowText(sSize);
 
 	// Snapshot rate
-	CEdit* pEditSnapshotRate = (CEdit*)GetDlgItem(IDC_EDIT_SNAPSHOT_RATE);
-	CString sSnapshotRate;
-	sSnapshotRate.Format(_T("%d"), m_pDoc->m_nSnapshotRate);
-	pEditSnapshotRate->SetWindowText(sSnapshotRate);
+	for (int i = 0; i < pComboBoxSnapshotRate->GetCount(); i++)
+	{
+		if (m_pDoc->m_nSnapshotRate == pComboBoxSnapshotRate->GetItemData(i))
+		{
+			pComboBoxSnapshotRate->SetCurSel(i);
+			break;
+		}
+	}
 
 	// Thumbnail Size Button
 	sSize.Format(ML_STRING(1769, "Size %i x %i"),	m_pDoc->m_nSnapshotThumbWidth,
@@ -852,15 +875,14 @@ void CCameraAdvancedSettingsDlg::OnAnimatedgifSize()
 	m_pDoc->m_SaveFrameListThread.Start();
 }
 
-void CCameraAdvancedSettingsDlg::OnChangeEditSnapshotRate()
+void CCameraAdvancedSettingsDlg::OnSelchangeSnapshotRate()
 {
 	// Get the set rate and update the variable
-	CString sText;
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_SNAPSHOT_RATE);
-	pEdit->GetWindowText(sText);
-	m_pDoc->m_nSnapshotRate = MAX(0, _tcstol(sText, NULL, 10));
-	
+	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOT_RATE);
+	m_pDoc->m_nSnapshotRate = pComboBox->GetItemData(pComboBox->GetCurSel());
+
 	// Update the web interface seconds rate
+	CString sText;
 	sText.Format(_T("%d"), m_pDoc->m_nSnapshotRate);
 	m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTREFRESHSEC, sText);
 
