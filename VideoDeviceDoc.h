@@ -100,6 +100,7 @@ class CCameraAdvancedSettingsDlg;
 #define GOOD_SNAPSHOT_COMPR_QUALITY				90				// 0 Worst Quality, 100 Best Quality
 #define DEFAULT_SNAPSHOT_THUMB_WIDTH			228				// Must be a multiple of 4 because of stretch and codec
 #define DEFAULT_SNAPSHOT_THUMB_HEIGHT			172				// Must be a multiple of 4 because of stretch and codec
+#define DEFAULT_SERVERPUSH_POLLRATE_MS			200				// ms
 
 // Movement Detection
 #define DEFAULT_PRE_BUFFER_MSEC					3000			// ms
@@ -143,6 +144,7 @@ class CCameraAdvancedSettingsDlg;
 #define PHPCONFIG_SUMMARYTITLE					_T("SUMMARYTITLE")
 #define PHPCONFIG_SNAPSHOTTITLE					_T("SNAPSHOTTITLE")
 #define PHPCONFIG_SNAPSHOTREFRESHSEC			_T("SNAPSHOTREFRESHSEC")
+#define PHPCONFIG_SERVERPUSH_POLLRATE_MS		_T("SERVERPUSH_POLLRATE_MS")
 #define PHPCONFIG_THUMBWIDTH					_T("THUMBWIDTH")
 #define PHPCONFIG_THUMBHEIGHT					_T("THUMBHEIGHT")
 #define PHPCONFIG_WIDTH							_T("WIDTH")
@@ -890,7 +892,7 @@ public:
 	CStringArray m_HttpGetFrameLocations;				// Automatic camera type detection query string
 
 	// Snapshot Vars
-	volatile int m_nSnapshotRate;						// Snapshot rate in seconds
+	volatile int m_nSnapshotRate;						// Snapshot rate in seconds, if 0 it will take snapshots each DEFAULT_SERVERPUSH_POLLRATE_MS
 	volatile int m_nSnapshotHistoryRate;				// Snapshot history rate in seconds
 	volatile int m_nSnapshotHistoryFrameRate;			// Snapshot history video framerate
 	volatile int m_nSnapshotThumbWidth;					// Snapshot thumbnail width

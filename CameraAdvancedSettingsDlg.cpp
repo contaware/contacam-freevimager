@@ -854,12 +854,29 @@ void CCameraAdvancedSettingsDlg::OnAnimatedgifSize()
 
 void CCameraAdvancedSettingsDlg::OnChangeEditSnapshotRate()
 {
-	CString sSnapshotRate;
+	// Get the set rate and update the variable
+	CString sText;
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_SNAPSHOT_RATE);
-	pEdit->GetWindowText(sSnapshotRate);
-	m_pDoc->m_nSnapshotRate = MAX(1, _tcstol(sSnapshotRate, NULL, 10));
-	sSnapshotRate.Format(_T("%d"), m_pDoc->m_nSnapshotRate);
-	m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTREFRESHSEC, sSnapshotRate);
+	pEdit->GetWindowText(sText);
+	m_pDoc->m_nSnapshotRate = MAX(0, _tcstol(sText, NULL, 10));
+	
+	// Update the web interface seconds rate
+	sText.Format(_T("%d"), m_pDoc->m_nSnapshotRate);
+	m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTREFRESHSEC, sText);
+
+	// Update the web interface sub-seconds rate
+	//
+	// In case that SNAPSHOTREFRESHSEC is >= 1
+	// - push.php polls the snapshots file modification time each
+	//   SERVERPUSH_POLLRATE_MS and sends the frames not faster than each
+	//   second because the modification time has a granularity of one second
+	// - snapshot.php and snapshotfull.php load snapshots each SNAPSHOTREFRESHSEC
+	//
+	// In case that SNAPSHOTREFRESHSEC is 0
+	// - push.php sends frames with a rate of SERVERPUSH_POLLRATE_MS
+	// - snapshot.php and snapshotfull.php load snapshots each SERVERPUSH_POLLRATE_MS
+	sText.Format(_T("%d"), DEFAULT_SERVERPUSH_POLLRATE_MS);
+	m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SERVERPUSH_POLLRATE_MS, sText);
 }
 
 void CCameraAdvancedSettingsDlg::ChangeThumbSize(int nNewWidth, int nNewHeight)

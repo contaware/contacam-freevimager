@@ -11,8 +11,15 @@ define ("FILESDIRPATH","");
 // (these files must reside in the above set FILESDIRPATH directory)
 define ("SNAPSHOTNAME","snapshot.jpg");
 define ("SNAPSHOTTHUMBNAME","snapshot_thumb.jpg");
-// In mjpeg(=server push) mode snapshots will be checked each
-// given milliseconds to see if they have changed
+// In case that SNAPSHOTREFRESHSEC is >= 1
+// - push.php polls the snapshots file modification time each
+//   SERVERPUSH_POLLRATE_MS and sends the frames not faster than each
+//   second because the modification time has a granularity of one second
+// - snapshot.php and snapshotfull.php load snapshots each SNAPSHOTREFRESHSEC
+//
+// In case that SNAPSHOTREFRESHSEC is 0
+// - push.php sends frames with a rate of SERVERPUSH_POLLRATE_MS
+// - snapshot.php and snapshotfull.php load snapshots each SERVERPUSH_POLLRATE_MS
 define ("SERVERPUSH_POLLRATE_MS","200");
 // Summary will auto-reload each given seconds
 define ("SUMMARYREFRESHSEC","300");

@@ -4281,7 +4281,7 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	CString sRecordAutoSaveDir = m_sRecordAutoSaveDir;
 	sRecordAutoSaveDir.TrimRight(_T('\\'));
 	m_bObscureSource = ::IsExistingFile(sRecordAutoSaveDir + _T("\\") + CAMERA_IS_OBSCURED_FILENAME);
-	m_nSnapshotRate = MAX(1, pApp->GetProfileInt(sSection, _T("SnapshotRate"), DEFAULT_SNAPSHOT_RATE));
+	m_nSnapshotRate = MAX(0, pApp->GetProfileInt(sSection, _T("SnapshotRate"), DEFAULT_SNAPSHOT_RATE));
 	m_nSnapshotHistoryRate = (int)pApp->GetProfileInt(sSection, _T("SnapshotHistoryRate"), DEFAULT_SNAPSHOT_HISTORY_RATE);
 	m_nSnapshotHistoryFrameRate = (int)pApp->GetProfileInt(sSection, _T("SnapshotHistoryFrameRate"), DEFAULT_SNAPSHOT_HISTORY_FRAMERATE);
 	m_nSnapshotThumbWidth = (int) MakeSizeMultipleOf4(pApp->GetProfileInt(sSection, _T("SnapshotThumbWidth"), DEFAULT_SNAPSHOT_THUMB_WIDTH));
@@ -7517,7 +7517,7 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 		int nFrameTime = Round(1000.0 / m_dFrameRate);
 		if (m_dEffectiveFrameRate > 0.0)
 			nFrameTime = Round(1000.0 / m_dEffectiveFrameRate);
-		int nSnapshotRateMs = 1000 * m_nSnapshotRate;
+		int nSnapshotRateMs = MAX(DEFAULT_SERVERPUSH_POLLRATE_MS, 1000 * m_nSnapshotRate); // Minimum rate is DEFAULT_SERVERPUSH_POLLRATE_MS
 		if (nFrameTime >= nSnapshotRateMs)
 		{
 			m_dwNextSnapshotUpTime = dwUpTime;

@@ -118,8 +118,14 @@ function doServerPush($file,$type,$poll) {
 				flush();
 			}
 			
-			// Poll the filesystem until the file changes, then send the update
-			$wait = !connection_aborted() && $lastupdate == @filemtime($file);
+			// - Poll the filesystem until the file changes, then send the update
+			// - In case of sub-second refresh do not wait and send with the given $poll rate
+			//   (that because up to ext3 only seconds file time granularity is available,
+			//   with ext4 and ntfs we have sub-seconds but not in php)
+			if (SNAPSHOTREFRESHSEC >= 1)
+				$wait = !connection_aborted() && $lastupdate == @filemtime($file);
+			else
+				$wait = false;
 		} while ($wait);
 	} while (!connection_aborted()); // if aborts are ignored, exit anyway to avoid endless threads
 }
