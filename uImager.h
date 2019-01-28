@@ -408,7 +408,16 @@ public:
 	BOOL UnassociateFileType(CString sExt);
 
 	// Get Application Temporary Directory (the returned string ends with a _T('\\'))
-	__forceinline CString GetAppTempDir() const {return m_sAppTempDir;};
+	// making sure the folder exists as some temporary folder managers may delete it
+	// if not used for some time!
+	__forceinline CString GetAppTempDir() const {
+		if (!::IsExistingDir(m_sAppTempDir))
+		{
+			if (!::CreateDir(m_sAppTempDir))
+				::ShowErrorMsg(::GetLastError(), FALSE);
+		}
+		return m_sAppTempDir;
+	};
 
 	// Show color dialog with custom
 	// colors store in registry.

@@ -1128,7 +1128,7 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 
 	// Temp file names
 	CString sTempFileName(::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), sHistoryFileName));
-	CString sTempThumbFileName(::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), ::GetFileNameNoExt(sHistoryFileName) + _T("_thumb.jpg")));
+	CString sTempThumbFileName(::GetFileNameNoExt(sTempFileName) + _T("_thumb.jpg"));
 
 	// Resize thumb
 	CDib DibThumb;
