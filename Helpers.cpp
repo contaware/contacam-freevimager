@@ -6,6 +6,7 @@
 #include <lmcons.h>
 #include <math.h>
 #include <psapi.h>
+#include <tlhelp32.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -1316,6 +1317,33 @@ BOOL KillProcByPID(DWORD dwProcID)
 		CloseHandle(hProcess); // close handle to avoid ERROR_NO_SYSTEM_RESOURCES
 	}
 	return res;
+}
+
+BOOL KillProcTreeByPID(DWORD dwProcID)
+{
+	// Kill child processes
+	// To be really sure we could use GetProcessTimes to query the creation time
+	// of the main process and check that it is older than the child. Note that
+	// if an intermediate process in the tree is terminated, we will not be able
+	// to walk the tree further.
+	PROCESSENTRY32 pe = {};
+	pe.dwSize = sizeof(PROCESSENTRY32);
+	HANDLE hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+	if (hProcessSnap != INVALID_HANDLE_VALUE)
+	{
+		if (Process32First(hProcessSnap, &pe))
+		{
+			do
+			{
+				if (pe.th32ParentProcessID == dwProcID)
+					KillProcTreeByPID(pe.th32ProcessID);
+			} while (Process32Next(hProcessSnap, &pe));
+		}
+		CloseHandle(hProcessSnap);
+	}
+
+	// Kill main process
+	return KillProcByPID(dwProcID);
 }
 
 int EnumKillProcByName(const CString& sProcessName, BOOL bKill/*=FALSE*/)

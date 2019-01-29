@@ -225,7 +225,17 @@ CSIDL_CDBURN_AREA				CD Burn area
 extern CString GetSpecialFolderPath(int nSpecialFolder);
 
 // Kill process by PID
+// 
+// The process ID is a value associated with the process object,
+// and as long as the process object is still around, so too will
+// its process ID. The process object remains as long as the process
+// is still running or as long as somebody still has a handle to the
+// process object. This makes sense, because as long as there is still
+// a handle to the process, which can already be terminated, somebody
+// can call WaitForSingleObject or GetExitCodeProcess or even
+// OpenProcess to get another handle.
 extern BOOL KillProcByPID(DWORD dwProcID);
+extern BOOL KillProcTreeByPID(DWORD dwProcID); // if the specified process is a 64-bit process and the caller is a 32-bit process this function fails!
 
 // Enumerate or eventually kill process(es) by name
 // returns the number of found processes
