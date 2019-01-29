@@ -235,7 +235,7 @@ extern CString GetSpecialFolderPath(int nSpecialFolder);
 // can call WaitForSingleObject or GetExitCodeProcess or even
 // OpenProcess to get another handle.
 extern BOOL KillProcByPID(DWORD dwProcID);
-extern BOOL KillProcTreeByPID(DWORD dwProcID); // if the specified process is a 64-bit process and the caller is a 32-bit process this function fails!
+extern BOOL KillProcTreeByPID(DWORD dwProcID);
 
 // Enumerate or eventually kill process(es) by name
 // returns the number of found processes
