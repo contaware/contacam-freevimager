@@ -48,5 +48,10 @@ ContaCam Program
 - Opera mobile can't play video records from web server page. I made also tests with other
   sources of mp4 and also with them there are problems. So we wait that Opera fixes it
   (a_adashkevich@mail.ru)
+- Use nmap to get all the MAC addresses and detect if one is present to disable ContaCam
+  (stuart.les.bloom@gmail.com)
 - Support connecting to a .m3u8 streaming server also known as HLS (HTTP Live Streaming)
   (frak@snakebite.com)
+  http://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8
+  http://184.72.239.149/vod/smil:BigBuckBunny.smil/playlist.m3u8
+  http://www.streambox.fr/playlists/test_001/stream.m3u8

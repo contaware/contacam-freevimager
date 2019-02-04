@@ -376,7 +376,7 @@
 @c @set have-vdpau-x11 no
 @c @set have-winrt no
 @c @set have-xlib no
-@c @set config-bsfs no
+@set config-bsfs yes
 @set config-decoders yes
 @set config-encoders yes
 @set config-hwaccels yes
@@ -635,7 +635,7 @@
 @c @set config-vt-bt2020 no
 @c @set config-wma-freqs no
 @c @set config-wmv2dsp no
-@c @set config-aac-adtstoasc-bsf no
+@set config-aac-adtstoasc-bsf yes
 @c @set config-chomp-bsf no
 @c @set config-dump-extradata-bsf no
 @c @set config-dca-core-bsf no
