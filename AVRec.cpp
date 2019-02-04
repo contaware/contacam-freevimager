@@ -1301,9 +1301,15 @@ bool CAVRec::AddAudioSamples(	DWORD dwStreamNum,
 			if (!bFlush)
 				ASSERT(nConvertedSamples == m_nDstBufSize[dwStreamNum]);
 #endif
+			// Add number of samples to frame
 			m_pFrame[dwStreamNum]->nb_samples = nConvertedSamples;
+
+			// Set rescaled (sample rate time base -> codec time base) pts before encoding
+			// m_pFrame[dwStreamNum]->pts = m_llTotalFramesOrSamples[dwStreamNum] * (1/pCodecCtx->sample_rate) / (pCodecCtx->time_base)
 			AVRational rational = {1, pCodecCtx->sample_rate};
 			m_pFrame[dwStreamNum]->pts = av_rescale_q(m_llTotalFramesOrSamples[dwStreamNum], rational, pCodecCtx->time_base);
+
+			// Add buffer to frame
 			int nDstBufSizeInBytes = av_samples_get_buffer_size(NULL, pCodecCtx->channels, m_nDstBufSize[dwStreamNum], pCodecCtx->sample_fmt, 0);
 			avcodec_fill_audio_frame(	m_pFrame[dwStreamNum], pCodecCtx->channels, pCodecCtx->sample_fmt,
 										*m_ppDstBuf[dwStreamNum], nDstBufSizeInBytes, 0);
