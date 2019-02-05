@@ -76,7 +76,7 @@ BOOL CCreditsDlg::OnInitDialog()
 	stoaster += CString(_T('\n')) + _T("http://www.naughter.com");
 
 	// AVIR
-	CString savir(_T("AVIR image resizing algorithm designed by\nAleksey Vaneev version 2.1"));
+	CString savir(_T("AVIR image resizing algorithm designed by\nAleksey Vaneev version 2.2"));
 	savir += CString(_T('\n')) + _T("http://github.com/avaneev/avir");
 
 	// libjpeg
