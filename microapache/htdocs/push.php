@@ -96,7 +96,7 @@ function doServerPush($file,$type,$poll) {
 		
 		// Store send time and send data
 		$lastupdate = @filemtime($file);
-		ob_flush();
+		@ob_flush(); // suppress notice ob_flush(): failed to flush buffer...
 		flush();
 		
 		// Wait loop
@@ -113,8 +113,8 @@ function doServerPush($file,$type,$poll) {
 			if (time() - $looptime >= 10)
 			{
 				$looptime = time();
-				echo ' '; // whitespace is ignored at this specific point in the stream
-				ob_flush();
+				echo ' ';    // whitespace is ignored at this specific point in the stream
+				@ob_flush(); // suppress notice ob_flush(): failed to flush buffer...
 				flush();
 			}
 			

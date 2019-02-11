@@ -40,7 +40,7 @@ if (isset($_SERVER['HTTP_RANGE'])) { // especially iOS wants byte-ranges
 	rangedownload($full_path);
 } else {
 	header("Content-Length: " . filesize($full_path));
-	ob_flush();
+	@ob_flush(); // suppress notice ob_flush(): failed to flush buffer...
 	flush();
 	if (!connection_aborted())
 		readfile($full_path);
@@ -105,7 +105,7 @@ function rangedownload($full_path) {
 	header('HTTP/1.1 206 Partial Content');
 	header("Content-Range: bytes $startpos-$endpos/$filesize");
 	header("Content-Length: $rangelength");
-	ob_flush();
+	@ob_flush(); // suppress notice ob_flush(): failed to flush buffer...
 	flush();
 	if (connection_aborted()) {
 		fclose($fp);
@@ -119,7 +119,7 @@ function rangedownload($full_path) {
 		if ($p + $buffer > $endpos)
 			$buffer = $endpos - $p + 1;
 		echo fread($fp, $buffer);
-		ob_flush();
+		@ob_flush(); // suppress notice ob_flush(): failed to flush buffer...
 		flush();
 		if (connection_aborted()) {
 			fclose($fp);
