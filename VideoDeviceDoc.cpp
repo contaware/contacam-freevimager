@@ -5687,7 +5687,7 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 				sAuthenticate += _T("}\r\n");
 				sAuthenticate += _T("else if (isset($_SESSION['username']) && $_SESSION['username'] == \"$username_hash\")\r\n");
 				sAuthenticate += _T("	return;\r\n");
-				sAuthenticate += _T("if ($httpbasicauth == 1) {\r\n");
+				sAuthenticate += _T("if (isset($httpbasicauth) && $httpbasicauth == 1) {\r\n");
 				sAuthenticate += _T("	header(\'WWW-Authenticate: Basic realm=\"ContaCam\"\');\r\n");
 				sAuthenticate += _T("	header(\'HTTP/1.0 401 Unauthorized\');\r\n");
 				sAuthenticate += _T("	die(\'Not authorized\');\r\n");
