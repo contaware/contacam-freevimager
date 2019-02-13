@@ -7,7 +7,10 @@ CONTACAM HISTORY
 - Do not adapt the frame time font size when the DPI changes, this
   because connecting through RDP can modify the DPI automatically
 - Possibility to display the system uptime in each frame
-
+- Updated internal web server to Apache 2.4.38 and PHP 5.6.40
+  with INVALID_HANDLE_VALUE patch discussed in PHP bug #77580
+  (Apache and PHP both with OpenSSL 1.0.2q) 
+  
 9.0.7 (December 27th 2018)
 
 - The web interface full screen image maintains the aspect ratio
