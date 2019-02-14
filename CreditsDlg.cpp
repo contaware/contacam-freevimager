@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "uimager.h"
 #include "CreditsDlg.h"
+#include "avir.h"
 extern "C"
 {
 #ifdef VIDEODEVICEDOC
@@ -76,7 +77,7 @@ BOOL CCreditsDlg::OnInitDialog()
 	stoaster += CString(_T('\n')) + _T("http://www.naughter.com");
 
 	// AVIR
-	CString savir(_T("AVIR image resizing algorithm designed by\nAleksey Vaneev version 2.2"));
+	CString savir = _T("AVIR image resizing algorithm designed by\nAleksey Vaneev version ") + CString(AVIR_VERSION);
 	savir += CString(_T('\n')) + _T("http://github.com/avaneev/avir");
 
 	// libjpeg
