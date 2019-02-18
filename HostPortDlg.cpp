@@ -604,7 +604,6 @@ void CHostPortDlg::OnOK()
 		return OnError(); // empty!
 	// Url?
 	else if (sHostLowerCase.Find(_T("http://")) >= 0 || sHostLowerCase.Find(_T("rtsp://")) >= 0)
-		
 	{
 		int nPos = sHostLowerCase.Find(_T("://"));
 		nPos += 3;
