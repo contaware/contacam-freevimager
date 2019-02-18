@@ -55,3 +55,11 @@ ContaCam Program
   http://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8
   http://184.72.239.149/vod/smil:BigBuckBunny.smil/playlist.m3u8
   http://www.streambox.fr/playlists/test_001/stream.m3u8
+  -> attention, many HLS streams are loading in bursts, we need to store pts in the frames
+- If we could delete (recycle) all files shown on the current page of the web interface by
+  clicking just one button or implement a multi-selection delete.
+  Skip empty days in web interface, up to let's say one month or more (reini703@gmx.ch)
+- Can you implement login log for the online viewing. So if people log 
+  in to see the videos you can check in the logs which ip address and when it 
+  has been logged in or tried to login (info@rwsvk.nl)
+  

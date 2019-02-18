@@ -1,8 +1,9 @@
 FREEVIMAGER HISTORY
 
-9.0.9 (January xth 2019)
+9.0.9 (February 18th 2019)
 
 - New temperature, humidity, pressure and water depth exif tags
+- Updated the AVIR library to version 2.2
 
 9.0.7 (December 27th 2018)
 

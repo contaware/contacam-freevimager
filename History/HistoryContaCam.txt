@@ -1,6 +1,6 @@
 CONTACAM HISTORY
 
-9.0.9 (January xth 2019)
+9.0.9 (February 18th 2019)
 
 - The web interface full screen live snapshot image can now be
   configured to either maintain the aspect ratio or to fully stretch
