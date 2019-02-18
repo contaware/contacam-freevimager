@@ -2149,13 +2149,12 @@ BOOL CMainFrame::GetRecBufStats(CString& sBufStats)
 	double dOverallCommitSizeGB = (double)((CDib::m_llOverallSharedMemoryBytes + MemoryStatusEx.ullAvailPageFile) >> 20) / 1024.0;
 
 	// Format stats
-	sBufStats.Format(_T("BUF: %0.1f/%0.1f") + ML_STRING(1826, "GB") + _T("(max %0.1f") + ML_STRING(1826, "GB") + _T(")"),
+	sBufStats.Format(_T("BUF: %0.1f(max %0.1f)/%0.1f") + ML_STRING(1826, "GB"),
 					(double)(CDib::m_llOverallSharedMemoryBytes >> 20) / 1024.0,
-					dOverallCommitSizeGB,
-					dMaxOverallQueueSizeGB);
+					dMaxOverallQueueSizeGB, dOverallCommitSizeGB);
 
 	// return TRUE to alert!
-	return (dOverallCommitSizeGB < dMaxOverallQueueSizeGB);
+	return (dMaxOverallQueueSizeGB > dOverallCommitSizeGB);
 }
 #endif
 
