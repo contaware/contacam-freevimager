@@ -5,7 +5,7 @@
 #include "uimager.h"
 #include "HostPortDlg.h"
 #include "VideoDeviceDoc.h"
-#include "SortableStringArray.h"
+#include "SortableStringArray.h" // for the CompareNatural() function
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -193,23 +193,31 @@ BOOL CHostPortDlg::OnInitDialog()
 		m_DeviceTypeModes.InsertAt(0, (DWORD)CVideoDeviceDoc::GENERIC_1_RTSP);
 	}
 
-	// Find the last selected index and populate the hosts CComboBox
-	CComboBox* pComboBoxHost = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
+	// Find the last selected index and populate the hosts combobox
+	m_HostComboBox.SubclassDlgItem(IDC_COMBO_HOST, this);
 	int nLastSel = 0; // if not found default to first item
 	for (int nHostIndex = 0; nHostIndex < m_Hosts.GetSize(); nHostIndex++)
 	{
+		// Above the duplicated hosts are deleted, it can happen that the
+		// chosen m_Ports[nHostIndex] and m_DeviceTypeModes[nHostIndex]
+		// are not the ones that were selected last time, correct that here
 		if (m_Hosts[nHostIndex] == m_sHost)
 		{
 			nLastSel = nHostIndex;
 			m_Ports[nHostIndex] = m_nPort;
 			m_DeviceTypeModes[nHostIndex] = m_nDeviceTypeMode;
 		}
-		pComboBoxHost->AddString(m_Hosts[nHostIndex]);
+
+		// Fill the list box of the combobox (device name is indexed by ItemData)
+		m_HostComboBox.SetItemData(	m_HostComboBox.AddString(m_Hosts[nHostIndex]),
+									m_HostComboBox.m_DescriptionArray.Add(GetAssignedDeviceName(m_Hosts[nHostIndex],
+																								m_Ports[nHostIndex],
+																								m_DeviceTypeModes[nHostIndex])));
 	}
 
 	// Current Host
 	m_sHost = m_Hosts[nLastSel];
-	pComboBoxHost->SetCurSel(nLastSel);
+	m_HostComboBox.SetCurSel(nLastSel);
 
 	// Current Port
 	m_nPort = m_Ports[nLastSel];
@@ -522,8 +530,7 @@ void CHostPortDlg::EnableDisableCtrls()
 
 void CHostPortDlg::OnEditchangeComboHost()
 {
-	CComboBox* pComboBoxHost = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
-	pComboBoxHost->GetWindowText(m_sHost);
+	m_HostComboBox.GetWindowText(m_sHost);
 	EnableDisableCtrls();
 	Load();
 }
@@ -539,11 +546,10 @@ combo box control.
 void CHostPortDlg::OnSelchangeComboHost() 
 {
 	// Host
-	CComboBox* pComboBoxHost = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
-	pComboBoxHost->GetLBText(pComboBoxHost->GetCurSel(), m_sHost);
+	m_HostComboBox.GetLBText(m_HostComboBox.GetCurSel(), m_sHost);
 
 	// Port
-	int nSel = pComboBoxHost->GetCurSel();
+	int nSel = m_HostComboBox.GetCurSel();
 	if (nSel >= 0 && nSel < m_Ports.GetSize())
 	{
 		m_nPort = m_Ports[nSel];
@@ -587,8 +593,7 @@ void CHostPortDlg::OnSelchangeComboDeviceTypeMode()
 
 void CHostPortDlg::OnError()
 {
-	CComboBox* pComboBoxHost = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
-	::SetFocus(pComboBoxHost->GetSafeHwnd());
+	::SetFocus(m_HostComboBox.GetSafeHwnd());
 	::AlertUser(GetSafeHwnd());
 	::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, ML_STRING(1867, "Enter an IP or a Hostname or an URL starting with rtsp:// or http:// (ATTENTION: User Name and Password must be provided under Camera Login, not in the URL)"), 0);
 }
@@ -639,6 +644,27 @@ CString CHostPortDlg::MakeDevicePathName(const CString& sInHost, int nInPort, in
 			sOutGetFrameLocation, nOutDeviceTypeMode);
 	return CVideoDeviceDoc::MakeNetworkDevicePathName(	sOutGetFrameVideoHost, nOutGetFrameVideoPort,
 														sOutGetFrameLocation, (CVideoDeviceDoc::NetworkDeviceTypeMode)nOutDeviceTypeMode);
+}
+
+CString CHostPortDlg::GetAssignedDeviceName(const CString& sInHost, int nInPort, int nInDeviceTypeMode)
+{
+	// Get device path name
+	CString sDevicePathName = MakeDevicePathName(sInHost, nInPort, nInDeviceTypeMode);
+
+	// Check whether section exists because the get profile functions call GetSectionKey()
+	// which creates the key if it doesn't exist. We do not want a new key for each typed char!
+	BOOL bSectionExists = ((CUImagerApp*)::AfxGetApp())->IsExistingSection(sDevicePathName);
+
+	CString	sName;
+	if (bSectionExists)
+	{
+		sName = ((CUImagerApp*)::AfxGetApp())->GetProfileString(sDevicePathName, _T("RecordAutoSaveDir"), _T(""));
+		sName.TrimRight(_T('\\'));
+		int index = sName.ReverseFind(_T('\\'));
+		if (index >= 0)
+			sName = sName.Mid(index + 1);
+	}
+	return sName;
 }
 
 void CHostPortDlg::Load()

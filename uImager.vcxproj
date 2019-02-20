@@ -604,6 +604,7 @@
     </ClCompile>
     <ClCompile Include="DeleteCamFoldersDlg.cpp" />
     <ClCompile Include="DeletePageDlg.cpp" />
+    <ClCompile Include="DescriptionComboBox.cpp" />
     <ClCompile Include="DIBStatic.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -1302,6 +1303,7 @@
     <ClInclude Include="DecreaseBppDlg.h" />
     <ClInclude Include="DeleteCamFoldersDlg.h" />
     <ClInclude Include="DeletePageDlg.h" />
+    <ClInclude Include="DescriptionComboBox.h" />
     <ClInclude Include="DIBStatic.h" />
     <ClInclude Include="DragDropListCtrl.h" />
     <ClInclude Include="DxCapture.h" />
