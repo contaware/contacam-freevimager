@@ -1,5 +1,10 @@
 CONTACAM HISTORY
 
+9.5.0 (Month XXth 2019)
+
+- Updated the "Network / IP Camera" dialog to show also the assigned
+  camera name in the "Camera IP or Address" drop down list
+
 9.0.9 (February 18th 2019)
 
 - The web interface full screen live snapshot image can now be
