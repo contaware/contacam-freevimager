@@ -10,8 +10,6 @@
 
 #include "DescriptionComboBox.h"
 
-#define MAX_HOST_PORT_HISTORY_SIZE		8
-
 /////////////////////////////////////////////////////////////////////////////
 // CHostPortDlg dialog
 
@@ -50,10 +48,8 @@ protected:
 	void EnableDisableCtrls();
 	static CString MakeDevicePathName(const CString& sInHost, int nInPort, int nInDeviceTypeMode);
 	static CString GetAssignedDeviceName(const CString& sInHost, int nInPort, int nInDeviceTypeMode);
-	void Load();		// load settings for given m_sHost, m_nPort, m_nDeviceTypeMode
-	void Save();		// save settings for given m_sHost, m_nPort, m_nDeviceTypeMode
-	void LoadHistory();	// load last selected m_sHost, m_nPort, m_nDeviceTypeMode
-	void SaveHistory();	// save last selected m_sHost, m_nPort, m_nDeviceTypeMode
+	void LoadSettings();	// load settings for given m_sHost, m_nPort, m_nDeviceTypeMode
+	void SaveSettings();	// save settings for given m_sHost, m_nPort, m_nDeviceTypeMode
 	void OnError();
 
 	CDescriptionComboBox m_HostComboBox;

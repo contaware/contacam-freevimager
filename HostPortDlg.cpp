@@ -22,8 +22,21 @@ static char THIS_FILE[] = __FILE__;
 CHostPortDlg::CHostPortDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CHostPortDlg::IDD, pParent)
 {
-	// Init m_sHost, m_nPort and m_nDeviceTypeMode
-	LoadHistory();
+	// Load last selected m_sHost, m_nPort, m_nDeviceTypeMode
+	CWinApp* pApp = ::AfxGetApp();
+	CString sSection(_T("HostPortDlg"));
+
+	// Host
+	m_sHost = pApp->GetProfileString(sSection, _T("HostHistory0"), _T(""));
+
+	// Port
+	DWORD dwPort = (DWORD)pApp->GetProfileInt(sSection, _T("PortHistory0"), 0xFFFFFFFF);
+	if (dwPort == 0 || dwPort > 65535) // Port 0 is Reserved
+		dwPort = DEFAULT_RTSP_PORT;
+	m_nPort = dwPort;
+
+	// Device Type and Mode
+	m_nDeviceTypeMode = (DWORD)pApp->GetProfileInt(sSection, _T("DeviceTypeModeHistory0"), CVideoDeviceDoc::GENERIC_1_RTSP);
 }
 
 BEGIN_MESSAGE_MAP(CHostPortDlg, CDialog)
@@ -232,7 +245,7 @@ BOOL CHostPortDlg::OnInitDialog()
 
 	// Update Controls
 	EnableDisableCtrls();
-	Load();
+	LoadSettings();
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -532,7 +545,7 @@ void CHostPortDlg::OnEditchangeComboHost()
 {
 	m_HostComboBox.GetWindowText(m_sHost);
 	EnableDisableCtrls();
-	Load();
+	LoadSettings();
 }
 
 /*
@@ -568,7 +581,7 @@ void CHostPortDlg::OnSelchangeComboHost()
 
 	// Update Controls
 	EnableDisableCtrls();
-	Load();
+	LoadSettings();
 }
 
 void CHostPortDlg::OnChangeEditPort()
@@ -582,13 +595,13 @@ void CHostPortDlg::OnChangeEditPort()
 		m_nPort = nPort;
 	else
 		m_nPort = DEFAULT_RTSP_PORT;
-	Load();
+	LoadSettings();
 }
 
 void CHostPortDlg::OnSelchangeComboDeviceTypeMode()
 {
 	m_nDeviceTypeMode = SelectionToDeviceTypeMode();
-	Load();
+	LoadSettings();
 }
 
 void CHostPortDlg::OnError()
@@ -626,10 +639,21 @@ void CHostPortDlg::OnOK()
 			return OnError(); // missing protocol!
 	}
 
-	// OK
-	SaveHistory();	// save selected m_sHost, m_nPort and m_nDeviceTypeMode
-	Save();			// save Username, Password and PreferTcpforRtsp flag
-					// for the device given by m_sHost, m_nPort, m_nDeviceTypeMode
+	// Save selected m_sHost, m_nPort and m_nDeviceTypeMode
+	// New ContaCam versions only use the first history
+	// entry to store the last selected item
+	// (old ContaCams stored the list of entered hosts separately,
+	// new ContaCams build that list from the registry/inifile settings)
+	CWinApp* pApp = ::AfxGetApp();
+	CString sSection(_T("HostPortDlg"));
+	pApp->WriteProfileString(sSection, _T("HostHistory0"), m_sHost);
+	pApp->WriteProfileInt(sSection, _T("PortHistory0"), m_nPort);
+	pApp->WriteProfileInt(sSection, _T("DeviceTypeModeHistory0"), m_nDeviceTypeMode);
+
+	// Save Username, Password and PreferTcpforRtsp flag
+	// for the device given by m_sHost, m_nPort, m_nDeviceTypeMode
+	SaveSettings();
+
 	CDialog::OnOK();
 }
 
@@ -667,7 +691,7 @@ CString CHostPortDlg::GetAssignedDeviceName(const CString& sInHost, int nInPort,
 	return sName;
 }
 
-void CHostPortDlg::Load()
+void CHostPortDlg::LoadSettings()
 {
 	// Get device path name
 	CString sDevicePathName = MakeDevicePathName(m_sHost, m_nPort, m_nDeviceTypeMode);
@@ -706,7 +730,7 @@ void CHostPortDlg::Load()
 		SetWindowText(m_sInitialDlgTitle + _T(" ") + sName);
 }
 
-void CHostPortDlg::Save()
+void CHostPortDlg::SaveSettings()
 {
 	// Get device path name
 	CString sDevicePathName = MakeDevicePathName(m_sHost, m_nPort, m_nDeviceTypeMode);
@@ -721,66 +745,6 @@ void CHostPortDlg::Save()
 	((CUImagerApp*)::AfxGetApp())->WriteSecureProfileString(sDevicePathName, _T("HTTPGetFramePasswordExportable"), sText);
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_PREFER_TCP_FOR_RTSP);
 	((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sDevicePathName, _T("PreferTcpforRtsp"), pCheck->GetCheck());
-}
-
-void CHostPortDlg::LoadHistory()
-{
-	CWinApp* pApp = ::AfxGetApp();
-	CString sSection(_T("HostPortDlg"));
-
-	// Host
-	m_sHost = pApp->GetProfileString(sSection, _T("HostHistory0"), _T(""));
-	
-	// Port
-	DWORD dwPort = (DWORD)pApp->GetProfileInt(sSection, _T("PortHistory0"), 0xFFFFFFFF);
-	if (dwPort == 0 || dwPort > 65535) // Port 0 is Reserved
-		dwPort = DEFAULT_RTSP_PORT;
-	m_nPort = dwPort;
-
-	// Device Type and Mode
-	m_nDeviceTypeMode = (DWORD)pApp->GetProfileInt(sSection, _T("DeviceTypeModeHistory0"), CVideoDeviceDoc::GENERIC_1_RTSP);
-}
-
-void CHostPortDlg::SaveHistory()
-{
-	CWinApp* pApp = ::AfxGetApp();
-	CString sSection(_T("HostPortDlg"));
-
-	for (int i = 0; i < MAX_HOST_PORT_HISTORY_SIZE; i++)
-	{
-		CString sHostEntry;
-		sHostEntry.Format(_T("HostHistory%d"), i);
-		CString sPortEntry;
-		sPortEntry.Format(_T("PortHistory%d"), i);
-		CString sDeviceTypeModeEntry;
-		sDeviceTypeModeEntry.Format(_T("DeviceTypeModeHistory%d"), i);
-		if (i == 0)
-		{
-			// New ContaCam versions only use the first history
-			// entry to store the last selected item
-			pApp->WriteProfileString(sSection, sHostEntry, m_sHost);
-			pApp->WriteProfileInt(sSection, sPortEntry, m_nPort);
-			pApp->WriteProfileInt(sSection, sDeviceTypeModeEntry, m_nDeviceTypeMode);
-		}
-		else
-		{
-			// Delete all the remaining entries from old ContaCam versions
-			// (old ContaCams stored the list of entered hosts separately,
-			//  new ContaCams build that list from the registry/inifile settings)
-			if (::AfxGetApp()->m_pszRegistryKey)
-			{
-				::DeleteRegistryValue(HKEY_CURRENT_USER, CString(_T("Software\\")) + MYCOMPANY + _T("\\") + APPNAME_NOEXT + _T("\\") + sSection, sHostEntry);
-				::DeleteRegistryValue(HKEY_CURRENT_USER, CString(_T("Software\\")) + MYCOMPANY + _T("\\") + APPNAME_NOEXT + _T("\\") + sSection, sPortEntry);
-				::DeleteRegistryValue(HKEY_CURRENT_USER, CString(_T("Software\\")) + MYCOMPANY + _T("\\") + APPNAME_NOEXT + _T("\\") + sSection, sDeviceTypeModeEntry);
-			}
-			else
-			{
-				::WritePrivateProfileString(sSection, sHostEntry, NULL, ::AfxGetApp()->m_pszProfileName);
-				::WritePrivateProfileString(sSection, sPortEntry, NULL, ::AfxGetApp()->m_pszProfileName);
-				::WritePrivateProfileString(sSection, sDeviceTypeModeEntry, NULL, ::AfxGetApp()->m_pszProfileName);
-			}
-		}
-	}
 }
 
 #endif
