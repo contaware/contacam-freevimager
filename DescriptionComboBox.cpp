@@ -27,28 +27,27 @@ void CDescriptionComboBox::MeasureItem(LPMEASUREITEMSTRUCT lpMeasureItemStruct)
 		CDC* pDC = GetDC();
 
 		// Ensure the DC is using the combobox font when getting the text metrics
-		CFont* pFont = pDC->SelectObject(GetFont());
-		if (pFont)
+		CFont* pOldFont = pDC->SelectObject(GetFont());
+
+		// Get the text height
+		TEXTMETRIC tm;
+		pDC->GetTextMetrics(&tm);
+		lpMeasureItemStruct->itemHeight = tm.tmHeight + tm.tmExternalLeading;
+
+		// Adjust the edit part of the combobox
+		if (!m_bEditHeightSet)
 		{
-			// Get the text height
-			TEXTMETRIC tm;
-			pDC->GetTextMetrics(&tm);
-			lpMeasureItemStruct->itemHeight = tm.tmHeight + tm.tmExternalLeading;
-
-			// Adjust the edit part of the combobox
-			if (!m_bEditHeightSet)
-			{
-				m_bEditHeightSet = TRUE;
-				SetItemHeight(-1, lpMeasureItemStruct->itemHeight + 2);
-			}
-
-			// Set the list item height
-			lpMeasureItemStruct->itemHeight *= 2;
-			lpMeasureItemStruct->itemHeight += 2;
+			m_bEditHeightSet = TRUE;
+			SetItemHeight(-1, lpMeasureItemStruct->itemHeight + 2);
 		}
 
+		// Set the list item height
+		lpMeasureItemStruct->itemHeight *= 2;
+		lpMeasureItemStruct->itemHeight += 2;
+
 		// Clean-up
-		pDC->SelectObject(pFont);
+		if (pOldFont)
+			pDC->SelectObject(pOldFont);
 		ReleaseDC(pDC);
 	}
 }
@@ -85,11 +84,22 @@ void CDescriptionComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 		
 		// Draw description
 		rc.bottom -= 2;
-		CString sData;
+		if (!(HFONT)m_DescriptionFont)
+		{
+			LOGFONT lf;
+			GetFont()->GetLogFont(&lf);
+			lf.lfItalic = TRUE;
+			m_DescriptionFont.CreateFontIndirect(&lf);
+		}
+		CFont* pOldFont = dc.SelectObject(&m_DescriptionFont);
+		dc.SetTextColor(::GetSysColor(COLOR_GRAYTEXT));
+		CString sDescription;
 		int nIndex = lpDrawItemStruct->itemData;
 		if (nIndex >= 0 && nIndex < m_DescriptionArray.GetCount())
-			sData = m_DescriptionArray[nIndex];
-		dc.DrawText(sData, sData.GetLength(), &rc, DT_SINGLELINE | DT_LEFT | DT_BOTTOM);
+			sDescription = m_DescriptionArray[nIndex];
+		dc.DrawText(sDescription, sDescription.GetLength(), &rc, DT_SINGLELINE | DT_LEFT | DT_BOTTOM);
+		if (pOldFont)
+			dc.SelectObject(pOldFont);
 
 		// Draw separator
 		rc.bottom += 1;
@@ -99,7 +109,8 @@ void CDescriptionComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 			CPen* pOldPen = dc.SelectObject(&Pen);
 			dc.MoveTo(rc.left, rc.bottom);
 			dc.LineTo(rc.right, rc.bottom);
-			dc.SelectObject(pOldPen);
+			if (pOldPen)
+				dc.SelectObject(pOldPen);
 		}
 
 		// Clean-up
