@@ -55,7 +55,7 @@ void CDescriptionComboBox::MeasureItem(LPMEASUREITEMSTRUCT lpMeasureItemStruct)
 // Draw the row in the list box part of the combobox
 void CDescriptionComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct) 
 {
-    int itemID = lpDrawItemStruct->itemID;  
+    int itemID = lpDrawItemStruct->itemID;
 	if (itemID != CB_ERR)
 	{
 		CDC dc;
