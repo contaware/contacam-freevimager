@@ -77,27 +77,29 @@ void CDescriptionComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 		else
 			dc.FillSolidRect(&lpDrawItemStruct->rcItem, crOldBkColor);
 
-		// Draw text
-		CString sText;
-		GetLBText(itemID, sText);
-		dc.DrawText(sText, sText.GetLength(), &rc, DT_SINGLELINE | DT_LEFT | DT_TOP);
+		// Draw name
+		CString sName;
+		int i = lpDrawItemStruct->itemData;
+		if (i >= 0 && i < m_NameArray.GetCount())
+			sName = m_NameArray[i];
+		if (sName.IsEmpty())
+			sName = _T("-------");
+		dc.DrawText(sName, sName.GetLength(), &rc, DT_SINGLELINE | DT_LEFT | DT_TOP);
 		
-		// Draw description
+		// Draw host
 		rc.bottom -= 2;
-		if (!(HFONT)m_DescriptionFont)
+		if (!(HFONT)m_HostFont)
 		{
 			LOGFONT lf;
 			GetFont()->GetLogFont(&lf);
 			lf.lfItalic = TRUE;
-			m_DescriptionFont.CreateFontIndirect(&lf);
+			m_HostFont.CreateFontIndirect(&lf);
 		}
-		CFont* pOldFont = dc.SelectObject(&m_DescriptionFont);
+		CFont* pOldFont = dc.SelectObject(&m_HostFont);
 		dc.SetTextColor(::GetSysColor(COLOR_GRAYTEXT));
-		CString sDescription;
-		int nIndex = lpDrawItemStruct->itemData;
-		if (nIndex >= 0 && nIndex < m_DescriptionArray.GetCount())
-			sDescription = m_DescriptionArray[nIndex];
-		dc.DrawText(sDescription, sDescription.GetLength(), &rc, DT_SINGLELINE | DT_LEFT | DT_BOTTOM);
+		CString sHost;
+		GetLBText(itemID, sHost);
+		dc.DrawText(sHost, sHost.GetLength(), &rc, DT_SINGLELINE | DT_LEFT | DT_BOTTOM);
 		if (pOldFont)
 			dc.SelectObject(pOldFont);
 

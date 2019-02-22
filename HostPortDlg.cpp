@@ -221,11 +221,11 @@ BOOL CHostPortDlg::OnInitDialog()
 			m_DeviceTypeModes[nHostIndex] = m_nDeviceTypeMode;
 		}
 
-		// Fill the list box of the combobox (device name is indexed by ItemData)
+		// Fill the list box of the combobox (name is indexed by ItemData)
 		m_HostComboBox.SetItemData(	m_HostComboBox.AddString(m_Hosts[nHostIndex]),
-									m_HostComboBox.m_DescriptionArray.Add(GetAssignedDeviceName(m_Hosts[nHostIndex],
-																								m_Ports[nHostIndex],
-																								m_DeviceTypeModes[nHostIndex])));
+									m_HostComboBox.m_NameArray.Add(GetAssignedDeviceName(m_Hosts[nHostIndex],
+																						m_Ports[nHostIndex],
+																						m_DeviceTypeModes[nHostIndex])));
 	}
 
 	// Current Host
