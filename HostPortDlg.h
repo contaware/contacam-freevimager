@@ -8,7 +8,7 @@
 
 #ifdef VIDEODEVICEDOC
 
-#include "DescriptionComboBox.h"
+#include "HostComboBox.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CHostPortDlg dialog
@@ -52,7 +52,7 @@ protected:
 	void SaveSettings();	// save settings for given m_sHost, m_nPort, m_nDeviceTypeMode
 	void OnError();
 
-	CDescriptionComboBox m_HostComboBox;
+	CHostComboBox m_HostComboBox;
 	CStringArray m_Hosts;
 	CDWordArray m_Ports;
 	CDWordArray m_DeviceTypeModes;

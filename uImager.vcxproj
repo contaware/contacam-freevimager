@@ -604,7 +604,6 @@
     </ClCompile>
     <ClCompile Include="DeleteCamFoldersDlg.cpp" />
     <ClCompile Include="DeletePageDlg.cpp" />
-    <ClCompile Include="DescriptionComboBox.cpp" />
     <ClCompile Include="DIBStatic.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -697,6 +696,7 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="HostComboBox.cpp" />
     <ClCompile Include="HostPortDlg.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -1303,7 +1303,6 @@
     <ClInclude Include="DecreaseBppDlg.h" />
     <ClInclude Include="DeleteCamFoldersDlg.h" />
     <ClInclude Include="DeletePageDlg.h" />
-    <ClInclude Include="DescriptionComboBox.h" />
     <ClInclude Include="DIBStatic.h" />
     <ClInclude Include="DragDropListCtrl.h" />
     <ClInclude Include="DxCapture.h" />
@@ -1315,6 +1314,7 @@
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="HelpersAudio.h" />
     <ClInclude Include="HLSDlgModeless.h" />
+    <ClInclude Include="HostComboBox.h" />
     <ClInclude Include="HostPortDlg.h" />
     <ClInclude Include="HScrollListBox.h" />
     <ClInclude Include="httpvideoformatdlg.h" />

@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "DescriptionComboBox.h"
+#include "HostComboBox.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -7,19 +7,19 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CDescriptionComboBox::CDescriptionComboBox()
+CHostComboBox::CHostComboBox()
 {
 	m_bEditHeightSet = FALSE;
 }
 
-CDescriptionComboBox::~CDescriptionComboBox()
+CHostComboBox::~CHostComboBox()
 {
 
 }
 
 // Called for each entry when adding the string
 // (as per microsoft doc we do not need to set lpMeasureItemStruct->itemWidth)
-void CDescriptionComboBox::MeasureItem(LPMEASUREITEMSTRUCT lpMeasureItemStruct)
+void CHostComboBox::MeasureItem(LPMEASUREITEMSTRUCT lpMeasureItemStruct)
 {
 	int itemID = lpMeasureItemStruct->itemID;
 	if (itemID != CB_ERR)
@@ -53,7 +53,7 @@ void CDescriptionComboBox::MeasureItem(LPMEASUREITEMSTRUCT lpMeasureItemStruct)
 }
 
 // Draw the row in the list box part of the combobox
-void CDescriptionComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct) 
+void CHostComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct) 
 {
     int itemID = lpDrawItemStruct->itemID;
 	if (itemID != CB_ERR)
