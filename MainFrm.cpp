@@ -75,7 +75,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_WM_INITMENUPOPUP()
 	ON_MESSAGE(WM_AUTORUN_VIDEODEVICES, OnAutorunVideoDevices)
 	ON_COMMAND(ID_VIEW_WEB, OnViewWeb)
-	ON_COMMAND(ID_VIEW_FILES, OnViewFiles)
 	ON_COMMAND(ID_INDICATOR_BUF_USAGE, OnBufUsageClick)
 #else
 	ON_COMMAND(ID_INDICATOR_XCOORDINATE, OnXCoordinatesDoubleClick)
@@ -1081,26 +1080,6 @@ void CMainFrame::OnViewWeb()
 		}
 	}
 	m_MDIClientWnd.ViewWeb(_T("localhost"));
-}
-
-void CMainFrame::OnViewFiles()
-{
-	CMDIChildWnd* pChild = MDIGetActive();
-	if (pChild)
-	{
-		CVideoDeviceDoc* pDoc = (CVideoDeviceDoc*)pChild->GetActiveDocument();
-		if (pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CVideoDeviceDoc)))
-		{
-			pDoc->ViewFiles();
-			return;
-		}
-	}
-	::ShellExecute(	NULL,
-					_T("open"),
-					((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot,
-					NULL,
-					NULL,
-					SW_SHOWNORMAL);
 }
 
 void CMainFrame::OnBufUsageClick()

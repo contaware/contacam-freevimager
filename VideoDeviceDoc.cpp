@@ -106,11 +106,12 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_COMMAND(ID_EDIT_ZONE_SMALL, OnEditZoneSmall)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_SMALL, OnUpdateEditZoneSmall)
 	ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, OnUpdateEditCopy)
 	ON_COMMAND(ID_FILE_SAVE, OnFileSave)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SAVE, OnUpdateFileSave)
 	ON_COMMAND(ID_VIEW_FIT, OnViewFit)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FIT, OnUpdateViewFit)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, OnUpdateEditCopy)
+	ON_COMMAND(ID_VIEW_FILES, OnViewFiles)
 	ON_COMMAND(ID_FILE_SAVE_AS, OnFileSaveAs)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SAVE_AS, OnUpdateFileSaveAs)
 	ON_COMMAND(ID_EDIT_SNAPSHOT, OnEditSnapshot)
@@ -5954,16 +5955,6 @@ void CVideoDeviceDoc::ViewWeb()
 	}
 }
 
-void CVideoDeviceDoc::ViewFiles() 
-{
-	::ShellExecute(	NULL,
-					_T("open"),
-					m_sRecordAutoSaveDir,
-					NULL,
-					NULL,
-					SW_SHOWNORMAL);
-}
-
 CString CVideoDeviceDoc::MicroApacheGetConfigFileName()
 {
 	CString sMicroapacheConfigFile = CUImagerApp::GetConfigFilesDir();
@@ -8414,6 +8405,18 @@ void CVideoDeviceDoc::OnUpdateViewFit(CCmdUI* pCmdUI)
 	pCmdUI->Enable(	!GetView()->m_bFullScreenMode	&&
 					(rcClient != m_DocRect)			&&
 					!GetFrame()->IsIconic());
+}
+
+void CVideoDeviceDoc::OnViewFiles()
+{
+	CString sBaseYearMonthDayDir;
+	CreateBaseYearMonthDaySubDir(m_sRecordAutoSaveDir, CTime::GetCurrentTime(), _T(""), sBaseYearMonthDayDir);
+	::ShellExecute(NULL,
+		_T("open"),
+		sBaseYearMonthDayDir,
+		NULL,
+		NULL,
+		SW_SHOWNORMAL);
 }
 
 void CVideoDeviceDoc::OnEditCopy() 

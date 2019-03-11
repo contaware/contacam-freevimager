@@ -755,7 +755,6 @@ public:
 
 	// Micro Apache
 	void ViewWeb();
-	void ViewFiles();
 	static CString MicroApacheGetConfigFileName();
 	static CString MicroApacheGetEditableConfigFileName();
 	static CString MicroApacheGetLogFileName();
@@ -1058,11 +1057,12 @@ protected:
 	afx_msg void OnEditZoneSmall();
 	afx_msg void OnUpdateEditZoneSmall(CCmdUI* pCmdUI);
 	afx_msg void OnEditCopy();
+	afx_msg void OnUpdateEditCopy(CCmdUI* pCmdUI);
 	afx_msg void OnFileSave();
 	afx_msg void OnUpdateFileSave(CCmdUI* pCmdUI);
 	afx_msg void OnViewFit();
 	afx_msg void OnUpdateViewFit(CCmdUI* pCmdUI);
-	afx_msg void OnUpdateEditCopy(CCmdUI* pCmdUI);
+	afx_msg void OnViewFiles();
 	afx_msg void OnFileSaveAs();
 	afx_msg void OnUpdateFileSaveAs(CCmdUI* pCmdUI);
 	afx_msg void OnEditSnapshot();

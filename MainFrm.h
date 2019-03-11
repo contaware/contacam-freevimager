@@ -276,7 +276,6 @@ protected:
 	afx_msg void OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu);
 	afx_msg LONG OnAutorunVideoDevices(WPARAM wparam, LPARAM lparam);
 	afx_msg void OnViewWeb();
-	afx_msg void OnViewFiles();
 	afx_msg void OnBufUsageClick();
 #else
 	afx_msg void OnXCoordinatesDoubleClick();
