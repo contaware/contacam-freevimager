@@ -111,6 +111,7 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SAVE, OnUpdateFileSave)
 	ON_COMMAND(ID_VIEW_FIT, OnViewFit)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FIT, OnUpdateViewFit)
+	ON_COMMAND(ID_VIEW_WEB, OnViewWeb)
 	ON_COMMAND(ID_VIEW_FILES, OnViewFiles)
 	ON_COMMAND(ID_FILE_SAVE_AS, OnFileSaveAs)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SAVE_AS, OnUpdateFileSaveAs)
@@ -5903,58 +5904,6 @@ BOOL CVideoDeviceDoc::MicroApacheUpdateWebFiles(CString sAutoSaveDir)
 	return TRUE;
 }
 
-void CVideoDeviceDoc::ViewWeb() 
-{
-	if (m_sRecordAutoSaveDir != _T(""))
-	{
-		// Init vars
-		CString sAutoSaveDir = m_sRecordAutoSaveDir;
-		sAutoSaveDir.TrimRight(_T('\\'));
-		CString sMicroApacheDocRoot = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
-		sMicroApacheDocRoot.TrimRight(_T('\\'));
-
-		// Fail if sAutoSaveDir is not inside document root
-		if (!::IsSubDir(sMicroApacheDocRoot, sAutoSaveDir))
-		{
-			::AfxMessageBox(ML_STRING(1473, "Camera folder must reside inside the document root directory!"), MB_OK | MB_ICONSTOP);
-			return;
-		}
-
-		// Overwrite web files in given directory
-		MicroApacheUpdateWebFiles(sAutoSaveDir);
-		
-		// Execute Browser
-		CString sRelPath(sAutoSaveDir.Right(sAutoSaveDir.GetLength() - sMicroApacheDocRoot.GetLength()));
-		sRelPath.TrimLeft(_T('\\'));
-		sRelPath.Replace(_T('\\'), _T('/'));// Change path from \ to /
-		CString sUrl, sPort;
-		sPort.Format(_T("%d"), ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort);
-		if (sPort != _T("80"))
-		{
-			if (sRelPath != _T(""))
-				sUrl = _T("http://localhost:") + sPort + _T("/") + sRelPath + _T("/");
-			else
-				sUrl = _T("http://localhost:") + sPort + _T("/");
-		}
-		else
-		{
-			if (sRelPath != _T(""))
-				sUrl = _T("http://localhost/") + sRelPath + _T("/");
-			else
-				sUrl = _T("http://localhost/");
-		}
-		sUrl = ::UrlEncode(sUrl, FALSE);
-		BeginWaitCursor();
-		::ShellExecute(	NULL,
-						_T("open"),
-						sUrl,
-						NULL,
-						NULL,
-						SW_SHOWNORMAL);
-		EndWaitCursor();
-	}
-}
-
 CString CVideoDeviceDoc::MicroApacheGetConfigFileName()
 {
 	CString sMicroapacheConfigFile = CUImagerApp::GetConfigFilesDir();
@@ -8405,6 +8354,58 @@ void CVideoDeviceDoc::OnUpdateViewFit(CCmdUI* pCmdUI)
 	pCmdUI->Enable(	!GetView()->m_bFullScreenMode	&&
 					(rcClient != m_DocRect)			&&
 					!GetFrame()->IsIconic());
+}
+
+void CVideoDeviceDoc::OnViewWeb()
+{
+	if (m_sRecordAutoSaveDir != _T(""))
+	{
+		// Init vars
+		CString sAutoSaveDir = m_sRecordAutoSaveDir;
+		sAutoSaveDir.TrimRight(_T('\\'));
+		CString sMicroApacheDocRoot = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
+		sMicroApacheDocRoot.TrimRight(_T('\\'));
+
+		// Fail if sAutoSaveDir is not inside document root
+		if (!::IsSubDir(sMicroApacheDocRoot, sAutoSaveDir))
+		{
+			::AfxMessageBox(ML_STRING(1473, "Camera folder must reside inside the document root directory!"), MB_OK | MB_ICONSTOP);
+			return;
+		}
+
+		// Overwrite web files in given directory
+		MicroApacheUpdateWebFiles(sAutoSaveDir);
+
+		// Execute Browser
+		CString sRelPath(sAutoSaveDir.Right(sAutoSaveDir.GetLength() - sMicroApacheDocRoot.GetLength()));
+		sRelPath.TrimLeft(_T('\\'));
+		sRelPath.Replace(_T('\\'), _T('/'));// Change path from \ to /
+		CString sUrl, sPort;
+		sPort.Format(_T("%d"), ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort);
+		if (sPort != _T("80"))
+		{
+			if (sRelPath != _T(""))
+				sUrl = _T("http://localhost:") + sPort + _T("/") + sRelPath + _T("/");
+			else
+				sUrl = _T("http://localhost:") + sPort + _T("/");
+		}
+		else
+		{
+			if (sRelPath != _T(""))
+				sUrl = _T("http://localhost/") + sRelPath + _T("/");
+			else
+				sUrl = _T("http://localhost/");
+		}
+		sUrl = ::UrlEncode(sUrl, FALSE);
+		BeginWaitCursor();
+		::ShellExecute(NULL,
+			_T("open"),
+			sUrl,
+			NULL,
+			NULL,
+			SW_SHOWNORMAL);
+		EndWaitCursor();
+	}
 }
 
 void CVideoDeviceDoc::OnViewFiles()

@@ -754,7 +754,6 @@ public:
 	// processes.
 
 	// Micro Apache
-	void ViewWeb();
 	static CString MicroApacheGetConfigFileName();
 	static CString MicroApacheGetEditableConfigFileName();
 	static CString MicroApacheGetLogFileName();
@@ -1062,6 +1061,7 @@ protected:
 	afx_msg void OnUpdateFileSave(CCmdUI* pCmdUI);
 	afx_msg void OnViewFit();
 	afx_msg void OnUpdateViewFit(CCmdUI* pCmdUI);
+	afx_msg void OnViewWeb();
 	afx_msg void OnViewFiles();
 	afx_msg void OnFileSaveAs();
 	afx_msg void OnUpdateFileSaveAs(CCmdUI* pCmdUI);
