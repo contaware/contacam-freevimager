@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "wininet.h"
+#include "afxinet.h"
 #include "Winnetwk.h"
 #include "Helpers.h"
 #include "Rpc.h"
@@ -35,8 +36,8 @@ static char THIS_FILE[] = __FILE__;
 #pragma comment(lib, "psapi.lib")	// to support EnumProcesses(), EnumProcessModules(), GetModuleBaseName(), GetProcessMemoryInfo()
 #endif
 #pragma comment(lib, "mpr.lib")		// to support WNetGetConnection()
-#pragma comment(lib, "Rpcrt4.lib")	// to support UuidCreate(), UuidToString(), RpcStringFree(), 
-#pragma comment(lib, "Wininet.lib")	// to support InternetGetLastResponseInfo()
+#pragma comment(lib, "Rpcrt4.lib")	// to support UuidCreate(), UuidToString(), RpcStringFree()
+#pragma comment(lib, "Wininet.lib")	// to support InternetGetLastResponseInfo(), InternetOpen(), InternetConnect(), ...
 
 // If InitHelpers() is not called vars default to:
 // default DPI, default font, no multimedia instructions,
@@ -2631,4 +2632,317 @@ BOOL IsFontSupported(LPCTSTR szFontFamily)
 	EnumFontFamiliesEx(hDC, &lf, (FONTENUMPROC)EnumFontFamExProc, (LPARAM)&lParam, 0);
 	ReleaseDC(NULL, hDC);
 	return (BOOL)lParam;
+}
+
+LPBYTE GetURL(LPCTSTR lpszURL, size_t& Size, BOOL bAllowInvalidCert, BOOL bShowMessageBoxOnError, URLDOWNLOADPROGRESSCALLBACK lpfnCallback)
+{
+	// Return vars
+	LPBYTE lpBuf = NULL;
+	Size = 0;
+
+	// Vars
+	HINTERNET hInternetRoot = NULL;
+	HINTERNET hConnectHandle = NULL;
+	HINTERNET hResourceHandle = NULL;
+
+	// 1. Parse URL
+	DWORD dwServiceType;
+	CString strServerName;
+	CString strObject;
+	INTERNET_PORT nPort;
+	if (!AfxParseURL(lpszURL, dwServiceType, strServerName, strObject, nPort))
+	{
+		CString sMsg(_T("AfxParseURL(): failed"));
+		LogLine(_T("%s"), sMsg);
+		if (bShowMessageBoxOnError)
+			AfxMessageBox(sMsg, MB_ICONSTOP);
+		goto error;
+	}
+	
+	// 2. Open internet directly (no proxy)
+	hInternetRoot = InternetOpen(AfxGetAppName(), INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
+	if (hInternetRoot == NULL)
+	{
+		ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("InternetOpen(): "));
+		goto error;
+	}
+
+	// 3. Open http(s) connection
+	hConnectHandle = InternetConnect(hInternetRoot, strServerName, nPort, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
+	if (hConnectHandle == NULL)
+	{
+		ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("InternetConnect(): "));
+		goto error;
+	}
+
+	// 4. Prepare for HTTP/1.1 request (no caching)
+	DWORD dwFlags = INTERNET_FLAG_KEEP_CONNECTION | INTERNET_FLAG_RELOAD | INTERNET_FLAG_DONT_CACHE;
+	if (dwServiceType == AFX_INET_SERVICE_HTTPS)
+	{
+		dwFlags |= INTERNET_FLAG_SECURE;
+		if (bAllowInvalidCert)
+			dwFlags |= INTERNET_FLAG_IGNORE_CERT_CN_INVALID | INTERNET_FLAG_IGNORE_CERT_DATE_INVALID;
+	}
+	hResourceHandle = HttpOpenRequest(hConnectHandle, _T("GET"), strObject, _T("HTTP/1.1"), NULL, NULL, dwFlags, 0);
+	if (hResourceHandle == NULL)
+	{
+		ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("HttpOpenRequest(): "));
+		goto error;
+	}
+
+	// 5. Send request
+	if (!HttpSendRequest(hResourceHandle, NULL, 0, NULL, 0))
+	{
+		DWORD dwLastError = GetLastError();
+		if (dwLastError == ERROR_INTERNET_INVALID_CA && bAllowInvalidCert)
+		{
+			DWORD dwSecFlags;
+			DWORD dwSecFlagsLen = sizeof(dwSecFlags);
+			if (InternetQueryOption(hResourceHandle, INTERNET_OPTION_SECURITY_FLAGS, &dwSecFlags, &dwSecFlagsLen))
+			{
+				dwSecFlags |= SECURITY_FLAG_IGNORE_UNKNOWN_CA;
+				InternetSetOption(hResourceHandle, INTERNET_OPTION_SECURITY_FLAGS, &dwSecFlags, sizeof(dwSecFlags));
+			}
+			if (!HttpSendRequest(hResourceHandle, NULL, 0, NULL, 0))
+			{
+				ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("HttpSendRequest(allow invalid cert): "));
+				goto error;
+			}
+		}
+		else
+		{
+			ShowErrorMsg(dwLastError, bShowMessageBoxOnError, _T("HttpSendRequest(): "));
+			goto error;
+		}
+	}
+
+	// 6. Status OK?
+	DWORD dwStatusCode = 0;
+	DWORD dwStatusCodeLen = sizeof(dwStatusCode);
+	if (!HttpQueryInfo(hResourceHandle, HTTP_QUERY_STATUS_CODE | HTTP_QUERY_FLAG_NUMBER, &dwStatusCode, &dwStatusCodeLen, NULL))
+	{
+		ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("HttpQueryInfo(): "));
+		goto error;
+	}
+	if (dwStatusCode < 200 || dwStatusCode >= 300)
+	{
+		CString sMsg;
+		sMsg.Format(_T("HttpSendRequest() returned: %u"), dwStatusCode);
+		LogLine(_T("%s"), sMsg);
+		if (bShowMessageBoxOnError)
+			AfxMessageBox(sMsg, MB_ICONSTOP);
+		goto error;
+	}
+
+	// 7. Read data from server and copy to buffer
+	BYTE lpReadBuf[4096];
+	DWORD dwReadBytes = 0;
+	while (InternetReadFile(hResourceHandle, lpReadBuf, sizeof(lpReadBuf), &dwReadBytes))
+	{
+		// Done?
+		if (dwReadBytes == 0)
+		{
+			if (lpfnCallback)
+				lpfnCallback(1, Size);
+			goto cleanup;
+		}
+
+		// More
+		LPBYTE lpOldBuf = lpBuf;	// save pointer in case realloc fails
+		if ((lpBuf = (LPBYTE)realloc(lpBuf, Size + dwReadBytes)) == NULL)
+		{
+			if (lpOldBuf)
+				free(lpOldBuf);		// free original block
+			CString sMsg;
+			sMsg.Format(CString(_T("realloc() failed for %Iu")) + ML_STRING(1244, "Bytes"), Size + (size_t)dwReadBytes);
+			LogLine(_T("%s"), sMsg);
+			if (bShowMessageBoxOnError)
+				AfxMessageBox(sMsg, MB_ICONSTOP);
+			goto error;
+		}
+		else
+		{
+			memcpy(lpBuf + Size, lpReadBuf, dwReadBytes);
+			Size += dwReadBytes;
+		}
+
+		// Callback
+		if (lpfnCallback)
+			lpfnCallback(0, Size);
+	}
+	ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("InternetReadFile(): "));
+
+error:
+	if (lpBuf)
+	{
+		free(lpBuf);
+		lpBuf = NULL;
+	}
+	Size = 0;
+	if (lpfnCallback)
+		lpfnCallback(-1, 0);
+
+cleanup:
+	if (hResourceHandle)
+		InternetCloseHandle(hResourceHandle);
+	if (hConnectHandle)
+		InternetCloseHandle(hConnectHandle);
+	if (hInternetRoot)
+		InternetCloseHandle(hInternetRoot);
+
+	return lpBuf;
+}
+
+BOOL SaveURL(LPCTSTR lpszURL, LPCTSTR lpszFileName, BOOL bAllowInvalidCert, BOOL bShowMessageBoxOnError, URLDOWNLOADPROGRESSCALLBACK lpfnCallback)
+{
+	// Return var
+	BOOL bOK = TRUE;
+
+	// Vars
+	HINTERNET hInternetRoot = NULL;
+	HINTERNET hConnectHandle = NULL;
+	HINTERNET hResourceHandle = NULL;
+	HANDLE hFile = INVALID_HANDLE_VALUE;
+	size_t Size = 0;
+
+	// 1. Parse URL
+	DWORD dwServiceType;
+	CString strServerName;
+	CString strObject;
+	INTERNET_PORT nPort;
+	if (!AfxParseURL(lpszURL, dwServiceType, strServerName, strObject, nPort))
+	{
+		CString sMsg(_T("AfxParseURL(): failed"));
+		LogLine(_T("%s"), sMsg);
+		if (bShowMessageBoxOnError)
+			AfxMessageBox(sMsg, MB_ICONSTOP);
+		goto error;
+	}
+
+	// 2. Open internet directly (no proxy)
+	hInternetRoot = InternetOpen(AfxGetAppName(), INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
+	if (hInternetRoot == NULL)
+	{
+		ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("InternetOpen(): "));
+		goto error;
+	}
+
+	// 3. Open http(s) connection
+	hConnectHandle = InternetConnect(hInternetRoot, strServerName, nPort, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
+	if (hConnectHandle == NULL)
+	{
+		ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("InternetConnect(): "));
+		goto error;
+	}
+
+	// 4. Prepare for HTTP/1.1 request (no caching)
+	DWORD dwFlags = INTERNET_FLAG_KEEP_CONNECTION | INTERNET_FLAG_RELOAD | INTERNET_FLAG_DONT_CACHE;
+	if (dwServiceType == AFX_INET_SERVICE_HTTPS)
+	{
+		dwFlags |= INTERNET_FLAG_SECURE;
+		if (bAllowInvalidCert)
+			dwFlags |= INTERNET_FLAG_IGNORE_CERT_CN_INVALID | INTERNET_FLAG_IGNORE_CERT_DATE_INVALID;
+	}
+	hResourceHandle = HttpOpenRequest(hConnectHandle, _T("GET"), strObject, _T("HTTP/1.1"), NULL, NULL, dwFlags, 0);
+	if (hResourceHandle == NULL)
+	{
+		ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("HttpOpenRequest(): "));
+		goto error;
+	}
+
+	// 5. Send request
+	if (!HttpSendRequest(hResourceHandle, NULL, 0, NULL, 0))
+	{
+		DWORD dwLastError = GetLastError();
+		if (dwLastError == ERROR_INTERNET_INVALID_CA && bAllowInvalidCert)
+		{
+			DWORD dwSecFlags;
+			DWORD dwSecFlagsLen = sizeof(dwSecFlags);
+			if (InternetQueryOption(hResourceHandle, INTERNET_OPTION_SECURITY_FLAGS, &dwSecFlags, &dwSecFlagsLen))
+			{
+				dwSecFlags |= SECURITY_FLAG_IGNORE_UNKNOWN_CA;
+				InternetSetOption(hResourceHandle, INTERNET_OPTION_SECURITY_FLAGS, &dwSecFlags, sizeof(dwSecFlags));
+			}
+			if (!HttpSendRequest(hResourceHandle, NULL, 0, NULL, 0))
+			{
+				ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("HttpSendRequest(allow invalid cert): "));
+				goto error;
+			}
+		}
+		else
+		{
+			ShowErrorMsg(dwLastError, bShowMessageBoxOnError, _T("HttpSendRequest(): "));
+			goto error;
+		}
+	}
+
+	// 6. Status OK?
+	DWORD dwStatusCode = 0;
+	DWORD dwStatusCodeLen = sizeof(dwStatusCode);
+	if (!HttpQueryInfo(hResourceHandle, HTTP_QUERY_STATUS_CODE | HTTP_QUERY_FLAG_NUMBER, &dwStatusCode, &dwStatusCodeLen, NULL))
+	{
+		ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("HttpQueryInfo(): "));
+		goto error;
+	}
+	if (dwStatusCode < 200 || dwStatusCode >= 300)
+	{
+		CString sMsg;
+		sMsg.Format(_T("HttpSendRequest() returned: %u"), dwStatusCode);
+		LogLine(_T("%s"), sMsg);
+		if (bShowMessageBoxOnError)
+			AfxMessageBox(sMsg, MB_ICONSTOP);
+		goto error;
+	}
+
+	// 7. Read data from server and write to file
+	hFile = CreateFile(lpszFileName, GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (hFile == INVALID_HANDLE_VALUE)
+	{
+		ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("CreateFile(): "));
+		goto error;
+	}
+	BYTE lpReadBuf[4096];
+	DWORD dwReadBytes = 0;
+	while (InternetReadFile(hResourceHandle, lpReadBuf, sizeof(lpReadBuf), &dwReadBytes))
+	{
+		// Done?
+		if (dwReadBytes == 0)
+		{
+			if (lpfnCallback)
+				lpfnCallback(1, Size);
+			goto cleanup;
+		}
+
+		// More
+		DWORD dwNumberOfBytesWritten;
+		if (!WriteFile(hFile, lpReadBuf, dwReadBytes, &dwNumberOfBytesWritten, NULL))
+		{
+			ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("WriteFile(): "));
+			goto error;
+		}
+		else
+			Size += dwNumberOfBytesWritten;
+
+		// Callback
+		if (lpfnCallback)
+			lpfnCallback(0, Size);
+	}
+	ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("InternetReadFile(): "));
+
+error:
+	bOK = FALSE;
+	if (lpfnCallback)
+		lpfnCallback(-1, 0);
+
+cleanup:
+	if (hFile != INVALID_HANDLE_VALUE)
+		CloseHandle(hFile);
+	if (hResourceHandle)
+		InternetCloseHandle(hResourceHandle);
+	if (hConnectHandle)
+		InternetCloseHandle(hConnectHandle);
+	if (hInternetRoot)
+		InternetCloseHandle(hInternetRoot);
+
+	return bOK;
 }
