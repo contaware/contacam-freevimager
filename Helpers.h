@@ -259,6 +259,10 @@ extern CString GetProfileIniString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTS
 extern BOOL WriteProfileIniString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszValue, LPCTSTR lpszProfileName);
 
 // Registry Functions
+// samOptional:
+// KEY_WOW64_64KEY to access a 64-bit key from either a 32-bit or 64-bit application
+// KEY_WOW64_32KEY to access a 32-bit key from either a 32-bit or 64-bit application
+// https://support.microsoft.com/en-us/help/305097/how-to-view-the-system-registry-by-using-64-bit-versions-of-windows
 extern BOOL IsRegistryValue(HKEY hOpenKey, LPCTSTR szKey, LPCTSTR szValue, REGSAM samOptional = 0);
 extern BOOL IsRegistryKey(HKEY hOpenKey, LPCTSTR szKey, REGSAM samOptional = 0);
 extern BOOL SetRegistryEmptyValue(HKEY hOpenKey, LPCTSTR szKey, LPCTSTR szValue);
