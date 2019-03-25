@@ -31,6 +31,7 @@ public:
 	CString m_sMaxCameraFolderSizeGB;
 	CString m_sMinDiskFreePercent;
 	int		m_nUsage;
+	BOOL	m_bSnapshotHistoryVideo;
 	BOOL	m_bAutorun;
 	BOOL	m_bCheckFullStretch;
 	BOOL	m_bCheckTrashCommand;

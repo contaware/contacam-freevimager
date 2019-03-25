@@ -39,6 +39,7 @@ void CCameraBasicSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_CBIndex(pDX, IDC_COMBO_KEEPFOR, m_nComboKeepFor);
 	DDX_Text(pDX, IDC_EDIT_NAME, m_sName);
 	DDX_Radio(pDX, IDC_RADIO_MOVDET, m_nUsage);
+	DDX_Check(pDX, IDC_CHECK_SNAPSHOT_HISTORY_VIDEO, m_bSnapshotHistoryVideo);
 	DDX_Check(pDX, IDC_CHECK_AUTORUN, m_bAutorun);
 	DDX_Check(pDX, IDC_CHECK_FULL_STRETCH, m_bCheckFullStretch);
 	DDX_Check(pDX, IDC_CHECK_TRASHCOMMAND, m_bCheckTrashCommand);
@@ -147,7 +148,15 @@ BOOL CCameraBasicSettingsDlg::OnInitDialog()
 	m_bCheckFullStretch = (m_pDoc->PhpConfigFileGetParam(PHPCONFIG_FULL_STRETCH) == _T("1"));
 	m_bCheckTrashCommand = (m_pDoc->PhpConfigFileGetParam(PHPCONFIG_SHOW_TRASH_COMMAND) == _T("1"));
 	m_bCheckCameraCommands = (m_pDoc->PhpConfigFileGetParam(PHPCONFIG_SHOW_CAMERA_COMMANDS) == _T("1"));
-	m_nUsage = m_pDoc->m_nCameraUsage;
+	CString sDefaultPage = m_pDoc->PhpConfigFileGetParam(PHPCONFIG_DEFAULTPAGE);
+	if (sDefaultPage.CompareNoCase(PHPCONFIG_SUMMARYSNAPSHOT_PHP) == 0 ||
+		sDefaultPage.CompareNoCase(PHPCONFIG_SNAPSHOTHISTORY_PHP) == 0 ||
+		sDefaultPage.CompareNoCase(PHPCONFIG_SNAPSHOT_PHP) == 0 ||
+		sDefaultPage.CompareNoCase(PHPCONFIG_SNAPSHOTFULL_PHP) == 0)
+		m_nUsage = 0;
+	else
+		m_nUsage = 1;
+	m_bSnapshotHistoryVideo = m_pDoc->m_bSnapshotHistoryVideo;
 	if (CVideoDeviceDoc::AutorunGetDeviceKey(m_pDoc->GetDevicePathName()) != _T(""))
 		m_bAutorun = TRUE;
 	else
@@ -240,6 +249,8 @@ void CCameraBasicSettingsDlg::EnableDisableAllCtrls(BOOL bEnable)
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_RADIO_MOVDET);
 	pCheck->EnableWindow(bEnable);
 	pCheck = (CButton*)GetDlgItem(IDC_RADIO_MANUAL);
+	pCheck->EnableWindow(bEnable);
+	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO);
 	pCheck->EnableWindow(bEnable);
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_AUTORUN);
 	pCheck->EnableWindow(bEnable);
@@ -574,7 +585,9 @@ void CCameraBasicSettingsDlg::ApplySettings()
 		default :
 			break;
 	}
-	m_pDoc->m_nCameraUsage = m_nUsage;
+
+	// Summary video
+	m_pDoc->m_bSnapshotHistoryVideo = m_bSnapshotHistoryVideo;
 
 	// Keep files for
 	switch (m_nComboKeepFor)

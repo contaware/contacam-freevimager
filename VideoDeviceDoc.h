@@ -814,7 +814,6 @@ public:
 	CTime m_CaptureStartTime;							// Grabbing device started at this time
 	CString m_sLastConnectionError;						// Last connection error
 	CRITICAL_SECTION m_csConnectionError;				// Critical section for the connection error
-	volatile int m_nCameraUsage;						// 0: Motion detection and daily snapshots history, 1: Continuous/manual recording
 	volatile BOOL m_bObscureSource;						// Flag indicating whether the source has to be obscured
 	volatile BOOL m_bShowFrameTime;						// Show / Hide Frame Time Inside the Frame (frame time is also recorded in the file)
 	volatile BOOL m_bShowFrameUptime;					// Show / Hide Frame Uptime Inside the Frame (frame uptime is also recorded in the file)
@@ -892,6 +891,7 @@ public:
 
 	// Snapshot Vars
 	volatile int m_nSnapshotRate;						// Snapshot rate in seconds, if 0 it will take snapshots each DEFAULT_SERVERPUSH_POLLRATE_MS
+	volatile BOOL m_bSnapshotHistoryVideo;				// Make snapshot history video
 	volatile int m_nSnapshotHistoryRate;				// Snapshot history rate in seconds
 	volatile int m_nSnapshotHistoryFrameRate;			// Snapshot history video framerate
 	volatile int m_nSnapshotThumbWidth;					// Snapshot thumbnail width

@@ -2,6 +2,8 @@ CONTACAM HISTORY
 
 9.5.0 (Month XXth 2019)
 
+- The daily summary video creation is now configurable under
+  Camera Basic Settings
 - Updated the "Network / IP Camera" dialog to show also the assigned
   camera name in the "Camera IP or Address" drop down list
 

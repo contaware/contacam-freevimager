@@ -2173,12 +2173,12 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTI
 CAPTION "Camera Basic Settings"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "Motion detection surveillance (with daily summary)",IDC_RADIO_MOVDET,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,16,15,176,10
+    CONTROL         "Motion detection surveillance",IDC_RADIO_MOVDET,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,15,107,10
     CONTROL         "Continuous recording (ON/OFF by the red dot toolbar button)",IDC_RADIO_MANUAL,
                     "Button",BS_AUTORADIOBUTTON,16,30,213,10
-    CONTROL         "AUTOSTART\nCamera when ContaCam is executed",IDC_CHECK_AUTORUN,
-                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,278,14,131,27
+    CONTROL         "Make daily\nsummary video",IDC_CHECK_SNAPSHOT_HISTORY_VIDEO,
+                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,263,14,66,27
+    CONTROL         "Autostart\ncamera",IDC_CHECK_AUTORUN,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,364,14,46,27
     EDITTEXT        IDC_EDIT_NAME,152,65,254,13,ES_AUTOHSCROLL
     COMBOBOX        IDC_COMBO_LANGUAGE,152,99,56,222,CBS_DROPDOWNLIST | WS_TABSTOP
     COMBOBOX        IDC_COMBO_STYLE,152,116,56,222,CBS_DROPDOWNLIST | WS_TABSTOP

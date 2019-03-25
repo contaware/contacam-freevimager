@@ -1970,6 +1970,7 @@
 #define IDC_CHECK_AUTORUN               1678
 #define IDS_STRING1678                  1678
 #define IDS_STRING1679                  1679
+#define IDC_CHECK_SNAPSHOT_HISTORY_VIDEO 1679
 #define IDS_STRING1680                  1680
 #define IDS_STRING1681                  1681
 #define IDC_CPUSPEED                    1682
