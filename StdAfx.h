@@ -52,6 +52,7 @@
 #include <atlenc.h>
 #include <atlsocket.h>
 #include <atlimage.h>
+#include <afxtaskdialog.h>
 
 // Maximum file path size for file dialog
 #define MAX_FILEDLG_PATH							1048576		// 1M

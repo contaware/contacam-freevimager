@@ -2,7 +2,6 @@
 //
 
 #include "stdafx.h"
-#include "uimager.h"
 #include "LicenseDlg.h"
 
 #ifdef _DEBUG
@@ -29,6 +28,7 @@ void CLicenseDlg::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CLicenseDlg)
 	DDX_Control(pDX, IDC_EDIT_LICENSE, m_License);
+	DDX_Text(pDX, IDC_EDIT_DONOR_EMAIL, m_sEmail);
 	//}}AFX_DATA_MAP
 }
 
@@ -120,33 +120,6 @@ BOOL CLicenseDlg::OnInitDialog()
 	// contaware.com site link
 	m_WebLink.SubclassDlgItem(IDC_WEB_LINK, this);
 
-	// Set Donor Email
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_DONOR_EMAIL);
-	pEdit->SetWindowText(((CUImagerApp*)::AfxGetApp())->m_sDonorEmail);
-
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
-}
-
-void CLicenseDlg::OnOK()
-{
-	BeginWaitCursor();
-	CString sEmail;
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_DONOR_EMAIL);
-	pEdit->GetWindowText(sEmail);
-	BOOL bOK = ((CUImagerApp*)::AfxGetApp())->DonorEmailValidate(sEmail);
-	if (bOK)
-	{
-		::Sleep(2000);
-		::AfxGetMainFrame()->m_MDIClientWnd.Invalidate();
-		EndWaitCursor();
-		CDialog::OnOK();
-	}
-	else
-	{
-		::AfxGetMainFrame()->m_MDIClientWnd.Invalidate();
-		EndWaitCursor();
-		pEdit->SetFocus();
-		::AlertUser(GetSafeHwnd());
-	}
 }

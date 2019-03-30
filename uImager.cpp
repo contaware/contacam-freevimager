@@ -173,7 +173,7 @@ CUImagerApp::CUImagerApp()
 	m_nPdfScanCompressionQuality = DEFAULT_JPEGCOMPRESSION;
 	m_sScanToPdfFileName = _T("");
 	m_sScanToTiffFileName = _T("");
-	m_bNoDonation = TRUE;
+	m_bNoDonation = FALSE;
 	m_bTrayIcon = FALSE;
 	m_bHideMainFrame = FALSE;
 	m_bPrinterInit = FALSE;
@@ -787,9 +787,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// Init Global Helper Functions
 		::InitHelpers();
 
-		// Donation
-		DonorEmailValidate(GetProfileString(_T("GeneralApp"), _T("DonorEmail"), _T("")));
-
 		// Init for the PostDelayedMessage() Function
 		CPostDelayedMessageThread::Init();
 
@@ -1059,9 +1056,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		WriteProfileInt(_T("GeneralApp"), _T("SilentInstall"), FALSE);
 
 #ifdef VIDEODEVICEDOC
-		// Redraw web server port
-		::AfxGetMainFrame()->m_MDIClientWnd.Invalidate();
-
 		// Log the starting of the application
 		CString sMsg(CString(APPNAME_NOEXT) + _T(" ") + APPVERSION + _T(" (") + CString(_T(__TIME__)) + CString(_T(" ")) + CString(_T(__DATE__)) + _T(")"));
 		if (m_bServiceProcess)
@@ -1176,6 +1170,13 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// Flag indicating that the auto-starts have been executed
 		m_bAutostartsExecuted = TRUE;
 #endif
+
+		// Redraw program's background
+		::AfxGetMainFrame()->m_MDIClientWnd.Invalidate();
+
+		// Start Donor Email Validation Thread
+		// (program's background updated again from inside this thread)
+		m_DonorEmailValidateThread.Start();
 
 		return TRUE;
 	}
@@ -1318,8 +1319,41 @@ void CUImagerApp::OnAppCredits()
 // Popup License Dialog
 void CUImagerApp::OnAppLicense() 
 {
+	// Attention: never read or modify m_sDonorEmail while the thread is running
+	m_DonorEmailValidateThread.Kill();
+
+	// Init m_sEmail variable and popup dialog
 	CLicenseDlg licenseDlg;
-	licenseDlg.DoModal();
+	licenseDlg.m_sEmail = m_sDonorEmail;
+	if (licenseDlg.DoModal() == IDOK)
+	{
+		// Update and validate email
+		BeginWaitCursor();
+		m_sDonorEmail = licenseDlg.m_sEmail;
+		WriteProfileString(_T("GeneralApp"), _T("DonorEmail"), m_sDonorEmail);
+		int ret = ((CUImagerApp*)::AfxGetApp())->DonorEmailValidate();
+		EndWaitCursor();
+
+		// Inform user
+		if (ret == 0)
+		{
+			CTaskDialog dlg(ML_STRING(1738, "Please contact us with the support email received after the donation."),
+				ML_STRING(1737, "Provided email is unknown"),
+				APPNAME_NOEXT,
+				TDCBF_OK_BUTTON);
+			dlg.SetMainIcon(TD_ERROR_ICON);
+			dlg.DoModal();
+		}
+		else if (ret == -1)
+		{
+			CTaskDialog dlg(ML_STRING(1740, "Please connect to the internet and try again."),
+				ML_STRING(1739, "Provided email cannot be verified"),
+				APPNAME_NOEXT,
+				TDCBF_OK_BUTTON);
+			dlg.SetMainIcon(TD_ERROR_ICON);
+			dlg.DoModal();
+		}
+	}
 }
 
 // Show the internet site about FAQs
@@ -1588,41 +1622,75 @@ void CUImagerApp::CaptureScreenToClipboard()
 	::ReleaseDC(NULL, hScreenDC);
 }
 
-BOOL CUImagerApp::DonorEmailValidate(CString sEmail)
+int CDonorEmailValidateThread::Work()
 {
-	sEmail.Trim();
-	int nNameChars = sEmail.Find(_T('@'));
-	int nDomainChars = sEmail.GetLength() - nNameChars - 1;
+	::CoInitialize(NULL);
 
-	// Check
-	BOOL bOK = FALSE;
-	if (nNameChars > 0 && nDomainChars >= 3)
-	{
-		CString sName(sEmail.Left(nNameChars));
-		CString sDomain(sEmail.Right(nDomainChars));
-		if (sName.Find(_T(' ')) == -1	&&
-			sDomain.Find(_T(' ')) == -1	&&
-			sDomain.Find(_T('@')) == -1	&&
-			sDomain.Find(_T('.')) > 0)
-			bOK = TRUE;
-	}
+	// Validate after 1 second
+	if (::WaitForSingleObject(GetKillEvent(), 1000U) == WAIT_OBJECT_0)
+		goto exit;
+	if (((CUImagerApp*)::AfxGetApp())->DonorEmailValidate() >= 0)
+		goto exit;
+
+	// Retry after 1 minute
+	if (::WaitForSingleObject(GetKillEvent(), 60000U) == WAIT_OBJECT_0)
+		goto exit;
+	if (((CUImagerApp*)::AfxGetApp())->DonorEmailValidate() >= 0)
+		goto exit;
+
+	// Final check after 1 hour
+	if (::WaitForSingleObject(GetKillEvent(), 3600000U) == WAIT_OBJECT_0)
+		goto exit;
+	((CUImagerApp*)::AfxGetApp())->DonorEmailValidate();
+
+exit:
+	::CoUninitialize();
+
+	return 0;
+}
+
+int CUImagerApp::DonorEmailValidate()
+{
+	int ret = -1;
 	
-	// Update vars
-	if (bOK)
+	// Connect to server and verify email
+	// Note: in case that our server does not answer correctly, or if it is
+	//       busy or when there is no internet connection, leave m_bNoDonation
+	//       as it is and leave also ret -1
+	CString sURL(_T("https://www.contaware.com/validate-437837653763456231.php"));
+	sURL += _T("?email=");
+	sURL += ::UrlEncode(m_sDonorEmail, TRUE);
+	sURL += _T("&computer=");
+	sURL += ::UrlEncode(::GetComputerName(), TRUE);
+	size_t Size;
+	LPBYTE p = ::GetURL(sURL, Size, FALSE, FALSE, NULL);
+	if (p)
 	{
-		m_sDonorEmail = sEmail;
-		m_bNoDonation = FALSE;
+		CString s(::FromUTF8(p, Size));
+		free(p);
+		if (s.Find(_T("OK")) >= 0)
+		{
+			ret = 1;	// good email
+			m_bNoDonation = FALSE;
+		}
+		else if (s.Find(_T("BAD")) >= 0)
+		{
+			ret = 0;	// bad email
+			m_bNoDonation = TRUE;
+		}
 	}
-	else
+
+	// But if empty then it is for sure a "bad" email
+	if (m_sDonorEmail.IsEmpty())
 	{
-		m_sDonorEmail = _T("");
+		ret = 0;		// bad email
 		m_bNoDonation = TRUE;
 	}
-	
-	// Write email to settings
-	WriteProfileString(_T("GeneralApp"), _T("DonorEmail"), m_sDonorEmail);
-	
-	return !m_bNoDonation;
+
+	// Redraw program's background
+	::PostMessage(::AfxGetMainFrame()->GetSafeHwnd(), WM_THREADSAFE_INVALIDATE_MDICLIENTWND, 0, 0);
+
+	return ret;
 }
 
 BOOL CUImagerApp::PasteToFile(LPCTSTR lpszFileName, COLORREF crBackgroundColor/*=RGB(255,255,255)*/)
@@ -3460,6 +3528,9 @@ void CUImagerApp::LoadSettings(UINT showCmd/*=SW_SHOWNORMAL*/)
 
 	// Log Level
 	g_nLogLevel = MIN(2, MAX(0, GetProfileInt(sSection, _T("LogLevel"), 0)));
+
+	// Donor E-mail
+	m_sDonorEmail = GetProfileString(sSection, _T("DonorEmail"), _T(""));
 
 	// MainFrame Placement
 	LoadPlacement(showCmd);

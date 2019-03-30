@@ -71,6 +71,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_MESSAGE(WM_COPYDATA, OnCopyData)
 	ON_MESSAGE(WM_TWAIN_CLOSED, OnTwainClosed)
 	ON_MESSAGE(WM_THREADSAFE_POPUP_TOASTER, OnThreadSafePopupToaster)
+	ON_MESSAGE(WM_THREADSAFE_INVALIDATE_MDICLIENTWND, OnThreadSafeInvalidateMDIClientWnd)
 #ifdef VIDEODEVICEDOC
 	ON_WM_INITMENUPOPUP()
 	ON_MESSAGE(WM_AUTORUN_VIDEODEVICES, OnAutorunVideoDevices)
@@ -636,6 +637,9 @@ void CMainFrame::OnClose()
 			return;		// don't close it
 		}
 
+		// Stop Donor Email Validation Thread
+		pApp->m_DonorEmailValidateThread.Kill();
+
 		// Stop All Threads used for the PostDelayedMessage() Function
 		CPostDelayedMessageThread::Exit();
 
@@ -792,6 +796,12 @@ LONG CMainFrame::OnThreadSafePopupToaster(WPARAM wparam, LPARAM lparam)
 			m_pToaster = NULL; // we do not need to delete m_pToaster because CToasterWnd is self deleting
 	}
 
+	return 0;
+}
+
+LONG CMainFrame::OnThreadSafeInvalidateMDIClientWnd(WPARAM wparam, LPARAM lparam)
+{
+	m_MDIClientWnd.Invalidate();
 	return 0;
 }
 

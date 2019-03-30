@@ -6,6 +6,7 @@
 // LicenseDlg.h : header file
 //
 
+#include "resource.h"
 #include "BkgColEdit.h"
 #include "Staticlink.h"
 
@@ -22,6 +23,7 @@ public:
 	//{{AFX_DATA(CLicenseDlg)
 	enum { IDD = IDD_LICENSE };
 	CBkgColEdit	m_License;
+	CString	m_sEmail;
 	//}}AFX_DATA
 	CStaticLink m_WebLink;	// Hyperlink
 
@@ -38,7 +40,6 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CLicenseDlg)
 	virtual BOOL OnInitDialog();
-	virtual void OnOK();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

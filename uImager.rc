@@ -3933,6 +3933,10 @@ BEGIN
     IDS_STRING1731          "1 Year"
     IDS_STRING1732          "Unlimited"
     IDS_STRING1734          "NO DONATION: see Help menu"
+    IDS_STRING1737          "Provided email is unknown"
+    IDS_STRING1738          "Please contact us with the support email received after the donation."
+    IDS_STRING1739          "Provided email cannot be verified"
+    IDS_STRING1740          "Please connect to the internet and try again."
 END
 
 STRINGTABLE
