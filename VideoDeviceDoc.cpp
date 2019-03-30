@@ -3506,7 +3506,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 
 	// Snapshot
 	m_nSnapshotRate = DEFAULT_SNAPSHOT_RATE;
-	m_bSnapshotHistoryVideo = FALSE;
+	m_bSnapshotHistoryVideo = TRUE;
 	m_nSnapshotHistoryRate = DEFAULT_SNAPSHOT_HISTORY_RATE;
 	m_nSnapshotHistoryFrameRate = DEFAULT_SNAPSHOT_HISTORY_FRAMERATE;
 	m_nSnapshotThumbWidth = DEFAULT_SNAPSHOT_THUMB_WIDTH;
@@ -4325,7 +4325,7 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	sRecordAutoSaveDir.TrimRight(_T('\\'));
 	m_bObscureSource = ::IsExistingFile(sRecordAutoSaveDir + _T("\\") + CAMERA_IS_OBSCURED_FILENAME);
 	m_nSnapshotRate = ValidateSnapshotRate(pApp->GetProfileInt(sSection, _T("SnapshotRate"), DEFAULT_SNAPSHOT_RATE));
-	m_bSnapshotHistoryVideo = (BOOL)pApp->GetProfileInt(sSection, _T("SnapshotHistoryVideo"), FALSE);
+	m_bSnapshotHistoryVideo = (BOOL)pApp->GetProfileInt(sSection, _T("SnapshotHistoryVideo"), TRUE);
 	m_nSnapshotHistoryRate = (int)pApp->GetProfileInt(sSection, _T("SnapshotHistoryRate"), DEFAULT_SNAPSHOT_HISTORY_RATE);
 	m_nSnapshotHistoryFrameRate = (int)pApp->GetProfileInt(sSection, _T("SnapshotHistoryFrameRate"), DEFAULT_SNAPSHOT_HISTORY_FRAMERATE);
 	m_nSnapshotThumbWidth = (int) MakeSizeMultipleOf4(pApp->GetProfileInt(sSection, _T("SnapshotThumbWidth"), DEFAULT_SNAPSHOT_THUMB_WIDTH));
