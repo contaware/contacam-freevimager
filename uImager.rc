@@ -831,32 +831,31 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 299, 223
+IDD_ABOUTBOX DIALOGEX 0, 0, 298, 216
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,15,10,20,20
     LTEXT           "Unknown",IDC_VERSION,154,49,136,8,SS_NOPREFIX
-    LTEXT           "Copyright © 2003 - 2019 Contaware.com, Switzerland",IDC_STATIC2141,62,213,181,8
-    DEFPUSHBUTTON   "OK",IDOK,125,196,50,14,WS_GROUP
+    DEFPUSHBUTTON   "OK",IDOK,124,196,50,14,WS_GROUP
     LTEXT           "Version:",IDC_STATIC2142,15,49,39,8
     LTEXT           "",IDC_APPNAME,74,17,216,8
     LTEXT           "Homepage:",IDC_STATIC2143,15,80,42,8
     LTEXT           "www.contaware.com",IDC_WEB_LINK,74,80,70,8,SS_NOTIFY
     LTEXT           "Developed By:",IDC_STATIC2144,15,110,48,8
     LTEXT           "M.Sc. ETH Oliver Pfister",IDC_STATIC2145,74,110,216,8
-    GROUPBOX        "",IDC_STATIC2146,7,38,285,26
+    GROUPBOX        "",IDC_STATIC2146,7,38,284,26
     LTEXT           "",IDC_APPVER,74,49,67,8
-    GROUPBOX        "",IDC_STATIC2148,7,100,285,39
-    GROUPBOX        "",IDC_STATIC2149,7,144,285,46
+    GROUPBOX        "",IDC_STATIC2148,7,100,284,39
+    GROUPBOX        "",IDC_STATIC2149,7,144,284,46
     LTEXT           "1000 MHz",IDC_CPUSPEED,74,153,216,8
     LTEXT           "System Info:",IDC_STATIC2150,15,164,44,8
     LTEXT           "1000 MB",IDC_PHYSMEM,74,176,216,8
     LTEXT           "CPU Count",IDC_CPUCOUNT,74,164,216,8
     LTEXT           "Translated By:",IDC_STATIC2151,15,124,51,8
     LTEXT           "This is the original language",IDC_STATIC2152,74,124,216,8
-    GROUPBOX        "",IDC_STATIC2147,7,69,285,26
+    GROUPBOX        "",IDC_STATIC2147,7,69,284,26
 END
 
 IDD_RESIZING DIALOGEX 0, 0, 206, 145
@@ -1302,21 +1301,22 @@ BEGIN
     CONTROL         "Progress1",IDC_ZIP_PROGRESS,"msctls_progress32",0x0,7,7,172,15
 END
 
-IDD_LICENSE DIALOGEX 0, 0, 401, 285
+IDD_LICENSE DIALOGEX 0, 0, 402, 309
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "License Agreement and Donation"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_EDIT_DONOR_EMAIL,13,195,374,14,ES_AUTOHSCROLL
     DEFPUSHBUTTON   "I Agree and Donated",IDOK,129,255,141,25
-    EDITTEXT        IDC_EDIT_LICENSE,7,6,387,138,ES_MULTILINE | ES_READONLY | WS_VSCROLL
+    EDITTEXT        IDC_EDIT_LICENSE,7,6,388,138,ES_MULTILINE | ES_READONLY | WS_VSCROLL
     LTEXT           "1. Please donate the requested $10 USD per installation at:",IDC_STATIC,13,167,192,8
     LTEXT           "www.contaware.com",IDC_WEB_LINK,210,167,70,8,SS_NOTIFY
-    LTEXT           "2. Enter here the email address used to donate (this will remove the ""NO DONATION"" text):",IDC_STATIC,13,181,374,8
+    LTEXT           "2. Enter here the email address used to donate, this will remove the ""NO DONATION"" text:",IDC_STATIC,13,181,374,8
     LTEXT           "NOTE",IDC_STATIC,13,213,19,8
-    LTEXT           "- Email addresses of past donors are all valid.",IDC_STATIC,13,223,374,8
-    LTEXT           "- For each additional installation please donate another $10 USD, the same email address can then be used.",IDC_STATIC,13,234,374,8
-    GROUPBOX        "Donation",IDC_STATIC,7,154,387,95
+    LTEXT           "• Email addresses of past donors are all valid.",IDC_STATIC,13,223,374,8
+    LTEXT           "• For each additional installation please donate another $10 USD, the same email address can then be used.",IDC_STATIC,13,234,374,8
+    GROUPBOX        "Donation",IDC_STATIC,7,154,388,95
+    LTEXT           "Privacy Policy: provided email address is sent encrypted to contaware.com. Your personal data is kept confidential. We believe that all our processes are EU GDPR compliant.",IDC_STATIC,13,284,374,19
 END
 
 IDD_CREDITS DIALOGEX 0, 0, 203, 182
@@ -2176,7 +2176,7 @@ BEGIN
     CONTROL         "Motion detection surveillance",IDC_RADIO_MOVDET,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,15,107,10
     CONTROL         "Continuous recording (ON/OFF by the red dot toolbar button)",IDC_RADIO_MANUAL,
                     "Button",BS_AUTORADIOBUTTON,16,30,213,10
-    CONTROL         "Make daily\nsummary video",IDC_CHECK_SNAPSHOT_HISTORY_VIDEO,
+    CONTROL         "Daily\nsummary video",IDC_CHECK_SNAPSHOT_HISTORY_VIDEO,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,263,14,66,27
     CONTROL         "Autostart\ncamera",IDC_CHECK_AUTORUN,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,364,14,46,27
     EDITTEXT        IDC_EDIT_NAME,152,65,254,13,ES_AUTOHSCROLL
@@ -2251,12 +2251,12 @@ BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 292
+        RIGHTMARGIN, 291
         VERTGUIDE, 15
         VERTGUIDE, 74
         VERTGUIDE, 290
         TOPMARGIN, 7
-        BOTTOMMARGIN, 218
+        BOTTOMMARGIN, 211
         HORZGUIDE, 203
     END
 
@@ -2441,11 +2441,11 @@ BEGIN
     IDD_LICENSE, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 394
+        RIGHTMARGIN, 395
         VERTGUIDE, 13
         VERTGUIDE, 387
         TOPMARGIN, 6
-        BOTTOMMARGIN, 282
+        BOTTOMMARGIN, 306
         HORZGUIDE, 171
         HORZGUIDE, 185
     END
