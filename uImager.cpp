@@ -1660,8 +1660,6 @@ int CUImagerApp::DonorEmailValidate()
 	CString sURL(_T("https://www.contaware.com/validate-437837653763456231.php"));
 	sURL += _T("?email=");
 	sURL += ::UrlEncode(m_sDonorEmail, TRUE);
-	sURL += _T("&computer=");
-	sURL += ::UrlEncode(::GetComputerName(), TRUE);
 	size_t Size;
 	LPBYTE p = ::GetURL(sURL, Size, FALSE, FALSE, NULL);
 	if (p)
