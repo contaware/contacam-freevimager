@@ -42,8 +42,20 @@ if (isset($_SERVER['HTTP_RANGE'])) { // especially iOS wants byte-ranges
 	header("Content-Length: " . filesize($full_path));
 	@ob_flush(); // suppress notice ob_flush(): failed to flush buffer...
 	flush();
-	if (!connection_aborted())
-		readfile($full_path);
+	if (!connection_aborted()) {
+		$fp = @fopen($full_path, 'rb');
+		$buffer = 256 * 1024; // buffer still in heap and good size for bigger files
+		while (!feof($fp)) {
+			echo fread($fp, $buffer);
+			@ob_flush(); // suppress notice ob_flush(): failed to flush buffer...
+			flush();
+			if (connection_aborted()) {
+				fclose($fp);
+				exit;
+			}
+		}
+		fclose($fp);
+    }
 }
 
 // Range download support
@@ -114,7 +126,7 @@ function rangedownload($full_path) {
 	
 	// Start buffered download
 	fseek($fp, $startpos);
-	$buffer = 1024 * 8;
+	$buffer = 256 * 1024; // buffer still in heap and good size for bigger files
 	while (!feof($fp) && ($p = ftell($fp)) <= $endpos) {
 		if ($p + $buffer > $endpos)
 			$buffer = $endpos - $p + 1;
