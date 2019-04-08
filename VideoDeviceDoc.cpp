@@ -8708,25 +8708,25 @@ void CVideoDeviceDoc::ConnectHttp()
 
 void CVideoDeviceDoc::ConnectRtsp()
 {
-	// Prepare query string
-	CString sQuery;
-	BOOL bCredentialInParams = FALSE;
+	// Prepare path and optional query
+	CString sPathAndQuery;
+	BOOL bCredentialAlreadyAdded = FALSE;
 	switch (m_nNetworkDeviceTypeMode)
 	{
 		case URL_RTSP:				
-			sQuery = m_HttpGetFrameLocations[0];
+			sPathAndQuery = m_HttpGetFrameLocations[0];
 			break;
 
 		case GENERIC_1_RTSP:		// Ctronics, Escam, FDT, HooToo, IdeaNext, INSTAR, KKmoon, Microseven, SV3C, Wansview, WBox
 		case WANSCAM_RTSP:
-			sQuery = _T("/11");
+			sPathAndQuery = _T("/11");
 			break;
 
 		case GENERIC_2_RTSP:		// Escam, iZtouch, Techege
 		case DIGOO_RTSP:
 		case HIKAM_RTSP:
 		case SRICAM_RTSP:			
-			sQuery = _T("/onvif1");
+			sPathAndQuery = _T("/onvif1");
 			break;
 
 		case GENERIC_3_RTSP:
@@ -8735,158 +8735,158 @@ void CVideoDeviceDoc::ConnectRtsp()
 		case NEXGADGET_RTSP:
 		case UOKOO_RTSP:
 		case WANSVIEW_RTSP:			
-			sQuery = _T("/live/ch0");
+			sPathAndQuery = _T("/live/ch0");
 			break;
 
 		case GENERIC_4_RTSP:		// Chinavasion, Cotier, Ctronics, Escam, Xvision
 		case FALCONEYE_RTSP:		
-			sQuery = m_bPreferTcpforRtsp ? _T("/ch01.264?ptype=tcp") : _T("/ch01.264?ptype=udp");
+			sPathAndQuery = m_bPreferTcpforRtsp ? _T("/ch01.264?ptype=tcp") : _T("/ch01.264?ptype=udp");
 			break;
 
-		case GENERIC_5_RTSP:		
-			sQuery = CString(_T("/user=")) + (m_sHttpGetFrameUsername.IsEmpty() ? _T("admin") : ::UrlEncode(m_sHttpGetFrameUsername, TRUE)) +
-					_T("&password=") + ::UrlEncode(m_sHttpGetFramePassword, TRUE) + 
-					_T("&channel=1&stream=0.sdp");
-			bCredentialInParams = TRUE;
+		case GENERIC_5_RTSP:		// Note: it is legal to have ampersands and equal signs in the path part of an url
+			sPathAndQuery = CString(_T("/user=")) + (m_sHttpGetFrameUsername.IsEmpty() ? _T("admin") : ::UrlEncode(m_sHttpGetFrameUsername, TRUE)) +
+							_T("&password=") + ::UrlEncode(m_sHttpGetFramePassword, TRUE) + 
+							_T("&channel=1&stream=0.sdp");
+			bCredentialAlreadyAdded = TRUE;
 			break;
 
 		case SEVENLINKS_RTSP:
 		case FOSCAM_RTSP:			
-			sQuery = _T("/videoMain");
+			sPathAndQuery = _T("/videoMain");
 			break;
 
 		case ABUS_RTSP:
 		case TPLINK_RTSP:			
-			sQuery = _T("/video.mp4");
+			sPathAndQuery = _T("/video.mp4");
 			break;
 
 		case ACTI_RTSP:
 		case BOSCH_RTSP:			
-			sQuery = _T("/h264");
+			sPathAndQuery = _T("/h264");
 			break;
 
 		case AMCREST_RTSP:			
-			sQuery = _T("/cam/realmonitor?channel=1&subtype=0");
+			sPathAndQuery = _T("/cam/realmonitor?channel=1&subtype=0");
 			break;
 
 		case ARECONT_RTSP:			
-			sQuery = _T("/h264.sdp");
+			sPathAndQuery = _T("/h264.sdp");
 			break;
 
 		case AXIS_RTSP:				
-			sQuery = _T("/axis-media/media.amp");
+			sPathAndQuery = _T("/axis-media/media.amp");
 			break;
 
 		case CANON_RTSP:			
-			sQuery = _T("/stream/profile0=r");
+			sPathAndQuery = _T("/stream/profile0=r");
 			break;
 
 		case DLINK_LIVE1_RTSP:		
-			sQuery = _T("/live1.sdp");
+			sPathAndQuery = _T("/live1.sdp");
 			break;
 
 		case DLINK_PLAY1_RTSP:		
-			sQuery = _T("/play1.sdp");
+			sPathAndQuery = _T("/play1.sdp");
 			break;
 
 		case DAHUA_RTSP:			
-			sQuery = _T("/live");
+			sPathAndQuery = _T("/live");
 			break;
 
 		case EDIMAX_H264_RTSP:		
-			sQuery = _T("/ipcam_h264.sdp");
+			sPathAndQuery = _T("/ipcam_h264.sdp");
 			break;
 
 		case EDIMAX_MPEG4_RTSP:		
-			sQuery = _T("/ipcam.sdp");
+			sPathAndQuery = _T("/ipcam.sdp");
 			break;
 
 		case GEOVISION_RTSP:		
-			sQuery = _T("/CH001.sdp");
+			sPathAndQuery = _T("/CH001.sdp");
 			break;
 
 		case HIKVISION_RTSP:
 		case TRENDNET_RTSP:			
-			sQuery = _T("/Streaming/Channels/1");
+			sPathAndQuery = _T("/Streaming/Channels/1");
 			break;
 
 		// av_h264_jpeg_ulaw.sdp will serve H.264 if OpenH264 has been downloaded
 		// in the IP Webcam (Pro) for Android App and if not it will serve MJPEG
 		// (jpeg_ulaw.sdp will server MJPEG only and h264_ulaw.sdp H.264 only)
 		case IPWEBCAM_ANDROID_RTSP:	
-			sQuery = _T("/av_h264_jpeg_ulaw.sdp");
+			sPathAndQuery = _T("/av_h264_jpeg_ulaw.sdp");
 			break;
 
 		case LINKSYS_RTSP:			
-			sQuery = _T("/img/media.sav");
+			sPathAndQuery = _T("/img/media.sav");
 			break;
 
 		case LOGITECH_RTSP:			
-			sQuery = _T("/HighResolutionVideo");
+			sPathAndQuery = _T("/HighResolutionVideo");
 			break;
 
 		case MONACOR_RTSP:			
-			sQuery = _T("/ch00/0");
+			sPathAndQuery = _T("/ch00/0");
 			break;
 
 		case MONACOR_2MP_RTSP:		
-			sQuery = _T("/0");
+			sPathAndQuery = _T("/0");
 			break;
 
 		case PANASONIC_RTSP:		
-			sQuery = _T("/MediaInput/h264");
+			sPathAndQuery = _T("/MediaInput/h264");
 			break;
 
 		case PIXORD_RTSP:			
-			sQuery = _T("/v00");
+			sPathAndQuery = _T("/v00");
 			break;
 
 		case PLANET_RTSP:			
-			sQuery = _T("/stream1");
+			sPathAndQuery = _T("/stream1");
 			break;
 
 		case REOLINK_RTSP:			
-			sQuery = _T("/h264Preview_01_main");
+			sPathAndQuery = _T("/h264Preview_01_main");
 			break;
 
 		case SAMSUNG_RTSP:			
-			sQuery = _T("/profile1/media.smp");
+			sPathAndQuery = _T("/profile1/media.smp");
 			break;
 
 		case SONY_RTSP:				
-			sQuery = _T("/media/video1");
+			sPathAndQuery = _T("/media/video1");
 			break;
 
 		case SUMPPLE_RTSP:
-			sQuery = CString(_T("/live/av0?user=")) + (m_sHttpGetFrameUsername.IsEmpty() ? _T("admin") : ::UrlEncode(m_sHttpGetFrameUsername, TRUE)) +
-					_T("&passwd=") + (m_sHttpGetFramePassword.IsEmpty() ? _T("sumpple") : ::UrlEncode(m_sHttpGetFramePassword, TRUE));
-			bCredentialInParams = TRUE;
+			sPathAndQuery = CString(_T("/live/av0?user=")) + (m_sHttpGetFrameUsername.IsEmpty() ? _T("admin") : ::UrlEncode(m_sHttpGetFrameUsername, TRUE)) +
+							_T("&passwd=") + (m_sHttpGetFramePassword.IsEmpty() ? _T("sumpple") : ::UrlEncode(m_sHttpGetFramePassword, TRUE));
+			bCredentialAlreadyAdded = TRUE;
 			break;
 
 		case TOSHIBA_RTSP:
 		case VIVOTEK_RTSP:			
-			sQuery = _T("/live.sdp");
+			sPathAndQuery = _T("/live.sdp");
 			break;
 
 		case UBIQUITI_RTSP:			
-			sQuery = _T("/live/ch00_0");
+			sPathAndQuery = _T("/live/ch00_0");
 			break;
 		
 		case VSTARCAM_RTSP:
 		case ZMODO_RTSP:			
-			sQuery = m_bPreferTcpforRtsp ? _T("/tcp/av0_0") : _T("/udp/av0_0");
+			sPathAndQuery = m_bPreferTcpforRtsp ? _T("/tcp/av0_0") : _T("/udp/av0_0");
 			break;
 
 		case XIAOMI_RTSP:			
-			sQuery = _T("/ch0_0.h264");
+			sPathAndQuery = _T("/ch0_0.h264");
 			break;
 
 		case YCAM_RTSP:				
-			sQuery = _T("/live_mpeg4.sdp");
+			sPathAndQuery = _T("/live_mpeg4.sdp");
 			break;
 
 		case ZAVIO_RTSP:			
-			sQuery = _T("/video.pro1");
+			sPathAndQuery = _T("/video.pro1");
 			break;
 		
 		default:					
@@ -8898,18 +8898,18 @@ void CVideoDeviceDoc::ConnectRtsp()
 	CString sHost(m_sGetFrameVideoHost);
 	if ((sHost.Find(_T(':'))) >= 0) // IPv6?
 		sHost = _T("[") + sHost + _T("]");
-	if (bCredentialInParams || (m_sHttpGetFrameUsername.IsEmpty() && m_sHttpGetFramePassword.IsEmpty()))
+	if (bCredentialAlreadyAdded || (m_sHttpGetFrameUsername.IsEmpty() && m_sHttpGetFramePassword.IsEmpty()))
 	{
-		m_RtspThread.m_sURL.Format(_T("rtsp://%s:%d%s"), sHost, m_nGetFrameVideoPort, sQuery);
+		m_RtspThread.m_sURL.Format(_T("rtsp://%s:%d%s"), sHost, m_nGetFrameVideoPort, sPathAndQuery);
 	}
 	else
 	{
 		m_RtspThread.m_sURL.Format(_T("rtsp://%s:%s@%s:%d%s"),	::UrlEncode(m_sHttpGetFrameUsername, TRUE),
 																::UrlEncode(m_sHttpGetFramePassword, TRUE),
-																sHost, m_nGetFrameVideoPort, sQuery);
+																sHost, m_nGetFrameVideoPort, sPathAndQuery);
 	}
 	if (g_nLogLevel > 1)
-		::LogLine(_T("%s, rtsp://%s:%d%s"), GetAssignedDeviceName(), sHost, m_nGetFrameVideoPort, sQuery);
+		::LogLine(_T("%s, rtsp://%s:%d%s"), GetAssignedDeviceName(), sHost, m_nGetFrameVideoPort, sPathAndQuery);
 	m_RtspThread.Start();
 }
 
