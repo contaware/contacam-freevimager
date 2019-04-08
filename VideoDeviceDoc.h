@@ -582,6 +582,7 @@ public:
 		SAMSUNG_RTSP = 1190,			// Samsung RTSP
 		SONY_RTSP = 1200,				// Sony RTSP
 		SRICAM_RTSP = 1205,				// Sricam RTSP
+		SUMPPLE_RTSP = 1207,			// Sumpple RTSP
 		TOSHIBA_RTSP = 1210,			// Toshiba RTSP
 		TPLINK_RTSP = 1220,				// TP-Link RTSP
 		TRENDNET_RTSP = 1230,			// TrendNet RTSP

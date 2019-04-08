@@ -8857,6 +8857,12 @@ void CVideoDeviceDoc::ConnectRtsp()
 			sQuery = _T("/media/video1");
 			break;
 
+		case SUMPPLE_RTSP:
+			sQuery = CString(_T("/live/av0?user=")) + (m_sHttpGetFrameUsername.IsEmpty() ? _T("admin") : ::UrlEncode(m_sHttpGetFrameUsername, TRUE)) +
+					_T("&passwd=") + (m_sHttpGetFramePassword.IsEmpty() ? _T("sumpple") : ::UrlEncode(m_sHttpGetFramePassword, TRUE));
+			bCredentialInParams = TRUE;
+			break;
+
 		case TOSHIBA_RTSP:
 		case VIVOTEK_RTSP:			
 			sQuery = _T("/live.sdp");

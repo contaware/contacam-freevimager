@@ -4,6 +4,7 @@ CONTACAM HISTORY
 
 - The daily summary video creation is now configurable under
   Camera Basic Settings
+- Support Sumpple RTSP cameras
 - Fixed download problems for daily summary videos
 - Increased the download performance of thumbnails and videos 
 - Updated the "Network / IP Camera" dialog to show also the assigned
