@@ -71,7 +71,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_MESSAGE(WM_COPYDATA, OnCopyData)
 	ON_MESSAGE(WM_TWAIN_CLOSED, OnTwainClosed)
 	ON_MESSAGE(WM_THREADSAFE_POPUP_TOASTER, OnThreadSafePopupToaster)
-	ON_MESSAGE(WM_THREADSAFE_INVALIDATE_MDICLIENTWND, OnThreadSafeInvalidateMDIClientWnd)
 #ifdef VIDEODEVICEDOC
 	ON_WM_INITMENUPOPUP()
 	ON_MESSAGE(WM_AUTORUN_VIDEODEVICES, OnAutorunVideoDevices)
@@ -796,12 +795,6 @@ LONG CMainFrame::OnThreadSafePopupToaster(WPARAM wparam, LPARAM lparam)
 			m_pToaster = NULL; // we do not need to delete m_pToaster because CToasterWnd is self deleting
 	}
 
-	return 0;
-}
-
-LONG CMainFrame::OnThreadSafeInvalidateMDIClientWnd(WPARAM wparam, LPARAM lparam)
-{
-	m_MDIClientWnd.Invalidate();
 	return 0;
 }
 
@@ -2347,12 +2340,20 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 #ifdef VIDEODEVICEDOC
 	else if (nIDEvent == ID_TIMER_1SEC)
 	{
-		// Text flash state flag
-		static int nFlashState = 0;
-
 		// Restore Movement Detection Buffering?
 		if (((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames && CDib::m_llOverallSharedMemoryBytes == 0)
 			((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = FALSE;
+
+		// If the No Donation flag changes trigger the drawing
+		static BOOL bNoDonation = FALSE;
+		if (((CUImagerApp*)::AfxGetApp())->m_bNoDonation != bNoDonation)
+		{
+			bNoDonation = ((CUImagerApp*)::AfxGetApp())->m_bNoDonation;
+			m_MDIClientWnd.Invalidate();
+		}
+
+		// Text flash state flag
+		static int nFlashState = 0;
 
 		// Show BUF Usage
 		CString sBufStats;

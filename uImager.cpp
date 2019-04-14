@@ -1175,7 +1175,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		::AfxGetMainFrame()->m_MDIClientWnd.Invalidate();
 
 		// Start Donor Email Validation Thread
-		// (program's background updated again from inside this thread)
 		m_DonorEmailValidateThread.Start();
 
 		return TRUE;
@@ -1684,9 +1683,6 @@ int CUImagerApp::DonorEmailValidate()
 		ret = 0;		// bad email
 		m_bNoDonation = TRUE;
 	}
-
-	// Redraw program's background
-	::PostMessage(::AfxGetMainFrame()->GetSafeHwnd(), WM_THREADSAFE_INVALIDATE_MDICLIENTWND, 0, 0);
 
 	return ret;
 }

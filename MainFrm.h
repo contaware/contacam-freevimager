@@ -23,12 +23,11 @@ extern "C"
 
 // Window Message IDs
 #define WM_THREADSAFE_POPUP_TOASTER					WM_USER + 100
-#define WM_THREADSAFE_INVALIDATE_MDICLIENTWND		WM_USER + 101
-#define WM_ALL_CLOSED								WM_USER + 102
-#define WM_SCANANDEMAIL								WM_USER + 103
-#define WM_TRAY_NOTIFICATION						WM_USER + 104
+#define WM_ALL_CLOSED								WM_USER + 101
+#define WM_SCANANDEMAIL								WM_USER + 102
+#define WM_TRAY_NOTIFICATION						WM_USER + 103
 #ifdef VIDEODEVICEDOC
-#define WM_AUTORUN_VIDEODEVICES						WM_USER + 105
+#define WM_AUTORUN_VIDEODEVICES						WM_USER + 104
 #endif
 														
 #define ID_TIMER_FULLSCREEN							1
@@ -273,7 +272,6 @@ protected:
 	afx_msg LRESULT OnCopyData(WPARAM wParam, LPARAM lParam);
 	afx_msg LONG OnTwainClosed(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafePopupToaster(WPARAM wparam, LPARAM lparam);
-	afx_msg LONG OnThreadSafeInvalidateMDIClientWnd(WPARAM wparam, LPARAM lparam);
 #ifdef VIDEODEVICEDOC
 	afx_msg void OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu);
 	afx_msg LONG OnAutorunVideoDevices(WPARAM wparam, LPARAM lparam);
