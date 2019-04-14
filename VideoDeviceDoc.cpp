@@ -3,6 +3,7 @@
 #include "VideoDeviceView.h"
 #include "MainFrm.h"
 #include "VideoDeviceDoc.h"
+#include "LicenseHelper.h"
 #include "AudioInSourceDlg.h"
 #include "CameraBasicSettingsDlg.h"
 #include "CameraAdvancedSettingsDlg.h"
@@ -397,7 +398,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				}
 
 				// Add "NO DONATION" tag
-				if (((CUImagerApp*)::AfxGetApp())->m_bNoDonation)
+				if (g_DonorEmailValidateThread.m_bNoDonation)
 					AddNoDonationTag(pDib, m_pDoc->m_nRefFontSize);
 
 				// Open if first frame
@@ -748,7 +749,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors
 		}
 
 		// Add "NO DONATION" tag to include its colors
-		if (((CUImagerApp*)::AfxGetApp())->m_bNoDonation)
+		if (g_DonorEmailValidateThread.m_bNoDonation)
 			AddNoDonationTag(&DibForPalette, m_pDoc->m_nRefFontSize);
 
 		// Calc. Palette
@@ -812,7 +813,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveSingleGif(	CDib* pDib,
 		}
 
 		// Add "NO DONATION" tag
-		if (((CUImagerApp*)::AfxGetApp())->m_bNoDonation)
+		if (g_DonorEmailValidateThread.m_bNoDonation)
 			AddNoDonationTag(pDib, m_pDoc->m_nRefFontSize);
 
 		// Convert to 8 bpp
@@ -867,7 +868,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::To255Colors(CDib* pDib,
 		}
 
 		// Add "NO DONATION" tag
-		if (((CUImagerApp*)::AfxGetApp())->m_bNoDonation)
+		if (g_DonorEmailValidateThread.m_bNoDonation)
 			AddNoDonationTag(pDib, m_pDoc->m_nRefFontSize);
 
 		// Convert to 8 bpp
@@ -1147,7 +1148,7 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 		AddFrameTime(&m_Dib, m_Time, dwUpTime, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
 		AddFrameTime(&DibThumb, m_Time, dwUpTime, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
 	}
-	if (((CUImagerApp*)::AfxGetApp())->m_bNoDonation)
+	if (g_DonorEmailValidateThread.m_bNoDonation)
 	{
 		AddNoDonationTag(&m_Dib, m_pDoc->m_nRefFontSize);
 		AddNoDonationTag(&DibThumb, m_pDoc->m_nRefFontSize);
@@ -7324,7 +7325,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 			AddFrameTime(pDib, CurrentTime, dwCurrentInitUpTime, m_nRefFontSize, m_bShowFrameUptime);
 
 		// Add "NO DONATION" tag
-		if (((CUImagerApp*)::AfxGetApp())->m_bNoDonation)
+		if (g_DonorEmailValidateThread.m_bNoDonation)
 			AddNoDonationTag(pDib, m_nRefFontSize);
 
 		// Swap Dib pointers, convert to RGB32 and invalidate to draw
@@ -7563,7 +7564,7 @@ BOOL CVideoDeviceDoc::EditCopy(CDib* pDib, const CTime& Time)
 		AddFrameTime(&Dib, Time, dwUpTime, m_nRefFontSize, m_bShowFrameUptime);
 
 	// Add "NO DONATION" tag
-	if (((CUImagerApp*)::AfxGetApp())->m_bNoDonation)
+	if (g_DonorEmailValidateThread.m_bNoDonation)
 		AddNoDonationTag(&Dib, m_nRefFontSize);
 
 	// Copy to clipboard
@@ -7598,7 +7599,7 @@ void CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 		AddFrameTime(&Dib, Time, dwUpTime, m_nRefFontSize, m_bShowFrameUptime);
 
 	// Add "NO DONATION" tag
-	if (((CUImagerApp*)::AfxGetApp())->m_bNoDonation)
+	if (g_DonorEmailValidateThread.m_bNoDonation)
 		AddNoDonationTag(&Dib, m_nRefFontSize);
 
 	// Save to JPEG File
@@ -7641,7 +7642,7 @@ CString CVideoDeviceDoc::SaveJpegMail(CDib* pDib, const CTime& RefTime, DWORD dw
 		AddFrameTime(&Dib, RefTime, dwRefUpTime, m_nRefFontSize, m_bShowFrameUptime);
 
 	// Add "NO DONATION" tag
-	if (((CUImagerApp*)::AfxGetApp())->m_bNoDonation)
+	if (g_DonorEmailValidateThread.m_bNoDonation)
 		AddNoDonationTag(&Dib, m_nRefFontSize);
 
 	// Save to JPEG File

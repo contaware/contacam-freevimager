@@ -1,6 +1,7 @@
 ﻿#include "stdafx.h"
 #include "uImager.h"
 #include "MainFrm.h"
+#include "LicenseHelper.h"
 #include "LicenseDlg.h"
 #include "CreditsDlg.h"
 #include "NewDlg.h"
@@ -173,7 +174,6 @@ CUImagerApp::CUImagerApp()
 	m_nPdfScanCompressionQuality = DEFAULT_JPEGCOMPRESSION;
 	m_sScanToPdfFileName = _T("");
 	m_sScanToTiffFileName = _T("");
-	m_bNoDonation = FALSE;
 	m_bTrayIcon = FALSE;
 	m_bHideMainFrame = FALSE;
 	m_bPrinterInit = FALSE;
@@ -1175,7 +1175,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		::AfxGetMainFrame()->m_MDIClientWnd.Invalidate();
 
 		// Start Donor Email Validation Thread
-		m_DonorEmailValidateThread.Start();
+		g_DonorEmailValidateThread.Start();
 
 		return TRUE;
 	}
@@ -1319,18 +1319,18 @@ void CUImagerApp::OnAppCredits()
 void CUImagerApp::OnAppLicense() 
 {
 	// Attention: never read or modify m_sDonorEmail while the thread is running
-	m_DonorEmailValidateThread.Kill();
+	g_DonorEmailValidateThread.Kill();
 
 	// Init m_sEmail variable and popup dialog
 	CLicenseDlg licenseDlg;
-	licenseDlg.m_sEmail = m_sDonorEmail;
+	licenseDlg.m_sEmail = g_DonorEmailValidateThread.m_sDonorEmail;
 	if (licenseDlg.DoModal() == IDOK)
 	{
 		// Update and validate email
 		BeginWaitCursor();
-		m_sDonorEmail = licenseDlg.m_sEmail;
-		WriteProfileString(_T("GeneralApp"), _T("DonorEmail"), m_sDonorEmail);
-		int ret = ((CUImagerApp*)::AfxGetApp())->DonorEmailValidate();
+		g_DonorEmailValidateThread.m_sDonorEmail = licenseDlg.m_sEmail;
+		WriteProfileString(_T("GeneralApp"), _T("DonorEmail"), g_DonorEmailValidateThread.m_sDonorEmail);
+		int ret = g_DonorEmailValidateThread.DonorEmailValidate();
 		EndWaitCursor();
 
 		// Inform user
@@ -1619,72 +1619,6 @@ void CUImagerApp::CaptureScreenToClipboard()
 	::DeleteObject(hBitmap);
 	::DeleteDC(hMemDC);
 	::ReleaseDC(NULL, hScreenDC);
-}
-
-int CDonorEmailValidateThread::Work()
-{
-	::CoInitialize(NULL);
-
-	// Validate after 1 second
-	if (::WaitForSingleObject(GetKillEvent(), 1000U) == WAIT_OBJECT_0)
-		goto exit;
-	if (((CUImagerApp*)::AfxGetApp())->DonorEmailValidate() >= 0)
-		goto exit;
-
-	// Retry after 1 minute
-	if (::WaitForSingleObject(GetKillEvent(), 60000U) == WAIT_OBJECT_0)
-		goto exit;
-	if (((CUImagerApp*)::AfxGetApp())->DonorEmailValidate() >= 0)
-		goto exit;
-
-	// Final check after 1 hour
-	if (::WaitForSingleObject(GetKillEvent(), 3600000U) == WAIT_OBJECT_0)
-		goto exit;
-	((CUImagerApp*)::AfxGetApp())->DonorEmailValidate();
-
-exit:
-	::CoUninitialize();
-
-	return 0;
-}
-
-int CUImagerApp::DonorEmailValidate()
-{
-	int ret = -1;
-	
-	// Connect to server and verify email
-	// Note: in case that our server does not answer correctly, or if it is
-	//       busy or when there is no internet connection, leave m_bNoDonation
-	//       as it is and leave also ret -1
-	CString sURL(_T("https://www.contaware.com/validate-437837653763456231.php"));
-	sURL += _T("?email=");
-	sURL += ::UrlEncode(m_sDonorEmail, TRUE);
-	size_t Size;
-	LPBYTE p = ::GetURL(sURL, Size, FALSE, FALSE, NULL);
-	if (p)
-	{
-		CString s(::FromUTF8(p, Size));
-		free(p);
-		if (s.Find(_T("OK")) >= 0)
-		{
-			ret = 1;	// good email
-			m_bNoDonation = FALSE;
-		}
-		else if (s.Find(_T("BAD")) >= 0)
-		{
-			ret = 0;	// bad email
-			m_bNoDonation = TRUE;
-		}
-	}
-
-	// But if empty then it is for sure a "bad" email
-	if (m_sDonorEmail.IsEmpty())
-	{
-		ret = 0;		// bad email
-		m_bNoDonation = TRUE;
-	}
-
-	return ret;
 }
 
 BOOL CUImagerApp::PasteToFile(LPCTSTR lpszFileName, COLORREF crBackgroundColor/*=RGB(255,255,255)*/)
@@ -3524,7 +3458,7 @@ void CUImagerApp::LoadSettings(UINT showCmd/*=SW_SHOWNORMAL*/)
 	g_nLogLevel = MIN(2, MAX(0, GetProfileInt(sSection, _T("LogLevel"), 0)));
 
 	// Donor E-mail
-	m_sDonorEmail = GetProfileString(sSection, _T("DonorEmail"), _T(""));
+	g_DonorEmailValidateThread.m_sDonorEmail = GetProfileString(sSection, _T("DonorEmail"), _T(""));
 
 	// MainFrame Placement
 	LoadPlacement(showCmd);

@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "uImager.h"
 #include "MDIClientWnd.h"
+#include "LicenseHelper.h"
 #include "MyMemDC.h"
 
 #ifdef _DEBUG
@@ -115,7 +116,7 @@ void CMDIClientWnd::OnPaint()
 					rcClient.bottom);
 	rcDraw.top += TextMetrics.tmAscent;
 	CString s;
-	if (((CUImagerApp*)::AfxGetApp())->m_bNoDonation)
+	if (g_DonorEmailValidateThread.m_bNoDonation)
 	{
 		CString sNoDonation(ML_STRING(1734, "NO DONATION: see Help menu"));
 		if (sNoDonation.GetLength() < 10)

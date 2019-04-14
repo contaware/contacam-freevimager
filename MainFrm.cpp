@@ -5,6 +5,7 @@
 #include "PictureView.h"
 #include "VideoDeviceView.h"
 #include "MainFrm.h"
+#include "LicenseHelper.h"
 #include "DxCapture.h"
 #include "dbt.h"
 #include "PicturePrintPreviewView.h"
@@ -637,7 +638,7 @@ void CMainFrame::OnClose()
 		}
 
 		// Stop Donor Email Validation Thread
-		pApp->m_DonorEmailValidateThread.Kill();
+		g_DonorEmailValidateThread.Kill();
 
 		// Stop All Threads used for the PostDelayedMessage() Function
 		CPostDelayedMessageThread::Exit();
@@ -2346,9 +2347,9 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 
 		// If the No Donation flag changes trigger the drawing
 		static BOOL bNoDonation = FALSE;
-		if (((CUImagerApp*)::AfxGetApp())->m_bNoDonation != bNoDonation)
+		if (g_DonorEmailValidateThread.m_bNoDonation != bNoDonation)
 		{
-			bNoDonation = ((CUImagerApp*)::AfxGetApp())->m_bNoDonation;
+			bNoDonation = g_DonorEmailValidateThread.m_bNoDonation;
 			m_MDIClientWnd.Invalidate();
 		}
 

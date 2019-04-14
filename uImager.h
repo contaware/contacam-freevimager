@@ -171,17 +171,6 @@ protected:
 	CStaticLink m_WebLink;	// Hyperlink
 };
 
-// The Donor Email Validation Thread Class
-class CDonorEmailValidateThread : public CWorkerThread
-{
-public:
-	CDonorEmailValidateThread() {;};
-	virtual ~CDonorEmailValidateThread() {Kill();};
-
-protected:
-	int Work();
-};
-
 class CUImagerMultiDocTemplate : public CMultiDocTemplate
 {
 	DECLARE_DYNAMIC(CUImagerMultiDocTemplate)
@@ -451,15 +440,6 @@ public:
 
 	// Paste clipboard to given file
 	static BOOL PasteToFile(LPCTSTR lpszFileName, COLORREF crBackgroundColor = RGB(255,255,255));
-
-	// Donation
-	// return:	-1:	unknown answer or server busy or no answer from server
-	//			0:	server answered bad email
-	//			1:	server answered good email
-	int DonorEmailValidate();
-	CDonorEmailValidateThread m_DonorEmailValidateThread;
-	volatile BOOL m_bNoDonation;
-	CString m_sDonorEmail;
 
 	// Use Tray Icon
 	volatile BOOL m_bTrayIcon;

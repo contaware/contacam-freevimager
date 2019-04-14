@@ -739,6 +739,7 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="LicenseHelper.cpp" />
     <ClCompile Include="ListCtrlEx.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -1322,6 +1323,7 @@
     <ClInclude Include="ISampleGrabber.h" />
     <ClInclude Include="LayeredDlg.h" />
     <ClInclude Include="LicenseDlg.h" />
+    <ClInclude Include="LicenseHelper.h" />
     <ClInclude Include="ListCtrlEx.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="MDIClientWnd.h" />
