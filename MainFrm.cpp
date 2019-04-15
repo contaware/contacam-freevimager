@@ -193,9 +193,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	DragAcceptFiles(TRUE);
 
 	// Init timers
-#ifdef VIDEODEVICEDOC
 	SetTimer(ID_TIMER_1SEC, 1000U, NULL);
-#endif
 	SetTimer(ID_TIMER_15SEC, 15000U, NULL);
 
 	// Init Menu Positions
@@ -294,10 +292,8 @@ void CMainFrame::TrayIcon(BOOL bEnable)
 
 void CMainFrame::OnDestroy() 
 {
-	// Kill timer
-#ifdef VIDEODEVICEDOC
+	// Kill timers
 	KillTimer(ID_TIMER_1SEC);
-#endif
 	KillTimer(ID_TIMER_15SEC);
 
 	// Close toaster
@@ -2338,13 +2334,8 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 	{
 		((CUImagerApp*)::AfxGetApp())->CloseAll();
 	}
-#ifdef VIDEODEVICEDOC
 	else if (nIDEvent == ID_TIMER_1SEC)
 	{
-		// Restore Movement Detection Buffering?
-		if (((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames && CDib::m_llOverallSharedMemoryBytes == 0)
-			((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = FALSE;
-
 		// If the No Donation flag changes trigger the drawing
 		static BOOL bNoDonation = FALSE;
 		if (g_DonorEmailValidateThread.m_bNoDonation != bNoDonation)
@@ -2352,6 +2343,10 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 			bNoDonation = g_DonorEmailValidateThread.m_bNoDonation;
 			m_MDIClientWnd.Invalidate();
 		}
+#ifdef VIDEODEVICEDOC
+		// Restore Movement Detection Buffering?
+		if (((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames && CDib::m_llOverallSharedMemoryBytes == 0)
+			((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = FALSE;
 
 		// Text flash state flag
 		static int nFlashState = 0;
@@ -2396,8 +2391,8 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 
 		// Toggle flash state
 		nFlashState = (nFlashState+1)%3;
-	}
 #endif
+	}
 	else if (nIDEvent == ID_TIMER_15SEC)
 	{
 		if (g_nLogLevel > 0)
