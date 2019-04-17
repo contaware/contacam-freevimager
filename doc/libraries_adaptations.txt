@@ -19,6 +19,12 @@ CToasterWnd 1.18
 - On some systems GetCursorPos() fails for addresses > 2GB -> replaced it with my GetSafeCursorPos()
 
 
+CMDITabs
+--------
+
+- Changed a lot!
+
+
 CColourPopup
 ------------
 

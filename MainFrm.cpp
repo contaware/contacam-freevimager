@@ -148,7 +148,7 @@ BOOL CMainFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
 
 int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
-	if (CMDIFrameWnd::OnCreate(lpCreateStruct) == -1)
+	if (CMDIFrameWnd::OnCreate(lpCreateStruct) == -1) // this calls CMainFrame::OnCreateClient() and thus inits m_MDIClientWnd
 		return -1;
 
 	// Create Toolbar
