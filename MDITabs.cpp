@@ -139,6 +139,7 @@ void CMDITabs::Update()
 
 	// Loop through all tabs
 	TCITEM item = {};
+	item.iImage = -1;
 	TCHAR szTitle[MAX_PATH] = {};
 	item.pszText = szTitle;
 	int i;
@@ -225,8 +226,9 @@ void CMDITabs::Update()
 			m_images.Add((HICON)::GetClassLongPtr(ChildFrameWndArray[n], GCLP_HICON));
 
 		// Add tab item
-		item.mask = TCIF_TEXT | TCIF_PARAM | TCIF_IMAGE;
-		item.iImage = i;
+		item.mask = TCIF_TEXT | TCIF_PARAM | (m_bImages ? TCIF_IMAGE : 0);
+		if (m_bImages)
+			item.iImage = i;
 		item.lParam = LPARAM(ChildFrameWndArray[n]);
 		InsertItem(i, &item);
 
