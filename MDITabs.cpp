@@ -24,7 +24,8 @@ static char THIS_FILE[] = __FILE__;
 #define CLOSE_COLOR				RGB(0x30,0x30,0x30)
 #define CLOSE_HOT_COLOR			RGB(0xff,0xff,0xff)
 #define CLOSE_HOT_BKGCOLOR		RGB(0xe8,0x11,0x23)
-#define CLOSE_PADDING			7
+#define CLOSE_BKG_PADDING		4
+#define CLOSE_CROSS_PADDING		7
 
 CMDITabs::CMDITabs()
 {
@@ -270,7 +271,7 @@ void CMDITabs::OnPaint()
 	dc.RestoreDC(nSavedDC);
 
 	// And paint also the Close Cross
-	int nPadding = ::SystemDPIScale(CLOSE_PADDING);
+	int nPadding = ::SystemDPIScale(CLOSE_CROSS_PADDING);
 	int nPenThickness = ::SystemDPIScale(CLOSE_THICKNESS);
 	for (int i = 0; i < GetItemCount(); i++)
 	{
@@ -376,9 +377,9 @@ CRect CMDITabs::GetCloseBkgRect(int nTabIndex)
 	if (nTabIndex >= 0)
 	{
 		GetItemRect(nTabIndex, &rc);
-		int nPadding = ::SystemDPIScale(CLOSE_PADDING);
+		int nPadding = ::SystemDPIScale(CLOSE_BKG_PADDING);
 		rc.left = rc.right - rc.Height();
-		rc.DeflateRect(nPadding / 2, nPadding / 2);
+		rc.DeflateRect(nPadding, nPadding);
 		rc.right += 1;
 		rc.bottom += 1;
 	}
