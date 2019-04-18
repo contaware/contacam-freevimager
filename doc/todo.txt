@@ -62,4 +62,6 @@ ContaCam Program
 - Can you implement login log for the online viewing. So if people log 
   in to see the videos you can check in the logs which ip address and when it 
   has been logged in or tried to login (info@rwsvk.nl)
+- Execute command on camera failure, add the option of "camera failure" to the command execute area
+  (n1fbg@arrl.net)
   
