@@ -1,5 +1,9 @@
 TRANSLATIONS HISTORY
 
+9.7.0 (Month XXth 2019)
+
+- ...
+
 9.5.0 (April 19th 2019)
 
 - Full Portuguese language support
