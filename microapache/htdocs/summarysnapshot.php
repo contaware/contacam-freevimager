@@ -333,9 +333,9 @@ if ($handle = @opendir($dir)) {
 				echo "<span class=\"thumbcontainer\">";
 				if ($path_parts['extension'] == 'gif') {
 					if (is_file("$dir/$filenamenoext.mp4"))
-						echo "<a href=\"mp4.php?file=$mp4uri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . $mp4s . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"download.php?embed=yes&amp;file=$gifuri_get\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a>";
+						echo "<a href=\"mp4.php?file=$mp4uri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . $mp4s . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"download.php?embed=yes&amp;file=$gifuri_get\" title=\"$file_timestamp\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a>";
 					else
-						echo "<a href=\"#\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"download.php?embed=yes&amp;file=$gifuri_get\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a>";
+						echo "<a href=\"#\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"download.php?embed=yes&amp;file=$gifuri_get\" title=\"$file_timestamp\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a>";
 				}
 				else if ($path_parts['extension'] == 'mp4') {
 					$file_prefix_upper = strtoupper($file_prefix);
