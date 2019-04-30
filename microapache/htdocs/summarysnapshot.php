@@ -52,7 +52,7 @@ else
 $max_per_page = (int)MAX_PER_PAGE;
 $pages = 1; // initialized later on
 $page_offset = 0;
-if (isset($_GET['pageoffset']))	{
+if (isset($_GET['pageoffset'])) {
 	$page_offset = (int)$_GET['pageoffset'];
 	if ($page_offset < 0)
 		$page_offset = 0;
@@ -83,22 +83,23 @@ function GetDaysElapsed($passed_time) {
 	$days_elapsed = ($current_date - $passed_date) / (60*60*24);
 	return ((int)floor($days_elapsed));
 }
-function GetDeltaUrl($delta_year, $delta_month, $delta_day) {
+function GetDeltaUrl($delta_day) {
 	global $selected_day;
 	global $selected_month;
 	global $selected_year;
 	global $scriptname;
-	$new_time = mktime(12,0,0,$selected_month+$delta_month,$selected_day+$delta_day,$selected_year+$delta_year);
+	$new_time = mktime(12,0,0,$selected_month,$selected_day+$delta_day,$selected_year);
 	$new_year = (int)date('Y', $new_time);
 	$new_month = (int)date('m', $new_time);
 	$new_day = (int)date('d', $new_time);
-	return "$scriptname?year=$new_year&amp;month=$new_month&amp;day=$new_day";
+	return "$scriptname?year=$new_year&month=$new_month&day=$new_day";
 }
 function PrintNoFilesDate() {
 	global $selected_days_elapsed;
 	global $selected_weekday_num;
 	$daynames = explode(",", str_replace("'", "", DAYNAMES));
 	$day_name = $daynames[$selected_weekday_num];
+	echo "<div style=\"text-align: center\">\n<h2>";
 	if ($selected_days_elapsed == 0) {
 		echo NOFILESFOR . " $day_name (" . TODAY . ")";
 	}
@@ -115,6 +116,7 @@ function PrintNoFilesDate() {
 		else
 			echo NOFILESFOR . " $day_name (" . IN . " $in_days " . DAYS . ")";
 	}
+	echo "</h2>\n</div>\n";
 }
 function PrintPageNavigation() {
 	global $file_array; 	// all the files
@@ -198,9 +200,9 @@ echo "<h1>" . SUMMARYTITLE . "</h1>\n";
 // Date picker
 echo "<form>\n";
 echo "<span class=\"globalbuttons\">\n";
-echo "<a href=\"" . GetDeltaUrl(0,0,-1) . "\">&lt;</a>\n";
+echo "<a href=\"" . htmlspecialchars(GetDeltaUrl(-1)) . "\">&lt;</a>\n";
 echo "<input id=\"DatePicker\" type=\"date\" value=\"$selected_year_string-$selected_month_string-$selected_day_string\" />\n";
-echo "<a href=\"" . GetDeltaUrl(0,0,1) . "\">&gt;</a>\n";
+echo "<a href=\"" . htmlspecialchars(GetDeltaUrl(1)) . "\">&gt;</a>\n";
 echo "</span>\n<br />\n";
 $daynames = explode(",", str_replace("'", "", DAYNAMES));
 $day_name = $daynames[$selected_weekday_num];	
@@ -355,21 +357,15 @@ if ($handle = @opendir($dir)) {
 	}
 			
 	// If no files found
-	if (!$day_has_files) {
-		echo "<div style=\"text-align: center\"><h2>\n";
+	if (!$day_has_files)
 		PrintNoFilesDate();
-		echo "</h2></div>\n";
-	}
 	
 	// Show bottom pages navigation
 	PrintPageNavigation();
 }
 // Given day doesn't exist
-else {
-	echo "<div style=\"text-align: center\"><h2>\n";
+else
 	PrintNoFilesDate();
-	echo "</h2></div>\n";
-}
 ?>
 <script type="text/javascript">
 //<![CDATA[
