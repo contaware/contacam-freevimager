@@ -12,8 +12,7 @@ require_once( LANGUAGEFILEPATH ); // Must be here at the top of this file becaus
 <?php
 // Init page refresh, title and style sheet
 require_once( 'setusertz.php' );
-$serveruri = htmlspecialchars($_SERVER['REQUEST_URI']);
-echo "<meta http-equiv=\"refresh\" content=\"" . SUMMARYREFRESHSEC . "; URL=" . $serveruri . "\" />\n";
+echo "<meta http-equiv=\"refresh\" content=\"" . SUMMARYREFRESHSEC . "; URL=" . htmlspecialchars($_SERVER['REQUEST_URI']) . "\" />\n";
 echo "<title>" . SUMMARYTITLE . "</title>\n";
 echo "<link rel=\"stylesheet\" href=\"" . STYLEFILEPATH . "\" type=\"text/css\" />\n";
 $scriptname = basename($_SERVER['SCRIPT_FILENAME']);
@@ -27,13 +26,22 @@ if (isset($_GET['year']) && isset($_GET['month']) && isset($_GET['day'])) {	// E
 	$selected_month = (int)$_GET['month'];
 	$lastdayof_selected_month = date('d',mktime(0, 0, 0, $selected_month + 1, 0, $selected_year));
 	$selected_day = min((int)$_GET['day'],(int)$lastdayof_selected_month);
-	$params = "?year=$selected_year&amp;month=$selected_month&amp;day=$selected_day";
+	$dateparams = "year=$selected_year&amp;month=$selected_month&amp;day=$selected_day";
+	
+	// Reload if today selected (cannot use php reload as UTF8-BOM has already been output)
+	if ($selected_year == $today_year && $selected_month == $today_month &&	$selected_day == $today_day) {
+		echo "<script type=\"text/javascript\">\n";
+		echo "//<![CDATA[\n";
+		echo "window.location.href = '$scriptname';\n";
+		echo "//]]>\n";
+		echo "</script>\n";
+	}	
 }
 else {	// Today
 	$selected_year = $today_year;
 	$selected_month = $today_month;
 	$selected_day = $today_day;
-	$params = "";
+	$dateparams = "";
 }
 $selected_time = mktime(12,0,0,$selected_month,$selected_day,$selected_year);
 $selected_weekday_num = date('w', $selected_time);
@@ -123,7 +131,7 @@ function PrintPageNavigation() {
 	global $pages;			// total pages amount
 	global $max_per_page;	// the configured maximum number of displayed files per page
 	global $page_offset;	// page offset parameter passed to script
-	global $params;			// all the parameters passed to script
+	global $dateparams;		// date parameters passed to script
 	global $scriptname;		// script name
 	
 	// Show pages navigation if more than a page available
@@ -136,29 +144,29 @@ function PrintPageNavigation() {
 			$page_text = sprintf("%d(%02d:%02d)", $page, $file_date['hours'], $file_date['minutes']);
 			if ($page == 1) {
 				if ($current_page_offset == $page_offset) {
-					if ($params == "")
+					if ($dateparams == "")
 						echo " <a class=\"highlight\" href=\"$scriptname\">$page_text</a>\n";
 					else
-						echo " <a class=\"highlight\" href=\"$scriptname" . $params . "\">$page_text</a>\n";
+						echo " <a class=\"highlight\" href=\"$scriptname?" . $dateparams . "\">$page_text</a>\n";
 				}
 				else {
-					if ($params == "")
+					if ($dateparams == "")
 						echo " <a href=\"$scriptname\">$page_text</a>\n";
 					else
-						echo " <a href=\"$scriptname" . $params . "\">$page_text</a>\n";
+						echo " <a href=\"$scriptname?" . $dateparams . "\">$page_text</a>\n";
 				}
 			} else {
 				if ($current_page_offset == $page_offset) {
-					if ($params == "")
+					if ($dateparams == "")
 						echo " <a class=\"highlight\" href=\"$scriptname?pageoffset=$current_page_offset\">$page_text</a>\n";
 					else
-						echo " <a class=\"highlight\" href=\"$scriptname" . $params . "&amp;pageoffset=$current_page_offset\">$page_text</a>\n";
+						echo " <a class=\"highlight\" href=\"$scriptname?" . $dateparams . "&amp;pageoffset=$current_page_offset\">$page_text</a>\n";
 				}
 				else {
-					if ($params == "")
+					if ($dateparams == "")
 						echo " <a href=\"$scriptname?pageoffset=$current_page_offset\">$page_text</a>\n";
 					else
-						echo " <a href=\"$scriptname" . $params . "&amp;pageoffset=$current_page_offset\">$page_text</a>\n";
+						echo " <a href=\"$scriptname?" . $dateparams . "&amp;pageoffset=$current_page_offset\">$page_text</a>\n";
 				}
 			}
 			$current_page_offset += $max_per_page;
