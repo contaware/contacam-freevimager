@@ -123,7 +123,7 @@ echo NSIS make ContaCamPtb installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Portuguese ContaCam.nsi
 move .\ContaCam-%CURRENTVERSION%-Setup-Ptb.exe .\%CURRENTVERSION%\ContaCam\portuguese\
 echo NSIS make ContaCamChs installer
-"%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Chinese ContaCam.nsi
+"%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=SimpChinese ContaCam.nsi
 move .\ContaCam-%CURRENTVERSION%-Setup-Chs.exe .\%CURRENTVERSION%\ContaCam\chinese\
 
 REM Make all the different FreeVimager installers
@@ -155,7 +155,7 @@ echo NSIS make FreeVimagerPtb installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Portuguese FreeVimager.nsi
 move .\FreeVimager-%CURRENTVERSION%-Setup-Ptb.exe .\%CURRENTVERSION%\FreeVimager\portuguese\
 echo NSIS make FreeVimagerChs installer
-"%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Chinese FreeVimager.nsi
+"%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=SimpChinese FreeVimager.nsi
 move .\FreeVimager-%CURRENTVERSION%-Setup-Chs.exe .\%CURRENTVERSION%\FreeVimager\chinese\
 
 REM exit

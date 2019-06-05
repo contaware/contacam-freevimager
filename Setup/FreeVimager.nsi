@@ -29,7 +29,7 @@ RequestExecutionLevel user
 !else if ${INSTALLER_LANGUAGE} == "Portuguese"
 	!define INSTALLER_LANGUAGE_ID ${LANG_PORTUGUESE}
 	!define INSTALLER_LANGUAGE_SUFFIX "Ptb"
-!else if ${INSTALLER_LANGUAGE} == "Chinese"
+!else if ${INSTALLER_LANGUAGE} == "SimpChinese"
 	!define INSTALLER_LANGUAGE_ID ${LANG_SIMPCHINESE}
 	!define INSTALLER_LANGUAGE_SUFFIX "Chs"
 !else
