@@ -49,6 +49,7 @@ mkdir .\%CURRENTVERSION%\ContaCam\vietnamese
 mkdir .\%CURRENTVERSION%\ContaCam\spanish
 mkdir .\%CURRENTVERSION%\ContaCam\french
 mkdir .\%CURRENTVERSION%\ContaCam\portuguese
+mkdir .\%CURRENTVERSION%\ContaCam\chinese
 mkdir .\%CURRENTVERSION%\FreeVimager
 mkdir .\%CURRENTVERSION%\FreeVimager\english
 mkdir .\%CURRENTVERSION%\FreeVimager\german
@@ -59,6 +60,7 @@ mkdir .\%CURRENTVERSION%\FreeVimager\vietnamese
 mkdir .\%CURRENTVERSION%\FreeVimager\spanish
 mkdir .\%CURRENTVERSION%\FreeVimager\french
 mkdir .\%CURRENTVERSION%\FreeVimager\portuguese
+mkdir .\%CURRENTVERSION%\FreeVimager\chinese
 
 REM Move the 7-zipped source code
 echo Move source code
@@ -89,6 +91,8 @@ echo Copy FreeVimagerFra.exe
 copy ..\Translation\FreeVimagerFRA.exe .\%CURRENTVERSION%\FreeVimager\french\FreeVimager-%CURRENTVERSION%-Portable-Fra.exe
 echo Copy FreeVimagerPtb.exe
 copy ..\Translation\FreeVimagerPTB.exe .\%CURRENTVERSION%\FreeVimager\portuguese\FreeVimager-%CURRENTVERSION%-Portable-Ptb.exe
+echo Copy FreeVimagerChs.exe
+copy ..\Translation\FreeVimagerCHS.exe .\%CURRENTVERSION%\FreeVimager\chinese\FreeVimager-%CURRENTVERSION%-Portable-Chs.exe
 
 REM Make all the different ContaCam installers
 echo NSIS make ContaCam installer
@@ -118,6 +122,9 @@ move .\ContaCam-%CURRENTVERSION%-Setup-Fra.exe .\%CURRENTVERSION%\ContaCam\frenc
 echo NSIS make ContaCamPtb installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Portuguese ContaCam.nsi
 move .\ContaCam-%CURRENTVERSION%-Setup-Ptb.exe .\%CURRENTVERSION%\ContaCam\portuguese\
+echo NSIS make ContaCamChs installer
+"%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Chinese ContaCam.nsi
+move .\ContaCam-%CURRENTVERSION%-Setup-Chs.exe .\%CURRENTVERSION%\ContaCam\chinese\
 
 REM Make all the different FreeVimager installers
 echo NSIS make FreeVimager installer
@@ -147,6 +154,9 @@ move .\FreeVimager-%CURRENTVERSION%-Setup-Fra.exe .\%CURRENTVERSION%\FreeVimager
 echo NSIS make FreeVimagerPtb installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Portuguese FreeVimager.nsi
 move .\FreeVimager-%CURRENTVERSION%-Setup-Ptb.exe .\%CURRENTVERSION%\FreeVimager\portuguese\
+echo NSIS make FreeVimagerChs installer
+"%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Chinese FreeVimager.nsi
+move .\FreeVimager-%CURRENTVERSION%-Setup-Chs.exe .\%CURRENTVERSION%\FreeVimager\chinese\
 
 REM exit
 :batchpause
