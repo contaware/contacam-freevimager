@@ -13,6 +13,9 @@ static char THIS_FILE[] = __FILE__;
 // The one and only CDonorEmailValidateThread object
 CDonorEmailValidateThread g_DonorEmailValidateThread;
 
+// Note: WinINet functions work also in ContaCam service mode, even if the
+//       InternetOpen() documentation states that it should not be used
+//       from a service (for that there is the WinHTTP API)
 int CDonorEmailValidateThread::DonorEmailValidate()
 {
 	int ret = -1;

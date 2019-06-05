@@ -2634,6 +2634,17 @@ BOOL IsFontSupported(LPCTSTR szFontFamily)
 	return (BOOL)lParam;
 }
 
+// TODO: Authentication Support
+// When a server receives a request that requires authentication,
+// the server returns a 401 status code message. In that message,
+// the server should include one or more WWW - Authenticate response
+// headers. These headers include the authentication methods the
+// server has available. WinINet chooses the first method it recognizes.
+// It is possible to supply credentials in the InternetConnect API or to 
+// use the InternetSetOption function to set the INTERNET_OPTION_PASSWORD
+// and INTERNET_OPTION_USERNAME values and then resend the request to the server.
+//
+// Reference: https://docs.microsoft.com/en-us/windows/desktop/wininet/handling-authentication
 LPBYTE GetURL(LPCTSTR lpszURL, size_t& Size, BOOL bAllowInvalidCert, BOOL bShowMessageBoxOnError, URLDOWNLOADPROGRESSCALLBACK lpfnCallback)
 {
 	// Return vars
@@ -2793,6 +2804,17 @@ cleanup:
 	return lpBuf;
 }
 
+// TODO: Authentication Support
+// When a server receives a request that requires authentication,
+// the server returns a 401 status code message. In that message,
+// the server should include one or more WWW - Authenticate response
+// headers. These headers include the authentication methods the
+// server has available. WinINet chooses the first method it recognizes.
+// It is possible to supply credentials in the InternetConnect API or to 
+// use the InternetSetOption function to set the INTERNET_OPTION_PASSWORD
+// and INTERNET_OPTION_USERNAME values and then resend the request to the server.
+//
+// Reference: https://docs.microsoft.com/en-us/windows/desktop/wininet/handling-authentication
 BOOL SaveURL(LPCTSTR lpszURL, LPCTSTR lpszFileName, BOOL bAllowInvalidCert, BOOL bShowMessageBoxOnError, URLDOWNLOADPROGRESSCALLBACK lpfnCallback)
 {
 	// Return var
