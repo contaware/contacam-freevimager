@@ -282,7 +282,7 @@ AVIR image resizing algorithm designed by Aleksey Vaneev
 --------------------------------------------------------
 
 - The code is thread-safe
-- Using avir.h from avir-master.zip
+- Using only avir.h
 https://github.com/avaneev/avir
 
 
