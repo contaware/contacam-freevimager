@@ -290,101 +290,78 @@ LONG CPreviewFileDlg::OnLoadDone(WPARAM wparam, LPARAM lparam)
 
 		CDib* pDib = m_DibStaticCtrl.GetDibHdrPointer();
 
+		// Size
+		t.Format(_T("%d x %d px\r\n"), pDib->GetWidth(), pDib->GetHeight());
+		s += t;
+
 		// Dpi
-		int nXDpi = pDib->GetXDpi();
-		int nYDpi = pDib->GetYDpi();
-		BOOL bDpi = TRUE;
-		if (nXDpi == 0 || nYDpi == 0)
-			bDpi = FALSE;
-
-		// Create Info Text
-		s.Format(_T("Size:\t%d x %d\r\n"),	pDib->GetWidth(),
-											pDib->GetHeight());
-
-		if (pDib->GetExifInfo()->bHasExif)
+		if (pDib->GetXDpi() != 0 && pDib->GetYDpi() != 0)
 		{
-			t.Format(_T("Depth:\t%s\r\n"), pDib->m_FileInfo.GetDepthName());
+			t.Format(_T("%d x %d dpi\r\n"), pDib->GetXDpi(), pDib->GetYDpi());
 			s += t;
+		}
 
-			if (bDpi)
-			{
-				t.Format(_T("Dpi:\t%d x %d\r\n"), nXDpi, nYDpi);
-				s += t;
-			}
-					
+		// Pixel Depth
+		t.Format(_T("%s\r\n"), pDib->m_FileInfo.GetDepthName());
+		s += t;
+
+		// Exif
+		if (pDib->GetExifInfo()->bHasExif)
+		{			
 			if (pDib->GetExifInfo()->CameraModel[0])
 			{
-				t.Format(_T("Model:\t%s\r\n"), CString(pDib->GetExifInfo()->CameraModel));
-				s+=t;
-			}
-
-			if (pDib->GetExifInfo()->Flash >= 0)
-			{
-				if (pDib->GetExifInfo()->Flash & 1)
-					t = _T("Flash:\tyes\r\n");
-				else
-					t = _T("Flash:\tno\r\n");
-				s+=t;
+				t.Format(_T("%s\r\n"), CString(pDib->GetExifInfo()->CameraModel));
+				s += t;
 			}
 
 			if (pDib->GetExifInfo()->ExposureTime)
 			{
-				t.Format(_T("Exp.:\t%.3f s "), (double)pDib->GetExifInfo()->ExposureTime); s+=t;
+				t.Format(_T("%.3f s"), (double)pDib->GetExifInfo()->ExposureTime);
+				s += t;
 				if (pDib->GetExifInfo()->ExposureTime <= 0.5)
 				{
 					t.Format(_T(" (1/%d)"), Round(1.0 / pDib->GetExifInfo()->ExposureTime));
-					s+=t;
+					s += t;
 				}
-				t.Format(_T("\r\n"));
-				s+=t;
+				s += _T("\r\n");
 			}
 
 			if (pDib->GetExifInfo()->ApertureFNumber)
 			{
-				t.Format(_T("Aperture:\tf/%.1f\r\n"), (double)pDib->GetExifInfo()->ApertureFNumber);
-				s+=t;
+				t.Format(_T("f/%.1f\r\n"), (double)pDib->GetExifInfo()->ApertureFNumber);
+				s += t;
 			}
 
-			if (pDib->GetExifInfo()->DateTime[0])
+			if (pDib->GetExifInfo()->Flash >= 0 && (pDib->GetExifInfo()->Flash & 1))
+				s += _T("\u21af\r\n");
+		}
+		// Gif
+		else if (::GetFileExt(sLastFileName) == _T(".gif"))
+		{
+			t.Format(_T("%s"), CDib::GIFGetVersion(sLastFileName, FALSE));
+			s += t;
+			if (m_DibStaticCtrl.GetGifAnimationThread()->IsRunning() &&
+				m_DibStaticCtrl.GetGifAnimationThread()->m_dwDibAnimationCount > 1)
 			{
-				CTime Time = CMetadata::GetDateTimeFromExifString(CString(pDib->GetExifInfo()->DateTime));
-				CString sTime = ::MakeDateLocalFormat(Time) + _T(" ") + ::MakeTimeLocalFormat(Time, TRUE);
-				t.Format(_T("Taken:\t%s"), sTime);
-				s+=t;
+				// Note: use the white square with black shadow because only Windows 10
+				//       supports the correct frame symbol \U0001f39e
+				t.Format(_T(", %d\u2750"),	m_DibStaticCtrl.GetGifAnimationThread()->m_dwDibAnimationCount > 1 ?
+											m_DibStaticCtrl.GetGifAnimationThread()->m_dwDibAnimationCount : 1);
+				s += t;
 			}
-			else
-				s += (_T("Created:\t") + GetCreationFileTime(sLastFileName));
+			s += _T("\r\n");
+		}
+
+		// Time
+		if (pDib->GetExifInfo()->bHasExif && pDib->GetExifInfo()->DateTime[0])
+		{
+			CTime Time = CMetadata::GetDateTimeFromExifString(CString(pDib->GetExifInfo()->DateTime));
+			CString sTime = ::MakeDateLocalFormat(Time) + _T(" ") + ::MakeTimeLocalFormat(Time, TRUE);
+			t.Format(_T("%s"), sTime);
+			s += t;
 		}
 		else
-		{
-			t.Format(_T("Depth:\t%s\r\n"), pDib->m_FileInfo.GetDepthName());
-			s += t;
-
-			t.Format(_T("Image:\t%d %s\r\n"),		(pDib->GetImageSize() >= 1024) ? pDib->GetImageSize() >> 10 : pDib->GetImageSize(),
-													(pDib->GetImageSize() >= 1024) ? ML_STRING(1243, "KB") : ML_STRING(1244, "Bytes"));
-			s += t;
-
-			if (bDpi)
-			{
-				t.Format(_T("Dpi:\t%d x %d\r\n"), nXDpi, nYDpi);
-				s += t;
-			}
-
-			if (::GetFileExt(sLastFileName) == _T(".gif"))
-			{
-				t.Format(_T("Ver:\t%s\r\n"), CDib::GIFGetVersion(sLastFileName, FALSE));
-				s += t;
-				if (m_DibStaticCtrl.GetGifAnimationThread()->IsRunning() &&
-					m_DibStaticCtrl.GetGifAnimationThread()->m_dwDibAnimationCount > 1)
-				{
-					t.Format(_T("Frames:\t%d\r\n"),	m_DibStaticCtrl.GetGifAnimationThread()->m_dwDibAnimationCount > 1 ?
-													m_DibStaticCtrl.GetGifAnimationThread()->m_dwDibAnimationCount : 1);
-					s += t;
-				}
-			}
-
-			s += (_T("Created:\t") + GetCreationFileTime(sLastFileName));
-		}
+			s += GetCreationFileTime(sLastFileName);
 
 		// Leave CS
 		m_csDibHdr.LeaveCriticalSection();
