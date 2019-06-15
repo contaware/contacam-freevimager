@@ -972,16 +972,6 @@ protected:
 	afx_msg void OnUpdateOsdOfftimeoutInfinite(CCmdUI* pCmdUI);
 	afx_msg void OnOsdFontcolorSelect();
 	afx_msg void OnUpdateOsdBkgcolorImage(CCmdUI* pCmdUI);
-	afx_msg void OnOsdFontfaceArial();
-	afx_msg void OnUpdateOsdFontfaceArial(CCmdUI* pCmdUI);
-	afx_msg void OnOsdFontfaceTimesnewroman();
-	afx_msg void OnUpdateOsdFontfaceTimesnewroman(CCmdUI* pCmdUI);
-	afx_msg void OnOsdFontfaceComicsansms();
-	afx_msg void OnUpdateOsdFontfaceComicsansms(CCmdUI* pCmdUI);
-	afx_msg void OnOsdFontfaceVerdana();
-	afx_msg void OnUpdateOsdFontfaceVerdana(CCmdUI* pCmdUI);
-	afx_msg void OnOsdFontfaceCouriernew();
-	afx_msg void OnUpdateOsdFontfaceCouriernew(CCmdUI* pCmdUI);
 	afx_msg void OnOsdOpacity100();
 	afx_msg void OnUpdateOsdOpacity100(CCmdUI* pCmdUI);
 	afx_msg void OnOsdOpacity80();

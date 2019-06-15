@@ -62,8 +62,6 @@ public:
 
 	void SetAutoSize(BOOL bAutoSize) {m_bAutoSize = bAutoSize;};
 	BOOL DoAutoSize() const {return m_bAutoSize;};
-	void SetFontFace(const CString& sFontFace);
-	CString GetFontFace() const {return m_sFontFace;};
 	void SetFontSize(int nFontSize);
 	int GetFontSize() const {return m_nFontSize;};
 	void SetFontColor(COLORREF crFontColor);
@@ -133,7 +131,6 @@ protected:
 	int m_nMinDlgSizeY;
 	BOOL m_bFontCreated;
 	int m_nFontSize;
-	CString m_sFontFace;
 	COLORREF m_crFontColor;
 	COLORREF m_crBackgroundColor;
 	BOOL m_bAutoSize;

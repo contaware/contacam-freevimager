@@ -570,14 +570,6 @@ BEGIN
                 MENUITEM "Same as for Image",           ID_OSD_BKGCOLOR_IMAGE
                 MENUITEM "Select...",                   ID_OSD_BKGCOLOR_SELECT
             END
-            POPUP "Font Face"
-            BEGIN
-                MENUITEM "Arial",                       ID_OSD_FONTFACE_ARIAL
-                MENUITEM "Times New Roman",             ID_OSD_FONTFACE_TIMESNEWROMAN
-                MENUITEM "Comic Sans MS",               ID_OSD_FONTFACE_COMICSANSMS
-                MENUITEM "Verdana",                     ID_OSD_FONTFACE_VERDANA
-                MENUITEM "Courier New",                 ID_OSD_FONTFACE_COURIERNEW
-            END
             POPUP "Font Size"
             BEGIN
                 MENUITEM "Small",                       ID_OSD_FONTSIZE_SMALL
@@ -634,14 +626,6 @@ BEGIN
         BEGIN
             MENUITEM "Same as for Image",           ID_OSD_BKGCOLOR_IMAGE
             MENUITEM "Select...",                   ID_OSD_BKGCOLOR_SELECT
-        END
-        POPUP "Font Face"
-        BEGIN
-            MENUITEM "Arial",                       ID_OSD_FONTFACE_ARIAL
-            MENUITEM "Times New Roman",             ID_OSD_FONTFACE_TIMESNEWROMAN
-            MENUITEM "Comic Sans MS",               ID_OSD_FONTFACE_COMICSANSMS
-            MENUITEM "Verdana",                     ID_OSD_FONTFACE_VERDANA
-            MENUITEM "Courier New",                 ID_OSD_FONTFACE_COURIERNEW
         END
         POPUP "Font Size"
         BEGIN
@@ -3459,17 +3443,10 @@ BEGIN
     ID_OSD_OFFTIMEOUT_6     "Set the off timeout to 6 seconds\n6 s"
     ID_OSD_OFFTIMEOUT_7     "Set the off timeout to 7 seconds\n7 s"
     ID_OSD_OFFTIMEOUT_INFINITE "Never turn off the OSD\nOSD Never Off"
-    ID_OSD_FONTFACE_ARIAL   "Use the arial font\nArial Font"
-    ID_OSD_FONTFACE_TIMESNEWROMAN 
-                            "Use the times new roman font\nTimes New Romans Font"
 END
 
 STRINGTABLE
 BEGIN
-    ID_OSD_FONTFACE_COMICSANSMS 
-                            "Use the comic sans ms font\nComic Sans MS Font"
-    ID_OSD_FONTFACE_VERDANA "Use the verdana font\nVerdana Font"
-    ID_OSD_FONTFACE_COURIERNEW "Use the courier new font\nCourier New Font"
     ID_OSD_OPACITY_100      "Choose a opacity of 100 %\nOpacity 100 %"
     ID_OSD_OPACITY_80       "Choose a opacity of 80 %\nOpacity 80 %"
     ID_OSD_OPACITY_60       "Choose a opacity of 60 %\nOpacity 60 %"

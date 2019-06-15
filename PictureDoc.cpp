@@ -200,16 +200,6 @@ BEGIN_MESSAGE_MAP(CPictureDoc, CUImagerDoc)
 	ON_UPDATE_COMMAND_UI(ID_OSD_OFFTIMEOUT_INFINITE, OnUpdateOsdOfftimeoutInfinite)
 	ON_COMMAND(ID_OSD_FONTCOLOR_SELECT, OnOsdFontcolorSelect)
 	ON_UPDATE_COMMAND_UI(ID_OSD_BKGCOLOR_IMAGE, OnUpdateOsdBkgcolorImage)
-	ON_COMMAND(ID_OSD_FONTFACE_ARIAL, OnOsdFontfaceArial)
-	ON_UPDATE_COMMAND_UI(ID_OSD_FONTFACE_ARIAL, OnUpdateOsdFontfaceArial)
-	ON_COMMAND(ID_OSD_FONTFACE_TIMESNEWROMAN, OnOsdFontfaceTimesnewroman)
-	ON_UPDATE_COMMAND_UI(ID_OSD_FONTFACE_TIMESNEWROMAN, OnUpdateOsdFontfaceTimesnewroman)
-	ON_COMMAND(ID_OSD_FONTFACE_COMICSANSMS, OnOsdFontfaceComicsansms)
-	ON_UPDATE_COMMAND_UI(ID_OSD_FONTFACE_COMICSANSMS, OnUpdateOsdFontfaceComicsansms)
-	ON_COMMAND(ID_OSD_FONTFACE_VERDANA, OnOsdFontfaceVerdana)
-	ON_UPDATE_COMMAND_UI(ID_OSD_FONTFACE_VERDANA, OnUpdateOsdFontfaceVerdana)
-	ON_COMMAND(ID_OSD_FONTFACE_COURIERNEW, OnOsdFontfaceCouriernew)
-	ON_UPDATE_COMMAND_UI(ID_OSD_FONTFACE_COURIERNEW, OnUpdateOsdFontfaceCouriernew)
 	ON_COMMAND(ID_OSD_OPACITY_100, OnOsdOpacity100)
 	ON_UPDATE_COMMAND_UI(ID_OSD_OPACITY_100, OnUpdateOsdOpacity100)
 	ON_COMMAND(ID_OSD_OPACITY_80, OnOsdOpacity80)
@@ -10238,71 +10228,6 @@ void CPictureDoc::OnUpdateOsdOfftimeoutInfinite(CCmdUI* pCmdUI)
 {
 	if (m_pOsdDlg)
 		pCmdUI->SetCheck(m_pOsdDlg->GetTimeout() == COsdDlg::TIMEOUT_INFINITE ? 1 : 0);
-	pCmdUI->Enable(m_bEnableOsd);
-}
-
-void CPictureDoc::OnOsdFontfaceArial() 
-{
-	if (m_pOsdDlg)
-		m_pOsdDlg->SetFontFace(_T("Arial"));	
-}
-
-void CPictureDoc::OnUpdateOsdFontfaceArial(CCmdUI* pCmdUI) 
-{
-	if (m_pOsdDlg)
-		pCmdUI->SetCheck(m_pOsdDlg->GetFontFace() == _T("Arial") ? 1 : 0);
-	pCmdUI->Enable(m_bEnableOsd);
-}
-
-void CPictureDoc::OnOsdFontfaceTimesnewroman() 
-{
-	if (m_pOsdDlg)
-		m_pOsdDlg->SetFontFace(_T("Times New Roman"));
-}
-
-void CPictureDoc::OnUpdateOsdFontfaceTimesnewroman(CCmdUI* pCmdUI) 
-{
-	if (m_pOsdDlg)
-		pCmdUI->SetCheck(m_pOsdDlg->GetFontFace() == _T("Times New Roman") ? 1 : 0);
-	pCmdUI->Enable(m_bEnableOsd);
-}
-
-void CPictureDoc::OnOsdFontfaceComicsansms() 
-{
-	if (m_pOsdDlg)
-		m_pOsdDlg->SetFontFace(_T("Comic Sans MS"));
-}
-
-void CPictureDoc::OnUpdateOsdFontfaceComicsansms(CCmdUI* pCmdUI) 
-{
-	if (m_pOsdDlg)
-		pCmdUI->SetCheck(m_pOsdDlg->GetFontFace() == _T("Comic Sans MS") ? 1 : 0);
-	pCmdUI->Enable(m_bEnableOsd);
-}
-
-void CPictureDoc::OnOsdFontfaceVerdana() 
-{
-	if (m_pOsdDlg)
-		m_pOsdDlg->SetFontFace(_T("Verdana"));
-}
-
-void CPictureDoc::OnUpdateOsdFontfaceVerdana(CCmdUI* pCmdUI) 
-{
-	if (m_pOsdDlg)
-		pCmdUI->SetCheck(m_pOsdDlg->GetFontFace() == _T("Verdana") ? 1 : 0);
-	pCmdUI->Enable(m_bEnableOsd);
-}
-
-void CPictureDoc::OnOsdFontfaceCouriernew() 
-{
-	if (m_pOsdDlg)
-		m_pOsdDlg->SetFontFace(_T("Courier New"));	
-}
-
-void CPictureDoc::OnUpdateOsdFontfaceCouriernew(CCmdUI* pCmdUI) 
-{
-	if (m_pOsdDlg)
-		pCmdUI->SetCheck(m_pOsdDlg->GetFontFace() == _T("Courier New") ? 1 : 0);
 	pCmdUI->Enable(m_bEnableOsd);
 }
 

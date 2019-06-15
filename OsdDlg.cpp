@@ -349,17 +349,6 @@ void COsdDlg::OnSize(UINT nType, int cx, int cy)
 	CDialog::OnSize(nType, cx, cy);
 }
 
-void COsdDlg::SetFontFace(const CString& sFontFace)
-{
-	if (m_sFontFace != sFontFace)
-	{
-		m_bFontCreated = FALSE;
-		m_sFontFace = sFontFace;
-		m_bAutoSizeNow = m_bAutoSize;
-		Invalidate();
-	}
-}
-
 void COsdDlg::SetFontSize(int nFontSize)
 {
 	if (m_nFontSize != nFontSize)
@@ -430,7 +419,7 @@ void COsdDlg::OnPaint()
 							CLIP_CHARACTER_PRECIS,
 							ANTIALIASED_QUALITY,
 							DEFAULT_PITCH | FF_DONTCARE,
-							m_sFontFace);
+							g_szDefaultFontFace);
 
 		m_FontDesc.DeleteObject();
 		m_FontDesc.CreateFont(	-nFontHeightDesc,
@@ -444,7 +433,7 @@ void COsdDlg::OnPaint()
 								CLIP_CHARACTER_PRECIS,
 								ANTIALIASED_QUALITY,
 								DEFAULT_PITCH | FF_DONTCARE,
-								m_sFontFace);
+								g_szDefaultFontFace);
 
 		m_bFontCreated = TRUE;
 	}
@@ -1205,7 +1194,6 @@ void COsdDlg::Defaults()
 	m_crFontColor = RGB(192,192,192);
 	m_crBackgroundColor = RGB(0,0,0);
 	m_bUsePictureDocBackgroundColor = FALSE;
-	m_sFontFace = _T("Arial");
 	m_nMaxOpacity = DEFAULT_MAX_OPACITY;
 	m_dwDisplayState =	DISPLAY_METADATADATE	|
 						DISPLAY_LOCATION		|
@@ -1223,7 +1211,6 @@ void COsdDlg::LoadSettings()
 	m_crFontColor = (COLORREF)pApp->GetProfileInt(sSection,	_T("FontColor"), RGB(192,192,192));
 	m_crBackgroundColor = (COLORREF)pApp->GetProfileInt(sSection,	_T("BackgroundColor"), RGB(0,0,0));
 	m_bUsePictureDocBackgroundColor = (BOOL)pApp->GetProfileInt(sSection,	_T("UsePictureDocBackgroundColor"), FALSE);
-	m_sFontFace = pApp->GetProfileString(sSection, _T("FontFace"), _T("Arial"));
 	m_nMaxOpacity = pApp->GetProfileInt(sSection,	_T("MaxOpacity"), DEFAULT_MAX_OPACITY);
 	m_dwDisplayState = (DWORD)pApp->GetProfileInt(sSection, _T("DisplayState"),	DISPLAY_METADATADATE	|
 																				DISPLAY_LOCATION		|
@@ -1252,7 +1239,6 @@ void COsdDlg::SaveSettings()
 	pApp->WriteProfileInt(sSection,	_T("FontColor"), m_crFontColor);
 	pApp->WriteProfileInt(sSection,	_T("BackgroundColor"), m_crBackgroundColor);
 	pApp->WriteProfileInt(sSection,	_T("UsePictureDocBackgroundColor"), m_bUsePictureDocBackgroundColor);
-	pApp->WriteProfileString(sSection, _T("FontFace"), m_sFontFace);
 	pApp->WriteProfileInt(sSection,	_T("MaxOpacity"), m_nMaxOpacity);
 	pApp->WriteProfileInt(sSection, _T("DisplayState"),	m_dwDisplayState);
 }
