@@ -314,11 +314,17 @@ LONG CPreviewFileDlg::OnLoadDone(WPARAM wparam, LPARAM lparam)
 				s += t;
 			}
 
+			if (pDib->GetExifInfo()->Flash >= 0 && (pDib->GetExifInfo()->Flash & 1))
+				s += _T("\u21af\r\n");
+
 			if (pDib->GetExifInfo()->ExposureTime)
 			{
-				t.Format(_T("%.3f s"), (double)pDib->GetExifInfo()->ExposureTime);
+				if (pDib->GetExifInfo()->ExposureTime < 0.010f)
+					t.Format(_T("%.4f s"), (double)pDib->GetExifInfo()->ExposureTime);
+				else
+					t.Format(_T("%.3f s"), (double)pDib->GetExifInfo()->ExposureTime);
 				s += t;
-				if (pDib->GetExifInfo()->ExposureTime <= 0.5)
+				if (pDib->GetExifInfo()->ExposureTime <= 0.5f)
 				{
 					t.Format(_T(" (1/%d)"), Round(1.0 / pDib->GetExifInfo()->ExposureTime));
 					s += t;
@@ -331,9 +337,6 @@ LONG CPreviewFileDlg::OnLoadDone(WPARAM wparam, LPARAM lparam)
 				t.Format(_T("f/%.1f\r\n"), (double)pDib->GetExifInfo()->ApertureFNumber);
 				s += t;
 			}
-
-			if (pDib->GetExifInfo()->Flash >= 0 && (pDib->GetExifInfo()->Flash & 1))
-				s += _T("\u21af\r\n");
 		}
 		// Gif
 		else if (::GetFileExt(sLastFileName) == _T(".gif"))
