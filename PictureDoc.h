@@ -1002,10 +1002,6 @@ protected:
 	afx_msg void OnUpdateOsdDisplayExposuretime(CCmdUI* pCmdUI);
 	afx_msg void OnOsdDisplayAperture();
 	afx_msg void OnUpdateOsdDisplayAperture(CCmdUI* pCmdUI);
-	afx_msg void OnOsdDisplayIsoequiv();
-	afx_msg void OnUpdateOsdDisplayIsoequiv(CCmdUI* pCmdUI);
-	afx_msg void OnOsdDisplayFocallength();
-	afx_msg void OnUpdateOsdDisplayFocallength(CCmdUI* pCmdUI);
 	afx_msg void OnOsdClose();
 	afx_msg void OnOsdDisplayFilename();
 	afx_msg void OnUpdateOsdDisplayFilename(CCmdUI* pCmdUI);

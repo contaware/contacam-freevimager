@@ -563,8 +563,6 @@ BEGIN
                 MENUITEM "Flash Used",                  ID_OSD_DISPLAY_FLASH
                 MENUITEM "Exposure Time",               ID_OSD_DISPLAY_EXPOSURETIME
                 MENUITEM "Aperture",                    ID_OSD_DISPLAY_APERTURE
-                MENUITEM "ISO Equiv.",                  ID_OSD_DISPLAY_ISOEQUIV
-                MENUITEM "Focal Length",                ID_OSD_DISPLAY_FOCALLENGTH
             END
             MENUITEM SEPARATOR
             POPUP "Background Color"
@@ -630,8 +628,6 @@ BEGIN
             MENUITEM "Flash Used",                  ID_OSD_DISPLAY_FLASH
             MENUITEM "Exposure Time",               ID_OSD_DISPLAY_EXPOSURETIME
             MENUITEM "Aperture",                    ID_OSD_DISPLAY_APERTURE
-            MENUITEM "ISO Equiv.",                  ID_OSD_DISPLAY_ISOEQUIV
-            MENUITEM "Focal Length",                ID_OSD_DISPLAY_FOCALLENGTH
         END
         MENUITEM SEPARATOR
         POPUP "Background Color"
@@ -3485,13 +3481,10 @@ BEGIN
     ID_OSD_DISPLAY_FLASH    "Display whether the flash has been used or not\nDisplay Flash Used"
     ID_OSD_DISPLAY_EXPOSURETIME 
                             "Display the exposure time\nDisplay Exposure Time"
-    ID_OSD_DISPLAY_FOCALLENGTH 
-                            "Display the focal length\nDisplay Focal Length"
 END
 
 STRINGTABLE
 BEGIN
-    ID_OSD_DISPLAY_ISOEQUIV "Display the iso equivalent\nDisplay ISO Equivalent"
     ID_OSD_DISPLAY_APERTURE "Display the aperture\nDisplay Aperture"
     ID_OSD_CLOSE            "Close the on-screen display\nClose"
     ID_OSD_DISPLAY_FILENAME "Display the file name\nDisplay File Name"

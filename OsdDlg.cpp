@@ -1275,18 +1275,11 @@ void COsdDlg::UpdateDisplay()
 		// Top Array
 		m_TopArray.RemoveAll();
 
-		// Sizes and Compression
+		// Size
 		if (DoDisplayState(COsdDlg::DISPLAY_SIZESCOMPRESSION))
 		{
 			// Image Dimension
-			t.Format(_T("%d x %d"), m_pDoc->m_pDib->GetWidth(), m_pDoc->m_pDib->GetHeight());
-			if (t != _T(""))
-				m_TopArray.Add(t);
-
-			// Image Size
-			t.Format(_T("%d %s"),
-					(m_pDoc->m_pDib->GetImageSize() >= 1024) ? m_pDoc->m_pDib->GetImageSize() >> 10 : m_pDoc->m_pDib->GetImageSize(),
-					(m_pDoc->m_pDib->GetImageSize() >= 1024) ? _T("KB") : _T("Bytes"));
+			t.Format(_T("%d x %d px"), m_pDoc->m_pDib->GetWidth(), m_pDoc->m_pDib->GetHeight());
 			if (t != _T(""))
 				m_TopArray.Add(t);
 		}
@@ -1313,7 +1306,7 @@ void COsdDlg::UpdateDisplay()
 		if (DoDisplayState(COsdDlg::DISPLAY_SIZESCOMPRESSION))
 		{
 			// Image Dimension
-			t.Format(_T("%d x %d"), m_pDoc->m_pDib->GetWidth(), m_pDoc->m_pDib->GetHeight());
+			t.Format(_T("%d x %d px"), m_pDoc->m_pDib->GetWidth(), m_pDoc->m_pDib->GetHeight());
 			if (t != _T(""))
 				m_TopArray.Add(t);
 
@@ -1325,20 +1318,13 @@ void COsdDlg::UpdateDisplay()
 				bDpi = FALSE;
 			if (bDpi)
 			{
-				t.Format(_T("%d x %d Dpi"), nXDpi, nYDpi);
+				t.Format(_T("%d x %d dpi"), nXDpi, nYDpi);
 				if (t != _T(""))
 					m_TopArray.Add(t);
 			}
 
 			// Depth & Compression
 			t = m_pDoc->m_pDib->m_FileInfo.GetDepthName();
-			if (t != _T(""))
-				m_TopArray.Add(t);
-
-			// File Size
-			t.Format(_T("%d %s"),
-					(m_pDoc->m_pDib->GetFileSize() >= 1024) ? m_pDoc->m_pDib->GetFileSize() >> 10 : m_pDoc->m_pDib->GetFileSize(),
-					(m_pDoc->m_pDib->GetFileSize() >= 1024) ? _T("KB") : _T("Bytes"));
 			if (t != _T(""))
 				m_TopArray.Add(t);
 		}
@@ -1497,23 +1483,19 @@ void COsdDlg::UpdateDisplay()
 
 		// Exif Camera Data
 		m_ExifArray.RemoveAll();
-		if (DoDisplayState(COsdDlg::DISPLAY_FLASH) &&
-			m_pDoc->m_pDib->GetExifInfo()->Flash >= 0)
+		if (DoDisplayState(COsdDlg::DISPLAY_FLASH)		&&
+			m_pDoc->m_pDib->GetExifInfo()->Flash >= 0	&&
+			(m_pDoc->m_pDib->GetExifInfo()->Flash & 1))
 		{
-			if (m_pDoc->m_pDib->GetExifInfo()->Flash & 1)
-				t = _T("Flash: yes");
-			else
-				t = _T("Flash: no");
-			if (t != _T(""))
-				m_ExifArray.Add(t);
+			m_ExifArray.Add(_T("\u21af"));
 		}
 		if (DoDisplayState(COsdDlg::DISPLAY_EXPOSURETIME) &&
 			m_pDoc->m_pDib->GetExifInfo()->ExposureTime)
 		{
 			if (m_pDoc->m_pDib->GetExifInfo()->ExposureTime < 0.010f)
-				m.Format(_T("Exposure: %.4f s"), (double)m_pDoc->m_pDib->GetExifInfo()->ExposureTime);
+				m.Format(_T("%.4f s"), (double)m_pDoc->m_pDib->GetExifInfo()->ExposureTime);
 			else
-				m.Format(_T("Exposure: %.3f s"), (double)m_pDoc->m_pDib->GetExifInfo()->ExposureTime);
+				m.Format(_T("%.3f s"), (double)m_pDoc->m_pDib->GetExifInfo()->ExposureTime);
 			t = m;
 			if (m_pDoc->m_pDib->GetExifInfo()->ExposureTime <= 0.5f)
 			{
@@ -1526,29 +1508,9 @@ void COsdDlg::UpdateDisplay()
 		if (DoDisplayState(COsdDlg::DISPLAY_APERTURE) &&
 			m_pDoc->m_pDib->GetExifInfo()->ApertureFNumber)
 		{
-			m.Format(_T("Aperture: f/%.1f"), (double)m_pDoc->m_pDib->GetExifInfo()->ApertureFNumber);
+			m.Format(_T("f/%.1f"), (double)m_pDoc->m_pDib->GetExifInfo()->ApertureFNumber);
 			if (m != _T(""))
 				m_ExifArray.Add(m);
-		}
-		if (DoDisplayState(COsdDlg::DISPLAY_ISOEQUIV) &&
-			m_pDoc->m_pDib->GetExifInfo()->ISOequivalent)
-		{
-			m.Format(_T("ISO equiv.: %2d"), (int)m_pDoc->m_pDib->GetExifInfo()->ISOequivalent);
-			if (m != _T(""))
-				m_ExifArray.Add(m);
-		}
-		if (DoDisplayState(COsdDlg::DISPLAY_FOCALLENGTH) &&
-			m_pDoc->m_pDib->GetExifInfo()->FocalLength)
-		{
-			m.Format(_T("Focal length: %.1fmm"), (double)m_pDoc->m_pDib->GetExifInfo()->FocalLength);
-			t = m;
-			if (m_pDoc->m_pDib->GetExifInfo()->FocalLength35mmEquiv)
-			{
-				m.Format(_T(" (35mm equiv.: %dmm)"), m_pDoc->m_pDib->GetExifInfo()->FocalLength35mmEquiv);
-				t += m;
-			}
-			if (t != _T(""))
-				m_ExifArray.Add(t);
 		}	
 	}
 

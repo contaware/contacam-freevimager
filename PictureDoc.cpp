@@ -230,10 +230,6 @@ BEGIN_MESSAGE_MAP(CPictureDoc, CUImagerDoc)
 	ON_UPDATE_COMMAND_UI(ID_OSD_DISPLAY_EXPOSURETIME, OnUpdateOsdDisplayExposuretime)
 	ON_COMMAND(ID_OSD_DISPLAY_APERTURE, OnOsdDisplayAperture)
 	ON_UPDATE_COMMAND_UI(ID_OSD_DISPLAY_APERTURE, OnUpdateOsdDisplayAperture)
-	ON_COMMAND(ID_OSD_DISPLAY_ISOEQUIV, OnOsdDisplayIsoequiv)
-	ON_UPDATE_COMMAND_UI(ID_OSD_DISPLAY_ISOEQUIV, OnUpdateOsdDisplayIsoequiv)
-	ON_COMMAND(ID_OSD_DISPLAY_FOCALLENGTH, OnOsdDisplayFocallength)
-	ON_UPDATE_COMMAND_UI(ID_OSD_DISPLAY_FOCALLENGTH, OnUpdateOsdDisplayFocallength)
 	ON_COMMAND(ID_OSD_CLOSE, OnOsdClose)
 	ON_COMMAND(ID_OSD_DISPLAY_FILENAME, OnOsdDisplayFilename)
 	ON_UPDATE_COMMAND_UI(ID_OSD_DISPLAY_FILENAME, OnUpdateOsdDisplayFilename)
@@ -10476,32 +10472,6 @@ void CPictureDoc::OnUpdateOsdDisplayAperture(CCmdUI* pCmdUI)
 {
 	if (m_pOsdDlg)
 		pCmdUI->SetCheck(m_pOsdDlg->DoDisplayState(COsdDlg::DISPLAY_APERTURE) ? 1 : 0);
-	pCmdUI->Enable(m_bEnableOsd);
-}
-
-void CPictureDoc::OnOsdDisplayIsoequiv() 
-{
-	if (m_pOsdDlg)
-		m_pOsdDlg->ToggleDisplayState(COsdDlg::DISPLAY_ISOEQUIV);
-}
-
-void CPictureDoc::OnUpdateOsdDisplayIsoequiv(CCmdUI* pCmdUI) 
-{
-	if (m_pOsdDlg)
-		pCmdUI->SetCheck(m_pOsdDlg->DoDisplayState(COsdDlg::DISPLAY_ISOEQUIV) ? 1 : 0);
-	pCmdUI->Enable(m_bEnableOsd);
-}
-
-void CPictureDoc::OnOsdDisplayFocallength() 
-{
-	if (m_pOsdDlg)
-		m_pOsdDlg->ToggleDisplayState(COsdDlg::DISPLAY_FOCALLENGTH);
-}
-
-void CPictureDoc::OnUpdateOsdDisplayFocallength(CCmdUI* pCmdUI) 
-{
-	if (m_pOsdDlg)
-		pCmdUI->SetCheck(m_pOsdDlg->DoDisplayState(COsdDlg::DISPLAY_FOCALLENGTH) ? 1 : 0);
 	pCmdUI->Enable(m_bEnableOsd);
 }
 

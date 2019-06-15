@@ -35,9 +35,7 @@ public:
 			DISPLAY_HEADLINEDESCRIPTION=32,
 			DISPLAY_FLASH=64,
 			DISPLAY_EXPOSURETIME=128,
-			DISPLAY_APERTURE=256,
-			DISPLAY_ISOEQUIV=512,
-			DISPLAY_FOCALLENGTH=1024};
+			DISPLAY_APERTURE=256};
 	
 	COsdDlg(CPictureDoc* pDoc);
 	virtual ~COsdDlg() {m_Font.DeleteObject(); m_FontDesc.DeleteObject();};
