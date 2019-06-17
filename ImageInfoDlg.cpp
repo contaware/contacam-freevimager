@@ -1876,7 +1876,7 @@ void CImageInfoDlg::DisplayMetadata()
 	else if (m_nMetadataGroupView == XMP)
 	{
 		// Creator Contact Info
-		t = ML_STRING(1617, "_____________ Contact ______________") + _T("\r\n");
+		t = _T("[") + ML_STRING(1577, "Contact") + _T("]\r\n");
 		s+=t;
 		
 		if (m_pDoc->m_pDib->GetIptcFromXmpInfo()->Byline != _T(""))
@@ -1969,7 +1969,7 @@ void CImageInfoDlg::DisplayMetadata()
 		}
 
 		// Content
-		t = _T("\r\n") + ML_STRING(1618, "_____________ Content ______________") + _T("\r\n");
+		t = _T("\r\n[") + ML_STRING(1578, "Content") + _T("]\r\n");
 		s+=t;
 		
 		if (m_pDoc->m_pDib->GetIptcFromXmpInfo()->Headline != _T(""))
@@ -2072,7 +2072,7 @@ void CImageInfoDlg::DisplayMetadata()
 		}
 
 		// Image
-		t = _T("\r\n") + ML_STRING(1619, "_____________ Image ________________") + _T("\r\n");
+		t = _T("\r\n[") + ML_STRING(1579, "Image") + _T("]\r\n");
 		s+=t;
 
 		if (m_pDoc->m_pDib->GetIptcFromXmpInfo()->DateCreated != _T(""))
@@ -2160,7 +2160,7 @@ void CImageInfoDlg::DisplayMetadata()
 		}
 
 		// Status
-		t = _T("\r\n") + ML_STRING(1620, "_____________ Status _______________") + _T("\r\n");
+		t = _T("\r\n[") + ML_STRING(1580, "Status") + _T("]\r\n");
 		s+=t;
 
 		if (m_pDoc->m_pDib->GetIptcFromXmpInfo()->ObjectName != _T(""))
@@ -2255,7 +2255,7 @@ void CImageInfoDlg::DisplayMetadata()
 	else if (m_nMetadataGroupView == IPTCLEGACY)
 	{
 		// Creator Contact Info
-		t = ML_STRING(1617, "_____________ Contact ______________") + _T("\r\n");
+		t = _T("[") + ML_STRING(1577, "Contact") + _T("]\r\n");
 		s+=t;
 
 		if (m_pDoc->m_pDib->GetIptcLegacyInfo()->Byline != _T(""))
@@ -2277,7 +2277,7 @@ void CImageInfoDlg::DisplayMetadata()
 		}
 
 		// Content
-		t = _T("\r\n") + ML_STRING(1618, "_____________ Content ______________") + _T("\r\n");
+		t = _T("\r\n[") + ML_STRING(1578, "Content") + _T("]\r\n");
 		s+=t;
 
 		if (m_pDoc->m_pDib->GetIptcLegacyInfo()->Headline != _T(""))
@@ -2359,7 +2359,7 @@ void CImageInfoDlg::DisplayMetadata()
 		}
 
 		// Image
-		t = _T("\r\n") + ML_STRING(1619, "_____________ Image ________________") + _T("\r\n");
+		t = _T("\r\n[") + ML_STRING(1579, "Image") + _T("]\r\n");
 		s+=t;
 		
 		if (m_pDoc->m_pDib->GetIptcLegacyInfo()->DateCreated != _T(""))
@@ -2399,7 +2399,7 @@ void CImageInfoDlg::DisplayMetadata()
 		}
 
 		// Status
-		t = _T("\r\n") + ML_STRING(1620, "_____________ Status _______________") + _T("\r\n");
+		t = _T("\r\n[") + ML_STRING(1580, "Status") + _T("]\r\n");
 		s+=t;
 
 		if (m_pDoc->m_pDib->GetIptcLegacyInfo()->ObjectName != _T(""))

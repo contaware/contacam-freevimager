@@ -3757,10 +3757,6 @@ END
 STRINGTABLE
 BEGIN
     IDS_STRING1616          "Copyright status"
-    IDS_STRING1617          "_____________ Contact ______________"
-    IDS_STRING1618          "_____________ Content ______________"
-    IDS_STRING1619          "_____________ Image ________________"
-    IDS_STRING1620          "_____________ Status _______________"
     IDS_STRING1621          "Creator:\t%s"
     IDS_STRING1622          "Creator's job title:\t%s"
     IDS_STRING1623          "Address:\t%s"
