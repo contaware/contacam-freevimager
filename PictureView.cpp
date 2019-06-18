@@ -4339,7 +4339,7 @@ void CPictureView::UpdateCropStatusText()
 		CString sCropRect;
 		if (((CUImagerApp*)::AfxGetApp())->m_nCoordinateUnit == COORDINATES_PIX)
 		{
-			sCropRect.Format(	ML_STRING(1234, "W=%dpx , H=%dpx , W/H=%0.2f (l=%d,t=%d,r=%d,b=%d)") + _T(" ") +
+			sCropRect.Format(	_T("\u2194=%dpx  \u2195=%dpx  \u2194/\u2195=%0.2f  (\u2190=%d  \u2191=%d  \u2192=%d  \u2193=%d) ") +
 								ML_STRING(1235, "*** CTRL Lock Ratio, ENTER Apply, ESC Cancel ***"),
 								pDoc->m_CropDocRect.Width(),
 								pDoc->m_CropDocRect.Height(),
@@ -4361,7 +4361,7 @@ void CPictureView::UpdateCropStatusText()
 				nYDpi = pDoc->m_pDib->GetYDpi();
 			if (nYDpi <= 0)
 				nYDpi = DEFAULT_DPI;
-			sCropRect.Format(	ML_STRING(1236, "W=%0.2fin , H=%0.2fin , W/H=%0.2f (l=%0.2f,t=%0.2f,r=%0.2f,b=%0.2f)") + _T(" ") +
+			sCropRect.Format(	_T("\u2194=%0.2fin  \u2195=%0.2fin  \u2194/\u2195=%0.2f  (\u2190=%0.2f  \u2191=%0.2f  \u2192=%0.2f  \u2193=%0.2f) ") +
 								ML_STRING(1235, "*** CTRL Lock Ratio, ENTER Apply, ESC Cancel ***"),
 								(double)pDoc->m_CropDocRect.Width()		/ (double)nXDpi,
 								(double)pDoc->m_CropDocRect.Height()	/ (double)nYDpi,
@@ -4383,7 +4383,7 @@ void CPictureView::UpdateCropStatusText()
 				nYDpi = pDoc->m_pDib->GetYDpi();
 			if (nYDpi <= 0)
 				nYDpi = DEFAULT_DPI;
-			sCropRect.Format(	ML_STRING(1237, "W=%0.2fcm , H=%0.2fcm , W/H=%0.2f (l=%0.2f,t=%0.2f,r=%0.2f,b=%0.2f)") + _T(" ") +
+			sCropRect.Format(	_T("\u2194=%0.2fcm  \u2195=%0.2fcm  \u2194/\u2195=%0.2f  (\u2190=%0.2f  \u2191=%0.2f  \u2192=%0.2f  \u2193=%0.2f) ") +
 								ML_STRING(1235, "*** CTRL Lock Ratio, ENTER Apply, ESC Cancel ***"),
 								(double)pDoc->m_CropDocRect.Width()	* 2.54	/ (double)nXDpi,
 								(double)pDoc->m_CropDocRect.Height()* 2.54	/ (double)nYDpi,

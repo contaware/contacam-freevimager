@@ -827,7 +827,7 @@ void CPicturePrintPreviewView::DisplayPrinterPaperDPI()
 		int index = ((CUImagerApp*)::AfxGetApp())->GetCurrentPrinterIndex();
 		CString sPrinterName = ((CUImagerApp*)::AfxGetApp())->m_PrinterControl.GetPrinterName(index);
 		CString sPaperSizeDpi;
-		sPaperSizeDpi.Format(_T("%s , %dx%ddpi"), GetPaperSizeName(), m_sizePrinterPPI.cx, m_sizePrinterPPI.cy);
+		sPaperSizeDpi.Format(_T("%s , %d x %d dpi"), GetPaperSizeName(), m_sizePrinterPPI.cx, m_sizePrinterPPI.cy);
 		CDC* pDC = pEdit->GetDC();
 		CFont* pOldFont = (CFont*)pDC->SelectObject(pEdit->GetFont());
 		CSize szTextExtentPrinterName = pDC->GetTextExtent(sPrinterName);
@@ -1115,20 +1115,20 @@ void CPicturePrintPreviewView::UpdatePaneText()
 	if (((CUImagerApp*)::AfxGetApp())->m_nCoordinateUnit == COORDINATES_PIX)
 	{
 		CalcPhysPix(dX, dY);
-		sXCoord.Format(_T("X: %d px"), Round(dX));
-		sYCoord.Format(_T("Y: %d px"), Round(dY));
+		sXCoord.Format(_T("X: %dpx"), Round(dX));
+		sYCoord.Format(_T("Y: %dpx"), Round(dY));
 	}
 	else if (((CUImagerApp*)::AfxGetApp())->m_nCoordinateUnit == COORDINATES_INCH)
 	{
 		CalcPhysInch(dX, dY);
-		sXCoord.Format(_T("X: %0.2f inch"), dX);
-		sYCoord.Format(_T("Y: %0.2f inch"), dY);
+		sXCoord.Format(_T("X: %0.2fin"), dX);
+		sYCoord.Format(_T("Y: %0.2fin"), dY);
 	}
 	else
 	{
 		CalcPhysCm(dX, dY);
-		sXCoord.Format(_T("X: %0.2f cm"), dX);
-		sYCoord.Format(_T("Y: %0.2f cm"), dY);
+		sXCoord.Format(_T("X: %0.2fcm"), dX);
+		sYCoord.Format(_T("Y: %0.2fcm"), dY);
 	}
 	::AfxGetMainFrame()->GetStatusBar()->SetPaneText(::AfxGetMainFrame()->GetStatusBar()->CommandToIndex(ID_INDICATOR_XCOORDINATE), _T(" ") + sXCoord + _T(" "));
 	::AfxGetMainFrame()->GetStatusBar()->SetPaneText(::AfxGetMainFrame()->GetStatusBar()->CommandToIndex(ID_INDICATOR_YCOORDINATE), _T(" ") + sYCoord + _T(" "));
@@ -1391,7 +1391,7 @@ void CPicturePrintPreviewView::UpdateStatusText()
 	double dBottomMargin = (double)(PageSize.cy - DibPrint.bottom);
 	if (((CUImagerApp*)::AfxGetApp())->m_nCoordinateUnit == COORDINATES_PIX)
 	{
-		s.Format(	ML_STRING(1234, "W=%dpx , H=%dpx , W/H=%0.2f (l=%d,t=%d,r=%d,b=%d)"),
+		s.Format(	_T("\u2194=%dpx  \u2195=%dpx  \u2194/\u2195=%0.2f  (\u2190=%d  \u2191=%d  \u2192=%d  \u2193=%d)"),
 					DibPrint.right - DibPrint.left,
 					DibPrint.bottom - DibPrint.top,
 					(double)(DibPrint.right - DibPrint.left) / (double)(DibPrint.bottom - DibPrint.top),
@@ -1408,7 +1408,7 @@ void CPicturePrintPreviewView::UpdateStatusText()
 		dBottom /= m_sizePrinterPPI.cy;
 		dRightMargin /= m_sizePrinterPPI.cx;
 		dBottomMargin /= m_sizePrinterPPI.cy;
-		s.Format(	ML_STRING(1236, "W=%0.2fin , H=%0.2fin , W/H=%0.2f (l=%0.2f,t=%0.2f,r=%0.2f,b=%0.2f)"),
+		s.Format(	_T("\u2194=%0.2fin  \u2195=%0.2fin  \u2194/\u2195=%0.2f  (\u2190=%0.2f  \u2191=%0.2f  \u2192=%0.2f  \u2193=%0.2f)"),
 					dRight - dLeft,
 					dBottom - dTop,
 					(dRight - dLeft) / (dBottom - dTop),
@@ -1425,7 +1425,7 @@ void CPicturePrintPreviewView::UpdateStatusText()
 		dBottom = dBottom * 2.54 / m_sizePrinterPPI.cy;
 		dRightMargin = dRightMargin * 2.54 / m_sizePrinterPPI.cx;
 		dBottomMargin = dBottomMargin * 2.54 / m_sizePrinterPPI.cy;
-		s.Format(	ML_STRING(1237, "W=%0.2fcm , H=%0.2fcm , W/H=%0.2f (l=%0.2f,t=%0.2f,r=%0.2f,b=%0.2f)"),
+		s.Format(	_T("\u2194=%0.2fcm  \u2195=%0.2fcm  \u2194/\u2195=%0.2f  (\u2190=%0.2f  \u2191=%0.2f  \u2192=%0.2f  \u2193=%0.2f)"),
 					dRight - dLeft,
 					dBottom - dTop,
 					(dRight - dLeft) / (dBottom - dTop),
