@@ -1,6 +1,6 @@
 FREEVIMAGER HISTORY
 
-9.7.0 (Month XXth 2019)
+9.7.0 (June 19th 2019)
 
 - Improved languages support
 
