@@ -415,9 +415,9 @@ void COsdDlg::OnPaint()
 							FALSE,		// Underline
 							FALSE,		// Strikethrough
 							DEFAULT_CHARSET,
-							OUT_CHARACTER_PRECIS,
-							CLIP_CHARACTER_PRECIS,
-							ANTIALIASED_QUALITY,
+							OUT_DEFAULT_PRECIS,
+							CLIP_DEFAULT_PRECIS,
+							PROOF_QUALITY,
 							DEFAULT_PITCH | FF_DONTCARE,
 							g_szDefaultFontFace);
 
@@ -429,9 +429,9 @@ void COsdDlg::OnPaint()
 								FALSE,		// Underline
 								FALSE,		// Strikethrough
 								DEFAULT_CHARSET,
-								OUT_CHARACTER_PRECIS,
-								CLIP_CHARACTER_PRECIS,
-								ANTIALIASED_QUALITY,
+								OUT_DEFAULT_PRECIS,
+								CLIP_DEFAULT_PRECIS,
+								PROOF_QUALITY,
 								DEFAULT_PITCH | FF_DONTCARE,
 								g_szDefaultFontFace);
 
