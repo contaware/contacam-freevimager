@@ -23,9 +23,7 @@ END_MESSAGE_MAP()
 
 CStaticLink::CStaticLink()
 {
-	m_crUnvisited = RGB(0, 0, 255);
-	m_crVisited = RGB(128, 0, 128);
-	m_bVisited = FALSE;
+	m_crLink = ::GetSysColor(COLOR_HOTLIGHT);
 }
 
 CStaticLink::~CStaticLink()
@@ -54,7 +52,7 @@ HBRUSH CStaticLink::CtlColor(CDC* pDC, UINT nCtlColor)
 	
 		// Font & Color
 		pDC->SelectObject(&m_Font);
-		pDC->SetTextColor(m_bVisited ? m_crVisited : m_crUnvisited);
+		pDC->SetTextColor(m_crLink);
 		pDC->SetBkMode(TRANSPARENT);
 	
 		hBrush = (HBRUSH)::GetStockObject(NULL_BRUSH);
@@ -84,18 +82,12 @@ void CStaticLink::OnClicked()
 	if (m_sLink.IsEmpty())
 		GetWindowText(m_sLink);
 
+	// Add mailto?
 	CString str;
 	if (m_sLink.Find(_T('@')) != -1)
 		str = _T("mailto:");
 	str += m_sLink;
 
 	// Execute Link
-	HINSTANCE hInst = ::ShellExecute(NULL, _T("open"), str, NULL, NULL, SW_SHOWNORMAL);
-	if (hInst > (HINSTANCE)32)
-	{
-		m_bVisited = TRUE;
-		Invalidate();
-	}
-	else
-		::LogLine(_T("Link Could Not Be Executed <%s>"), m_sLink);
+	::ShellExecute(NULL, _T("open"), str, NULL, NULL, SW_SHOWNORMAL);
 }

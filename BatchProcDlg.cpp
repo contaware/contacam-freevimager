@@ -1513,9 +1513,6 @@ BOOL CBatchProcDlg::OnInitDialog()
 	m_InputDirLabel.SubclassDlgItem(IDC_TEXT_INPUT_DIR, this);
 	m_OutputDirLabel.SubclassDlgItem(IDC_TEXT_OUTPUT_DIR, this);
 	m_OutputFileNameLabel.SubclassDlgItem(IDC_TEXT_OUTPUT_FILE, this);
-	m_InputDirLabel.SetVisitedColor(RGB(0, 0, 255));
-	m_OutputDirLabel.SetVisitedColor(RGB(0, 0, 255));
-	m_OutputFileNameLabel.SetVisitedColor(RGB(0, 0, 255));
 
 	// Set Dlg Wnd for Process Thread
 	m_ProcessThread.SetDlg(this);
