@@ -23,8 +23,8 @@ protected:
 	int m_nFontSize;
 	CFont m_Font;
 	CFont m_FontUnderline;
-	CString m_sFontFace;
-	COLORREF m_crFontColor;
+	COLORREF m_crBackgroundColor;
+	COLORREF m_crTextColor;
 	COLORREF m_crLinkColor;
 	COLORREF m_crVerboseLoggingColor;
 	COLORREF m_crDebugLoggingColor;

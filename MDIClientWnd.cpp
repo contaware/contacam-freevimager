@@ -6,6 +6,7 @@
 #include "MDIClientWnd.h"
 #include "LicenseHelper.h"
 #include "MyMemDC.h"
+#include "Dib.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -17,9 +18,9 @@ CMDIClientWnd::CMDIClientWnd()
 {
 	m_bFontCreated = FALSE;
 	m_nFontSize = 10;
-	m_sFontFace = _T("Verdana");
-	m_crFontColor = RGB(255,255,255);
-	m_crLinkColor = RGB(0x99,0xdd,0xff);
+	m_crBackgroundColor = ::GetSysColor(COLOR_APPWORKSPACE);
+	m_crTextColor = CDib::HighlightColor(m_crBackgroundColor);
+	m_crLinkColor = ::GetSysColor(COLOR_HOTLIGHT);
 	m_crVerboseLoggingColor = RGB(0xee,0xdd,0x20);
 	m_crDebugLoggingColor = RGB(0xff, 0xbb, 0x00);
 	m_nLeftMargin = 2;
@@ -63,7 +64,7 @@ void CMDIClientWnd::OnPaint()
 	GetClientRect(&rcClient);
 	
 	// Erase Background
-	memDC.FillSolidRect(&rcClient, ::GetSysColor(COLOR_APPWORKSPACE));
+	memDC.FillSolidRect(&rcClient, m_crBackgroundColor);
 
 	// Create Font
 	if (!m_bFontCreated)
@@ -78,28 +79,28 @@ void CMDIClientWnd::OnPaint()
 							FALSE,		// Underline
 							FALSE,		// Strikethrough
 							DEFAULT_CHARSET,
-							OUT_CHARACTER_PRECIS,
-							CLIP_CHARACTER_PRECIS,
-							ANTIALIASED_QUALITY,
+							OUT_DEFAULT_PRECIS,
+							CLIP_DEFAULT_PRECIS,
+							PROOF_QUALITY,
 							DEFAULT_PITCH | FF_DONTCARE,
-							m_sFontFace);
+							g_szDefaultFontFace);
 		m_FontUnderline.CreateFont(	-nFontHeight,
-							0, 0, 0,
-							FW_NORMAL,
-							FALSE,		// Italic
-							TRUE,		// Underline
-							FALSE,		// Strikethrough
-							DEFAULT_CHARSET,
-							OUT_CHARACTER_PRECIS,
-							CLIP_CHARACTER_PRECIS,
-							ANTIALIASED_QUALITY,
-							DEFAULT_PITCH | FF_DONTCARE,
-							m_sFontFace);
+									0, 0, 0,
+									FW_NORMAL,
+									FALSE,		// Italic
+									TRUE,		// Underline
+									FALSE,		// Strikethrough
+									DEFAULT_CHARSET,
+									OUT_DEFAULT_PRECIS,
+									CLIP_DEFAULT_PRECIS,
+									PROOF_QUALITY,
+									DEFAULT_PITCH | FF_DONTCARE,
+									g_szDefaultFontFace);
 		m_bFontCreated = TRUE;
 	}
 
 	// Select color & font
-	COLORREF crOldTextColor = memDC.SetTextColor(m_crFontColor);
+	COLORREF crOldTextColor = memDC.SetTextColor(m_crTextColor);
 	int nOldBkMode = memDC.SetBkMode(TRANSPARENT);
 	CFont* pOldFont = memDC.SelectObject(&m_Font);
 	UINT uiOldTextAlign = memDC.SetTextAlign(VTA_BASELINE);
