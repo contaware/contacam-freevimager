@@ -763,20 +763,23 @@ LONG CMainFrame::OnThreadSafePopupToaster(WPARAM wparam, LPARAM lparam)
 		VERIFY(::SystemParametersInfo(SPI_GETNONCLIENTMETRICS, ncm.cbSize, &ncm, 0));
 		defaultGUIFont.CreateFontIndirect(&(ncm.lfMessageFont));
 
-		// Title font
+		// Title
 		LOGFONT lf;
 		defaultGUIFont.GetLogFont(&lf);
 		lf.lfWeight = FW_BOLD;
+		m_pToaster->m_colorTitle = ::GetSysColor(COLOR_WINDOWTEXT);
 		m_pToaster->m_fontTitle.CreateFontIndirect(&lf);
 
-		// Message text
+		// Message
 		defaultGUIFont.GetLogFont(&lf);
 		if (m_pToaster->m_bTextHot)
 		{
-			m_pToaster->m_pNotifier = &m_ToasterNotificationLink;
-			m_pToaster->m_colorText = RGB(0, 0, 0xFF);
 			lf.lfUnderline = TRUE;
+			m_pToaster->m_pNotifier = &m_ToasterNotificationLink;
+			m_pToaster->m_colorText = ::GetSysColor(COLOR_HOTLIGHT); // color for a hyperlink, the associated background color is COLOR_WINDOW
 		}
+		else
+			m_pToaster->m_colorText = ::GetSysColor(COLOR_WINDOWTEXT);
 		m_pToaster->m_fontText.CreateFontIndirect(&lf);
 
 		// Size
@@ -784,8 +787,8 @@ LONG CMainFrame::OnThreadSafePopupToaster(WPARAM wparam, LPARAM lparam)
 		m_pToaster->m_nHeight = ::SystemDPIScale(80);
 
 		// Background
-		m_pToaster->m_colorBackground = RGB(0xD4, 0xD0, 0xC8);
-		m_pToaster->m_colorGradient = RGB(0xF5, 0xF5, 0xF5);
+		m_pToaster->m_BackgroundStyle = CToasterWnd::Solid;
+		m_pToaster->m_colorBackground = ::GetSysColor(COLOR_WINDOW);
 
 		// Show
 		if (!m_pToaster->Show())
