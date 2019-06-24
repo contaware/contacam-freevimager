@@ -8751,6 +8751,13 @@ void CVideoDeviceDoc::ConnectRtsp()
 			bCredentialAlreadyAdded = TRUE;
 			break;
 
+		case GENERIC_6_RTSP:		// Note: it is legal to have equal signs in the path part of an url
+			sPathAndQuery = CString(_T("/user=")) + (m_sHttpGetFrameUsername.IsEmpty() ? _T("admin") : ::UrlEncode(m_sHttpGetFrameUsername, TRUE)) +
+							_T("_password=") + ::UrlEncode(m_sHttpGetFramePassword, TRUE) +
+							_T("_channel=1_stream=0.sdp");
+			bCredentialAlreadyAdded = TRUE;
+			break;
+
 		case SEVENLINKS_RTSP:
 		case FOSCAM_RTSP:			
 			sPathAndQuery = _T("/videoMain");

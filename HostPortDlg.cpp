@@ -60,6 +60,7 @@ BOOL CHostPortDlg::OnInitDialog()
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Generic") + _T(" /live/ch0 (RTSP)")), (DWORD)CVideoDeviceDoc::GENERIC_3_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Generic") + _T(" /ch01.264 (RTSP)")), (DWORD)CVideoDeviceDoc::GENERIC_4_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Generic") + _T(" /channel=1&stream=0.sdp (RTSP)")), (DWORD)CVideoDeviceDoc::GENERIC_5_RTSP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Generic") + _T(" /channel=1_stream=0.sdp (RTSP)")), (DWORD)CVideoDeviceDoc::GENERIC_6_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Generic") + _T(" (") + ML_STRING(1865, "HTTP motion jpeg") + _T(")")), (DWORD)CVideoDeviceDoc::GENERIC_SP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Generic") + _T(" (") + ML_STRING(1866, "HTTP jpeg snapshots") + _T(")")), (DWORD)CVideoDeviceDoc::GENERIC_CP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("7Links (RTSP)")), (DWORD)CVideoDeviceDoc::SEVENLINKS_RTSP);
