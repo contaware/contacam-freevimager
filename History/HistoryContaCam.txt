@@ -1,5 +1,10 @@
 CONTACAM HISTORY
 
+9.9.0 (Month XXth 2019)
+
+- Better support for high contrast themes
+- Added a new Generic IP camera entry
+
 9.7.0 (June 19th 2019)
 
 - In web interface showing start time if hovering over small videos

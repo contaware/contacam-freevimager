@@ -1,5 +1,9 @@
 TRANSLATIONS HISTORY
 
+9.9.0 (Month XXth 2019)
+
+- ... 
+
 9.7.0 (June 19th 2019)
 
 - Full Chinese language support
