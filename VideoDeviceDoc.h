@@ -60,13 +60,13 @@ class CCameraAdvancedSettingsDlg;
 #define PLACEMENT_THRESHOLD_PIXELS				50				// to make sure that the saved placement is visible
 #define CAN_SAVE_POLL_MS						1000U			// ms
 
-// Frame tag, thumb message and draw message
+// Frame stamps and messages
 #define FRAMETAG_REFWIDTH						640
 #define FRAMETAG_REFHEIGHT						480
 #define FRAMETIME_COLOR							RGB(0,0xFF,0)
 #define FRAMEDATE_COLOR							RGB(0x80,0x80,0xFF)
+#define FRAMEANNOTATION_COLOR					RGB(0xFF,0xFF,0xFF)
 #define FRAMECOUNT_COLOR						RGB(0xFF,0xFF,0xFF)
-#define THUMBMESSAGE_FONTSIZE					8
 #define DRAW_BKG_COLOR							RGB(0,0,0)
 #define DRAW_MESSAGE_COLOR						RGB(0xFF,0xFF,0xFF)
 #define REC_MESSAGE_COLOR						RGB(0xFF,0,0)
@@ -642,7 +642,7 @@ public:
 	// Frame Tags
 	static CTime CalcTime(DWORD dwUpTime, const CTime& RefTime, DWORD dwRefUpTime);
 	static int ScaleFont(int nWidth, int nHeight, int nMinRefFontSize, int nMinRefWidth, int nMinRefHeight);
-	static void AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime, int nRefFontSize, BOOL bShowFrameUptime);
+	static void AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime, const CString& sFrameAnnotation, int nRefFontSize, BOOL bShowFrameUptime);
 	static void AddFrameCount(CDib* pDib, const CString& sCount, int nRefFontSize);
 	static void AddNoDonationTag(CDib* pDib, int nRefFontSize);
 	static void AddRecSymbol(CDib* pDib, int nRefFontSize);
@@ -817,9 +817,10 @@ public:
 	CString m_sLastConnectionError;						// Last connection error
 	CRITICAL_SECTION m_csConnectionError;				// Critical section for the connection error
 	volatile BOOL m_bObscureSource;						// Flag indicating whether the source has to be obscured
-	volatile BOOL m_bShowFrameTime;						// Show / Hide Frame Time Inside the Frame (frame time is also recorded in the file)
-	volatile BOOL m_bShowFrameUptime;					// Show / Hide Frame Uptime Inside the Frame (frame uptime is also recorded in the file)
-	volatile int m_nRefFontSize;						// Minimum font size for frame time, rec indicator and save progress
+	TCHAR m_szFrameAnnotation[MAX_PATH];				// Frame annotation text (also recorded in the file)
+	volatile BOOL m_bShowFrameTime;						// Show stamps inside the frame (also recorded in the file)
+	volatile BOOL m_bShowFrameUptime;					// Together with timestamp show also uptime (also recorded in the file)
+	volatile int m_nRefFontSize;						// Minimum font size for frame stamps, rec indicator and save progress
 	volatile BOOL m_bDoEditCopy;						// Copy Frame to Clipboard in ProcessI420Frame()
 	volatile BOOL m_bDoEditSnapshot;					// Manual Snapshot Frame to file
 	volatile DWORD m_dwFrameCountUp;					// Captured Frames Count-Up, it can wrap around!
@@ -1029,6 +1030,7 @@ protected:
 	afx_msg void OnCaptureObscureSource();
 	afx_msg void OnUpdateCaptureObscureSource(CCmdUI* pCmdUI);
 	afx_msg void OnCaptureCameraAdvancedSettings();
+	afx_msg void OnViewFrameAnnotation();
 	afx_msg void OnViewFrametime();
 	afx_msg void OnUpdateViewFrametime(CCmdUI* pCmdUI);
 	afx_msg void OnViewFrameUptime();

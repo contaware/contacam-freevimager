@@ -1086,6 +1086,7 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="TextEntryDlg.cpp" />
     <ClCompile Include="ToasterWnd.cpp" />
     <ClCompile Include="ToasterWndLink.cpp" />
     <ClCompile Include="ToolBarChildFrm.cpp">
@@ -1378,6 +1379,7 @@
     <ClInclude Include="StdAfx.h" />
     <ClInclude Include="TabCtrlSSL.h" />
     <ClInclude Include="TabPageSSL.h" />
+    <ClInclude Include="TextEntryDlg.h" />
     <ClInclude Include="ToasterWnd.h" />
     <ClInclude Include="ToasterWndLink.h" />
     <ClInclude Include="ToolBarChildFrm.h" />

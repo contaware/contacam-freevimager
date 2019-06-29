@@ -71,7 +71,7 @@
 #define IDD_SHRINK_CURRENT_PICTUREDOC   228
 #define IDD_BATCH_PROC                  229
 #define IDR_CONTEXT_SENSITIVITY         238
-#define IDR_CONTEXT_FONTSIZE            239
+#define IDR_CONTEXT_FRAMESTAMP          239
 #define IDR_CONTEXT_PICTURE_FULLSCREEN  240
 #define IDR_CONTEXT_OSD                 242
 #define IDB_BITMAP_DRAGDROP_SINGLE      243
@@ -3008,6 +3008,7 @@
 #define ID_TEST_VIDEO_COMPR_CONFIG      32849
 #define ID_PLAY_SLIDESHOW               32850
 #define ID_STOP_SLIDESHOW               32851
+#define ID_VIEW_FRAMEANNOTATION         32854
 #define ID_VIEW_FRAMETIME               32855
 #define ID_VIEW_FRAMEUPTIME             32856
 #define ID_FILE_INFO                    32858

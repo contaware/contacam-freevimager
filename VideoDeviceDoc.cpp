@@ -21,6 +21,7 @@
 #include "NoVistaFileDlg.h"
 #include "YuvToYuv.h"
 #include "GetDirContentSize.h"
+#include "TextEntryDlg.h"
 #include <random>
 
 #ifdef _DEBUG
@@ -78,6 +79,7 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_COMMAND(ID_CAPTURE_OBSCURESOURCE, OnCaptureObscureSource)
 	ON_UPDATE_COMMAND_UI(ID_CAPTURE_OBSCURESOURCE, OnUpdateCaptureObscureSource)
 	ON_COMMAND(ID_CAPTURE_CAMERAADVANCEDSETTINGS, OnCaptureCameraAdvancedSettings)
+	ON_COMMAND(ID_VIEW_FRAMEANNOTATION, OnViewFrameAnnotation)
 	ON_COMMAND(ID_VIEW_FRAMETIME, OnViewFrametime)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FRAMETIME, OnUpdateViewFrametime)
 	ON_COMMAND(ID_VIEW_FRAMEUPTIME, OnViewFrameUptime)
@@ -393,7 +395,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				// Add Frame Tags
 				if (m_pDoc->m_bShowFrameTime)
 				{
-					AddFrameTime(pDib, RefTime, dwRefUpTime, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
+					AddFrameTime(pDib, RefTime, dwRefUpTime, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
 					AddFrameCount(pDib, sMovDetSavesCount, m_pDoc->m_nRefFontSize);
 				}
 
@@ -744,7 +746,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors
 		// Add frame tags to include its colors
 		if (m_pDoc->m_bShowFrameTime)
 		{
-			AddFrameTime(&DibForPalette, RefTime, dwRefUpTime, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
+			AddFrameTime(&DibForPalette, RefTime, dwRefUpTime, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
 			AddFrameCount(&DibForPalette, sMovDetSavesCount, m_pDoc->m_nRefFontSize);
 		}
 
@@ -808,7 +810,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveSingleGif(	CDib* pDib,
 		// Add Frame Tags
 		if (m_pDoc->m_bShowFrameTime)
 		{
-			AddFrameTime(pDib, RefTime, dwRefUpTime, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
+			AddFrameTime(pDib, RefTime, dwRefUpTime, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
 			AddFrameCount(pDib, sMovDetSavesCount, m_pDoc->m_nRefFontSize);
 		}
 
@@ -863,7 +865,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::To255Colors(CDib* pDib,
 		// Add Frame Tags
 		if (m_pDoc->m_bShowFrameTime)
 		{
-			AddFrameTime(pDib, RefTime, dwRefUpTime, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
+			AddFrameTime(pDib, RefTime, dwRefUpTime, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
 			AddFrameCount(pDib, sMovDetSavesCount, m_pDoc->m_nRefFontSize);
 		}
 
@@ -1145,8 +1147,8 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	// Add tags
 	if (m_pDoc->m_bShowFrameTime)
 	{
-		AddFrameTime(&m_Dib, m_Time, dwUpTime, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
-		AddFrameTime(&DibThumb, m_Time, dwUpTime, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
+		AddFrameTime(&m_Dib, m_Time, dwUpTime, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
+		AddFrameTime(&DibThumb, m_Time, dwUpTime, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
 	}
 	if (g_DonorEmailValidateThread.m_bNoDonation)
 	{
@@ -3472,6 +3474,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_lEffectiveDataRateSum = 0;
 	m_bPlacementLoaded = FALSE;
 	m_bCaptureStarted = FALSE;
+	memset(m_szFrameAnnotation, 0, MAX_PATH * sizeof(TCHAR));
 	m_bShowFrameTime = TRUE;
 	m_bShowFrameUptime = FALSE;
 	m_nRefFontSize = 9;
@@ -4385,6 +4388,8 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 												pApp->GetProfileInt(sSection, _T("DetectionStopMin"), CurrentTime.GetMinute()),
 												pApp->GetProfileInt(sSection, _T("DetectionStopSec"), CurrentTime.GetSecond()));
 	m_bInSchedule = IsInSchedule(CurrentTime);
+	m_szFrameAnnotation[MAX_PATH - 1] = _T('\0');																	// first make sure it is NULL terminated
+	_tcsncpy(m_szFrameAnnotation, pApp->GetProfileString(sSection, _T("FrameAnnotation"), _T("")), MAX_PATH - 1);	// and then copy a maximum of (MAX_PATH - 1) chars
 	m_bShowFrameTime = (BOOL) pApp->GetProfileInt(sSection, _T("ShowFrameTime"), TRUE);
 	m_bShowFrameUptime = (BOOL)pApp->GetProfileInt(sSection, _T("ShowFrameUptime"), FALSE);
 	m_nRefFontSize = ValidateRefFontSize(pApp->GetProfileInt(sSection, _T("RefFontSize"), 9));
@@ -4541,6 +4546,7 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("DetectionStopHour"), m_SchedulerStopTime.GetHour());
 	pApp->WriteProfileInt(sSection, _T("DetectionStopMin"), m_SchedulerStopTime.GetMinute());
 	pApp->WriteProfileInt(sSection, _T("DetectionStopSec"), m_SchedulerStopTime.GetSecond());
+	pApp->WriteProfileString(sSection, _T("FrameAnnotation"), m_szFrameAnnotation);
 	pApp->WriteProfileInt(sSection, _T("ShowFrameTime"), (int)m_bShowFrameTime);
 	pApp->WriteProfileInt(sSection, _T("ShowFrameUptime"), (int)m_bShowFrameUptime);
 	pApp->WriteProfileInt(sSection, _T("RefFontSize"), m_nRefFontSize);
@@ -6422,7 +6428,7 @@ int CVideoDeviceDoc::ScaleFont(	int nWidth, int nHeight,
 		return Round(nMinRefFontSize * dFactorY);
 }
 
-void CVideoDeviceDoc::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime, int nRefFontSize, BOOL bShowFrameUptime)
+void CVideoDeviceDoc::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime, const CString& sFrameAnnotation, int nRefFontSize, BOOL bShowFrameUptime)
 {
 	// Check
 	if (!pDib)
@@ -6486,6 +6492,18 @@ void CVideoDeviceDoc::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime,
 							FRAMEDATE_COLOR,
 							OPAQUE,
 							DRAW_BKG_COLOR);
+
+	// Frame annotation text
+	if (!sFrameAnnotation.IsEmpty())
+	{
+		pDib->AddSingleLineText(sFrameAnnotation,
+								rcRect,
+								&Font,
+								(DT_RIGHT | DT_TOP),
+								FRAMEANNOTATION_COLOR,
+								OPAQUE,
+								DRAW_BKG_COLOR);
+	}
 }
 
 void CVideoDeviceDoc::AddFrameCount(CDib* pDib, const CString& sCount, int nRefFontSize)
@@ -7322,7 +7340,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 
 		// Add Frame Time if User Wants it
 		if (m_bShowFrameTime)
-			AddFrameTime(pDib, CurrentTime, dwCurrentInitUpTime, m_nRefFontSize, m_bShowFrameUptime);
+			AddFrameTime(pDib, CurrentTime, dwCurrentInitUpTime, m_szFrameAnnotation, m_nRefFontSize, m_bShowFrameUptime);
 
 		// Add "NO DONATION" tag
 		if (g_DonorEmailValidateThread.m_bNoDonation)
@@ -7561,7 +7579,7 @@ BOOL CVideoDeviceDoc::EditCopy(CDib* pDib, const CTime& Time)
 
 	// Add frame time
 	if (m_bShowFrameTime)
-		AddFrameTime(&Dib, Time, dwUpTime, m_nRefFontSize, m_bShowFrameUptime);
+		AddFrameTime(&Dib, Time, dwUpTime, m_szFrameAnnotation, m_nRefFontSize, m_bShowFrameUptime);
 
 	// Add "NO DONATION" tag
 	if (g_DonorEmailValidateThread.m_bNoDonation)
@@ -7596,7 +7614,7 @@ void CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 
 	// Add frame time
 	if (m_bShowFrameTime)
-		AddFrameTime(&Dib, Time, dwUpTime, m_nRefFontSize, m_bShowFrameUptime);
+		AddFrameTime(&Dib, Time, dwUpTime, m_szFrameAnnotation, m_nRefFontSize, m_bShowFrameUptime);
 
 	// Add "NO DONATION" tag
 	if (g_DonorEmailValidateThread.m_bNoDonation)
@@ -7639,7 +7657,7 @@ CString CVideoDeviceDoc::SaveJpegMail(CDib* pDib, const CTime& RefTime, DWORD dw
 
 	// Add frame time
 	if (m_bShowFrameTime)
-		AddFrameTime(&Dib, RefTime, dwRefUpTime, m_nRefFontSize, m_bShowFrameUptime);
+		AddFrameTime(&Dib, RefTime, dwRefUpTime, m_szFrameAnnotation, m_nRefFontSize, m_bShowFrameUptime);
 
 	// Add "NO DONATION" tag
 	if (g_DonorEmailValidateThread.m_bNoDonation)
@@ -8056,6 +8074,20 @@ __forceinline void CVideoDeviceDoc::SaveFrameList(BOOL bMarkEnd)
 	if (pNewList)
 		m_MovementDetectionsList.AddTail(pNewList);
 	::LeaveCriticalSection(&m_csMovementDetectionsList);
+}
+
+void CVideoDeviceDoc::OnViewFrameAnnotation()
+{
+	CTextEntryDlg dlg;
+	dlg.m_sText = m_szFrameAnnotation;
+	if (dlg.Show(::AfxGetMainFrame(), GetView(), ML_STRING(1878, "Annotation")) == IDOK)
+	{
+		m_szFrameAnnotation[MAX_PATH - 1] = _T('\0');				// first make sure it is NULL terminated
+		_tcsncpy(m_szFrameAnnotation, dlg.m_sText, MAX_PATH - 1);	// and then copy a maximum of (MAX_PATH - 1) chars
+		::AfxGetApp()->WriteProfileString(GetDevicePathName(), _T("FrameAnnotation"), m_szFrameAnnotation);
+		if (!m_bShowFrameTime)
+			OnViewFrametime();
+	}
 }
 
 void CVideoDeviceDoc::OnViewFrametime() 

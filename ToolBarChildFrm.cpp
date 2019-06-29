@@ -204,9 +204,9 @@ BOOL CVideoDeviceToolBar::Create(CWnd* pParentWnd)
 
 	// Add toolbar button dropdown arrows
 	GetToolBarCtrl().SetExtendedStyle(TBSTYLE_EX_DRAWDDARROWS);
-	DWORD dwStyle = GetButtonStyle(CommandToIndex(ID_VIEW_FRAMETIME));
+	DWORD dwStyle = GetButtonStyle(CommandToIndex(ID_VIEW_FRAMEANNOTATION));
 	dwStyle |= TBSTYLE_DROPDOWN;
-	SetButtonStyle(CommandToIndex(ID_VIEW_FRAMETIME), dwStyle);
+	SetButtonStyle(CommandToIndex(ID_VIEW_FRAMEANNOTATION), dwStyle);
 	dwStyle = GetButtonStyle(CommandToIndex(ID_CAPTURE_RECORD));
 	dwStyle |= TBSTYLE_DROPDOWN;
 	SetButtonStyle(CommandToIndex(ID_CAPTURE_RECORD), dwStyle);
@@ -1010,10 +1010,10 @@ void CVideoDeviceChildFrame::OnToolbarDropDown(NMHDR* pNMHDR, LRESULT* pResult)
 	LPNMTOOLBAR pNMToolBar = reinterpret_cast<LPNMTOOLBAR>(pNMHDR);
 	switch (pNMToolBar->iItem)
 	{
-		case ID_VIEW_FRAMETIME:
+		case ID_VIEW_FRAMEANNOTATION:
 		{
 			CMenu menu;
-			VERIFY(menu.LoadMenu(IDR_CONTEXT_FONTSIZE));
+			VERIFY(menu.LoadMenu(IDR_CONTEXT_FRAMESTAMP));
 			CMenu* pPopup = menu.GetSubMenu(0);
 			ASSERT(pPopup != NULL);
 			GetToolBar()->ClientToScreen(&(pNMToolBar->rcButton));

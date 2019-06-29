@@ -722,11 +722,12 @@ BEGIN
     END
 END
 
-IDR_CONTEXT_FONTSIZE MENU
+IDR_CONTEXT_FRAMESTAMP MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
-        MENUITEM "Show Uptime",                 ID_VIEW_FRAMEUPTIME
+        MENUITEM "Show",                        ID_VIEW_FRAMETIME
+        MENUITEM "With Uptime",                 ID_VIEW_FRAMEUPTIME
         MENUITEM SEPARATOR
         MENUITEM "4",                           ID_FONTSIZE_4
         MENUITEM "5",                           ID_FONTSIZE_5
@@ -3291,7 +3292,7 @@ STRINGTABLE
 BEGIN
     ID_PLAY_SLIDESHOW       "Start slideshow (inside current directory)\nStart Slideshow"
     ID_STOP_SLIDESHOW       "Stop slideshow\nStop Slideshow"
-    ID_VIEW_FRAMETIME       "Enable / disable frame time display\nFrame Time"
+    ID_VIEW_FRAMEANNOTATION "Frame stamps\nFrame Stamps"
     ID_FILE_INFO            "Show file information\nFile Info"
     ID_PLAY_TRANSITION_OFF  "Turn transition effect off\nTransition Off"
     ID_PLAY_TRANSITION_RANDOM "Random transition effect\nRandom Transition"
@@ -4032,6 +4033,7 @@ BEGIN
     IDS_STRING1875          "Enabled:"
     IDS_STRING1876          "Disabled:"
     IDS_STRING1877          "Save: %d%%"
+    IDS_STRING1878          "Annotation"
     IDS_STRING1879          "REC OFF (by scheduler)"
     IDS_STRING1880          "No Attachment"
     IDS_STRING1881          "Snapshot"
