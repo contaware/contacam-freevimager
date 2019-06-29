@@ -3338,7 +3338,6 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_EDIT_ZONE_REMOVE     "Enable tool to remove zones\nEnable Tool to Remove Zones"
     ID_EDIT_ADDALL          "Add all zones\nAdd All Zones"
     ID_EDIT_REMOVEALL       "Remove all zones\nRemove All Zones"
     ID_CAPTURE_NETWORK      "Network / IP camera\nNetwork / IP Camera"
@@ -3971,16 +3970,6 @@ STRINGTABLE
 BEGIN
     ID_CAPTURE_CAMERABASICSETTINGS 
                             "Camera basic settings\nCamera Basic Settings"
-    ID_EDIT_ZONE_SENSITIVITY_100 
-                            "Enable tool to add zones with 100% relative motion sensitivity\nEnable Tool to Add Zones with 100% Relative Motion Sensitivity"
-    ID_EDIT_ZONE_SENSITIVITY_50 
-                            "Enable tool to add zones with 50% relative motion sensitivity\nEnable Tool to Add Zones with 50% Relative Motion Sensitivity"
-    ID_EDIT_ZONE_SENSITIVITY_25 
-                            "Enable tool to add zones with 25% relative motion sensitivity\nEnable Tool to Add Zones with 25% Relative Motion Sensitivity"
-    ID_EDIT_ZONE_SENSITIVITY_10 
-                            "Enable tool to add zones with 10% relative motion sensitivity\nEnable Tool to Add Zones with 10% Relative Motion Sensitivity"
-    ID_EDIT_ZONE_SENSITIVITY_5 
-                            "Enable tool to add zones with 5% relative motion sensitivity\nEnable Tool to Add Zones with 5% Relative Motion Sensitivity"
     ID_FILE_EXTRACT         "Extract all pages/frames\nExtract Pages/Frames"
     ID_EDIT_SCREENSHOT      "Take a screenshot\nScreenshot"
 END
@@ -4065,19 +4054,6 @@ STRINGTABLE
 BEGIN
     IDS_STRING1904          "30 minutes"
     IDS_STRING1905          "1 hour"
-END
-
-STRINGTABLE
-BEGIN
-    ID_EDIT_ZONE_BIG        "Big zones size\nBig Zones Size"
-END
-
-STRINGTABLE
-BEGIN
-    ID_EDIT_ZONE_MEDIUM     "Medium zones size\nMedium Zones Size"
-    ID_EDIT_ZONE_SMALL      "Small zones size\nSmall Zones Size"
-    ID_EDIT_ZONE_OBSCURE_REMOVED 
-                            "Obscure removed zones (privacy mask)\nObscure Removed Zones (Privacy Mask)"
 END
 
 #endif    // English (United States) resources
