@@ -165,14 +165,14 @@ END_MESSAGE_MAP()
 BOOL CVideoDeviceToolBar::SwitchToolBar(int nDPI, BOOL bCallShowControlBar/*=TRUE*/)
 {
 	// Load and set sizes
-	if (nDPI >= 240)		// 250% or more
+	if (nDPI > 192)		// more than 200%
 	{
 		if (!LoadToolBar(IDR_VIDEO_DEVICE_TOOLBAR3X))
 			return FALSE;
 		SetSizes(	CSize(TOOLBAR_BUTTON_SIZE_3X, TOOLBAR_BUTTON_SIZE_3Y),
 					CSize(TOOLBAR_IMAGE_SIZE_3X, TOOLBAR_IMAGE_SIZE_3Y));
 	}
-	else if (nDPI >= 144)	// 150% or more
+	else if (nDPI > 96)	// more than 100%
 	{
 		if (!LoadToolBar(IDR_VIDEO_DEVICE_TOOLBAR2X))
 			return FALSE;
@@ -287,14 +287,14 @@ END_MESSAGE_MAP()
 BOOL CPictureToolBar::SwitchToolBar(int nDPI, BOOL bCallShowControlBar/*=TRUE*/)
 {
 	// Load and set sizes
-	if (nDPI >= 240)		// 250% or more
+	if (nDPI > 192)		// more than 200%
 	{
 		if (!LoadToolBar(IDR_PICTURE_TOOLBAR3X))
 			return FALSE;
 		SetSizes(	CSize(TOOLBAR_BUTTON_SIZE_3X, TOOLBAR_BUTTON_SIZE_3Y),
 					CSize(TOOLBAR_IMAGE_SIZE_3X, TOOLBAR_IMAGE_SIZE_3Y));
 	}
-	else if (nDPI >= 144)	// 150% or more
+	else if (nDPI > 96)	// more than 100%
 	{
 		if (!LoadToolBar(IDR_PICTURE_TOOLBAR2X))
 			return FALSE;
@@ -318,9 +318,9 @@ BOOL CPictureToolBar::SwitchToolBar(int nDPI, BOOL bCallShowControlBar/*=TRUE*/)
 
 int CPictureToolBar::ScaleToolBar(int nDPI, int n)
 {
-	if (nDPI >= 240)		// 250% or more
+	if (nDPI > 192)		// more than 200%
 		return 3*n;
-	else if (nDPI >= 144)	// 150% or more
+	else if (nDPI > 96)	// more than 100%
 		return 2*n;
 	else
 		return n;

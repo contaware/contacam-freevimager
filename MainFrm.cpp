@@ -1999,14 +1999,14 @@ void CMainFrame::OnMenuSelect(UINT nItemID, UINT nFlags, HMENU hSysMenu)
 BOOL CMainFrame::SwitchToolBar(int nDPI, BOOL bCallShowControlBar/*=TRUE*/)
 {
 	// Load and set sizes
-	if (nDPI >= 240)		// 250% or more
+	if (nDPI > 192)		// more than 200%
 	{
 		if (!m_wndToolBar.LoadToolBar(IDR_MAINFRAME3X))
 			return FALSE;
 		m_wndToolBar.SetSizes(	CSize(TOOLBAR_BUTTON_SIZE_3X, TOOLBAR_BUTTON_SIZE_3Y),
 								CSize(TOOLBAR_IMAGE_SIZE_3X, TOOLBAR_IMAGE_SIZE_3Y));
 	}
-	else if (nDPI >= 144)	// 150% or more
+	else if (nDPI > 96)	// more than 100%
 	{
 		if (!m_wndToolBar.LoadToolBar(IDR_MAINFRAME2X))
 			return FALSE;
