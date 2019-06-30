@@ -6532,7 +6532,7 @@ void CVideoDeviceDoc::AddFrameCount(CDib* pDib, const CString& sCount, int nRefF
 	pDib->AddSingleLineText(sCount,
 							rcRect,
 							&Font,
-							(DT_RIGHT | DT_TOP),
+							(DT_RIGHT | DT_BOTTOM),
 							FRAMECOUNT_COLOR,
 							OPAQUE,
 							DRAW_BKG_COLOR);
