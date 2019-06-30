@@ -632,31 +632,38 @@ void CVideoDeviceView::OnDraw(CDC* pDC)
 														pDoc->m_nRefFontSize,
 														FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
 
-		// Draw Save progress
-		if (pDoc->m_SaveFrameListThread.GetSaveProgress() < 100)
+		// Draw REC state
+		if (pDoc->m_bInSchedule)
 		{
-			CString sProgress;
-			sProgress.Format(ML_STRING(1877, "Save: %d%%"), pDoc->m_SaveFrameListThread.GetSaveProgress());
-			DrawBigText(MemDC.GetSafeHdc(), CRect(0, 0, rcClient.Width(), rcClient.Height()),
-						sProgress,
-						DRAW_MESSAGE_COLOR, nMaxFontSize, DT_TOP | DT_RIGHT,
-						OPAQUE, DRAW_BKG_COLOR);
-		}
+			// Init save progress string
+			CString sSaveProgress;
+			if (pDoc->m_SaveFrameListThread.GetSaveProgress() < 100)
+				sSaveProgress.Format(ML_STRING(1877, "Save: %d%%"), pDoc->m_SaveFrameListThread.GetSaveProgress());
 
-		// Draw REC dot symbol
-		if (pDoc->m_bDetectingMinLengthMovement)
-		{
-			DrawBigText(MemDC.GetSafeHdc(), CRect(0, 0, rcClient.Width(), rcClient.Height()),
-						_T("\u25cf"), // note: if using more than 16 bits, use a uppercase U (for example \U0001F3C3)
-						REC_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT);
+			// Detecting?
+			if (pDoc->m_bDetectingMinLengthMovement)
+			{
+				// Draw save progress (if not empty) + REC dot symbol
+				DrawBigText(MemDC.GetSafeHdc(), CRect(0, 0, rcClient.Width(), rcClient.Height()),
+							sSaveProgress + _T("\u25cf"), // note: if using more than 16 bits, use a uppercase U (for example \U0001F3C3)
+							REC_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT);
+			}
+			else if (!sSaveProgress.IsEmpty())
+			{
+				// Draw save progress
+				DrawBigText(MemDC.GetSafeHdc(), CRect(0, 0, rcClient.Width(), rcClient.Height()),
+							sSaveProgress,
+							REC_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT);
+			}
 		}
-		// Draw REC OFF (by scheduler)
-		else if (!pDoc->m_bInSchedule)
+		else
 		{
+			// Draw REC OFF (by scheduler)
+			// Note: when pDoc->m_bInSchedule is cleared we immediately show the "REC OFF (by scheduler)"
+			//       message even if the current recording will be stopped and correctly saved
 			DrawBigText(MemDC.GetSafeHdc(), CRect(0, 0, rcClient.Width(), rcClient.Height()),
 						ML_STRING(1879, "REC OFF (by scheduler)"),
-						DRAW_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT,
-						OPAQUE, DRAW_BKG_COLOR);
+						REC_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT);	
 		}
 	}
 	else
