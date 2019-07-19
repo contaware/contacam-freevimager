@@ -22,7 +22,7 @@ CMDIClientWnd::CMDIClientWnd()
 	BYTE BackgroundColorGray = CDib::RGBToGray(	GetRValue(m_crBackgroundColor),
 												GetGValue(m_crBackgroundColor),
 												GetBValue(m_crBackgroundColor));
-	if (BackgroundColorGray > 0xbb)
+	if (BackgroundColorGray > 0xbbu)
 		m_crTextColor = RGB(0,0,0);
 	else
 		m_crTextColor = RGB(0xff,0xff,0xff);
