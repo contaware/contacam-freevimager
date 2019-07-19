@@ -17,12 +17,18 @@ static char THIS_FILE[] = __FILE__;
 CMDIClientWnd::CMDIClientWnd()
 {
 	m_bFontCreated = FALSE;
-	m_nFontSize = 10;
+	m_nFontSize = 11;
 	m_crBackgroundColor = ::GetSysColor(COLOR_APPWORKSPACE);
-	m_crTextColor = CDib::HighlightColor(m_crBackgroundColor);
+	BYTE BackgroundColorGray = CDib::RGBToGray(	GetRValue(m_crBackgroundColor),
+												GetGValue(m_crBackgroundColor),
+												GetBValue(m_crBackgroundColor));
+	if (BackgroundColorGray > 0xbb)
+		m_crTextColor = RGB(0,0,0);
+	else
+		m_crTextColor = RGB(0xff,0xff,0xff);
 	m_crLinkColor = ::GetSysColor(COLOR_HOTLIGHT);
 	m_crVerboseLoggingColor = RGB(0xee,0xdd,0x20);
-	m_crDebugLoggingColor = RGB(0xff, 0xbb, 0x00);
+	m_crDebugLoggingColor = RGB(0xff,0xbb,0x00);
 	m_nLeftMargin = 2;
 	m_nTopMargin = 0;
 	m_rcLinkComputer = CRect(0,0,0,0);
