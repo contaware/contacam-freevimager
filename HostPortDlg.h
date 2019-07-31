@@ -66,6 +66,7 @@ protected:
 	afx_msg void OnEditchangeComboHost();
 	afx_msg void OnChangeEditPort();
 	afx_msg void OnSelchangeComboDeviceTypeMode();
+	afx_msg void OnSyslinkIPCamInstabilityHelp(NMHDR* pNMHDR, LRESULT* pResult);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

@@ -160,7 +160,8 @@ BEGIN_MESSAGE_MAP(CCameraAdvancedSettingsDlg, CDialog)
 	ON_CBN_SELCHANGE(IDC_COMBO_SNAPSHOT_RATE, OnSelchangeSnapshotRate)
 	ON_BN_CLICKED(IDC_BUTTON_THUMB_SIZE, OnButtonThumbSize)
 	ON_BN_CLICKED(IDC_EXEC_COMMAND, OnExecCommand)
-	ON_NOTIFY(NM_CLICK, IDC_SYSLINK_PARAMS_HELP, OnNMClickSyslinkParamsHelp)
+	ON_NOTIFY(NM_CLICK, IDC_SYSLINK_PARAMS_HELP, OnSyslinkParamsHelp)
+	ON_NOTIFY(NM_RETURN, IDC_SYSLINK_PARAMS_HELP, OnSyslinkParamsHelp)
 	ON_CBN_SELCHANGE(IDC_EXEC_COMMAND_MODE, OnSelchangeExecCommandMode)
 	ON_EN_CHANGE(IDC_EDIT_EXE, OnChangeEditExe)
 	ON_EN_CHANGE(IDC_EDIT_PARAMS, OnChangeEditParams)
@@ -937,7 +938,7 @@ void CCameraAdvancedSettingsDlg::OnExecCommand()
 	m_pDoc->m_bExecCommand = pCheck->GetCheck() > 0;
 }
 
-void CCameraAdvancedSettingsDlg::OnNMClickSyslinkParamsHelp(NMHDR* pNMHDR, LRESULT* pResult)
+void CCameraAdvancedSettingsDlg::OnSyslinkParamsHelp(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	::ShellExecute(	NULL,
 					_T("open"),

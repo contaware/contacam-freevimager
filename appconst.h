@@ -10,7 +10,7 @@
 // *** Remember To Change the Version in uImager.rc2                   ***
 // *** Remember To Change the Version in the Installer                 ***
 // *** Update the History.txt files                                    ***
-
+// *** Update the web site .htaccess file to reflect the online pages  ***
 #ifdef VIDEODEVICEDOC
 #define APPNAME_EXT										_T("ContaCam.exe")
 #define APPNAME_NOEXT									_T("ContaCam")
@@ -19,17 +19,18 @@
 #define SERVICENAME_EXT									_T("ContaCamService.exe")
 #define SERVICENAME_NOEXT								_T("ContaCamService")
 #define APPMUTEXNAME									_T("ContaCamAppMutex")
-#define FAQ_ONLINE_PAGE									_T("http://www.contaware.com/contacamfaq/")
-#define MANUAL_ONLINE_PAGE								_T("http://www.contaware.com/contacammanual/")
-#define EXAMPLE_COMMANDS_ONLINE_PAGE					_T("http://www.contaware.com/contacamexamplecmd/")
+#define FAQ_ONLINE_PAGE									_T("https://www.contaware.com/contacamfaq/")
+#define MANUAL_ONLINE_PAGE								_T("https://www.contaware.com/contacammanual/")
+#define EXAMPLE_COMMANDS_ONLINE_PAGE					_T("https://www.contaware.com/contacamexamplecmd/")
+#define IPCAM_INSTABILITY_ONLINE_PAGE					_T("https://www.contaware.com/contacamipcaminstability/")
 #else
 #define APPNAME_EXT										_T("FreeVimager.exe")
 #define APPNAME_NOEXT									_T("FreeVimager")
 #define APPNAME_NOEXT_LOW								_T("freevimager")
 #define APPNAME_NOEXT_ASCII								"FreeVimager"
 #define APPMUTEXNAME									_T("FreeVimagerAppMutex")
-#define FAQ_ONLINE_PAGE									_T("http://www.contaware.com/freevimagerfaq/")
-#define MANUAL_ONLINE_PAGE								_T("http://www.contaware.com/freevimagermanual/")
+#define FAQ_ONLINE_PAGE									_T("https://www.contaware.com/freevimagerfaq/")
+#define MANUAL_ONLINE_PAGE								_T("https://www.contaware.com/freevimagermanual/")
 #endif
 #define APPVERSION										_T("9.9.0beta2")
 

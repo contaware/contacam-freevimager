@@ -2982,6 +2982,7 @@
 #define IDC_CHECK_FLIP_H                2576
 #define IDC_CHECK_FLIP_V                2577
 #define IDC_COMBO_SIMULTANEOUS_SAVING   2578
+#define IDC_SYSLINK_IPCAM_INSTABILITY_HELP 2579
 #define ID_EDIT_ROTATE_FLIP             32778
 #define ID_FILE_SELECTTWAINSOURCE       32779
 #define ID_FILE_ACQUIRE                 32780
@@ -3230,7 +3231,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1503
 #define _APS_NEXT_COMMAND_VALUE         33555
-#define _APS_NEXT_CONTROL_VALUE         2579
+#define _APS_NEXT_CONTROL_VALUE         2580
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

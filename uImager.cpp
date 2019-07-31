@@ -566,8 +566,8 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		INITCOMMONCONTROLSEX InitCtrls;
 		InitCtrls.dwSize = sizeof(InitCtrls);
 		// Set this to include all the common control classes you want to use
-		// in your application.
-		InitCtrls.dwICC = ICC_WIN95_CLASSES;
+		// in your application
+		InitCtrls.dwICC = ICC_WIN95_CLASSES | ICC_LINK_CLASS;
 		InitCommonControlsEx(&InitCtrls);
 
 		// Call base class implementation

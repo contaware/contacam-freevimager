@@ -45,6 +45,8 @@ BEGIN_MESSAGE_MAP(CHostPortDlg, CDialog)
 	ON_CBN_EDITCHANGE(IDC_COMBO_HOST, OnEditchangeComboHost)
 	ON_EN_CHANGE(IDC_EDIT_PORT, OnChangeEditPort)
 	ON_CBN_SELCHANGE(IDC_COMBO_DEVICETYPEMODE, OnSelchangeComboDeviceTypeMode)
+	ON_NOTIFY(NM_CLICK, IDC_SYSLINK_IPCAM_INSTABILITY_HELP, OnSyslinkIPCamInstabilityHelp)
+	ON_NOTIFY(NM_RETURN, IDC_SYSLINK_IPCAM_INSTABILITY_HELP, OnSyslinkIPCamInstabilityHelp)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -747,6 +749,15 @@ void CHostPortDlg::SaveSettings()
 	((CUImagerApp*)::AfxGetApp())->WriteSecureProfileString(sDevicePathName, _T("HTTPGetFramePasswordExportable"), sText);
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_PREFER_TCP_FOR_RTSP);
 	((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sDevicePathName, _T("PreferTcpforRtsp"), pCheck->GetCheck());
+}
+
+void CHostPortDlg::OnSyslinkIPCamInstabilityHelp(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	::ShellExecute(	NULL,
+					_T("open"),
+					IPCAM_INSTABILITY_ONLINE_PAGE,
+					NULL, NULL, SW_SHOWNORMAL);
+	*pResult = 0;
 }
 
 #endif
