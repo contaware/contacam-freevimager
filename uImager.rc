@@ -823,7 +823,6 @@ BEGIN
     LTEXT           "Version:",IDC_STATIC2142,15,49,39,8
     LTEXT           "",IDC_APPNAME,74,17,216,8
     LTEXT           "Homepage:",IDC_STATIC2143,15,80,42,8
-    LTEXT           "www.contaware.com",IDC_WEB_LINK,74,80,70,8,SS_NOTIFY
     LTEXT           "Developed By:",IDC_STATIC2144,15,110,48,8
     LTEXT           "M.Sc. ETH Oliver Pfister",IDC_STATIC2145,74,110,216,8
     GROUPBOX        "",IDC_STATIC2146,7,38,284,26
@@ -837,6 +836,7 @@ BEGIN
     LTEXT           "Translated By:",IDC_STATIC2151,15,124,51,8
     LTEXT           "This is the original language",IDC_STATIC2152,74,124,216,8
     GROUPBOX        "",IDC_STATIC2147,7,69,284,26
+    CONTROL         "<a>www.contaware.com</a>",IDC_SYSLINK_HOMEPAGE,"SysLink",WS_TABSTOP,74,80,216,8
 END
 
 IDD_RESIZING DIALOGEX 0, 0, 206, 145
@@ -1042,7 +1042,7 @@ BEGIN
     LTEXT           "Allowed case sensitive: %name% %date% %time% %note%",IDC_STATIC2263,14,130,226,8
 END
 
-IDD_HOSTPORT DIALOGEX 0, 0, 226, 264
+IDD_HOSTPORT DIALOGEX 0, 0, 226, 263
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Connect To"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -1053,11 +1053,11 @@ BEGIN
     EDITTEXT        IDC_AUTH_USERNAME,68,164,145,13,ES_AUTOHSCROLL
     EDITTEXT        IDC_AUTH_PASSWORD,68,180,145,13,ES_PASSWORD | ES_AUTOHSCROLL
     CONTROL         "As RTSP transport try first TCP then UDP",IDC_CHECK_PREFER_TCP_FOR_RTSP,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,207,148,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,208,148,10
     CONTROL         "<a>Click here to solve camera instability</a>",IDC_SYSLINK_IPCAM_INSTABILITY_HELP,
                     "SysLink",WS_TABSTOP,7,225,206,10
-    DEFPUSHBUTTON   "OK",IDOK,58,245,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,118,245,50,14
+    DEFPUSHBUTTON   "OK",IDOK,58,244,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,118,244,50,14
     GROUPBOX        "Camera IP or Address",IDC_STATIC_IP,7,5,213,32
     GROUPBOX        "Camera Port",IDC_STATIC_PORT,7,44,213,33
     GROUPBOX        "Camera Maker and Protocol",IDC_STATIC_DEVICETYPEMODE,7,84,213,60
@@ -1293,13 +1293,13 @@ BEGIN
     DEFPUSHBUTTON   "I Agree and Donated",IDOK,129,255,141,25
     EDITTEXT        IDC_EDIT_LICENSE,7,6,388,138,ES_MULTILINE | ES_READONLY | WS_VSCROLL
     LTEXT           "1. Please donate the requested $10 USD per installation at:",IDC_STATIC,13,167,192,8
-    LTEXT           "www.contaware.com",IDC_WEB_LINK,210,167,70,8,SS_NOTIFY
     LTEXT           "2. Enter here the email address used to donate, this will remove the ""NO DONATION"" text:",IDC_STATIC,13,181,374,8
     LTEXT           "NOTE",IDC_STATIC,13,213,19,8
     LTEXT           "• Email addresses of past donors are all valid.",IDC_STATIC,13,223,374,8
     LTEXT           "• For each additional installation please donate another $10 USD, the same email address can then be used.",IDC_STATIC,13,234,374,8
     GROUPBOX        "Donation",IDC_STATIC,7,154,388,95
     LTEXT           "Privacy Policy: provided email address is sent encrypted to contaware.com. Your personal data is kept confidential. We believe that all our processes are EU GDPR compliant.",IDC_STATIC,13,284,374,19
+    CONTROL         "<a>www.contaware.com</a>",IDC_SYSLINK_HOMEPAGE,"SysLink",WS_TABSTOP,209,167,178,8
 END
 
 IDD_CREDITS DIALOGEX 0, 0, 203, 182
@@ -2347,7 +2347,7 @@ BEGIN
         VERTGUIDE, 14
         VERTGUIDE, 213
         TOPMARGIN, 7
-        BOTTOMMARGIN, 260
+        BOTTOMMARGIN, 259
     END
 
     IDD_CAMERAADVANCEDSETTINGS, DIALOG

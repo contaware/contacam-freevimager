@@ -10,10 +10,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-/////////////////////////////////////////////////////////////////////////////
-// CLicenseDlg dialog
-
-
 CLicenseDlg::CLicenseDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CLicenseDlg::IDD, pParent)
 {
@@ -21,7 +17,6 @@ CLicenseDlg::CLicenseDlg(CWnd* pParent /*=NULL*/)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
 }
-
 
 void CLicenseDlg::DoDataExchange(CDataExchange* pDX)
 {
@@ -32,14 +27,21 @@ void CLicenseDlg::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP
 }
 
+void CLicenseDlg::OnSyslinkHomepage(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	::ShellExecute(	NULL,
+					_T("open"),
+					MYCOMPANY_PAGE,
+					NULL, NULL, SW_SHOWNORMAL);
+	*pResult = 0;
+}
 
 BEGIN_MESSAGE_MAP(CLicenseDlg, CDialog)
 	//{{AFX_MSG_MAP(CLicenseDlg)
+	ON_NOTIFY(NM_CLICK, IDC_SYSLINK_HOMEPAGE, OnSyslinkHomepage)
+	ON_NOTIFY(NM_RETURN, IDC_SYSLINK_HOMEPAGE, OnSyslinkHomepage)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// CLicenseDlg message handlers
 
 BOOL CLicenseDlg::OnInitDialog() 
 {
@@ -116,9 +118,6 @@ BOOL CLicenseDlg::OnInitDialog()
 		// Also calling the dialog several times is not a problem,
 		// LoadResource is always returning the same portion of memory!
 	}
-	
-	// contaware.com site link
-	m_WebLink.SubclassDlgItem(IDC_WEB_LINK, this);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE

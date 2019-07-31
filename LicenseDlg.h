@@ -8,7 +8,6 @@
 
 #include "resource.h"
 #include "BkgColEdit.h"
-#include "Staticlink.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CLicenseDlg dialog
@@ -25,7 +24,6 @@ public:
 	CBkgColEdit	m_License;
 	CString	m_sEmail;
 	//}}AFX_DATA
-	CStaticLink m_WebLink;	// Hyperlink
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -40,6 +38,7 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CLicenseDlg)
 	virtual BOOL OnInitDialog();
+	afx_msg void OnSyslinkHomepage(NMHDR* pNMHDR, LRESULT* pResult);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

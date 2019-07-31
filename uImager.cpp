@@ -1280,9 +1280,6 @@ BOOL CAboutDlg::OnInitDialog()
 	CEdit* pPhysMemMB = (CEdit*)GetDlgItem(IDC_PHYSMEM);
 	pPhysMemMB->SetWindowText(sPhysMemMB);
 
-	// contaware.com site link
-	m_WebLink.SubclassDlgItem(IDC_WEB_LINK, this);
-
 	// Compilation Time & Date
 	CString sCompilationTime;
 	sCompilationTime =	CString(_T("(")) +
@@ -1296,8 +1293,19 @@ BOOL CAboutDlg::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
+void CAboutDlg::OnSyslinkHomepage(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	::ShellExecute(	NULL,
+					_T("open"),
+					MYCOMPANY_PAGE,
+					NULL, NULL, SW_SHOWNORMAL);
+	*pResult = 0;
+}
+
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
 	//{{AFX_MSG_MAP(CAboutDlg)
+	ON_NOTIFY(NM_CLICK, IDC_SYSLINK_HOMEPAGE, OnSyslinkHomepage)
+	ON_NOTIFY(NM_RETURN, IDC_SYSLINK_HOMEPAGE, OnSyslinkHomepage)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 

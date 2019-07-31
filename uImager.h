@@ -12,7 +12,6 @@
 
 #include "resource.h"       // main symbols
 #include "ZipArchive.h"
-#include "Staticlink.h"
 #include "EnumPrinters.h"
 #include "MainFrm.h"
 #include "WorkerThread.h"
@@ -166,9 +165,9 @@ public:
 protected:
 	//{{AFX_MSG(CAboutDlg)
 	virtual BOOL OnInitDialog();
+	afx_msg void OnSyslinkHomepage(NMHDR* pNMHDR, LRESULT* pResult);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
-	CStaticLink m_WebLink;	// Hyperlink
 };
 
 class CUImagerMultiDocTemplate : public CMultiDocTemplate

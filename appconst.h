@@ -37,6 +37,7 @@
 // Company
 #define MYCOMPANY										_T("Contaware")
 #define MYCOMPANY_WEB									_T("contaware.com")
+#define MYCOMPANY_PAGE									_T("https://www.contaware.com/")
 
 // This file contains the configuration files location, the temporary folder location
 // and tells the program whether to use the registry or an ini file 
