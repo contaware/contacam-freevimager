@@ -2261,6 +2261,7 @@ BOOL CBatchProcDlg::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 void CBatchProcDlg::UpdateControls()
 {
 	CSpinButtonCtrl* pSpin;
+	CLinkCtrl* pSyslink;
 	CEdit* pEdit;
 	CButton* pRadio;
 	CButton* pCheck;
@@ -2700,6 +2701,10 @@ void CBatchProcDlg::UpdateControls()
 		{
 			DragAcceptFiles(FALSE);
 
+			pSyslink = (CLinkCtrl*)GetDlgItem(IDC_TEXT_INPUT_DIR);
+			if (pSyslink)
+				pSyslink->EnableWindow(TRUE);
+
 			pEdit = (CEdit*)GetDlgItem(IDC_EDIT_SRCDIR);
 			if (pEdit)
 				pEdit->EnableWindow(TRUE);
@@ -2742,6 +2747,10 @@ void CBatchProcDlg::UpdateControls()
 		case INPUT_LIST :
 		{
 			DragAcceptFiles(TRUE);
+
+			pSyslink = (CLinkCtrl*)GetDlgItem(IDC_TEXT_INPUT_DIR);
+			if (pSyslink)
+				pSyslink->EnableWindow(FALSE);
 
 			pEdit = (CEdit*)GetDlgItem(IDC_EDIT_SRCDIR);
 			if (pEdit)
@@ -2790,6 +2799,13 @@ void CBatchProcDlg::UpdateControls()
 	{
 		case OUTPUT_DIR :
 		{
+			pSyslink = (CLinkCtrl*)GetDlgItem(IDC_TEXT_OUTPUT_DIR);
+			if (pSyslink)
+				pSyslink->EnableWindow(TRUE);
+			pSyslink = (CLinkCtrl*)GetDlgItem(IDC_TEXT_OUTPUT_FILE);
+			if (pSyslink)
+				pSyslink->EnableWindow(FALSE);
+
 			pEdit = (CEdit*)GetDlgItem(IDC_EDIT_DSTDIR);
 			if (pEdit)
 				pEdit->EnableWindow(TRUE);
@@ -2810,6 +2826,13 @@ void CBatchProcDlg::UpdateControls()
 
 		case OUTPUT_FILE :
 		{
+			pSyslink = (CLinkCtrl*)GetDlgItem(IDC_TEXT_OUTPUT_DIR);
+			if (pSyslink)
+				pSyslink->EnableWindow(FALSE);
+			pSyslink = (CLinkCtrl*)GetDlgItem(IDC_TEXT_OUTPUT_FILE);
+			if (pSyslink)
+				pSyslink->EnableWindow(TRUE);
+
 			pEdit = (CEdit*)GetDlgItem(IDC_EDIT_DSTDIR);
 			if (pEdit)
 				pEdit->EnableWindow(FALSE);
@@ -2854,6 +2877,7 @@ void CBatchProcDlg::UpdateControls()
 void CBatchProcDlg::EnableAllControls(BOOL bEnable, BOOL bIncludeProcessButton)
 {
 	CSpinButtonCtrl* pSpin;
+	CLinkCtrl* pSyslink;
 	CEdit* pEdit;
 	CButton* pRadio;
 	CButton* pCheck;
@@ -2876,6 +2900,17 @@ void CBatchProcDlg::EnableAllControls(BOOL bEnable, BOOL bIncludeProcessButton)
 	pSpin = (CSpinButtonCtrl*)m_TiffTab.GetDlgItem(IDC_SPIN_QUALITY);
 	if (pSpin)
 		pSpin->EnableWindow(bEnable);
+
+	// Syslink Controls
+	pSyslink = (CLinkCtrl*)GetDlgItem(IDC_TEXT_INPUT_DIR);
+	if (pSyslink)
+		pSyslink->EnableWindow(bEnable);
+	pSyslink = (CLinkCtrl*)GetDlgItem(IDC_TEXT_OUTPUT_DIR);
+	if (pSyslink)
+		pSyslink->EnableWindow(bEnable);
+	pSyslink = (CLinkCtrl*)GetDlgItem(IDC_TEXT_OUTPUT_FILE);
+	if (pSyslink)
+		pSyslink->EnableWindow(bEnable);
 
 	// Edit Controls
 	pEdit = (CEdit*)m_ShrinkTab.GetDlgItem(IDC_EDIT_PIXELS);
