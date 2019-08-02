@@ -5,7 +5,6 @@
 
 #include "resource.h"
 #include "DibStatic.h"
-#include "StaticLink.h"
 #include "DragDropListCtrl.h"
 #include "TabCtrlSSL.h"
 #include "BatchProcGeneralTab.h"
@@ -270,9 +269,6 @@ public:
 								// when change notification thread is not running!
 
 	CDibStatic m_Dibs[NUM_DIBS];
-	CStaticLink m_InputDirLabel;
-	CStaticLink m_OutputDirLabel;
-	CStaticLink m_OutputFileNameLabel;
 
 protected:
 	// Settings
@@ -425,8 +421,11 @@ protected:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnRadioOptimizeAdvanced();
 	afx_msg void OnRadioOptimizeAuto();
+	afx_msg void OnSyslinkTextInputDir(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnButtonSrcDir();
+	afx_msg void OnSyslinkTextOutputDir(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnButtonDstDir();
+	afx_msg void OnSyslinkTextOutputFile(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnButtonDstFile();
 	afx_msg void OnRadioOutput();
 	afx_msg void OnRadioOutputFile();

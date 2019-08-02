@@ -1456,8 +1456,14 @@ BEGIN_MESSAGE_MAP(CBatchProcDlg, CDialog)
 	//{{AFX_MSG_MAP(CBatchProcDlg)
 	ON_BN_CLICKED(IDC_RADIO_OPTIMIZE_ADVANCED, OnRadioOptimizeAdvanced)
 	ON_BN_CLICKED(IDC_RADIO_OPTIMIZE_AUTO, OnRadioOptimizeAuto)
+	ON_NOTIFY(NM_CLICK, IDC_TEXT_INPUT_DIR, OnSyslinkTextInputDir)
+	ON_NOTIFY(NM_RETURN, IDC_TEXT_INPUT_DIR, OnSyslinkTextInputDir)
 	ON_BN_CLICKED(IDC_BUTTON_SRCDIR, OnButtonSrcDir)
+	ON_NOTIFY(NM_CLICK, IDC_TEXT_OUTPUT_DIR, OnSyslinkTextOutputDir)
+	ON_NOTIFY(NM_RETURN, IDC_TEXT_OUTPUT_DIR, OnSyslinkTextOutputDir)
 	ON_BN_CLICKED(IDC_BUTTON_DSTDIR, OnButtonDstDir)
+	ON_NOTIFY(NM_CLICK, IDC_TEXT_OUTPUT_FILE, OnSyslinkTextOutputFile)
+	ON_NOTIFY(NM_RETURN, IDC_TEXT_OUTPUT_FILE, OnSyslinkTextOutputFile)
 	ON_BN_CLICKED(IDC_BUTTON_OUTPUT_FILE, OnButtonDstFile)
 	ON_BN_CLICKED(IDC_RADIO_OUTPUT, OnRadioOutput)
 	ON_BN_CLICKED(IDC_RADIO_OUTPUT_FILE, OnRadioOutputFile)
@@ -1508,11 +1514,6 @@ BOOL CBatchProcDlg::OnInitDialog()
 
 	// Update Sizes
 	UpdateDstFileSize();
-
-	// Subclass Links
-	m_InputDirLabel.SubclassDlgItem(IDC_TEXT_INPUT_DIR, this);
-	m_OutputDirLabel.SubclassDlgItem(IDC_TEXT_OUTPUT_DIR, this);
-	m_OutputFileNameLabel.SubclassDlgItem(IDC_TEXT_OUTPUT_FILE, this);
 
 	// Set Dlg Wnd for Process Thread
 	m_ProcessThread.SetDlg(this);
@@ -1660,12 +1661,8 @@ void CBatchProcDlg::LoadSettings()
 	m_TiffTab.m_sPdfPaperSize = pApp->GetProfileString(sSection, _T("PdfPaperSize"), _T("Fit"));
 	m_bRecursive = (BOOL)pApp->GetProfileInt(sSection, _T("Recursive"), TRUE);
 	m_sSrc = pApp->GetProfileString(sSection, _T("Src"), _T(""));
-	m_InputDirLabel.SetLink(m_sSrc);
-	m_sDst = pApp->GetProfileString(sSection, _T("Dst"), _T(""));
-	m_sEditDst = m_sDst;
-	m_OutputDirLabel.SetLink(m_sDst);
+	m_sEditDst = m_sDst = pApp->GetProfileString(sSection, _T("Dst"), _T(""));
 	m_sOutputFileName = pApp->GetProfileString(sSection, _T("OutputFileName"), _T(""));
-	m_OutputFileNameLabel.SetLink(m_sOutputFileName);
 	m_nOutputSelection = (int)pApp->GetProfileInt(sSection, _T("OutputSelection"), OUTPUT_DIR);
 	m_nInputSelection = (int)pApp->GetProfileInt(sSection, _T("InputSelection"), INPUT_DIR);
 	m_JpegTab.m_nExifThumbOperationType = (int)pApp->GetProfileInt(sSection, _T("ExifThumbOperationType"), CBatchProcJpegTab::THUMB_NONE);
@@ -1799,14 +1796,13 @@ void CBatchProcDlg::OnRadioInputList()
 void CBatchProcDlg::OnChangeEditSrcdir() 
 {
 	UpdateData(TRUE);
-	m_InputDirLabel.SetLink(m_sSrc);
 }
 
 void CBatchProcDlg::OnChangeEditDstdir() 
 {
 	UpdateData(TRUE);
 	m_ChangeNotificationThread.Kill();
-	m_OutputDirLabel.SetLink(m_sDst = m_sEditDst);
+	m_sDst = m_sEditDst;
 	if (::IsExistingDir(m_sDst))
 		m_ChangeNotificationThread.Start();
 	else
@@ -1816,7 +1812,6 @@ void CBatchProcDlg::OnChangeEditDstdir()
 void CBatchProcDlg::OnChangeEditOutputFileName() 
 {
 	UpdateData(TRUE);
-	m_OutputFileNameLabel.SetLink(m_sOutputFileName);
 	UpdateDstFileSize();
 }
 
@@ -1832,6 +1827,15 @@ void CBatchProcDlg::OnRadioOutputFile()
 	UpdateDstFileSize();
 }
 
+void CBatchProcDlg::OnSyslinkTextInputDir(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	::ShellExecute(	NULL,
+					_T("open"),
+					m_sSrc,
+					NULL, NULL, SW_SHOWNORMAL);
+	*pResult = 0;
+}
+
 void CBatchProcDlg::OnButtonSrcDir() 
 {
 	if (UpdateData(TRUE))
@@ -1839,11 +1843,18 @@ void CBatchProcDlg::OnButtonSrcDir()
 		CBrowseDlg dlg(	this,
 						&m_sSrc,
 						_T("Select the Source Directory"));
-		if (dlg.DoModal())
-			m_InputDirLabel.SetLink(m_sSrc);
-
+		dlg.DoModal();
 		UpdateData(FALSE);
 	}
+}
+
+void CBatchProcDlg::OnSyslinkTextOutputDir(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	::ShellExecute(	NULL,
+					_T("open"),
+					m_sDst,
+					NULL, NULL, SW_SHOWNORMAL);
+	*pResult = 0;
 }
 
 void CBatchProcDlg::OnButtonDstDir() 
@@ -1854,20 +1865,26 @@ void CBatchProcDlg::OnButtonDstDir()
 						&m_sEditDst,
 						_T("Select the Destination Directory"),
 						TRUE);
-		if (dlg.DoModal())
+		if (dlg.DoModal() == IDOK)
 		{
 			m_ChangeNotificationThread.Kill();
-			m_OutputDirLabel.SetLink(m_sDst = m_sEditDst);
+			m_sDst = m_sEditDst;
 			if (::IsExistingDir(m_sDst))
 				m_ChangeNotificationThread.Start();
 			else
 				UpdateDstFolderSizes();
 		}
-		else
-			m_sEditDst = m_sDst; // Restore
-
 		UpdateData(FALSE);
 	}
+}
+
+void CBatchProcDlg::OnSyslinkTextOutputFile(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	::ShellExecute(	NULL,
+					_T("open"),
+					m_sOutputFileName,
+					NULL, NULL, SW_SHOWNORMAL);
+	*pResult = 0;
 }
 
 void CBatchProcDlg::OnButtonDstFile()
@@ -1916,7 +1933,6 @@ void CBatchProcDlg::OnButtonDstFile()
 		if (fd.DoModal() == IDOK)
 		{
 			m_sOutputFileName = FileName;
-			m_OutputFileNameLabel.SetLink(m_sOutputFileName);
 		}
 		UpdateData(FALSE);
 		UpdateDstFileSize();
