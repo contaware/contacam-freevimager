@@ -413,6 +413,14 @@ void CSettingsDlgVideoDeviceDoc::OnButtonDocRoot()
 			return;
 		}
 
+		// Fail if we do not have write access to the sNewMicroApacheDocRoot folder
+		if (!::HasWriteAccess(::MakeTempFileName(sNewMicroApacheDocRoot, CString(APPNAME_NOEXT) + _T(".tmp"))))
+		{
+			sMsg.Format(ML_STRING(1251, "Access denied to %s"), sNewMicroApacheDocRoot);
+			::AfxMessageBox(sMsg, MB_OK | MB_ICONERROR);
+			return;
+		}
+
 		// Fail if sNewMicroApacheDocRoot is not an ASCII path
 		if (!::IsASCIICompatiblePath(sNewMicroApacheDocRoot))
 		{
