@@ -5536,14 +5536,28 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	sConfig += _T("ErrorLog \"") + sConfigDir + MICROAPACHE_LOGNAME_EXT + _T("\"\r\n");
 	sConfig += _T("PidFile \"") + sConfigDir + MICROAPACHE_PIDNAME_EXT + _T("\"\r\n");
 	
-	// PHP session temporary file location
+	// PHP session
+	// 1. session.gc_maxlifetime specifies the number of seconds after which inactive session data will be seen as garbage.
+	//    For performance reasons session_start() calls the garbage collector (which cleans-up the above mentioned garbage)
+	//    with a frequency of session.gc_probability / session.gc_divisor.
+	//    Note1: on heavily used servers set session.gc_divisor to a bigger value (session.gc_probability is usually left 1).
+	//    Note2: it's not possible to expire its own session (on the same browser) because session_start() first refreshes its
+	//           own session updating the session file timestamp and only after that the garbage collector is called. To expire
+	//           sessions another user/browser must access the server.
+	//    Note3: in ContaCam web interface sessions will not expire as long as the page polls snapshots or refreshes with the
+	//           html meta tag, only if a video is open the session can be expired by another user/browser.
+	//
+	// 2. session.cookie_lifetime (default 0, which means until the browser's next restart) defines how long (in seconds) a
+	//    session cookie will live. Sounds similar to session.gc_maxlifetime, but it's a completely different approach. This
+	//    value defines the absolute maximum lifetime of a session, whether the user is active or not.
 	CString sTempDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir(); // directory has been created in InitInstance()
 	sTempDir = ::GetASCIICompatiblePath(sTempDir); // directory must exist!
 	sTempDir.Replace(_T('\\'), _T('/')); // change path from \ to / (otherwise apache is not happy)
 	sConfig += _T("php_value session.save_path \"") + sTempDir + _T("\"\r\n");
-	sConfig += _T("php_value session.gc_probability 1\r\n");	// session_start() has 1 / 10 or 10% probability
-	sConfig += _T("php_value session.gc_divisor 10\r\n");		// to clean-up old session files
-	sConfig += _T("php_value session.gc_maxlifetime 1440\r\n");	// session maximum lifetime is 1440 seconds
+	sConfig += _T("php_value session.gc_probability 1\r\n");	// session_start() has 1 / 10 or 10% probability (default is 1)
+	sConfig += _T("php_value session.gc_divisor 10\r\n");		// to clean-up old session files (default is 100)
+	sConfig += _T("php_value session.gc_maxlifetime 3600\r\n");	// session maximum lifetime of 1 hour (default is 1440 seconds)
+	sConfig += _T("php_value session.cookie_lifetime 0\r\n");	// the default of 0 means until the browser is closed
 
 	// SSL
 	CString sMicroApacheCertFileSSL = ::GetASCIICompatiblePath(((CUImagerApp*)::AfxGetApp())->m_sMicroApacheCertFileSSL); // file must exist!
