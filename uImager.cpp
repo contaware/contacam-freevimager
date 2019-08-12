@@ -1422,12 +1422,12 @@ void CUImagerApp::OnFileOpen()
 		dlgFile.m_ofn.lpstrCustomFilter = NULL;
 		dlgFile.m_ofn.lpstrFilter = 
 					_T("Supported Files (*.bmp;*.gif;*.jpg;*.tif;*.png;*.pcx;*.emf)\0")
-					_T("*.bmp;*.dib;*.gif;*.png;*.jpg;*.jpeg;*.jpe;*.thm;*.tif;*.tiff;*.jfx;*.pcx;*.emf\0")
+					_T("*.bmp;*.dib;*.gif;*.png;*.jpg;*.jpeg;*.jpe;*.jfif;*.thm;*.tif;*.tiff;*.jfx;*.pcx;*.emf\0")
 					_T("All Files (*.*)\0*.*\0")
 					_T("Windows Bitmap (*.bmp;*.dib)\0*.bmp;*.dib\0")
 					_T("Graphics Interchange Format (*.gif)\0*.gif\0")
 					_T("Portable Network Graphics (*.png)\0*.png\0")
-					_T("JPEG File Interchange Format (*.jpg;*.jpeg;*.jpe;*.thm)\0*.jpg;*.jpeg;*.jpe;*.thm\0")
+					_T("JPEG File Interchange Format (*.jpg;*.jpeg;*.jpe;*.jfif;*.thm)\0*.jpg;*.jpeg;*.jpe;*.jfif;*.thm\0")
 					_T("Tag Image File Format (*.tif;*.tiff;*.jfx)\0*.tif;*.tiff;*.jfx\0")
 					_T("PC Paintbrush (*.pcx)\0*.pcx\0")
 					_T("Enhanced Metafile (*.emf)\0*.emf\0");
@@ -4107,6 +4107,7 @@ void CUImagerApp::UpdateFileAssociations()
 	bJpeg =		IsFileTypeAssociated(_T("jpg"))		&&
 				IsFileTypeAssociated(_T("jpeg"))	&&
 				IsFileTypeAssociated(_T("jpe"))		&&
+				IsFileTypeAssociated(_T("jfif"))	&&
 				IsFileTypeAssociated(_T("thm"));
 	bPcx =		IsFileTypeAssociated(_T("pcx"));
 	bEmf =		IsFileTypeAssociated(_T("emf"));
@@ -4127,6 +4128,7 @@ void CUImagerApp::UpdateFileAssociations()
 		AssociateFileType(_T("jpg"));
 		AssociateFileType(_T("jpeg"));
 		AssociateFileType(_T("jpe"));
+		AssociateFileType(_T("jfif"));
 		AssociateFileType(_T("thm"));
 	}
 	else
@@ -4134,6 +4136,7 @@ void CUImagerApp::UpdateFileAssociations()
 		UnassociateFileType(_T("jpg"));
 		UnassociateFileType(_T("jpeg"));
 		UnassociateFileType(_T("jpe"));
+		UnassociateFileType(_T("jfif"));
 		UnassociateFileType(_T("thm"));
 	}
 

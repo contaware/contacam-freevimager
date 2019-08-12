@@ -2057,6 +2057,7 @@ CPictureDoc::CPictureDoc()
 	m_FileFind.AddAllowedExtension(_T("jpeg"));
 	m_FileFind.AddAllowedExtension(_T("tiff"));
 	m_FileFind.AddAllowedExtension(_T("jpe"));
+	m_FileFind.AddAllowedExtension(_T("jfif"));
 	m_FileFind.AddAllowedExtension(_T("thm"));
 	m_FileFind.AddAllowedExtension(_T("jfx"));
 	m_FileFind.AddAllowedExtension(_T("dib"));
@@ -2071,6 +2072,7 @@ CPictureDoc::CPictureDoc()
 	m_NewFileFind.AddAllowedExtension(_T("jpeg"));
 	m_NewFileFind.AddAllowedExtension(_T("tiff"));
 	m_NewFileFind.AddAllowedExtension(_T("jpe"));
+	m_NewFileFind.AddAllowedExtension(_T("jfif"));
 	m_NewFileFind.AddAllowedExtension(_T("thm"));
 	m_NewFileFind.AddAllowedExtension(_T("jfx"));
 	m_NewFileFind.AddAllowedExtension(_T("dib"));
@@ -9196,7 +9198,7 @@ BOOL CPictureDoc::CopyDelCrop(BOOL bShowMessageBoxOnError, BOOL bCopy, BOOL bDel
 				dlgFile.m_ofn.lpstrFile = szFileName;
 				dlgFile.m_ofn.nMaxFile = MAX_PATH;
 				dlgFile.m_ofn.lpstrCustomFilter = NULL;
-				dlgFile.m_ofn.lpstrFilter = _T("JPEG File Interchange Format (*.jpg;*.jpeg;*.jpe;*.thm)\0*.jpg;*.jpeg;*.jpe;*.thm\0");
+				dlgFile.m_ofn.lpstrFilter = _T("JPEG File Interchange Format (*.jpg;*.jpeg;*.jpe;*.jfif;*.thm)\0*.jpg;*.jpeg;*.jpe;*.jfif;*.thm\0");
 				dlgFile.m_ofn.lpstrDefExt = _T("jpg");
 				if (dlgFile.DoModal() == IDOK)
 				{

@@ -124,6 +124,7 @@ void CSettingsDlg::FileAssociation(BOOL bDoAssociation)
 		pApp->AssociateFileType(_T("jpg"));
 		pApp->AssociateFileType(_T("jpeg"));
 		pApp->AssociateFileType(_T("jpe"));
+		pApp->AssociateFileType(_T("jfif"));
 		pApp->AssociateFileType(_T("thm"));
 
 		// Pcx
@@ -152,6 +153,7 @@ void CSettingsDlg::FileAssociation(BOOL bDoAssociation)
 		pApp->UnassociateFileType(_T("jpg"));
 		pApp->UnassociateFileType(_T("jpeg"));
 		pApp->UnassociateFileType(_T("jpe"));
+		pApp->UnassociateFileType(_T("jfif"));
 		pApp->UnassociateFileType(_T("thm"));
 
 		// Pcx

@@ -103,7 +103,11 @@ JpegExtension:
   WriteRegStr HKCR "$MYFILECLASSNAME\DefaultIcon" "" "$INSTDIR\${APPNAME_EXT},19"
   goto GraphicsExtensionShell
 JpeExtension:
-  StrCmp $FILEEXTENSION "jpe" 0 ThmExtension
+  StrCmp $FILEEXTENSION "jpe" 0 JfifExtension
+  WriteRegStr HKCR "$MYFILECLASSNAME\DefaultIcon" "" "$INSTDIR\${APPNAME_EXT},19"
+  goto GraphicsExtensionShell
+JfifExtension:
+  StrCmp $FILEEXTENSION "jfif" 0 ThmExtension
   WriteRegStr HKCR "$MYFILECLASSNAME\DefaultIcon" "" "$INSTDIR\${APPNAME_EXT},19"
   goto GraphicsExtensionShell
 ThmExtension:

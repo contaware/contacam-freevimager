@@ -286,6 +286,7 @@ Section "${APPNAME_NOEXT} Program (required)"
   !insertmacro ADDREMOVE_FILEASSOCIATION $JPG jpg
   !insertmacro ADDREMOVE_FILEASSOCIATION $JPG jpeg
   !insertmacro ADDREMOVE_FILEASSOCIATION $JPG jpe
+  !insertmacro ADDREMOVE_FILEASSOCIATION $JPG jfif
   !insertmacro ADDREMOVE_FILEASSOCIATION $JPG thm
   !insertmacro ADDREMOVE_FILEASSOCIATION $PCX pcx
   !insertmacro ADDREMOVE_FILEASSOCIATION $EMF emf
@@ -430,6 +431,8 @@ Section "Uninstall"
   StrCpy $FILEEXTENSION "jpeg"
   call un.RemoveFileAssociation
   StrCpy $FILEEXTENSION "jpe"
+  call un.RemoveFileAssociation
+  StrCpy $FILEEXTENSION "jfif"
   call un.RemoveFileAssociation
   StrCpy $FILEEXTENSION "thm"
   call un.RemoveFileAssociation

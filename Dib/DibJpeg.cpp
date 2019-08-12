@@ -52,9 +52,10 @@ static void jpeg_error_load(j_common_ptr pcinfo)
 BOOL CDib::IsJPEGExt(CString sExt)
 {
 	sExt.TrimLeft(_T('.'));
-	return ((sExt.CompareNoCase(_T("jpg")) == 0) ||
-			(sExt.CompareNoCase(_T("jpeg")) == 0) ||
-			(sExt.CompareNoCase(_T("jpe")) == 0) ||
+	return ((sExt.CompareNoCase(_T("jpg")) == 0)	||
+			(sExt.CompareNoCase(_T("jpeg")) == 0)	||
+			(sExt.CompareNoCase(_T("jpe")) == 0)	||
+			(sExt.CompareNoCase(_T("jfif")) == 0)	||
 			(sExt.CompareNoCase(_T("thm")) == 0));
 }
 
