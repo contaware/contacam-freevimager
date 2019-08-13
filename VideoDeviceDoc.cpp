@@ -9720,6 +9720,31 @@ __forceinline int CVideoDeviceDoc::CHttpParseProcess::FindEndOfLine(const CStrin
 		return -1;
 }
 
+/*
+Content-Type: multipart/x-mixed-replace; boundary="FrameBoundary"<CRLF>
+<CRLF>
+--FrameBoundary<CRLF>
+Content-Type: image/jpeg<CRLF>
+Content-Length: 12436<CRLF>
+<CRLF>
+<jpeg bytes>
+<CRLF>
+--FrameBoundary<CRLF>
+Content-Type: image/jpeg<CRLF>
+Content-Length: 21436<CRLF>
+<CRLF>
+<jpeg bytes>
+<CRLF>
+--FrameBoundary<CRLF>
+...
+
+Note: the optional double-quotes around the boundary delimiter parameter are necessary
+      if using special characters, like a column for example
+Attention: some servers erroneously set boundary=--FrameBoundary (with the two hyphens)
+
+https://tools.ietf.org/html/rfc2046#section-5.1.1
+https://tools.ietf.org/html/rfc822
+*/
 BOOL CVideoDeviceDoc::CHttpParseProcess::ParseMultipart(CNetCom* pNetCom,
 														int nPos,
 														int nSize,
@@ -9776,7 +9801,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::ParseMultipart(CNetCom* pNetCom,
 			sContentType.TrimLeft();
 		}
 
-		// Find Content Length
+		// Content Length
 		if ((nPos = sMsgLowerCase.Find(_T("content-length:"), nPos)) < 0)
 		{
 			if (nSize > HTTP_MIN_MULTIPART_SIZE)
@@ -9786,8 +9811,6 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::ParseMultipart(CNetCom* pNetCom,
 		nPos += 15;
 		if ((nPosEnd = FindEndOfLine(sMsg, nPos)) < 0)
 			return FALSE;
-
-		// Parse Content Length
 		CString sMultipartLength = sMsgLowerCase.Mid(nPos, nPosEnd - nPos);
 		if (sMultipartLength == _T(""))
 			return FALSE;
