@@ -9942,8 +9942,10 @@ The end-of-line marker within an Entity-Body is defined by
 its associated media type.
 The end of the header fields is indicated by an empty field,
 resulting in the transmission of two consecutive CRLF pairs.
-Using LFLF instead of CRLFCRLF violates RFC 2616 but must be
-supported!
+Attention 1: Using LFLF instead of CRLFCRLF violates RFC 2616
+             but must be supported!
+Attention 2: I have seen unauthorized (401) replies with only
+             one CRLF ending pair!
 http://tools.ietf.org/html/rfc2616
 */
 BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
@@ -10353,7 +10355,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 		else if (sCode == _T("401"))
 		{
 			// Wait until whole header is received
-			if (sMsg.Find(_T("\r\n\r\n"), 0) < 0 && sMsg.Find(_T("\n\n"), 0) < 0)
+			if (!bLastCall && sMsg.Find(_T("\r\n\r\n"), 0) < 0 && sMsg.Find(_T("\n\n"), 0) < 0)
 			{
 				delete [] pMsg;
 				return FALSE; // Do not call Processor
