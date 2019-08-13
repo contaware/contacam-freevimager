@@ -10477,10 +10477,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 			else
 			{
 				// Msg
-				if (sCode == _T("503")) // Service Unavailable
-					m_pDoc->ConnectErr(ML_STRING(1491, "Camera is too busy"), m_pDoc->GetDeviceName());
-				else
-					m_pDoc->ConnectErr(ML_STRING(1490, "Wrong camera type"), m_pDoc->GetDeviceName());
+				m_pDoc->ConnectErr(ML_STRING(1465, "Cannot connect to camera"), m_pDoc->GetDeviceName());
 
 				// Empty the buffers, so that parser stops calling us!
 				pNetCom->Read();
