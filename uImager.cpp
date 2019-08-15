@@ -1164,8 +1164,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		sMsg.Format(ML_STRING(1569, "Cameras autostart delay %d sec"), (int)(m_dwFirstStartDelayMs / 1000));
 		if (!m_bServiceProcess)
 			::AfxGetMainFrame()->StatusText(sMsg);
-		if (g_nLogLevel > 0)
-			::LogLine(_T("%s"), sMsg);
+		::LogLine(_T("%s"), sMsg);
 
 		// Flag indicating that the auto-starts have been executed
 		m_bAutostartsExecuted = TRUE;

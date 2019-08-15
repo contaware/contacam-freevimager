@@ -192,9 +192,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// Enable Drag'n'Drop
 	DragAcceptFiles(TRUE);
 
-	// Init timers
+	// Init timer
 	SetTimer(ID_TIMER_1SEC, 1000U, NULL);
-	SetTimer(ID_TIMER_15SEC, 15000U, NULL);
 
 	// Init Menu Positions
 	InitMenuPositions();
@@ -292,9 +291,8 @@ void CMainFrame::TrayIcon(BOOL bEnable)
 
 void CMainFrame::OnDestroy() 
 {
-	// Kill timers
+	// Kill timer
 	KillTimer(ID_TIMER_1SEC);
-	KillTimer(ID_TIMER_15SEC);
 
 	// Close toaster
 	CloseToaster(TRUE); // TRUE: do not allow further toaster windows
@@ -2346,7 +2344,24 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 			bNoDonation = g_DonorEmailValidateThread.m_bNoDonation;
 			m_MDIClientWnd.Invalidate();
 		}
+
+		// System Usage
+		static ULONGLONG ullCount = 0U;
+		ullCount++;
+		if (g_nLogLevel > 0)
+		{
+			// Log every 15 seconds
+			if ((ullCount % 15) == 0)
+				LogSysUsage();
+		}
 #ifdef VIDEODEVICEDOC
+		else
+		{
+			// Single log 1 minute after cameras starting
+			if (ullCount == (ULONGLONG)((((CUImagerApp*)::AfxGetApp())->m_dwFirstStartDelayMs / 1000U) + 60U))
+				LogSysUsage();
+		}
+
 		// Restore Movement Detection Buffering?
 		if (((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames && CDib::m_llOverallSharedMemoryBytes == 0)
 			((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = FALSE;
@@ -2395,11 +2410,6 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		// Toggle flash state
 		nFlashState = (nFlashState+1)%3;
 #endif
-	}
-	else if (nIDEvent == ID_TIMER_15SEC)
-	{
-		if (g_nLogLevel > 0)
-			LogSysUsage();
 	}
 }
 
