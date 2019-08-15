@@ -4,6 +4,8 @@ CONTACAM HISTORY
 
 - Better support for high contrast themes
 - Added a new Generic IP camera entry
+- Fixed mjpeg support for the MotionEyeOS camera (thanks to
+  Dave Smith for reporting the problem and helping find the bug)
 
 9.7.0 (June 19th 2019)
 
