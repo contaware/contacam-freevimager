@@ -193,7 +193,7 @@ Function KillApp
   goto KillAppAbort
 KillApp:
   KillProcDLL::KillProc "${APPNAME_EXT}"
-  Sleep 2000				; give process some time to really stop
+  Sleep 1500				; give process some time to really stop
   Goto lbl_end
 KillAppError:
   MessageBox MB_OK|MB_ICONEXCLAMATION $(CloseAppError) /SD IDOK
@@ -220,12 +220,12 @@ Function KillOtherApps
 
 KillMApache:
   KillProcDLL::KillProc "mapache.exe"
-  Sleep 2000					; give process some time to really stop
+  Sleep 1500					; give process some time to really stop
   StrCmp $R0 "0" KillMApache 0	; check return value of KillProc (Sleep doesn't set $R0)
 
 KillMail:
   KillProcDLL::KillProc "mailsend.exe"
-  Sleep 2000					; give process some time to really stop
+  Sleep 1500					; give process some time to really stop
   StrCmp $R0 "0" KillMail 0		; check return value of KillProc (Sleep doesn't set $R0)
   
   Pop $R1
@@ -457,7 +457,7 @@ Function un.KillApp
   goto KillAppAbort
 KillApp:
   KillProcDLL::KillProc "${APPNAME_EXT}"
-  Sleep 2000				; give process some time to really stop
+  Sleep 1500				; give process some time to really stop
   Goto lbl_end
 KillAppAbort:
   ClearErrors
@@ -482,12 +482,12 @@ Function un.KillOtherApps
 
 KillMApache:
   KillProcDLL::KillProc "mapache.exe"
-  Sleep 2000					; give process some time to really stop
+  Sleep 1500					; give process some time to really stop
   StrCmp $R0 "0" KillMApache 0	; check return value of KillProc (Sleep doesn't set $R0)
 
 KillMail:
   KillProcDLL::KillProc "mailsend.exe"
-  Sleep 2000					; give process some time to really stop
+  Sleep 1500					; give process some time to really stop
   StrCmp $R0 "0" KillMail 0		; check return value of KillProc (Sleep doesn't set $R0)
   
   Pop $R1

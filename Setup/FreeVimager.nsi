@@ -184,7 +184,7 @@ Function KillApp
   goto KillAppAbort
 KillApp:
   KillProcDLL::KillProc "${APPNAME_EXT}"
-  Sleep 2000				; give process some time to really stop
+  Sleep 1500				; give process some time to really stop
   StrCmp $R0 "0" KillApp 0	; to kill all instances check the return value of KillProc (Sleep doesn't set $R0)
   Goto lbl_end
 KillAppError:
@@ -391,7 +391,7 @@ Function un.KillApp
   goto KillAppAbort
 KillApp:
   KillProcDLL::KillProc "${APPNAME_EXT}"
-  Sleep 2000				; give process some time to really stop
+  Sleep 1500				; give process some time to really stop
   StrCmp $R0 "0" KillApp 0	; to kill all instances check the return value of KillProc (Sleep doesn't set $R0)
   Goto lbl_end
 KillAppAbort:
