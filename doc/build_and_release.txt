@@ -7,6 +7,7 @@ support is necessary).
 Free tool to make the Unicode NSIS installers:
 - http://www.scratchpaper.com
   (needed also the nsisFirewall, UAC unicode plugins and KillProcDLL
+  http://wiz0u.free.fr/prog/nsisFirewall
   https://github.com/mazinsw/KillProcDLL)
 
 Non-free tool to make the translations:
