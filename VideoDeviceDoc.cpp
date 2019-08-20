@@ -4573,14 +4573,6 @@ void CVideoDeviceDoc::SaveSettings()
 	// Frame-rate
 	unsigned int nSize = sizeof(m_dFrameRate);
 	pApp->WriteProfileBinary(sSection, _T("FrameRate"), (LPBYTE)&m_dFrameRate, nSize);
-
-	// Store the detection zones only if they have been loaded/inited
-	// in OnThreadSafeInitMovDet() <-> m_lMovDetTotalZones is set
-	if (m_lMovDetTotalZones > 0)
-	{
-		pApp->WriteProfileInt(sSection, _T("MovDetTotalZones"), m_lMovDetTotalZones);
-		SaveZonesSettings(sSection);
-	}
 }
 
 void CVideoDeviceDoc::OpenDxVideoDevice(int nId, CString sDevicePathName, CString sDeviceName)
@@ -8163,10 +8155,7 @@ void CVideoDeviceDoc::OnEditZone()
 	}
 	// Disable
 	else
-	{
 		HideDetectionZones();
-		SaveSettings();
-	}
 }
 
 void CVideoDeviceDoc::OnUpdateEditZone(CCmdUI* pCmdUI)

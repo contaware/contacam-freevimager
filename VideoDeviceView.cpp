@@ -821,10 +821,16 @@ void CVideoDeviceView::OnLButtonDown(UINT nFlags, CPoint point)
 		int nZone = x + y * pDoc->m_lMovDetXZonesCount;
 
 		// Add / Remove Zone Value
-		pDoc->m_DoMovementDetection[nZone] = (pDoc->m_nShowEditDetectionZones == 1 ? m_MovDetSingleZoneSensitivity : 0);
-
-		// Paint
-		Invalidate(FALSE);
+		if (nZone >= 0 && nZone < MOVDET_MAX_ZONES)
+		{
+			int nNewDoMovementDetectionValue = (pDoc->m_nShowEditDetectionZones == 1 ? m_MovDetSingleZoneSensitivity : 0);
+			if (nNewDoMovementDetectionValue != pDoc->m_DoMovementDetection[nZone])
+			{
+				pDoc->m_DoMovementDetection[nZone] = nNewDoMovementDetectionValue;
+				pDoc->SaveZonesBlockSettings(nZone / MOVDET_MAX_ZONES_BLOCK_SIZE, pDoc->GetDevicePathName());
+				Invalidate(FALSE);
+			}
+		}
 	}
 }
 
@@ -929,10 +935,7 @@ void CVideoDeviceView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			if (pDoc->m_pCameraAdvancedSettingsDlg && pDoc->m_pCameraAdvancedSettingsDlg->IsWindowVisible())
 				pDoc->m_pCameraAdvancedSettingsDlg->Hide(TRUE);
 			else if (pDoc->m_nShowEditDetectionZones)
-			{
 				pDoc->HideDetectionZones();
-				pDoc->SaveSettings();
-			}
 			else if (m_bFullScreenMode)
 				::AfxGetMainFrame()->EnterExitFullscreen();	// Exit Full-Screen Mode
 			else
@@ -1128,10 +1131,16 @@ void CVideoDeviceView::OnMouseMove(UINT nFlags, CPoint point)
 		int nZone = x + y * pDoc->m_lMovDetXZonesCount;
 
 		// Add / Remove Zone Value
-		pDoc->m_DoMovementDetection[nZone] = (pDoc->m_nShowEditDetectionZones == 1 ? m_MovDetSingleZoneSensitivity : 0);
-
-		// Paint
-		Invalidate(FALSE);
+		if (nZone >= 0 && nZone < MOVDET_MAX_ZONES)
+		{
+			int nNewDoMovementDetectionValue = (pDoc->m_nShowEditDetectionZones == 1 ? m_MovDetSingleZoneSensitivity : 0);
+			if (nNewDoMovementDetectionValue != pDoc->m_DoMovementDetection[nZone])
+			{
+				pDoc->m_DoMovementDetection[nZone] = nNewDoMovementDetectionValue;
+				pDoc->SaveZonesBlockSettings(nZone / MOVDET_MAX_ZONES_BLOCK_SIZE, pDoc->GetDevicePathName());
+				Invalidate(FALSE);
+			}
+		}
 	}
 	
 	CUImagerView::OnMouseMove(nFlags, point);
@@ -1152,6 +1161,7 @@ void CVideoDeviceView::OnEditAddAll()
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	memset(pDoc->m_DoMovementDetection, 1, MOVDET_MAX_ZONES);
+	pDoc->SaveZonesSettings(pDoc->GetDevicePathName());
 	Invalidate(FALSE);
 }
 
@@ -1160,6 +1170,7 @@ void CVideoDeviceView::OnEditRemoveAll()
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	memset(pDoc->m_DoMovementDetection, 0, MOVDET_MAX_ZONES);
+	pDoc->SaveZonesSettings(pDoc->GetDevicePathName());
 	Invalidate(FALSE);
 }
 
