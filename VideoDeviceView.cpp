@@ -933,7 +933,7 @@ void CVideoDeviceView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 		case VK_ESCAPE :
 			if (pDoc->m_pCameraAdvancedSettingsDlg && pDoc->m_pCameraAdvancedSettingsDlg->IsWindowVisible())
-				pDoc->m_pCameraAdvancedSettingsDlg->Hide(TRUE);
+				pDoc->m_pCameraAdvancedSettingsDlg->Hide();
 			else if (pDoc->m_nShowEditDetectionZones)
 				pDoc->HideDetectionZones();
 			else if (m_bFullScreenMode)

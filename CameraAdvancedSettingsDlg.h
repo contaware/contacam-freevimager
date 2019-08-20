@@ -21,7 +21,7 @@ public:
 	~CCameraAdvancedSettingsDlg();
 
 	void Show();
-	void Hide(BOOL bSaveSettingsOnHiding);
+	void Hide();
 	void DestroyOnAppExit();
 	void UpdateTitle();
 	void ChangeThumbSize(int nNewWidth, int nNewHeight);

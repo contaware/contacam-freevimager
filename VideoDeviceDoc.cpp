@@ -5361,7 +5361,7 @@ void CVideoDeviceDoc::OnCaptureCameraAdvancedSettings()
 	else
 	{
 		if (m_pCameraAdvancedSettingsDlg->IsWindowVisible())
-			m_pCameraAdvancedSettingsDlg->Hide(TRUE);
+			m_pCameraAdvancedSettingsDlg->Hide();
 		else
 			m_pCameraAdvancedSettingsDlg->Show();
 	}

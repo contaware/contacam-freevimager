@@ -46,12 +46,11 @@ void CCameraAdvancedSettingsDlg::Show()
 	}
 }
 
-void CCameraAdvancedSettingsDlg::Hide(BOOL bSaveSettingsOnHiding)
+void CCameraAdvancedSettingsDlg::Hide()
 {
 	if (IsWindowVisible())
 	{
-		if (bSaveSettingsOnHiding)
-			m_pDoc->SaveSettings();
+		m_pDoc->SaveSettings();
 		ShowWindow(SW_HIDE);
 		m_pDoc->GetView()->ForceCursor(FALSE);
 	}
@@ -66,7 +65,7 @@ void CCameraAdvancedSettingsDlg::DestroyOnAppExit()
 
 void CCameraAdvancedSettingsDlg::OnClose()
 {
-	Hide(TRUE);
+	Hide();
 }
 
 BOOL CCameraAdvancedSettingsDlg::OnCommand(WPARAM wParam, LPARAM lParam)
@@ -78,7 +77,7 @@ BOOL CCameraAdvancedSettingsDlg::OnCommand(WPARAM wParam, LPARAM lParam)
 		case IDOK:
 			return TRUE;
 		case IDCANCEL:
-			Hide(TRUE);
+			Hide();
 			return TRUE;
 		default:
 			return CDialog::OnCommand(wParam, lParam);

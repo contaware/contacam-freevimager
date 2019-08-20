@@ -1216,9 +1216,9 @@ void CVideoDeviceChildFrame::StartShutdown1()
 	// Stop Processing Frames
 	pDoc->StopProcessFrame(PROCESSFRAME_CLOSE);
 
-	// Hide without saving because already done in OnClose()
+	// Hide
 	if (pDoc->m_pCameraAdvancedSettingsDlg && pDoc->m_pCameraAdvancedSettingsDlg->IsWindowVisible())
-		pDoc->m_pCameraAdvancedSettingsDlg->Hide(FALSE);
+		pDoc->m_pCameraAdvancedSettingsDlg->Hide();
 }
 
 void CVideoDeviceChildFrame::StartShutdown2()
