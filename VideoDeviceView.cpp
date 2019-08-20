@@ -297,14 +297,14 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 	CString sSection(pDoc->GetDevicePathName());
 	BOOL bZonesLoaded = FALSE;
 	if (pDoc->m_lMovDetTotalZones == ::AfxGetApp()->GetProfileInt(sSection, _T("MovDetTotalZones"), 0))
-		bZonesLoaded = pDoc->LoadZonesSettings();
+		bZonesLoaded = pDoc->LoadZonesSettings(sSection);
 	
 	// If not loaded enable all zones and save it
 	if (!bZonesLoaded)
 	{
 		memset(pDoc->m_DoMovementDetection, 1, MOVDET_MAX_ZONES);
 		::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetTotalZones"), pDoc->m_lMovDetTotalZones);
-		pDoc->SaveZonesSettings();
+		pDoc->SaveZonesSettings(sSection);
 	}
 
 	// Update current detection zone size and store new value

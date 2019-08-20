@@ -4125,42 +4125,56 @@ CString CVideoDeviceDoc::GetValidName(CString sName)
 	return sValidName;
 }
 
-BOOL CVideoDeviceDoc::LoadZonesSettings()
+BOOL CVideoDeviceDoc::LoadZonesBlockSettings(int nBlock, CString sSection)
 {
 	BOOL bOK = FALSE;
-	CString sSection(GetDevicePathName());
-	for (int i = 0 ; i < MOVDET_MAX_ZONES / MOVDET_MAX_ZONES_BLOCK_SIZE ; i++)
+	if (nBlock >= 0 && nBlock < (MOVDET_MAX_ZONES / MOVDET_MAX_ZONES_BLOCK_SIZE))
 	{
 		UINT uiSize = 0U;
 		LPBYTE pBlock = NULL;
 		CString sBlock;
-		sBlock.Format(MOVDET_ZONES_BLOCK_FORMAT, i);
+		sBlock.Format(MOVDET_ZONES_BLOCK_FORMAT, nBlock);
 		::AfxGetApp()->GetProfileBinary(sSection, sBlock, &pBlock, &uiSize);
 		if (pBlock && uiSize > 0U)
 		{
 			bOK = TRUE;
-			memcpy(	m_DoMovementDetection + i * MOVDET_MAX_ZONES_BLOCK_SIZE,
+			memcpy(	m_DoMovementDetection + nBlock * MOVDET_MAX_ZONES_BLOCK_SIZE,
 					pBlock,
 					MIN(MOVDET_MAX_ZONES_BLOCK_SIZE, uiSize));
 		}
 		if (pBlock)
-			delete [] pBlock;
+			delete[] pBlock;
 	}
 	return bOK;
 }
 
-void CVideoDeviceDoc::SaveZonesSettings()
+BOOL CVideoDeviceDoc::LoadZonesSettings(CString sSection)
 {
-	CString sSection(GetDevicePathName());
 	for (int i = 0 ; i < MOVDET_MAX_ZONES / MOVDET_MAX_ZONES_BLOCK_SIZE ; i++)
 	{
+		if (!LoadZonesBlockSettings(i, sSection))
+			return FALSE;
+	}
+	return TRUE;
+}
+
+void CVideoDeviceDoc::SaveZonesBlockSettings(int nBlock, CString sSection)
+{
+	if (nBlock >= 0 && nBlock < (MOVDET_MAX_ZONES / MOVDET_MAX_ZONES_BLOCK_SIZE))
+	{
 		CString sBlock;
-		sBlock.Format(MOVDET_ZONES_BLOCK_FORMAT, i);
+		sBlock.Format(MOVDET_ZONES_BLOCK_FORMAT, nBlock);
 		::AfxGetApp()->WriteProfileBinary(	sSection,
 											sBlock,
-											m_DoMovementDetection + i * MOVDET_MAX_ZONES_BLOCK_SIZE,
+											m_DoMovementDetection + nBlock * MOVDET_MAX_ZONES_BLOCK_SIZE,
 											MOVDET_MAX_ZONES_BLOCK_SIZE);
 	}
+}
+
+void CVideoDeviceDoc::SaveZonesSettings(CString sSection)
+{
+	for (int i = 0 ; i < MOVDET_MAX_ZONES / MOVDET_MAX_ZONES_BLOCK_SIZE ; i++)
+		SaveZonesBlockSettings(i, sSection);
 }
 
 // Valid values: 4,5,6,7,8,9,10,11,12,14,16
@@ -4565,7 +4579,7 @@ void CVideoDeviceDoc::SaveSettings()
 	if (m_lMovDetTotalZones > 0)
 	{
 		pApp->WriteProfileInt(sSection, _T("MovDetTotalZones"), m_lMovDetTotalZones);
-		SaveZonesSettings();
+		SaveZonesSettings(sSection);
 	}
 }
 

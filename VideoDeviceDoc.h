@@ -111,7 +111,6 @@ class CCameraAdvancedSettingsDlg;
 #define MOVDET_MAX_ZONES_BLOCK_SIZE				1024			// Subdivide settings in blocks (MOVDET_MAX_ZONES must be a multiple of this)
 #define MOVDET_MAX_ZONES						8192			// Maximum number of zones
 #define MOVDET_MIN_ZONES_XORY					4				// Minimum number of zones in X or Y direction
-#define MOVDET_ZONE_FORMAT						_T("DoMovementDetection%03i")
 #define MOVDET_ZONES_BLOCK_FORMAT				_T("MovDetZones%i")
 #define MOVDET_DEFAULT_MAX_FRAMES_IN_LIST		1000			// Default maximum frames per list
 #define MOVDET_MAX_MAX_FRAMES_IN_LIST			14999			// Upper limit for the maximum frames per list
@@ -729,8 +728,10 @@ public:
 	static CString GetValidName(CString sName);
 
 	// Settings
-	BOOL LoadZonesSettings();
-	void SaveZonesSettings();
+	BOOL LoadZonesBlockSettings(int nBlock, CString sSection);
+	BOOL LoadZonesSettings(CString sSection);
+	void SaveZonesBlockSettings(int nBlock, CString sSection);
+	void SaveZonesSettings(CString sSection);
 	static int ValidateRefFontSize(int nRefFontSize);
 	static int ValidateDetectionLevel(int nDetectionLevel);
 	static int ValidateSnapshotRate(int nSnapshotRate);
