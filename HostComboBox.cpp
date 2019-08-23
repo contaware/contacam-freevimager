@@ -96,7 +96,9 @@ void CHostComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 			m_HostFont.CreateFontIndirect(&lf);
 		}
 		CFont* pOldFont = dc.SelectObject(&m_HostFont);
-		dc.SetTextColor(::GetSysColor(COLOR_GRAYTEXT));
+		if (!((lpDrawItemStruct->itemAction & ODA_SELECT) &&
+			(lpDrawItemStruct->itemState  & ODS_SELECTED)))
+			dc.SetTextColor(::GetSysColor(COLOR_GRAYTEXT)); // if not highlighted draw host in gray
 		CString sHost;
 		GetLBText(itemID, sHost);
 		dc.DrawText(sHost, sHost.GetLength(), &rc, DT_SINGLELINE | DT_LEFT | DT_BOTTOM);
