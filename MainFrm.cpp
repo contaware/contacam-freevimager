@@ -2306,6 +2306,7 @@ void CMainFrame::LogSysUsage()
 	// Message
 	::LogLine(
 		_T("%s | ")
+		_T("CPU: %d core | ")
 #ifdef VIDEODEVICEDOC
 		_T("%s | ")
 #endif
@@ -2313,6 +2314,7 @@ void CMainFrame::LogSysUsage()
 		_T("VMEM: used=%s(max %s) res=%s(max %s) free=%s(max %s) frag=%0.1f%% regions=%I64u | ")
 		_T("HEAP: used=%s (%s big), free(committed)=%s, free(uncommitted)=%s"),
 		sDiskStats,
+		((CUImagerApp*)::AfxGetApp())->m_nCoresCount,
 #ifdef VIDEODEVICEDOC
 		sBufStats,
 #endif
