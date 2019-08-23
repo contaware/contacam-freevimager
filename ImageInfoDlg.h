@@ -9,7 +9,6 @@
 #include "resource.h"
 #include "Dib.h"
 #include "cdxCDynamicDialog.h"
-#include "SepComboBox.h"
 
 #define	ICC_TEXT_MAX_SIZE		65536
 
@@ -94,7 +93,7 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CImageInfoDlg)
 	int	m_nMetadataGroupView;
-	CSeparatorComboBox m_cbMetadata;
+	CComboBox m_cbMetadata;
 	//}}AFX_DATA
 
 

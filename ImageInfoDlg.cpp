@@ -169,17 +169,6 @@ BOOL CImageInfoDlg::OnInitDialog()
 	m_cbMetadata.InsertString(IMAGE_DATECREATED, sLBText + _T("  (") + sDateFormat + _T(")"));
 	m_cbMetadata.DeleteString(IMAGE_DATECREATED + 1);
 
-	// Init Combo Box Separators
-	m_cbMetadata.SetSeparator(0);
-	m_cbMetadata.SetSeparator(10);
-	m_cbMetadata.SetSeparator(17);
-	m_cbMetadata.SetSeparator(25);
-	m_cbMetadata.SetSepLineStyle(PS_SOLID); // PS_SOLID, PS_DASH, PS_DOT
-	m_cbMetadata.SetSepLineWidth(1);
-	m_cbMetadata.SetSepLineColor(RGB(172, 172, 172));
-	m_cbMetadata.SetBottomMargin(1);
-	m_cbMetadata.SetHorizontalMargin(1); 
-
 	// Set Combo Box Selection
 	m_cbMetadata.SetCurSel(m_nMetadataType);
 
