@@ -109,7 +109,7 @@ void CHostComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 		rc.bottom += 1;
 		if (itemID < GetCount() - 1)
 		{
-			CPen Pen(PS_SOLID, 1, RGB(172, 172, 172));
+			CPen Pen(PS_SOLID, 1, ::GetSysColor(COLOR_GRAYTEXT));
 			CPen* pOldPen = dc.SelectObject(&Pen);
 			dc.MoveTo(rc.left, rc.bottom);
 			dc.LineTo(rc.right, rc.bottom);
