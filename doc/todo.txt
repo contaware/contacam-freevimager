@@ -33,7 +33,8 @@ ContaCam Program
   (g.frascarolo@tiscali.it)
 - Post buffer is good to not split the detection, but should be removed at the
   end of the record (sambul7165@gmail.com)
-- Execute cmd and params separate for snapshots and recs
+- Execute cmd and params separate for snapshots, recs start, saving done, summary 
+  (chrislarsen101@gmail.com)
 - When running ContaCam from an Administrator login on a computer, if another
   person logged into that computer, the video would still get captured but audio
   from the webcam microphone would stop getting captured until that second person
@@ -45,9 +46,6 @@ ContaCam Program
   Pollable DoExecCommandMovementDetection (johnliber@gmail.com)
   (I do not know whether it is a good thing to add more and more pollable settings...)
 - Implement the classic grid display for cameras overview (harmi11@gmail.com)
-- Opera mobile can't play video records from web server page. I made also tests with other
-  sources of mp4 and also with them there are problems. So we wait that Opera fixes it
-  (a_adashkevich@mail.ru)
 - Use nmap to get all the MAC addresses and detect if one is present to disable ContaCam
   (stuart.les.bloom@gmail.com)
 - Support connecting to a .m3u8 streaming server also known as HLS (HTTP Live Streaming)
@@ -64,4 +62,10 @@ ContaCam Program
   has been logged in or tried to login (info@rwsvk.nl)
 - Execute command on camera failure, add the option of "camera failure" to the command execute area
   (n1fbg@arrl.net)
+- Setting that would record the motion "grid" turning red along with the motion in the video
+  (gthumberger@gmail.com)
+- Stopping/starting with the red dot rec button would pop-up the scheduler interface highlighting
+  current day and setting current start time, you only need to set the leave time. If that time
+  changes just press again the record button to update it, what do you think?
+  (fahadbb@gmail.com)
   
