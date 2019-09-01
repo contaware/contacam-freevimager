@@ -3,16 +3,7 @@
 
 #pragma once
 
-
-// Use at least 1000 ms for measure time
-extern DWORD GetProcessorSpeedMHz(DWORD dwMeasureTimeMs);
-
-
-///////////////////////////////////
-// Another faster implementation //
-///////////////////////////////////
-
-extern DWORD GetProcessorSpeedMHzFast();
+extern DWORD GetProcessorSpeedMHz();
 
 typedef	void (*DELAY_FUNC)(unsigned int uiMS);
 

@@ -1253,7 +1253,7 @@ BOOL CAboutDlg::OnInitDialog()
 	// CPU
 	CEdit* pCpuEdit = (CEdit*)GetDlgItem(IDC_CPU);
 	CString sCpu;
-	sCpu.Format(_T("CPU  %u MHz (%d thread)"), ::GetProcessorSpeedMHzFast(), ((CUImagerApp*)::AfxGetApp())->m_nThreadCount);
+	sCpu.Format(_T("CPU  %u MHz (%d thread)"), ::GetProcessorSpeedMHz(), ((CUImagerApp*)::AfxGetApp())->m_nThreadCount);
 	pCpuEdit->SetWindowText(sCpu);
 
 	// Total Physical Memory
