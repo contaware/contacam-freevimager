@@ -1632,7 +1632,7 @@ void CBatchProcDlg::StartLoadDibs()
 	}
 
 	// Start Thread(s)
-	if (StartNextLoadDibsHdr(((CUImagerApp*)::AfxGetApp())->m_nCoresCount) == 0)
+	if (StartNextLoadDibsHdr(((CUImagerApp*)::AfxGetApp())->m_nThreadCount) == 0)
 	{
 		// Re-Enable Controls
 		EnableAllControls(TRUE, TRUE);
@@ -4793,7 +4793,7 @@ LONG CBatchProcDlg::OnLoadDone(WPARAM wparam, LPARAM lparam)
 			m_Progress.SetPos(-1);
 
 			// Start Thumbnail Dib Load
-			StartNextLoadDibsFull(((CUImagerApp*)::AfxGetApp())->m_nCoresCount + 1);
+			StartNextLoadDibsFull(((CUImagerApp*)::AfxGetApp())->m_nThreadCount);
 
 			// Re-Enable Controls
 			EnableAllControls(TRUE, TRUE);

@@ -21,7 +21,6 @@
 #include "ZipProgressDlg.h"
 #include "BrowseDlg.h"
 #include "SortableFileFind.h"
-#include "CPUCount.h"
 #include "CPUSpeed.h"
 #include "PostDelayedMessage.h"
 #include "YuvToRgb.h"
@@ -33,6 +32,7 @@
 #include <atlbase.h>
 #include <signal.h>
 #include <gdiplus.h>
+#include <thread>
 #ifdef VIDEODEVICEDOC
 #include "DeleteCamFoldersDlg.h"
 #include "SettingsDlgVideoDeviceDoc.h"
@@ -169,7 +169,7 @@ CUImagerApp::CUImagerApp()
 	m_bSilentInstall = FALSE;
 	m_bMailAvailable = FALSE;
 	m_bStartMaximized = FALSE;
-	m_nCoresCount = 1;
+	m_nThreadCount = 1;
 	m_sLastOpenedDir = _T("");
 	m_nPdfScanCompressionQuality = DEFAULT_JPEGCOMPRESSION;
 	m_sScanToPdfFileName = _T("");
@@ -790,12 +790,9 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// Init for the PostDelayedMessage() Function
 		CPostDelayedMessageThread::Init();
 
-		// Get the Cores Count
-		unsigned int TotAvailLogical	= 0, // Number of available logical CPU in the system
-					 TotAvailCore		= 0, // Number of available cores in the system
-					 PhysicalNum		= 0; // Total number of physical processors in the system
-		::CPUCount(&TotAvailLogical, &TotAvailCore, &PhysicalNum);
-		m_nCoresCount = MAX(1, TotAvailCore);
+		// Get the optimal number of threads to use for a task
+		if ((m_nThreadCount = std::thread::hardware_concurrency()) == 0)
+			m_nThreadCount = 1; // guard against std::thread::hardware_concurrency() returning 0
 
 		// Loads the 6 MRU Files and loads also the m_nNumPreviewPages
 		// variable for the PrintPreview.
@@ -1253,22 +1250,11 @@ BOOL CAboutDlg::OnInitDialog()
 	CEdit* pAppVer = (CEdit*)GetDlgItem(IDC_APPVER);
 	pAppVer->SetWindowText(APPVERSION);
 
-	// CPU Speed
-	CEdit* pCpuSpeedEdit = (CEdit*)GetDlgItem(IDC_CPUSPEED);
-	CString sCpuSpeedMHz;
-	sCpuSpeedMHz.Format(_T("CPU  %u MHz"), ::GetProcessorSpeedMHzFast());
-	pCpuSpeedEdit->SetWindowText(sCpuSpeedMHz);
-
-	// CPU Count
-	unsigned int TotAvailLogical	= 0, // Number of available logical CPU in the system
-				 TotAvailCore		= 0, // Number of available cores in the system
-				 PhysicalNum		= 0; // Total number of physical processors in the system
-	::CPUCount(&TotAvailLogical, &TotAvailCore, &PhysicalNum);
-	CEdit* pCpuCount = (CEdit*)GetDlgItem(IDC_CPUCOUNT);
-	CString sCpuCount;
-	sCpuCount.Format(	ML_STRING(1173, "%u phys. processor(s), %u core(s), %u logical processor(s)"),
-						PhysicalNum, TotAvailCore, TotAvailLogical);
-	pCpuCount->SetWindowText(sCpuCount);
+	// CPU
+	CEdit* pCpuEdit = (CEdit*)GetDlgItem(IDC_CPU);
+	CString sCpu;
+	sCpu.Format(_T("CPU  %u MHz (%d thread)"), ::GetProcessorSpeedMHzFast(), ((CUImagerApp*)::AfxGetApp())->m_nThreadCount);
+	pCpuEdit->SetWindowText(sCpu);
 
 	// Total Physical Memory
 	CString sPhysMemMB;

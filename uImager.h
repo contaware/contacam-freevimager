@@ -483,8 +483,8 @@ public:
 	// Placement Settings have been loaded
 	BOOL m_bPlacementLoaded;
 
-	// Cores count
-	volatile int m_nCoresCount;
+	// Thread count
+	volatile int m_nThreadCount;
 
 	// Last Opened Directory
 	CString m_sLastOpenedDir;

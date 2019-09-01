@@ -1972,11 +1972,10 @@
 #define IDC_CHECK_SNAPSHOT_HISTORY_VIDEO 1679
 #define IDS_STRING1680                  1680
 #define IDS_STRING1681                  1681
-#define IDC_CPUSPEED                    1682
+#define IDC_CPU                         1682
 #define IDS_STRING1682                  1682
 #define IDC_PHYSMEM                     1683
 #define IDS_STRING1683                  1683
-#define IDC_CPUCOUNT                    1684
 #define IDS_STRING1684                  1684
 #define IDS_STRING1685                  1685
 #define IDS_STRING1686                  1686

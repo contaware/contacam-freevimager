@@ -812,14 +812,14 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 298, 216
+IDD_ABOUTBOX DIALOGEX 0, 0, 298, 206
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,15,10,20,20
     LTEXT           "Unknown",IDC_VERSION,154,49,136,8,SS_NOPREFIX
-    DEFPUSHBUTTON   "OK",IDOK,124,196,50,14,WS_GROUP
+    DEFPUSHBUTTON   "OK",IDOK,124,187,50,14,WS_GROUP
     LTEXT           "Version:",IDC_STATIC2142,15,49,39,8
     LTEXT           "",IDC_APPNAME,74,17,216,8
     LTEXT           "Homepage:",IDC_STATIC2143,15,80,42,8
@@ -828,11 +828,10 @@ BEGIN
     GROUPBOX        "",IDC_STATIC2146,7,38,284,26
     LTEXT           "",IDC_APPVER,74,49,67,8
     GROUPBOX        "",IDC_STATIC2148,7,100,284,39
-    GROUPBOX        "",IDC_STATIC2149,7,144,284,46
-    LTEXT           "1000 MHz",IDC_CPUSPEED,74,153,216,8
-    LTEXT           "System Info:",IDC_STATIC2150,15,164,44,8
-    LTEXT           "1000 MB",IDC_PHYSMEM,74,176,216,8
-    LTEXT           "CPU Count",IDC_CPUCOUNT,74,164,216,8
+    GROUPBOX        "",IDC_STATIC2149,7,144,284,35
+    LTEXT           "1000 MHz",IDC_CPU,74,153,216,8
+    LTEXT           "System Info:",IDC_STATIC2150,15,160,44,8
+    LTEXT           "1000 MB",IDC_PHYSMEM,74,166,216,8
     LTEXT           "Translated By:",IDC_STATIC2151,15,124,51,8
     LTEXT           "This is the original language",IDC_STATIC2152,74,124,216,8
     GROUPBOX        "",IDC_STATIC2147,7,69,284,26
@@ -2239,8 +2238,7 @@ BEGIN
         VERTGUIDE, 74
         VERTGUIDE, 290
         TOPMARGIN, 7
-        BOTTOMMARGIN, 211
-        HORZGUIDE, 203
+        BOTTOMMARGIN, 201
     END
 
     IDD_RESIZING, DIALOG
@@ -3022,7 +3020,6 @@ STRINGTABLE
 BEGIN
     IDS_MULTILANG_1170      "Error: No MMX Processor"
     IDS_MULTILANG_1171      "No usable WinSock DLL found"
-    IDS_MULTILANG_1173      "%u phys. processor(s), %u core(s), %u logical processor(s)"
     IDS_MULTILANG_1174      "Failed to Open:\n%s\nThe following extension is not supported:\n%s"
     IDS_MULTILANG_1175      "No Email Program Installed."
     IDS_MULTILANG_1178      "No picture file loaded."

@@ -418,7 +418,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 											CalcFrameRate.num,					// Rate
 											CalcFrameRate.den,					// Scale			
 											m_pDoc->m_fVideoRecQuality,			// Video quality
-											((CUImagerApp*)::AfxGetApp())->m_nCoresCount);
+											((CUImagerApp*)::AfxGetApp())->m_nThreadCount);
 					if (m_pDoc->m_bCaptureAudio)
 					{	
 						AVRecVideo.AddAudioStream(	m_pDoc->m_pSrcWaveFormat,	// Src Wave Format
@@ -1054,7 +1054,7 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 														FrameRate.num,						// Rate
 														FrameRate.den,						// Scale				
 														DEFAULT_VIDEO_QUALITY,				// Use default video quality
-														((CUImagerApp*)::AfxGetApp())->m_nCoresCount);
+														((CUImagerApp*)::AfxGetApp())->m_nThreadCount);
 							pAVRecVideo->Open(m_pDoc->GetAssignedDeviceName() + _T(" ") + ::MakeDateLocalFormat(m_Time));
 						}
 
@@ -2293,7 +2293,7 @@ BOOL CVideoDeviceDoc::SaveJpegFast(CDib* pDib, CMJPEGEncoder* pMJPEGEncoder, con
 	// are running interleaved and allocating blocks that do not fit into the heap (blocks bigger than
 	// 512 KB are gotten from normal VM which is quite prone to fragmentation). So we better set the
 	// threads count to 1, later on when we get a 64-bit application we can set the threads count to:
-	// ((CUImagerApp*)::AfxGetApp())->m_nCoresCount
+	// ((CUImagerApp*)::AfxGetApp())->m_nThreadCount
 	dwEncodedLen = pMJPEGEncoder->Encode(qscale,	// 2: best quality, 31: worst quality
 										&DstBmi, pJ420Buf,
 										1);			// threads count
