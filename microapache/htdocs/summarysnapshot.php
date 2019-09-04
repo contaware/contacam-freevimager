@@ -86,14 +86,17 @@ if ($show_trash_command) {
 	echo "}\n";
 	echo "function deleteCheckedElements() {\n";
 	echo "	checkboxes = document.getElementsByName('checklist');\n";
+	echo "	var doReload = false;\n";
 	echo "	for (var i = 0; i < checkboxes.length; i++) {\n";
 	echo "		if (checkboxes[i].checked) {\n";
+	echo "			doReload = true;\n";
 	echo "			var ajax = new XMLHttpRequest();\n";
 	echo "			ajax.open('GET', checkboxes[i].value, false); // sync. call\n";
 	echo "			ajax.send(null);\n";
 	echo "		}\n";
 	echo "	}\n";
-	echo "	window.location.href = '" . $_SERVER['REQUEST_URI'] . "'; // reload page\n";
+	echo "	if (doReload)\n";
+	echo "		window.location.href = '" . $_SERVER['REQUEST_URI'] . "'; // reload page\n";
 	echo "}\n";
 }
 echo "//]]>\n";
