@@ -97,21 +97,6 @@ a.lastselected img, a.lastselected:visited img, a:active img, a:focus img {
 	padding: 0;
 }
 
-/* Thumbs trash button */
-span.thumbcontainer a.trashbuttons {
-	text-align: center;
-	vertical-align: bottom;
-	text-decoration: none;
-}
-span.thumbcontainer a.trashbuttons:link, span.thumbcontainer a.trashbuttons:visited {
-	color: #aa2222;
-	text-decoration: none;
-}
-span.thumbcontainer a.trashbuttons:active, span.thumbcontainer a.trashbuttons:hover {
-	color: #ff0000;
-	text-decoration: none;
-}
-
 /* Controls style */
 video {
 	background-color: transparent;

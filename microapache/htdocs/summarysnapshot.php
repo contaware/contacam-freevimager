@@ -1,15 +1,15 @@
 <?php
 require_once( 'configuration.php' );
 require_once( LANGUAGEFILEPATH ); // Must be here at the top of this file because it outputs the UTF8-BOM!
-?>
-<!DOCTYPE html>
-<html>
-<head>
-<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="author" content="Oliver Pfister" />
-<?php
+
+echo "<!DOCTYPE html>\n";
+echo "<html>\n";
+echo "<head>\n";
+echo "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\n";
+echo "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n";
+echo "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n";
+echo "<meta name=\"author\" content=\"Oliver Pfister\" />\n";
+
 // Init page refresh, title and style sheet
 require_once( 'setusertz.php' );
 echo "<meta http-equiv=\"refresh\" content=\"" . SUMMARYREFRESHSEC . "; URL=" . htmlspecialchars($_SERVER['REQUEST_URI']) . "\" />\n";
@@ -67,22 +67,41 @@ if (isset($_GET['pageoffset'])) {
 	$page_offset = (int)(floor($page_offset / $max_per_page) * $max_per_page);
 	// upper bound corrected later on
 }
-?>
-<script type="text/javascript">
-//<![CDATA[
-function changeStyle(id) {
-	if (parent.window.name != '' && document.getElementById(parent.window.name))
-		document.getElementById(parent.window.name).className = 'notselected';
-	if (document.getElementById(id))
-		document.getElementById(id).className = 'lastselected';
-	parent.window.name = id; // this var survives between pages!
-}
-//]]>
-</script>
-</head>
 
-<body>
-<?php
+echo "<script type=\"text/javascript\">\n";
+echo "//<![CDATA[\n";
+echo "function changeStyle(id) {\n";
+echo "	if (parent.window.name != '' && document.getElementById(parent.window.name))\n";
+echo "		document.getElementById(parent.window.name).className = 'notselected';\n";
+echo "	if (document.getElementById(id))\n";
+echo "		document.getElementById(id).className = 'lastselected';\n";
+echo "	parent.window.name = id; // this var survives between pages!\n";
+echo "}\n";
+if ($show_trash_command) {
+	echo "function allCheckBoxes(checked) {\n";
+	echo "	checkboxes = document.getElementsByName('checklist');\n";
+	echo "	for (var i = 0; i < checkboxes.length; i++) {\n";
+	echo "		checkboxes[i].checked = checked;\n";
+	echo "	}\n";
+	echo "}\n";
+	echo "function deleteCheckedElements() {\n";
+	echo "	checkboxes = document.getElementsByName('checklist');\n";
+	echo "	for (var i = 0; i < checkboxes.length; i++) {\n";
+	echo "		if (checkboxes[i].checked) {\n";
+	echo "			var ajax = new XMLHttpRequest();\n";
+	echo "			ajax.open('GET', checkboxes[i].value, false); // sync. call\n";
+	echo "			ajax.send(null);\n";
+	echo "		}\n";
+	echo "	}\n";
+	echo "	window.location.href = '" . $_SERVER['REQUEST_URI'] . "'; // reload page\n";
+	echo "}\n";
+}
+echo "//]]>\n";
+echo "</script>\n";
+
+echo "</head>\n";
+
+echo "<body>\n";
             
 // Functions
 function GetDaysElapsed($passed_time) {
@@ -195,6 +214,11 @@ echo "<a style=\"font-size: 16px;\" href=\"#\" onclick=\"window.location.reload(
 if ($show_camera_commands) {
 	echo "<a class=\"camonbuttons\" href=\"camera.php?source=on&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\">&nbsp;</a>&nbsp;";
 	echo "<a class=\"camoffbuttons\" href=\"camera.php?source=off&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\">&nbsp;</a>&nbsp;";
+}
+if ($show_trash_command) {
+	echo "<a style=\"font-size: 12px; position: relative;\" href=\"#\" onclick=\"allCheckBoxes(true); return false;\"><span style=\"display: inline-block; position: absolute; left: 11px; top: 5px; width: 12px; height: 12px; border: 1px solid #000000;\">&nbsp;</span>&#x2713;</a>&nbsp;";
+	echo "<a style=\"font-size: 12px; position: relative;\" href=\"#\" onclick=\"allCheckBoxes(false); return false;\"><span style=\"display: inline-block; position: absolute; left: 11px; top: 5px; width: 12px; height: 12px; border: 1px solid #000000;\">&nbsp;</span>&nbsp;</a>&nbsp;";
+	echo "<a style=\"font-size: 16px;\" href=\"#\" onclick=\"deleteCheckedElements(); return false;\">&#x1F5D1;</a>&nbsp;";
 }
 echo "</span>\n";
 echo "</div>\n";
@@ -355,7 +379,7 @@ if ($handle = @opendir($dir)) {
 						echo "$file_prefix_upper<br /><a href=\"mp4.php?file=$mp4uri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\" >$file_timestamp</a>";
 				}
 				if ($show_trash_command)
-					echo "<a class=\"trashbuttons\" href=\"recycle.php?year=$selected_year_string&amp;month=$selected_month_string&amp;day=$selected_day_string&amp;filenamenoext=$filenamenoext&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\">&#x2718;&nbsp;</a>";
+					echo "&nbsp;<input style=\"vertical-align: bottom\" type=\"checkbox\" name=\"checklist\" value=\"recycle.php?year=$selected_year_string&amp;month=$selected_month_string&amp;day=$selected_day_string&amp;filenamenoext=$filenamenoext\" />";
 				echo "</span>";
 				$count++;
 			}
