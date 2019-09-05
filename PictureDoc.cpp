@@ -1114,17 +1114,10 @@ void CPictureDoc::CJpegThread::CleanUp()
 
 int CPictureDoc::CJpegThread::Work() 
 {
+	ASSERT(m_pDoc);
+
 	DWORD Event;
 	CDib Dib;
-
-	// Check
-	if (m_pDoc == NULL || m_pDoc->m_pDib == NULL)
-	{
-		if (m_pDoc)
-			m_pDoc->m_bCancelLoadFullJpegTransitionAllowed = TRUE;
-		OnExit();
-		return 0;
-	}
 
 	// Current Monitor Bpp
 	int nCurrentMonitorBpp = ::AfxGetMainFrame()->GetMonitorBpp();
@@ -1142,7 +1135,7 @@ int CPictureDoc::CJpegThread::Work()
 	m_pDoc->m_bCancelLoadFullJpegTransitionAllowed = TRUE;
 
 	// Full Load Current Picture?
-	if (m_pDoc->m_pDib && !m_pDoc->m_pDib->IsValid())
+	if (m_bDoFullLoad)
 	{
 		// Load Dib!
 		if (!Dib.LoadJPEG(m_sFileName, 1, FALSE, FALSE, m_pDoc->GetView(), FALSE, this))
@@ -1183,8 +1176,6 @@ int CPictureDoc::CJpegThread::Work()
 	// Start Full Jpeg Transition
 	if (m_pDoc->m_pLoadFullJpegDib				&&
 		m_pDoc->m_pLoadFullJpegDib->IsValid()	&&
-		m_pDoc->m_pDib							&&
-		!m_pDoc->m_pDib->IsValid()				&&
 		m_pDoc->GetView()->m_LoadFullJpegTransitionDib.IsValid())
 	{
 		// Wait until the transition thread finishes.
@@ -8209,6 +8200,9 @@ void CPictureDoc::JPEGGet()
 		// LEAVE CS
 		m_csLoadFullJpegDib.LeaveCriticalSection();
 		
+		// Do a Full Load?
+		m_JpegThread.SetDoFullLoad(m_pDib && !m_pDib->IsValid());
+
 		// Set File Name
 		m_JpegThread.SetFileName(m_sFileName);
 		

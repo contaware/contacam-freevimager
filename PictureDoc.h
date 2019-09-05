@@ -264,10 +264,12 @@ public:
 		public:
 			CJpegThread(){	m_pDoc = NULL;
 							m_lJpegCompressionQuality = -1;
+							m_bDoFullLoad = FALSE;
 							m_sFileName = _T("");
 							m_hTimerEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);};
 			virtual ~CJpegThread(){Kill(); ::CloseHandle(m_hTimerEvent);};
 			void SetDoc(CPictureDoc* pDoc) {m_pDoc = pDoc;};
+			__forceinline void SetDoFullLoad(BOOL bDoFullLoad) { m_bDoFullLoad = bDoFullLoad; };
 			__forceinline void SetFileName(CString sFileName) {m_sFileName = sFileName;};
 			__forceinline void ResetJpegCompressionQuality() {::InterlockedExchange(&m_lJpegCompressionQuality, -1);};
 			__forceinline int GetJpegCompressionQuality() const {return (int)m_lJpegCompressionQuality;};
@@ -281,6 +283,7 @@ public:
 			HANDLE m_hEventArray[2];
 			HANDLE m_hTimerEvent;
 			volatile LONG m_lJpegCompressionQuality;
+			volatile BOOL m_bDoFullLoad;
 			CString m_sFileName;
 	};
 
