@@ -4560,11 +4560,23 @@ BOOL CPictureDoc::LoadPicture(CDib *volatile *ppDib,
 	{
 		// Throw Previous
 		if (m_pPrevDib)
+		{
 			delete m_pPrevDib;
+			m_pPrevDib = NULL;
+		}
+		m_sPrevDibName = _T("");
 
-		// Previous from Current
-		m_pPrevDib = (*ppDib);
-		m_sPrevDibName = m_sFileName;
+		// Previous from Current if Valid
+		// Note: OnThreadSafeSlideshowLoadPicture() skips failed loads, but leaves
+		//       the current dib invalid, so we must check its validity here!
+		if ((*ppDib)->IsValid() ||
+			((*ppDib)->GetPreviewDib() && (*ppDib)->GetPreviewDib()->IsValid()))
+		{
+			m_pPrevDib = (*ppDib);
+			m_sPrevDibName = m_sFileName;
+		}
+		else
+			delete (*ppDib);
 
 		// Current from Next
 		(*ppDib) = m_pNextDib;
@@ -4586,11 +4598,23 @@ BOOL CPictureDoc::LoadPicture(CDib *volatile *ppDib,
 	{
 		// Throw Next
 		if (m_pNextDib)
+		{
 			delete m_pNextDib;
+			m_pNextDib = NULL;
+		}
+		m_sNextDibName = _T("");
 
-		// Next from Current
-		m_pNextDib = (*ppDib);
-		m_sNextDibName = m_sFileName;
+		// Next from Current if Valid
+		// Note: OnThreadSafeSlideshowLoadPicture() skips failed loads, but leaves
+		//       the current dib invalid, so we must check its validity here!
+		if ((*ppDib)->IsValid() ||
+			((*ppDib)->GetPreviewDib() && (*ppDib)->GetPreviewDib()->IsValid()))
+		{
+			m_pNextDib = (*ppDib);
+			m_sNextDibName = m_sFileName;
+		}
+		else
+			delete (*ppDib);
 
 		// Current from Previous
 		(*ppDib) = m_pPrevDib;
