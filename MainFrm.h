@@ -15,7 +15,6 @@
 #include "MDIClientWnd.h"
 #include "MDITabs.h"
 #include "ToasterWnd.h"
-#include "ToasterWndLink.h"
 extern "C"
 {
 #include "tiffiop.h"
@@ -209,7 +208,6 @@ protected:
 	CString m_sStatusBarString;
 	BOOL m_bLastToasterDone;
 	CToasterWnd* m_pToaster;
-	CToasterNotificationLink m_ToasterNotificationLink;
 
 	// Scan Vars
 	BOOL m_bScanAndEmail;

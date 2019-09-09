@@ -1058,7 +1058,6 @@
     </ClCompile>
     <ClCompile Include="TextEntryDlg.cpp" />
     <ClCompile Include="ToasterWnd.cpp" />
-    <ClCompile Include="ToasterWndLink.cpp" />
     <ClCompile Include="ToolBarChildFrm.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -1348,7 +1347,6 @@
     <ClInclude Include="TabPageSSL.h" />
     <ClInclude Include="TextEntryDlg.h" />
     <ClInclude Include="ToasterWnd.h" />
-    <ClInclude Include="ToasterWndLink.h" />
     <ClInclude Include="ToolBarChildFrm.h" />
     <ClInclude Include="TraceLogFile.h" />
     <ClInclude Include="TransAlpha.h" />

@@ -735,60 +735,10 @@ LONG CMainFrame::OnThreadSafePopupToaster(WPARAM wparam, LPARAM lparam)
 		CloseToaster();
 
 		// Create
-		m_pToaster = new CToasterWnd(sTitle, sText);
-		if (dwWaitTimeMs > 0)
-		{
-			m_pToaster->m_dwWaitTime = dwWaitTimeMs;
-			m_pToaster->m_bWaitOnMouseOver = TRUE;
-			m_pToaster->m_bOnlyCloseOnUser = FALSE;
-		}
-		else
-			m_pToaster->m_bOnlyCloseOnUser = TRUE;
-
-		// Icon
-		m_pToaster->m_TitleIcon = static_cast<HICON>(LoadImage(AfxGetResourceHandle(), MAKEINTRESOURCE(IDR_MAINFRAME), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR));
-
-		// Clickable?
-		m_pToaster->m_bIconHot = FALSE;
-		m_pToaster->m_bTitleHot = FALSE;
-		m_pToaster->m_bTextHot = CToasterNotificationLink::IsClickable(m_pToaster->m_sText);
-
-		// Get default UI font
-		// Attention: do not use the obsolete way: defaultGUIFont.Attach(GetStockObject(DEFAULT_GUI_FONT))
-		CFont defaultGUIFont;
-		NONCLIENTMETRICS ncm = {sizeof(NONCLIENTMETRICS)};
-		VERIFY(::SystemParametersInfo(SPI_GETNONCLIENTMETRICS, ncm.cbSize, &ncm, 0));
-		defaultGUIFont.CreateFontIndirect(&(ncm.lfMessageFont));
-
-		// Title
-		LOGFONT lf;
-		defaultGUIFont.GetLogFont(&lf);
-		lf.lfWeight = FW_BOLD;
-		m_pToaster->m_colorTitle = ::GetSysColor(COLOR_WINDOWTEXT);
-		m_pToaster->m_fontTitle.CreateFontIndirect(&lf);
-
-		// Message
-		defaultGUIFont.GetLogFont(&lf);
-		if (m_pToaster->m_bTextHot)
-		{
-			lf.lfUnderline = TRUE;
-			m_pToaster->m_pNotifier = &m_ToasterNotificationLink;
-			m_pToaster->m_colorText = ::GetSysColor(COLOR_HOTLIGHT); // color for a hyperlink, the associated background color is COLOR_WINDOW
-		}
-		else
-			m_pToaster->m_colorText = ::GetSysColor(COLOR_WINDOWTEXT);
-		m_pToaster->m_fontText.CreateFontIndirect(&lf);
-
-		// Size
-		m_pToaster->m_nWidth = ::SystemDPIScale(360);
-		m_pToaster->m_nHeight = ::SystemDPIScale(80);
-
-		// Background
-		m_pToaster->m_BackgroundStyle = CToasterWnd::Solid;
-		m_pToaster->m_colorBackground = ::GetSysColor(COLOR_WINDOW);
+		m_pToaster = new CToasterWnd(sTitle, sText, 360, 80, dwWaitTimeMs);
 
 		// Show
-		if (!m_pToaster->Show())
+		if (m_pToaster && !m_pToaster->Show())
 			m_pToaster = NULL; // we do not need to delete m_pToaster because CToasterWnd is self deleting
 	}
 
