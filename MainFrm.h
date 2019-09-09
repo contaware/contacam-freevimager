@@ -14,14 +14,14 @@
 #include "StatusBarACT.h"
 #include "MDIClientWnd.h"
 #include "MDITabs.h"
-#include "ToasterWnd.h"
+#include "NotificationWnd.h"
 extern "C"
 {
 #include "tiffiop.h"
 }
 
 // Window Message IDs
-#define WM_THREADSAFE_POPUP_TOASTER					WM_USER + 100
+#define WM_THREADSAFE_POPUP_NOTIFICATIONWND			WM_USER + 100
 #define WM_ALL_CLOSED								WM_USER + 101
 #define WM_SCANANDEMAIL								WM_USER + 102
 #define WM_TRAY_NOTIFICATION						WM_USER + 103
@@ -76,12 +76,12 @@ public:
 	void EnterExitFullscreen();
 	void Progress(int nPercent);
 
-	// Toaster window
+	// Notification window
 	// dwWaitTimeMs == 0 : Only close on user action
 	// dwWaitTimeMs > 0  : Auto-close after the given amount of milliseconds
-	void PopupToaster(const CString& sTitle, const CString& sText, DWORD dwWaitTimeMs = 10000);	// call from any thread
-	void CloseToaster(BOOL bLastToasterDone = FALSE);											// call only from UI thread
-																								// (when exiting program in CMainFrame::OnDestroy() pass TRUE)
+	void PopupNotificationWnd(const CString& sTitle, const CString& sText, DWORD dwWaitTimeMs = 10000);	// call from any thread
+	void CloseNotificationWnd(BOOL bLastNotificationWndDone = FALSE);									// call only from UI thread
+																										// (when exiting program in CMainFrame::OnDestroy() pass TRUE)
 
 	// Enable / Disable Tray Icon
 	void TrayIcon(BOOL bEnable);
@@ -206,8 +206,8 @@ protected:
 	CPoint m_ptChildScrollPosition;
 	BOOL m_bScreenSaverWasActive;
 	CString m_sStatusBarString;
-	BOOL m_bLastToasterDone;
-	CToasterWnd* m_pToaster;
+	BOOL m_bLastNotificationWndDone;
+	CNotificationWnd* m_pNotificationWnd;
 
 	// Scan Vars
 	BOOL m_bScanAndEmail;
@@ -268,7 +268,7 @@ protected:
 	afx_msg LONG OnTrayNotification(WPARAM uID, LPARAM lEvent);
 	afx_msg LRESULT OnCopyData(WPARAM wParam, LPARAM lParam);
 	afx_msg LONG OnTwainClosed(WPARAM wparam, LPARAM lparam);
-	afx_msg LONG OnThreadSafePopupToaster(WPARAM wparam, LPARAM lparam);
+	afx_msg LONG OnThreadSafePopupNotificationWnd(WPARAM wparam, LPARAM lparam);
 #ifdef VIDEODEVICEDOC
 	afx_msg void OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu);
 	afx_msg LONG OnAutorunVideoDevices(WPARAM wparam, LPARAM lparam);

@@ -1,17 +1,17 @@
 #pragma once
 
-#ifndef __TOASTERWND_H__
-#define __TOASTERWND_H__
+#ifndef __NOTIFICATIONWND_H__
+#define __NOTIFICATIONWND_H__
 
 #ifndef _UXTHEME_H_
 #include <uxtheme.h>
 #endif
 
-class CToasterWnd : public CFrameWnd
+class CNotificationWnd : public CFrameWnd
 {
 public:
-	CToasterWnd(const CString& sTitle, const CString& sText, int nWidth, int nHeight, DWORD dwWaitTimeMs = 0U);
-	virtual ~CToasterWnd();
+	CNotificationWnd(const CString& sTitle, const CString& sText, int nWidth, int nHeight, DWORD dwWaitTimeMs = 0U);
+	virtual ~CNotificationWnd();
 
 	BOOL Show();				// Create and popup the notification window
 	void Close();				// Actually destroys the window

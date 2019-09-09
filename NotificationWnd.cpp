@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "MainFrm.h"
 #include "resource.h"
-#include "ToasterWnd.h"
+#include "NotificationWnd.h"
 
 #ifndef WP_CLOSEBUTTON
 #define WP_CLOSEBUTTON 18
@@ -19,9 +19,9 @@
 #define new DEBUG_NEW
 #endif
 
-const UINT TOASTERWND_TIMER_ID = 1;
+const UINT NOTIFICATIONWND_TIMER_ID = 1;
 
-BEGIN_MESSAGE_MAP(CToasterWnd, CFrameWnd)
+BEGIN_MESSAGE_MAP(CNotificationWnd, CFrameWnd)
 	ON_WM_DESTROY()
 	ON_WM_TIMER()
 	ON_WM_PAINT()
@@ -34,7 +34,7 @@ BEGIN_MESSAGE_MAP(CToasterWnd, CFrameWnd)
 	ON_WM_MOUSEMOVE()
 END_MESSAGE_MAP()
 
-CToasterWnd::CToasterWnd(const CString& sTitle, const CString& sText, int nWidth, int nHeight, DWORD dwWaitTimeMs/*=0U*/)
+CNotificationWnd::CNotificationWnd(const CString& sTitle, const CString& sText, int nWidth, int nHeight, DWORD dwWaitTimeMs/*=0U*/)
 {
 	// Title
 	m_sTitle = sTitle;
@@ -93,7 +93,7 @@ CToasterWnd::CToasterWnd(const CString& sTitle, const CString& sText, int nWidth
 	m_cursorHand = LoadCursor(NULL, IDC_HAND);
 }
 
-CToasterWnd::~CToasterWnd()
+CNotificationWnd::~CNotificationWnd()
 {
 	if (m_hUXTheme != NULL)
 	{
@@ -112,7 +112,7 @@ CToasterWnd::~CToasterWnd()
 	}
 }
 
-HMODULE CToasterWnd::LoadLibraryFromSystem32(LPCTSTR lpFileName)
+HMODULE CNotificationWnd::LoadLibraryFromSystem32(LPCTSTR lpFileName)
 {
 	// Get the Windows System32 directory
 	TCHAR szFullPath[_MAX_PATH];
@@ -127,7 +127,7 @@ HMODULE CToasterWnd::LoadLibraryFromSystem32(LPCTSTR lpFileName)
 	return LoadLibrary(szFullPath);
 }
 
-CRect CToasterWnd::CalculatePopupPosition()
+CRect CNotificationWnd::CalculatePopupPosition()
 {
 	// Get the working area for the current monitor
 	// Note: displaying the popup window in another monitor with a different DPI doesn't work correctly
@@ -148,7 +148,7 @@ CRect CToasterWnd::CalculatePopupPosition()
 		return CRect(0, 0, 0, 0);
 }
 
-void CToasterWnd::CreateFonts()
+void CNotificationWnd::CreateFonts()
 {
 	// Get default UI font
 	CFont defaultGUIFont;
@@ -169,7 +169,7 @@ void CToasterWnd::CreateFonts()
 	m_fontText.CreateFontIndirect(&lf);
 }
 
-BOOL CToasterWnd::Show()
+BOOL CNotificationWnd::Show()
 {
 	// Validate
 	ASSERT(m_sText.GetLength());
@@ -242,7 +242,7 @@ BOOL CToasterWnd::Show()
 
 	// Create the auto-closing timer
 	if (m_dwWaitTimeMs > 0)
-		m_nTimerID = SetTimer(TOASTERWND_TIMER_ID, m_dwWaitTimeMs, NULL);
+		m_nTimerID = SetTimer(NOTIFICATIONWND_TIMER_ID, m_dwWaitTimeMs, NULL);
 
 	// Show the window (without activation)
 	ShowWindow(SW_SHOWNOACTIVATE);
@@ -250,13 +250,13 @@ BOOL CToasterWnd::Show()
 	return TRUE;
 }
 
-void CToasterWnd::Close()
+void CNotificationWnd::Close()
 {
 	m_bSafeToClose = TRUE;
 	DestroyWindow();
 }
 
-void CToasterWnd::OnDestroy() 
+void CNotificationWnd::OnDestroy() 
 {
 	// Kill the timer if active
 	if (m_nTimerID)
@@ -269,13 +269,13 @@ void CToasterWnd::OnDestroy()
 	__super::OnDestroy();
 }
 
-void CToasterWnd::PostNcDestroy()
+void CNotificationWnd::PostNcDestroy()
 {
 	// Let CFrameWnd::PostNcDestroy() do the "delete this;"
 	__super::PostNcDestroy();
 }
 
-void CToasterWnd::OnTimer(UINT_PTR nIDEvent) 
+void CNotificationWnd::OnTimer(UINT_PTR nIDEvent) 
 {
 	if (nIDEvent == m_nTimerID)
 	{
@@ -293,7 +293,7 @@ void CToasterWnd::OnTimer(UINT_PTR nIDEvent)
 	}
 }
 
-void CToasterWnd::OnPaint() 
+void CNotificationWnd::OnPaint() 
 {
 	// Create the device context for painting
 	CPaintDC dc(this);
@@ -353,13 +353,13 @@ void CToasterWnd::OnPaint()
 	memDC.SelectObject(pOldBitmap);
 }
 
-BOOL CToasterWnd::OnEraseBkgnd(CDC* /*pDC*/) 
+BOOL CNotificationWnd::OnEraseBkgnd(CDC* /*pDC*/) 
 {
 	// Do not do any background drawing since all our drawing is done in OnPaint
 	return TRUE;
 }
 
-void CToasterWnd::DrawCloseButton(CDC* pDC)
+void CNotificationWnd::DrawCloseButton(CDC* pDC)
 {
 	if (IsAppThemed())
 		DrawThemeCloseButton(pDC);
@@ -367,7 +367,7 @@ void CToasterWnd::DrawCloseButton(CDC* pDC)
 		DrawLegacyCloseButton(pDC);
 }
 
-void CToasterWnd::DrawThemeCloseButton(CDC* pDC)
+void CNotificationWnd::DrawThemeCloseButton(CDC* pDC)
 {
 	// Validate our parameters
 	AFXASSUME(m_lpfnOpenThemeData != NULL);
@@ -386,7 +386,7 @@ void CToasterWnd::DrawThemeCloseButton(CDC* pDC)
 	}
 }
 
-void CToasterWnd::DrawLegacyCloseButton(CDC* pDC)
+void CNotificationWnd::DrawLegacyCloseButton(CDC* pDC)
 {
 	if (m_bClosePressed)
 		pDC->DrawFrameControl(&m_rectClose, DFC_CAPTION, DFCS_CAPTIONCLOSE | DFCS_PUSHED);
@@ -394,7 +394,7 @@ void CToasterWnd::DrawLegacyCloseButton(CDC* pDC)
 		pDC->DrawFrameControl(&m_rectClose, DFC_CAPTION, DFCS_CAPTIONCLOSE);
 }
 
-void CToasterWnd::OnLButtonDown(UINT /*nFlags*/, CPoint point) 
+void CNotificationWnd::OnLButtonDown(UINT /*nFlags*/, CPoint point) 
 {
 	if (m_rectClose.PtInRect(point))
 	{
@@ -407,7 +407,7 @@ void CToasterWnd::OnLButtonDown(UINT /*nFlags*/, CPoint point)
 	}
 }
 
-void CToasterWnd::HandleClosing()
+void CNotificationWnd::HandleClosing()
 {
 	// Kill the timer if running
 	if (m_nTimerID)
@@ -420,7 +420,7 @@ void CToasterWnd::HandleClosing()
 	ShowWindow(SW_HIDE);
 }
 
-BOOL CToasterWnd::IsBodyTextClickable(const CString& sText)
+BOOL CNotificationWnd::IsBodyTextClickable(const CString& sText)
 {
 	return (::IsExistingFile(sText)			||
 			::IsExistingDir(sText)			||
@@ -429,7 +429,7 @@ BOOL CToasterWnd::IsBodyTextClickable(const CString& sText)
 			sText.Find(ML_STRING(1570, "In Power Options disable: ")) == 0);
 }
 
-void CToasterWnd::OnLButtonUp(UINT /*nFlags*/, CPoint point) 
+void CNotificationWnd::OnLButtonUp(UINT /*nFlags*/, CPoint point) 
 {
 	if (m_bClosePressed)
 	{
@@ -450,13 +450,13 @@ void CToasterWnd::OnLButtonUp(UINT /*nFlags*/, CPoint point)
 				else
 					::ShellExecute(NULL, _T("open"), m_sText, NULL, NULL, SW_SHOWNORMAL);
 
-				::AfxGetMainFrame()->CloseToaster();
+				::AfxGetMainFrame()->CloseNotificationWnd();
 			}
 		}
 	}
 }
 
-BOOL CToasterWnd::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message) 
+BOOL CNotificationWnd::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message) 
 {
 	const MSG* pMsg = GetCurrentMessage();
 	CPoint pt(pMsg->pt);
@@ -471,7 +471,7 @@ BOOL CToasterWnd::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 		return __super::OnSetCursor(pWnd, nHitTest, message);
 }
 
-void CToasterWnd::OnClose() 
+void CNotificationWnd::OnClose() 
 {
 	// Only really close the window if the m_bSafeToClose flag
 	// is set. Doing this ensures that client code will always
@@ -483,7 +483,7 @@ void CToasterWnd::OnClose()
 		HandleClosing(); // like pressing ALT+F4
 }
 
-int CToasterWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
+int CNotificationWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
 	// Let the base class do its thing
 	if (__super::OnCreate(lpCreateStruct) == -1)
@@ -492,7 +492,7 @@ int CToasterWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 }
 
-void CToasterWnd::OnMouseMove(UINT nFlags, CPoint point) 
+void CNotificationWnd::OnMouseMove(UINT nFlags, CPoint point) 
 {
 	// Let the base class do its thing
 	__super::OnMouseMove(nFlags, point);

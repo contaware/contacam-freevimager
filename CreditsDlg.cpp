@@ -72,10 +72,6 @@ BOOL CCreditsDlg::OnInitDialog()
 	CString smditabs(_T("CMDITabs by Christian Rodemeyer"));
 	smditabs += CString(_T('\n')) + _T("http://www.codeproject.com/articles/1438/cmditabs");
 
-	// CToasterWnd v1.18
-	CString stoaster(_T("CToasterWnd v1.18"));
-	stoaster += CString(_T('\n')) + _T("http://www.naughter.com");
-
 	// AVIR
 	CString savir = _T("AVIR image resizing algorithm designed by\nAleksey Vaneev version ") + CString(AVIR_VERSION);
 	savir += CString(_T('\n')) + _T("http://github.com/avaneev/avir");
@@ -122,7 +118,6 @@ BOOL CCreditsDlg::OnInitDialog()
 						ssmtp		+ _T("\n\n") +
 #endif
 						smditabs	+ _T("\n\n") +
-						stoaster	+ _T("\n\n") +
 						savir		+ _T("\n\n") +
 						slibjpeg	+ _T("\n\n") +
 						slibtiff	+ _T("\n\n") +

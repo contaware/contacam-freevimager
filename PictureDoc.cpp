@@ -3998,11 +3998,11 @@ BOOL CPictureDoc::SaveAsPdf()
 
 		// Show message
 		if (res)
-			::AfxGetMainFrame()->PopupToaster(CString(APPNAME_NOEXT) + _T(" ") + ML_STRING(1849, "Saved"), FileName);
+			::AfxGetMainFrame()->PopupNotificationWnd(CString(APPNAME_NOEXT) + _T(" ") + ML_STRING(1849, "Saved"), FileName);
 		else
 		{
 			::DeleteFile(FileName);
-			::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, ML_STRING(1850, "Save Failed!"), 0);
+			::AfxGetMainFrame()->PopupNotificationWnd(APPNAME_NOEXT, ML_STRING(1850, "Save Failed!"), 0);
 		}
 	}
 

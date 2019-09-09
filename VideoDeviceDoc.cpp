@@ -7619,7 +7619,7 @@ void CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 	// Make FileName
 	CString sFileName = MakeJpegManualSnapshotFileName(Time);
 
-	// Do not overwrite existing because of below PopupToaster()
+	// Do not overwrite existing because of below PopupNotificationWnd()
 	if (::IsExistingFile(sFileName))
 	{
 		m_bDoEditSnapshot = FALSE;
@@ -7649,9 +7649,9 @@ void CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 
 	// Show message
 	if (res)
-		::AfxGetMainFrame()->PopupToaster(CString(APPNAME_NOEXT) + _T(" ") + ML_STRING(1849, "Saved"), sFileName);
+		::AfxGetMainFrame()->PopupNotificationWnd(CString(APPNAME_NOEXT) + _T(" ") + ML_STRING(1849, "Saved"), sFileName);
 	else
-		::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, ML_STRING(1850, "Save Failed!"), 0);
+		::AfxGetMainFrame()->PopupNotificationWnd(APPNAME_NOEXT, ML_STRING(1850, "Save Failed!"), 0);
 }
 
 CString CVideoDeviceDoc::SaveJpegMail(CDib* pDib, const CTime& RefTime, DWORD dwRefUpTime)

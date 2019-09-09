@@ -70,7 +70,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_MESSAGE(WM_TRAY_NOTIFICATION, OnTrayNotification)
 	ON_MESSAGE(WM_COPYDATA, OnCopyData)
 	ON_MESSAGE(WM_TWAIN_CLOSED, OnTwainClosed)
-	ON_MESSAGE(WM_THREADSAFE_POPUP_TOASTER, OnThreadSafePopupToaster)
+	ON_MESSAGE(WM_THREADSAFE_POPUP_NOTIFICATIONWND, OnThreadSafePopupNotificationWnd)
 #ifdef VIDEODEVICEDOC
 	ON_WM_INITMENUPOPUP()
 	ON_MESSAGE(WM_AUTORUN_VIDEODEVICES, OnAutorunVideoDevices)
@@ -125,8 +125,8 @@ CMainFrame::CMainFrame() : m_TrayIcon(IDR_TRAYICON) // Menu ID
 	m_TiffScan = NULL;
 	m_bScanAndEmail = FALSE;
 	m_pBatchProcDlg = NULL;
-	m_bLastToasterDone = FALSE;
-	m_pToaster = NULL;
+	m_bLastNotificationWndDone = FALSE;
+	m_pNotificationWnd = NULL;
 }
 
 CMainFrame::~CMainFrame()
@@ -293,8 +293,8 @@ void CMainFrame::OnDestroy()
 	// Kill timer
 	KillTimer(ID_TIMER_1SEC);
 
-	// Close toaster
-	CloseToaster(TRUE); // TRUE: do not allow further toaster windows
+	// Close Notification Wnd
+	CloseNotificationWnd(TRUE); // TRUE: do not allow further notification windows
 
 	// Base class
 	CMDIFrameWnd::OnDestroy();
@@ -443,12 +443,12 @@ LONG CMainFrame::OnTwainClosed(WPARAM wparam, LPARAM lparam)
 						::DeleteFile(((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName);
 
 						// Show message
-						PopupToaster(CString(APPNAME_NOEXT) + _T(" ") + ML_STRING(1849, "Saved"), ((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName);
+						PopupNotificationWnd(CString(APPNAME_NOEXT) + _T(" ") + ML_STRING(1849, "Saved"), ((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName);
 					}
 					else
 					{
 						EndWaitCursor();
-						PopupToaster(APPNAME_NOEXT, ML_STRING(1850, "Save Failed!"), 0);
+						PopupNotificationWnd(APPNAME_NOEXT, ML_STRING(1850, "Save Failed!"), 0);
 					}
 				}
 				// Open Multi-Page Tiff
@@ -653,9 +653,9 @@ void CMainFrame::OnClose()
 		if (((CUImagerApp*)::AfxGetApp())->m_bAutostartsExecuted &&
 			!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
 		{
-			PopupToaster(	ML_STRING(1566, "Closing") + _T(" ") + APPNAME_NOEXT,
-							ML_STRING(1565, "Please wait..."),
-							0);
+			PopupNotificationWnd(ML_STRING(1566, "Closing") + _T(" ") + APPNAME_NOEXT,
+								ML_STRING(1565, "Please wait..."),
+								0);
 		}
 #endif
 
@@ -686,7 +686,7 @@ void CMainFrame::OnClose()
 	}	
 }
 
-void CMainFrame::PopupToaster(const CString& sTitle, const CString& sText, DWORD dwWaitTimeMs/*=10000*/)
+void CMainFrame::PopupNotificationWnd(const CString& sTitle, const CString& sText, DWORD dwWaitTimeMs/*=10000*/)
 {
 	TCHAR* p = new TCHAR[sTitle.GetLength() + sText.GetLength() + 2];
 	if (p)
@@ -696,23 +696,23 @@ void CMainFrame::PopupToaster(const CString& sTitle, const CString& sText, DWORD
 		_tcscpy(p, sText);
 		p -= sTitle.GetLength() + 1;
 		::PostMessage(	GetSafeHwnd(),
-						WM_THREADSAFE_POPUP_TOASTER,
+						WM_THREADSAFE_POPUP_NOTIFICATIONWND,
 						(WPARAM)p,
 						(LPARAM)dwWaitTimeMs);
 	}
 }
 
-void CMainFrame::CloseToaster(BOOL bLastToasterDone/*=FALSE*/)
+void CMainFrame::CloseNotificationWnd(BOOL bLastNotificationWndDone/*=FALSE*/)
 {
-	m_bLastToasterDone = bLastToasterDone;
-	if (m_pToaster)
+	m_bLastNotificationWndDone = bLastNotificationWndDone;
+	if (m_pNotificationWnd)
 	{
-		m_pToaster->Close(); // we do not need to delete m_pToaster because CToasterWnd is self deleting
-		m_pToaster = NULL;
+		m_pNotificationWnd->Close(); // we do not need to delete m_pNotificationWnd because CNotificationWnd is self deleting
+		m_pNotificationWnd = NULL;
 	}
 }
 
-LONG CMainFrame::OnThreadSafePopupToaster(WPARAM wparam, LPARAM lparam)
+LONG CMainFrame::OnThreadSafePopupNotificationWnd(WPARAM wparam, LPARAM lparam)
 {
 	// Get params
 	TCHAR* p = (TCHAR*)wparam;
@@ -728,18 +728,18 @@ LONG CMainFrame::OnThreadSafePopupToaster(WPARAM wparam, LPARAM lparam)
 	}
 	DWORD dwWaitTimeMs = (DWORD)lparam;
 
-	// Show Toaster?
-	if (!m_bLastToasterDone)
+	// Show Notification Wnd?
+	if (!m_bLastNotificationWndDone)
 	{
 		// Close
-		CloseToaster();
+		CloseNotificationWnd();
 
 		// Create
-		m_pToaster = new CToasterWnd(sTitle, sText, 360, 80, dwWaitTimeMs);
+		m_pNotificationWnd = new CNotificationWnd(sTitle, sText, 360, 80, dwWaitTimeMs);
 
 		// Show
-		if (m_pToaster && !m_pToaster->Show())
-			m_pToaster = NULL; // we do not need to delete m_pToaster because CToasterWnd is self deleting
+		if (m_pNotificationWnd && !m_pNotificationWnd->Show())
+			m_pNotificationWnd = NULL; // we do not need to delete m_pNotificationWnd because CNotificationWnd is self deleting
 	}
 
 	return 0;
@@ -1018,7 +1018,7 @@ LONG CMainFrame::OnAutorunVideoDevices(WPARAM wparam, LPARAM lparam)
 
 void CMainFrame::OnBufUsageClick()
 {
-	PopupToaster(APPNAME_NOEXT, ML_STRING(1819, "To reduce the max usage lower the \"Split longer than\" value under Settings - Camera Advanced Settings"), 0);
+	PopupNotificationWnd(APPNAME_NOEXT, ML_STRING(1819, "To reduce the max usage lower the \"Split longer than\" value under Settings - Camera Advanced Settings"), 0);
 }
 
 #endif

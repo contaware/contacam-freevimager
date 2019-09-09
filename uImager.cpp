@@ -945,18 +945,18 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		if (!m_bServiceProcess && GetContaCamServiceState() == CONTACAMSERVICE_RUNNING)
 		{
 			CServiceControlEndProcThread ServiceControlEndProcThread;
-			::AfxGetMainFrame()->PopupToaster(	ML_STRING(1764, "Starting") + _T(" ") + APPNAME_NOEXT,
-												ML_STRING(1565, "Please wait..."),
-												0);
+			::AfxGetMainFrame()->PopupNotificationWnd(	ML_STRING(1764, "Starting") + _T(" ") + APPNAME_NOEXT,
+														ML_STRING(1565, "Please wait..."),
+														0);
 			ServiceControlEndProcThread.Start();
 			do 
 			{
-				Pump();	// pump messages to show toaster
+				Pump();	// pump messages to show notification window
 				::Sleep(10);
 			}
 			while (ServiceControlEndProcThread.IsAlive());
-			::AfxGetMainFrame()->CloseToaster();
-			Pump();		// pump messages to hide toaster
+			::AfxGetMainFrame()->CloseNotificationWnd();
+			Pump();		// pump messages to hide notification window
 			m_bDoStartFromService = TRUE;
 		}
 #endif
@@ -1111,21 +1111,21 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			{
 				sMsg = ML_STRING(1570, "In Power Options disable: ") + ML_STRING(1571, "Sleep") + _T(" + ") + ML_STRING(1572, "Hibernate");
 				if (!m_bServiceProcess)
-					::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, sMsg);
+					::AfxGetMainFrame()->PopupNotificationWnd(APPNAME_NOEXT, sMsg);
 				::LogLine(_T("%s"), sMsg);
 			}
 			else if (dwStandbyTimeout != 0)
 			{
 				sMsg = ML_STRING(1570, "In Power Options disable: ") + ML_STRING(1571, "Sleep");
 				if (!m_bServiceProcess)
-					::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, sMsg);
+					::AfxGetMainFrame()->PopupNotificationWnd(APPNAME_NOEXT, sMsg);
 				::LogLine(_T("%s"), sMsg);
 			}
 			else if (dwHibernateTimeout != 0)
 			{
 				sMsg = ML_STRING(1570, "In Power Options disable: ") + ML_STRING(1572, "Hibernate");
 				if (!m_bServiceProcess)
-					::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, sMsg);
+					::AfxGetMainFrame()->PopupNotificationWnd(APPNAME_NOEXT, sMsg);
 				::LogLine(_T("%s"), sMsg);
 			}
 		}
@@ -1148,7 +1148,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			{
 				sMsg = ML_STRING(1475, "Failed to start the web server");
 				if (!m_bServiceProcess)
-					::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, sMsg, 0);
+					::AfxGetMainFrame()->PopupNotificationWnd(APPNAME_NOEXT, sMsg, 0);
 				::LogLine(_T("%s"), sMsg);
 			}
 		}

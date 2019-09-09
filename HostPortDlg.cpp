@@ -612,7 +612,7 @@ void CHostPortDlg::OnError()
 {
 	::SetFocus(m_HostComboBox.GetSafeHwnd());
 	::AlertUser(GetSafeHwnd());
-	::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, ML_STRING(1867, "Enter an IP or a Hostname or an URL starting with rtsp:// or http:// (ATTENTION: User Name and Password must be provided under Camera Login, not in the URL)"), 0);
+	::AfxGetMainFrame()->PopupNotificationWnd(APPNAME_NOEXT, ML_STRING(1867, "Enter an IP or a Hostname or an URL starting with rtsp:// or http:// (ATTENTION: User Name and Password must be provided under Camera Login, not in the URL)"), 0);
 }
 
 void CHostPortDlg::OnOK() 

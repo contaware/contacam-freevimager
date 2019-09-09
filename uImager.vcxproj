@@ -775,6 +775,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="NewDlg.cpp" />
+    <ClCompile Include="NotificationWnd.cpp" />
     <ClCompile Include="NoVistaFileDlg.cpp" />
     <ClCompile Include="NumEdit.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -1057,7 +1058,6 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="TextEntryDlg.cpp" />
-    <ClCompile Include="ToasterWnd.cpp" />
     <ClCompile Include="ToolBarChildFrm.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -1304,6 +1304,7 @@
     <ClInclude Include="MyMemDC.h" />
     <ClInclude Include="NetCom.h" />
     <ClInclude Include="NewDlg.h" />
+    <ClInclude Include="NotificationWnd.h" />
     <ClInclude Include="NoVistaFileDlg.h" />
     <ClInclude Include="NumEdit.h" />
     <ClInclude Include="NumSpinCtrl.h" />
@@ -1346,7 +1347,6 @@
     <ClInclude Include="TabCtrlSSL.h" />
     <ClInclude Include="TabPageSSL.h" />
     <ClInclude Include="TextEntryDlg.h" />
-    <ClInclude Include="ToasterWnd.h" />
     <ClInclude Include="ToolBarChildFrm.h" />
     <ClInclude Include="TraceLogFile.h" />
     <ClInclude Include="TransAlpha.h" />
