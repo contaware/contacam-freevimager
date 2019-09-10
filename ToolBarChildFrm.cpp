@@ -203,15 +203,16 @@ BOOL CVideoDeviceToolBar::Create(CWnd* pParentWnd)
 		return FALSE;
 
 	// Add toolbar button dropdown arrows
+	// See: https://docs.microsoft.com/en-us/windows/win32/controls/toolbar-extended-styles
 	GetToolBarCtrl().SetExtendedStyle(TBSTYLE_EX_DRAWDDARROWS);
 	DWORD dwStyle = GetButtonStyle(CommandToIndex(ID_VIEW_FRAMEANNOTATION));
-	dwStyle |= TBSTYLE_DROPDOWN;
+	dwStyle |= BTNS_DROPDOWN;
 	SetButtonStyle(CommandToIndex(ID_VIEW_FRAMEANNOTATION), dwStyle);
 	dwStyle = GetButtonStyle(CommandToIndex(ID_CAPTURE_RECORD));
-	dwStyle |= TBSTYLE_DROPDOWN;
+	dwStyle |= BTNS_DROPDOWN;
 	SetButtonStyle(CommandToIndex(ID_CAPTURE_RECORD), dwStyle);
 	dwStyle = GetButtonStyle(CommandToIndex(ID_EDIT_ZONE));
-	dwStyle |= TBSTYLE_DROPDOWN;
+	dwStyle |= BTNS_WHOLEDROPDOWN;
 	SetButtonStyle(CommandToIndex(ID_EDIT_ZONE), dwStyle);
 	
 	return TRUE;

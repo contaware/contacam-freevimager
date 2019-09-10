@@ -752,8 +752,8 @@ BEGIN
         MENUITEM "Add Zones Tool (25% relative sensitivity)", ID_EDIT_ZONE_SENSITIVITY_25
         MENUITEM "Add Zones Tool (10% relative sensitivity)", ID_EDIT_ZONE_SENSITIVITY_10
         MENUITEM "Add Zones Tool (5% relative sensitivity)", ID_EDIT_ZONE_SENSITIVITY_5
-        MENUITEM SEPARATOR
         MENUITEM "Remove Zones Tool",           ID_EDIT_ZONE_REMOVE
+        MENUITEM SEPARATOR
         MENUITEM "Obscure Removed Zones (privacy mask)", ID_EDIT_ZONE_OBSCURE_REMOVED
         MENUITEM SEPARATOR
         MENUITEM "Big Zones Size",              ID_EDIT_ZONE_BIG

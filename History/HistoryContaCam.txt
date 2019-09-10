@@ -4,8 +4,8 @@ CONTACAM HISTORY
 
 - Better support for high contrast themes
 - Frame Annotation possibility with the new toolbar button
-- Store the detection zones/mask when changed (before those settings
-  were only saved when closing the zones/mask tool)
+- Store the detection zones/mask when changed
+- More intuitive detection zones/mask toolbar button
 - Updated installer with an improved closing logic for Apache server
 - Added a new Generic IP camera entry
 - Fixed mjpeg support for the MotionEyeOS camera (thanks to
