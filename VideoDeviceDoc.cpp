@@ -5895,6 +5895,10 @@ BOOL CVideoDeviceDoc::MicroApacheUpdateWebFiles(CString sAutoSaveDir)
 	::DeleteFile(sAutoSaveDir + _T("styles\\reload_white.png"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\reload_darkgray.png"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\reload_gray.png"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\camon_black.png"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\camon_white.png"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\camon_darkgray.png"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\camon_gray.png"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\back_black.png"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\back_white.png"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\back_darkgray.png"));

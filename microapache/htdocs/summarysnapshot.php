@@ -70,6 +70,7 @@ if (isset($_GET['pageoffset'])) {
 
 echo "<script type=\"text/javascript\">\n";
 echo "//<![CDATA[\n";
+
 echo "function changeStyle(id) {\n";
 echo "	if (parent.window.name != '' && document.getElementById(parent.window.name))\n";
 echo "		document.getElementById(parent.window.name).className = 'notselected';\n";
@@ -77,15 +78,27 @@ echo "	if (document.getElementById(id))\n";
 echo "		document.getElementById(id).className = 'lastselected';\n";
 echo "	parent.window.name = id; // this var survives between pages!\n";
 echo "}\n";
+
+echo "function preventUserActions() {\n";
+echo "	var anchors = document.getElementsByTagName('a');\n";
+echo "	for (var i = 0; i < anchors.length; i++) {\n";
+echo "		anchors[i].onclick = function() {return false;};\n";
+echo "	}\n";
+echo "	var inputs = document.getElementsByTagName('input');\n";
+echo "	for (var i = 0; i < inputs.length; i++) {\n";
+echo "		inputs[i].disabled = true;\n";
+echo "	}\n";
+echo "}\n";
+
 if ($show_trash_command) {
 	echo "function allCheckBoxes(checked) {\n";
-	echo "	checkboxes = document.getElementsByName('checklist');\n";
+	echo "	var checkboxes = document.getElementsByName('checklist');\n";
 	echo "	for (var i = 0; i < checkboxes.length; i++) {\n";
 	echo "		checkboxes[i].checked = checked;\n";
 	echo "	}\n";
 	echo "}\n";
 	echo "function deleteCheckedElements() {\n";
-	echo "	checkboxes = document.getElementsByName('checklist');\n";
+	echo "	var checkboxes = document.getElementsByName('checklist');\n";
 	echo "	var doReload = false;\n";
 	echo "	for (var i = 0; i < checkboxes.length; i++) {\n";
 	echo "		if (checkboxes[i].checked) {\n";
@@ -99,6 +112,7 @@ if ($show_trash_command) {
 	echo "		window.location.href = '" . $_SERVER['REQUEST_URI'] . "'; // reload page\n";
 	echo "}\n";
 }
+
 echo "//]]>\n";
 echo "</script>\n";
 
@@ -215,8 +229,7 @@ if (isset($_SESSION['username'])) {
 }
 echo "<a style=\"font-size: 16px;\" href=\"#\" onclick=\"window.location.reload(); return false;\">&#x21bb;</a>&nbsp;";
 if ($show_camera_commands) {
-	echo "<a class=\"camonbuttons\" href=\"camera.php?source=on&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\">&nbsp;</a>&nbsp;";
-	echo "<a class=\"camoffbuttons\" href=\"camera.php?source=off&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\">&nbsp;</a>&nbsp;";
+	echo "<a class=\"camoffbuttons\" href=\"camera.php?source=toggle&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\" onclick=\"preventUserActions(); return true;\">&nbsp;</a>&nbsp;";
 }
 if ($show_trash_command) {
 	echo "<a style=\"font-size: 12px; position: relative;\" href=\"#\" onclick=\"allCheckBoxes(true); return false;\"><span style=\"display: inline-block; position: absolute; left: 11px; top: 5px; width: 12px; height: 12px; border: 1px solid #000000;\">&nbsp;</span>&#x2713;</a>&nbsp;";

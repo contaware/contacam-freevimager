@@ -7,9 +7,20 @@ if ($show_camera_commands == 0)
 $dir = rtrim(str_replace("\\", "/", dirname($_SERVER['SCRIPT_FILENAME'])), '/');
 $fullfilepath = "$dir/CAMERA_IS_OBSCURED.txt";
 if (isset($_GET['source'])) {
-	if ($_GET['source'] == 'off')
+	$source = ''; // no default
+	
+	if ($_GET['source'] == 'toggle') {
+		if (is_file($fullfilepath))
+			$source = 'on';
+		else
+			$source = 'off';
+	}
+	else
+		$source = $_GET['source'];
+	
+	if ($source == 'off')
 		@file_put_contents($fullfilepath, "Note: delete this file to re-enable the camera");
-	else if ($_GET['source'] == 'on') 
+	else if ($source == 'on') 
 		@unlink($fullfilepath);
 }
 

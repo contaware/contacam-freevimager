@@ -132,9 +132,6 @@ span.globalbuttons a.highlight:link, span.globalbuttons a.highlight:visited, spa
 	text-decoration: underline;
 	border-color: #33ccff #039ccf #039ccf #33ccff;
 }
-a.camonbuttons {
-	background: transparent url('camon_gray.png') no-repeat center center;
-}
 a.camoffbuttons {
 	background: transparent url('camoff_gray.png') no-repeat center center;
 }
