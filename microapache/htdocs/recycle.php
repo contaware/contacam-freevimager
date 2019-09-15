@@ -28,30 +28,37 @@ function strong_rename($old, $new) {
 	exit($last_error['message']);
 }
 
-if (isset($_GET['year']) && isset($_GET['month']) && isset($_GET['day']) && isset($_GET['filenamenoext'])) {
+if (isset($_GET['year']) && isset($_GET['month']) && isset($_GET['day'])) {
 	// Check safety
 	check_safety($_GET['year']);
 	check_safety($_GET['month']);
 	check_safety($_GET['day']);
-	check_safety($_GET['filenamenoext']);
 	
-	// Full path without extension
+	// Loop passed files
 	$doc_root = $_SERVER['DOCUMENT_ROOT'];
-	$filenoext = $_GET['year']."/".$_GET['month']."/".$_GET['day']."/".$_GET['filenamenoext'];
-	if ($doc_root == "")
-		$filenoext = "$filesdirpath/$filenoext";
-	else
-		$filenoext = rtrim($doc_root,"\\/")."/".ltrim($filesdirpath,"\\/")."/$filenoext";
-	
-	// Rename filename to .recycled
-	if (is_file("$filenoext.mp4"))
-		strong_rename("$filenoext.mp4","$filenoext.mp4.recycled");
-	if (is_file("$filenoext.gif"))
-		strong_rename("$filenoext.gif","$filenoext.gif.recycled");
-	
-	// Reload page
-	if (isset($_GET['backuri'])) {
-		$host = (!empty($_SERVER['HTTP_X_FORWARDED_HOST'])) ? $_SERVER['HTTP_X_FORWARDED_HOST'] : $_SERVER['HTTP_HOST'];
-		header("Location: $scheme://$host" . $_GET['backuri']);
+	foreach($_GET as $key=>$filenamenoext) {
+		if (is_numeric($key) && intval($key) >= 0) {
+			// Check safety
+			check_safety($filenamenoext);
+			
+			// Full path without extension
+			$filenoext = $_GET['year']."/".$_GET['month']."/".$_GET['day']."/".$filenamenoext;
+			if ($doc_root == "")
+				$filenoext = "$filesdirpath/$filenoext";
+			else
+				$filenoext = rtrim($doc_root,"\\/")."/".ltrim($filesdirpath,"\\/")."/$filenoext";
+			
+			// Rename filename(s) to .recycled
+			if (is_file("$filenoext.mp4"))
+				strong_rename("$filenoext.mp4","$filenoext.mp4.recycled");
+			if (is_file("$filenoext.gif"))
+				strong_rename("$filenoext.gif","$filenoext.gif.recycled");
+		}
 	}
+}
+
+// Reload page
+if (isset($_GET['backuri'])) {
+	$host = (!empty($_SERVER['HTTP_X_FORWARDED_HOST'])) ? $_SERVER['HTTP_X_FORWARDED_HOST'] : $_SERVER['HTTP_HOST'];
+	header("Location: $scheme://$host" . $_GET['backuri']);
 }

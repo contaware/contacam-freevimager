@@ -91,28 +91,38 @@ echo "	}\n";
 echo "}\n";
 
 if ($show_trash_command) {
-	echo "function allCheckBoxes(checked) {\n";
+	echo "function toggleCheckBoxes() {\n";
+	echo "	var doCheck = false;\n";
 	echo "	var checkboxes = document.getElementsByName('checklist');\n";
 	echo "	for (var i = 0; i < checkboxes.length; i++) {\n";
-	echo "		checkboxes[i].checked = checked;\n";
-	echo "	}\n";
-	echo "}\n";
-	echo "function deleteCheckedElements() {\n";
-	echo "	var checkboxes = document.getElementsByName('checklist');\n";
-	echo "	var doReload = false;\n";
-	echo "	for (var i = 0; i < checkboxes.length; i++) {\n";
-	echo "		if (checkboxes[i].checked) {\n";
-	echo "			doReload = true;\n";
-	echo "			var ajax = new XMLHttpRequest();\n";
-	echo "			ajax.open('GET', checkboxes[i].value, false); // sync. call\n";
-	echo "			ajax.send(null);\n";
+	echo "		if (!checkboxes[i].checked) {\n";
+	echo "			doCheck = true;\n";
+	echo "			break;\n";
 	echo "		}\n";
 	echo "	}\n";
-	echo "	if (doReload)\n";
-	echo "		window.location.href = '" . $_SERVER['REQUEST_URI'] . "'; // reload page\n";
+	echo "	for (var i = 0; i < checkboxes.length; i++) {\n";
+	echo "		checkboxes[i].checked = doCheck;\n";
+	echo "	}\n";
+	echo "}\n";
+
+	echo "function deleteCheckedElements() {\n";
+	echo "	var checkboxes = document.getElementsByName('checklist');\n";
+	echo "	var doDelete = false;\n";
+	echo "	var filePos = 0;\n";
+	echo "	var deleteUrl = 'recycle.php?year=$selected_year_string&month=$selected_month_string&day=$selected_day_string';\n";
+	echo "	for (var i = 0; i < checkboxes.length; i++) {\n";
+	echo "		if (checkboxes[i].checked) {\n";
+	echo "			doDelete = true;\n";
+	echo "			deleteUrl += '&' + filePos + '=' + encodeURIComponent(checkboxes[i].value);\n";
+	echo "			filePos++;\n";
+	echo "		}\n";
+	echo "	}\n";
+	echo "	if (doDelete) {\n";
+	echo "		preventUserActions();\n";
+	echo "		window.location.href = deleteUrl + '&backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "';\n";
+	echo "	}\n";
 	echo "}\n";
 }
-
 echo "//]]>\n";
 echo "</script>\n";
 
@@ -232,8 +242,7 @@ if ($show_camera_commands) {
 	echo "<a class=\"camoffbuttons\" href=\"camera.php?source=toggle&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\" onclick=\"preventUserActions(); return true;\">&nbsp;</a>&nbsp;";
 }
 if ($show_trash_command) {
-	echo "<a style=\"font-size: 12px; position: relative;\" href=\"#\" onclick=\"allCheckBoxes(true); return false;\"><span style=\"display: inline-block; position: absolute; left: 11px; top: 5px; width: 12px; height: 12px; border: 1px solid #000000;\">&nbsp;</span>&#x2713;</a>&nbsp;";
-	echo "<a style=\"font-size: 12px; position: relative;\" href=\"#\" onclick=\"allCheckBoxes(false); return false;\"><span style=\"display: inline-block; position: absolute; left: 11px; top: 5px; width: 12px; height: 12px; border: 1px solid #000000;\">&nbsp;</span>&nbsp;</a>&nbsp;";
+	echo "<a style=\"font-size: 12px; position: relative;\" href=\"#\" onclick=\"toggleCheckBoxes(); return false;\"><span style=\"display: inline-block; position: absolute; left: 11px; top: 5px; width: 12px; height: 12px; border: 1px solid #000000;\">&nbsp;</span>&#x2713;</a>&nbsp;";
 	echo "<a style=\"font-size: 16px;\" href=\"#\" onclick=\"deleteCheckedElements(); return false;\">&#x1F5D1;</a>&nbsp;";
 }
 echo "</span>\n";
@@ -395,7 +404,7 @@ if ($handle = @opendir($dir)) {
 						echo "$file_prefix_upper<br /><a href=\"mp4.php?file=$mp4uri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\" >$file_timestamp</a>";
 				}
 				if ($show_trash_command)
-					echo "&nbsp;<input style=\"vertical-align: bottom\" type=\"checkbox\" name=\"checklist\" value=\"recycle.php?year=$selected_year_string&amp;month=$selected_month_string&amp;day=$selected_day_string&amp;filenamenoext=$filenamenoext\" />";
+					echo "&nbsp;<input style=\"vertical-align: bottom\" type=\"checkbox\" name=\"checklist\" value=\"" . htmlspecialchars($filenamenoext) . "\" />";
 				echo "</span>";
 				$count++;
 			}

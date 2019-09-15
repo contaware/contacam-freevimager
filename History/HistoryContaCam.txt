@@ -4,8 +4,10 @@ CONTACAM HISTORY
 
 - Better support for high contrast themes
 - Frame Annotation possibility with the new toolbar button
-- Store the detection zones/mask when changed
-- More intuitive detection zones/mask toolbar button
+- More intuitive detection zones/mask toolbar button. Single zones
+  changes are now saved immediately
+- Web interface multiple selection deletion
+  (sponsored by Grün Stadt Zürich)
 - In web interface we have now only one camera source obscure button
   (like in ContaCam program)
 - Updated installer with an improved closing logic for Apache server

@@ -6,6 +6,8 @@ FREEVIMAGER HISTORY
 - Support for .jfif graphics files
 - Updated installer with an improved closing logic for multiple 
   running instances of FreeVimager
+- Fixed a bug which in some circumstances blocked the display of
+  a good image placed near a corrupted one
 - Updated the avir library to version 2.4
 
 9.7.0 (June 19th 2019)
