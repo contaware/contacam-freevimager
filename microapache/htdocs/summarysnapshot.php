@@ -79,16 +79,25 @@ echo "		document.getElementById(id).className = 'lastselected';\n";
 echo "	parent.window.name = id; // this var survives between pages!\n";
 echo "}\n";
 
-echo "function preventUserActions() {\n";
-echo "	var anchors = document.getElementsByTagName('a');\n";
-echo "	for (var i = 0; i < anchors.length; i++) {\n";
-echo "		anchors[i].onclick = function() {return false;};\n";
-echo "	}\n";
-echo "	var inputs = document.getElementsByTagName('input');\n";
-echo "	for (var i = 0; i < inputs.length; i++) {\n";
-echo "		inputs[i].disabled = true;\n";
-echo "	}\n";
-echo "}\n";
+if ($show_camera_commands || $show_trash_command) {
+	echo "function preventUserActions() {\n";
+	echo "	var anchors = document.getElementsByTagName('a');\n";
+	echo "	for (var i = 0; i < anchors.length; i++) {\n";
+	echo "		anchors[i].onclick = function() {return false;};\n";
+	echo "	}\n";
+	echo "	var inputs = document.getElementsByTagName('input');\n";
+	echo "	for (var i = 0; i < inputs.length; i++) {\n";
+	echo "		inputs[i].disabled = true;\n";
+	echo "	}\n";
+	echo "}\n";
+}
+
+if ($show_camera_commands) {
+	echo "function toggleCamera() {\n";
+	echo "	preventUserActions();\n";
+	echo "	window.location.href = 'camera.php?source=toggle&backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "';\n";
+	echo "}\n";
+}
 
 if ($show_trash_command) {
 	echo "function toggleCheckBoxes() {\n";
@@ -239,7 +248,7 @@ if (isset($_SESSION['username'])) {
 }
 echo "<a style=\"font-size: 16px;\" href=\"#\" onclick=\"window.location.reload(); return false;\">&#x21bb;</a>&nbsp;";
 if ($show_camera_commands) {
-	echo "<a class=\"camoffbuttons\" href=\"camera.php?source=toggle&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\" onclick=\"preventUserActions(); return true;\">&nbsp;</a>&nbsp;";
+	echo "<a class=\"camoffbuttons\" href=\"#\" onclick=\"toggleCamera(); return false;\">&nbsp;</a>&nbsp;";
 }
 if ($show_trash_command) {
 	echo "<a style=\"font-size: 12px; position: relative;\" href=\"#\" onclick=\"toggleCheckBoxes(); return false;\"><span style=\"display: inline-block; position: absolute; left: 11px; top: 5px; width: 12px; height: 12px; border: 1px solid #000000;\">&nbsp;</span>&#x2713;</a>&nbsp;";
