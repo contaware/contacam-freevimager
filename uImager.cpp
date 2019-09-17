@@ -574,8 +574,8 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		CWinApp::InitInstance();
 
 		// Initialize OLE libraries
-		// Note: AfxWinTerm() called after ExitInstance() will clean-up,
-		// no need to do it in ExitInstance()!
+		// Note: AfxWinTerm() (called after ExitInstance()) will invoke AfxOleTerm()
+		//       which does the clean-up, no need to do that in ExitInstance()
 		if (!AfxOleInit()) // This calls ::CoInitialize(NULL) internally
 		{
 			::AfxMessageBox(IDP_OLE_INIT_FAILED, MB_OK | MB_ICONSTOP);
@@ -2111,6 +2111,9 @@ BOOL CUImagerApp::ExtractZipToDir(LPCTSTR szDirPath, LPCTSTR szZipFileName)
 
 int CUImagerApp::ExitInstance() 
 {
+	// Stop Donor Email Validation Thread
+	g_DonorEmailValidateThread.Kill();
+
 #ifdef VIDEODEVICEDOC
 	// Clean-up auto-starts
 	if (m_bAutostartsExecuted)

@@ -630,9 +630,6 @@ void CMainFrame::OnClose()
 			return;		// don't close it
 		}
 
-		// Stop Donor Email Validation Thread
-		g_DonorEmailValidateThread.Kill();
-
 		// Stop All Threads used for the PostDelayedMessage() Function
 		CPostDelayedMessageThread::Exit();
 
