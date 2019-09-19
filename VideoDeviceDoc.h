@@ -679,7 +679,6 @@ public:
 	void ProcessI420Frame(LPBYTE pData, DWORD dwSize);
 	static BOOL FlipH(CDib* pDib);
 	static BOOL FlipV(CDib* pDib);
-	BOOL IsInSchedule(const CTime& Time);
 
 	// To Start / Stop Frame Processing and Avoid Dead-Locks!
 	__forceinline void StopProcessFrame(DWORD dwMask) {		::EnterCriticalSection(&m_csProcessFrameStop);
@@ -941,19 +940,6 @@ public:
 	volatile LONG m_lMovDetYZonesCount;					// Number of zones in Y direction (never set to 0 to avoid division by 0)
 	volatile LONG m_lMovDetTotalZones;					// Total Number of zones (set to 0 when a (re-)init of the zones is wanted)
 	volatile BOOL m_bObscureRemovedZones;				// Removed detection zones are obscured
-	volatile int m_nSchedulerStartStop;					// 0 -> Recording always on
-														// 1 -> Enable recording on specified times and days
-														// 2 -> Disable recording on specified times and days
-	volatile BOOL m_bSchedulerSunday;					// Scheduler Sunday
-	volatile BOOL m_bSchedulerMonday;					// Scheduler Monday
-	volatile BOOL m_bSchedulerTuesday;					// Scheduler Tuesday
-	volatile BOOL m_bSchedulerWednesday;				// Scheduler Wednesday
-	volatile BOOL m_bSchedulerThursday;					// Scheduler Thursday
-	volatile BOOL m_bSchedulerFriday;					// Scheduler Friday
-	volatile BOOL m_bSchedulerSaturday;					// Scheduler Saturday
-	CTime m_SchedulerStartTime;							// Scheduler Start Time
-	CTime m_SchedulerStopTime;							// Scheduler Stop Time
-	volatile BOOL m_bInSchedule;						// Updated by the UI thread each RELOAD_TIMER_MS
 	volatile int m_nMovDetFreqDiv;						// Current frequency divider
 	volatile double m_dMovDetFrameRateFreqDivCalc;		// Framerate used to calculate the current frequency divider
 	volatile AttachmentType m_AttachmentType;			// The email attachment type

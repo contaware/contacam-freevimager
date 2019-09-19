@@ -625,43 +625,29 @@ void CVideoDeviceView::OnDraw(CDC* pDC)
 		if (pDoc->m_nShowEditDetectionZones)
 			DrawZones(MemDC.GetSafeHdc());
 
-		// Calc. font size
-		int nMaxFontSize = CVideoDeviceDoc::ScaleFont(	rcClient.Width(), rcClient.Height(),
-														pDoc->m_nRefFontSize,
-														FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
-
 		// Draw REC state
-		if (pDoc->m_bInSchedule)
+		CString sSaveProgress;
+		if (pDoc->m_SaveFrameListThread.GetSaveProgress() < 100)
+			sSaveProgress.Format(ML_STRING(1877, "Save: %d%%"), pDoc->m_SaveFrameListThread.GetSaveProgress());
+		if (pDoc->m_bDetectingMinLengthMovement)
 		{
-			// Init save progress string
-			CString sSaveProgress;
-			if (pDoc->m_SaveFrameListThread.GetSaveProgress() < 100)
-				sSaveProgress.Format(ML_STRING(1877, "Save: %d%%"), pDoc->m_SaveFrameListThread.GetSaveProgress());
-
-			// Detecting?
-			if (pDoc->m_bDetectingMinLengthMovement)
-			{
-				// Draw save progress (if not empty) + REC dot symbol
-				DrawBigText(MemDC.GetSafeHdc(), CRect(0, 0, rcClient.Width(), rcClient.Height()),
-							sSaveProgress + _T("\u25cf"), // note: if using more than 16 bits, use a uppercase U (for example \U0001F3C3)
-							REC_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT);
-			}
-			else if (!sSaveProgress.IsEmpty())
-			{
-				// Draw save progress
-				DrawBigText(MemDC.GetSafeHdc(), CRect(0, 0, rcClient.Width(), rcClient.Height()),
-							sSaveProgress,
-							REC_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT);
-			}
-		}
-		else
-		{
-			// Draw REC OFF (by scheduler)
-			// Note: when pDoc->m_bInSchedule is cleared we immediately show the "REC OFF (by scheduler)"
-			//       message even if the current recording will be stopped and correctly saved
+			// Draw save progress (if not empty) + REC dot symbol
+			int nMaxFontSize = CVideoDeviceDoc::ScaleFont(	rcClient.Width(), rcClient.Height(),
+															pDoc->m_nRefFontSize,
+															FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
 			DrawBigText(MemDC.GetSafeHdc(), CRect(0, 0, rcClient.Width(), rcClient.Height()),
-						ML_STRING(1879, "REC OFF (by scheduler)"),
-						REC_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT);	
+						sSaveProgress + _T("\u25cf"), // note: if using more than 16 bits, use a uppercase U (for example \U0001F3C3)
+						REC_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT);
+		}
+		else if (!sSaveProgress.IsEmpty())
+		{
+			// Draw save progress
+			int nMaxFontSize = CVideoDeviceDoc::ScaleFont(	rcClient.Width(), rcClient.Height(),
+															pDoc->m_nRefFontSize,
+															FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
+			DrawBigText(MemDC.GetSafeHdc(), CRect(0, 0, rcClient.Width(), rcClient.Height()),
+						sSaveProgress,
+						REC_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT);
 		}
 	}
 	else
@@ -871,9 +857,6 @@ void CVideoDeviceView::OnTimer(UINT nIDEvent)
 			CString sRecordAutoSaveDir = pDoc->m_sRecordAutoSaveDir;
 			sRecordAutoSaveDir.TrimRight(_T('\\'));
 			pDoc->m_bObscureSource = ::IsExistingFile(sRecordAutoSaveDir + _T("\\") + CAMERA_IS_OBSCURED_FILENAME);
-				
-			// Set the scheduler state flag
-			pDoc->m_bInSchedule = pDoc->IsInSchedule(CTime::GetCurrentTime());
 
 			break;
 		}

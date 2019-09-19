@@ -34,8 +34,6 @@ public:
 	int m_nDetectionMaxFrames;
 	BOOL m_bFlipH;
 	BOOL m_bFlipV;
-	CTime m_SchedulerStartTime;
-	CTime m_SchedulerStopTime;
 	BOOL m_bAudioListen;
 	CSliderCtrl	m_VideoRecQuality;
 
@@ -51,7 +49,6 @@ protected:
 	static void SetRevertedPos(CSliderCtrl* pSliderCtrl, int nPos);
 	BOOL IsEmpty(int nIDC);
 	void UpdateVideoQualityInfo();
-	void UpdateStartStopTimes();
 
 	// Dialog functions
 	virtual void DoDataExchange(CDataExchange* pDX);
@@ -78,16 +75,6 @@ protected:
 	afx_msg void OnRecAudioFromSource();
 	afx_msg void OnAudioInput();
 	afx_msg void OnAudioMixer();
-	afx_msg void OnCbnSelchangeComboboxScheduler();
-	afx_msg void OnCheckSchedulerSunday();
-	afx_msg void OnCheckSchedulerMonday();
-	afx_msg void OnCheckSchedulerTuesday();
-	afx_msg void OnCheckSchedulerWednesday();
-	afx_msg void OnCheckSchedulerThursday();
-	afx_msg void OnCheckSchedulerFriday();
-	afx_msg void OnCheckSchedulerSaturday();
-	afx_msg void OnDatetimechangeTimeDailyStart(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnDatetimechangeTimeDailyStop(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnSaveVideo();
 	afx_msg void OnSaveAnimGif();

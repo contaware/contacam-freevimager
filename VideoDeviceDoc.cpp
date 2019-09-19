@@ -3564,17 +3564,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_lMovDetYZonesCount = MOVDET_MIN_ZONES_XORY;
 	m_lMovDetTotalZones = 0;
 	m_bObscureRemovedZones = FALSE;
-	m_nSchedulerStartStop = 0;
-	m_bSchedulerSunday = TRUE;
-	m_bSchedulerMonday = TRUE;
-	m_bSchedulerTuesday = TRUE;
-	m_bSchedulerWednesday = TRUE;
-	m_bSchedulerThursday = TRUE;
-	m_bSchedulerFriday = TRUE;
-	m_bSchedulerSaturday = TRUE;
-	m_SchedulerStartTime = CurrentTimeOnly;
-	m_SchedulerStopTime = CurrentTimeOnly;
-	m_bInSchedule = FALSE;
 	m_nMovDetFreqDiv = 1;
 	m_dMovDetFrameRateFreqDivCalc = 0.0;
 
@@ -4382,21 +4371,6 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_bWaitExecCommand = (BOOL) pApp->GetProfileInt(sSection, _T("WaitExecCommandMovementDetection"), FALSE);
 	m_fVideoRecQuality = (float) CAVRec::ClipVideoQuality((float)pApp->GetProfileInt(sSection, _T("VideoRecQuality"), (int)DEFAULT_VIDEO_QUALITY));
 	m_bObscureRemovedZones = (BOOL) pApp->GetProfileInt(sSection, _T("ObscureRemovedZones"), FALSE);
-	m_nSchedulerStartStop = (int) pApp->GetProfileInt(sSection, _T("DetectionStartStop"), 0);
-	m_bSchedulerSunday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionSunday"), TRUE);
-	m_bSchedulerMonday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionMonday"), TRUE);
-	m_bSchedulerTuesday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionTuesday"), TRUE);
-	m_bSchedulerWednesday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionWednesday"), TRUE);
-	m_bSchedulerThursday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionThursday"), TRUE);
-	m_bSchedulerFriday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionFriday"), TRUE);
-	m_bSchedulerSaturday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionSaturday"), TRUE);
-	m_SchedulerStartTime = CTime(2000, 1, 1,	pApp->GetProfileInt(sSection, _T("DetectionStartHour"), CurrentTime.GetHour()),
-												pApp->GetProfileInt(sSection, _T("DetectionStartMin"), CurrentTime.GetMinute()),
-												pApp->GetProfileInt(sSection, _T("DetectionStartSec"), CurrentTime.GetSecond()));
-	m_SchedulerStopTime = CTime(2000, 1, 1,		pApp->GetProfileInt(sSection, _T("DetectionStopHour"), CurrentTime.GetHour()),
-												pApp->GetProfileInt(sSection, _T("DetectionStopMin"), CurrentTime.GetMinute()),
-												pApp->GetProfileInt(sSection, _T("DetectionStopSec"), CurrentTime.GetSecond()));
-	m_bInSchedule = IsInSchedule(CurrentTime);
 	m_szFrameAnnotation[MAX_PATH - 1] = _T('\0');																	// first make sure it is NULL terminated
 	_tcsncpy(m_szFrameAnnotation, pApp->GetProfileString(sSection, _T("FrameAnnotation"), _T("")), MAX_PATH - 1);	// and then copy a maximum of (MAX_PATH - 1) chars
 	m_bShowFrameTime = (BOOL) pApp->GetProfileInt(sSection, _T("ShowFrameTime"), TRUE);
@@ -4540,20 +4514,6 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("WaitExecCommandMovementDetection"), m_bWaitExecCommand);
 	pApp->WriteProfileInt(sSection, _T("VideoRecQuality"), (int)m_fVideoRecQuality);
 	pApp->WriteProfileInt(sSection, _T("ObscureRemovedZones"), (int)m_bObscureRemovedZones);
-	pApp->WriteProfileInt(sSection, _T("DetectionStartStop"), m_nSchedulerStartStop);
-	pApp->WriteProfileInt(sSection, _T("DetectionSunday"), (int)m_bSchedulerSunday);
-	pApp->WriteProfileInt(sSection, _T("DetectionMonday"), (int)m_bSchedulerMonday);
-	pApp->WriteProfileInt(sSection, _T("DetectionTuesday"), (int)m_bSchedulerTuesday);
-	pApp->WriteProfileInt(sSection, _T("DetectionWednesday"), (int)m_bSchedulerWednesday);
-	pApp->WriteProfileInt(sSection, _T("DetectionThursday"), (int)m_bSchedulerThursday);
-	pApp->WriteProfileInt(sSection, _T("DetectionFriday"), (int)m_bSchedulerFriday);
-	pApp->WriteProfileInt(sSection, _T("DetectionSaturday"), (int)m_bSchedulerSaturday);
-	pApp->WriteProfileInt(sSection, _T("DetectionStartHour"), m_SchedulerStartTime.GetHour());
-	pApp->WriteProfileInt(sSection, _T("DetectionStartMin"), m_SchedulerStartTime.GetMinute());
-	pApp->WriteProfileInt(sSection, _T("DetectionStartSec"), m_SchedulerStartTime.GetSecond());
-	pApp->WriteProfileInt(sSection, _T("DetectionStopHour"), m_SchedulerStopTime.GetHour());
-	pApp->WriteProfileInt(sSection, _T("DetectionStopMin"), m_SchedulerStopTime.GetMinute());
-	pApp->WriteProfileInt(sSection, _T("DetectionStopSec"), m_SchedulerStopTime.GetSecond());
 	pApp->WriteProfileString(sSection, _T("FrameAnnotation"), m_szFrameAnnotation);
 	pApp->WriteProfileInt(sSection, _T("ShowFrameTime"), (int)m_bShowFrameTime);
 	pApp->WriteProfileInt(sSection, _T("ShowFrameUptime"), (int)m_bShowFrameUptime);
@@ -6823,46 +6783,6 @@ BOOL CVideoDeviceDoc::FlipV(CDib* pDib)
 	delete[] pTemp;
 
 	return TRUE;
-}
-
-BOOL CVideoDeviceDoc::IsInSchedule(const CTime& Time)
-{
-	if (m_nSchedulerStartStop == 0) // always enabled
-		return TRUE;
-
-	BOOL bInSchedule = TRUE;
-	switch (Time.GetDayOfWeek())
-	{
-		case 1: if (!m_bSchedulerSunday)	bInSchedule = FALSE; break;
-		case 2: if (!m_bSchedulerMonday)	bInSchedule = FALSE; break;
-		case 3: if (!m_bSchedulerTuesday)	bInSchedule = FALSE; break;
-		case 4: if (!m_bSchedulerWednesday)	bInSchedule = FALSE; break;
-		case 5: if (!m_bSchedulerThursday)	bInSchedule = FALSE; break;
-		case 6: if (!m_bSchedulerFriday)	bInSchedule = FALSE; break;
-		case 7: if (!m_bSchedulerSaturday)	bInSchedule = FALSE; break;
-		default: break;
-	}
-	CTime timeonly(	2000,
-					1,
-					1,
-					Time.GetHour(),
-					Time.GetMinute(),
-					Time.GetSecond());
-	if (m_SchedulerStartTime <= m_SchedulerStopTime)
-	{
-		if (timeonly < m_SchedulerStartTime || timeonly > m_SchedulerStopTime)
-			bInSchedule = FALSE;
-	}
-	else
-	{
-		if (timeonly < m_SchedulerStartTime && timeonly > m_SchedulerStopTime)
-			bInSchedule = FALSE;
-	}
-
-	if (m_nSchedulerStartStop == 1) // enable on specified schedule
-		return bInSchedule;
-	else							// disable on specified schedule
-		return !bInSchedule;
 }
 
 void CVideoDeviceDoc::ProcessOtherFrame(LPBYTE pData, DWORD dwSize)

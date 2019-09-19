@@ -35,9 +35,7 @@ ContaCam Program
   most convenient if you could toggle between stay/away from either the 
   software or the web interface (tyler.barnes@telus.net)
 - Execute cmd and params separate for snapshots, recs start, saving done, summary 
-  (chrislarsen101@gmail.com)  
-- Advanced motion scheduler with the possibility to configure times for each day
-  (g.frascarolo@tiscali.it)
+  (chrislarsen101@gmail.com)
 ->ALL THAT COULD BE SOLVED WITH THE POSSIBILITY TO CLONE A CAM 
   (gthumberger@gmail.com)
 
@@ -85,9 +83,3 @@ ContaCam Program
   call it through ajax and update the style of the image with:
   outline: 1px solid red; outline-offset: -1px;
   (djkothbauer@gmail.com)  
-
-- Stopping/starting with the red dot rec button would pop-up the scheduler interface highlighting
-  current day and setting current start time, you only need to set the leave time. If that time
-  changes just press again the record button to update it, what do you think?
-  (fahadbb@gmail.com)
-  
