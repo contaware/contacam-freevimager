@@ -2047,7 +2047,7 @@ BOOL CMainFrame::GetRecBufStats(CString& sBufStats)
 	while (posVideoDeviceDoc)
 	{
 		CVideoDeviceDoc* pVideoDeviceDoc = (CVideoDeviceDoc*)(pVideoDeviceDocTemplate->GetNextDoc(posVideoDeviceDoc));
-		if (pVideoDeviceDoc && pVideoDeviceDoc->m_dwVideoProcessorMode)
+		if (pVideoDeviceDoc)
 			llMaxOverallQueueSize += (LONGLONG)pVideoDeviceDoc->m_ProcessFrameBMI.bmiHeader.biSizeImage * (LONGLONG)pVideoDeviceDoc->m_nDetectionMaxFrames;
 	}
 	double dMaxOverallQueueSizeGB = (double)(llMaxOverallQueueSize >> 20) / 1024.0;

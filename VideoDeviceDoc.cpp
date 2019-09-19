@@ -52,7 +52,6 @@ IMPLEMENT_DYNCREATE(CVideoDeviceDoc, CUImagerDoc)
 
 BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	//{{AFX_MSG_MAP(CVideoDeviceDoc)
-	ON_COMMAND(ID_CAPTURE_RECORD, OnCaptureRecord)
 	ON_UPDATE_COMMAND_UI(ID_CAPTURE_RECORD, OnUpdateCaptureRecord)
 	ON_COMMAND(ID_SENSITIVITY_0, OnMovDetSensitivity0)
 	ON_UPDATE_COMMAND_UI(ID_SENSITIVITY_0, OnUpdateMovDetSensitivity0)
@@ -1756,12 +1755,12 @@ BOOL CVideoDeviceDoc::AudioListen(	LPBYTE pData, DWORD dwSizeInBytes,
 		return FALSE;
 }
 
-void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, DWORD dwVideoProcessorMode, BOOL b1SecTick)
+void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, BOOL b1SecTick)
 {
 	BOOL bSoftwareDetectionMovement = FALSE;
 	int nDetectionLevel = m_nDetectionLevel; // use local var
 	int nMovementDetectorIntensityLimit = 50 - nDetectionLevel / 2;	// noise floor
-	BOOL bDoSoftwareDetection = (dwVideoProcessorMode && nDetectionLevel > 0);
+	BOOL bDoSoftwareDetection = (nDetectionLevel > 0);
 	
 	// Clean-up
 	if (!bDoSoftwareDetection)
@@ -1998,7 +1997,7 @@ end_of_software_detection:
 	}
 
 	// If in detection state
-	BOOL bStoreFrame = dwVideoProcessorMode && (m_bSaveVideo || m_bSaveAnimGIF);
+	BOOL bStoreFrame = (m_bSaveVideo || m_bSaveAnimGIF);
 	BOOL bDropFrame = ((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames;
 	DWORD dwError = ERROR_SUCCESS;
 	if (m_bDetectingMovement)
@@ -3106,7 +3105,6 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 				// it's not a problem because CSaveFrameListThread::Work()
 				// removes empty lists
 				if (m_pDoc->m_bWatchDogVideoAlarm						&&
-					m_pDoc->m_dwVideoProcessorMode						&&
 					m_pDoc->m_bDetectingMovement						&&
 					m_pDoc->GetNewestMovementDetectionsListCount() > 0	&&
 					(m_pDoc->m_bSaveVideo || m_pDoc->m_bSaveAnimGIF))
@@ -3478,7 +3476,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bShowFrameUptime = FALSE;
 	m_nRefFontSize = 9;
 	m_bObscureSource = FALSE;
-	m_dwVideoProcessorMode = 0;
 	m_dwFrameCountUp = 0U;
 	m_bSizeToDoc = TRUE;
 	m_bDeviceFirstRun = FALSE;
@@ -4383,7 +4380,6 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 
 	m_bHideExecCommand = (BOOL) pApp->GetProfileInt(sSection, _T("HideExecCommandMovementDetection"), FALSE);
 	m_bWaitExecCommand = (BOOL) pApp->GetProfileInt(sSection, _T("WaitExecCommandMovementDetection"), FALSE);
-	m_dwVideoProcessorMode = (DWORD) MIN(1, MAX(0, pApp->GetProfileInt(sSection, _T("VideoProcessorMode"), 0)));
 	m_fVideoRecQuality = (float) CAVRec::ClipVideoQuality((float)pApp->GetProfileInt(sSection, _T("VideoRecQuality"), (int)DEFAULT_VIDEO_QUALITY));
 	m_bObscureRemovedZones = (BOOL) pApp->GetProfileInt(sSection, _T("ObscureRemovedZones"), FALSE);
 	m_nSchedulerStartStop = (int) pApp->GetProfileInt(sSection, _T("DetectionStartStop"), 0);
@@ -4542,7 +4538,6 @@ void CVideoDeviceDoc::SaveSettings()
 		
 	pApp->WriteProfileInt(sSection, _T("HideExecCommandMovementDetection"), m_bHideExecCommand);
 	pApp->WriteProfileInt(sSection, _T("WaitExecCommandMovementDetection"), m_bWaitExecCommand);
-	pApp->WriteProfileInt(sSection, _T("VideoProcessorMode"), m_dwVideoProcessorMode);
 	pApp->WriteProfileInt(sSection, _T("VideoRecQuality"), (int)m_fVideoRecQuality);
 	pApp->WriteProfileInt(sSection, _T("ObscureRemovedZones"), (int)m_bObscureRemovedZones);
 	pApp->WriteProfileInt(sSection, _T("DetectionStartStop"), m_nSchedulerStartStop);
@@ -5044,20 +5039,11 @@ void CVideoDeviceDoc::WaveInitFormat(WORD wCh, DWORD dwSampleRate, WORD wBitsPer
 	}
 }
 
-void CVideoDeviceDoc::OnCaptureRecord()
-{
-	CaptureRecord();
-}
-
 void CVideoDeviceDoc::OnUpdateCaptureRecord(CCmdUI* pCmdUI)
 {
-	pCmdUI->SetCheck(m_dwVideoProcessorMode ? 1 : 0);
-}
-
-void CVideoDeviceDoc::CaptureRecord()
-{
-	m_dwVideoProcessorMode = !m_dwVideoProcessorMode;
-	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("VideoProcessorMode"), m_dwVideoProcessorMode);
+	// Note: ON_COMMAND(ID_CAPTURE_RECORD, OnCaptureRecord) is never called,
+	//       CVideoDeviceChildFrame::OnToolbarDropDown() is responsible for the menu popup
+	pCmdUI->Enable();
 }
 
 void CVideoDeviceDoc::OnMovDetSensitivity0()
@@ -7348,7 +7334,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 			pDib->FreeUserList();
 
 		// Do Motion Detection Processing
-		MovementDetectionProcessing(pDib, m_bInSchedule ? m_dwVideoProcessorMode : 0, b1SecTick);
+		MovementDetectionProcessing(pDib, b1SecTick);
 
 		// Copy to Clipboard
 		if (m_bDoEditCopy)
@@ -8150,8 +8136,7 @@ void CVideoDeviceDoc::HideDetectionZones()
 void CVideoDeviceDoc::OnUpdateEditZone(CCmdUI* pCmdUI)
 {
 	// Note: ON_COMMAND(ID_EDIT_ZONE, OnEditZone) is never called,
-	//       CVideoDeviceChildFrame::OnToolbarDropDown() is
-	//       responsible for the menu popup
+	//       CVideoDeviceChildFrame::OnToolbarDropDown() is responsible for the menu popup
 	pCmdUI->Enable();
 }
 

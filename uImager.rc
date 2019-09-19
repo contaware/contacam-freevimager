@@ -709,16 +709,18 @@ BEGIN
     POPUP "_Context Menu_"
     BEGIN
         MENUITEM "OFF",                         ID_SENSITIVITY_0
-        MENUITEM "Motion Sensitivity 10",       ID_SENSITIVITY_10
-        MENUITEM "Motion Sensitivity 20",       ID_SENSITIVITY_20
-        MENUITEM "Motion Sensitivity 30",       ID_SENSITIVITY_30
-        MENUITEM "Motion Sensitivity 40",       ID_SENSITIVITY_40
-        MENUITEM "Motion Sensitivity 50",       ID_SENSITIVITY_50
-        MENUITEM "Motion Sensitivity 60",       ID_SENSITIVITY_60
-        MENUITEM "Motion Sensitivity 70",       ID_SENSITIVITY_70
-        MENUITEM "Motion Sensitivity 80",       ID_SENSITIVITY_80
-        MENUITEM "Motion Sensitivity 90",       ID_SENSITIVITY_90
-        MENUITEM "Continuous Recording",        ID_SENSITIVITY_100
+        MENUITEM SEPARATOR
+        MENUITEM "Motion REC with Sensitivity 10", ID_SENSITIVITY_10
+        MENUITEM "Motion REC with Sensitivity 20", ID_SENSITIVITY_20
+        MENUITEM "Motion REC with Sensitivity 30", ID_SENSITIVITY_30
+        MENUITEM "Motion REC with Sensitivity 40", ID_SENSITIVITY_40
+        MENUITEM "Motion REC with Sensitivity 50", ID_SENSITIVITY_50
+        MENUITEM "Motion REC with Sensitivity 60", ID_SENSITIVITY_60
+        MENUITEM "Motion REC with Sensitivity 70", ID_SENSITIVITY_70
+        MENUITEM "Motion REC with Sensitivity 80", ID_SENSITIVITY_80
+        MENUITEM "Motion REC with Sensitivity 90", ID_SENSITIVITY_90
+        MENUITEM SEPARATOR
+        MENUITEM "Continuous REC",              ID_SENSITIVITY_100
     END
 END
 
@@ -1087,7 +1089,7 @@ BEGIN
     PUSHBUTTON      "TV Tuner",IDC_VIDEO_TUNER,13,93,93,16
     PUSHBUTTON      "Input Select",IDC_VIDEO_INPUT,110,93,93,16
     CONTROL         "Enable",IDC_REC_AUDIO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,139,38,10
-    CONTROL         "Listen",IDC_CHECK_AUDIO_LISTEN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,79,139,35,10
+    CONTROL         "Live Listen",IDC_CHECK_AUDIO_LISTEN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,79,139,51,10
     CONTROL         "Audio from stream (only for RTSP cameras with audio)",IDC_REC_AUDIO_FROM_STREAM,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP,13,156,189,10
     CONTROL         "Audio from:",IDC_REC_AUDIO_FROM_SOURCE,"Button",BS_AUTORADIOBUTTON,13,174,52,10
@@ -2155,9 +2157,8 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTI
 CAPTION "Camera Basic Settings"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "Motion detection surveillance",IDC_RADIO_MOVDET,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,15,107,10
-    CONTROL         "Continuous/manual recording (ON/OFF by the red dot toolbar button)",IDC_RADIO_MANUAL,
-                    "Button",BS_AUTORADIOBUTTON,16,30,240,10
+    CONTROL         "Motion detection surveillance",IDC_RADIO_MOVDET,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,15,109,10
+    CONTROL         "Continuous recording",IDC_RADIO_MANUAL,"Button",BS_AUTORADIOBUTTON,16,30,86,10
     CONTROL         "Daily\nsummary video",IDC_CHECK_SNAPSHOT_HISTORY_VIDEO,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,272,14,66,27
     CONTROL         "Autostart\ncamera",IDC_CHECK_AUTORUN,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,359,14,47,27
@@ -3339,7 +3340,7 @@ BEGIN
     ID_EDIT_ADDALL          "Add all zones\nAdd All Zones"
     ID_EDIT_REMOVEALL       "Remove all zones\nRemove All Zones"
     ID_CAPTURE_NETWORK      "Network / IP camera\nNetwork / IP Camera"
-    ID_CAPTURE_RECORD       "Recording ON / OFF\nRecord"
+    ID_CAPTURE_RECORD       "Recording\nRecording"
     ID_VIEW_ALL_NEXT_PICTURE 
                             "Show next image of all open documents\nAll Next Image"
     ID_VIEW_ALL_PREVIOUS_PICTURE 

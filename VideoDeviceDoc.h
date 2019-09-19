@@ -710,10 +710,7 @@ public:
 	static BOOL SaveJpegFast(CDib* pDib, CMJPEGEncoder* pMJPEGEncoder, const CString& sFileName, int quality);
 
 	// Recording
-	void CaptureRecord();
-	void MovementDetectionProcessing(	CDib* pDib,
-										DWORD dwVideoProcessorMode,
-										BOOL b1SecTick);
+	void MovementDetectionProcessing(CDib* pDib, BOOL b1SecTick);
 	BOOL MovementDetector(CDib* pDib, int nDetectionLevel);
 	void FreeMovementDetector();
 	void HideDetectionZones();
@@ -904,7 +901,6 @@ public:
 	volatile DWORD m_dwNextSnapshotUpTime;				// The up-time of the next snapshot
 
 	// Movement Detector Vars
-	volatile DWORD m_dwVideoProcessorMode;				// 0 = Off, 1 = On
 	int m_nShowEditDetectionZones;						// Edit Detection zones, 0: disabled, 1: add, 2: remove
 	volatile BOOL m_bDetectingMovement;					// Flag indicating a Detection
 	volatile BOOL m_bDetectingMinLengthMovement;		// Flag indicating a Movement of at least m_nDetectionMinLengthMilliSeconds
@@ -1005,7 +1001,6 @@ public:
 // Generated message map functions
 protected:
 	//{{AFX_MSG(CVideoDeviceDoc)
-	afx_msg void OnCaptureRecord();
 	afx_msg void OnUpdateCaptureRecord(CCmdUI* pCmdUI);
 	afx_msg void OnMovDetSensitivity0();
 	afx_msg void OnUpdateMovDetSensitivity0(CCmdUI* pCmdUI);

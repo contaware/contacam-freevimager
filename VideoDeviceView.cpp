@@ -457,12 +457,15 @@ void CVideoDeviceView::DrawZones(HDC hDC)
 
 		if (pDoc->m_nShowEditDetectionZones)
 		{
-			// Draw Zones where Detection is enabled
+			// Common
 			HBRUSH hSensitivityTextBrush = ::CreateSolidBrush(MOVDET_SENSITIVITY_BKGCOLOR);
-			HPEN hPen = ::CreatePen(PS_SOLID, 1, MOVDET_SELECTED_ZONES_COLOR);
-			HGDIOBJ hOldPen = ::SelectObject(hDC, hPen);
 			HGDIOBJ hOldBrush = ::SelectObject(hDC, ::GetStockObject(NULL_BRUSH));
-			int nLastBottomEdge = 1;
+			int nLastBottomEdge;
+
+			// Draw Zones where Detection is enabled
+			HPEN hPenSelectedZones = ::CreatePen(PS_SOLID, 1, MOVDET_SELECTED_ZONES_COLOR);
+			HGDIOBJ hOldPenSelectedZones = ::SelectObject(hDC, hPenSelectedZones);
+			nLastBottomEdge = 1;
 			for (int y = 0; y < pDoc->m_lMovDetYZonesCount; y++)
 			{
 				int nLastRightEdge = 1;
@@ -486,47 +489,42 @@ void CVideoDeviceView::DrawZones(HDC hDC)
 				}
 				nLastBottomEdge = rcDetZone.bottom;
 			}
-			::SelectObject(hDC, hOldBrush);
-			::SelectObject(hDC, hOldPen);
-			::DeleteObject(hPen);
-			::DeleteObject(hSensitivityTextBrush);
+			::SelectObject(hDC, hOldPenSelectedZones);
+			::DeleteObject(hPenSelectedZones);
 
 			// Draw Detected Zones
-			if (pDoc->m_dwVideoProcessorMode)
+			HPEN hPenDetectingZones = ::CreatePen(PS_SOLID, 1, MOVDET_DETECTING_ZONES_COLOR);
+			HGDIOBJ hOldPenDetectingZones = ::SelectObject(hDC, hPenDetectingZones);
+			nLastBottomEdge = 1;
+			for (int y = 0; y < pDoc->m_lMovDetYZonesCount; y++)
 			{
-				HBRUSH hSensitivityTextBrush = ::CreateSolidBrush(MOVDET_SENSITIVITY_BKGCOLOR);
-				HPEN hPen = ::CreatePen(PS_SOLID, 1, MOVDET_DETECTING_ZONES_COLOR);
-				HGDIOBJ hOldPen = ::SelectObject(hDC, hPen);
-				HGDIOBJ hOldBrush = ::SelectObject(hDC, ::GetStockObject(NULL_BRUSH));
-				int nLastBottomEdge = 1;
-				for (int y = 0; y < pDoc->m_lMovDetYZonesCount; y++)
+				int nLastRightEdge = 1;
+				for (int x = 0; x < pDoc->m_lMovDetXZonesCount; x++)
 				{
-					int nLastRightEdge = 1;
-					for (int x = 0; x < pDoc->m_lMovDetXZonesCount; x++)
+					int nZoneOffsetX = (int)(x * dZoneWidth);
+					int nZoneOffsetY = (int)(y * dZoneHeight);
+					rcDetZone.left = nLastRightEdge - 1;
+					rcDetZone.top = nLastBottomEdge - 1;
+					rcDetZone.right = (x == (pDoc->m_lMovDetXZonesCount - 1) ? rcClient.right : (int)(nZoneOffsetX + dZoneWidth));
+					rcDetZone.bottom = (y == (pDoc->m_lMovDetYZonesCount - 1) ? rcClient.bottom : (int)(nZoneOffsetY + dZoneHeight));
+					int i = x + y * pDoc->m_lMovDetXZonesCount;
+					if (pDoc->m_MovementDetections[i])
 					{
-						int nZoneOffsetX = (int)(x * dZoneWidth);
-						int nZoneOffsetY = (int)(y * dZoneHeight);
-						rcDetZone.left = nLastRightEdge - 1;
-						rcDetZone.top = nLastBottomEdge - 1;
-						rcDetZone.right = (x == (pDoc->m_lMovDetXZonesCount - 1) ? rcClient.right : (int)(nZoneOffsetX + dZoneWidth));
-						rcDetZone.bottom = (y == (pDoc->m_lMovDetYZonesCount - 1) ? rcClient.bottom : (int)(nZoneOffsetY + dZoneHeight));
-						int i = x + y * pDoc->m_lMovDetXZonesCount;
-						if (pDoc->m_MovementDetections[i])
-						{
-							DrawZoneSensitivity(i, hDC, rcDetZone, nSensitivityTextSize, hSensitivityTextBrush);
-							::Rectangle(hDC, rcDetZone.left, rcDetZone.top, rcDetZone.right, rcDetZone.bottom);
-							::MoveToEx(hDC, rcDetZone.left + (rcDetZone.right - rcDetZone.left) / 4, rcDetZone.top, NULL);
-							::LineTo(hDC, rcDetZone.left, rcDetZone.top + (rcDetZone.right - rcDetZone.left) / 4);
-						}
-						nLastRightEdge = rcDetZone.right;
+						DrawZoneSensitivity(i, hDC, rcDetZone, nSensitivityTextSize, hSensitivityTextBrush);
+						::Rectangle(hDC, rcDetZone.left, rcDetZone.top, rcDetZone.right, rcDetZone.bottom);
+						::MoveToEx(hDC, rcDetZone.left + (rcDetZone.right - rcDetZone.left) / 4, rcDetZone.top, NULL);
+						::LineTo(hDC, rcDetZone.left, rcDetZone.top + (rcDetZone.right - rcDetZone.left) / 4);
 					}
-					nLastBottomEdge = rcDetZone.bottom;
+					nLastRightEdge = rcDetZone.right;
 				}
-				::SelectObject(hDC, hOldBrush);
-				::SelectObject(hDC, hOldPen);
-				::DeleteObject(hPen);
-				::DeleteObject(hSensitivityTextBrush);
+				nLastBottomEdge = rcDetZone.bottom;
 			}
+			::SelectObject(hDC, hOldPenDetectingZones);
+			::DeleteObject(hPenDetectingZones);
+
+			// Clean-up common
+			::SelectObject(hDC, hOldBrush);
+			::DeleteObject(hSensitivityTextBrush);
 		}
 	}
 }
@@ -865,9 +863,6 @@ void CVideoDeviceView::OnTimer(UINT nIDEvent)
 		case ID_TIMER_RELOAD :
 		{
 			CString sSection(pDoc->GetDevicePathName());
-
-			// Load detection on/off from registry/ini file
-			pDoc->m_dwVideoProcessorMode = (DWORD) MIN(1, MAX(0, ::AfxGetApp()->GetProfileInt(sSection, _T("VideoProcessorMode"), 0)));
 			
 			// Load detection level from registry/ini file
 			pDoc->m_nDetectionLevel = CVideoDeviceDoc::ValidateDetectionLevel(::AfxGetApp()->GetProfileInt(sSection, _T("DetectionLevel"), DEFAULT_MOVDET_LEVEL));
@@ -902,10 +897,6 @@ void CVideoDeviceView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 	switch (nChar)
 	{
-		case VK_RETURN : // Enter
-			pDoc->CaptureRecord();
-			break;
-
 		case VK_CONTROL:
 			// Switch from Add to Remove
 			if (pDoc->m_nShowEditDetectionZones == 1)

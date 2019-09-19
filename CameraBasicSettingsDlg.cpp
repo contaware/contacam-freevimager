@@ -442,16 +442,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	// Update data -> view to vars
 	UpdateData(TRUE);
 
-	// Disable recording
-	BOOL bDoRecording;
-	if (m_pDoc->m_dwVideoProcessorMode)
-	{
-		bDoRecording = TRUE;
-		m_pDoc->m_dwVideoProcessorMode = 0;
-		::AfxGetApp()->WriteProfileInt(m_pDoc->GetDevicePathName(), _T("VideoProcessorMode"), m_pDoc->m_dwVideoProcessorMode);
-	}
-	else
-		bDoRecording = FALSE;
+	// Disable saving
 	m_pDoc->m_SaveFrameListThread.Kill();
 	m_pDoc->OneEmptyFrameList();
 	m_pDoc->FreeMovementDetector();
@@ -534,9 +525,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	{
 		case 0 :
 		{
-			// Enable recording
-			bDoRecording = TRUE;
-			if (m_pDoc->m_nDetectionLevel == 100)
+			if (m_pDoc->m_nDetectionLevel == 0 || m_pDoc->m_nDetectionLevel == 100)
 				m_pDoc->m_nDetectionLevel = DEFAULT_MOVDET_LEVEL;
 			if (m_pDoc->m_nMilliSecondsRecBeforeMovementBegin == 1000)
 				m_pDoc->m_nMilliSecondsRecBeforeMovementBegin = DEFAULT_PRE_BUFFER_MSEC;
@@ -559,16 +548,10 @@ void CCameraBasicSettingsDlg::ApplySettings()
 		}
 		case 1 :
 		{
-			// Disable recording
-			bDoRecording = FALSE;
-			if (m_pDoc->m_nDetectionLevel != 100)
-				m_pDoc->m_nDetectionLevel = 100;
-			if (m_pDoc->m_nMilliSecondsRecBeforeMovementBegin != 1000)
-				m_pDoc->m_nMilliSecondsRecBeforeMovementBegin = 1000;
-			if (m_pDoc->m_nMilliSecondsRecAfterMovementEnd != 1000)
-				m_pDoc->m_nMilliSecondsRecAfterMovementEnd = 1000;
-			if (m_pDoc->m_nDetectionMinLengthMilliSeconds != 0)
-				m_pDoc->m_nDetectionMinLengthMilliSeconds = 0;
+			m_pDoc->m_nDetectionLevel = 100;
+			m_pDoc->m_nMilliSecondsRecBeforeMovementBegin = 1000;
+			m_pDoc->m_nMilliSecondsRecAfterMovementEnd = 1000;
+			m_pDoc->m_nDetectionMinLengthMilliSeconds = 0;
 			if (m_pDoc->m_pCameraAdvancedSettingsDlg)
 			{
 				m_pDoc->m_pCameraAdvancedSettingsDlg->m_nSecondsBeforeMovementBegin = m_pDoc->m_nMilliSecondsRecBeforeMovementBegin / 1000;
@@ -643,12 +626,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	// Restart watchdog thread
 	m_pDoc->m_WatchdogThread.Start();
 
-	// Do recording?
-	if (bDoRecording)
-	{
-		m_pDoc->m_dwVideoProcessorMode = 1;
-		::AfxGetApp()->WriteProfileInt(m_pDoc->GetDevicePathName(), _T("VideoProcessorMode"), m_pDoc->m_dwVideoProcessorMode);
-	}
+	// Enable saving
 	m_pDoc->m_SaveFrameListThread.Start();
 
 	// Restart process frame

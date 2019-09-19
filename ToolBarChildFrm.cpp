@@ -209,7 +209,7 @@ BOOL CVideoDeviceToolBar::Create(CWnd* pParentWnd)
 	dwStyle |= BTNS_DROPDOWN;
 	SetButtonStyle(CommandToIndex(ID_VIEW_FRAMEANNOTATION), dwStyle);
 	dwStyle = GetButtonStyle(CommandToIndex(ID_CAPTURE_RECORD));
-	dwStyle |= BTNS_DROPDOWN;
+	dwStyle |= BTNS_WHOLEDROPDOWN;
 	SetButtonStyle(CommandToIndex(ID_CAPTURE_RECORD), dwStyle);
 	dwStyle = GetButtonStyle(CommandToIndex(ID_EDIT_ZONE));
 	dwStyle |= BTNS_WHOLEDROPDOWN;
