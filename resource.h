@@ -3214,6 +3214,7 @@
 #define ID_EDIT_ZONE_MEDIUM             33552
 #define ID_EDIT_ZONE_SMALL              33553
 #define ID_EDIT_ZONE_OBSCURE_REMOVED    33554
+#define ID_EDIT_ZONES_HIDE              33555
 #define ID_BUTTON_PRINT_SETUP           58120
 
 // Next default values for new objects
@@ -3222,7 +3223,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1503
-#define _APS_NEXT_COMMAND_VALUE         33555
+#define _APS_NEXT_COMMAND_VALUE         33556
 #define _APS_NEXT_CONTROL_VALUE         2581
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

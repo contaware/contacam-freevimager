@@ -86,6 +86,8 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_COMMAND(ID_FILE_CLOSE, OnFileClose)
 	ON_UPDATE_COMMAND_UI(ID_CAPTURE_CAMERAADVANCEDSETTINGS, OnUpdateCaptureCameraAdvancedSettings)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE, OnUpdateEditZone)
+	ON_COMMAND(ID_EDIT_ZONES_HIDE, OnEditZonesHide)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONES_HIDE, OnUpdateEditZonesHide)
 	ON_COMMAND(ID_EDIT_ZONE_SENSITIVITY_100, OnEditZoneSensitivity100)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_SENSITIVITY_100, OnUpdateEditZoneSensitivity100)
 	ON_COMMAND(ID_EDIT_ZONE_SENSITIVITY_50, OnEditZoneSensitivity50)
@@ -8060,6 +8062,16 @@ void CVideoDeviceDoc::OnUpdateEditZone(CCmdUI* pCmdUI)
 	pCmdUI->Enable();
 }
 
+void CVideoDeviceDoc::OnEditZonesHide()
+{
+	HideDetectionZones();
+}
+
+void CVideoDeviceDoc::OnUpdateEditZonesHide(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(m_nShowEditDetectionZones == 0 ? 1 : 0);
+}
+
 void CVideoDeviceDoc::OnEditZoneSensitivity(int nSingleZoneSensitivity)
 {
 	// Enable Add with nSingleZoneSensitivity
@@ -8069,20 +8081,12 @@ void CVideoDeviceDoc::OnEditZoneSensitivity(int nSingleZoneSensitivity)
 		GetView()->m_MovDetSingleZoneSensitivity = nSingleZoneSensitivity;
 		GetView()->ForceCursor();
 		GetView()->Invalidate(FALSE);
-		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** Ctrl: Add <-> Remove Zones ***"));
+		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** Ctrl: Draw <-> Erase ***"));
 	}
+	// Switch to nSingleZoneSensitivity
 	else if (m_nShowEditDetectionZones == 1)
 	{
-		// Hide
-		if (GetView()->m_MovDetSingleZoneSensitivity == nSingleZoneSensitivity)
-		{
-			HideDetectionZones();
-		}
-		// Switch to nSingleZoneSensitivity
-		else
-		{
-			GetView()->m_MovDetSingleZoneSensitivity = nSingleZoneSensitivity;
-		}
+		GetView()->m_MovDetSingleZoneSensitivity = nSingleZoneSensitivity;
 	}
 	// Switch from Remove to Add with nSingleZoneSensitivity
 	else if (m_nShowEditDetectionZones == 2)
@@ -8151,18 +8155,13 @@ void CVideoDeviceDoc::OnEditZoneRemove()
 		m_nShowEditDetectionZones = 2;
 		GetView()->ForceCursor();
 		GetView()->Invalidate(FALSE);
-		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** Ctrl: Add <-> Remove Zones ***"));
+		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** Ctrl: Draw <-> Erase ***"));
 	}
 	// Switch from Add to Remove
 	else if (m_nShowEditDetectionZones == 1)
 	{
 		m_nShowEditDetectionZones = 2;
 		GetView()->Invalidate(FALSE);
-	}
-	// Hide
-	else if (m_nShowEditDetectionZones == 2)
-	{
-		HideDetectionZones();
 	}
 }
 

@@ -908,12 +908,8 @@ void CVideoDeviceView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		case VK_ESCAPE :
 			if (pDoc->m_pCameraAdvancedSettingsDlg && pDoc->m_pCameraAdvancedSettingsDlg->IsWindowVisible())
 				pDoc->m_pCameraAdvancedSettingsDlg->Hide();
-			else if (pDoc->m_nShowEditDetectionZones)
-				pDoc->HideDetectionZones();
 			else if (m_bFullScreenMode)
 				::AfxGetMainFrame()->EnterExitFullscreen();	// Exit Full-Screen Mode
-			else
-				pDoc->GetFrame()->PostMessage(WM_CLOSE, 0, 0);
 			break;
 
 		case VK_INSERT :
@@ -1074,7 +1070,7 @@ void CVideoDeviceView::OnMouseMove(UINT nFlags, CPoint point)
 	ASSERT_VALID(pDoc);
 
 	if (pDoc->m_nShowEditDetectionZones)
-		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** Ctrl: Add <-> Remove Zones ***"));
+		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** Ctrl: Draw <-> Erase ***"));
 	else
 		::AfxGetMainFrame()->StatusText();
 

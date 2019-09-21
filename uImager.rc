@@ -486,8 +486,8 @@ IDR_CONTEXT_ZONES MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
-        MENUITEM "Add All Zones",               ID_EDIT_ADDALL
-        MENUITEM "Remove All Zones",            ID_EDIT_REMOVEALL
+        MENUITEM "Activate all zones",          ID_EDIT_ADDALL
+        MENUITEM "Deactivate all zones",        ID_EDIT_REMOVEALL
         MENUITEM SEPARATOR
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
     END
@@ -708,7 +708,7 @@ IDR_CONTEXT_SENSITIVITY MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
-        MENUITEM "OFF",                         ID_SENSITIVITY_0
+        MENUITEM "REC OFF",                     ID_SENSITIVITY_0
         MENUITEM SEPARATOR
         MENUITEM "Motion REC with sensitivity 10", ID_SENSITIVITY_10
         MENUITEM "Motion REC with sensitivity 20", ID_SENSITIVITY_20
@@ -728,8 +728,8 @@ IDR_CONTEXT_FRAMESTAMP MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
-        MENUITEM "Show",                        ID_VIEW_FRAMETIME
-        MENUITEM "With Uptime",                 ID_VIEW_FRAMEUPTIME
+        MENUITEM "Enable frame stamps",         ID_VIEW_FRAMETIME
+        MENUITEM "Include uptime with time",    ID_VIEW_FRAMEUPTIME
         MENUITEM SEPARATOR
         MENUITEM "4",                           ID_FONTSIZE_4
         MENUITEM "5",                           ID_FONTSIZE_5
@@ -749,18 +749,19 @@ IDR_CONTEXT_ADD_REMOVE_ZONES MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
-        MENUITEM "Add Zones Tool (100% relative sensitivity)", ID_EDIT_ZONE_SENSITIVITY_100
-        MENUITEM "Add Zones Tool (50% relative sensitivity)", ID_EDIT_ZONE_SENSITIVITY_50
-        MENUITEM "Add Zones Tool (25% relative sensitivity)", ID_EDIT_ZONE_SENSITIVITY_25
-        MENUITEM "Add Zones Tool (10% relative sensitivity)", ID_EDIT_ZONE_SENSITIVITY_10
-        MENUITEM "Add Zones Tool (5% relative sensitivity)", ID_EDIT_ZONE_SENSITIVITY_5
-        MENUITEM "Remove Zones Tool",           ID_EDIT_ZONE_REMOVE
+        MENUITEM "Draw/Erase OFF",              ID_EDIT_ZONES_HIDE
+        MENUITEM "Draw active zones (100% main sensitivity)", ID_EDIT_ZONE_SENSITIVITY_100
+        MENUITEM "Draw active zones (50% main sensitivity)", ID_EDIT_ZONE_SENSITIVITY_50
+        MENUITEM "Draw active zones (25% main sensitivity)", ID_EDIT_ZONE_SENSITIVITY_25
+        MENUITEM "Draw active zones (10% main sensitivity)", ID_EDIT_ZONE_SENSITIVITY_10
+        MENUITEM "Draw active zones (5% main sensitivity)", ID_EDIT_ZONE_SENSITIVITY_5
+        MENUITEM "Erase active zones",          ID_EDIT_ZONE_REMOVE
         MENUITEM SEPARATOR
-        MENUITEM "Obscure Removed Zones (privacy mask)", ID_EDIT_ZONE_OBSCURE_REMOVED
+        MENUITEM "Obscure non-active zones (privacy mask)", ID_EDIT_ZONE_OBSCURE_REMOVED
         MENUITEM SEPARATOR
-        MENUITEM "Big Zones Size",              ID_EDIT_ZONE_BIG
-        MENUITEM "Medium Zones Size",           ID_EDIT_ZONE_MEDIUM
-        MENUITEM "Small Zones Size",            ID_EDIT_ZONE_SMALL
+        MENUITEM "Big zones size",              ID_EDIT_ZONE_BIG
+        MENUITEM "Medium zones size",           ID_EDIT_ZONE_MEDIUM
+        MENUITEM "Small zones size",            ID_EDIT_ZONE_SMALL
     END
 END
 
@@ -3224,7 +3225,7 @@ STRINGTABLE
 BEGIN
     IDS_MULTILANG_1473      "Camera folder must reside inside the document root directory!"
     IDS_MULTILANG_1475      "Failed to start the web server"
-    IDS_MULTILANG_1483      "*** Ctrl: Add <-> Remove ***"
+    IDS_MULTILANG_1483      "*** Ctrl: Draw <-> Erase ***"
     IDS_MULTILANG_1484      "&Copying...\tCtrl+C"
     IDS_MULTILANG_1485      "&Copy\tCtrl+C"
 END
@@ -3334,8 +3335,6 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_EDIT_ADDALL          "Add all zones\nAdd All Zones"
-    ID_EDIT_REMOVEALL       "Remove all zones\nRemove All Zones"
     ID_CAPTURE_NETWORK      "Network / IP camera\nNetwork / IP Camera"
     ID_CAPTURE_RECORD       "Recording\nRecording"
     ID_VIEW_ALL_NEXT_PICTURE 

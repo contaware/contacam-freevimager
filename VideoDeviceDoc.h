@@ -1021,6 +1021,8 @@ protected:
 	afx_msg void OnFileClose();
 	afx_msg void OnUpdateCaptureCameraAdvancedSettings(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateEditZone(CCmdUI* pCmdUI);
+	afx_msg void OnEditZonesHide();
+	afx_msg void OnUpdateEditZonesHide(CCmdUI* pCmdUI);
 	afx_msg void OnEditZoneSensitivity100();
 	afx_msg void OnUpdateEditZoneSensitivity100(CCmdUI* pCmdUI);
 	afx_msg void OnEditZoneSensitivity50();
