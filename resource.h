@@ -2080,7 +2080,9 @@
 #define IDC_CHECK_WAIT_EXEC_COMMAND     1751
 #define IDS_STRING1751                  1751
 #define IDS_STRING1752                  1752
+#define IDC_EDIT_CONTROL_EXE            1752
 #define IDS_STRING1753                  1753
+#define IDC_EDIT_CONTROL_PARAMS         1753
 #define IDS_STRING1754                  1754
 #define IDC_COMBO_SNAPSHOT_RATE         1755
 #define IDS_STRING1755                  1755
@@ -2970,6 +2972,7 @@
 #define IDC_CHECK_FLIP_H                2576
 #define IDC_CHECK_FLIP_V                2577
 #define IDC_COMBO_SIMULTANEOUS_SAVING   2578
+#define IDC_SYSLINK_CONTROL_HELP        2578
 #define IDC_SYSLINK_IPCAM_INSTABILITY_HELP 2579
 #define IDC_SYSLINK_HOMEPAGE            2580
 #define ID_EDIT_ROTATE_FLIP             32778

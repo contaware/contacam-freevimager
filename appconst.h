@@ -21,6 +21,7 @@
 #define APPMUTEXNAME									_T("ContaCamAppMutex")
 #define FAQ_ONLINE_PAGE									_T("https://www.contaware.com/contacamfaq/")
 #define MANUAL_ONLINE_PAGE								_T("https://www.contaware.com/contacammanual/")
+#define EXAMPLE_CONTROL_ONLINE_PAGE						_T("https://www.contaware.com/contacamexamplecontrol/")
 #define EXAMPLE_COMMANDS_ONLINE_PAGE					_T("https://www.contaware.com/contacamexamplecmd/")
 #define IPCAM_INSTABILITY_ONLINE_PAGE					_T("https://www.contaware.com/contacamipcaminstability/")
 #else

@@ -146,6 +146,8 @@ BEGIN_MESSAGE_MAP(CCameraAdvancedSettingsDlg, CDialog)
 	ON_BN_CLICKED(IDC_ANIMATEDGIF_SIZE, OnAnimatedgifSize)
 	ON_CBN_SELCHANGE(IDC_COMBO_SNAPSHOT_RATE, OnSelchangeSnapshotRate)
 	ON_BN_CLICKED(IDC_BUTTON_THUMB_SIZE, OnButtonThumbSize)
+	ON_NOTIFY(NM_CLICK, IDC_SYSLINK_CONTROL_HELP, OnSyslinkControlHelp)
+	ON_NOTIFY(NM_RETURN, IDC_SYSLINK_CONTROL_HELP, OnSyslinkControlHelp)
 	ON_BN_CLICKED(IDC_EXEC_COMMAND, OnExecCommand)
 	ON_NOTIFY(NM_CLICK, IDC_SYSLINK_PARAMS_HELP, OnSyslinkParamsHelp)
 	ON_NOTIFY(NM_RETURN, IDC_SYSLINK_PARAMS_HELP, OnSyslinkParamsHelp)
@@ -342,6 +344,12 @@ BOOL CCameraAdvancedSettingsDlg::OnInitDialog()
 													m_pDoc->m_nSnapshotThumbHeight);
 	CButton* pButtonThumbnailSize = (CButton*)GetDlgItem(IDC_BUTTON_THUMB_SIZE);
 	pButtonThumbnailSize->SetWindowText(sSize);
+
+	// Show the hints for controlling ContaCam
+	CEdit* pEditControlExe = (CEdit*)GetDlgItem(IDC_EDIT_CONTROL_EXE);
+	pEditControlExe->SetWindowText(_T("reg.exe"));
+	CEdit* pEditControlParams = (CEdit*)GetDlgItem(IDC_EDIT_CONTROL_PARAMS);
+	pEditControlParams->SetWindowText(_T("add \"HKCU\\Software\\Contaware\\ContaCam\\") + m_pDoc->GetDevicePathName() + _T("\" /v DetectionLevel /t REG_DWORD /d 50 /f"));
 
 	// Execute Command
 	CButton* pCheckExecCommand = (CButton*)GetDlgItem(IDC_EXEC_COMMAND);
@@ -809,6 +817,15 @@ void CCameraAdvancedSettingsDlg::OnButtonThumbSize()
 		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBWIDTH, sWidth);
 		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBHEIGHT, sHeight);
 	}
+}
+
+void CCameraAdvancedSettingsDlg::OnSyslinkControlHelp(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	::ShellExecute(	NULL,
+					_T("open"),
+					EXAMPLE_CONTROL_ONLINE_PAGE,
+					NULL, NULL, SW_SHOWNORMAL);
+	*pResult = 0;
 }
 
 void CCameraAdvancedSettingsDlg::OnExecCommand()

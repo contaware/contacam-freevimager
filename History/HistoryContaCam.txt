@@ -6,6 +6,8 @@ CONTACAM HISTORY
 - Frame Annotation possibility with the new toolbar button
 - More intuitive detection zones/mask toolbar button. Single zones
   changes are now saved immediately
+- Removed the rudimentary scheduler in favour of a more flexible way
+  to control ContaCam through the Windows Task Scheduler
 - Web interface multiple selection deletion
   (sponsored by Grün Stadt Zürich)
 - In web interface we have now only one camera source obscure button

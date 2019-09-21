@@ -710,15 +710,15 @@ BEGIN
     BEGIN
         MENUITEM "OFF",                         ID_SENSITIVITY_0
         MENUITEM SEPARATOR
-        MENUITEM "Motion REC with Sensitivity 10", ID_SENSITIVITY_10
-        MENUITEM "Motion REC with Sensitivity 20", ID_SENSITIVITY_20
-        MENUITEM "Motion REC with Sensitivity 30", ID_SENSITIVITY_30
-        MENUITEM "Motion REC with Sensitivity 40", ID_SENSITIVITY_40
-        MENUITEM "Motion REC with Sensitivity 50", ID_SENSITIVITY_50
-        MENUITEM "Motion REC with Sensitivity 60", ID_SENSITIVITY_60
-        MENUITEM "Motion REC with Sensitivity 70", ID_SENSITIVITY_70
-        MENUITEM "Motion REC with Sensitivity 80", ID_SENSITIVITY_80
-        MENUITEM "Motion REC with Sensitivity 90", ID_SENSITIVITY_90
+        MENUITEM "Motion REC with sensitivity 10", ID_SENSITIVITY_10
+        MENUITEM "Motion REC with sensitivity 20", ID_SENSITIVITY_20
+        MENUITEM "Motion REC with sensitivity 30", ID_SENSITIVITY_30
+        MENUITEM "Motion REC with sensitivity 40", ID_SENSITIVITY_40
+        MENUITEM "Motion REC with sensitivity 50", ID_SENSITIVITY_50
+        MENUITEM "Motion REC with sensitivity 60", ID_SENSITIVITY_60
+        MENUITEM "Motion REC with sensitivity 70", ID_SENSITIVITY_70
+        MENUITEM "Motion REC with sensitivity 80", ID_SENSITIVITY_80
+        MENUITEM "Motion REC with sensitivity 90", ID_SENSITIVITY_90
         MENUITEM SEPARATOR
         MENUITEM "Continuous REC",              ID_SENSITIVITY_100
     END
@@ -1101,10 +1101,14 @@ BEGIN
     PUSHBUTTON      "",IDC_ANIMATEDGIF_SIZE,75,206,128,14
     COMBOBOX        IDC_COMBO_SNAPSHOT_RATE,75,243,128,204,CBS_DROPDOWNLIST | WS_TABSTOP
     PUSHBUTTON      "",IDC_BUTTON_THUMB_SIZE,75,260,128,14
+    CONTROL         "Externally set/schedule recording state/sensitivity <a>(?)</a>",IDC_SYSLINK_CONTROL_HELP,
+                    "SysLink",WS_TABSTOP,225,13,184,8
+    EDITTEXT        IDC_EDIT_CONTROL_EXE,225,35,184,12,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_CONTROL_PARAMS,225,61,184,43,ES_MULTILINE | ES_READONLY | WS_VSCROLL
     CONTROL         "Execute on",IDC_EXEC_COMMAND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,127,58,10
     COMBOBOX        IDC_EXEC_COMMAND_MODE,286,126,123,72,CBS_DROPDOWNLIST | WS_TABSTOP
     EDITTEXT        IDC_EDIT_EXE,225,151,184,12,ES_AUTOHSCROLL
-    CONTROL         "<a>(?)</a>",IDC_SYSLINK_PARAMS_HELP,"SysLink",WS_TABSTOP,253,168,10,9
+    CONTROL         "Arguments <a>(?)</a>",IDC_SYSLINK_PARAMS_HELP,"SysLink",WS_TABSTOP,225,168,184,9
     EDITTEXT        IDC_EDIT_PARAMS,225,178,184,52,ES_MULTILINE | WS_VSCROLL
     CONTROL         "Hide window of executed command",IDC_CHECK_HIDE_EXEC_COMMAND,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,252,129,10
@@ -1129,8 +1133,9 @@ BEGIN
     LTEXT           "Take each",IDC_STATIC2476,13,245,47,8
     LTEXT           "Thumbnail",IDC_STATIC2478,13,263,53,8
     LTEXT           "%sec% %min% %hour% %day% %month% %year% %full% %small%",IDC_STATIC,225,232,184,17
-    LTEXT           "Cmd",IDC_STATIC,225,141,15,8
-    LTEXT           "Params",IDC_STATIC,225,168,24,8
+    LTEXT           "Program",IDC_STATIC,225,141,28,8
+    LTEXT           "Program",IDC_STATIC,225,25,28,8
+    LTEXT           "Arguments",IDC_STATIC,225,51,35,8
 END
 
 IDD_REDEYE DIALOGEX 0, 0, 223, 268
@@ -2148,7 +2153,7 @@ BEGIN
     CONTROL         "Motion detection surveillance",IDC_RADIO_MOVDET,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,15,109,10
     CONTROL         "Continuous recording",IDC_RADIO_MANUAL,"Button",BS_AUTORADIOBUTTON,16,30,86,10
     CONTROL         "Daily\nsummary video",IDC_CHECK_SNAPSHOT_HISTORY_VIDEO,
-                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,272,14,66,27
+                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,245,14,66,27
     CONTROL         "Autostart\ncamera",IDC_CHECK_AUTORUN,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,359,14,47,27
     EDITTEXT        IDC_EDIT_NAME,152,65,254,13,ES_AUTOHSCROLL
     COMBOBOX        IDC_COMBO_LANGUAGE,152,99,56,222,CBS_DROPDOWNLIST | WS_TABSTOP
@@ -2722,6 +2727,7 @@ BEGIN
         VERTGUIDE, 16
         VERTGUIDE, 152
         VERTGUIDE, 208
+        VERTGUIDE, 245
         VERTGUIDE, 406
         TOPMARGIN, 2
         BOTTOMMARGIN, 278

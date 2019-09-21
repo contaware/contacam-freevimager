@@ -81,6 +81,7 @@ protected:
 	afx_msg void OnAnimatedgifSize();
 	afx_msg void OnSelchangeSnapshotRate();
 	afx_msg void OnButtonThumbSize();
+	afx_msg void OnSyslinkControlHelp(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnExecCommand();
 	afx_msg void OnSyslinkParamsHelp(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnSelchangeExecCommandMode();
