@@ -1762,24 +1762,6 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, BOOL b1SecTick)
 	BOOL bSoftwareDetectionMovement = FALSE;
 	int nDetectionLevel = m_nDetectionLevel; // use local var
 	int nMovementDetectorIntensityLimit = 50 - nDetectionLevel / 2;	// noise floor
-	BOOL bDoSoftwareDetection = (nDetectionLevel > 0);
-	
-	// Clean-up
-	if (!bDoSoftwareDetection)
-	{	
-		if (m_pDifferencingDib)
-		{
-			delete m_pDifferencingDib;
-			m_pDifferencingDib = NULL;
-		}
-		if (m_pMovementDetectorBackgndDib)
-		{
-			delete m_pMovementDetectorBackgndDib;
-			m_pMovementDetectorBackgndDib = NULL;
-		}
-		if (m_MovementDetections)
-			memset(m_MovementDetections, 0, MOVDET_MAX_ZONES);
-	}
 
 	// Init from UI thread because of a UI control update and
 	// initialization of variables used by the UI drawing
@@ -1791,145 +1773,144 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, BOOL b1SecTick)
 			goto end_of_software_detection; // Cannot init, unsupported resolution
 	}
 
-	// Software Detection
-	if (bDoSoftwareDetection)
+	// REC OFF
+	if (nDetectionLevel == 0)
 	{
-		if (nDetectionLevel == 0)
+		if (m_pDifferencingDib)
 		{
-			if (m_pDifferencingDib)
+			delete m_pDifferencingDib;
+			m_pDifferencingDib = NULL;
+		}
+		if (m_pMovementDetectorBackgndDib)
+		{
+			delete m_pMovementDetectorBackgndDib;
+			m_pMovementDetectorBackgndDib = NULL;
+		}
+		if (m_MovementDetections)
+			memset(m_MovementDetections, 0, m_lMovDetTotalZones);
+	}
+	// Continuous REC
+	else if (nDetectionLevel == 100)
+	{
+		if (m_pDifferencingDib)
+		{
+			delete m_pDifferencingDib;
+			m_pDifferencingDib = NULL;
+		}
+		if (m_pMovementDetectorBackgndDib)
+		{
+			delete m_pMovementDetectorBackgndDib;
+			m_pMovementDetectorBackgndDib = NULL;
+		}
+		for (int i = 0; i < m_lMovDetTotalZones; i++)
+		{
+			if (m_DoMovementDetection[i])
 			{
-				delete m_pDifferencingDib;
-				m_pDifferencingDib = NULL;
+				m_MovementDetections[i] = 1;
+				m_MovementDetectionsUpTime[i] = pDib->GetUpTime();
 			}
-			if (m_pMovementDetectorBackgndDib)
-			{
-				delete m_pMovementDetectorBackgndDib;
-				m_pMovementDetectorBackgndDib = NULL;
-			}
-			for (int i = 0; i < m_lMovDetTotalZones; i++)
+			else
 				m_MovementDetections[i] = 0;
 		}
-		else if (nDetectionLevel == 100)
+		bSoftwareDetectionMovement = TRUE;
+	}
+	// Software Motion Detection
+	else
+	{
+		// Every 1 sec check whether we have to update the Freq Div
+		if (b1SecTick &&
+			(m_dEffectiveFrameRate > m_dMovDetFrameRateFreqDivCalc + 0.5 ||
+				m_dEffectiveFrameRate < m_dMovDetFrameRateFreqDivCalc - 0.5))
 		{
-			if (m_pDifferencingDib)
-			{
-				delete m_pDifferencingDib;
-				m_pDifferencingDib = NULL;
-			}
-			if (m_pMovementDetectorBackgndDib)
-			{
-				delete m_pMovementDetectorBackgndDib;
-				m_pMovementDetectorBackgndDib = NULL;
-			}
-			for (int i = 0; i < m_lMovDetTotalZones; i++)
-			{
-				if (m_DoMovementDetection[i])
-				{
-					m_MovementDetections[i] = 1;
-					m_MovementDetectionsUpTime[i] = pDib->GetUpTime();
-				}
-				else
-					m_MovementDetections[i] = 0;
-			}
-			bSoftwareDetectionMovement = TRUE;
+			double dNewMovDetFreqDiv = m_dEffectiveFrameRate / MOVDET_WANTED_FREQ;
+			if (dNewMovDetFreqDiv < 1.0)
+				dNewMovDetFreqDiv = 1.0;
+			m_nMovDetFreqDiv = Round(dNewMovDetFreqDiv);
+			m_dMovDetFrameRateFreqDivCalc = m_dEffectiveFrameRate;
 		}
-		else
+
+		// Do detect?
+		if ((m_dwFrameCountUp % m_nMovDetFreqDiv) == 0)
 		{
-			// Every 1 sec check whether we have to update the Freq Div
-			if (b1SecTick &&
-				(m_dEffectiveFrameRate > m_dMovDetFrameRateFreqDivCalc + 0.5 ||
-					m_dEffectiveFrameRate < m_dMovDetFrameRateFreqDivCalc - 0.5))
+			// Init Dibs
+			if (!m_pMovementDetectorBackgndDib)
 			{
-				double dNewMovDetFreqDiv = m_dEffectiveFrameRate / MOVDET_WANTED_FREQ;
-				if (dNewMovDetFreqDiv < 1.0)
-					dNewMovDetFreqDiv = 1.0;
-				m_nMovDetFreqDiv = Round(dNewMovDetFreqDiv);
-				m_dMovDetFrameRateFreqDivCalc = m_dEffectiveFrameRate;
+				m_pMovementDetectorBackgndDib = new CDib(*pDib);
+				if (!m_pMovementDetectorBackgndDib)
+					goto end_of_software_detection;
+				m_pMovementDetectorBackgndDib->SetShowMessageBoxOnError(FALSE);
+			}
+			if (!m_pDifferencingDib)
+			{
+				m_pDifferencingDib = new CDib;
+				if (!m_pDifferencingDib)
+					goto end_of_software_detection;
+				m_pDifferencingDib->SetShowMessageBoxOnError(FALSE);
+				if (!m_pDifferencingDib->AllocateBitsFast(	pDib->GetBitCount(),
+															pDib->GetCompression(),
+															pDib->GetWidth(),
+															pDib->GetHeight()))
+					goto end_of_software_detection;
 			}
 
-			// Do detect?
-			if ((m_dwFrameCountUp % m_nMovDetFreqDiv) == 0)
+			// Differencing
+			BYTE p[16];
+			LPBYTE MinDiff = (LPBYTE)((DWORD)(p + 7) & 0xFFFFFFF8);
+			MinDiff[0] = nMovementDetectorIntensityLimit; // noise floor
+			MinDiff[1] = MinDiff[0];
+			MinDiff[2] = MinDiff[0];
+			MinDiff[3] = MinDiff[0];
+			MinDiff[4] = MinDiff[0];
+			MinDiff[5] = MinDiff[0];
+			MinDiff[6] = MinDiff[0];
+			MinDiff[7] = MinDiff[0];
+
+			// Size in 8 bytes units
+			int nSize8 = (pDib->GetWidth() * pDib->GetHeight()) >> 3;
+
+			// Do Differencing
+			::DiffMMX(	m_pDifferencingDib->GetBits(),				// Dst
+						pDib->GetBits(),							// Src1
+						m_pMovementDetectorBackgndDib->GetBits(),	// Src2
+						nSize8,										// Size in 8 bytes units
+						MinDiff);
+
+			// Call Detector
+			m_pDifferencingDib->SetUpTime(pDib->GetUpTime());
+			bSoftwareDetectionMovement = MovementDetector(m_pDifferencingDib, nDetectionLevel);
+
+			// Update background
+			// Note: Mix7To1MMX and Mix3To1MMX use the pavgb instruction
+			// which is available only on SSE processors
+			if (g_bSSE)
 			{
-				// Init Dibs
-				if (!m_pMovementDetectorBackgndDib)
+				if (m_dMovDetFrameRateFreqDivCalc / m_nMovDetFreqDiv >= MOVDET_MIX_THRESHOLD)
 				{
-					m_pMovementDetectorBackgndDib = new CDib(*pDib);
-					if (!m_pMovementDetectorBackgndDib)
-						goto end_of_software_detection;
-					m_pMovementDetectorBackgndDib->SetShowMessageBoxOnError(FALSE);
-				}
-				if (!m_pDifferencingDib)
-				{
-					m_pDifferencingDib = new CDib;
-					if (!m_pDifferencingDib)
-						goto end_of_software_detection;
-					m_pDifferencingDib->SetShowMessageBoxOnError(FALSE);
-					if (!m_pDifferencingDib->AllocateBitsFast(pDib->GetBitCount(),
-						pDib->GetCompression(),
-						pDib->GetWidth(),
-						pDib->GetHeight()))
-						goto end_of_software_detection;
-				}
-
-				// Differencing
-				BYTE p[16];
-				LPBYTE MinDiff = (LPBYTE)((DWORD)(p + 7) & 0xFFFFFFF8);
-				MinDiff[0] = nMovementDetectorIntensityLimit; // noise floor
-				MinDiff[1] = MinDiff[0];
-				MinDiff[2] = MinDiff[0];
-				MinDiff[3] = MinDiff[0];
-				MinDiff[4] = MinDiff[0];
-				MinDiff[5] = MinDiff[0];
-				MinDiff[6] = MinDiff[0];
-				MinDiff[7] = MinDiff[0];
-
-				// Size in 8 bytes units
-				int nSize8 = (pDib->GetWidth() * pDib->GetHeight()) >> 3;
-
-				// Do Differencing
-				::DiffMMX(m_pDifferencingDib->GetBits(),				// Dst
-					pDib->GetBits(),							// Src1
-					m_pMovementDetectorBackgndDib->GetBits(),	// Src2
-					nSize8,										// Size in 8 bytes units
-					MinDiff);
-
-				// Call Detector
-				m_pDifferencingDib->SetUpTime(pDib->GetUpTime());
-				bSoftwareDetectionMovement = MovementDetector(m_pDifferencingDib, nDetectionLevel);
-
-				// Update background
-				// Note: Mix7To1MMX and Mix3To1MMX use the pavgb instruction
-				// which is available only on SSE processors
-				if (g_bSSE)
-				{
-					if (m_dMovDetFrameRateFreqDivCalc / m_nMovDetFreqDiv >= MOVDET_MIX_THRESHOLD)
-					{
-						::Mix7To1MMX(m_pMovementDetectorBackgndDib->GetBits(),	// Src1 & Dst
-							pDib->GetBits(),							// Src2
-							nSize8);									// Size in 8 bytes units
-					}
-					else
-					{
-						::Mix3To1MMX(m_pMovementDetectorBackgndDib->GetBits(),	// Src1 & Dst
-							pDib->GetBits(),							// Src2
-							nSize8);									// Size in 8 bytes units
-					}
+					::Mix7To1MMX(m_pMovementDetectorBackgndDib->GetBits(),	// Src1 & Dst
+								pDib->GetBits(),							// Src2
+								nSize8);									// Size in 8 bytes units
 				}
 				else
 				{
-					int nSize = pDib->GetWidth() * pDib->GetHeight();
-					LPBYTE p1 = m_pMovementDetectorBackgndDib->GetBits();
-					LPBYTE p2 = pDib->GetBits();
-					if (m_dMovDetFrameRateFreqDivCalc / m_nMovDetFreqDiv >= MOVDET_MIX_THRESHOLD)
-					{
-						for (int i = 0; i < nSize; i++)
-							p1[i] = (BYTE)((7 * (int)(p1[i]) + (int)(p2[i]) + 4) >> 3);
-					}
-					else
-					{
-						for (int i = 0; i < nSize; i++)
-							p1[i] = (BYTE)((3 * (int)(p1[i]) + (int)(p2[i]) + 2) >> 2);
-					}
+					::Mix3To1MMX(m_pMovementDetectorBackgndDib->GetBits(),	// Src1 & Dst
+								pDib->GetBits(),							// Src2
+								nSize8);									// Size in 8 bytes units
+				}
+			}
+			else
+			{
+				int nSize = pDib->GetWidth() * pDib->GetHeight();
+				LPBYTE p1 = m_pMovementDetectorBackgndDib->GetBits();
+				LPBYTE p2 = pDib->GetBits();
+				if (m_dMovDetFrameRateFreqDivCalc / m_nMovDetFreqDiv >= MOVDET_MIX_THRESHOLD)
+				{
+					for (int i = 0; i < nSize; i++)
+						p1[i] = (BYTE)((7 * (int)(p1[i]) + (int)(p2[i]) + 4) >> 3);
+				}
+				else
+				{
+					for (int i = 0; i < nSize; i++)
+						p1[i] = (BYTE)((3 * (int)(p1[i]) + (int)(p2[i]) + 2) >> 2);
 				}
 			}
 		}
