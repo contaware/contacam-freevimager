@@ -77,6 +77,7 @@
 #define PHP_LANGUAGES_DIR								_T("languages")
 #define CSS_STYLE_DIR									_T("styles")
 #define CAMERA_IS_OBSCURED_FILENAME						_T("CAMERA_IS_OBSCURED.txt")
+#define CAMERA_REC_SENSITIVITY_FILENAME					_T("CAMERA_REC_SENSITIVITY.txt")
 
 // Default wait time before autostarting first device
 #define DEFAULT_FIRSTSTART_DELAY_MS						0U

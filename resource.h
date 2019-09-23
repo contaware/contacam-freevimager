@@ -2080,9 +2080,7 @@
 #define IDC_CHECK_WAIT_EXEC_COMMAND     1751
 #define IDS_STRING1751                  1751
 #define IDS_STRING1752                  1752
-#define IDC_EDIT_CONTROL_EXE            1752
 #define IDS_STRING1753                  1753
-#define IDC_EDIT_CONTROL_PARAMS         1753
 #define IDS_STRING1754                  1754
 #define IDC_COMBO_SNAPSHOT_RATE         1755
 #define IDS_STRING1755                  1755
@@ -2975,6 +2973,7 @@
 #define IDC_SYSLINK_CONTROL_HELP        2578
 #define IDC_SYSLINK_IPCAM_INSTABILITY_HELP 2579
 #define IDC_SYSLINK_HOMEPAGE            2580
+#define IDC_BUTTON_CREATE_BAT           2581
 #define ID_EDIT_ROTATE_FLIP             32778
 #define ID_FILE_SELECTTWAINSOURCE       32779
 #define ID_FILE_ACQUIRE                 32780
@@ -3224,7 +3223,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1503
 #define _APS_NEXT_COMMAND_VALUE         33556
-#define _APS_NEXT_CONTROL_VALUE         2581
+#define _APS_NEXT_CONTROL_VALUE         2582
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

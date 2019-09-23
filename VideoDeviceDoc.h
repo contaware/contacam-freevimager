@@ -730,6 +730,8 @@ public:
 	void SaveZonesSettings(CString sSection);
 	static int ValidateRefFontSize(int nRefFontSize);
 	static int ValidateDetectionLevel(int nDetectionLevel);
+	int ReadDetectionLevelFromFile(CString sRecordAutoSaveDir);
+	void WriteDetectionLevelToFile(int nDetectionLevel, CString sRecordAutoSaveDir);
 	static int ValidateSnapshotRate(int nSnapshotRate);
 	static int MakeSizeMultipleOf4(int nSize);
 	void LoadSettings(	double dDefaultFrameRate,

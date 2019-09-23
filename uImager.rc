@@ -1104,8 +1104,7 @@ BEGIN
     PUSHBUTTON      "",IDC_BUTTON_THUMB_SIZE,75,260,128,14
     CONTROL         "Externally set/schedule recording state/sensitivity <a>(?)</a>",IDC_SYSLINK_CONTROL_HELP,
                     "SysLink",WS_TABSTOP,225,13,184,8
-    EDITTEXT        IDC_EDIT_CONTROL_EXE,225,35,184,12,ES_AUTOHSCROLL | ES_READONLY
-    EDITTEXT        IDC_EDIT_CONTROL_PARAMS,225,61,184,43,ES_MULTILINE | ES_READONLY | WS_VSCROLL
+    PUSHBUTTON      "Create .bat File",IDC_BUTTON_CREATE_BAT,225,25,184,16
     CONTROL         "Execute on",IDC_EXEC_COMMAND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,127,58,10
     COMBOBOX        IDC_EXEC_COMMAND_MODE,286,126,123,72,CBS_DROPDOWNLIST | WS_TABSTOP
     EDITTEXT        IDC_EDIT_EXE,225,151,184,12,ES_AUTOHSCROLL
@@ -1117,7 +1116,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,264,145,10
     LTEXT           "sec",IDC_STATIC2283,123,27,11,8
     GROUPBOX        "Video",IDC_STATIC2286,6,3,202,106
-    GROUPBOX        "Control",IDC_STATIC2291,218,3,198,106
+    GROUPBOX        "Control",IDC_STATIC2291,218,3,198,43
     LTEXT           "Drop shorter than",IDC_STATIC,13,41,61,11
     LTEXT           "sec",IDC_STATIC2292,123,41,11,8
     LTEXT           "Split longer than",IDC_STATIC,13,55,57,8
@@ -1129,14 +1128,12 @@ BEGIN
     LTEXT           "fps",IDC_STATIC2183,123,13,11,8
     GROUPBOX        "Audio",IDC_STATIC2157,6,116,202,55
     GROUPBOX        "Live Snapshot",IDC_STATIC2294,6,233,202,45
-    GROUPBOX        "Command",IDC_STATIC2295,218,116,198,162
+    GROUPBOX        "Command",IDC_STATIC2295,218,53,198,225
     LTEXT           "Quality",IDC_STATIC,75,191,24,8
     LTEXT           "Take each",IDC_STATIC2476,13,245,47,8
     LTEXT           "Thumbnail",IDC_STATIC2478,13,263,53,8
     LTEXT           "%sec% %min% %hour% %day% %month% %year% %full% %small%",IDC_STATIC,225,232,184,17
     LTEXT           "Program",IDC_STATIC,225,141,28,8
-    LTEXT           "Program",IDC_STATIC,225,25,28,8
-    LTEXT           "Arguments",IDC_STATIC,225,51,35,8
 END
 
 IDD_REDEYE DIALOGEX 0, 0, 223, 268

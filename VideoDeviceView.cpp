@@ -848,15 +848,16 @@ void CVideoDeviceView::OnTimer(UINT nIDEvent)
 	{
 		case ID_TIMER_RELOAD :
 		{
-			CString sSection(pDoc->GetDevicePathName());
-			
-			// Load detection level from registry/ini file
-			pDoc->m_nDetectionLevel = CVideoDeviceDoc::ValidateDetectionLevel(::AfxGetApp()->GetProfileInt(sSection, _T("DetectionLevel"), DEFAULT_MOVDET_LEVEL));
-
-			// Load video source obscuration state
 			CString sRecordAutoSaveDir = pDoc->m_sRecordAutoSaveDir;
 			sRecordAutoSaveDir.TrimRight(_T('\\'));
+
+			// Load video source obscuration state
 			pDoc->m_bObscureSource = ::IsExistingFile(sRecordAutoSaveDir + _T("\\") + CAMERA_IS_OBSCURED_FILENAME);
+
+			// Load detection level
+			int nDetectionLevelFromFile;
+			if ((nDetectionLevelFromFile = pDoc->ReadDetectionLevelFromFile(sRecordAutoSaveDir)) >= 0)
+				pDoc->m_nDetectionLevel = CVideoDeviceDoc::ValidateDetectionLevel(nDetectionLevelFromFile);
 
 			break;
 		}

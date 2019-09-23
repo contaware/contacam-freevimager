@@ -4159,6 +4159,57 @@ int CVideoDeviceDoc::ValidateRefFontSize(int nRefFontSize)
 	return nRefFontSize;
 }
 
+// Returns -1 on error, otherwise the read detection level
+int CVideoDeviceDoc::ReadDetectionLevelFromFile(CString sRecordAutoSaveDir)
+{
+	int nDetectionLevel = -1;
+	sRecordAutoSaveDir.TrimRight(_T('\\'));
+	CString sCameraRecSensitivityFile(sRecordAutoSaveDir + _T("\\") + CAMERA_REC_SENSITIVITY_FILENAME);
+	if (::IsExistingFile(sCameraRecSensitivityFile))
+	{
+		for (int nRetry = 0; nRetry < 10; nRetry++)
+		{
+			try
+			{
+				CStdioFile f(sCameraRecSensitivityFile, CFile::modeRead | CFile::typeText | CFile::shareDenyWrite);
+				CString sDetectionLevel;
+				f.ReadString(sDetectionLevel);
+				nDetectionLevel = _tcstol(sDetectionLevel.GetBuffer(0), NULL, 10);
+				sDetectionLevel.ReleaseBuffer();
+				break;
+			}
+			catch (CFileException* e)
+			{
+				e->Delete();
+				::Sleep(100);
+			}
+		}
+	}
+	return nDetectionLevel;
+}
+
+void CVideoDeviceDoc::WriteDetectionLevelToFile(int nDetectionLevel, CString sRecordAutoSaveDir)
+{
+	sRecordAutoSaveDir.TrimRight(_T('\\'));
+	CString sCameraRecSensitivityFile(sRecordAutoSaveDir + _T("\\") + CAMERA_REC_SENSITIVITY_FILENAME);
+	for (int nRetry = 0; nRetry < 10; nRetry++)
+	{
+		try
+		{
+			CStdioFile f(sCameraRecSensitivityFile, CFile::modeCreate | CFile::modeWrite | CFile::typeText | CFile::shareExclusive);
+			CString sDetectionLevel;
+			sDetectionLevel.Format(_T("%d\n"), nDetectionLevel);
+			f.WriteString(sDetectionLevel);
+			break;
+		}
+		catch (CFileException* e)
+		{
+			e->Delete();
+			::Sleep(100);
+		}
+	}
+}
+
 // Valid values: 0,10,20,30,40,50,60,70,80,90,100
 int CVideoDeviceDoc::ValidateDetectionLevel(int nDetectionLevel)
 {
@@ -4333,7 +4384,17 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 		m_nDetectionMaxFrames = nDetectionMaxFrames;
 	else
 		m_nDetectionMaxFrames = MOVDET_DEFAULT_MAX_FRAMES_IN_LIST; // restore the default if a strange value is set
-	m_nDetectionLevel = ValidateDetectionLevel(pApp->GetProfileInt(sSection, _T("DetectionLevel"), DEFAULT_MOVDET_LEVEL));
+	int nDetectionLevelFromFile;
+	if ((nDetectionLevelFromFile = ReadDetectionLevelFromFile(m_sRecordAutoSaveDir)) >= 0)
+		m_nDetectionLevel = ValidateDetectionLevel(nDetectionLevelFromFile);
+	else
+	{
+		// TODO: in future remove the following and just set m_nDetectionLevel = DEFAULT_MOVDET_LEVEL;
+		
+		// Import old registry value and write it to the file
+		m_nDetectionLevel = ValidateDetectionLevel(pApp->GetProfileInt(sSection, _T("DetectionLevel"), DEFAULT_MOVDET_LEVEL));
+		WriteDetectionLevelToFile(m_nDetectionLevel, m_sRecordAutoSaveDir);
+	}
 	m_nCurrentDetectionZoneSize = m_nDetectionZoneSize = (int) pApp->GetProfileInt(sSection, _T("DetectionZoneSize"), 0);
 	m_bSaveVideo = (BOOL) pApp->GetProfileInt(sSection, _T("SaveVideoMovementDetection"), TRUE);
 	m_bSaveAnimGIF = (BOOL) pApp->GetProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), TRUE);
@@ -4473,7 +4534,6 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), m_nMilliSecondsRecAfterMovementEnd);
 	pApp->WriteProfileInt(sSection, _T("DetectionMinLengthMilliSeconds"), m_nDetectionMinLengthMilliSeconds);
 	pApp->WriteProfileInt(sSection, _T("DetectionMaxFrames"), m_nDetectionMaxFrames);
-	pApp->WriteProfileInt(sSection, _T("DetectionLevel"), m_nDetectionLevel);
 	pApp->WriteProfileInt(sSection, _T("DetectionZoneSize"), m_nDetectionZoneSize);
 	pApp->WriteProfileInt(sSection, _T("SaveVideoMovementDetection"), m_bSaveVideo);
 	pApp->WriteProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), m_bSaveAnimGIF);
@@ -4992,7 +5052,7 @@ void CVideoDeviceDoc::OnUpdateCaptureRecord(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity0()
 {
 	m_nDetectionLevel = 0;
-	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
+	WriteDetectionLevelToFile(m_nDetectionLevel, m_sRecordAutoSaveDir);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity0(CCmdUI* pCmdUI)
@@ -5003,7 +5063,7 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity0(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity10()
 {
 	m_nDetectionLevel = 10;
-	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
+	WriteDetectionLevelToFile(m_nDetectionLevel, m_sRecordAutoSaveDir);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity10(CCmdUI* pCmdUI)
@@ -5014,7 +5074,7 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity10(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity20()
 {
 	m_nDetectionLevel = 20;
-	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
+	WriteDetectionLevelToFile(m_nDetectionLevel, m_sRecordAutoSaveDir);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity20(CCmdUI* pCmdUI)
@@ -5025,7 +5085,7 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity20(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity30()
 {
 	m_nDetectionLevel = 30;
-	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
+	WriteDetectionLevelToFile(m_nDetectionLevel, m_sRecordAutoSaveDir);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity30(CCmdUI* pCmdUI)
@@ -5036,7 +5096,7 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity30(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity40()
 {
 	m_nDetectionLevel = 40;
-	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
+	WriteDetectionLevelToFile(m_nDetectionLevel, m_sRecordAutoSaveDir);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity40(CCmdUI* pCmdUI)
@@ -5047,7 +5107,7 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity40(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity50()
 {
 	m_nDetectionLevel = 50;
-	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
+	WriteDetectionLevelToFile(m_nDetectionLevel, m_sRecordAutoSaveDir);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity50(CCmdUI* pCmdUI)
@@ -5058,7 +5118,7 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity50(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity60()
 {
 	m_nDetectionLevel = 60;
-	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
+	WriteDetectionLevelToFile(m_nDetectionLevel, m_sRecordAutoSaveDir);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity60(CCmdUI* pCmdUI)
@@ -5069,7 +5129,7 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity60(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity70()
 {
 	m_nDetectionLevel = 70;
-	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
+	WriteDetectionLevelToFile(m_nDetectionLevel, m_sRecordAutoSaveDir);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity70(CCmdUI* pCmdUI)
@@ -5080,7 +5140,7 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity70(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity80()
 {
 	m_nDetectionLevel = 80;
-	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
+	WriteDetectionLevelToFile(m_nDetectionLevel, m_sRecordAutoSaveDir);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity80(CCmdUI* pCmdUI)
@@ -5091,7 +5151,7 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity80(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity90()
 {
 	m_nDetectionLevel = 90;
-	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
+	WriteDetectionLevelToFile(m_nDetectionLevel, m_sRecordAutoSaveDir);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity90(CCmdUI* pCmdUI)
@@ -5102,7 +5162,7 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity90(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnMovDetSensitivity100()
 {
 	m_nDetectionLevel = 100;
-	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionLevel"), m_nDetectionLevel);
+	WriteDetectionLevelToFile(m_nDetectionLevel, m_sRecordAutoSaveDir);
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity100(CCmdUI* pCmdUI)
