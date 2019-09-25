@@ -61,24 +61,24 @@ BOOL CCreditsDlg::OnInitDialog()
 #ifdef VIDEODEVICEDOC
 	// ffmpeg
 	CString sffmpeg = _T("ffmpeg ") + CString(FFMPEG_VERSION);
-	sffmpeg += CString(_T('\n')) + _T("http://www.ffmpeg.org");
+	sffmpeg += CString(_T('\n')) + _T("https://www.ffmpeg.org");
 
 	// Smtp
 	CString ssmtp(_T("mailsend"));
-	ssmtp += CString(_T('\n')) + _T("http://github.com/muquit/mailsend");
+	ssmtp += CString(_T('\n')) + _T("https://github.com/muquit/mailsend");
 #endif
 
 	// CMDITabs
 	CString smditabs(_T("CMDITabs by Christian Rodemeyer"));
-	smditabs += CString(_T('\n')) + _T("http://www.codeproject.com/articles/1438/cmditabs");
+	smditabs += CString(_T('\n')) + _T("https://www.codeproject.com/articles/1438/cmditabs");
 
 	// AVIR
 	CString savir = _T("AVIR image resizing algorithm designed by\nAleksey Vaneev version ") + CString(AVIR_VERSION);
-	savir += CString(_T('\n')) + _T("http://github.com/avaneev/avir");
+	savir += CString(_T('\n')) + _T("https://github.com/avaneev/avir");
 
 	// libjpeg
 	CString slibjpeg = _T("libjpeg ") + CString(JVERSION);
-	slibjpeg += CString(_T('\n')) + _T("http://www.ijg.org");
+	slibjpeg += CString(_T('\n')) + _T("https://www.ijg.org");
 
 	// libtiff
 	CString slibtiff(::TIFFGetVersion());
@@ -94,18 +94,18 @@ BOOL CCreditsDlg::OnInitDialog()
 
 	// zlib
 	CString szlib = _T("zlib ") + CString(::zlibVersion());
-	szlib += CString(_T('\n')) + _T("http://www.zlib.net");
+	szlib += CString(_T('\n')) + _T("https://www.zlib.net");
 
 	// giflib
 	CString sgiflib(GIF_LIB_VERSION);
 	sgiflib.Trim();
 	sgiflib.TrimRight(_T(','));
 	sgiflib = _T("giflib ") + sgiflib;
-	sgiflib += CString(_T('\n')) + _T("http://sourceforge.net/projects/giflib");
+	sgiflib += CString(_T('\n')) + _T("https://sourceforge.net/projects/giflib");
 
 	// icclib
 	CString sicclib = _T("icclib ") + CString(ICCLIB_VERSION_STR);
-	sicclib += CString(_T('\n')) + _T("http://www.argyllcms.com/icclibsrc.html");
+	sicclib += CString(_T('\n')) + _T("https://www.argyllcms.com/icclibsrc.html");
 
 	// unicode nsis
 	CString snsis(_T("Unicode NSIS"));

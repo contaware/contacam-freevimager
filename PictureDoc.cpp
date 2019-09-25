@@ -9824,7 +9824,7 @@ void CPictureDoc::ViewMap()
 							(double)m_pDib->GetExifInfo()->GpsLong[GPS_SECONDS] / 3600.0;	
 			sLong.Format(_T("%s%0.6f"), CString(m_pDib->GetExifInfo()->GpsLongRef), dLong);
 			sQuery = sLat + _T(", ") + sLong;
-			sUrl.Format(_T("http://maps.google.com/maps?q=%s"), ::UrlEncode(sQuery, TRUE));
+			sUrl.Format(_T("https://maps.google.com/maps?q=%s"), ::UrlEncode(sQuery, TRUE));
 			::ShellExecute(NULL, _T("open"), sUrl, NULL, NULL, SW_SHOWNORMAL);
 			return;
 		}
@@ -9917,7 +9917,7 @@ void CPictureDoc::ViewMap()
 		}
 
 		// Start browser
-		sUrl.Format(_T("http://maps.google.com/maps?q=%s"), ::UrlEncode(sQuery, TRUE));
+		sUrl.Format(_T("https://maps.google.com/maps?q=%s"), ::UrlEncode(sQuery, TRUE));
 		::ShellExecute(NULL, _T("open"), sUrl, NULL, NULL, SW_SHOWNORMAL);
 	}
 }
