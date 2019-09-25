@@ -2035,6 +2035,10 @@ void CVideoDeviceDoc::ExecCommand(BOOL bReplaceVars/*=FALSE*/,
 								const CString& sFullFileName/*=_T("")*/,
 								const CString& sSmallFileName/*=_T("")*/)
 {
+	// Critical section is necessary for two distinct reasons:
+	// 1. to serialize the access to the m_sExecCommand and m_sExecParams strings
+	// 2. to avoid getting called by two separate threads at the same time,
+	//    this could happen while switching m_nExecCommandMode
 	::EnterCriticalSection(&m_csExecCommand);
 	if (m_bWaitExecCommand)
 	{

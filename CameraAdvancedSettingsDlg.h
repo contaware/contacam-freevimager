@@ -36,6 +36,12 @@ public:
 	BOOL m_bFlipV;
 	BOOL m_bAudioListen;
 	CSliderCtrl	m_VideoRecQuality;
+	BOOL m_bExecCommand;
+	int m_nExecCommandMode;
+	CString m_sExecCommand;
+	CString m_sExecParams;
+	BOOL m_bHideExecCommand;
+	BOOL m_bWaitExecCommand;
 
 protected:
 	// Helper vars
@@ -83,13 +89,14 @@ protected:
 	afx_msg void OnButtonThumbSize();
 	afx_msg void OnSyslinkControlHelp(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnButtonCreateBatchFile();
-	afx_msg void OnExecCommand();
-	afx_msg void OnSyslinkParamsHelp(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnCheckExecCommand();
 	afx_msg void OnSelchangeExecCommandMode();
 	afx_msg void OnChangeEditExe();
+	afx_msg void OnSyslinkParamsHelp(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnChangeEditParams();
 	afx_msg void OnCheckHideExecCommand();
 	afx_msg void OnCheckWaitExecCommand();
+	afx_msg void OnButtonVlcPlaySound();
 	DECLARE_MESSAGE_MAP()
 };
 

@@ -118,6 +118,12 @@ void CCameraAdvancedSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_FLIP_V, m_bFlipV);
 	DDX_Check(pDX, IDC_CHECK_AUDIO_LISTEN, m_bAudioListen);
 	DDX_Control(pDX, IDC_VIDEO_COMPRESSION_QUALITY, m_VideoRecQuality);
+	DDX_Check(pDX, IDC_EXEC_COMMAND, m_bExecCommand);
+	DDX_CBIndex(pDX, IDC_EXEC_COMMAND_MODE, m_nExecCommandMode);
+	DDX_Text(pDX, IDC_EDIT_EXE, m_sExecCommand);
+	DDX_Text(pDX, IDC_EDIT_PARAMS, m_sExecParams);
+	DDX_Check(pDX, IDC_CHECK_HIDE_EXEC_COMMAND, m_bHideExecCommand);
+	DDX_Check(pDX, IDC_CHECK_WAIT_EXEC_COMMAND, m_bWaitExecCommand);
 }
 
 BEGIN_MESSAGE_MAP(CCameraAdvancedSettingsDlg, CDialog)
@@ -150,14 +156,15 @@ BEGIN_MESSAGE_MAP(CCameraAdvancedSettingsDlg, CDialog)
 	ON_NOTIFY(NM_CLICK, IDC_SYSLINK_CONTROL_HELP, OnSyslinkControlHelp)
 	ON_NOTIFY(NM_RETURN, IDC_SYSLINK_CONTROL_HELP, OnSyslinkControlHelp)
 	ON_BN_CLICKED(IDC_BUTTON_CREATE_BAT, OnButtonCreateBatchFile)
-	ON_BN_CLICKED(IDC_EXEC_COMMAND, OnExecCommand)
-	ON_NOTIFY(NM_CLICK, IDC_SYSLINK_PARAMS_HELP, OnSyslinkParamsHelp)
-	ON_NOTIFY(NM_RETURN, IDC_SYSLINK_PARAMS_HELP, OnSyslinkParamsHelp)
+	ON_BN_CLICKED(IDC_EXEC_COMMAND, OnCheckExecCommand)
 	ON_CBN_SELCHANGE(IDC_EXEC_COMMAND_MODE, OnSelchangeExecCommandMode)
 	ON_EN_CHANGE(IDC_EDIT_EXE, OnChangeEditExe)
+	ON_NOTIFY(NM_CLICK, IDC_SYSLINK_PARAMS_HELP, OnSyslinkParamsHelp)
+	ON_NOTIFY(NM_RETURN, IDC_SYSLINK_PARAMS_HELP, OnSyslinkParamsHelp)
 	ON_EN_CHANGE(IDC_EDIT_PARAMS, OnChangeEditParams)
 	ON_BN_CLICKED(IDC_CHECK_HIDE_EXEC_COMMAND, OnCheckHideExecCommand)
 	ON_BN_CLICKED(IDC_CHECK_WAIT_EXEC_COMMAND, OnCheckWaitExecCommand)
+	ON_BN_CLICKED(IDC_BUTTON_VLC_PLAYSOUND, OnButtonVlcPlaySound)
 END_MESSAGE_MAP()
 
 void CCameraAdvancedSettingsDlg::UpdateTitle()
@@ -178,6 +185,12 @@ BOOL CCameraAdvancedSettingsDlg::OnInitDialog()
 	m_bFlipH = m_pDoc->m_bFlipH;
 	m_bFlipV = m_pDoc->m_bFlipV;
 	m_bAudioListen = m_pDoc->m_bAudioListen;
+	m_bExecCommand = m_pDoc->m_bExecCommand;
+	m_nExecCommandMode = m_pDoc->m_nExecCommandMode;
+	m_sExecCommand = m_pDoc->m_sExecCommand;
+	m_sExecParams = m_pDoc->m_sExecParams;
+	m_bHideExecCommand = m_pDoc->m_bHideExecCommand;
+	m_bWaitExecCommand = m_pDoc->m_bWaitExecCommand;
 
 	// Init Combo Boxes
 	CComboBox* pComboBoxSnapshotRate = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOT_RATE);
@@ -346,28 +359,6 @@ BOOL CCameraAdvancedSettingsDlg::OnInitDialog()
 													m_pDoc->m_nSnapshotThumbHeight);
 	CButton* pButtonThumbnailSize = (CButton*)GetDlgItem(IDC_BUTTON_THUMB_SIZE);
 	pButtonThumbnailSize->SetWindowText(sSize);
-
-	// Execute Command
-	CButton* pCheckExecCommand = (CButton*)GetDlgItem(IDC_EXEC_COMMAND);
-	if (m_pDoc->m_bExecCommand)
-		pCheckExecCommand->SetCheck(1);
-	else
-		pCheckExecCommand->SetCheck(0);
-	pComboBoxExecCommandMode->SetCurSel(m_pDoc->m_nExecCommandMode);
-	CEdit* pEditExecCommand = (CEdit*)GetDlgItem(IDC_EDIT_EXE);
-	pEditExecCommand->SetWindowText(m_pDoc->m_sExecCommand);
-	CEdit* pEditExecParams = (CEdit*)GetDlgItem(IDC_EDIT_PARAMS);
-	pEditExecParams->SetWindowText(m_pDoc->m_sExecParams);
-	CButton* pCheckHideExecCommand = (CButton*)GetDlgItem(IDC_CHECK_HIDE_EXEC_COMMAND);
-	if (m_pDoc->m_bHideExecCommand)
-		pCheckHideExecCommand->SetCheck(1);
-	else
-		pCheckHideExecCommand->SetCheck(0);
-	CButton* pCheckWaitExecCommand = (CButton*)GetDlgItem(IDC_CHECK_WAIT_EXEC_COMMAND);
-	if (m_pDoc->m_bWaitExecCommand)
-		pCheckWaitExecCommand->SetCheck(1);
-	else
-		pCheckWaitExecCommand->SetCheck(0);
 
 	// Set Pointer to this
 	m_pDoc->m_pCameraAdvancedSettingsDlg = this;
@@ -826,8 +817,25 @@ void CCameraAdvancedSettingsDlg::OnSyslinkControlHelp(NMHDR* pNMHDR, LRESULT* pR
 
 void CCameraAdvancedSettingsDlg::OnButtonCreateBatchFile()
 {
+	// Enumerate the detection levels
+	CMenu menu;
+	VERIFY(menu.LoadMenu(IDR_CONTEXT_SENSITIVITY));
+	CMenu* pPopup = menu.GetSubMenu(0);
+	ASSERT(pPopup != NULL);
+	CStringArray DetectionLevels;
+	for (int i = 0; i < (int)pPopup->GetMenuItemCount(); i++)
+	{
+		if (pPopup->GetMenuItemID(i) > 0) // skip separators
+		{
+			CString s;
+			pPopup->GetMenuString(i, s, MF_BYPOSITION);
+			DetectionLevels.Add(s);
+		}
+	}
+
+	// Create the batch file
 	CString sBatchFile;
-	sBatchFile.Format(_T("%s_%s_REC%d.bat"), APPNAME_NOEXT, m_pDoc->GetAssignedDeviceName(), m_pDoc->m_nDetectionLevel);
+	sBatchFile.Format(_T("%s %s %s.bat"), APPNAME_NOEXT, m_pDoc->GetAssignedDeviceName(), DetectionLevels[m_pDoc->m_nDetectionLevel / 10]);
 	CNoVistaFileDlg fd(	FALSE,
 						_T("bat"),
 						sBatchFile,
@@ -888,10 +896,26 @@ void CCameraAdvancedSettingsDlg::OnButtonCreateBatchFile()
 	}
 }
 
-void CCameraAdvancedSettingsDlg::OnExecCommand()
+void CCameraAdvancedSettingsDlg::OnCheckExecCommand()
 {
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_EXEC_COMMAND);
-	m_pDoc->m_bExecCommand = pCheck->GetCheck() > 0;
+	if (UpdateData(TRUE))
+		m_pDoc->m_bExecCommand = m_bExecCommand;
+}
+
+void CCameraAdvancedSettingsDlg::OnSelchangeExecCommandMode()
+{
+	if (UpdateData(TRUE))
+		m_pDoc->m_nExecCommandMode = m_nExecCommandMode;
+}
+
+void CCameraAdvancedSettingsDlg::OnChangeEditExe()
+{
+	if (UpdateData(TRUE))
+	{
+		::EnterCriticalSection(&m_pDoc->m_csExecCommand);
+		m_pDoc->m_sExecCommand = m_sExecCommand;
+		::LeaveCriticalSection(&m_pDoc->m_csExecCommand);
+	}
 }
 
 void CCameraAdvancedSettingsDlg::OnSyslinkParamsHelp(NMHDR* pNMHDR, LRESULT* pResult)
@@ -903,42 +927,74 @@ void CCameraAdvancedSettingsDlg::OnSyslinkParamsHelp(NMHDR* pNMHDR, LRESULT* pRe
 	*pResult = 0;
 }
 
-void CCameraAdvancedSettingsDlg::OnSelchangeExecCommandMode()
-{
-	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_EXEC_COMMAND_MODE);
-	m_pDoc->m_nExecCommandMode = pComboBox->GetCurSel();
-}
-
-void CCameraAdvancedSettingsDlg::OnChangeEditExe()
-{
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_EXE);
-	::EnterCriticalSection(&m_pDoc->m_csExecCommand);
-	pEdit->GetWindowText(m_pDoc->m_sExecCommand);
-	::LeaveCriticalSection(&m_pDoc->m_csExecCommand);
-}
-
 void CCameraAdvancedSettingsDlg::OnChangeEditParams()
 {
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PARAMS);
-	::EnterCriticalSection(&m_pDoc->m_csExecCommand);
-	pEdit->GetWindowText(m_pDoc->m_sExecParams);
-	::LeaveCriticalSection(&m_pDoc->m_csExecCommand);
+	if (UpdateData(TRUE))
+	{
+		::EnterCriticalSection(&m_pDoc->m_csExecCommand);
+		m_pDoc->m_sExecParams = m_sExecParams;
+		::LeaveCriticalSection(&m_pDoc->m_csExecCommand);
+	}
 }
 
 void CCameraAdvancedSettingsDlg::OnCheckHideExecCommand()
 {
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_HIDE_EXEC_COMMAND);
-	::EnterCriticalSection(&m_pDoc->m_csExecCommand);
-	m_pDoc->m_bHideExecCommand = pCheck->GetCheck() > 0;
-	::LeaveCriticalSection(&m_pDoc->m_csExecCommand);
+	if (UpdateData(TRUE))
+		m_pDoc->m_bHideExecCommand = m_bHideExecCommand;
 }
 
 void CCameraAdvancedSettingsDlg::OnCheckWaitExecCommand()
 {
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_WAIT_EXEC_COMMAND);
-	::EnterCriticalSection(&m_pDoc->m_csExecCommand);
-	m_pDoc->m_bWaitExecCommand = pCheck->GetCheck() > 0;
-	::LeaveCriticalSection(&m_pDoc->m_csExecCommand);
+	if (UpdateData(TRUE))
+		m_pDoc->m_bWaitExecCommand = m_bWaitExecCommand;
+}
+
+void CCameraAdvancedSettingsDlg::OnButtonVlcPlaySound()
+{
+	// Check whether VLC is installed
+	CString sVlcDir = ::GetRegistryStringValue(HKEY_LOCAL_MACHINE, _T("Software\\VideoLAN\\VLC"), _T("InstallDir")); // 32 bit vlc
+	if (sVlcDir.IsEmpty())
+		sVlcDir = ::GetRegistryStringValue(HKEY_LOCAL_MACHINE, _T("Software\\VideoLAN\\VLC"), _T("InstallDir"), KEY_WOW64_64KEY); // 64 bit vlc
+	if (sVlcDir.IsEmpty())
+	{
+		CTaskDialog dlg(_T("<a href=\"https://www.videolan.org/\">www.videolan.org</a>"),
+						_T("Please install VLC media player from:"),
+						_T("VLC media player missing"),
+						TDCBF_OK_BUTTON);
+		dlg.SetMainIcon(TD_ERROR_ICON);
+		dlg.DoModal(::AfxGetMainFrame()->GetSafeHwnd());
+	}
+	else
+	{
+		// Prompt for audio file
+		CNoVistaFileDlg fd(	TRUE,
+							_T(""),
+							_T(""),
+							OFN_FILEMUSTEXIST | OFN_HIDEREADONLY, // hides the Read Only check box
+							_T("All Files (*.*)|*.*||"));
+		CString sDlgTitle(ML_STRING(1848, "Choose Audio File"));
+		fd.m_ofn.lpstrTitle = sDlgTitle;
+		if (fd.DoModal() == IDOK)
+		{
+			// Fill executable & params
+			sVlcDir.TrimRight(_T('\\'));
+			m_sExecCommand = sVlcDir + _T("\\vlc.exe");
+			m_sExecParams.Format(_T("-I dummy --dummy-quiet --play-and-exit --no-loop --no-repeat \"%s\""), fd.GetPathName());
+			::EnterCriticalSection(&m_pDoc->m_csExecCommand);
+			m_pDoc->m_sExecCommand = m_sExecCommand;
+			m_pDoc->m_sExecParams = m_sExecParams;
+			::LeaveCriticalSection(&m_pDoc->m_csExecCommand);
+
+			// Fill flags and mode
+			m_pDoc->m_bHideExecCommand = m_bHideExecCommand = TRUE;
+			m_pDoc->m_bWaitExecCommand = m_bWaitExecCommand = TRUE;
+			m_pDoc->m_nExecCommandMode = m_nExecCommandMode = 0;
+			m_pDoc->m_bExecCommand = m_bExecCommand = TRUE;
+
+			// Update data from vars to view
+			UpdateData(FALSE);
+		}
+	}
 }
 
 #endif
