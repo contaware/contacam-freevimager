@@ -3802,7 +3802,7 @@ void CBatchProcDlg::OnButtonListLoad()
 	CNoVistaFileDlg fd(	TRUE,
 						_T("txt"),
 						_T(""),
-						OFN_HIDEREADONLY, // Hides the Read Only check box
+						OFN_FILEMUSTEXIST | OFN_HIDEREADONLY, // file must exist and hide the read-only check box
 						_T("Text Files (*.txt)|*.txt||"));
 	if (fd.DoModal() == IDOK)
 	{

@@ -970,7 +970,7 @@ void CCameraAdvancedSettingsDlg::OnButtonVlcPlaySound()
 		CNoVistaFileDlg fd(	TRUE,
 							_T(""),
 							_T(""),
-							OFN_FILEMUSTEXIST | OFN_HIDEREADONLY, // hides the Read Only check box
+							OFN_FILEMUSTEXIST | OFN_HIDEREADONLY, // file must exist and hide the read-only check box
 							_T("All Files (*.*)|*.*||"));
 		CString sDlgTitle(ML_STRING(1848, "Choose Audio File"));
 		fd.m_ofn.lpstrTitle = sDlgTitle;

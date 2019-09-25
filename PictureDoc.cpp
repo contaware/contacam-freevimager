@@ -6133,7 +6133,7 @@ void CPictureDoc::OnEditPasteIntoFile()
 		CNoVistaFileDlg fd(	TRUE,
 						_T("txt"),
 						_T(""),
-						OFN_HIDEREADONLY, // Hides the Read Only check box
+						OFN_FILEMUSTEXIST | OFN_HIDEREADONLY, // file must exist and hide the read-only check box
 						_T("Text Files (*.txt)|*.txt||"));
 		if (fd.DoModal() == IDOK)
 		{	
@@ -9189,16 +9189,17 @@ BOOL CPictureDoc::CopyDelCrop(BOOL bShowMessageBoxOnError, BOOL bCopy, BOOL bDel
 		{	
 			CString sCroppedFileName;
 			int nID;
-			BOOL bReadOnly = !::HasWriteAccess(m_sFileName); 
-			if (bReadOnly)
+			if (!::HasWriteAccess(m_sFileName))
 				nID = IDYES;
 			else
 				nID = ::AfxMessageBox(ML_STRING(1327, "Do You Want To Save The Cropped Image To A New File?"), MB_YESNOCANCEL);
 			if (nID == IDYES)
 			{
 				// Display the Save As Dialog
+				// Note: the OFN_OVERWRITEPROMPT flag makes no sense here
+				//       because below we fail when attempting to overwrite
 				TCHAR szFileName[MAX_PATH];
-				CNoVistaFileDlg dlgFile(FALSE);
+				CNoVistaFileDlg dlgFile(FALSE, NULL, NULL, OFN_HIDEREADONLY);
 				sCroppedFileName = m_sFileName;
 				int index = sCroppedFileName.ReverseFind(_T('.'));	
 				if (index > 0)
@@ -9221,7 +9222,7 @@ BOOL CPictureDoc::CopyDelCrop(BOOL bShowMessageBoxOnError, BOOL bCopy, BOOL bDel
 				if (dlgFile.DoModal() == IDOK)
 				{
 					sCroppedFileName = szFileName;
-					if (bReadOnly && sCroppedFileName == m_sFileName)
+					if (sCroppedFileName.CompareNoCase(m_sFileName) == 0)
 					{
 						::AfxMessageBox(ML_STRING(1275, "Cannot save to ourself"), MB_OK | MB_ICONSTOP);
 						GetView()->ForceCursor(FALSE);

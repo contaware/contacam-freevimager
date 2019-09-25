@@ -967,7 +967,7 @@ void CXmpDlg::OnButtonXmpload()
 	CNoVistaFileDlg fd(	TRUE,
 						_T("xmp"),
 						_T(""),
-						OFN_HIDEREADONLY, // Hides the Read Only check box
+						OFN_FILEMUSTEXIST | OFN_HIDEREADONLY, // file must exist and hide the read-only check box
 						_T("Xmp Files (*.xmp)|*.xmp||"));
 	fd.m_ofn.lpstrInitialDir = InitDir;
 	if (fd.DoModal() == IDOK)

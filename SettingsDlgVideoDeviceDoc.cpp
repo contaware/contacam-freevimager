@@ -450,7 +450,7 @@ void CSettingsDlgVideoDeviceDoc::OnButtonCertSsl()
 	CNoVistaFileDlg fd(	TRUE,
 						_T("crt"),
 						m_sMicroApacheCertFileSSL,
-						OFN_FILEMUSTEXIST | OFN_HIDEREADONLY,
+						OFN_FILEMUSTEXIST | OFN_HIDEREADONLY, // file must exist and hide the read-only check box
 						_T("Cert Files (*.crt)|*.crt||"));
 	if (fd.DoModal() == IDOK)
 	{
@@ -468,7 +468,7 @@ void CSettingsDlgVideoDeviceDoc::OnButtonKeySsl()
 	CNoVistaFileDlg fd(	TRUE,
 						_T("key"),
 						m_sMicroApacheKeyFileSSL,
-						OFN_FILEMUSTEXIST | OFN_HIDEREADONLY,
+						OFN_FILEMUSTEXIST | OFN_HIDEREADONLY, // file must exist and hide the read-only check box
 						_T("Key Files (*.key)|*.key||"));
 	if (fd.DoModal() == IDOK)
 	{
