@@ -568,7 +568,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 
 		// Execute Command
 		if (m_pDoc->m_bExecCommand && m_pDoc->m_nExecCommandMode == 1)
-			m_pDoc->ExecCommand(TRUE, FirstTime, sVideoFileName, sGIFFileName);
+			m_pDoc->ExecCommand(FirstTime, sVideoFileName, sGIFFileName);
 
 		// Increment saves count and store settings
 		nMovDetSavesCount++;
@@ -1093,7 +1093,7 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 
 		// Execute Command
 		if (m_pDoc->m_bExecCommand && m_pDoc->m_nExecCommandMode == 3)
-			m_pDoc->ExecCommand(TRUE, m_Time, sVideoFileName);
+			m_pDoc->ExecCommand(m_Time, sVideoFileName);
 	}
 
 	// Set task completion time
@@ -1174,7 +1174,7 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	//            program is fast enough to avoid that the passed live
 	//            snapshots get overwritten with the next shot!
 	if (m_pDoc->m_bExecCommand && m_pDoc->m_nExecCommandMode == 2)
-		m_pDoc->ExecCommand(TRUE, m_Time, sLiveFileName, sLiveThumbFileName);
+		m_pDoc->ExecCommand(m_Time, sLiveFileName, sLiveThumbFileName);
 
 	// We need the History jpgs to make the video file inside the snapshot video thread
 	// (history jpgs are deleted in snapshot video thread)
@@ -1757,7 +1757,7 @@ BOOL CVideoDeviceDoc::AudioListen(	LPBYTE pData, DWORD dwSizeInBytes,
 		return FALSE;
 }
 
-void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, BOOL b1SecTick)
+void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, const CTime& Time, BOOL b1SecTick)
 {
 	BOOL bSoftwareDetectionMovement = FALSE;
 	int nDetectionLevel = m_nDetectionLevel; // use local var
@@ -1946,36 +1946,42 @@ end_of_software_detection:
 			// Set flag
 			m_bDetectingMinLengthMovement = TRUE;
 
+			// Common var
+			CString sSavedJpegRec;
+
 			// Send E-Mail
 			if (m_bSendMailRecording)
 			{
 				if (m_AttachmentType == ATTACHMENT_NONE)
 				{
-					CTime RefTime = CTime::GetCurrentTime();
-					DWORD dwRefUpTime = ::timeGetTime();
-					CTime Time = CalcTime(pDib->GetUpTime(), RefTime, dwRefUpTime);
 					CTimeSpan TimeDiff = Time - m_MovDetLastMailTime;
-					if (TimeDiff.GetTotalSeconds() >= (LONGLONG)m_nMovDetSendMailSecBetweenMsg &&
-						CVideoDeviceDoc::SendMail(m_SendMailConfiguration, GetAssignedDeviceName(), Time, _T("REC")))
-						m_MovDetLastMailTime = Time;
+					if (TimeDiff.GetTotalSeconds() >= (LONGLONG)m_nMovDetSendMailSecBetweenMsg)
+					{
+						if (CVideoDeviceDoc::SendMail(m_SendMailConfiguration, GetAssignedDeviceName(), Time, _T("REC")))
+							m_MovDetLastMailTime = Time;
+					}
 				}
 				else if (	m_AttachmentType == ATTACHMENT_JPG			||
 							m_AttachmentType == ATTACHMENT_JPG_VIDEO	||
 							m_AttachmentType == ATTACHMENT_JPG_GIF)
 				{
-					CTime RefTime = CTime::GetCurrentTime();
-					DWORD dwRefUpTime = ::timeGetTime();
-					CTime Time = CalcTime(pDib->GetUpTime(), RefTime, dwRefUpTime);
 					CTimeSpan TimeDiff = Time - m_MovDetLastJPGMailTime;
-					if (TimeDiff.GetTotalSeconds() >= (LONGLONG)m_nMovDetSendMailSecBetweenMsg &&
-						CVideoDeviceDoc::SendMail(m_SendMailConfiguration, GetAssignedDeviceName(), Time, _T("REC"), _T(""), SaveJpegMail(pDib, RefTime, dwRefUpTime)))
-						m_MovDetLastJPGMailTime = Time;
+					if (TimeDiff.GetTotalSeconds() >= (LONGLONG)m_nMovDetSendMailSecBetweenMsg)
+					{
+						sSavedJpegRec = SaveJpegRec(pDib, Time);
+						if (CVideoDeviceDoc::SendMail(m_SendMailConfiguration, GetAssignedDeviceName(), Time, _T("REC"), _T(""), sSavedJpegRec))
+							m_MovDetLastJPGMailTime = Time;
+					}
 				}
 			}
 
 			// Execute Command
 			if (m_bExecCommand && m_nExecCommandMode == 0)
-				ExecCommand();
+			{
+				if (sSavedJpegRec.IsEmpty())
+					sSavedJpegRec = SaveJpegRec(pDib, Time);
+				ExecCommand(Time, sSavedJpegRec);
+			}
 		}
 	}
 
@@ -2030,8 +2036,7 @@ end_of_software_detection:
 		ClearNewestFrameList();
 }
 
-void CVideoDeviceDoc::ExecCommand(BOOL bReplaceVars/*=FALSE*/,
-								CTime Time/*=CTime(0)*/,
+void CVideoDeviceDoc::ExecCommand(const CTime& Time,
 								const CString& sFullFileName/*=_T("")*/,
 								const CString& sSmallFileName/*=_T("")*/)
 {
@@ -2060,24 +2065,21 @@ void CVideoDeviceDoc::ExecCommand(BOOL bReplaceVars/*=FALSE*/,
 	{
 		// Replace variables
 		CString sExecParams = m_sExecParams;
-		if (bReplaceVars)
-		{
-			CString sSecond, sMinute, sHour, sDay, sMonth, sYear, sMovDetSavesCount;
-			sSecond.Format(_T("%02d"), Time.GetSecond());
-			sMinute.Format(_T("%02d"), Time.GetMinute());
-			sHour.Format(_T("%02d"), Time.GetHour());
-			sDay.Format(_T("%02d"), Time.GetDay());
-			sMonth.Format(_T("%02d"), Time.GetMonth());
-			sYear.Format(_T("%04d"), Time.GetYear());
-			sExecParams.Replace(_T("%sec%"), sSecond);
-			sExecParams.Replace(_T("%min%"), sMinute);
-			sExecParams.Replace(_T("%hour%"), sHour);
-			sExecParams.Replace(_T("%day%"), sDay);
-			sExecParams.Replace(_T("%month%"), sMonth);
-			sExecParams.Replace(_T("%year%"), sYear);
-			sExecParams.Replace(_T("%full%"), sFullFileName);
-			sExecParams.Replace(_T("%small%"), sSmallFileName);
-		}
+		CString sSecond, sMinute, sHour, sDay, sMonth, sYear, sMovDetSavesCount;
+		sSecond.Format(_T("%02d"), Time.GetSecond());
+		sMinute.Format(_T("%02d"), Time.GetMinute());
+		sHour.Format(_T("%02d"), Time.GetHour());
+		sDay.Format(_T("%02d"), Time.GetDay());
+		sMonth.Format(_T("%02d"), Time.GetMonth());
+		sYear.Format(_T("%04d"), Time.GetYear());
+		sExecParams.Replace(_T("%sec%"), sSecond);
+		sExecParams.Replace(_T("%min%"), sMinute);
+		sExecParams.Replace(_T("%hour%"), sHour);
+		sExecParams.Replace(_T("%day%"), sDay);
+		sExecParams.Replace(_T("%month%"), sMonth);
+		sExecParams.Replace(_T("%year%"), sYear);
+		sExecParams.Replace(_T("%full%"), sFullFileName);
+		sExecParams.Replace(_T("%small%"), sSmallFileName);
 		
 		// Execute command
 		//
@@ -4998,40 +5000,6 @@ void CVideoDeviceDoc::OpenNetVideoDevice(CHostPortDlg* pDlg)
 		ConnectRtsp();
 }
 
-CString CVideoDeviceDoc::MakeJpegManualSnapshotFileName(const CTime& Time)
-{
-	CString sBaseYearMonthDayDir;
-
-	// Snapshot time
-	CString sTime = Time.Format(_T("%Y_%m_%d_%H_%M_%S"));
-
-	// Create directory
-	CreateBaseYearMonthDaySubDir(m_sRecordAutoSaveDir, Time, _T(""), sBaseYearMonthDayDir);
-
-	// Return file name
-	if (sBaseYearMonthDayDir.IsEmpty())
-		return _T("manualshot_") + sTime + _T(".jpg");
-	else
-		return sBaseYearMonthDayDir + _T("\\") + _T("manualshot_") + sTime + _T(".jpg");
-}
-
-CString CVideoDeviceDoc::MakeJpegMailSnapshotFileName(const CTime& Time)
-{
-	CString sBaseYearMonthDayDir;
-
-	// Snapshot time
-	CString sTime = Time.Format(_T("%Y_%m_%d_%H_%M_%S"));
-
-	// Create directory
-	CreateBaseYearMonthDaySubDir(m_sRecordAutoSaveDir, Time, _T(""), sBaseYearMonthDayDir);
-
-	// Return file name
-	if (sBaseYearMonthDayDir.IsEmpty())
-		return _T("mailshot_") + sTime + _T(".jpg");
-	else
-		return sBaseYearMonthDayDir + _T("\\") + _T("mailshot_") + sTime + _T(".jpg");
-}
-
 void CVideoDeviceDoc::WaveInitFormat(WORD wCh, DWORD dwSampleRate, WORD wBitsPerSample, LPWAVEFORMATEX pWaveFormat)
 {
 	if (pWaveFormat)
@@ -7301,7 +7269,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 			pDib->FreeUserList();
 
 		// Do Motion Detection Processing
-		MovementDetectionProcessing(pDib, b1SecTick);
+		MovementDetectionProcessing(pDib, CurrentTime, b1SecTick);
 
 		// Copy to Clipboard
 		if (m_bDoEditCopy)
@@ -7572,8 +7540,16 @@ BOOL CVideoDeviceDoc::EditCopy(CDib* pDib, const CTime& Time)
 
 void CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 {
-	// Make FileName
-	CString sFileName = MakeJpegManualSnapshotFileName(Time);
+	// Create directory
+	CString sBaseYearMonthDayDir;
+	CreateBaseYearMonthDaySubDir(m_sRecordAutoSaveDir, Time, _T(""), sBaseYearMonthDayDir);
+
+	// Make File Name
+	CString sFileName;
+	if (sBaseYearMonthDayDir.IsEmpty())
+		sFileName = _T("manualshot_") + Time.Format(_T("%Y_%m_%d_%H_%M_%S")) + _T(".jpg");
+	else
+		sFileName = sBaseYearMonthDayDir + _T("\\") + _T("manualshot_") + Time.Format(_T("%Y_%m_%d_%H_%M_%S")) + _T(".jpg");
 
 	// Do not overwrite existing because of below PopupNotificationWnd()
 	if (::IsExistingFile(sFileName))
@@ -7610,17 +7586,18 @@ void CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 		::AfxGetMainFrame()->PopupNotificationWnd(APPNAME_NOEXT, ML_STRING(1850, "Save Failed!"), 0);
 }
 
-CString CVideoDeviceDoc::SaveJpegMail(CDib* pDib, const CTime& RefTime, DWORD dwRefUpTime)
+CString CVideoDeviceDoc::SaveJpegRec(CDib* pDib, const CTime& Time)
 {
-	// Check
-	if (!pDib || !pDib->IsValid())
-		return _T("");
+	// Create directory
+	CString sBaseYearMonthDayDir;
+	CreateBaseYearMonthDaySubDir(m_sRecordAutoSaveDir, Time, _T(""), sBaseYearMonthDayDir);
 
-	// Time
-	CTime Time = CalcTime(pDib->GetUpTime(), RefTime, dwRefUpTime);
-
-	// Make FileName
-	CString sFileName = MakeJpegMailSnapshotFileName(Time);
+	// Make File Name
+	CString sFileName;
+	if (sBaseYearMonthDayDir.IsEmpty())
+		sFileName = _T("rec_") + Time.Format(_T("%Y_%m_%d_%H_%M_%S")) + _T(".jpg");
+	else
+		sFileName = sBaseYearMonthDayDir + _T("\\") + _T("rec_") + Time.Format(_T("%Y_%m_%d_%H_%M_%S")) + _T(".jpg");
 
 	// Do not overwrite previous save, use it.
 	// Attention: it's ok to call this function several times per second,
@@ -7628,12 +7605,15 @@ CString CVideoDeviceDoc::SaveJpegMail(CDib* pDib, const CTime& RefTime, DWORD dw
 	if (::IsExistingFile(sFileName))
 		return sFileName;
 
+	// Get uptime
+	DWORD dwUpTime = pDib->GetUpTime();
+
 	// Dib
 	CDib Dib(*pDib);
 
 	// Add frame time
 	if (m_bShowFrameTime)
-		AddFrameTime(&Dib, RefTime, dwRefUpTime, m_szFrameAnnotation, m_nRefFontSize, m_bShowFrameUptime);
+		AddFrameTime(&Dib, Time, dwUpTime, m_szFrameAnnotation, m_nRefFontSize, m_bShowFrameUptime);
 
 	// Add "NO DONATION" tag
 	if (g_DonorEmailValidateThread.m_bNoDonation)
@@ -7641,7 +7621,7 @@ CString CVideoDeviceDoc::SaveJpegMail(CDib* pDib, const CTime& RefTime, DWORD dw
 
 	// Save to JPEG File
 	CMJPEGEncoder MJPEGEncoder;
-	if (CVideoDeviceDoc::SaveJpegFast(&Dib, &MJPEGEncoder, sFileName, DEFAULT_SNAPSHOT_COMPR_QUALITY))
+	if (CVideoDeviceDoc::SaveJpegFast(&Dib, &MJPEGEncoder, sFileName, GOOD_SNAPSHOT_COMPR_QUALITY))
 		return sFileName;
 	else
 		return _T("");

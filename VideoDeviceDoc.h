@@ -709,14 +709,13 @@ public:
 	static BOOL SaveJpegFast(CDib* pDib, CMJPEGEncoder* pMJPEGEncoder, const CString& sFileName, int quality);
 
 	// Recording
-	void MovementDetectionProcessing(CDib* pDib, BOOL b1SecTick);
+	void MovementDetectionProcessing(CDib* pDib, const CTime& Time, BOOL b1SecTick);
 	BOOL MovementDetector(CDib* pDib, int nDetectionLevel);
 	void FreeMovementDetector();
 	void HideDetectionZones();
 
 	// Command execution
-	void ExecCommand(BOOL bReplaceVars = FALSE,
-					CTime Time = CTime(0),
+	void ExecCommand(const CTime& Time,
 					const CString& sFullFileName = _T(""),
 					const CString& sSmallFileName = _T(""));
 
@@ -785,9 +784,7 @@ protected:
 	void Snapshot(CDib* pDib, const CTime& Time);
 	BOOL EditCopy(CDib* pDib, const CTime& Time);
 	void EditSnapshot(CDib* pDib, const CTime& Time);
-	CString SaveJpegMail(CDib* pDib, const CTime& RefTime, DWORD dwRefUpTime);
-	CString MakeJpegManualSnapshotFileName(const CTime& Time);
-	CString MakeJpegMailSnapshotFileName(const CTime& Time);
+	CString SaveJpegRec(CDib* pDib, const CTime& Time);
 	__forceinline int SummRectArea(	CDib* pDib,
 									int width,
 									int posX,
