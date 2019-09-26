@@ -5019,6 +5019,7 @@ void CVideoDeviceDoc::OnUpdateCaptureRecord(CCmdUI* pCmdUI)
 	// Note: ON_COMMAND(ID_CAPTURE_RECORD, OnCaptureRecord) is never called,
 	//       CVideoDeviceChildFrame::OnToolbarDropDown() is responsible for the menu popup
 	pCmdUI->Enable();
+	pCmdUI->SetCheck(m_nDetectionLevel != 0 ? 1 : 0);
 }
 
 void CVideoDeviceDoc::OnMovDetSensitivity0()
@@ -8085,6 +8086,7 @@ void CVideoDeviceDoc::OnUpdateEditZone(CCmdUI* pCmdUI)
 	// Note: ON_COMMAND(ID_EDIT_ZONE, OnEditZone) is never called,
 	//       CVideoDeviceChildFrame::OnToolbarDropDown() is responsible for the menu popup
 	pCmdUI->Enable();
+	pCmdUI->SetCheck(m_nShowEditDetectionZones != 0 ? 1 : 0);
 }
 
 void CVideoDeviceDoc::OnEditZonesHide()
