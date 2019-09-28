@@ -12,6 +12,7 @@
 #include "ResizingDlg.h"
 #include "BrowseDlg.h"
 #include "NoVistaFileDlg.h"
+#include <shlwapi.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -164,7 +165,8 @@ BEGIN_MESSAGE_MAP(CCameraAdvancedSettingsDlg, CDialog)
 	ON_EN_CHANGE(IDC_EDIT_PARAMS, OnChangeEditParams)
 	ON_BN_CLICKED(IDC_CHECK_HIDE_EXEC_COMMAND, OnCheckHideExecCommand)
 	ON_BN_CLICKED(IDC_CHECK_WAIT_EXEC_COMMAND, OnCheckWaitExecCommand)
-	ON_BN_CLICKED(IDC_BUTTON_VLC_PLAYSOUND, OnButtonVlcPlaySound)
+	ON_BN_CLICKED(IDC_BUTTON_PLAY_SOUND, OnButtonPlaySound)
+	ON_BN_CLICKED(IDC_BUTTON_FTP_UPLOAD, OnButtonFtpUpload)
 END_MESSAGE_MAP()
 
 void CCameraAdvancedSettingsDlg::UpdateTitle()
@@ -949,7 +951,7 @@ void CCameraAdvancedSettingsDlg::OnCheckWaitExecCommand()
 		m_pDoc->m_bWaitExecCommand = m_bWaitExecCommand;
 }
 
-void CCameraAdvancedSettingsDlg::OnButtonVlcPlaySound()
+void CCameraAdvancedSettingsDlg::OnButtonPlaySound()
 {
 	// Check whether VLC is installed
 	CString sVlcDir = ::GetRegistryStringValue(HKEY_LOCAL_MACHINE, _T("Software\\VideoLAN\\VLC"), _T("InstallDir")); // 32 bit vlc
@@ -959,7 +961,7 @@ void CCameraAdvancedSettingsDlg::OnButtonVlcPlaySound()
 	{
 		CTaskDialog dlg(_T("<a href=\"https://www.videolan.org/\">www.videolan.org</a>"),
 						_T("Please install VLC media player from:"),
-						_T("VLC media player missing"),
+						_T("VLC missing"),
 						TDCBF_OK_BUTTON);
 		dlg.SetMainIcon(TD_ERROR_ICON);
 		dlg.DoModal(::AfxGetMainFrame()->GetSafeHwnd());
@@ -995,6 +997,82 @@ void CCameraAdvancedSettingsDlg::OnButtonVlcPlaySound()
 			UpdateData(FALSE);
 		}
 	}
+}
+
+void CCameraAdvancedSettingsDlg::OnButtonFtpUpload()
+{
+	// Check whether curl.exe is available
+	TCHAR szCurlPath[MAX_PATH];
+	_tcscpy(szCurlPath, _T("curl.exe"));
+	if (!::PathFindOnPath(szCurlPath, NULL))
+	{
+		/*
+		The %windir%\System32 directory is reserved for 64-bit applications on 64-bit Windows.
+		Most DLL file names were not changed when 64-bit versions of the DLLs were created,
+		so 32-bit versions of the DLLs are stored in a different directory. WOW64 (Windows 32-bit
+		on Windows 64-bit) hides this difference by using a file system redirector.
+
+		Whenever a 32-bit application attempts to access %windir%\System32 the access is redirected to
+		%windir%\SysWOW64.
+		
+		32-bit applications can access the native system directory by substituting %windir%\Sysnative
+		for %windir%\System32. WOW64 recognizes Sysnative as a special alias used to indicate that
+		the file system should not redirect the access. This mechanism is flexible and easy to use,
+		therefore, it is the recommended mechanism to bypass file system redirection. Note that 64-bit
+		applications cannot use the Sysnative alias as it is a virtual directory not a real one.
+
+		https://docs.microsoft.com/en-us/windows/win32/winprog64/file-system-redirector
+
+		On a 64-bit Windows it often happens that there is only a 64-bit curl.exe version in
+		%windir%\System32 and nothing under %windir%\SysWOW64.
+		We are a 32-bit application and our PathFindOnPath() calls do not find curl.exe under
+		the redirected %windir%\System32 (note that only %windir%\System32 is in the PATH).
+
+		The 64-bit Windows 10 since 1803 has both 32-bit and 64-bit curl.exe correctly installed.
+		*/
+		TCHAR szSysNative[MAX_PATH];
+		::GetWindowsDirectory(szSysNative, MAX_PATH);
+		TCHAR LastChar = _T('\0');
+		int nLength = _tcslen(szSysNative);
+		if (nLength > 0)
+			LastChar = szSysNative[nLength - 1];
+		if (LastChar != _T('\\'))
+			_tcscat(szSysNative, (LPCTSTR)_T("\\"));
+		_tcscat(szSysNative, (LPCTSTR)_T("Sysnative"));
+		const TCHAR* OtherDirs[] = { szSysNative, NULL };
+		if (!::PathFindOnPath(szCurlPath, OtherDirs))
+		{
+			TCHAR szSystem32Path[MAX_PATH];
+			::GetSystemDirectory(szSystem32Path, MAX_PATH);
+			CString sCurlMsg;
+			sCurlMsg.Format(_T("<a href=\"https://curl.haxx.se/\">curl.haxx.se</a>\n1. Download binary and unzip\n2. From bin copy curl.exe and curl-ca-bundle.crt to %s"), szSystem32Path);
+			CTaskDialog dlg(sCurlMsg,
+							_T("Upgrade to Windows 10 (1803) or get curl from:"),
+							_T("Curl missing"),
+							TDCBF_OK_BUTTON,
+							TDF_ENABLE_HYPERLINKS | TDF_USE_COMMAND_LINKS | TDF_SIZE_TO_CONTENT);
+			dlg.SetMainIcon(TD_ERROR_ICON);
+			dlg.DoModal(::AfxGetMainFrame()->GetSafeHwnd());
+			return;
+		}
+	}
+
+	// Fill executable & params
+	m_sExecCommand = szCurlPath;
+	m_sExecParams = _T("--ftp-create-dirs --insecure --ssl --user \"USER:PASSWORD\" --upload-file \"%full%\" \"ftp://HOST/\" --upload-file \"%small%\" \"ftp://HOST/\"");
+	::EnterCriticalSection(&m_pDoc->m_csExecCommand);
+	m_pDoc->m_sExecCommand = m_sExecCommand;
+	m_pDoc->m_sExecParams = m_sExecParams;
+	::LeaveCriticalSection(&m_pDoc->m_csExecCommand);
+
+	// Fill flags and mode
+	m_pDoc->m_bHideExecCommand = m_bHideExecCommand = TRUE;
+	m_pDoc->m_bWaitExecCommand = m_bWaitExecCommand = FALSE;
+	m_pDoc->m_nExecCommandMode = m_nExecCommandMode = 1;
+	m_pDoc->m_bExecCommand = m_bExecCommand = TRUE;
+
+	// Update data from vars to view
+	UpdateData(FALSE);
 }
 
 #endif

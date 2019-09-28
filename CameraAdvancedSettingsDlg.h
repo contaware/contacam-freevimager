@@ -96,7 +96,8 @@ protected:
 	afx_msg void OnChangeEditParams();
 	afx_msg void OnCheckHideExecCommand();
 	afx_msg void OnCheckWaitExecCommand();
-	afx_msg void OnButtonVlcPlaySound();
+	afx_msg void OnButtonPlaySound();
+	afx_msg void OnButtonFtpUpload();
 	DECLARE_MESSAGE_MAP()
 };
 
