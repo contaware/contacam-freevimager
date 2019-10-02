@@ -24,6 +24,8 @@
 #define EXAMPLE_CONTROL_ONLINE_PAGE						_T("https://www.contaware.com/contacamexamplecontrol/")
 #define EXAMPLE_COMMANDS_ONLINE_PAGE					_T("https://www.contaware.com/contacamexamplecmd/")
 #define IPCAM_INSTABILITY_ONLINE_PAGE					_T("https://www.contaware.com/contacamipcaminstability/")
+#define PLATERECOGNIZER_ONLINE_PAGE						_T("https://platerecognizer.com/")
+#define PLATERECOGNIZER_REGIONS_ONLINE_PAGE				_T("http://docs.platerecognizer.com/#regions-supported")
 #else
 #define APPNAME_EXT										_T("FreeVimager.exe")
 #define APPNAME_NOEXT									_T("FreeVimager")

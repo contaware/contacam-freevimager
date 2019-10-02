@@ -55,6 +55,7 @@ protected:
 	static void SetRevertedPos(CSliderCtrl* pSliderCtrl, int nPos);
 	BOOL IsEmpty(int nIDC);
 	void UpdateVideoQualityInfo();
+	CString GetCurlPath();
 
 	// Dialog functions
 	virtual void DoDataExchange(CDataExchange* pDX);
@@ -98,6 +99,8 @@ protected:
 	afx_msg void OnCheckWaitExecCommand();
 	afx_msg void OnButtonPlaySound();
 	afx_msg void OnButtonFtpUpload();
+	afx_msg void OnButtonPlateRecognizer();
+	afx_msg void OnButtonBackupFiles();
 	DECLARE_MESSAGE_MAP()
 };
 

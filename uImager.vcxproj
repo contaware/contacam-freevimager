@@ -857,6 +857,7 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="PlateRecognizerDlg.cpp" />
     <ClCompile Include="PostDelayedMessage.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -1318,6 +1319,7 @@
     <ClInclude Include="PictureDoc.h" />
     <ClInclude Include="PicturePrintPreviewView.h" />
     <ClInclude Include="PictureView.h" />
+    <ClInclude Include="PlateRecognizerDlg.h" />
     <ClInclude Include="PostDelayedMessage.h" />
     <ClInclude Include="PreviewFileDlg.h" />
     <ClInclude Include="PrintPreviewScaleEdit.h" />

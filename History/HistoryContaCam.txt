@@ -8,6 +8,7 @@ CONTACAM HISTORY
   changes are now saved immediately
 - Removed the rudimentary scheduler in favour of a more flexible way
   to control ContaCam through the Windows Task Scheduler
+- Added example buttons for typical external commands
 - Web interface multiple selection deletion
   (sponsored by Grün Stadt Zürich)
 - In web interface we have now only one camera source obscure button

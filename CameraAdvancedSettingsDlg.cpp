@@ -11,7 +11,9 @@
 #include "DxVideoInputDlg.h"
 #include "ResizingDlg.h"
 #include "BrowseDlg.h"
+#include "PlateRecognizerDlg.h"
 #include "NoVistaFileDlg.h"
+#include "BrowseDlg.h"
 #include <shlwapi.h>
 
 #ifdef _DEBUG
@@ -167,6 +169,8 @@ BEGIN_MESSAGE_MAP(CCameraAdvancedSettingsDlg, CDialog)
 	ON_BN_CLICKED(IDC_CHECK_WAIT_EXEC_COMMAND, OnCheckWaitExecCommand)
 	ON_BN_CLICKED(IDC_BUTTON_PLAY_SOUND, OnButtonPlaySound)
 	ON_BN_CLICKED(IDC_BUTTON_FTP_UPLOAD, OnButtonFtpUpload)
+	ON_BN_CLICKED(IDC_BUTTON_PLATERECOGNIZER, OnButtonPlateRecognizer)
+	ON_BN_CLICKED(IDC_BUTTON_BACKUP_FILES, OnButtonBackupFiles)
 END_MESSAGE_MAP()
 
 void CCameraAdvancedSettingsDlg::UpdateTitle()
@@ -999,9 +1003,8 @@ void CCameraAdvancedSettingsDlg::OnButtonPlaySound()
 	}
 }
 
-void CCameraAdvancedSettingsDlg::OnButtonFtpUpload()
+CString CCameraAdvancedSettingsDlg::GetCurlPath()
 {
-	// Check whether curl.exe is available
 	TCHAR szCurlPath[MAX_PATH];
 	_tcscpy(szCurlPath, _T("curl.exe"));
 	if (!::PathFindOnPath(szCurlPath, NULL))
@@ -1014,7 +1017,7 @@ void CCameraAdvancedSettingsDlg::OnButtonFtpUpload()
 
 		Whenever a 32-bit application attempts to access %windir%\System32 the access is redirected to
 		%windir%\SysWOW64.
-		
+
 		32-bit applications can access the native system directory by substituting %windir%\Sysnative
 		for %windir%\System32. WOW64 recognizes Sysnative as a special alias used to indicate that
 		the file system should not redirect the access. This mechanism is flexible and easy to use,
@@ -1053,26 +1056,121 @@ void CCameraAdvancedSettingsDlg::OnButtonFtpUpload()
 							TDF_ENABLE_HYPERLINKS | TDF_USE_COMMAND_LINKS | TDF_SIZE_TO_CONTENT);
 			dlg.SetMainIcon(TD_ERROR_ICON);
 			dlg.DoModal(::AfxGetMainFrame()->GetSafeHwnd());
-			return;
+			return _T("");
 		}
 	}
+	return szCurlPath;
+}
 
-	// Fill executable & params
-	m_sExecCommand = szCurlPath;
-	m_sExecParams = _T("--ftp-create-dirs --insecure --ssl --user \"USER:PASSWORD\" --upload-file \"%full%\" \"ftp://HOST/\" --upload-file \"%small%\" \"ftp://HOST/\"");
-	::EnterCriticalSection(&m_pDoc->m_csExecCommand);
-	m_pDoc->m_sExecCommand = m_sExecCommand;
-	m_pDoc->m_sExecParams = m_sExecParams;
-	::LeaveCriticalSection(&m_pDoc->m_csExecCommand);
+void CCameraAdvancedSettingsDlg::OnButtonFtpUpload()
+{
+	CString sCurlPath = GetCurlPath();
+	if (!sCurlPath.IsEmpty())
+	{
+		// Fill executable & params
+		m_sExecCommand = sCurlPath;
+		m_sExecParams = _T("--ftp-create-dirs --insecure --ssl --user \"USER:PASSWORD\" --upload-file \"%full%\" \"ftp://HOST/\" --upload-file \"%small%\" \"ftp://HOST/\"");
+		::EnterCriticalSection(&m_pDoc->m_csExecCommand);
+		m_pDoc->m_sExecCommand = m_sExecCommand;
+		m_pDoc->m_sExecParams = m_sExecParams;
+		::LeaveCriticalSection(&m_pDoc->m_csExecCommand);
 
-	// Fill flags and mode
-	m_pDoc->m_bHideExecCommand = m_bHideExecCommand = TRUE;
-	m_pDoc->m_bWaitExecCommand = m_bWaitExecCommand = FALSE;
-	m_pDoc->m_nExecCommandMode = m_nExecCommandMode = 1;
-	m_pDoc->m_bExecCommand = m_bExecCommand = TRUE;
+		// Fill flags and mode
+		m_pDoc->m_bHideExecCommand = m_bHideExecCommand = TRUE;
+		m_pDoc->m_bWaitExecCommand = m_bWaitExecCommand = FALSE;
+		m_pDoc->m_nExecCommandMode = m_nExecCommandMode = 1;
+		m_pDoc->m_bExecCommand = m_bExecCommand = TRUE;
 
-	// Update data from vars to view
-	UpdateData(FALSE);
+		// Update data from vars to view
+		UpdateData(FALSE);
+	}
+}
+
+void CCameraAdvancedSettingsDlg::OnButtonPlateRecognizer()
+{
+	CString sCurlPath = GetCurlPath();
+	if (!sCurlPath.IsEmpty())
+	{
+		CPlateRecognizerDlg dlg;
+		if (dlg.DoModal() == IDOK)
+		{
+			// Set executable
+			m_sExecCommand = sCurlPath;
+
+			// Parse regions
+			CString sRegions = dlg.m_sRegions;
+			CStringArray Regions;
+			int nPos;
+			while ((nPos = sRegions.Find(_T(' '))) >= 0)
+			{
+				CString sSingleRegion = sRegions.Left(nPos);
+				if (!sSingleRegion.IsEmpty())
+					Regions.Add(sSingleRegion);
+				sRegions = sRegions.Mid(nPos + 1);
+			}
+			if (!sRegions.IsEmpty())
+				Regions.Add(sRegions);
+
+			// Fill params
+			m_sExecParams = _T("-F \"upload=@%full%\"");
+			for (int n = 0; n < Regions.GetCount(); n++)
+				m_sExecParams += _T(" -F regions=") + Regions[n];
+			if (dlg.m_nMode == 0)
+				m_sExecParams += _T(" -H \"Authorization: Token ") + dlg.m_sToken + _T("\" https://api.platerecognizer.com/v1/plate-reader");
+			else
+				m_sExecParams += _T(" ") + dlg.m_sUrl;
+			
+			// Update executable & params
+			::EnterCriticalSection(&m_pDoc->m_csExecCommand);
+			m_pDoc->m_sExecCommand = m_sExecCommand;
+			m_pDoc->m_sExecParams = m_sExecParams;
+			::LeaveCriticalSection(&m_pDoc->m_csExecCommand);
+
+			// Fill flags and mode
+			m_pDoc->m_bHideExecCommand = m_bHideExecCommand = TRUE;
+			m_pDoc->m_bWaitExecCommand = m_bWaitExecCommand = FALSE;
+			m_pDoc->m_nExecCommandMode = m_nExecCommandMode = 0;
+			m_pDoc->m_bExecCommand = m_bExecCommand = TRUE;
+
+			// Update data from vars to view
+			UpdateData(FALSE);
+		}
+	}
+}
+
+void CCameraAdvancedSettingsDlg::OnButtonBackupFiles()
+{
+	TCHAR szCmdPath[MAX_PATH];
+	_tcscpy(szCmdPath, _T("cmd.exe"));
+	if (::PathFindOnPath(szCmdPath, NULL))
+	{
+		// Prompt for destination folder
+		CString sDst;
+		CBrowseDlg dlg(::AfxGetMainFrame(), &sDst, ML_STRING(1359, "Select the Destination Directory"), TRUE);
+		if (dlg.DoModal() == IDOK)
+		{
+			sDst.TrimRight(_T('\\'));
+			if (!sDst.IsEmpty())
+			{
+				// Fill executable & params
+				m_sExecCommand = szCmdPath;
+				m_sExecParams.Format(_T("/C \"mkdir \"%s\\%%year%%\\%%month%%\\%%day%%\" & copy \"%%full%%\" \"%s\\%%year%%\\%%month%%\\%%day%%\" & copy \"%%small%%\" \"%s\\%%year%%\\%%month%%\\%%day%%\"\""), sDst, sDst, sDst);
+				::EnterCriticalSection(&m_pDoc->m_csExecCommand);
+				m_pDoc->m_sExecCommand = m_sExecCommand;
+				m_pDoc->m_sExecParams = m_sExecParams;
+				::LeaveCriticalSection(&m_pDoc->m_csExecCommand);
+
+				// Fill flags and mode
+				m_pDoc->m_bHideExecCommand = m_bHideExecCommand = TRUE;
+				m_pDoc->m_bWaitExecCommand = m_bWaitExecCommand = FALSE;
+				m_pDoc->m_nExecCommandMode = m_nExecCommandMode = 1;
+				m_pDoc->m_bExecCommand = m_bExecCommand = TRUE;
+
+				// Update data from vars to view
+				UpdateData(FALSE);
+			}
+		}
+	}
 }
 
 #endif

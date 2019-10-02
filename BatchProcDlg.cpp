@@ -1829,10 +1829,13 @@ void CBatchProcDlg::OnRadioOutputFile()
 
 void CBatchProcDlg::OnSyslinkTextInputDir(NMHDR* pNMHDR, LRESULT* pResult)
 {
-	::ShellExecute(	NULL,
-					_T("open"),
-					m_sSrc,
-					NULL, NULL, SW_SHOWNORMAL);
+	if (!m_sSrc.IsEmpty())
+	{
+		::ShellExecute(	NULL,
+						_T("open"),
+						m_sSrc,
+						NULL, NULL, SW_SHOWNORMAL);
+	}
 	*pResult = 0;
 }
 
@@ -1840,9 +1843,9 @@ void CBatchProcDlg::OnButtonSrcDir()
 {
 	if (UpdateData(TRUE))
 	{
-		CBrowseDlg dlg(	this,
+		CBrowseDlg dlg(	::AfxGetMainFrame(),
 						&m_sSrc,
-						_T("Select the Source Directory"));
+						ML_STRING(1358, "Select the Source Directory"));
 		dlg.DoModal();
 		UpdateData(FALSE);
 	}
@@ -1850,10 +1853,13 @@ void CBatchProcDlg::OnButtonSrcDir()
 
 void CBatchProcDlg::OnSyslinkTextOutputDir(NMHDR* pNMHDR, LRESULT* pResult)
 {
-	::ShellExecute(	NULL,
-					_T("open"),
-					m_sDst,
-					NULL, NULL, SW_SHOWNORMAL);
+	if (!m_sDst.IsEmpty())
+	{
+		::ShellExecute(	NULL,
+						_T("open"),
+						m_sDst,
+						NULL, NULL, SW_SHOWNORMAL);
+	}
 	*pResult = 0;
 }
 
@@ -1861,9 +1867,9 @@ void CBatchProcDlg::OnButtonDstDir()
 {
 	if (UpdateData(TRUE))
 	{
-		CBrowseDlg dlg(	this,
+		CBrowseDlg dlg(	::AfxGetMainFrame(),
 						&m_sEditDst,
-						_T("Select the Destination Directory"),
+						ML_STRING(1359, "Select the Destination Directory"),
 						TRUE);
 		if (dlg.DoModal() == IDOK)
 		{
@@ -1880,10 +1886,13 @@ void CBatchProcDlg::OnButtonDstDir()
 
 void CBatchProcDlg::OnSyslinkTextOutputFile(NMHDR* pNMHDR, LRESULT* pResult)
 {
-	::ShellExecute(	NULL,
-					_T("open"),
-					m_sOutputFileName,
-					NULL, NULL, SW_SHOWNORMAL);
+	if (!m_sOutputFileName.IsEmpty())
+	{
+		::ShellExecute(	NULL,
+						_T("open"),
+						m_sOutputFileName,
+						NULL, NULL, SW_SHOWNORMAL);
+	}
 	*pResult = 0;
 }
 

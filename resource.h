@@ -111,6 +111,7 @@
 #define IDD_CAMERABASICSETTINGS         304
 #define IDD_RENAME                      305
 #define IDD_DELETE_CAM_FOLDERS          306
+#define IDD_PLATERECOGNIZER             307
 #define IDS_MULTILANG_341               341
 #define IDS_MULTILANG_342               342
 #define IDS_MULTILANG_343               343
@@ -1386,8 +1387,10 @@
 #define IDC_CHECK_REMOVE_IPTC           1357
 #define IDS_MULTILANG_1358              1358
 #define IDC_CHECK_REMOVE_OTHER_APPSECTIONS 1358
+#define IDS_STRING1358                  1358
 #define IDS_MULTILANG_1359              1359
 #define IDC_CHECK_REMOVE_JFIF           1359
+#define IDS_STRING1359                  1359
 #define IDS_MULTILANG_1360              1360
 #define IDC_DIB0                        1360
 #define IDS_MULTILANG_1361              1361
@@ -2976,6 +2979,15 @@
 #define IDC_BUTTON_CREATE_BAT           2581
 #define IDC_BUTTON_PLAY_SOUND           2582
 #define IDC_BUTTON_FTP_UPLOAD           2583
+#define IDC_BUTTON_PLATERECOGNIZER      2584
+#define IDC_BUTTON_BACKUP_FILES         2585
+#define IDC_SYSLINK_PLATERECOGNIZER_HELP 2586
+#define IDC_SYSLINK_PLATERECOGNIZER_REGIONS_HELP 2587
+#define IDC_CHECK_PLATERECOGNIZER_CLOUD 2588
+#define IDC_CHECK_PLATERECOGNIZER_ONPREMISE 2589
+#define IDC_EDIT_PLATERECOGNIZER_TOKEN  2590
+#define IDC_EDIT_PLATERECOGNIZER_URL    2591
+#define IDC_EDIT_PLATERECOGNIZER_REGIONS 2592
 #define ID_EDIT_ROTATE_FLIP             32778
 #define ID_FILE_SELECTTWAINSOURCE       32779
 #define ID_FILE_ACQUIRE                 32780
@@ -3225,7 +3237,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1503
 #define _APS_NEXT_COMMAND_VALUE         33556
-#define _APS_NEXT_CONTROL_VALUE         2584
+#define _APS_NEXT_CONTROL_VALUE         2593
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
