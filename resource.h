@@ -105,6 +105,7 @@
 #define IDI_JPG                         296
 #define IDI_TIF                         297
 #define IDI_PNG                         298
+#define IDD_FTP_UPLOAD                  299
 #define IDI_PCX                         299
 #define IDD_SETTINGS_VIDEODEVICEDOC     300
 #define IDI_EMF                         300
@@ -2930,7 +2931,13 @@
 #define IDC_STATIC2490                  2490
 #define IDC_STATIC2491                  2491
 #define IDC_STATIC2493                  2493
+#define IDC_STATIC2494                  2494
 #define IDC_STATIC2495                  2495
+#define IDC_STATIC2496                  2496
+#define IDC_STATIC2497                  2497
+#define IDC_STATIC2498                  2498
+#define IDC_STATIC2499                  2499
+#define IDC_STATIC2500                  2500
 #define IDC_CHECK_WEBSERVER             2501
 #define IDC_RADIO_MOVDET                2519
 #define IDC_RADIO_MANUAL                2521

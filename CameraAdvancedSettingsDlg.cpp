@@ -12,6 +12,7 @@
 #include "ResizingDlg.h"
 #include "BrowseDlg.h"
 #include "PlateRecognizerDlg.h"
+#include "FTPUploadDlg.h"
 #include "NoVistaFileDlg.h"
 #include "BrowseDlg.h"
 #include <shlwapi.h>
@@ -1067,22 +1068,26 @@ void CCameraAdvancedSettingsDlg::OnButtonFtpUpload()
 	CString sCurlPath = GetCurlPath();
 	if (!sCurlPath.IsEmpty())
 	{
-		// Fill executable & params
-		m_sExecCommand = sCurlPath;
-		m_sExecParams = _T("--ftp-create-dirs --insecure --ssl --user \"USER:PASSWORD\" --upload-file \"%full%\" \"ftp://HOST/\" --upload-file \"%small%\" \"ftp://HOST/\"");
-		::EnterCriticalSection(&m_pDoc->m_csExecCommand);
-		m_pDoc->m_sExecCommand = m_sExecCommand;
-		m_pDoc->m_sExecParams = m_sExecParams;
-		::LeaveCriticalSection(&m_pDoc->m_csExecCommand);
+		CFTPUploadDlg dlg;
+		if (dlg.DoModal() == IDOK)
+		{
+			// Fill executable & params
+			m_sExecCommand = sCurlPath;
+			m_sExecParams.Format(_T("--ftp-create-dirs --insecure --ssl --user \"%s:%s\" --upload-file \"%%full%%\" \"ftp://%s/%%year%%/%%month%%/%%day%%/\" --upload-file \"%%small%%\" \"ftp://%s/%%year%%/%%month%%/%%day%%/\""), dlg.m_sUsername, dlg.m_sPassword, dlg.m_sHost, dlg.m_sHost);
+			::EnterCriticalSection(&m_pDoc->m_csExecCommand);
+			m_pDoc->m_sExecCommand = m_sExecCommand;
+			m_pDoc->m_sExecParams = m_sExecParams;
+			::LeaveCriticalSection(&m_pDoc->m_csExecCommand);
 
-		// Fill flags and mode
-		m_pDoc->m_bHideExecCommand = m_bHideExecCommand = TRUE;
-		m_pDoc->m_bWaitExecCommand = m_bWaitExecCommand = FALSE;
-		m_pDoc->m_nExecCommandMode = m_nExecCommandMode = 1;
-		m_pDoc->m_bExecCommand = m_bExecCommand = TRUE;
+			// Fill flags and mode
+			m_pDoc->m_bHideExecCommand = m_bHideExecCommand = TRUE;
+			m_pDoc->m_bWaitExecCommand = m_bWaitExecCommand = FALSE;
+			m_pDoc->m_nExecCommandMode = m_nExecCommandMode = 1;
+			m_pDoc->m_bExecCommand = m_bExecCommand = TRUE;
 
-		// Update data from vars to view
-		UpdateData(FALSE);
+			// Update data from vars to view
+			UpdateData(FALSE);
+		}
 	}
 }
 
