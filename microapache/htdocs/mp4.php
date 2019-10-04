@@ -104,6 +104,7 @@ if (isset($_GET['backuri']))
 echo "<a href=\"javascript:;\" onclick=\"playRate(0.25);\">0.25x</a>&nbsp;";
 echo "<a href=\"javascript:;\" onclick=\"playRate(0.5);\">0.5x</a>&nbsp;";
 echo "<a href=\"javascript:;\" onclick=\"playRate(1.0);\">1.0x</a>&nbsp;";
+echo "<a href=\"javascript:;\" onclick=\"playRate(2.0);\">2.0x</a>&nbsp;";
 echo "<a style=\"font-size: 16px;\" href=\"download.php?file=" . urlencode($filename) . "\" target=\"_top\">&#x1f4be;</a>";
 echo "</span>\n";
 echo "</div>\n";
