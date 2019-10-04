@@ -6,11 +6,13 @@ CONTACAM HISTORY
 - Frame Annotation possibility with the new toolbar button
 - More intuitive detection zones/mask toolbar button. Single zones
   changes are now saved immediately
+- Configurable frame interval for the daily summary video
 - Removed the rudimentary scheduler in favour of a more flexible way
   to control ContaCam through the Windows Task Scheduler
 - Added example buttons for typical external commands
 - Web interface multiple selection deletion
   (sponsored by Grün Stadt Zürich)
+- The web interface video player has now also a 2.0x play speed
 - In web interface we have now only one camera source obscure button
   (like in ContaCam program)
 - Updated installer with an improved closing logic for Apache server
