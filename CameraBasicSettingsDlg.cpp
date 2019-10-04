@@ -40,6 +40,8 @@ void CCameraBasicSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_NAME, m_sName);
 	DDX_Radio(pDX, IDC_RADIO_MOVDET, m_nUsage);
 	DDX_Check(pDX, IDC_CHECK_SNAPSHOT_HISTORY_VIDEO, m_bSnapshotHistoryVideo);
+	DDX_Text(pDX, IDC_EDIT_SNAPSHOT_HISTORY_RATE, m_nSnapshotHistoryRate);
+	DDV_MinMaxInt(pDX, m_nSnapshotHistoryRate, 0, INT_MAX);
 	DDX_Check(pDX, IDC_CHECK_AUTORUN, m_bAutorun);
 	DDX_Check(pDX, IDC_CHECK_FULL_STRETCH, m_bCheckFullStretch);
 	DDX_Check(pDX, IDC_CHECK_TRASHCOMMAND, m_bCheckTrashCommand);
@@ -157,6 +159,7 @@ BOOL CCameraBasicSettingsDlg::OnInitDialog()
 	else
 		m_nUsage = 1;
 	m_bSnapshotHistoryVideo = m_pDoc->m_bSnapshotHistoryVideo;
+	m_nSnapshotHistoryRate = m_pDoc->m_nSnapshotHistoryRate;
 	if (CVideoDeviceDoc::AutorunGetDeviceKey(m_pDoc->GetDevicePathName()) != _T(""))
 		m_bAutorun = TRUE;
 	else
@@ -252,9 +255,11 @@ void CCameraBasicSettingsDlg::EnableDisableAllCtrls(BOOL bEnable)
 	pCheck->EnableWindow(bEnable);
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO);
 	pCheck->EnableWindow(bEnable);
+	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_SNAPSHOT_HISTORY_RATE);
+	pEdit->EnableWindow(bEnable);
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_AUTORUN);
 	pCheck->EnableWindow(bEnable);
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_NAME);
+	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_NAME);
 	pEdit->EnableWindow(bEnable);
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_LANGUAGE);
 	pComboBox->EnableWindow(bEnable);
@@ -571,6 +576,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 
 	// Summary video
 	m_pDoc->m_bSnapshotHistoryVideo = m_bSnapshotHistoryVideo;
+	m_pDoc->m_nSnapshotHistoryRate = m_nSnapshotHistoryRate;
 
 	// Keep files for
 	switch (m_nComboKeepFor)

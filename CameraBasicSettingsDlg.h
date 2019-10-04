@@ -32,6 +32,7 @@ public:
 	CString m_sMinDiskFreePercent;
 	int		m_nUsage;
 	BOOL	m_bSnapshotHistoryVideo;
+	int     m_nSnapshotHistoryRate;
 	BOOL	m_bAutorun;
 	BOOL	m_bCheckFullStretch;
 	BOOL	m_bCheckTrashCommand;
