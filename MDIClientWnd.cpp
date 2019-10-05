@@ -316,12 +316,7 @@ void CMDIClientWnd::ViewWeb(CString sHost)
 			sUrl.Format(_T("http://%s:%d"), sHost, ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort);
 		sUrl = ::UrlEncode(sUrl, FALSE);
 		BeginWaitCursor();
-		::ShellExecute(	NULL,
-						_T("open"),
-						sUrl,
-						NULL,
-						NULL,
-						SW_SHOWNORMAL);
+		::ShellExecute(NULL, _T("open"), sUrl, NULL, NULL, SW_SHOWNORMAL);
 		EndWaitCursor();
 	}
 }

@@ -1280,10 +1280,7 @@ BOOL CAboutDlg::OnInitDialog()
 
 void CAboutDlg::OnSyslinkHomepage(NMHDR* pNMHDR, LRESULT* pResult)
 {
-	::ShellExecute(	NULL,
-					_T("open"),
-					MYCOMPANY_PAGE,
-					NULL, NULL, SW_SHOWNORMAL);
+	::ShellExecute(NULL, _T("open"), MYCOMPANY_PAGE, NULL, NULL, SW_SHOWNORMAL);
 	*pResult = 0;
 }
 
@@ -1351,19 +1348,13 @@ void CUImagerApp::OnAppLicense()
 // Show the internet site about FAQs
 void CUImagerApp::OnAppFaq() 
 {
-	::ShellExecute(	NULL,
-					_T("open"),
-					FAQ_ONLINE_PAGE,
-					NULL, NULL, SW_SHOWNORMAL);
+	::ShellExecute(NULL, _T("open"), FAQ_ONLINE_PAGE, NULL, NULL, SW_SHOWNORMAL);
 }
 
 // Show the internet site of the Manual
 void CUImagerApp::OnAppManual() 
 {
-	::ShellExecute(	NULL,
-					_T("open"),
-					MANUAL_ONLINE_PAGE,
-					NULL, NULL, SW_SHOWNORMAL);
+	::ShellExecute(NULL, _T("open"), MANUAL_ONLINE_PAGE, NULL, NULL, SW_SHOWNORMAL);
 }
 
 // Popup Settings Dialog
@@ -4580,12 +4571,7 @@ void CUImagerApp::OnSettingsBrowseConfigLogFiles()
 			sConfigFilesDir = CString(szDrive) + CString(szDir);
 		}
 	}
-	::ShellExecute(	NULL,
-					_T("open"),
-					sConfigFilesDir,
-					NULL,
-					NULL,
-					SW_SHOWNORMAL);
+	::ShellExecute(NULL, _T("open"), sConfigFilesDir, NULL, NULL, SW_SHOWNORMAL);
 }
 
 #ifdef VIDEODEVICEDOC

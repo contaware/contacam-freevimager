@@ -753,10 +753,7 @@ void CHostPortDlg::SaveSettings()
 
 void CHostPortDlg::OnSyslinkIPCamInstabilityHelp(NMHDR* pNMHDR, LRESULT* pResult)
 {
-	::ShellExecute(	NULL,
-					_T("open"),
-					IPCAM_INSTABILITY_ONLINE_PAGE,
-					NULL, NULL, SW_SHOWNORMAL);
+	::ShellExecute(NULL, _T("open"), IPCAM_INSTABILITY_ONLINE_PAGE, NULL, NULL, SW_SHOWNORMAL);
 	*pResult = 0;
 }
 

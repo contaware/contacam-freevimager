@@ -5371,12 +5371,7 @@ void CVideoDeviceDoc::VideoFormatDialog()
 		if (m_nNetworkDeviceTypeMode >= URL_RTSP)
 		{
 			BeginWaitCursor();
-			::ShellExecute(	NULL,
-							_T("open"),
-							::UrlEncode(_T("http://") + m_sGetFrameVideoHost, FALSE),
-							NULL,
-							NULL,
-							SW_SHOWNORMAL);
+			::ShellExecute(NULL, _T("open"), ::UrlEncode(_T("http://") + m_sGetFrameVideoHost, FALSE), NULL, NULL, SW_SHOWNORMAL);
 			EndWaitCursor();
 		}
 		else if (	m_nNetworkDeviceTypeMode == GENERIC_SP	||
@@ -5390,12 +5385,7 @@ void CVideoDeviceDoc::VideoFormatDialog()
 			else
 				sUrl.Format(_T("http://%s"), m_sGetFrameVideoHost);
 			BeginWaitCursor();
-			::ShellExecute(	NULL,
-							_T("open"),
-							::UrlEncode(sUrl, FALSE),
-							NULL,
-							NULL,
-							SW_SHOWNORMAL);
+			::ShellExecute(NULL, _T("open"), ::UrlEncode(sUrl, FALSE), NULL, NULL, SW_SHOWNORMAL);
 			EndWaitCursor();
 		}
 		else
@@ -8322,12 +8312,7 @@ void CVideoDeviceDoc::OnViewWeb()
 		}
 		sUrl = ::UrlEncode(sUrl, FALSE);
 		BeginWaitCursor();
-		::ShellExecute(NULL,
-			_T("open"),
-			sUrl,
-			NULL,
-			NULL,
-			SW_SHOWNORMAL);
+		::ShellExecute(NULL, _T("open"), sUrl, NULL, NULL, SW_SHOWNORMAL);
 		EndWaitCursor();
 	}
 }
@@ -8336,12 +8321,7 @@ void CVideoDeviceDoc::OnViewFiles()
 {
 	CString sBaseYearMonthDayDir;
 	CreateBaseYearMonthDaySubDir(m_sRecordAutoSaveDir, CTime::GetCurrentTime(), _T(""), sBaseYearMonthDayDir);
-	::ShellExecute(NULL,
-		_T("open"),
-		sBaseYearMonthDayDir,
-		NULL,
-		NULL,
-		SW_SHOWNORMAL);
+	::ShellExecute(NULL, _T("open"), sBaseYearMonthDayDir, NULL, NULL, SW_SHOWNORMAL);
 }
 
 void CVideoDeviceDoc::OnEditCopy() 

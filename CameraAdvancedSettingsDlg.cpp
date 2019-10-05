@@ -649,8 +649,7 @@ audio-capture devices.
 */
 void CCameraAdvancedSettingsDlg::OnAudioMixer()
 {
-	::ShellExecute(NULL, NULL,
-		_T("control.exe"), _T("mmsys.cpl,,1"), NULL, SW_SHOWNORMAL);
+	::ShellExecute(NULL, NULL, _T("control.exe"), _T("mmsys.cpl,,1"), NULL, SW_SHOWNORMAL);
 }
 
 int CCameraAdvancedSettingsDlg::GetRevertedPos(CSliderCtrl* pSliderCtrl)
@@ -815,10 +814,7 @@ void CCameraAdvancedSettingsDlg::OnButtonThumbSize()
 
 void CCameraAdvancedSettingsDlg::OnSyslinkControlHelp(NMHDR* pNMHDR, LRESULT* pResult)
 {
-	::ShellExecute(	NULL,
-					_T("open"),
-					EXAMPLE_CONTROL_ONLINE_PAGE,
-					NULL, NULL, SW_SHOWNORMAL);
+	::ShellExecute(NULL, _T("open"), EXAMPLE_CONTROL_ONLINE_PAGE, NULL, NULL, SW_SHOWNORMAL);
 	*pResult = 0;
 }
 
@@ -927,10 +923,7 @@ void CCameraAdvancedSettingsDlg::OnChangeEditExe()
 
 void CCameraAdvancedSettingsDlg::OnSyslinkParamsHelp(NMHDR* pNMHDR, LRESULT* pResult)
 {
-	::ShellExecute(	NULL,
-					_T("open"),
-					EXAMPLE_COMMANDS_ONLINE_PAGE,
-					NULL, NULL, SW_SHOWNORMAL);
+	::ShellExecute(NULL, _T("open"), EXAMPLE_COMMANDS_ONLINE_PAGE, NULL, NULL, SW_SHOWNORMAL);
 	*pResult = 0;
 }
 

@@ -29,10 +29,7 @@ void CLicenseDlg::DoDataExchange(CDataExchange* pDX)
 
 void CLicenseDlg::OnSyslinkHomepage(NMHDR* pNMHDR, LRESULT* pResult)
 {
-	::ShellExecute(	NULL,
-					_T("open"),
-					MYCOMPANY_PAGE,
-					NULL, NULL, SW_SHOWNORMAL);
+	::ShellExecute(NULL, _T("open"), MYCOMPANY_PAGE, NULL, NULL, SW_SHOWNORMAL);
 	*pResult = 0;
 }
 

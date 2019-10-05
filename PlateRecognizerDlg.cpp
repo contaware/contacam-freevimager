@@ -62,10 +62,7 @@ BOOL CPlateRecognizerDlg::OnInitDialog()
 
 void CPlateRecognizerDlg::OnSyslinkPlateRecognizerHelp(NMHDR *pNMHDR, LRESULT *pResult)
 {
-	::ShellExecute(	NULL,
-					_T("open"),
-					PLATERECOGNIZER_ONLINE_PAGE,
-					NULL, NULL, SW_SHOWNORMAL);
+	::ShellExecute(NULL, _T("open"), PLATERECOGNIZER_ONLINE_PAGE, NULL, NULL, SW_SHOWNORMAL);
 	*pResult = 0;
 }
 
@@ -87,10 +84,7 @@ void CPlateRecognizerDlg::OnCheckPlateRecognizerOnPremise()
 
 void CPlateRecognizerDlg::OnSyslinkPlateRecognizerRegionsHelp(NMHDR *pNMHDR, LRESULT *pResult)
 {
-	::ShellExecute(	NULL,
-					_T("open"),
-					PLATERECOGNIZER_REGIONS_ONLINE_PAGE,
-					NULL, NULL, SW_SHOWNORMAL);
+	::ShellExecute(NULL, _T("open"), PLATERECOGNIZER_REGIONS_ONLINE_PAGE, NULL, NULL, SW_SHOWNORMAL);
 	*pResult = 0;
 }
 

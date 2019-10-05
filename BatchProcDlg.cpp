@@ -1830,12 +1830,7 @@ void CBatchProcDlg::OnRadioOutputFile()
 void CBatchProcDlg::OnSyslinkTextInputDir(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	if (!m_sSrc.IsEmpty())
-	{
-		::ShellExecute(	NULL,
-						_T("open"),
-						m_sSrc,
-						NULL, NULL, SW_SHOWNORMAL);
-	}
+		::ShellExecute(NULL, _T("open"), m_sSrc, NULL, NULL, SW_SHOWNORMAL);
 	*pResult = 0;
 }
 
@@ -1854,12 +1849,7 @@ void CBatchProcDlg::OnButtonSrcDir()
 void CBatchProcDlg::OnSyslinkTextOutputDir(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	if (!m_sDst.IsEmpty())
-	{
-		::ShellExecute(	NULL,
-						_T("open"),
-						m_sDst,
-						NULL, NULL, SW_SHOWNORMAL);
-	}
+		::ShellExecute(NULL, _T("open"), m_sDst, NULL, NULL, SW_SHOWNORMAL);
 	*pResult = 0;
 }
 
@@ -1887,12 +1877,7 @@ void CBatchProcDlg::OnButtonDstDir()
 void CBatchProcDlg::OnSyslinkTextOutputFile(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	if (!m_sOutputFileName.IsEmpty())
-	{
-		::ShellExecute(	NULL,
-						_T("open"),
-						m_sOutputFileName,
-						NULL, NULL, SW_SHOWNORMAL);
-	}
+		::ShellExecute(NULL, _T("open"), m_sOutputFileName, NULL, NULL, SW_SHOWNORMAL);
 	*pResult = 0;
 }
 
