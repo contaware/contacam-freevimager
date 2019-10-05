@@ -958,9 +958,10 @@ void CCameraAdvancedSettingsDlg::OnButtonPlaySound()
 	if (sVlcDir.IsEmpty())
 	{
 		CTaskDialog dlg(_T("<a href=\"https://www.videolan.org/\">www.videolan.org</a>"),
-						_T("Please install VLC media player from:"),
-						_T("VLC missing"),
-						TDCBF_OK_BUTTON);
+						ML_STRING(1911, "Please install VLC media player from:"),
+						ML_STRING(1910, "VLC missing"),
+						TDCBF_OK_BUTTON,
+						TDF_ENABLE_HYPERLINKS | TDF_USE_COMMAND_LINKS | TDF_SIZE_TO_CONTENT);
 		dlg.SetMainIcon(TD_ERROR_ICON);
 		dlg.DoModal(::AfxGetMainFrame()->GetSafeHwnd());
 	}
@@ -1042,10 +1043,12 @@ CString CCameraAdvancedSettingsDlg::GetCurlPath()
 			TCHAR szSystem32Path[MAX_PATH];
 			::GetSystemDirectory(szSystem32Path, MAX_PATH);
 			CString sCurlMsg;
-			sCurlMsg.Format(_T("<a href=\"https://curl.haxx.se/\">curl.haxx.se</a>\n1. Download binary and unzip\n2. From bin copy curl.exe and curl-ca-bundle.crt to %s"), szSystem32Path);
+			sCurlMsg.Format(_T("<a href=\"https://curl.haxx.se/\">curl.haxx.se</a>\n") +
+							ML_STRING(1915, "1. Download binary and unzip") + _T("\n") + 
+							ML_STRING(1916, "2. From bin copy curl.exe and curl-ca-bundle.crt to %s"), szSystem32Path);
 			CTaskDialog dlg(sCurlMsg,
-							_T("Upgrade to Windows 10 (1803) or get curl from:"),
-							_T("Curl missing"),
+							ML_STRING(1914, "Upgrade to Windows 10 (1803) or get curl from:"),
+							ML_STRING(1913, "Curl missing"),
 							TDCBF_OK_BUTTON,
 							TDF_ENABLE_HYPERLINKS | TDF_USE_COMMAND_LINKS | TDF_SIZE_TO_CONTENT);
 			dlg.SetMainIcon(TD_ERROR_ICON);

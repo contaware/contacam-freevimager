@@ -1329,7 +1329,8 @@ void CUImagerApp::OnAppLicense()
 			CTaskDialog dlg(ML_STRING(1738, "Please contact us with the support email received after the donation."),
 							ML_STRING(1737, "Provided email is unknown"),
 							APPNAME_NOEXT,
-							TDCBF_OK_BUTTON);
+							TDCBF_OK_BUTTON,
+							TDF_ENABLE_HYPERLINKS | TDF_USE_COMMAND_LINKS | TDF_SIZE_TO_CONTENT);
 			dlg.SetMainIcon(TD_ERROR_ICON);
 			dlg.DoModal();
 		}
@@ -1338,7 +1339,8 @@ void CUImagerApp::OnAppLicense()
 			CTaskDialog dlg(ML_STRING(1740, "Please connect to the internet and try again."),
 							ML_STRING(1739, "Provided email cannot be verified"),
 							APPNAME_NOEXT,
-							TDCBF_OK_BUTTON);
+							TDCBF_OK_BUTTON,
+							TDF_ENABLE_HYPERLINKS | TDF_USE_COMMAND_LINKS | TDF_SIZE_TO_CONTENT);
 			dlg.SetMainIcon(TD_ERROR_ICON);
 			dlg.DoModal();
 		}
