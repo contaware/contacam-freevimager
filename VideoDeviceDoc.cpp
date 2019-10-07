@@ -3958,9 +3958,9 @@ void CVideoDeviceDoc::SetDocumentTitle()
 			sFormat = GetDeviceFormat();
 		}
 
-		// Update Camera Advanced Settings Title
+		// Update Camera Advanced Settings Title and Recording Dir
 		if (m_pCameraAdvancedSettingsDlg)
-			m_pCameraAdvancedSettingsDlg->UpdateTitle();
+			m_pCameraAdvancedSettingsDlg->UpdateTitleAndDir();
 
 		// Set main title
 		if (!sWidthHeight.IsEmpty())

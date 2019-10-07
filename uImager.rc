@@ -1102,25 +1102,25 @@ BEGIN
     PUSHBUTTON      "",IDC_ANIMATEDGIF_SIZE,75,206,128,14
     COMBOBOX        IDC_COMBO_SNAPSHOT_RATE,75,243,128,204,CBS_DROPDOWNLIST | WS_TABSTOP
     PUSHBUTTON      "",IDC_BUTTON_THUMB_SIZE,75,260,128,14
-    CONTROL         "Externally set/schedule recording state/sensitivity <a>(?)</a>",IDC_SYSLINK_CONTROL_HELP,
-                    "SysLink",WS_TABSTOP,225,13,184,8
-    PUSHBUTTON      "Create .bat File",IDC_BUTTON_CREATE_BAT,225,25,184,16
-    CONTROL         "Execute on",IDC_EXEC_COMMAND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,64,58,10
-    COMBOBOX        IDC_EXEC_COMMAND_MODE,286,63,123,72,CBS_DROPDOWNLIST | WS_TABSTOP
-    EDITTEXT        IDC_EDIT_EXE,225,88,184,12,ES_AUTOHSCROLL
-    CONTROL         "Arguments <a>(?)</a>",IDC_SYSLINK_PARAMS_HELP,"SysLink",WS_TABSTOP,225,105,184,9
-    EDITTEXT        IDC_EDIT_PARAMS,225,115,184,62,ES_MULTILINE | WS_VSCROLL
+    CONTROL         "Externally set or schedule the recording state/sensitivity using the following batch file <a>(?)</a>",IDC_SYSLINK_CONTROL_HELP,
+                    "SysLink",WS_TABSTOP,225,13,184,18
+    EDITTEXT        IDC_EDIT_CONTROL_BATCH,225,33,184,27,ES_MULTILINE | ES_READONLY | WS_VSCROLL
+    CONTROL         "Execute on",IDC_EXEC_COMMAND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,83,58,10
+    COMBOBOX        IDC_EXEC_COMMAND_MODE,286,82,123,72,CBS_DROPDOWNLIST | WS_TABSTOP
+    EDITTEXT        IDC_EDIT_EXE,225,107,184,12,ES_AUTOHSCROLL
+    CONTROL         "Arguments <a>(?)</a>",IDC_SYSLINK_PARAMS_HELP,"SysLink",WS_TABSTOP,225,123,184,9
+    EDITTEXT        IDC_EDIT_PARAMS,225,133,184,51,ES_MULTILINE | WS_VSCROLL
     CONTROL         "Hide window of executed command",IDC_CHECK_HIDE_EXEC_COMMAND,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,198,129,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,203,129,10
     CONTROL         "Only one instance of executed command",IDC_CHECK_WAIT_EXEC_COMMAND,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,210,145,10
-    PUSHBUTTON      "Play Sound",IDC_BUTTON_PLAY_SOUND,225,238,90,16
-    PUSHBUTTON      "Plate Recognizer",IDC_BUTTON_PLATERECOGNIZER,319,238,90,16
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,215,145,10
+    PUSHBUTTON      "Play Sound",IDC_BUTTON_PLAY_SOUND,225,239,90,16
+    PUSHBUTTON      "Plate Recognizer",IDC_BUTTON_PLATERECOGNIZER,319,239,90,16
     PUSHBUTTON      "Ftp Upload",IDC_BUTTON_FTP_UPLOAD,225,258,90,16
     PUSHBUTTON      "Backup Files",IDC_BUTTON_BACKUP_FILES,319,258,90,16
     LTEXT           "sec",IDC_STATIC2283,123,27,11,8
     GROUPBOX        "Video",IDC_STATIC2286,6,3,202,106
-    GROUPBOX        "Control",IDC_STATIC2291,218,3,198,43
+    GROUPBOX        "Control",IDC_STATIC2291,218,3,198,62
     LTEXT           "Drop shorter than",IDC_STATIC,13,41,61,11
     LTEXT           "sec",IDC_STATIC2292,123,41,11,8
     LTEXT           "Split longer than",IDC_STATIC,13,55,57,8
@@ -1132,13 +1132,13 @@ BEGIN
     LTEXT           "fps",IDC_STATIC2183,123,13,11,8
     GROUPBOX        "Audio",IDC_STATIC2157,6,116,202,55
     GROUPBOX        "Live Snapshot",IDC_STATIC2294,6,233,202,45
-    GROUPBOX        "Command",IDC_STATIC2295,218,53,198,225
+    GROUPBOX        "Command",IDC_STATIC2295,218,72,198,206
     LTEXT           "Quality",IDC_STATIC,75,191,24,8
     LTEXT           "Take each",IDC_STATIC2476,13,245,47,8
     LTEXT           "Thumbnail",IDC_STATIC2478,13,263,53,8
-    LTEXT           "%sec% %min% %hour% %day% %month% %year% %full% %small%",IDC_STATIC,225,179,184,17
-    LTEXT           "Program",IDC_STATIC,225,78,28,8
-    LTEXT           "Examples",IDC_STATIC,225,227,31,8
+    LTEXT           "%sec% %min% %hour% %day% %month% %year% %full% %small%",IDC_STATIC,225,185,184,17
+    LTEXT           "Program",IDC_STATIC,225,97,28,8
+    LTEXT           "Examples",IDC_STATIC,225,228,31,8
 END
 
 IDD_REDEYE DIALOGEX 0, 0, 223, 268
@@ -2115,14 +2115,14 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTI
 CAPTION "Ftp Upload"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    EDITTEXT        IDC_HOST_NAME,64,7,168,13,ES_AUTOHSCROLL
-    EDITTEXT        IDC_AUTH_USERNAME,64,27,168,13,ES_AUTOHSCROLL
-    EDITTEXT        IDC_AUTH_PASSWORD,64,47,168,13,ES_PASSWORD | ES_AUTOHSCROLL
-    DEFPUSHBUTTON   "OK",IDOK,127,69,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,189,69,50,14
-    LTEXT           "Password",IDC_STATIC2494,14,49,46,8
-    LTEXT           "Host Name",IDC_STATIC2498,14,9,46,8
-    LTEXT           "User Name",IDC_STATIC2500,14,29,46,8
+    EDITTEXT        IDC_HOST_NAME,64,7,170,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_AUTH_USERNAME,64,27,170,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_AUTH_PASSWORD,64,47,170,13,ES_PASSWORD | ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,122,69,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,184,69,50,14
+    LTEXT           "Password",IDC_STATIC2494,11,49,49,8
+    LTEXT           "Host Name",IDC_STATIC2498,11,9,49,8
+    LTEXT           "User Name",IDC_STATIC2500,11,29,49,8
 END
 
 IDD_SETTINGS_VIDEODEVICEDOC DIALOGEX 0, 0, 350, 262
@@ -2171,8 +2171,8 @@ BEGIN
     CONTROL         "Motion detection surveillance",IDC_RADIO_MOVDET,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,15,109,10
     CONTROL         "Continuous recording",IDC_RADIO_MANUAL,"Button",BS_AUTORADIOBUTTON,16,30,86,10
     CONTROL         "Daily summary video",IDC_CHECK_SNAPSHOT_HISTORY_VIDEO,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,15,82,10
-    EDITTEXT        IDC_EDIT_SNAPSHOT_HISTORY_RATE,236,29,29,12,ES_AUTOHSCROLL | ES_NUMBER
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,182,15,82,10
+    EDITTEXT        IDC_EDIT_SNAPSHOT_HISTORY_RATE,244,29,29,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Autostart\ncamera",IDC_CHECK_AUTORUN,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,359,14,47,27
     EDITTEXT        IDC_EDIT_NAME,152,65,254,13,ES_AUTOHSCROLL
     COMBOBOX        IDC_COMBO_LANGUAGE,152,99,56,222,CBS_DROPDOWNLIST | WS_TABSTOP
@@ -2210,8 +2210,8 @@ BEGIN
     GROUPBOX        "5. Email",IDC_STATIC,5,199,407,58
     LTEXT           "minimum time between recording event messages",IDC_STATIC,27,239,239,8
     LTEXT           "sec",IDC_STATIC2295,313,241,15,8
-    LTEXT           "sec",IDC_STATIC2296,270,31,15,8
-    LTEXT           "frame interval",IDC_STATIC,185,31,47,8
+    LTEXT           "sec",IDC_STATIC2296,278,31,15,8
+    LTEXT           "frame interval",IDC_STATIC,193,31,47,8
 END
 
 IDD_RENAME DIALOG 0, 0, 186, 47
@@ -2234,29 +2234,29 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,79,177,50,17
     PUSHBUTTON      "Sel All",IDC_BUTTON_LIST_SELECTALL,166,177,35,17
     PUSHBUTTON      "Sel None",IDC_BUTTON_LIST_SELECTNONE,208,177,35,17
-    LTEXT           "WARNING: videos and snapshots will be deleted to Recycle Bin",IDC_STATIC,7,163,236,8
+    LTEXT           "WARNING: videos and snapshots will be moved to the Recycle Bin",IDC_STATIC,7,163,236,8
 END
 
-IDD_PLATERECOGNIZER DIALOGEX 0, 0, 223, 169
+IDD_PLATERECOGNIZER DIALOGEX 0, 0, 222, 181
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Plate Recognizer"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "Plate Recognizer offers FREE Plans with high-accuracy license plate recognition in over 60 countries wordwide <a>(?)</a>",IDC_SYSLINK_PLATERECOGNIZER_HELP,
-                    "SysLink",WS_TABSTOP,7,5,210,17
-    CONTROL         "Cloud API",IDC_CHECK_PLATERECOGNIZER_CLOUD,"Button",BS_AUTORADIOBUTTON | WS_GROUP,7,28,85,10
+    CONTROL         "Plate Recognizer offers FREE Plans with high-accuracy license plate recognition in over 60 countries worldwide <a>(?)</a>",IDC_SYSLINK_PLATERECOGNIZER_HELP,
+                    "SysLink",WS_TABSTOP,7,6,209,27
+    CONTROL         "Cloud API",IDC_CHECK_PLATERECOGNIZER_CLOUD,"Button",BS_AUTORADIOBUTTON | WS_GROUP,7,38,85,10
     CONTROL         "On-Premise SDK",IDC_CHECK_PLATERECOGNIZER_ONPREMISE,
-                    "Button",BS_AUTORADIOBUTTON,7,62,82,10
-    EDITTEXT        IDC_EDIT_PLATERECOGNIZER_TOKEN,42,41,175,13,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_PLATERECOGNIZER_URL,42,76,175,13,ES_AUTOHSCROLL
-    LTEXT           "Regions (optional)",IDC_STATIC,7,99,68,8
-    EDITTEXT        IDC_EDIT_PLATERECOGNIZER_REGIONS,7,110,210,13,ES_AUTOHSCROLL
-    CONTROL         "2-letter country code separated by a space, like gb de it fr\nUSA and Australia can include the state, like us-ca au-qld <a>(?)</a>",IDC_SYSLINK_PLATERECOGNIZER_REGIONS_HELP,
-                    "SysLink",WS_TABSTOP,7,125,210,21
-    DEFPUSHBUTTON   "OK",IDOK,56,150,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,117,150,50,14
-    LTEXT           "Token",IDC_STATIC,18,43,22,8
-    LTEXT           "Url",IDC_STATIC,18,78,15,8
+                    "Button",BS_AUTORADIOBUTTON,7,72,82,10
+    EDITTEXT        IDC_EDIT_PLATERECOGNIZER_TOKEN,42,51,174,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_PLATERECOGNIZER_URL,42,86,174,13,ES_AUTOHSCROLL
+    LTEXT           "Regions (optional)",IDC_STATIC,7,110,68,8
+    EDITTEXT        IDC_EDIT_PLATERECOGNIZER_REGIONS,7,121,209,13,ES_AUTOHSCROLL
+    CONTROL         "2-letter country code separated by a space: gb de it fr\nUSA and Australia can include the state: us-ca au-qld <a>(?)</a>",IDC_SYSLINK_PLATERECOGNIZER_REGIONS_HELP,
+                    "SysLink",WS_TABSTOP,7,136,209,21
+    DEFPUSHBUTTON   "OK",IDOK,56,162,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,117,162,50,14
+    LTEXT           "Token",IDC_STATIC,18,53,22,8
+    LTEXT           "Url",IDC_STATIC,18,88,15,8
 END
 
 
@@ -2757,10 +2757,10 @@ BEGIN
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 239
-        VERTGUIDE, 14
+        VERTGUIDE, 11
         VERTGUIDE, 60
         VERTGUIDE, 64
-        VERTGUIDE, 232
+        VERTGUIDE, 234
         TOPMARGIN, 7
         BOTTOMMARGIN, 83
     END
@@ -2808,11 +2808,11 @@ BEGIN
     IDD_PLATERECOGNIZER, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 217
+        RIGHTMARGIN, 216
         VERTGUIDE, 18
         VERTGUIDE, 42
         TOPMARGIN, 7
-        BOTTOMMARGIN, 164
+        BOTTOMMARGIN, 176
         HORZGUIDE, 47
         HORZGUIDE, 82
     END

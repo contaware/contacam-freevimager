@@ -159,7 +159,6 @@ BEGIN_MESSAGE_MAP(CCameraAdvancedSettingsDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_THUMB_SIZE, OnButtonThumbSize)
 	ON_NOTIFY(NM_CLICK, IDC_SYSLINK_CONTROL_HELP, OnSyslinkControlHelp)
 	ON_NOTIFY(NM_RETURN, IDC_SYSLINK_CONTROL_HELP, OnSyslinkControlHelp)
-	ON_BN_CLICKED(IDC_BUTTON_CREATE_BAT, OnButtonCreateBatchFile)
 	ON_BN_CLICKED(IDC_EXEC_COMMAND, OnCheckExecCommand)
 	ON_CBN_SELCHANGE(IDC_EXEC_COMMAND_MODE, OnSelchangeExecCommandMode)
 	ON_EN_CHANGE(IDC_EDIT_EXE, OnChangeEditExe)
@@ -174,12 +173,24 @@ BEGIN_MESSAGE_MAP(CCameraAdvancedSettingsDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_BACKUP_FILES, OnButtonBackupFiles)
 END_MESSAGE_MAP()
 
-void CCameraAdvancedSettingsDlg::UpdateTitle()
+void CCameraAdvancedSettingsDlg::UpdateTitleAndDir()
 {
 	if (m_pDoc->GetDeviceName() != m_pDoc->GetAssignedDeviceName())
 		SetWindowText(m_pDoc->GetAssignedDeviceName() + _T(" (") + m_pDoc->GetDeviceName() + _T(")"));
 	else
 		SetWindowText(m_pDoc->GetDeviceName());
+
+	CEdit* pEditControlBatch = (CEdit*)GetDlgItem(IDC_EDIT_CONTROL_BATCH);
+	if (pEditControlBatch)
+	{
+		CString sCurrentControlBatch;
+		pEditControlBatch->GetWindowText(sCurrentControlBatch);
+		CString sRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
+		sRecordAutoSaveDir.TrimRight(_T('\\'));
+		CString sNewControlBatch = sRecordAutoSaveDir + _T("\\") + CAMERA_REC_SENSITIVITY_BATCH_FILENAME;
+		if (sCurrentControlBatch != sNewControlBatch)
+			pEditControlBatch->SetWindowText(sNewControlBatch);
+	}
 }
 
 BOOL CCameraAdvancedSettingsDlg::OnInitDialog() 
@@ -370,8 +381,8 @@ BOOL CCameraAdvancedSettingsDlg::OnInitDialog()
 	// Set Pointer to this
 	m_pDoc->m_pCameraAdvancedSettingsDlg = this;
 	
-	// Set title
-	UpdateTitle();
+	// Set title and recording dir
+	UpdateTitleAndDir();
 
 	// Set Timer
 	SetTimer(ID_TIMER_CAMERAADVANCEDSETTINGSDLG, CAMERAADVANCEDSETTINGSDLG_TIMER_MS, NULL);
@@ -816,87 +827,6 @@ void CCameraAdvancedSettingsDlg::OnSyslinkControlHelp(NMHDR* pNMHDR, LRESULT* pR
 {
 	::ShellExecute(NULL, _T("open"), EXAMPLE_CONTROL_ONLINE_PAGE, NULL, NULL, SW_SHOWNORMAL);
 	*pResult = 0;
-}
-
-void CCameraAdvancedSettingsDlg::OnButtonCreateBatchFile()
-{
-	// Enumerate the detection levels
-	CMenu menu;
-	VERIFY(menu.LoadMenu(IDR_CONTEXT_SENSITIVITY));
-	CMenu* pPopup = menu.GetSubMenu(0);
-	ASSERT(pPopup != NULL);
-	CStringArray DetectionLevels;
-	for (int i = 0; i < (int)pPopup->GetMenuItemCount(); i++)
-	{
-		if (pPopup->GetMenuItemID(i) > 0) // skip separators
-		{
-			CString s;
-			pPopup->GetMenuString(i, s, MF_BYPOSITION);
-			DetectionLevels.Add(s);
-		}
-	}
-
-	// Create the batch file
-	CString sBatchFile;
-	sBatchFile.Format(_T("%s %s %s.bat"), APPNAME_NOEXT, m_pDoc->GetAssignedDeviceName(), DetectionLevels[m_pDoc->m_nDetectionLevel / 10]);
-	CNoVistaFileDlg fd(	FALSE,
-						_T("bat"),
-						sBatchFile,
-						OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
-						_T("Batch Files (*.bat)|*.bat||"));
-	if (fd.DoModal() == IDOK)
-	{
-		sBatchFile = fd.GetPathName();
-		try
-		{
-			CString sRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
-			sRecordAutoSaveDir.TrimRight(_T('\\'));
-			CStdioFile f(sBatchFile, CFile::modeCreate | CFile::modeWrite | CFile::typeText); // overwrite if existing
-			f.WriteString(_T("@echo off\n"));
-			f.WriteString(_T("\n"));
-			CString sSensitivity;
-			sSensitivity.Format(_T("set /a Sensitivity=%d\n"), m_pDoc->m_nDetectionLevel);
-			f.WriteString(sSensitivity);
-			f.WriteString(_T("\n"));
-			f.WriteString(_T("set /a Retry=5\n"));
-			f.WriteString(_T("\n"));
-			f.WriteString(_T(":loop\n"));
-			f.WriteString(_T("\n"));
-			f.WriteString(_T("REM Write sensitivity to file\n"));
-			f.WriteString(_T("echo.Writing sensitivity:\n"));
-			f.WriteString(_T("echo.%Sensitivity%\n"));
-			CString sSensitivityWrite;
-			sSensitivityWrite.Format(_T("echo.%%Sensitivity%%>\"%s\\%s\"\n"), sRecordAutoSaveDir, CAMERA_REC_SENSITIVITY_FILENAME);
-			f.WriteString(sSensitivityWrite);
-			f.WriteString(_T("\n"));
-			f.WriteString(_T("echo.\n"));
-			f.WriteString(_T("\n"));
-			f.WriteString(_T("REM Check whether the sensitivity has been written\n"));
-			f.WriteString(_T("echo.Checking sensitivity:\n"));
-			f.WriteString(_T("set /a ReadSensitivity=-1\n"));
-			CString sSensitivityRead;
-			sSensitivityRead.Format(_T("set /p ReadSensitivity=<\"%s\\%s\"\n"), sRecordAutoSaveDir, CAMERA_REC_SENSITIVITY_FILENAME);
-			f.WriteString(sSensitivityRead);
-			f.WriteString(_T("echo.%ReadSensitivity%\n"));
-			f.WriteString(_T("if %ReadSensitivity%==%Sensitivity% goto end\n"));
-			f.WriteString(_T("\n"));
-			f.WriteString(_T("REM Retry decrement\n"));
-			f.WriteString(_T("set /a Retry=%Retry%-1\n"));
-			f.WriteString(_T("if %Retry%==0 goto end\n"));
-			f.WriteString(_T("timeout /T 1 /NOBREAK\n"));
-			f.WriteString(_T("echo.\n"));
-			f.WriteString(_T("goto loop\n"));
-			f.WriteString(_T("\n"));
-			f.WriteString(_T(":end\n"));
-			f.WriteString(_T("\n"));
-			f.WriteString(_T("timeout /T 3\n"));
-		}
-		catch (CFileException* e)
-		{
-			e->ReportError();
-			e->Delete();
-		}
-	}
 }
 
 void CCameraAdvancedSettingsDlg::OnCheckExecCommand()

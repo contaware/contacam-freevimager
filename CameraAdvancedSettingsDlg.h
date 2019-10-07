@@ -23,7 +23,7 @@ public:
 	void Show();
 	void Hide();
 	void DestroyOnAppExit();
-	void UpdateTitle();
+	void UpdateTitleAndDir();
 	void ChangeThumbSize(int nNewWidth, int nNewHeight);
 
 	// Dialog data
@@ -89,7 +89,6 @@ protected:
 	afx_msg void OnSelchangeSnapshotRate();
 	afx_msg void OnButtonThumbSize();
 	afx_msg void OnSyslinkControlHelp(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnButtonCreateBatchFile();
 	afx_msg void OnCheckExecCommand();
 	afx_msg void OnSelchangeExecCommandMode();
 	afx_msg void OnChangeEditExe();
