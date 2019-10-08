@@ -187,7 +187,7 @@ void CCameraAdvancedSettingsDlg::UpdateTitleAndDir()
 		pEditControlBatch->GetWindowText(sCurrentControlBatch);
 		CString sRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
 		sRecordAutoSaveDir.TrimRight(_T('\\'));
-		CString sNewControlBatch = sRecordAutoSaveDir + _T("\\") + CAMERA_REC_SENSITIVITY_BATCH_FILENAME;
+		CString sNewControlBatch = _T("\"") + sRecordAutoSaveDir + _T("\\") + CAMERA_REC_SENSITIVITY_BATCH_FILENAME + _T("\"");
 		if (sCurrentControlBatch != sNewControlBatch)
 			pEditControlBatch->SetWindowText(sNewControlBatch);
 	}

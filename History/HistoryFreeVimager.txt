@@ -1,6 +1,6 @@
 FREEVIMAGER HISTORY
 
-9.9.0 (Month XXth 2019)
+9.9.0 (October 8th 2019)
 
 - Better support for high contrast themes
 - Support for .jfif graphics files

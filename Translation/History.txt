@@ -1,8 +1,8 @@
 TRANSLATIONS HISTORY
 
-9.9.0 (Month XXth 2019)
+9.9.0 (October 8th 2019)
 
-- ... 
+- Minor changes
 
 9.7.0 (June 19th 2019)
 

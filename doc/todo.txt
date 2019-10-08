@@ -6,9 +6,6 @@ FreeVimager Program
 
 ContaCam Program
 ----------------
-
-- Intergrate Automatic License Plate Recognition library
-  https://github.com/openalpr/openalpr (alessandro@ballerininet.eu)
   
 - Use a Logitech C920 to implement H.264 video capture support
   -> directshow graph building for H.264 support is intentionally
