@@ -4390,16 +4390,17 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 		m_nDetectionMaxFrames = nDetectionMaxFrames;
 	else
 		m_nDetectionMaxFrames = MOVDET_DEFAULT_MAX_FRAMES_IN_LIST; // restore the default if a strange value is set
-	int nDetectionLevelFromFile;
-	if ((nDetectionLevelFromFile = ReadDetectionLevelFromFile(m_sRecordAutoSaveDir)) >= 0)
-		m_nDetectionLevel = ValidateDetectionLevel(nDetectionLevelFromFile);
+	int nDetectionLevel;
+	if ((nDetectionLevel = ReadDetectionLevelFromFile(m_sRecordAutoSaveDir)) >= 0)
+		m_nDetectionLevel = ValidateDetectionLevel(nDetectionLevel);
 	else
 	{
-		// TODO: in future remove the following and just set m_nDetectionLevel = DEFAULT_MOVDET_LEVEL;
+		// TODO: in future remove the following and just set nDetectionLevel = DEFAULT_MOVDET_LEVEL;
 		
 		// Import old registry value and write it to the file
-		m_nDetectionLevel = ValidateDetectionLevel(pApp->GetProfileInt(sSection, _T("DetectionLevel"), DEFAULT_MOVDET_LEVEL));
-		WriteDetectionLevelToFile(m_nDetectionLevel, m_sRecordAutoSaveDir);
+		nDetectionLevel = ValidateDetectionLevel(pApp->GetProfileInt(sSection, _T("DetectionLevel"), DEFAULT_MOVDET_LEVEL));
+		WriteDetectionLevelToFile(nDetectionLevel, m_sRecordAutoSaveDir);
+		m_nDetectionLevel = nDetectionLevel; // always after the write as in OnTimer() it gets polled!
 	}
 	m_nCurrentDetectionZoneSize = m_nDetectionZoneSize = (int) pApp->GetProfileInt(sSection, _T("DetectionZoneSize"), 0);
 	m_bSaveVideo = (BOOL) pApp->GetProfileInt(sSection, _T("SaveVideoMovementDetection"), TRUE);
@@ -5024,8 +5025,8 @@ void CVideoDeviceDoc::OnUpdateCaptureRecord(CCmdUI* pCmdUI)
 
 void CVideoDeviceDoc::OnMovDetSensitivity0()
 {
-	m_nDetectionLevel = 0;
-	WriteDetectionLevelToFile(m_nDetectionLevel, m_sRecordAutoSaveDir);
+	WriteDetectionLevelToFile(0, m_sRecordAutoSaveDir);
+	m_nDetectionLevel = 0; // always after the write as in OnTimer() it gets polled!
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity0(CCmdUI* pCmdUI)
@@ -5035,8 +5036,8 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity0(CCmdUI* pCmdUI)
 
 void CVideoDeviceDoc::OnMovDetSensitivity10()
 {
-	m_nDetectionLevel = 10;
-	WriteDetectionLevelToFile(m_nDetectionLevel, m_sRecordAutoSaveDir);
+	WriteDetectionLevelToFile(10, m_sRecordAutoSaveDir);
+	m_nDetectionLevel = 10; // always after the write as in OnTimer() it gets polled!
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity10(CCmdUI* pCmdUI)
@@ -5046,8 +5047,8 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity10(CCmdUI* pCmdUI)
 
 void CVideoDeviceDoc::OnMovDetSensitivity20()
 {
-	m_nDetectionLevel = 20;
-	WriteDetectionLevelToFile(m_nDetectionLevel, m_sRecordAutoSaveDir);
+	WriteDetectionLevelToFile(20, m_sRecordAutoSaveDir);
+	m_nDetectionLevel = 20; // always after the write as in OnTimer() it gets polled!
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity20(CCmdUI* pCmdUI)
@@ -5057,8 +5058,8 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity20(CCmdUI* pCmdUI)
 
 void CVideoDeviceDoc::OnMovDetSensitivity30()
 {
-	m_nDetectionLevel = 30;
-	WriteDetectionLevelToFile(m_nDetectionLevel, m_sRecordAutoSaveDir);
+	WriteDetectionLevelToFile(30, m_sRecordAutoSaveDir);
+	m_nDetectionLevel = 30; // always after the write as in OnTimer() it gets polled!
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity30(CCmdUI* pCmdUI)
@@ -5068,8 +5069,8 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity30(CCmdUI* pCmdUI)
 
 void CVideoDeviceDoc::OnMovDetSensitivity40()
 {
-	m_nDetectionLevel = 40;
-	WriteDetectionLevelToFile(m_nDetectionLevel, m_sRecordAutoSaveDir);
+	WriteDetectionLevelToFile(40, m_sRecordAutoSaveDir);
+	m_nDetectionLevel = 40; // always after the write as in OnTimer() it gets polled!
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity40(CCmdUI* pCmdUI)
@@ -5079,8 +5080,8 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity40(CCmdUI* pCmdUI)
 
 void CVideoDeviceDoc::OnMovDetSensitivity50()
 {
-	m_nDetectionLevel = 50;
-	WriteDetectionLevelToFile(m_nDetectionLevel, m_sRecordAutoSaveDir);
+	WriteDetectionLevelToFile(50, m_sRecordAutoSaveDir);
+	m_nDetectionLevel = 50; // always after the write as in OnTimer() it gets polled!
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity50(CCmdUI* pCmdUI)
@@ -5090,8 +5091,8 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity50(CCmdUI* pCmdUI)
 
 void CVideoDeviceDoc::OnMovDetSensitivity60()
 {
-	m_nDetectionLevel = 60;
-	WriteDetectionLevelToFile(m_nDetectionLevel, m_sRecordAutoSaveDir);
+	WriteDetectionLevelToFile(60, m_sRecordAutoSaveDir);
+	m_nDetectionLevel = 60; // always after the write as in OnTimer() it gets polled!
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity60(CCmdUI* pCmdUI)
@@ -5101,8 +5102,8 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity60(CCmdUI* pCmdUI)
 
 void CVideoDeviceDoc::OnMovDetSensitivity70()
 {
-	m_nDetectionLevel = 70;
-	WriteDetectionLevelToFile(m_nDetectionLevel, m_sRecordAutoSaveDir);
+	WriteDetectionLevelToFile(70, m_sRecordAutoSaveDir);
+	m_nDetectionLevel = 70; // always after the write as in OnTimer() it gets polled!
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity70(CCmdUI* pCmdUI)
@@ -5112,8 +5113,8 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity70(CCmdUI* pCmdUI)
 
 void CVideoDeviceDoc::OnMovDetSensitivity80()
 {
-	m_nDetectionLevel = 80;
-	WriteDetectionLevelToFile(m_nDetectionLevel, m_sRecordAutoSaveDir);
+	WriteDetectionLevelToFile(80, m_sRecordAutoSaveDir);
+	m_nDetectionLevel = 80; // always after the write as in OnTimer() it gets polled!
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity80(CCmdUI* pCmdUI)
@@ -5123,8 +5124,8 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity80(CCmdUI* pCmdUI)
 
 void CVideoDeviceDoc::OnMovDetSensitivity90()
 {
-	m_nDetectionLevel = 90;
-	WriteDetectionLevelToFile(m_nDetectionLevel, m_sRecordAutoSaveDir);
+	WriteDetectionLevelToFile(90, m_sRecordAutoSaveDir);
+	m_nDetectionLevel = 90; // always after the write as in OnTimer() it gets polled!
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity90(CCmdUI* pCmdUI)
@@ -5134,8 +5135,8 @@ void CVideoDeviceDoc::OnUpdateMovDetSensitivity90(CCmdUI* pCmdUI)
 
 void CVideoDeviceDoc::OnMovDetSensitivity100()
 {
-	m_nDetectionLevel = 100;
-	WriteDetectionLevelToFile(m_nDetectionLevel, m_sRecordAutoSaveDir);
+	WriteDetectionLevelToFile(100, m_sRecordAutoSaveDir);
+	m_nDetectionLevel = 100; // always after the write as in OnTimer() it gets polled!
 }
 
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity100(CCmdUI* pCmdUI)

@@ -855,9 +855,9 @@ void CVideoDeviceView::OnTimer(UINT nIDEvent)
 			pDoc->m_bObscureSource = ::IsExistingFile(sRecordAutoSaveDir + _T("\\") + CAMERA_IS_OBSCURED_FILENAME);
 
 			// Load detection level
-			int nDetectionLevelFromFile;
-			if ((nDetectionLevelFromFile = pDoc->ReadDetectionLevelFromFile(sRecordAutoSaveDir)) >= 0)
-				pDoc->m_nDetectionLevel = CVideoDeviceDoc::ValidateDetectionLevel(nDetectionLevelFromFile);
+			int nDetectionLevel;
+			if ((nDetectionLevel = CVideoDeviceDoc::ReadDetectionLevelFromFile(sRecordAutoSaveDir)) >= 0)
+				pDoc->m_nDetectionLevel = CVideoDeviceDoc::ValidateDetectionLevel(nDetectionLevel);
 
 			break;
 		}
