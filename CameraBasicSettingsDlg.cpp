@@ -532,8 +532,8 @@ void CCameraBasicSettingsDlg::ApplySettings()
 		{
 			if (m_pDoc->m_nDetectionLevel == 0 || m_pDoc->m_nDetectionLevel == 100)
 			{
-				CVideoDeviceDoc::WriteDetectionLevelToFile(DEFAULT_MOVDET_LEVEL, m_pDoc->m_sRecordAutoSaveDir);
-				m_pDoc->m_nDetectionLevel = DEFAULT_MOVDET_LEVEL; // always after the write as in OnTimer() it gets polled!
+				if (CVideoDeviceDoc::WriteDetectionLevelToFile(DEFAULT_MOVDET_LEVEL, m_pDoc->m_sRecordAutoSaveDir))
+					m_pDoc->m_nDetectionLevel = DEFAULT_MOVDET_LEVEL; // always after the write as in OnTimer() it gets polled!
 			}
 			if (m_pDoc->m_nMilliSecondsRecBeforeMovementBegin == 1000)
 				m_pDoc->m_nMilliSecondsRecBeforeMovementBegin = DEFAULT_PRE_BUFFER_MSEC;
@@ -556,8 +556,8 @@ void CCameraBasicSettingsDlg::ApplySettings()
 		}
 		case 1 :
 		{
-			CVideoDeviceDoc::WriteDetectionLevelToFile(100, m_pDoc->m_sRecordAutoSaveDir);
-			m_pDoc->m_nDetectionLevel = 100; // always after the write as in OnTimer() it gets polled!
+			if (CVideoDeviceDoc::WriteDetectionLevelToFile(100, m_pDoc->m_sRecordAutoSaveDir))
+				m_pDoc->m_nDetectionLevel = 100; // always after the write as in OnTimer() it gets polled!
 			m_pDoc->m_nMilliSecondsRecBeforeMovementBegin = 1000;
 			m_pDoc->m_nMilliSecondsRecAfterMovementEnd = 1000;
 			m_pDoc->m_nDetectionMinLengthMilliSeconds = 0;
