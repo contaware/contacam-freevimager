@@ -1,8 +1,8 @@
 FREEVIMAGER HISTORY
 
-9.9.1 (October XXth 2019)
+9.9.1 (October 10th 2019)
 
-- ...
+- No changes (be in sync with ContaCam version)
 
 9.9.0 (October 8th 2019)
 
