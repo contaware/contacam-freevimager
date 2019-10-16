@@ -261,11 +261,14 @@ libpng 1.2.59
 
 - Thread Safe, but do not define PNG_THREAD_UNSAFE_OK!
 
-- Preprocessor defines for release: WIN32, NDEBUG, PNG_LIBPNG_SPECIALBUILD
+- Preprocessor defines for release: WIN32, NDEBUG,
+                                    PNG_LIBPNG_SPECIALBUILD,
+                                    PNG_USER_CHUNK_MALLOC_MAX=80000000  <- 10x the default value
 
 - Preprocessor defines for debug:   WIN32, DEBUG, _DEBUG, PNG_DEBUG=1,
                                     PNG_LIBPNG_SPECIALBUILD
-
+                                    PNG_USER_CHUNK_MALLOC_MAX=80000000  <- 10x the default value
+									
 									
 AVIR image resizing algorithm designed by Aleksey Vaneev
 --------------------------------------------------------
