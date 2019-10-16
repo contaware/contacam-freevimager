@@ -1,5 +1,10 @@
 FREEVIMAGER HISTORY
 
+9.9.3 (Month XXth 2019)
+
+- Increased a security check limit which prevented loading
+  big .png images
+
 9.9.1 (October 10th 2019)
 
 - No changes (be in sync with ContaCam version)
