@@ -2,7 +2,7 @@ CONTACAM HISTORY
 
 9.9.3 (Month XXth 2019)
 
-- ...
+- Support Floureon and JideTech RTSP cameras
 
 9.9.1 (October 10th 2019)
 

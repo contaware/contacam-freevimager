@@ -563,12 +563,14 @@ public:
 		EDIMAX_H264_RTSP = 1110,		// Edimax H.264 RTSP
 		EDIMAX_MPEG4_RTSP = 1111,		// Edimax MPEG4 RTSP
 		FALCONEYE_RTSP = 1115,			// FalconEye RTSP
+		FLOUREON_RTSP = 1118,			// Floureon RTSP
 		FOSCAM_RTSP = 1120,				// Foscam RTSP
 		GEMBIRD_RTSP = 1123,			// Gembird RTSP
 		GEOVISION_RTSP = 1125,			// GeoVision RTSP
 		HIKAM_RTSP = 1128,				// HiKam RTSP
 		HIKVISION_RTSP = 1130,			// Hikvision RTSP
 		IPWEBCAM_ANDROID_RTSP = 1132,	// IP Webcam (Pro) for Android RTSP
+		JIDETECH_RTSP = 1133,			// JideTech RTSP
 		KUCAM_RTSP = 1135,				// Kucam RTSP
 		LINKSYS_RTSP = 1140,			// Linksys RTSP
 		LOGITECH_RTSP = 1150,			// Logitech RTSP

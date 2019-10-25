@@ -8722,6 +8722,11 @@ void CVideoDeviceDoc::ConnectRtsp()
 			sPathAndQuery = _T("/ipcam.sdp");
 			break;
 
+		case FLOUREON_RTSP:
+		case JIDETECH_RTSP:
+			sPathAndQuery = _T("/1/h264major");
+			break;
+
 		case GEOVISION_RTSP:		
 			sPathAndQuery = _T("/CH001.sdp");
 			break;
