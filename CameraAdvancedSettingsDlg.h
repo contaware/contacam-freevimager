@@ -61,6 +61,7 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);
 	virtual BOOL OnInitDialog();
 	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual void PostNcDestroy();
 	afx_msg void OnDestroy();
 	afx_msg void OnClose();

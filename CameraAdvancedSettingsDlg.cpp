@@ -91,6 +91,36 @@ BOOL CCameraAdvancedSettingsDlg::OnCommand(WPARAM wParam, LPARAM lParam)
 	return CDialog::OnCommand(wParam, lParam);
 }
 
+BOOL CCameraAdvancedSettingsDlg::PreTranslateMessage(MSG* pMsg)
+{
+	switch (pMsg->message)
+	{
+		// Select All for all edit controls (single-line, multi-line or read-only)
+		case WM_KEYDOWN:
+			if (pMsg->wParam == 'A' && ::GetKeyState(VK_CONTROL) < 0)
+			{
+				CWnd* pWnd = GetFocus();
+				if (pWnd != NULL)
+				{
+					TCHAR szClassName[6]; // one extra char to make sure it is exactly "Edit"
+					::GetClassName(pWnd->GetSafeHwnd(), szClassName, 6);
+					szClassName[5] = _T('\0');
+					if (_tcsicmp(szClassName, _T("Edit")) == 0)
+					{
+						pWnd->SendMessage(EM_SETSEL, 0, -1);
+						return TRUE;
+					}
+				}
+			}
+			break;
+
+		default:
+			break;
+	}
+
+	return CDialog::PreTranslateMessage(pMsg);
+}
+
 void CCameraAdvancedSettingsDlg::OnDestroy()
 {
 	// Kill timer
