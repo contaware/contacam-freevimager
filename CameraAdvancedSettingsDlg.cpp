@@ -1077,10 +1077,16 @@ void CCameraAdvancedSettingsDlg::OnButtonPlateRecognizer()
 			for (int n = 0; n < Regions.GetCount(); n++)
 				m_sExecParams += _T(" -F regions=") + Regions[n];
 			if (dlg.m_nMode == 0)
+			{
+				m_sExecParams += _T(" -F \"camera_id=%cam%\"");
 				m_sExecParams += _T(" -H \"Authorization: Token ") + dlg.m_sToken + _T("\" https://api.platerecognizer.com/v1/plate-reader");
+			}
 			else
+			{
+				// Note: as per doc the SDK API does not support fields: camera_id and timestamp
 				m_sExecParams += _T(" ") + dlg.m_sUrl;
-			
+			}
+
 			// Update executable & params
 			::EnterCriticalSection(&m_pDoc->m_csExecCommand);
 			m_pDoc->m_sExecCommand = m_sExecCommand;

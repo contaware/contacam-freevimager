@@ -1136,7 +1136,7 @@ BEGIN
     LTEXT           "Quality",IDC_STATIC,75,191,24,8
     LTEXT           "Take each",IDC_STATIC2476,13,245,47,8
     LTEXT           "Thumbnail",IDC_STATIC2478,13,263,53,8
-    LTEXT           "%sec% %min% %hour% %day% %month% %year% %full% %small%",IDC_STATIC,225,185,184,17
+    LTEXT           "%sec% %min% %hour% %day% %month% %year% %full% %small% %cam%",IDC_STATIC,225,185,184,17
     LTEXT           "Program",IDC_STATIC,225,103,28,8
     LTEXT           "Examples",IDC_STATIC,225,228,31,8
 END
