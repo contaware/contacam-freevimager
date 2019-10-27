@@ -17,7 +17,7 @@ CDonorEmailValidateThread g_DonorEmailValidateThread;
 
 CString CDonorEmailValidateThread::GetAppLanguage()
 {
-	CString sLanguageName;
+	CString sLanguage;
 	TCHAR szProgramName[MAX_PATH];
 	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
 	{
@@ -37,17 +37,16 @@ CString CDonorEmailValidateThread::GetAppLanguage()
 					} *lpTranslate;
 					if (::VerQueryValue(pData, _T("\\VarFileInfo\\Translation"), (void**)&lpTranslate, (UINT*)&uiLen))
 					{
-						TCHAR szLanguageName[MAX_PATH];
-						::VerLanguageName(MAKELANGID(lpTranslate->wLanguage, SUBLANG_NEUTRAL), szLanguageName, MAX_PATH);
-						szLanguageName[MAX_PATH - 1] = _T('\0');
-						sLanguageName = szLanguageName;
+						// See: https://docs.microsoft.com/en-us/windows/win32/intl/language-identifier-constants-and-strings
+						//      https://ss64.com/locale.html
+						sLanguage.Format(_T("%hu"), lpTranslate->wLanguage);
 					}
 				}
 				delete[] pData;
 			}
 		}
 	}
-	return sLanguageName;
+	return sLanguage;
 }
 
 // Note: WinINet functions work also in ContaCam service mode, even if the
