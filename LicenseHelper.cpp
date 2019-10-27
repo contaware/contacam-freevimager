@@ -10,8 +10,45 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+#pragma comment(lib, "Version.lib") // to support GetFileVersionInfo()
+
 // The one and only CDonorEmailValidateThread object
 CDonorEmailValidateThread g_DonorEmailValidateThread;
+
+CString CDonorEmailValidateThread::GetAppLanguage()
+{
+	CString sLanguageName;
+	TCHAR szProgramName[MAX_PATH];
+	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
+	{
+		DWORD dwDummy;
+		DWORD dwSize = ::GetFileVersionInfoSize(szProgramName, &dwDummy);
+		if (dwSize > 0)
+		{
+			LPBYTE pData = new BYTE[dwSize];
+			if (pData)
+			{
+				if (::GetFileVersionInfo(szProgramName, NULL, dwSize, pData))
+				{
+					UINT uiLen = 0;
+					struct LANGANDCODEPAGE {
+						WORD wLanguage;
+						WORD wCodePage;
+					} *lpTranslate;
+					if (::VerQueryValue(pData, _T("\\VarFileInfo\\Translation"), (void**)&lpTranslate, (UINT*)&uiLen))
+					{
+						TCHAR szLanguageName[MAX_PATH];
+						::VerLanguageName(MAKELANGID(lpTranslate->wLanguage, SUBLANG_NEUTRAL), szLanguageName, MAX_PATH);
+						szLanguageName[MAX_PATH - 1] = _T('\0');
+						sLanguageName = szLanguageName;
+					}
+				}
+				delete[] pData;
+			}
+		}
+	}
+	return sLanguageName;
+}
 
 // Note: WinINet functions work also in ContaCam service mode, even if the
 //       InternetOpen() documentation states that it should not be used
@@ -27,6 +64,8 @@ int CDonorEmailValidateThread::DonorEmailValidate()
 	CString sURL(_T("https://www.contaware.com/validate-437837653763456231.php"));
 	sURL += _T("?email=");
 	sURL += ::UrlEncode(m_sDonorEmail, TRUE);
+	sURL += _T("&lang=");
+	sURL += ::UrlEncode(GetAppLanguage(), TRUE);
 	size_t Size;
 	LPBYTE p = ::GetURL(sURL, Size, FALSE, FALSE, NULL);
 	if (p)

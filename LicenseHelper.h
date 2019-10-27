@@ -25,6 +25,7 @@ public:
 	CString m_sDonorEmail;
 
 protected:
+	static CString GetAppLanguage();
 	int Work();
 };
 
