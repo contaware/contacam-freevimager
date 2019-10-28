@@ -2080,7 +2080,7 @@ void CVideoDeviceDoc::ExecCommand(const CTime& Time,
 		sExecParams.Replace(_T("%year%"), sYear);
 		sExecParams.Replace(_T("%full%"), sFullFileName);
 		sExecParams.Replace(_T("%small%"), sSmallFileName);
-		sExecParams.Replace(_T("%cam%"), GetAssignedDeviceName());
+		sExecParams.Replace(_T("%name%"), GetAssignedDeviceName());
 		
 		// Execute command
 		//

@@ -1078,7 +1078,7 @@ void CCameraAdvancedSettingsDlg::OnButtonPlateRecognizer()
 				m_sExecParams += _T(" -F regions=") + Regions[n];
 			if (dlg.m_nMode == 0)
 			{
-				m_sExecParams += _T(" -F \"camera_id=%cam%\"");
+				m_sExecParams += _T(" -F \"camera_id=%name%\"");
 				m_sExecParams += _T(" -H \"Authorization: Token ") + dlg.m_sToken + _T("\" https://api.platerecognizer.com/v1/plate-reader");
 			}
 			else
