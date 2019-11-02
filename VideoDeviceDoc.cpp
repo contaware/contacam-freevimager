@@ -9615,6 +9615,7 @@ Note: the optional double-quotes around the boundary delimiter parameter are nec
       if using special characters, like a column for example
 Attention: some servers erroneously set boundary=--FrameBoundary (with the two hyphens)
 
+https://www.w3.org/Protocols/rfc1341/7_2_Multipart.html
 https://tools.ietf.org/html/rfc2046#section-5.1.1
 https://tools.ietf.org/html/rfc822
 */
@@ -9629,15 +9630,16 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::ParseMultipart(CNetCom* pNetCom,
 	int nMultipartLength;
 	CString sContentType;
 
-	if (m_bMultipartNoLength)
+	// Security Size Check
+	if (nSize > HTTP_MAX_MULTIPART_SIZE)
 	{
-		// Security Size Check
-		if (nSize > HTTP_MAX_MULTIPART_SIZE)
-		{
-			pNetCom->Read(); // Empty the buffers
-			return FALSE;
-		}
+		pNetCom->Read(); // Empty the buffers
+		return FALSE;
+	}
 
+	// Find Multipart Start and Length
+	if (m_bMultipartFullSearch)
+	{
 		// Find Start
 		if ((nPos = FindMultipartBoundary(nPos, nSize, pMsg)) < 0)
 			return FALSE;
@@ -9653,16 +9655,13 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::ParseMultipart(CNetCom* pNetCom,
 	}
 	else
 	{
-		// Security Size Check
-		if (nSize > HTTP_MAX_MULTIPART_SIZE / 2)
+		// Find Boundary
+		if ((nPos = FindMultipartBoundary(nPos, MIN(HTTP_MAX_HEADER_SIZE, nSize), pMsg)) < 0)
 		{
-			m_bMultipartNoLength = TRUE;
+			if (nSize >= HTTP_MAX_HEADER_SIZE)
+				m_bMultipartFullSearch = TRUE;
 			return FALSE;
 		}
-
-		// Find Boundary
-		if (m_sMultipartBoundary.IsEmpty() || (nPos = sMsg.Find(m_sMultipartBoundary, nPos)) < 0)
-			return FALSE;
 
 		// Content Type
 		if ((nPosType = sMsgLowerCase.Find(_T("content-type:"), nPos)) >= 0)
@@ -9677,8 +9676,8 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::ParseMultipart(CNetCom* pNetCom,
 		// Content Length
 		if ((nPos = sMsgLowerCase.Find(_T("content-length:"), nPos)) < 0)
 		{
-			if (nSize > HTTP_MIN_MULTIPART_SIZE)
-				m_bMultipartNoLength = TRUE;
+			if (nSize >= HTTP_MAX_HEADER_SIZE)
+				m_bMultipartFullSearch = TRUE;
 			return FALSE;
 		}
 		nPos += 15;
@@ -9866,7 +9865,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 	}
 
 	// Allocate Linear Buffer and copy message
-	if (m_bMultipartNoLength)
+	if (m_bMultipartFullSearch)
 	{
 		pMsg = new char[MAX(HTTP_MAX_HEADER_SIZE, nSize)];
 		if (!pMsg)
@@ -9893,7 +9892,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 		{
 			// Update Message Buffer and Size
 			int nNextMsgSize = pBuf->GetMsgSize() + nMsgSize;
-			if (!m_bMultipartNoLength)
+			if (!m_bMultipartFullSearch)
 			{
 				if (nNextMsgSize >= HTTP_MAX_HEADER_SIZE)
 					nNextMsgSize = HTTP_MAX_HEADER_SIZE - 1;
@@ -9911,7 +9910,8 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 
 	::LeaveCriticalSection(pNetCom->GetRxFifoSync());
 	
-	// Init sMsg and sMsgLowerCase Vars
+	// Init sMsg and sMsgLowerCase to a maximum of HTTP_MAX_HEADER_SIZE - 1 characters
+	// Note: a multipart message could contain '\0' shortening sMsg and sMsgLowerCase
 	char cTemp = pMsg[HTTP_MAX_HEADER_SIZE - 1];
 	pMsg[HTTP_MAX_HEADER_SIZE - 1] = '\0';
 	sMsg = CString(pMsg);
@@ -10017,7 +10017,6 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 					delete [] pMsg;
 					return FALSE; // Do not call Processor
 				}
-				m_sMultipartBoundary = CString(m_szMultipartBoundary);
 
 				// Flag
 				m_bFirstProcessing = TRUE;

@@ -164,8 +164,7 @@ class CCameraAdvancedSettingsDlg;
 #define DEFAULT_CONNECTION_TIMEOUT				60				// in sec
 #define HTTP_MAX_HEADER_SIZE					1400			// bytes
 #define HTTP_MAX_MULTIPART_BOUNDARY				128				// boundary string buffer size in bytes
-#define HTTP_MIN_MULTIPART_SIZE					256				// minimum size of a multipart content
-#define HTTP_MAX_MULTIPART_SIZE					8388608			// 8 MB		
+#define HTTP_MAX_MULTIPART_SIZE					16777216		// 16 MB		
 #define HTTP_DEFAULT_VIDEO_QUALITY				30				// 0 Best Quality, 100 Worst Quality
 #define HTTP_DEFAULT_VIDEO_SIZE_CX				640				// pixels
 #define HTTP_DEFAULT_VIDEO_SIZE_CY				480				// pixels
@@ -208,7 +207,7 @@ public:
 		public:
 			CHttpParseProcess(CVideoDeviceDoc* pDoc) {	m_pDoc = pDoc;
 														m_dwCNonceCount = 0U;
-														m_bMultipartNoLength = FALSE;
+														m_bMultipartFullSearch = FALSE;
 														m_nMultipartBoundaryLength = 0;
 														m_bFirstProcessing = TRUE;
 														m_bQueryVideoProperties = FALSE;
@@ -286,11 +285,10 @@ public:
 			BOOL DecodeVideo(AVPacket* avpkt);
 			
 			CVideoDeviceDoc* m_pDoc;
-			BOOL m_bMultipartNoLength;
+			BOOL m_bMultipartFullSearch;
 			CString m_sLastRequest;
-			CString m_sMultipartBoundary;
-			char m_szMultipartBoundary[HTTP_MAX_MULTIPART_BOUNDARY];
-			int m_nMultipartBoundaryLength;
+			char m_szMultipartBoundary[HTTP_MAX_MULTIPART_BOUNDARY]; // NULL terminated boundary string
+			int m_nMultipartBoundaryLength; // boundary string length (without counting the NULL termination)
 			AVCodec* m_pCodec;
 			AVCodecContext* m_pCodecCtx;
 			AVFrame* m_pFrame;
