@@ -318,6 +318,23 @@ extern void MakeLineBreakCR(CString& s);
 extern void MakeLineBreakLF(CString& s);
 extern void MakeLineBreakCRLF(CString& s);
 
+/* Command line parameters parser, usage example:
+if (::AfxGetApp()->m_lpCmdLine && _tcslen(::AfxGetApp()->m_lpCmdLine) > 0)
+{
+	CString sCmdLine(::AfxGetApp()->m_lpCmdLine);
+	CString sParam;
+	while (!(sParam = ::ParseNextParam(sCmdLine)).IsEmpty())
+	{
+		sParam.MakeLower();
+		if (sParam == _T("/param1") || sParam == _T("-param1"))
+			...
+		else if (sParam == _T("/param2") || sParam == _T("-param2"))
+			...
+	}
+}
+*/
+extern CString ParseNextParam(CString& sCmdLine);
+
 // Is Valid File Name, checks whether s contains  \ / : * ? " < > |
 extern BOOL IsValidFileName(const CString& s, BOOL bShowMessageBoxOnError = FALSE);
 

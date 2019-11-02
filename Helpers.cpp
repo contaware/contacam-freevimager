@@ -2196,6 +2196,52 @@ void MakeLineBreakCRLF(CString& s)
 	s.Replace(_T("\n"), _T("\r\n"));
 }
 
+CString ParseNextParam(CString& sCmdLine)
+{
+	int i;
+	CString sParam;
+
+	// Remove blanks
+	sCmdLine.Trim();
+
+	// For the below double-quote check, make sure sCmdLine contains at least a char
+	if (sCmdLine.IsEmpty())
+		return CString(_T(""));
+
+	// Param starts with a double-quote?
+	if (sCmdLine[0] == _T('"'))
+	{
+		sCmdLine.Delete(0, 1);			// remove beginning double-quote
+		i = sCmdLine.Find(_T('"'));		// find end
+		if (i >= 0)
+		{
+			sParam = sCmdLine.Left(i);
+			sCmdLine.Delete(0, i + 1);	// remove param with ending double-quote
+		}
+		else
+		{
+			sParam = sCmdLine;
+			sCmdLine.Empty();
+		}
+	}
+	else
+	{
+		i = sCmdLine.Find(_T(' '));		// find end
+		if (i >= 0)
+		{
+			sParam = sCmdLine.Left(i);
+			sCmdLine.Delete(0, i + 1);	// remove param with ending blank
+		}
+		else
+		{
+			sParam = sCmdLine;
+			sCmdLine.Empty();
+		}
+	}
+
+	return sParam;
+}
+
 BOOL IsValidFileName(const CString& s, BOOL bShowMessageBoxOnError/*=FALSE*/)
 {
 	// Not allowed  \ / : * ? " < > |
