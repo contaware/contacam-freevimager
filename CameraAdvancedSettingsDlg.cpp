@@ -1052,7 +1052,60 @@ void CCameraAdvancedSettingsDlg::OnButtonPlateRecognizer()
 	CString sCurlPath = GetCurlPath();
 	if (!sCurlPath.IsEmpty())
 	{
+		// This transfers data from the dialog window to
+		// the member variables validating it
+		if (!UpdateData(TRUE))
+			return;
+
+		// Init dialog vars
 		CPlateRecognizerDlg dlg;
+		CString sExecParams(m_sExecParams);
+		CString s, sUrl;
+		CStringArray Params;
+		while (!(s = ::ParseNextParam(sExecParams)).IsEmpty())
+			Params.Add(s);
+		int i = 0;
+		while (i < Params.GetSize())
+		{
+			int n;
+			if (Params[i].Compare(_T("-H")) == 0)
+			{
+				if (++i >= Params.GetSize())
+					break;
+				if ((n = Params[i].Find(_T("Authorization:"))) >= 0)
+				{
+					if ((n = Params[i].Find(_T("Token"), n + 14)) >= 0)
+					{
+						dlg.m_sToken = Params[i].Mid(n + 5);
+						dlg.m_sToken.Trim();
+						dlg.m_nMode = 0;
+					}
+				}
+			}
+			else if (Params[i].Compare(_T("-F")) == 0)
+			{
+				if (++i >= Params.GetSize())
+					break;
+				if ((n = Params[i].Find(_T("regions="))) >= 0)
+				{
+					if (!dlg.m_sRegions.IsEmpty())
+						dlg.m_sRegions += _T(" ");
+					dlg.m_sRegions += Params[i].Mid(n + 8);
+				}
+			}
+			else if ((n = Params[i].Find(_T("http"))) >= 0)
+				sUrl = Params[i].Mid(n);
+			
+			// Next
+			i++;
+		}
+		if (dlg.m_sToken.IsEmpty() && !sUrl.IsEmpty())
+		{
+			dlg.m_nMode = 1;
+			dlg.m_sUrl = sUrl;
+		}
+
+		// Show dialog
 		if (dlg.DoModal() == IDOK)
 		{
 			// Set executable
