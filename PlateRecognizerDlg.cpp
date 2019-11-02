@@ -51,10 +51,18 @@ BOOL CPlateRecognizerDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	// Set the input focus to the token edit control and disable the url edit control
-	GotoDlgCtrl(GetDlgItem(IDC_EDIT_PLATERECOGNIZER_TOKEN));
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PLATERECOGNIZER_URL);
-	pEdit->EnableWindow(FALSE);
+	if (m_nMode == 0)
+	{
+		GotoDlgCtrl(GetDlgItem(IDC_EDIT_PLATERECOGNIZER_TOKEN));
+		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PLATERECOGNIZER_URL);
+		pEdit->EnableWindow(FALSE);
+	}
+	else
+	{
+		GotoDlgCtrl(GetDlgItem(IDC_EDIT_PLATERECOGNIZER_URL));
+		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PLATERECOGNIZER_TOKEN);
+		pEdit->EnableWindow(FALSE);
+	}
 
 	// Return FALSE because we manually set the focus to a control
 	return FALSE;
