@@ -927,10 +927,27 @@ void CCameraAdvancedSettingsDlg::OnButtonPlaySound()
 	}
 	else
 	{
+		// This transfers data from the dialog window to
+		// the member variables validating it
+		if (!UpdateData(TRUE))
+			return;
+
+		// Init audio file
+		CString sExecParams(m_sExecParams);
+		CString s, sFileName;
+		while (!(s = ::ParseNextParam(sExecParams)).IsEmpty())
+		{
+			if (::IsExistingFile(s))
+			{
+				sFileName = s;
+				break;
+			}
+		}
+
 		// Prompt for audio file
 		CNoVistaFileDlg fd(	TRUE,
 							_T(""),
-							_T(""),
+							sFileName,
 							OFN_FILEMUSTEXIST | OFN_HIDEREADONLY, // file must exist and hide the read-only check box
 							_T("All Files (*.*)|*.*||"));
 		CString sDlgTitle(ML_STRING(1848, "Choose Audio File"));
@@ -1024,7 +1041,43 @@ void CCameraAdvancedSettingsDlg::OnButtonFtpUpload()
 	CString sCurlPath = GetCurlPath();
 	if (!sCurlPath.IsEmpty())
 	{
+		// This transfers data from the dialog window to
+		// the member variables validating it
+		if (!UpdateData(TRUE))
+			return;
+
+		// Init dialog vars
 		CFTPUploadDlg dlg;
+		CString sExecParams(m_sExecParams);
+		CString s;
+		CStringArray Params;
+		while (!(s = ::ParseNextParam(sExecParams)).IsEmpty())
+			Params.Add(s);
+		int i = 0;
+		while (i < Params.GetSize())
+		{
+			int n;
+			if (Params[i].Compare(_T("--user")) == 0 || Params[i].Compare(_T("-u")) == 0)
+			{
+				if (++i >= Params.GetSize())
+					break;
+				if ((n = Params[i].Find(_T(":"))) >= 0)
+				{
+					dlg.m_sUsername = Params[i].Left(n);
+					dlg.m_sPassword = Params[i].Mid(n + 1);
+				}
+			}
+			else if (Params[i].Find(_T("ftp://")) == 0)
+			{
+				if ((n = Params[i].Find(_T("/"), 6)) > 6)
+					dlg.m_sHost = Params[i].Mid(6, n - 6);
+			}
+
+			// Next
+			i++;
+		}
+
+		// Show dialog
 		if (dlg.DoModal() == IDOK)
 		{
 			// Fill executable & params
@@ -1068,7 +1121,7 @@ void CCameraAdvancedSettingsDlg::OnButtonPlateRecognizer()
 		while (i < Params.GetSize())
 		{
 			int n;
-			if (Params[i].Compare(_T("-H")) == 0)
+			if (Params[i].Compare(_T("--header")) == 0 || Params[i].Compare(_T("-H")) == 0)
 			{
 				if (++i >= Params.GetSize())
 					break;
@@ -1082,7 +1135,7 @@ void CCameraAdvancedSettingsDlg::OnButtonPlateRecognizer()
 					}
 				}
 			}
-			else if (Params[i].Compare(_T("-F")) == 0)
+			else if (Params[i].Compare(_T("--form")) == 0  || Params[i].Compare(_T("-F")) == 0)
 			{
 				if (++i >= Params.GetSize())
 					break;
@@ -1093,8 +1146,8 @@ void CCameraAdvancedSettingsDlg::OnButtonPlateRecognizer()
 					dlg.m_sRegions += Params[i].Mid(n + 8);
 				}
 			}
-			else if ((n = Params[i].Find(_T("http"))) >= 0)
-				sUrl = Params[i].Mid(n);
+			else if (Params[i].Find(_T("http")) == 0)
+				sUrl = Params[i];
 			
 			// Next
 			i++;
@@ -1160,12 +1213,60 @@ void CCameraAdvancedSettingsDlg::OnButtonPlateRecognizer()
 
 void CCameraAdvancedSettingsDlg::OnButtonBackupFiles()
 {
+	/*
+	cmd.exe
+	
+	Attention: for quote characters we means the double quote ", not the single quote '
+
+	If /C or /K is specified, then the remainder of the command line after
+	the switch is processed as a command line with no need to quote it.
+	
+	Quote characters are processed as follows:
+
+	1.  If all of the following conditions are met, then quote characters
+		on the command line after /C or /K are preserved:
+
+		- no /S switch
+		- exactly two quote characters in total!
+		- no special characters between the two quote characters,
+			where special is one of: &<>()@^|
+		- there are one or more whitespace characters between the
+			two quote characters
+		- the string between the two quote characters is the name
+			of an executable file
+
+	2.  Otherwise, old behavior is to see if the first character is
+		a quote character and if so, strip it and remove the last
+		found quote character on the command line, preserving
+		any text after this last quote character
+	*/
 	TCHAR szCmdPath[MAX_PATH];
 	_tcscpy(szCmdPath, _T("cmd.exe"));
 	if (::PathFindOnPath(szCmdPath, NULL))
 	{
+		// This transfers data from the dialog window to
+		// the member variables validating it
+		if (!UpdateData(TRUE))
+			return;
+
+		// Init destination folder
+		CString sExecParams(m_sExecParams);
+		CString s, sDst;
+		while (!(s = ::ParseNextParam(sExecParams)).IsEmpty())
+		{
+			int n;
+			if ((n = s.Find(_T("\\%year%\\%month%\\%day%"))) >= 0)
+			{
+				s = s.Left(n);
+				if (::IsExistingDir(s))
+				{
+					sDst = s;
+					break;
+				}
+			}
+		}
+
 		// Prompt for destination folder
-		CString sDst;
 		CBrowseDlg dlg(::AfxGetMainFrame(), &sDst, ML_STRING(1359, "Select the Destination Directory"), TRUE);
 		if (dlg.DoModal() == IDOK)
 		{
@@ -1174,7 +1275,7 @@ void CCameraAdvancedSettingsDlg::OnButtonBackupFiles()
 			{
 				// Fill executable & params
 				m_sExecCommand = szCmdPath;
-				m_sExecParams.Format(_T("/C \"mkdir \"%s\\%%year%%\\%%month%%\\%%day%%\" & copy \"%%full%%\" \"%s\\%%year%%\\%%month%%\\%%day%%\" & copy \"%%small%%\" \"%s\\%%year%%\\%%month%%\\%%day%%\"\""), sDst, sDst, sDst);
+				m_sExecParams.Format(_T("/C mkdir \"%s\\%%year%%\\%%month%%\\%%day%%\" & copy \"%%full%%\" \"%s\\%%year%%\\%%month%%\\%%day%%\" & copy \"%%small%%\" \"%s\\%%year%%\\%%month%%\\%%day%%\""), sDst, sDst, sDst);
 				::EnterCriticalSection(&m_pDoc->m_csExecCommand);
 				m_pDoc->m_sExecCommand = m_sExecCommand;
 				m_pDoc->m_sExecParams = m_sExecParams;
