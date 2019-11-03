@@ -49,7 +49,7 @@ public:
 	void EnableOk(BOOL bEnable);
 
 	// Set the current selection in the tree control
-	void SetSelection(const CString &strPath);
+	void SetSelection(CString strPath);
 
 	// Overrides
 public:

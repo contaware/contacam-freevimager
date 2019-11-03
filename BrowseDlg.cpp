@@ -122,11 +122,19 @@ void CBrowseDlg::EnableOk(BOOL bEnable)
 	SendMessage(BFFM_ENABLEOK, 0U, bEnable ? 1L : 0L);
 }
 
-void CBrowseDlg::SetSelection(const CString &strPath)
+void CBrowseDlg::SetSelection(CString strPath)
 {
+	/*
+	If the folder is the root of a drive, then we have to make sure that the
+	trailing backslash is present. If the folder is not the root, then
+	we have to strip off the trailing backslash instead (this behavior is not
+	documented by Microsoft)
+	*/
 	ASSERT(NULL != m_hWnd);
-	SendMessage(BFFM_SETSELECTION, (WPARAM)TRUE,
-			  (LPARAM)(LPCTSTR)strPath);
+	strPath.TrimRight(_T('\\'));
+	if (strPath[strPath.GetLength() - 1] == _T(':'))
+		strPath += _T("\\");
+	SendMessage(BFFM_SETSELECTION, (WPARAM)TRUE, (LPARAM)(LPCTSTR)strPath);
 }
 
 void CBrowseDlg::OnCheckClicked()
