@@ -2052,19 +2052,30 @@ BOOL CMainFrame::GetRecBufStats(CString& sBufStats)
 	}
 	double dMaxOverallQueueSizeGB = (double)(llMaxOverallQueueSize >> 20) / 1024.0;
 
-	// Commit size
+	// Overall Commit size = what we already got + what we are allowed to take more
+	//
+	// MemoryStatusEx.ullTotalPageFile = RAM + allocated page file size under Performance Options - Advanced
+	// MemoryStatusEx.ullAvailPageFile = what the OS can give use (a lot less than MemoryStatusEx.ullTotalPageFile)
+	//                                   Note: the system gives us a bit more when we reach the limit
 	MEMORYSTATUSEX MemoryStatusEx;
 	MemoryStatusEx.dwLength = sizeof(MemoryStatusEx);
 	::GlobalMemoryStatusEx(&MemoryStatusEx);
 	double dOverallCommitSizeGB = (double)((CDib::m_llOverallSharedMemoryBytes + MemoryStatusEx.ullAvailPageFile) >> 20) / 1024.0;
 
+	// RAM
+	double dRamGB = (double)g_nOSUsablePhysRamMB / 1024.0;
+
+	// Limit = minimum of dOverallCommitSizeGB and dRamGB
+	double dLimitGB = min(dOverallCommitSizeGB, dRamGB);
+
 	// Format stats
 	sBufStats.Format(_T("BUF: %0.1f(max %0.1f)/%0.1f") + ML_STRING(1826, "GB"),
 					(double)(CDib::m_llOverallSharedMemoryBytes >> 20) / 1024.0,
-					dMaxOverallQueueSizeGB, dOverallCommitSizeGB);
+					dMaxOverallQueueSizeGB,
+					dLimitGB);
 
 	// return TRUE to alert!
-	return (dMaxOverallQueueSizeGB > dOverallCommitSizeGB);
+	return (dMaxOverallQueueSizeGB > dLimitGB);
 }
 #endif
 
