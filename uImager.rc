@@ -1108,8 +1108,9 @@ BEGIN
     CONTROL         "Execute on",IDC_EXEC_COMMAND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,89,58,10
     COMBOBOX        IDC_EXEC_COMMAND_MODE,286,88,123,72,CBS_DROPDOWNLIST | WS_TABSTOP
     EDITTEXT        IDC_EDIT_EXE,225,113,184,12,ES_AUTOHSCROLL
-    CONTROL         "Arguments <a>(?)</a>",IDC_SYSLINK_PARAMS_HELP,"SysLink",WS_TABSTOP,225,129,184,9
     EDITTEXT        IDC_EDIT_PARAMS,225,139,184,45,ES_MULTILINE | WS_VSCROLL
+    CONTROL         "%sec% %min% %hour% %day% %month% %year% %full% %small% %name% <a>(?)</a>",IDC_SYSLINK_PARAMS_HELP,
+                    "SysLink",WS_TABSTOP,225,185,184,17
     CONTROL         "Hide window of executed command",IDC_CHECK_HIDE_EXEC_COMMAND,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,203,129,10
     CONTROL         "Only one instance of executed command",IDC_CHECK_WAIT_EXEC_COMMAND,
@@ -1136,7 +1137,7 @@ BEGIN
     LTEXT           "Quality",IDC_STATIC,75,191,24,8
     LTEXT           "Take each",IDC_STATIC2476,13,245,47,8
     LTEXT           "Thumbnail",IDC_STATIC2478,13,263,53,8
-    LTEXT           "%sec% %min% %hour% %day% %month% %year% %full% %small% %name%",IDC_STATIC,225,185,184,17
+    LTEXT           "Arguments",IDC_STATIC,225,129,35,8
     LTEXT           "Program",IDC_STATIC,225,103,28,8
     LTEXT           "Examples",IDC_STATIC,225,228,31,8
 END
