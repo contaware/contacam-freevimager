@@ -1257,13 +1257,15 @@ BOOL CAboutDlg::OnInitDialog()
 	pCpuEdit->SetWindowText(sCpu);
 
 	// Total Physical Memory
-	CString sPhysMemMB;
-	sPhysMemMB.Format(	_T("RAM  %d ") + ML_STRING(1825, "MB") + _T(" (") +
-						ML_STRING(1820, "usable") + _T(" %d ") + ML_STRING(1825, "MB") + _T(", ") +
-						ML_STRING(1821, "addressable") + _T(" %d ") + ML_STRING(1825, "MB") + _T(")"),
-						g_nPCInstalledPhysRamMB, g_nOSUsablePhysRamMB, g_nAppUsableAddressSpaceMB);
-	CEdit* pPhysMemMB = (CEdit*)GetDlgItem(IDC_PHYSMEM);
-	pPhysMemMB->SetWindowText(sPhysMemMB);
+	CString sPhysMem;
+	sPhysMem.Format(	_T("RAM  %0.1f ") + ML_STRING(1826, "GB") + _T(" (") +
+						ML_STRING(1820, "usable") + _T(" %0.1f ") + ML_STRING(1826, "GB") + _T(", ") +
+						ML_STRING(1821, "addressable") + _T(" %0.1f ") + ML_STRING(1826, "GB") + _T(")"),
+						(double)g_nPCInstalledPhysRamMB / 1024.0,
+						(double)g_nOSUsablePhysRamMB / 1024.0,
+						(double)g_nAppUsableAddressSpaceMB / 1024.0);
+	CEdit* pPhysMem = (CEdit*)GetDlgItem(IDC_PHYSMEM);
+	pPhysMem->SetWindowText(sPhysMem);
 
 	// Compilation Time & Date
 	CString sCompilationTime;
