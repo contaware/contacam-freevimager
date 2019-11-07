@@ -1946,8 +1946,10 @@ end_of_software_detection:
 			// Set flag
 			m_bDetectingMinLengthMovement = TRUE;
 
-			// Common var
+			// Save Jpeg
 			CString sSavedJpegRec;
+			if (m_bSaveStartPicture)
+				sSavedJpegRec = SaveJpegRec(pDib, Time);
 
 			// Send E-Mail
 			if (m_bSendMailRecording)
@@ -1968,7 +1970,6 @@ end_of_software_detection:
 					CTimeSpan TimeDiff = Time - m_MovDetLastJPGMailTime;
 					if (TimeDiff.GetTotalSeconds() >= (LONGLONG)m_nMovDetSendMailSecBetweenMsg)
 					{
-						sSavedJpegRec = SaveJpegRec(pDib, Time);
 						if (CVideoDeviceDoc::SendMail(m_SendMailConfiguration, GetAssignedDeviceName(), Time, _T("REC"), _T(""), sSavedJpegRec))
 							m_MovDetLastJPGMailTime = Time;
 					}
@@ -1977,11 +1978,7 @@ end_of_software_detection:
 
 			// Execute Command
 			if (m_bExecCommand && m_nExecCommandMode == 0)
-			{
-				if (sSavedJpegRec.IsEmpty())
-					sSavedJpegRec = SaveJpegRec(pDib, Time);
 				ExecCommand(Time, sSavedJpegRec);
-			}
 		}
 	}
 
@@ -1991,9 +1988,12 @@ end_of_software_detection:
 	DWORD dwError = ERROR_SUCCESS;
 	if (m_bDetectingMovement)
 	{
-		// Add new frame
-		if (bStoreFrame && !bDropFrame)
-			dwError = AddNewFrameToNewestList(bMarkStart, pDib);
+		if (bStoreFrame)
+		{
+			// Add new frame
+			if (!bDropFrame)
+				dwError = AddNewFrameToNewestList(bMarkStart, pDib);
+		}
 
 		// Check if end of detection period
 		// Attention: m_nMilliSecondsRecAfterMovementEnd must be at least 1 sec!
@@ -3533,6 +3533,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nDetectionMaxFrames = MOVDET_DEFAULT_MAX_FRAMES_IN_LIST;
 	m_bSaveVideo = TRUE;
 	m_bSaveAnimGIF = TRUE;
+	m_bSaveStartPicture = TRUE;
 	m_bSendMailMalfunction = TRUE;
 	m_bSendMailRecording = FALSE;
 	m_bExecCommand = FALSE;
@@ -4407,6 +4408,7 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_nCurrentDetectionZoneSize = m_nDetectionZoneSize = (int) pApp->GetProfileInt(sSection, _T("DetectionZoneSize"), 0);
 	m_bSaveVideo = (BOOL) pApp->GetProfileInt(sSection, _T("SaveVideoMovementDetection"), TRUE);
 	m_bSaveAnimGIF = (BOOL) pApp->GetProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), TRUE);
+	m_bSaveStartPicture = (BOOL)pApp->GetProfileInt(sSection, _T("SaveStartPictureMovementDetection"), TRUE);
 	m_bSendMailMalfunction = (BOOL)pApp->GetProfileInt(sSection, _T("SendMailMalfunction"), TRUE);
 	m_bSendMailRecording = (BOOL) pApp->GetProfileInt(sSection, _T("SendMailMovementDetection"), FALSE);
 	m_bExecCommand = (BOOL) pApp->GetProfileInt(sSection, _T("DoExecCommandMovementDetection"), FALSE);
@@ -4546,6 +4548,7 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("DetectionZoneSize"), m_nDetectionZoneSize);
 	pApp->WriteProfileInt(sSection, _T("SaveVideoMovementDetection"), m_bSaveVideo);
 	pApp->WriteProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), m_bSaveAnimGIF);
+	pApp->WriteProfileInt(sSection, _T("SaveStartPictureMovementDetection"), m_bSaveStartPicture);
 	pApp->WriteProfileInt(sSection, _T("SendMailMalfunction"), m_bSendMailMalfunction);
 	pApp->WriteProfileInt(sSection, _T("SendMailMovementDetection"), m_bSendMailRecording);
 	pApp->WriteProfileInt(sSection, _T("DoExecCommandMovementDetection"), m_bExecCommand);

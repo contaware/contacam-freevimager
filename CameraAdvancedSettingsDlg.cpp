@@ -184,6 +184,7 @@ BEGIN_MESSAGE_MAP(CCameraAdvancedSettingsDlg, CDialog)
 	ON_WM_HSCROLL()
 	ON_BN_CLICKED(IDC_SAVE_VIDEO, OnSaveVideo)
 	ON_BN_CLICKED(IDC_SAVE_ANIMATEDGIF, OnSaveAnimGif)
+	ON_BN_CLICKED(IDC_SAVE_START_PICTURE, OnSaveStartPicture)
 	ON_BN_CLICKED(IDC_ANIMATEDGIF_SIZE, OnAnimatedgifSize)
 	ON_CBN_SELCHANGE(IDC_COMBO_SNAPSHOT_RATE, OnSelchangeSnapshotRate)
 	ON_BN_CLICKED(IDC_BUTTON_THUMB_SIZE, OnButtonThumbSize)
@@ -391,6 +392,13 @@ BOOL CCameraAdvancedSettingsDlg::OnInitDialog()
 													m_pDoc->m_dwAnimatedGifHeight);
 	CButton* pButtonAnimGIFSize = (CButton*)GetDlgItem(IDC_ANIMATEDGIF_SIZE);
 	pButtonAnimGIFSize->SetWindowText(sSize);
+
+	// Save Start Picture Check Box
+	CButton* pCheckStartPictureSave = (CButton*)GetDlgItem(IDC_SAVE_START_PICTURE);
+	if (m_pDoc->m_bSaveStartPicture)
+		pCheckStartPictureSave->SetCheck(1);
+	else
+		pCheckStartPictureSave->SetCheck(0);
 
 	// Snapshot rate
 	for (int i = 0; i < pComboBoxSnapshotRate->GetCount(); i++)
@@ -795,6 +803,12 @@ void CCameraAdvancedSettingsDlg::OnAnimatedgifSize()
 
 	// Restart Save Frame List Thread
 	m_pDoc->m_SaveFrameListThread.Start();
+}
+
+void CCameraAdvancedSettingsDlg::OnSaveStartPicture()
+{
+	CButton* pCheck = (CButton*)GetDlgItem(IDC_SAVE_START_PICTURE);
+	m_pDoc->m_bSaveStartPicture = pCheck->GetCheck() > 0;
 }
 
 void CCameraAdvancedSettingsDlg::OnSelchangeSnapshotRate()

@@ -913,6 +913,7 @@ public:
 	volatile int m_nDetectionMaxFrames;					// Maximum number of frames for a detection sequence
 	volatile BOOL m_bSaveVideo;							// Save Video File
 	volatile BOOL m_bSaveAnimGIF;						// Save Animated GIF
+	volatile BOOL m_bSaveStartPicture;					// Save Start Picture
 	volatile BOOL m_bSendMailMalfunction;				// Send Email on Device Malfunction
 	volatile BOOL m_bSendMailRecording;					// Send Email on Recording
 	volatile BOOL m_bExecCommand;						// Execute Command

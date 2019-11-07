@@ -87,6 +87,7 @@ protected:
 	afx_msg void OnSaveVideo();
 	afx_msg void OnSaveAnimGif();
 	afx_msg void OnAnimatedgifSize();
+	afx_msg void OnSaveStartPicture();
 	afx_msg void OnSelchangeSnapshotRate();
 	afx_msg void OnButtonThumbSize();
 	afx_msg void OnSyslinkControlHelp(NMHDR* pNMHDR, LRESULT* pResult);

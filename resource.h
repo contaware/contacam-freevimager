@@ -883,6 +883,7 @@
 #define IDC_SAVE_ANIMATEDGIF            1057
 #define IDS_MULTILANG_1058              1058
 #define IDC_EDIT_QUALITY                1058
+#define IDC_SAVE_START_PICTURE          1058
 #define IDS_MULTILANG_1059              1059
 #define IDC_SPIN_QUALITY                1059
 #define IDS_MULTILANG_1060              1060

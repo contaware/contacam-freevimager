@@ -138,9 +138,9 @@ BOOL CCameraBasicSettingsDlg::OnInitDialog()
 		pComboBox->AddString(ML_STRING(1880, "No Attachment"));
 		pComboBox->AddString(ML_STRING(1883, "Saved Full Video"));
 		pComboBox->AddString(ML_STRING(1882, "Saved Small Video"));
-		pComboBox->AddString(ML_STRING(1881, "Snapshot"));
-		pComboBox->AddString(ML_STRING(1881, "Snapshot") + _T(" + ") + ML_STRING(1883, "Saved Full Video"));
-		pComboBox->AddString(ML_STRING(1881, "Snapshot") + _T(" + ") + ML_STRING(1882, "Saved Small Video"));
+		pComboBox->AddString(ML_STRING(1881, "Saved Start Picture"));
+		pComboBox->AddString(ML_STRING(1881, "Saved Start Picture") + _T(" + ") + ML_STRING(1883, "Saved Full Video"));
+		pComboBox->AddString(ML_STRING(1881, "Saved Start Picture") + _T(" + ") + ML_STRING(1882, "Saved Small Video"));
 	}
 
 	// Init vars
