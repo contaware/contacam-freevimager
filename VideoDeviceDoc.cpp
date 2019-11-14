@@ -1004,7 +1004,11 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 	Dib.SetShowMessageBoxOnError(FALSE);
 	DWORD dwCurrentThreadId = ::GetCurrentThreadId();
 	CAVRec* pAVRecVideo = NULL;
-	CString sVideoFileName = MakeVideoHistoryFileName();
+	CString sBaseYearMonthDayDir;
+	CVideoDeviceDoc::CreateBaseYearMonthDaySubDir(m_pDoc->m_sRecordAutoSaveDir, m_Time, _T(""), sBaseYearMonthDayDir);
+	CString sVideoFileName(_T("shot_") + m_Time.Format(_T("%Y_%m_%d")) + DEFAULT_VIDEO_FILEEXT);
+	if (!sBaseYearMonthDayDir.IsEmpty())
+		sVideoFileName = sBaseYearMonthDayDir + _T("\\") + sVideoFileName;
 	CString sVideoTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), sVideoFileName);
 	CSortableFileFind FileFind;
 	FileFind.AddAllowedExtension(_T("jpg"));
@@ -1126,10 +1130,13 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	sLiveThumbFileName += CString(_T("\\")) + DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME;
 
 	// Init history file name
-	// Note: if m_pDoc->m_bSnapshotHistoryVideo is TRUE
-	//       it creates also year\month\day\DEFAULT_SNAPSHOT_HISTORY_FOLDER
-	//       otherwise it just returns the file name without path
-	CString sHistoryFileName(MakeJpegHistoryFileName());
+	CString sBaseYearMonthDaySubDir;
+	BOOL bSaveHistoryJpeg = m_pDoc->m_bSnapshotHistoryVideo && !m_pDoc->m_bObscureSource;
+	if (bSaveHistoryJpeg)
+		CVideoDeviceDoc::CreateBaseYearMonthDaySubDir(m_pDoc->m_sRecordAutoSaveDir, m_Time, DEFAULT_SNAPSHOT_HISTORY_FOLDER, sBaseYearMonthDaySubDir);
+	CString sHistoryFileName(_T("shot_") + m_Time.Format(_T("%Y_%m_%d_%H_%M_%S")) + _T(".jpg"));
+	if (!sBaseYearMonthDaySubDir.IsEmpty())
+		sHistoryFileName = sBaseYearMonthDaySubDir + _T("\\") + sHistoryFileName;
 
 	// Temp file names
 	CString sTempFileName(::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), sHistoryFileName));
@@ -1178,7 +1185,7 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 
 	// We need the History jpgs to make the video file inside the snapshot video thread
 	// (history jpgs are deleted in snapshot video thread)
-	if (m_pDoc->m_bSnapshotHistoryVideo && (m_Time - m_LastSnapshotHistoryTime).GetTotalSeconds() >= (LONGLONG)m_pDoc->m_nSnapshotHistoryRate)
+	if (bSaveHistoryJpeg && (m_Time - m_LastSnapshotHistoryTime).GetTotalSeconds() >= (LONGLONG)m_pDoc->m_nSnapshotHistoryRate)
 	{
 		CVideoDeviceDoc::SaveJpegFast(&m_Dib, &m_MJPEGEncoder, sHistoryFileName, GOOD_SNAPSHOT_COMPR_QUALITY);
 		m_LastSnapshotHistoryTime = m_Time;
@@ -1189,41 +1196,6 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	::DeleteFile(sTempThumbFileName);
 
 	return 0;
-}
-
-__forceinline CString CVideoDeviceDoc::CSaveSnapshotThread::MakeJpegHistoryFileName()
-{
-	CString sBaseYearMonthDaySubDir;
-
-	// Snapshot time
-	CString sTime = m_Time.Format(_T("%Y_%m_%d_%H_%M_%S"));
-
-	// Create directory if necessary
-	if (m_pDoc->m_bSnapshotHistoryVideo)
-		CVideoDeviceDoc::CreateBaseYearMonthDaySubDir(m_pDoc->m_sRecordAutoSaveDir, m_Time, DEFAULT_SNAPSHOT_HISTORY_FOLDER, sBaseYearMonthDaySubDir);
-
-	// Return file name
-	if (sBaseYearMonthDaySubDir.IsEmpty())
-		return _T("shot_") + sTime + _T(".jpg");
-	else
-		return sBaseYearMonthDaySubDir + _T("\\") + _T("shot_") + sTime + _T(".jpg");
-}
-
-__forceinline CString CVideoDeviceDoc::CSaveSnapshotVideoThread::MakeVideoHistoryFileName()
-{
-	CString sBaseYearMonthDayDir;
-
-	// Snapshots time
-	CString sTime = m_Time.Format(_T("%Y_%m_%d"));
-
-	// Create directory
-	CVideoDeviceDoc::CreateBaseYearMonthDaySubDir(m_pDoc->m_sRecordAutoSaveDir, m_Time, _T(""), sBaseYearMonthDayDir);
-
-	// Return file name
-	if (sBaseYearMonthDayDir.IsEmpty())
-		return _T("shot_") + sTime + DEFAULT_VIDEO_FILEEXT;
-	else
-		return sBaseYearMonthDayDir + _T("\\") + _T("shot_") + sTime + DEFAULT_VIDEO_FILEEXT;
 }
 
 BOOL CVideoDeviceDoc::SendMail(	const SendMailConfigurationStruct& Config,

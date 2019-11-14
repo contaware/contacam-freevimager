@@ -490,7 +490,6 @@ public:
 
 		protected:
 			int Work();
-			__forceinline CString MakeVideoHistoryFileName();
 			CVideoDeviceDoc* m_pDoc;
 	};
 
@@ -507,7 +506,6 @@ public:
 
 		protected:
 			int Work();
-			__forceinline CString MakeJpegHistoryFileName();
 			CVideoDeviceDoc* m_pDoc;
 			CMJPEGEncoder m_MJPEGEncoder;
 			CMJPEGEncoder m_MJPEGThumbEncoder;
