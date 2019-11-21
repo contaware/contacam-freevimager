@@ -2085,8 +2085,9 @@
 #define IDC_CHECK_WAIT_EXEC_COMMAND     1751
 #define IDS_STRING1751                  1751
 #define IDS_STRING1752                  1752
-#define IDC_EDIT_CONTROL_BATCH          1752
+#define IDC_EDIT_BATCH                  1752
 #define IDS_STRING1753                  1753
+#define IDC_EDIT_BATCH_SENSITIVITY      1753
 #define IDS_STRING1754                  1754
 #define IDC_COMBO_SNAPSHOT_RATE         1755
 #define IDS_STRING1755                  1755

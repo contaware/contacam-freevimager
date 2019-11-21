@@ -211,16 +211,27 @@ void CCameraAdvancedSettingsDlg::UpdateTitleAndDir()
 	else
 		SetWindowText(m_pDoc->GetDeviceName());
 
-	CEdit* pEditControlBatch = (CEdit*)GetDlgItem(IDC_EDIT_CONTROL_BATCH);
-	if (pEditControlBatch)
+	CString sRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
+	sRecordAutoSaveDir.TrimRight(_T('\\'));
+
+	CEdit* pEditBatch = (CEdit*)GetDlgItem(IDC_EDIT_BATCH);
+	if (pEditBatch)
 	{
-		CString sCurrentControlBatch;
-		pEditControlBatch->GetWindowText(sCurrentControlBatch);
-		CString sRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
-		sRecordAutoSaveDir.TrimRight(_T('\\'));
-		CString sNewControlBatch = _T("\"") + sRecordAutoSaveDir + _T("\\") + CAMERA_REC_SENSITIVITY_BATCH_FILENAME + _T("\"");
-		if (sCurrentControlBatch != sNewControlBatch)
-			pEditControlBatch->SetWindowText(sNewControlBatch);
+		CString sCurrentBatch;
+		pEditBatch->GetWindowText(sCurrentBatch);
+		CString sNewBatch(_T("\"") + sRecordAutoSaveDir + _T("\\") + CAMERA_BATCH_FILENAME + _T("\""));
+		if (sCurrentBatch != sNewBatch)
+			pEditBatch->SetWindowText(sNewBatch);
+	}
+
+	pEditBatch = (CEdit*)GetDlgItem(IDC_EDIT_BATCH_SENSITIVITY);
+	if (pEditBatch)
+	{
+		CString sCurrentBatch;
+		pEditBatch->GetWindowText(sCurrentBatch);
+		CString sNewBatch(_T("\"") + sRecordAutoSaveDir + _T("\\") + CAMERA_REC_SENSITIVITY_BATCH_FILENAME + _T("\""));
+		if (sCurrentBatch != sNewBatch)
+			pEditBatch->SetWindowText(sNewBatch);
 	}
 }
 

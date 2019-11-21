@@ -1103,12 +1103,13 @@ BEGIN
     CONTROL         "Start picture",IDC_SAVE_START_PICTURE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,213,55,10
     COMBOBOX        IDC_COMBO_SNAPSHOT_RATE,75,243,128,204,CBS_DROPDOWNLIST | WS_TABSTOP
     PUSHBUTTON      "",IDC_BUTTON_THUMB_SIZE,75,260,128,14
-    CONTROL         "Externally set or schedule the recording state/sensitivity using the following batch file <a>(?)</a>",IDC_SYSLINK_CONTROL_HELP,
-                    "SysLink",WS_TABSTOP,225,13,184,18
-    EDITTEXT        IDC_EDIT_CONTROL_BATCH,225,32,184,34,ES_MULTILINE | ES_READONLY | WS_VSCROLL
-    CONTROL         "Execute on",IDC_EXEC_COMMAND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,89,58,10
-    COMBOBOX        IDC_EXEC_COMMAND_MODE,286,88,123,72,CBS_DROPDOWNLIST | WS_TABSTOP
-    EDITTEXT        IDC_EDIT_EXE,225,113,184,12,ES_AUTOHSCROLL
+    CONTROL         "Externally set/schedule with batch files <a>(?)</a>",IDC_SYSLINK_CONTROL_HELP,
+                    "SysLink",WS_TABSTOP,225,13,184,9
+    EDITTEXT        IDC_EDIT_BATCH,225,33,184,12,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_BATCH_SENSITIVITY,225,58,184,12,ES_AUTOHSCROLL | ES_READONLY
+    CONTROL         "Execute on",IDC_EXEC_COMMAND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,91,58,10
+    COMBOBOX        IDC_EXEC_COMMAND_MODE,286,90,123,72,CBS_DROPDOWNLIST | WS_TABSTOP
+    EDITTEXT        IDC_EDIT_EXE,225,114,184,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_EDIT_PARAMS,225,139,184,45,ES_MULTILINE | WS_VSCROLL
     CONTROL         "%sec% %min% %hour% %day% %month% %year% %full% %small% %name% <a>(?)</a>",IDC_SYSLINK_PARAMS_HELP,
                     "SysLink",WS_TABSTOP,225,185,184,17
@@ -1122,7 +1123,7 @@ BEGIN
     PUSHBUTTON      "Backup Files",IDC_BUTTON_BACKUP_FILES,319,258,90,16
     LTEXT           "sec",IDC_STATIC2283,124,27,11,8
     GROUPBOX        "Video",IDC_STATIC2286,6,3,202,103
-    GROUPBOX        "Control",IDC_STATIC2291,218,3,198,67
+    GROUPBOX        "Control",IDC_STATIC2291,218,3,198,71
     LTEXT           "Drop shorter than",IDC_STATIC,13,40,61,11
     LTEXT           "sec",IDC_STATIC2292,124,40,11,8
     LTEXT           "Split longer than",IDC_STATIC,13,54,57,8
@@ -1134,13 +1135,15 @@ BEGIN
     LTEXT           "fps",IDC_STATIC2183,124,12,11,8
     GROUPBOX        "Audio",IDC_STATIC2157,6,113,202,51
     GROUPBOX        "Live Snapshot",IDC_STATIC2294,6,233,202,45
-    GROUPBOX        "Command",IDC_STATIC2295,218,78,198,200
+    GROUPBOX        "Command",IDC_STATIC2295,218,81,198,197
     LTEXT           "Quality",IDC_STATIC,75,182,24,8
     LTEXT           "Take each",IDC_STATIC2476,13,245,47,8
     LTEXT           "Thumbnail",IDC_STATIC2478,13,263,53,8
     LTEXT           "Arguments",IDC_STATIC,225,129,35,8
-    LTEXT           "Program",IDC_STATIC,225,103,28,8
+    LTEXT           "Program",IDC_STATIC,225,104,28,8
     LTEXT           "Examples",IDC_STATIC,225,228,31,8
+    LTEXT           "Camera source on/off (argument: on,off)",IDC_STATIC,225,24,184,8
+    LTEXT           "Camera rec sensitivity (argument: 0,10,20..100)",IDC_STATIC,225,49,184,8
 END
 
 IDD_REDEYE DIALOGEX 0, 0, 223, 268
@@ -3435,7 +3438,7 @@ BEGIN
     ID_INDICATOR_YCOORDINATE " Y:        "
     ID_SETTINGS_LOG_ALL_MESSAGES 
                             "Enable highly verbose diagnostic logging\nDebug Log"
-    ID_CAPTURE_OBSCURESOURCE "Obscure / show source\nObscure Source"
+    ID_CAPTURE_OBSCURESOURCE "Camera source ON/OFF\nCamera Source ON/OFF"
     ID_SETTINGS_LOG_NORMAL  "Enable normal logging\nNormal Log"
     ID_SETTINGS_LOG_VERBOSE "Enable verbose diagnostic logging\nVerbose Log"
 END
