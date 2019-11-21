@@ -594,7 +594,8 @@ public:
 		YCAM_RTSP = 1250,				// Y-cam RTSP
 		ZAVIO_RTSP = 1255,				// Zavio RTSP
 		ZMODO_RTSP = 1260,				// Zmodo RTSP
-		// Add more rtsp devices here...
+		// Add more rtsp devices here if there is no space at alphabetical position:
+		WYZE_RTSP = 1270,				// Wyze RTSP
 		LAST_DEVICE						// Placeholder for range check
 	} NetworkDeviceTypeMode;
 

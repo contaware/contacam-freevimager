@@ -8686,7 +8686,8 @@ void CVideoDeviceDoc::ConnectRtsp()
 			sPathAndQuery = _T("/play1.sdp");
 			break;
 
-		case DAHUA_RTSP:			
+		case DAHUA_RTSP:
+		case WYZE_RTSP:
 			sPathAndQuery = _T("/live");
 			break;
 
