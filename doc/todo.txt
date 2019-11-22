@@ -42,19 +42,8 @@ ContaCam Program
 - Post buffer is good to not split the detection, but should be removed at the
   end of the record (sambul7165@gmail.com)
 
-- When running ContaCam from an Administrator login on a computer, if another
-  person logged into that computer, the video would still get captured but audio
-  from the webcam microphone would stop getting captured until that second person
-  logged out. This is under Windows 10; I tried running ContaCam as a Service and
-  it made no difference to this problem (shep@bostin.com)
-  
-- Pollable SendMailMovementDetection (nmclachlan@gmail.com)
-  Pollable DoExecCommandMovementDetection (johnliber@gmail.com)
-  (I do not know whether it is a good thing to add more and more pollable settings...)
-  
-- Implement the classic grid display for cameras overview (harmi11@gmail.com)
-
 - Use nmap to get all the MAC addresses and detect if one is present to disable ContaCam
+  -> implement that as a ContaCam API usage example
   (stuart.les.bloom@gmail.com)
   
 - Support connecting to a .m3u8 streaming server also known as HLS (HTTP Live Streaming)

@@ -1,8 +1,14 @@
 CONTACAM HISTORY
 
-9.9.3 (Month XXth 2019)
+9.9.3 (November 22nd 2019)
 
-- Support Floureon and JideTech RTSP cameras
+- New CAMERA.bat batch file to control the camera source on/off state
+- Daily summary video will not record black frames when source is off
+- Added a recording start picture saving checkbox
+- Http multipart parser is more fault tolerant
+  (fixes VLC multipart streaming)
+- New %name% command execution variable containing the camera name
+- Support Floureon, JideTech and Wyze RTSP cameras
 
 9.9.1 (October 10th 2019)
 

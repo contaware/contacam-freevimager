@@ -1,6 +1,6 @@
 FREEVIMAGER HISTORY
 
-9.9.3 (Month XXth 2019)
+9.9.3 (November 22nd 2019)
 
 - Increased a security check limit which prevented loading
   big .png images

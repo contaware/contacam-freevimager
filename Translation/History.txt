@@ -1,8 +1,8 @@
 TRANSLATIONS HISTORY
 
-9.9.3 (Month XXth 2019)
+9.9.3 (November 22nd 2019)
 
-- ...
+- Fixed all languages to display well with 125% text size
   
 9.9.1 (October 10th 2019)
 
