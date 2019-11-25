@@ -2035,8 +2035,14 @@ void CVideoDeviceDoc::ExecCommand(const CTime& Time,
 	}
 	if (m_sExecCommand != _T("") && m_hExecCommand == NULL)
 	{
+		// Executable
+		CString sExecCommand(m_sExecCommand);
+		sExecCommand.Trim();
+		sExecCommand.Trim(_T('"'));
+
 		// Replace variables
-		CString sExecParams = m_sExecParams;
+		CString sExecParams(m_sExecParams);
+		sExecParams.Trim();
 		CString sSecond, sMinute, sHour, sDay, sMonth, sYear, sMovDetSavesCount;
 		sSecond.Format(_T("%02d"), Time.GetSecond());
 		sMinute.Format(_T("%02d"), Time.GetMinute());
@@ -2072,10 +2078,13 @@ void CVideoDeviceDoc::ExecCommand(const CTime& Time,
 						STARTF_USESHOWWINDOW;		// use the following wShowWindow
 		si.wShowWindow = m_bHideExecCommand ? SW_HIDE : SW_SHOWNORMAL;
 		TCHAR lpCommandLine[32768];
-		_tcscpy_s(lpCommandLine, _T("\"") + m_sExecCommand + _T("\"") + _T(" ") + sExecParams);
-		::CreateProcess(m_sExecCommand, lpCommandLine,
+		if (sExecParams.IsEmpty())
+			_tcscpy_s(lpCommandLine, _T("\"") + sExecCommand + _T("\""));
+		else
+			_tcscpy_s(lpCommandLine, _T("\"") + sExecCommand + _T("\"") + _T(" ") + sExecParams);
+		::CreateProcess(sExecCommand, lpCommandLine,
 						NULL, NULL, FALSE, NORMAL_PRIORITY_CLASS, NULL,
-						::GetDriveAndDirName(m_sExecCommand), &si, &pi);
+						::GetDriveAndDirName(sExecCommand), &si, &pi);
 		m_hExecCommand = pi.hProcess;
 		if (pi.hThread)
 			::CloseHandle(pi.hThread);
