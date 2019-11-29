@@ -4041,7 +4041,6 @@ BEGIN
     IDS_STRING1834          "SSL/TLS (Port 465)"
     IDS_STRING1835          "STARTTLS (Port 25 or 587)"
     IDS_STRING1836          "Unsupported Video or Zones Size!"
-    IDS_STRING1839          "%s, cannot realtime save (%fx), decrease framerate and/or video resolution!"
 END
 
 STRINGTABLE

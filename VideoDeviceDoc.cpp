@@ -179,6 +179,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 	CString sTempRecordingDir;
 	sTempRecordingDir.Format(_T("Recording%X"), dwCurrentThreadId);
 	sTempRecordingDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + sTempRecordingDir;
+	int nSaveFreqDiv = 1;
 
 	// Save loop
 	for (;;)
@@ -365,7 +366,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			if (dCalcFrameRate / m_pDoc->m_dEffectiveFrameRate < MOVDET_SAVE_MIN_FRAMERATE_RATIO)
 				dCalcFrameRate = m_pDoc->m_dEffectiveFrameRate;
 		}
-		AVRational CalcFrameRate = av_d2q(dCalcFrameRate, MAX_SIZE_FOR_RATIONAL);
 		while (!m_pFrameList->IsEmpty() && nextpos && nFrames)
 		{
 			// Shutdown?
@@ -392,17 +392,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			// Video
 			if (bMakeVideo)
 			{
-				// Add Frame Tags
-				if (m_pDoc->m_bShowFrameTime)
-				{
-					AddFrameTime(pDib, RefTime, dwRefUpTime, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
-					AddFrameCount(pDib, sMovDetSavesCount, m_pDoc->m_nRefFontSize);
-				}
-
-				// Add "NO DONATION" tag
-				if (g_DonorEmailValidateThread.m_bNoDonation)
-					AddNoDonationTag(pDib, m_pDoc->m_nRefFontSize);
-
 				// Open if first frame
 				if (nFrames == m_nNumFramesToSave)
 				{
@@ -413,10 +402,11 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 					DstBmi.biHeight = pDib ? pDib->GetHeight() : 0;
 					DstBmi.biPlanes = 1;
 					DstBmi.biCompression = DEFAULT_VIDEO_FOURCC;
+					AVRational SaveFrameRate = av_d2q(dCalcFrameRate / (double)nSaveFreqDiv, MAX_SIZE_FOR_RATIONAL);
 					AVRecVideo.AddVideoStream(pDib ? pDib->GetBMI() : NULL,		// Source Video Format
 											(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
-											CalcFrameRate.num,					// Rate
-											CalcFrameRate.den,					// Scale			
+											SaveFrameRate.num,					// Rate
+											SaveFrameRate.den,					// Scale			
 											m_pDoc->m_fVideoRecQuality,			// Video quality
 											((CUImagerApp*)::AfxGetApp())->m_nThreadCount);
 					if (m_pDoc->m_bCaptureAudio)
@@ -431,15 +421,27 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				// If open add data to file
 				if (AVRecVideo.IsOpen() && pDib)
 				{
-					// Add Frame
-					if (pDib->IsValid())
+					// Video
+					if (pDib->IsValid() && ((m_nNumFramesToSave - nFrames) % nSaveFreqDiv) == 0)
 					{
+						// Add Frame Tags
+						if (m_pDoc->m_bShowFrameTime)
+						{
+							AddFrameTime(pDib, RefTime, dwRefUpTime, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
+							AddFrameCount(pDib, sMovDetSavesCount, m_pDoc->m_nRefFontSize);
+						}
+
+						// Add "NO DONATION" tag
+						if (g_DonorEmailValidateThread.m_bNoDonation)
+							AddNoDonationTag(pDib, m_pDoc->m_nRefFontSize);
+
+						// Add Frame
 						AVRecVideo.AddFrame(AVRecVideo.VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
 											pDib,
 											false);	// No interleave
 					}
 
-					// Add Audio Samples
+					// Audio
 					if (m_pDoc->m_bCaptureAudio)
 					{
 						POSITION posUserBuf = pDib->m_UserList.GetHeadPosition();
@@ -474,6 +476,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 									RefTime,
 									dwRefUpTime,
 									sMovDetSavesCount);
+					if (nSaveFreqDiv > 1)
+						dDelayMul *= 2; // to save faster only store half of the frames calculated in AnimatedGifInit()
 				}
 				// Next Frame?
 				else
@@ -585,11 +589,34 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			double dSaveFrameListSpeed = (double)dwFramesTimeMs / (double)dwSaveTimeMs;
 			m_pDoc->m_nSaveFrameListSpeedPercent = Round(dSaveFrameListSpeed * 100.0);
 
-			// Alert
-			if (dwFramesTimeMs > MOVDET_MIN_LENGTH_SAVESPEED_MSEC && dSaveFrameListSpeed < 1.0)
+			// Log
+			if (g_nLogLevel > 0)
 			{
-				::LogLine(ML_STRING(1839, "%s, cannot realtime save (%fx), decrease framerate and/or video resolution!"),
-						m_pDoc->GetAssignedDeviceName(), dSaveFrameListSpeed);
+				if (nSaveFreqDiv > 1)
+				{
+					::LogLine(_T("%s, %s %0.1fx @ %0.1ffps/%d"),
+						m_pDoc->GetAssignedDeviceName(), ML_STRING(1849, "Saved"), dSaveFrameListSpeed, dCalcFrameRate, nSaveFreqDiv);
+				}
+				else
+				{
+					::LogLine(_T("%s, %s %0.1fx @ %0.1ffps"),
+						m_pDoc->GetAssignedDeviceName(), ML_STRING(1849, "Saved"), dSaveFrameListSpeed, dCalcFrameRate);
+				}
+			}
+
+			// Adjust the frame-rate divider
+			if (dwFramesTimeMs > MOVDET_MIN_LENGTH_SAVESPEED_MSEC)
+			{
+				if (dSaveFrameListSpeed < 1.0)
+				{
+					if (nSaveFreqDiv < MOVDET_SAVE_MAX_FREQDIV)
+						++nSaveFreqDiv;
+				}
+				else
+				{
+					if (nSaveFreqDiv > 1)
+						--nSaveFreqDiv;
+				}
 			}
 		}
 

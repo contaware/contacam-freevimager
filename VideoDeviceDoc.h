@@ -106,7 +106,8 @@ class CCameraAdvancedSettingsDlg;
 #define DEFAULT_PRE_BUFFER_MSEC					3000			// ms
 #define DEFAULT_POST_BUFFER_MSEC				5000			// ms
 #define MOVDET_MIN_LENGTH_MSEC					1000			// Default minimum detection length in ms, below this value frames are not saved
-#define MOVDET_MIN_LENGTH_SAVESPEED_MSEC		8000U			// Saving speed calculation only for frame sequences longer than this value
+#define MOVDET_MIN_LENGTH_SAVESPEED_MSEC		8000U			// Saving speed calculation is considered reliable for frame sequences longer than this
+#define MOVDET_SAVE_MAX_FREQDIV					4				// Maximum save frame-rate divider
 #define DEFAULT_MOVDET_LEVEL					50				// Detection level default value (0 = Off .. 99 = Max Sensitivity, 100 = Continuous Recording)
 #define MOVDET_MAX_ZONES_BLOCK_SIZE				1024			// Subdivide settings in blocks (MOVDET_MAX_ZONES must be a multiple of this)
 #define MOVDET_MAX_ZONES						8192			// Maximum number of zones
