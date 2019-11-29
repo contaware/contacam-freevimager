@@ -120,8 +120,8 @@ class CCameraAdvancedSettingsDlg;
 #define MOVDET_ANIMGIF_MAX_FRAMES				40				// Maximum number of frames per animated gif
 #define MOVDET_ANIMGIF_MAX_LENGTH				4000.0			// ms, MOVDET_ANIMGIF_MAX_LENGTH / MOVDET_ANIMGIF_MAX_FRAMES must be >= 100
 #define MOVDET_ANIMGIF_DELAY					500.0			// ms (frame time)
-#define MOVDET_ANIMGIF_FIRST_FRAME_DELAY		1000			// ms (first frame time)
-#define MOVDET_ANIMGIF_LAST_FRAME_DELAY			1000			// ms (last frame time)
+#define MOVDET_ANIMGIF_FIRST_FRAME_DELAY		500				// ms (first frame time)
+#define MOVDET_ANIMGIF_LAST_FRAME_DELAY			500				// ms (last frame time)
 #define MOVDET_ANIMGIF_DIFF_MINLEVEL			10				// determines the "inter-frame-compression" of animated gifs
 																// higher values better compression but worse quality
 #define MOVDET_ANIMGIF_DEFAULT_WIDTH			128				// Default animated gif width (must be a multiple of 4 for stretch)
