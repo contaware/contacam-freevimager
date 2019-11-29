@@ -532,13 +532,13 @@ void CCameraBasicSettingsDlg::ApplySettings()
 		{
 			if (m_pDoc->m_nDetectionLevel == 0 || m_pDoc->m_nDetectionLevel == 100)
 			{
-				if (CVideoDeviceDoc::WriteDetectionLevelToFile(DEFAULT_MOVDET_LEVEL, m_pDoc->m_sRecordAutoSaveDir))
-					m_pDoc->m_nDetectionLevel = DEFAULT_MOVDET_LEVEL; // always after the write as in OnTimer() it gets polled!
+				if (CVideoDeviceDoc::WriteDetectionLevelToFile(MOVDET_DEFAULT_LEVEL, m_pDoc->m_sRecordAutoSaveDir))
+					m_pDoc->m_nDetectionLevel = MOVDET_DEFAULT_LEVEL; // always after the write as in OnTimer() it gets polled!
 			}
 			if (m_pDoc->m_nMilliSecondsRecBeforeMovementBegin == 1000)
-				m_pDoc->m_nMilliSecondsRecBeforeMovementBegin = DEFAULT_PRE_BUFFER_MSEC;
+				m_pDoc->m_nMilliSecondsRecBeforeMovementBegin = MOVDET_DEFAULT_PRE_BUFFER_MSEC;
 			if (m_pDoc->m_nMilliSecondsRecAfterMovementEnd == 1000)
-				m_pDoc->m_nMilliSecondsRecAfterMovementEnd = DEFAULT_POST_BUFFER_MSEC;
+				m_pDoc->m_nMilliSecondsRecAfterMovementEnd = MOVDET_DEFAULT_POST_BUFFER_MSEC;
 			if (m_pDoc->m_nDetectionMinLengthMilliSeconds == 0)
 				m_pDoc->m_nDetectionMinLengthMilliSeconds = MOVDET_MIN_LENGTH_MSEC;
 			if (m_pDoc->m_pCameraAdvancedSettingsDlg)

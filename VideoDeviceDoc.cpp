@@ -3535,8 +3535,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nShowEditDetectionZones = 0;
 	m_bDetectingMovement = FALSE;
 	m_bDetectingMinLengthMovement = FALSE;
-	m_nMilliSecondsRecBeforeMovementBegin = DEFAULT_PRE_BUFFER_MSEC;
-	m_nMilliSecondsRecAfterMovementEnd = DEFAULT_POST_BUFFER_MSEC;
+	m_nMilliSecondsRecBeforeMovementBegin = MOVDET_DEFAULT_PRE_BUFFER_MSEC;
+	m_nMilliSecondsRecAfterMovementEnd = MOVDET_DEFAULT_POST_BUFFER_MSEC;
 	m_nDetectionMinLengthMilliSeconds = MOVDET_MIN_LENGTH_MSEC;
 	m_nDetectionMaxFrames = MOVDET_DEFAULT_MAX_FRAMES_IN_LIST;
 	m_bSaveVideo = TRUE;
@@ -3551,7 +3551,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bHideExecCommand = FALSE;
 	m_bWaitExecCommand = FALSE;
 	m_hExecCommand = NULL;
-	m_nDetectionLevel = DEFAULT_MOVDET_LEVEL;
+	m_nDetectionLevel = MOVDET_DEFAULT_LEVEL;
 	m_nCurrentDetectionZoneSize = m_nDetectionZoneSize = 0;
 	m_dwAnimatedGifWidth = MOVDET_ANIMGIF_DEFAULT_WIDTH;
 	m_dwAnimatedGifHeight = MOVDET_ANIMGIF_DEFAULT_HEIGHT;
@@ -4393,8 +4393,8 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_nDeviceFormatId = (int) pApp->GetProfileInt(sSection, _T("VideoCaptureDeviceFormatID"), -1);
 	m_nDeviceFormatWidth = (int) pApp->GetProfileInt(sSection, _T("VideoCaptureDeviceFormatWidth"), 0);
 	m_nDeviceFormatHeight = (int) pApp->GetProfileInt(sSection, _T("VideoCaptureDeviceFormatHeight"), 0);
-	m_nMilliSecondsRecBeforeMovementBegin = (int) pApp->GetProfileInt(sSection, _T("MilliSecondsRecBeforeMovementBegin"), DEFAULT_PRE_BUFFER_MSEC);
-	m_nMilliSecondsRecAfterMovementEnd = (int) pApp->GetProfileInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), DEFAULT_POST_BUFFER_MSEC);
+	m_nMilliSecondsRecBeforeMovementBegin = (int) pApp->GetProfileInt(sSection, _T("MilliSecondsRecBeforeMovementBegin"), MOVDET_DEFAULT_PRE_BUFFER_MSEC);
+	m_nMilliSecondsRecAfterMovementEnd = (int) pApp->GetProfileInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), MOVDET_DEFAULT_POST_BUFFER_MSEC);
 	m_nDetectionMinLengthMilliSeconds = (int) pApp->GetProfileInt(sSection, _T("DetectionMinLengthMilliSeconds"), MOVDET_MIN_LENGTH_MSEC);
 	int nDetectionMaxFrames = (int) pApp->GetProfileInt(sSection, _T("DetectionMaxFrames"), MOVDET_DEFAULT_MAX_FRAMES_IN_LIST);
 	if (nDetectionMaxFrames >= 1 && nDetectionMaxFrames <= MOVDET_MAX_MAX_FRAMES_IN_LIST)
@@ -4406,10 +4406,10 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 		m_nDetectionLevel = ValidateDetectionLevel(nDetectionLevel);
 	else
 	{
-		// TODO: in future remove the following and just set nDetectionLevel = DEFAULT_MOVDET_LEVEL;
+		// TODO: in future remove the following and just set nDetectionLevel = MOVDET_DEFAULT_LEVEL;
 		
 		// Import old registry value and write it to the file
-		nDetectionLevel = ValidateDetectionLevel(pApp->GetProfileInt(sSection, _T("DetectionLevel"), DEFAULT_MOVDET_LEVEL));
+		nDetectionLevel = ValidateDetectionLevel(pApp->GetProfileInt(sSection, _T("DetectionLevel"), MOVDET_DEFAULT_LEVEL));
 		if (WriteDetectionLevelToFile(nDetectionLevel, m_sRecordAutoSaveDir))
 			m_nDetectionLevel = nDetectionLevel; // always after the write as in OnTimer() it gets polled!
 	}
