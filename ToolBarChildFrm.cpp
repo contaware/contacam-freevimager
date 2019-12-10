@@ -1018,7 +1018,10 @@ void CVideoDeviceChildFrame::OnToolbarDropDown(NMHDR* pNMHDR, LRESULT* pResult)
 			CMenu* pPopup = menu.GetSubMenu(0);
 			ASSERT(pPopup != NULL);
 			GetToolBar()->ClientToScreen(&(pNMToolBar->rcButton));
-			pPopup->TrackPopupMenu(TPM_LEFTBUTTON | TPM_RIGHTBUTTON, pNMToolBar->rcButton.left, pNMToolBar->rcButton.bottom, this);
+			TPMPARAMS tpm;
+			tpm.cbSize = sizeof(tpm);
+			tpm.rcExclude = pNMToolBar->rcButton; // prevent the menu from covering the button
+			pPopup->TrackPopupMenuEx(TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_VERTICAL, pNMToolBar->rcButton.left, pNMToolBar->rcButton.bottom, this, &tpm);
 			break;
 		}
 		case ID_CAPTURE_RECORD:
@@ -1028,7 +1031,10 @@ void CVideoDeviceChildFrame::OnToolbarDropDown(NMHDR* pNMHDR, LRESULT* pResult)
 			CMenu* pPopup = menu.GetSubMenu(0);
 			ASSERT(pPopup != NULL);
 			GetToolBar()->ClientToScreen(&(pNMToolBar->rcButton));
-			pPopup->TrackPopupMenu(TPM_LEFTBUTTON | TPM_RIGHTBUTTON, pNMToolBar->rcButton.left, pNMToolBar->rcButton.bottom, this);
+			TPMPARAMS tpm;
+			tpm.cbSize = sizeof(tpm);
+			tpm.rcExclude = pNMToolBar->rcButton; // prevent the menu from covering the button
+			pPopup->TrackPopupMenuEx(TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_VERTICAL, pNMToolBar->rcButton.left, pNMToolBar->rcButton.bottom, this, &tpm);
 			break;
 		}
 		case ID_EDIT_ZONE:
@@ -1038,7 +1044,10 @@ void CVideoDeviceChildFrame::OnToolbarDropDown(NMHDR* pNMHDR, LRESULT* pResult)
 			CMenu* pPopup = menu.GetSubMenu(0);
 			ASSERT(pPopup != NULL);
 			GetToolBar()->ClientToScreen(&(pNMToolBar->rcButton));
-			pPopup->TrackPopupMenu(TPM_LEFTBUTTON | TPM_RIGHTBUTTON, pNMToolBar->rcButton.left, pNMToolBar->rcButton.bottom, this);
+			TPMPARAMS tpm;
+			tpm.cbSize = sizeof(tpm);
+			tpm.rcExclude = pNMToolBar->rcButton; // prevent the menu from covering the button
+			pPopup->TrackPopupMenuEx(TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_VERTICAL, pNMToolBar->rcButton.left, pNMToolBar->rcButton.bottom, this, &tpm);
 			break;
 		}
 		default:
