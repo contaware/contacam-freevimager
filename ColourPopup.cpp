@@ -766,11 +766,18 @@ void CColourPopup::SetWindowSize()
 	hMonitor = ::MonitorFromWindow(m_pParent->m_hWnd, MONITOR_DEFAULTTONEAREST);
 	mi.cbSize = sizeof(mi);
 	::GetMonitorInfo(hMonitor, &mi);
-	CRect rc = mi.rcWork;
 	int w = m_WindowRect.Width();
 	int h = m_WindowRect.Height();
-	m_WindowRect.left = max(rc.left, min(rc.right-w, m_WindowRect.left));
-	m_WindowRect.top = max(rc.top, min(rc.bottom-h, m_WindowRect.top));
+	if (m_WindowRect.bottom > mi.rcWork.bottom)
+	{
+		// Show above parent button instead of below
+		CRect rcParent;
+		m_pParent->GetWindowRect(rcParent);
+		m_WindowRect.bottom = rcParent.top;
+		m_WindowRect.top = m_WindowRect.bottom - h;
+	}
+	m_WindowRect.left = max(mi.rcWork.left, min(mi.rcWork.right - w, m_WindowRect.left));
+	m_WindowRect.top = max(mi.rcWork.top, min(mi.rcWork.bottom - h, m_WindowRect.top));
 	m_WindowRect.right = m_WindowRect.left + w;
 	m_WindowRect.bottom = m_WindowRect.top + h;
 
