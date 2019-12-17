@@ -1295,10 +1295,8 @@ BOOL CVideoDeviceDoc::SendMail(	const SendMailConfigurationStruct& Config,
 				//       starting the mailsend.exe process.
 				//       The CreateProcessA() ANSI version is called so that the passed utf8
 				//       command line remains untouched!
-				STARTUPINFOA si;
-				PROCESS_INFORMATION pi;
-				memset(&si, 0, sizeof(si));
-				memset(&pi, 0, sizeof(pi));
+				STARTUPINFOA si = {};
+				PROCESS_INFORMATION pi = {};
 				si.cb = sizeof(si);
 				si.dwFlags =	STARTF_FORCEOFFFEEDBACK |	// do not display the busy cursor
 								STARTF_USESHOWWINDOW;		// use the following wShowWindow
@@ -2096,10 +2094,8 @@ void CVideoDeviceDoc::ExecCommand(const CTime& Time,
 		//       We also need the STARTF_FORCEOFFFEEDBACK flag which is not available
 		//       with ShellExecuteEx, this flag avoids showing the busy cursor while
 		//       starting the given process.
-		STARTUPINFO si;
-		PROCESS_INFORMATION pi;
-		memset(&si, 0, sizeof(si));
-		memset(&pi, 0, sizeof(pi));
+		STARTUPINFO si = {};
+		PROCESS_INFORMATION pi = {};
 		si.cb = sizeof(si);
 		si.dwFlags =	STARTF_FORCEOFFFEEDBACK |	// do not display the busy cursor
 						STARTF_USESHOWWINDOW;		// use the following wShowWindow
@@ -5964,10 +5960,8 @@ BOOL CVideoDeviceDoc::MicroApacheStart(DWORD dwTimeoutMs)
 	//       We also need the STARTF_FORCEOFFFEEDBACK flag, which is not available
 	//       with ShellExecuteEx, this flag avoids showing the busy cursor while
 	//       starting the mapache.exe process.
-	STARTUPINFO si;
-	PROCESS_INFORMATION pi;
-	memset(&si, 0, sizeof(si));
-	memset(&pi, 0, sizeof(pi));
+	STARTUPINFO si = {};
+	PROCESS_INFORMATION pi = {};
 	si.cb = sizeof(si);
 	si.dwFlags =	STARTF_FORCEOFFFEEDBACK |	// do not display the busy cursor
 					STARTF_USESHOWWINDOW;		// use the following wShowWindow

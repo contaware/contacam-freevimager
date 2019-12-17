@@ -224,7 +224,7 @@ CSIDL_CDBURN_AREA				CD Burn area
 */
 extern CString GetSpecialFolderPath(int nSpecialFolder);
 
-// Kill process by PID
+// Kill process
 // 
 // The process ID is a value associated with the process object,
 // and as long as the process object is still around, so too will
@@ -234,6 +234,7 @@ extern CString GetSpecialFolderPath(int nSpecialFolder);
 // a handle to the process, which can already be terminated, somebody
 // can call WaitForSingleObject or GetExitCodeProcess or even
 // OpenProcess to get another handle.
+extern BOOL KillProc(HANDLE& hProcess);	// after killing this function closes and sets hProcess to NULL
 extern BOOL KillProcByPID(DWORD dwProcID);
 extern BOOL KillProcTreeByPID(DWORD dwProcID);
 
@@ -250,7 +251,6 @@ extern HANDLE ExecApp(	const CString& sFileName,
 						BOOL bElevated = FALSE,						// run the given app with elevated privileges?
 						BOOL bWaitTillDone = FALSE,					// do not return until done?
 						DWORD dwWaitMillisecondsTimeout = INFINITE);// timeout in ms for the above wait
-extern void KillApp(HANDLE& hProcess);								// after killing the app, the function closes and sets hProcess to NULL
 
 // Ini file Functions
 extern UINT GetProfileIniInt(LPCTSTR lpszSection, LPCTSTR lpszEntry, int nDefault, LPCTSTR lpszProfileName);

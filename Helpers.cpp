@@ -1308,16 +1308,22 @@ CString GetSpecialFolderPath(int nSpecialFolder)
 	return CString(path);
 }
 
-BOOL KillProcByPID(DWORD dwProcID)
+BOOL KillProc(HANDLE& hProcess)
 {
 	BOOL res = FALSE;
-	HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, dwProcID);
 	if (hProcess)
 	{
 		res = TerminateProcess(hProcess, 0);
 		CloseHandle(hProcess); // close handle to avoid ERROR_NO_SYSTEM_RESOURCES
+		hProcess = NULL;
 	}
 	return res;
+}
+
+BOOL KillProcByPID(DWORD dwProcID)
+{
+	HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, dwProcID);
+	return KillProc(hProcess);
 }
 
 BOOL KillProcTreeByPID(DWORD dwProcID)
@@ -1436,16 +1442,6 @@ HANDLE ExecApp(	const CString& sFileName,
 	if (ShellExecuteEx(&sei) && bWaitTillDone && sei.hProcess)
 		WaitForSingleObject(sei.hProcess, dwWaitMillisecondsTimeout);
 	return sei.hProcess;
-}
-
-void KillApp(HANDLE& hProcess)
-{
-	if (hProcess)
-	{
-		TerminateProcess(hProcess, 0);
-		CloseHandle(hProcess); // close handle to avoid ERROR_NO_SYSTEM_RESOURCES
-		hProcess = NULL;
-	}
 }
 
 UINT GetProfileIniInt(LPCTSTR lpszSection, LPCTSTR lpszEntry, int nDefault, LPCTSTR lpszProfileName)
