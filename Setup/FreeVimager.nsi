@@ -14,9 +14,6 @@ RequestExecutionLevel user
 !else if ${INSTALLER_LANGUAGE} == "Russian"
 	!define INSTALLER_LANGUAGE_ID ${LANG_RUSSIAN}
 	!define INSTALLER_LANGUAGE_SUFFIX "Rus"
-!else if ${INSTALLER_LANGUAGE} == "Bulgarian"
-	!define INSTALLER_LANGUAGE_ID ${LANG_BULGARIAN}
-	!define INSTALLER_LANGUAGE_SUFFIX "Bgr"
 !else if ${INSTALLER_LANGUAGE} == "Spanish"
 	!define INSTALLER_LANGUAGE_ID ${LANG_SPANISH}
 	!define INSTALLER_LANGUAGE_SUFFIX "Esn"
