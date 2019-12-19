@@ -45,7 +45,6 @@ mkdir .\%CURRENTVERSION%\ContaCam\german
 mkdir .\%CURRENTVERSION%\ContaCam\italian
 mkdir .\%CURRENTVERSION%\ContaCam\russian
 mkdir .\%CURRENTVERSION%\ContaCam\bulgarian
-mkdir .\%CURRENTVERSION%\ContaCam\vietnamese
 mkdir .\%CURRENTVERSION%\ContaCam\spanish
 mkdir .\%CURRENTVERSION%\ContaCam\french
 mkdir .\%CURRENTVERSION%\ContaCam\portuguese
@@ -56,7 +55,6 @@ mkdir .\%CURRENTVERSION%\FreeVimager\german
 mkdir .\%CURRENTVERSION%\FreeVimager\italian
 mkdir .\%CURRENTVERSION%\FreeVimager\russian
 mkdir .\%CURRENTVERSION%\FreeVimager\bulgarian
-mkdir .\%CURRENTVERSION%\FreeVimager\vietnamese
 mkdir .\%CURRENTVERSION%\FreeVimager\spanish
 mkdir .\%CURRENTVERSION%\FreeVimager\french
 mkdir .\%CURRENTVERSION%\FreeVimager\portuguese
@@ -83,8 +81,6 @@ echo Copy FreeVimagerRus.exe
 copy ..\Translation\FreeVimagerRUS.exe .\%CURRENTVERSION%\FreeVimager\russian\FreeVimager-%CURRENTVERSION%-Portable-Rus.exe
 echo Copy FreeVimagerBgr.exe
 copy ..\Translation\FreeVimagerBGR.exe .\%CURRENTVERSION%\FreeVimager\bulgarian\FreeVimager-%CURRENTVERSION%-Portable-Bgr.exe
-echo Copy FreeVimagerVit.exe
-copy ..\Translation\FreeVimagerVIT.exe .\%CURRENTVERSION%\FreeVimager\vietnamese\FreeVimager-%CURRENTVERSION%-Portable-Vit.exe
 echo Copy FreeVimagerEsn.exe
 copy ..\Translation\FreeVimagerESN.exe .\%CURRENTVERSION%\FreeVimager\spanish\FreeVimager-%CURRENTVERSION%-Portable-Esn.exe
 echo Copy FreeVimagerFra.exe
@@ -110,9 +106,6 @@ move .\ContaCam-%CURRENTVERSION%-Setup-Rus.exe .\%CURRENTVERSION%\ContaCam\russi
 echo NSIS make ContaCamBgr installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Bulgarian ContaCam.nsi
 move .\ContaCam-%CURRENTVERSION%-Setup-Bgr.exe .\%CURRENTVERSION%\ContaCam\bulgarian\
-echo NSIS make ContaCamVit installer
-"%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Vietnamese ContaCam.nsi
-move .\ContaCam-%CURRENTVERSION%-Setup-Vit.exe .\%CURRENTVERSION%\ContaCam\vietnamese\
 echo NSIS make ContaCamEsn installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Spanish ContaCam.nsi
 move .\ContaCam-%CURRENTVERSION%-Setup-Esn.exe .\%CURRENTVERSION%\ContaCam\spanish\
@@ -142,9 +135,6 @@ move .\FreeVimager-%CURRENTVERSION%-Setup-Rus.exe .\%CURRENTVERSION%\FreeVimager
 echo NSIS make FreeVimagerBgr installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Bulgarian FreeVimager.nsi
 move .\FreeVimager-%CURRENTVERSION%-Setup-Bgr.exe .\%CURRENTVERSION%\FreeVimager\bulgarian\
-echo NSIS make FreeVimagerVit installer
-"%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Vietnamese FreeVimager.nsi
-move .\FreeVimager-%CURRENTVERSION%-Setup-Vit.exe .\%CURRENTVERSION%\FreeVimager\vietnamese\
 echo NSIS make FreeVimagerEsn installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Spanish FreeVimager.nsi
 move .\FreeVimager-%CURRENTVERSION%-Setup-Esn.exe .\%CURRENTVERSION%\FreeVimager\spanish\
