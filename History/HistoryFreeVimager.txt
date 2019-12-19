@@ -1,6 +1,6 @@
 FREEVIMAGER HISTORY
 
-9.9.5 (Month XXth 2019)
+9.9.5 (December 19th 2019)
 
 - Bottom toolbar color popup must not cover its own button
 

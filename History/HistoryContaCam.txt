@@ -1,6 +1,6 @@
 CONTACAM HISTORY
 
-9.9.5 (Month XXth 2019)
+9.9.5 (December 19th 2019)
 
 - Video saving speed adapts itself to the available system resources
 - Optimized small video (animated gif) creation and play time

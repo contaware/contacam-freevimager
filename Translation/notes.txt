@@ -33,3 +33,16 @@ output files under the Module Properties. Save it and close.
 Reopen FreeVimager.apt and call Update Source.
 This way around because with ContaCam we can check all the resources.
 FREEVIMAGER AND CONTACAM BOTH COMMITTED MEANS THEY ARE IN SYNC!
+
+
+Language Codes
+--------------
+
+English       1033
+Chinese       2052
+French        1036
+German        1031
+Italian       1040
+Portuguese    1046
+Russian       1049
+Spanish       3082
