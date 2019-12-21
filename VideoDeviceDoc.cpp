@@ -2629,11 +2629,16 @@ int CVideoDeviceDoc::CRtspThread::Work()
 		CAudioPlay* pAudioPlay = NULL;
 		BOOL bAudioSupported = FALSE;
 
-		// Set options
+		// Options var
 		AVDictionary* opts = NULL;
+
+		// If set, and if TCP is available as RTP transport, then TCP will be tried first instead of UDP
 		if (m_pDoc->m_bPreferTcpforRtsp)
-			av_dict_set(&opts, "rtsp_flags", "prefer_tcp", 0);		// if set, and if TCP is available as RTP transport, then TCP will be tried first instead of UDP
-		av_dict_set_int(&opts, "stimeout", RTSP_SOCKET_TIMEOUT, 0);	// set timeout (in microseconds) of socket I/O operations
+			av_dict_set(&opts, "rtsp_flags", "prefer_tcp", 0);
+
+		// Set timeout (in microseconds) of socket I/O operations
+		av_dict_set_int(&opts, "stimeout", RTSP_SOCKET_TIMEOUT, 0);
+
 		// SO_RCVBUF is the size of the buffer the system allocates to hold the data arriving
 		// into the given socket during the time between it arrives over the network and when it
 		// is read by the program that owns this socket. With TCP, if data arrives and you aren't
@@ -2641,10 +2646,11 @@ int CVideoDeviceDoc::CRtspThread::Work()
 		// window adjustment mechanism). For UDP, once the buffer is full, new packets will just be
 		// discarded.
 		// SO_RCVBUF is set by the OS to 8K for Win7 or older and to 64K for newer. ffmpeg inits it
-		// to UDP_MAX_PKT_SIZE. The user can change it with the "buffer_size" option.
-		// Note: the 'circular_buffer_size' option was set but it is not supported warning is emitted
-		//       in udp.c. This warning cannot be removed, but is not interfering with the setting of
-		//       the following 'buffer_size' which is something different.
+		// to UDP_MAX_PKT_SIZE. We can change it with the "buffer_size" option used in udp.c like:
+		// ... tmp = s->buffer_size; setsockopt(udp_fd, SOL_SOCKET, SO_RCVBUF, &tmp, sizeof(tmp)); ...
+		// Note: the "'circular_buffer_size' option was set but it is not supported ..." warning is
+		//       emitted in udp.c. This warning cannot be removed, but it is also not interfering
+		//       with the setting of the following "buffer_size" which is something different.
 		av_dict_set_int(&opts, "buffer_size", 10485760, 0); // 10 MB should be enough for 4K cams
 
 		// Open rtsp
