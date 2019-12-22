@@ -51,6 +51,7 @@ Name "${APPNAME_NOEXT} ${APPVERSION}"
 ; Includes
 !include "MUI2.nsh"
 !include "UAC.nsh"
+!include "FileFunc.nsh"
 !include "InitVersion.nsh"
 !include "ContawareFileAssociation.nsh"
 !include "ContawareParams.nsh"
@@ -309,6 +310,9 @@ Section "${APPNAME_NOEXT} Program (required)"
   File /r "..\mail\*.*"
   SetOutPath $INSTDIR
   
+  ; Write uninstaller file
+  WriteUninstaller "${UNINSTNAME_EXT}"
+  
   ; Write the installation path into the registry
   WriteRegStr HKLM "Software\Contaware\${APPNAME_NOEXT}" "Install_Dir" "$INSTDIR"
   
@@ -326,16 +330,22 @@ Section "${APPNAME_NOEXT} Program (required)"
   WriteRegDWORD HKCU "Software\Contaware\${APPNAME_NOEXT}\GeneralApp" "SilentInstall" 1
   
   ; Write the uninstall keys for Windows
+  ${GetTime} "" "L" $0 $1 $2 $3 $4 $5 $6
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "InstallDate" "$2$1$0"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "InstallLocation" "$INSTDIR"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "DisplayName" "${APPNAME_NOEXT}"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "UninstallString" '"$INSTDIR\${UNINSTNAME_EXT}"'
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "QuietUninstallString" '"$INSTDIR\${UNINSTNAME_EXT}" /S'
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "DisplayIcon" "$INSTDIR\${APPNAME_EXT},0"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "DisplayVersion" "${APPVERSION}"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "Publisher" "Contaware.com"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "URLInfoAbout" "http://www.contaware.com"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "URLInfoAbout" "https://www.contaware.com"
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "NoModify" 1
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "NoRepair" 1
-  WriteUninstaller "${UNINSTNAME_EXT}"
+  ; To get the correct size this must happen after the files copy
+  ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
+  IntFmt $0 "0x%08X" $0
+  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "EstimatedSize" "$0"
   
   ; Firewall add to the authorized list
   nsisFirewall::AddAuthorizedApplication "$INSTDIR\${APPNAME_EXT}" "${APPNAME_NOEXT}"
@@ -378,7 +388,7 @@ SectionEnd
 
 VIProductVersion "${APPVERSION}.0"
 VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "ProductName" "${APPNAME_NOEXT} Application"
-VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "Comments" "MM Application"
+VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "Comments" "Surveillance Application"
 VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "CompanyName" "Contaware.com"
 VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "LegalTrademarks" ""
 VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "LegalCopyright" "© Contaware.com"
@@ -615,6 +625,11 @@ Section "Uninstall"
   RMDir /r "$INSTDIR\microapache"
   RMDir /r "$INSTDIR\mail"
   RMDir /r "$INSTDIR\ftp"
+  
+  ; Remove the main directory only if it is completely empty.
+  ; RMDir /r "$INSTDIR" is not safe, the user might select to
+  ; install directly to the Program Files folder and so this
+  ; command would wipe out the entire Program Files folder!
   RMDir "$INSTDIR"
   
   ; Refresh Icons
