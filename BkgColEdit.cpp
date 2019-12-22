@@ -2,7 +2,6 @@
 //
 
 #include "stdafx.h"
-#include "uimager.h"
 #include "BkgColEdit.h"
 
 #ifdef _DEBUG
