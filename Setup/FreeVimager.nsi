@@ -97,6 +97,7 @@ xpstyle on
 
 ; Page Modern UI
 !insertmacro MUI_PAGE_LICENSE "..\License\License.rtf"
+!define MUI_PAGE_CUSTOMFUNCTION_SHOW OnCompShow
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
@@ -114,14 +115,22 @@ xpstyle on
 
 ;--------------------------------
 
+; Unload UAC
 Function .OnInstFailed
-${UAC.Unload} ;Must call unload!
+  ${UAC.Unload} ;Must call unload!
 FunctionEnd
 Function MyOnUserAbort
-${UAC.Unload} ;Must call unload!
+  ${UAC.Unload} ;Must call unload!
 FunctionEnd
 Function .OnInstSuccess
-${UAC.Unload} ;Must call unload!
+  ${UAC.Unload} ;Must call unload!
+FunctionEnd
+
+; When showing the components selection page
+Function OnCompShow
+  ; Correct small checkboxes for High DPI displays
+  ; http://forums.winamp.com/showthread.php?t=443754
+  SysCompImg::SetNative
 FunctionEnd
 
 ;--------------------------------
@@ -200,7 +209,7 @@ FunctionEnd
 ;--------------------------------
 
 Function FinishRunCB
-UAC::Exec "" "$INSTDIR\${APPNAME_EXT}" "" ""
+  UAC::Exec "" "$INSTDIR\${APPNAME_EXT}" "" ""
 FunctionEnd
 
 !define SHCNE_ASSOCCHANGED 0x08000000
@@ -336,14 +345,15 @@ VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "ProductVersion" "${APPVERSION}.0
 
 ;--------------------------------
 
+; Unload UAC
 Function un.OnUnInstFailed
-${UAC.Unload} ;Must call unload!
+  ${UAC.Unload} ;Must call unload!
 FunctionEnd
 Function un.MyOnUserAbort
-${UAC.Unload} ;Must call unload!
+  ${UAC.Unload} ;Must call unload!
 FunctionEnd
 Function un.OnUnInstSuccess
-${UAC.Unload} ;Must call unload!
+  ${UAC.Unload} ;Must call unload!
 FunctionEnd
 
 ;--------------------------------
