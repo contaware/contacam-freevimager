@@ -1,3 +1,8 @@
+; Unicode
+!if "${NSIS_PACKEDVERSION}" > 0x02ffffff ; NSIS 3+
+  Unicode true
+!endif
+
 ; Adds a user (no admin) manifest (for vista or higher)
 RequestExecutionLevel user
 
@@ -79,6 +84,9 @@ SetCompressorDictSize 16
 
 ; Write Manifest to Installer and Uninstaller
 xpstyle on
+!if "${NSIS_PACKEDVERSION}" > 0x02ffffff ; NSIS 3+
+  ManifestDPIAware true
+!endif
 
 ; Interface Settings for Modern UI
 !define MUI_CUSTOMFUNCTION_ABORT MyOnUserAbort
@@ -334,7 +342,7 @@ VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "ProductName" "${APPNAME_NOEXT} A
 VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "Comments" "MM Application"
 VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "CompanyName" "Contaware.com"
 VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "LegalTrademarks" ""
-VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "LegalCopyright" "© Contaware.com"
+VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "LegalCopyright" "Contaware.com"
 VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "FileDescription" "Installation Routine of ${APPNAME_NOEXT}"
 VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "FileVersion" "${APPVERSION}.0"
 VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "ProductVersion" "${APPVERSION}.0"

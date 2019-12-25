@@ -4,12 +4,17 @@ Build system
 uImager.sln is the main solution file for Visual Studio 2017 (MFC 
 support is necessary). 
 
-Free tool to make the Unicode NSIS installers:
-- http://www.scratchpaper.com
-Necessary Unicode Plugins:
-- nsisFirewall from http://wiz0u.free.fr/prog/nsisFirewall
-- UAC from https://nsis.sourceforge.io/mediawiki/index.php?title=UAC_plug-in&oldid=19055
-- KillProcDLL from https://github.com/mazinsw/KillProcDLL
+Free tool to make the NSIS installers:
+- https://nsis.sourceforge.io
+Necessary x86-unicode Plugins:
+- nsisFirewall
+  http://wiz0u.free.fr/prog/nsisFirewall
+- UAC
+  https://nsis.sourceforge.io/mediawiki/index.php?title=UAC_plug-in&oldid=19055
+- KillProcDLL
+  https://github.com/mazinsw/KillProcDLL
+- SysCompImg
+  http://forums.winamp.com/showthread.php?t=443754
 
 Non-free tool to make the translations:
 - http://www.apptranslator.com

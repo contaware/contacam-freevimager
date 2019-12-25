@@ -3,10 +3,10 @@
 REM clear nsis installation directory variable
 set NSISDIR=
 REM divide with _ of REG_SZ because the first column differs for every language, in Italian it is <Senza nome>, English: (Default), ...
-for /F "tokens=1* delims=_" %%A in ('REG QUERY "HKLM\Software\NSIS\Unicode" /ve 2^>NUL ^| FIND "REG_SZ"') do set NSISDIR=%%B
+for /F "tokens=1* delims=_" %%A in ('REG QUERY "HKLM\Software\NSIS" /ve 2^>NUL ^| FIND "REG_SZ"') do set NSISDIR=%%B
 REM on 64 bit platforms try the 32 bit mode to read the registry
 if "%NSISDIR%"=="" (
-	for /F "tokens=1* delims=_" %%A in ('REG QUERY "HKLM\Software\NSIS\Unicode" /ve /reg:32 2^>NUL ^| FIND "REG_SZ"') do set NSISDIR=%%B
+	for /F "tokens=1* delims=_" %%A in ('REG QUERY "HKLM\Software\NSIS" /ve /reg:32 2^>NUL ^| FIND "REG_SZ"') do set NSISDIR=%%B
 )
 REM now divide at space char
 if NOT "%NSISDIR%"=="" (
@@ -14,7 +14,7 @@ if NOT "%NSISDIR%"=="" (
 )
 REM check
 if "%NSISDIR%"=="" (
-	echo ERROR: Unicode NSIS installation not found!
+	echo ERROR: NSIS installation not found!
 	goto batchpause    
 )
 
