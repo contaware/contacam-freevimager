@@ -107,9 +107,9 @@ BOOL CCreditsDlg::OnInitDialog()
 	CString sicclib = _T("icclib ") + CString(ICCLIB_VERSION_STR);
 	sicclib += CString(_T('\n')) + _T("https://www.argyllcms.com/icclibsrc.html");
 
-	// unicode nsis
-	CString snsis(_T("Unicode NSIS"));
-	snsis += CString(_T('\n')) + _T("http://www.scratchpaper.com");
+	// nsis
+	CString snsis(_T("NSIS (Nullsoft Scriptable Install System)"));
+	snsis += CString(_T('\n')) + _T("https://nsis.sourceforge.io");
 
 	// Output credits
 	CString sCredits =	
