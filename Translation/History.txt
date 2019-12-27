@@ -1,5 +1,9 @@
 TRANSLATIONS HISTORY
 
+9.9.7 (Month xxth 2020)
+
+- ... 
+
 9.9.5 (December 19th 2019)
 
 - Removed Vietnamese and Bulgarian languages
