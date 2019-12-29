@@ -57,7 +57,6 @@ Name "${APPNAME_NOEXT} ${APPVERSION}"
 !include "MUI2.nsh"
 !include "UAC.nsh"
 !include "FileFunc.nsh"
-!include "InitVersion.nsh"
 !include "ContawareFileAssociation.nsh"
 !include "ContawareParams.nsh"
 
@@ -149,18 +148,13 @@ Function .onInit
   Push $R1
   ClearErrors
   
-  ; Get Win Version
-  call InitVersion
-  
   ; Passed Parameters
   call InitParams
 	
   ; UAC
-  StrCmp $HAS_UAC 'FALSE' InstallCheckInstallerRunning
-    ${UAC.I.Elevate.AdminOnly}
+  ${UAC.I.Elevate.AdminOnly}
   
   ; Single Instance of Installer
-InstallCheckInstallerRunning:
   System::Call 'kernel32::CreateMutex(i 0, i 0, t "${INSTALLERMUTEXNAME}") i .r1 ?e'
   Pop $R0
   StrCmp $R0 0 lbl_end
@@ -372,15 +366,10 @@ Function un.onInit
   Push $R1
   ClearErrors
   
-  ; Get Win Version
-  call un.InitVersion
-  
   ; UAC
-  StrCmp $HAS_UAC 'FALSE' UninstallCheckUninstallerRunning
-    ${UAC.U.Elevate.AdminOnly} ${UNINSTNAME_EXT}
+  ${UAC.U.Elevate.AdminOnly} ${UNINSTNAME_EXT}
   
   ; Single Instance of Uninstaller
-UninstallCheckUninstallerRunning:
   System::Call 'kernel32::CreateMutex(i 0, i 0, t "${INSTALLERMUTEXNAME}") i .r1 ?e'
   Pop $R0
   StrCmp $R0 0 lbl_end
