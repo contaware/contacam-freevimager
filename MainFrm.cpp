@@ -2307,7 +2307,7 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		// System Usage
 		static ULONGLONG ullCount = 0U;
 		ullCount++;
-		if (g_nLogLevel > 0)
+		if (g_nLogLevel > 1)
 		{
 			// Log every 15 seconds
 			if ((ullCount % 15) == 0)
