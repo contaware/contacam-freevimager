@@ -128,8 +128,7 @@ BEGIN
         MENUITEM "Credits",                     ID_APP_CREDITS
         MENUITEM "&About",                      ID_APP_ABOUT
         MENUITEM SEPARATOR
-        MENUITEM "Manual",                      ID_APP_MANUAL
-        MENUITEM "FAQs",                        ID_APP_FAQ
+        MENUITEM "Online Help",                 ID_APP_MANUAL
     END
 END
 
@@ -234,8 +233,7 @@ BEGIN
         MENUITEM "Credits",                     ID_APP_CREDITS
         MENUITEM "&About",                      ID_APP_ABOUT
         MENUITEM SEPARATOR
-        MENUITEM "Manual",                      ID_APP_MANUAL
-        MENUITEM "FAQs",                        ID_APP_FAQ
+        MENUITEM "Online Help",                 ID_APP_MANUAL
     END
 END
 
@@ -466,8 +464,7 @@ BEGIN
         MENUITEM "Credits",                     ID_APP_CREDITS
         MENUITEM "&About",                      ID_APP_ABOUT
         MENUITEM SEPARATOR
-        MENUITEM "Manual",                      ID_APP_MANUAL
-        MENUITEM "FAQs",                        ID_APP_FAQ
+        MENUITEM "Online Help",                 ID_APP_MANUAL
     END
 END
 
@@ -3561,8 +3558,7 @@ STRINGTABLE
 BEGIN
     ID_SETTINGS_TRAYICON    "Use tray icon\nTray Icon"
     ID_VIEW_FIT             "Fit\nFit"
-    ID_APP_FAQ              "Open the FAQs page of contaware.com\nFAQs Page"
-    ID_APP_MANUAL           "Open the Manual page of contaware.com\nManual Page"
+    ID_APP_MANUAL           "Open the online help page of contaware.com\nOnline Help Page"
     ID_VIEW_NO_BORDERS      "No borders\nNo Borders"
 END
 

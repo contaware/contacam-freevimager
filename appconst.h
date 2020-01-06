@@ -19,7 +19,6 @@
 #define SERVICENAME_EXT									_T("ContaCamService.exe")
 #define SERVICENAME_NOEXT								_T("ContaCamService")
 #define APPMUTEXNAME									_T("ContaCamAppMutex")
-#define FAQ_ONLINE_PAGE									_T("https://www.contaware.com/contacamfaq/")
 #define MANUAL_ONLINE_PAGE								_T("https://www.contaware.com/contacammanual/")
 #define EXAMPLE_CONTROL_ONLINE_PAGE						_T("https://www.contaware.com/contacamexamplecontrol/")
 #define EXAMPLE_COMMANDS_ONLINE_PAGE					_T("https://www.contaware.com/contacamexamplecmd/")
@@ -32,7 +31,6 @@
 #define APPNAME_NOEXT_LOW								_T("freevimager")
 #define APPNAME_NOEXT_ASCII								"FreeVimager"
 #define APPMUTEXNAME									_T("FreeVimagerAppMutex")
-#define FAQ_ONLINE_PAGE									_T("https://www.contaware.com/freevimagerfaq/")
 #define MANUAL_ONLINE_PAGE								_T("https://www.contaware.com/freevimagermanual/")
 #endif
 #define APPVERSION										_T("9.9.7beta1")

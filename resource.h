@@ -3143,7 +3143,6 @@
 #define ID_OPEN_FROM_TRAY               33072
 #define ID_SETTINGS_TRAYICON            33073
 #define ID_VIEW_FIT                     33083
-#define ID_APP_FAQ                      33084
 #define ID_APP_MANUAL                   33085
 #define ID_VIEW_NO_BORDERS              33087
 #define ID_VIEW_NEXT_MONITOR            33092
