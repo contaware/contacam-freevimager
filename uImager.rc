@@ -3462,7 +3462,7 @@ BEGIN
     ID_MINIMIZE             "Reduces the window to an icon\nMinimize"
     ID_MAXIMIZE             "Enlarges the window to full size\nMaximize"
     ID_APP_LICENSE          "License agreement and donation\nLicense and Donation"
-    ID_APP_CREDITS          "Display program contributors and used libraries\nCredits"
+    ID_APP_CREDITS          "Display used tools and libraries\nCredits"
     ID_VIEW_STRETCH_HALFTONE "High quality stretch\nHigh Quality Stretch"
 END
 
@@ -3687,7 +3687,7 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_APP_ABOUT            "Display program and system information, version number and copyright\nAbout"
+    ID_APP_ABOUT            "Display program and system information\nAbout"
     ID_APP_EXIT             "Quit the application (prompts to save documents)\nExit"
 END
 
