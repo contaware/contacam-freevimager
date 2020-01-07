@@ -187,5 +187,21 @@ $ mingw-get install --reinstall mingw32-libintl
 
 To update MinGW better to use the MSYS command line
 ---------------------------------------------------
+
 $ mingw-get update
 $ mingw-get upgrade
+
+
+Demuxer vs. Parser
+------------------
+
+We do not need the Raw HEVC and H264 demuxers if we already have the RTSP demuxer 
+(with HEVC and H264 parsers and decoders). 
+
+The demuxer is the thing which takes a container (a single 1-D vector of bytes)
+and splits (demuxes) these into several streams (1 or more audio streams,
+1 or more video streams, ...).
+
+The parser is the thing which takes a single stream as output by a demuxer and
+splits it into proper frames (some demuxers already produce proper frames
+so no parser is needed).
