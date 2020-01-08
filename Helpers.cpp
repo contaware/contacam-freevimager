@@ -2780,7 +2780,7 @@ LPBYTE GetURL(LPCTSTR lpszURL, size_t& Size, BOOL bAllowInvalidCert, BOOL bShowM
 	if (dwStatusCode < 200 || dwStatusCode >= 300)
 	{
 		CString sMsg;
-		sMsg.Format(_T("HttpSendRequest() returned: %u"), dwStatusCode);
+		sMsg.Format(_T("HttpQueryInfo() returned: %u"), dwStatusCode);
 		LogLine(_T("%s"), sMsg);
 		if (bShowMessageBoxOnError)
 			AfxMessageBox(sMsg, MB_ICONSTOP);
@@ -2951,7 +2951,7 @@ BOOL SaveURL(LPCTSTR lpszURL, LPCTSTR lpszFileName, BOOL bAllowInvalidCert, BOOL
 	if (dwStatusCode < 200 || dwStatusCode >= 300)
 	{
 		CString sMsg;
-		sMsg.Format(_T("HttpSendRequest() returned: %u"), dwStatusCode);
+		sMsg.Format(_T("HttpQueryInfo() returned: %u"), dwStatusCode);
 		LogLine(_T("%s"), sMsg);
 		if (bShowMessageBoxOnError)
 			AfxMessageBox(sMsg, MB_ICONSTOP);
