@@ -2711,7 +2711,7 @@ LPBYTE GetURL(LPCTSTR lpszURL, size_t& Size, BOOL bAllowInvalidCert, BOOL bShowM
 			AfxMessageBox(sMsg, MB_ICONSTOP);
 		goto error;
 	}
-	
+
 	// 2. Open internet directly (no proxy)
 	hInternetRoot = InternetOpen(AfxGetAppName(), INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
 	if (hInternetRoot == NULL)
@@ -2746,14 +2746,24 @@ LPBYTE GetURL(LPCTSTR lpszURL, size_t& Size, BOOL bAllowInvalidCert, BOOL bShowM
 	// 5. Send request
 	if (!HttpSendRequest(hResourceHandle, NULL, 0, NULL, 0))
 	{
+		// ERROR_INTERNET_CONNECTION_RESET can be returned because the server doesn't accept
+		// our OS's used SSL/TLS version (this happens for example for Windows Vista)
 		DWORD dwLastError = GetLastError();
-		if (dwLastError == ERROR_INTERNET_INVALID_CA && bAllowInvalidCert)
+		DWORD dwSecIgnoreFlag = 0;
+		if (bAllowInvalidCert)
+		{
+			if (dwLastError == ERROR_INTERNET_INVALID_CA)
+				dwSecIgnoreFlag = SECURITY_FLAG_IGNORE_UNKNOWN_CA;
+			else if (dwLastError == ERROR_INTERNET_SEC_CERT_REV_FAILED)
+				dwSecIgnoreFlag = SECURITY_FLAG_IGNORE_REVOCATION;
+		}
+		if (dwSecIgnoreFlag)
 		{
 			DWORD dwSecFlags;
 			DWORD dwSecFlagsLen = sizeof(dwSecFlags);
 			if (InternetQueryOption(hResourceHandle, INTERNET_OPTION_SECURITY_FLAGS, &dwSecFlags, &dwSecFlagsLen))
 			{
-				dwSecFlags |= SECURITY_FLAG_IGNORE_UNKNOWN_CA;
+				dwSecFlags |= dwSecIgnoreFlag;
 				InternetSetOption(hResourceHandle, INTERNET_OPTION_SECURITY_FLAGS, &dwSecFlags, sizeof(dwSecFlags));
 			}
 			if (!HttpSendRequest(hResourceHandle, NULL, 0, NULL, 0))
@@ -2917,14 +2927,24 @@ BOOL SaveURL(LPCTSTR lpszURL, LPCTSTR lpszFileName, BOOL bAllowInvalidCert, BOOL
 	// 5. Send request
 	if (!HttpSendRequest(hResourceHandle, NULL, 0, NULL, 0))
 	{
+		// ERROR_INTERNET_CONNECTION_RESET can be returned because the server doesn't accept
+		// our OS's used SSL/TLS version (this happens for example for Windows Vista)
 		DWORD dwLastError = GetLastError();
-		if (dwLastError == ERROR_INTERNET_INVALID_CA && bAllowInvalidCert)
+		DWORD dwSecIgnoreFlag = 0;
+		if (bAllowInvalidCert)
+		{
+			if (dwLastError == ERROR_INTERNET_INVALID_CA)
+				dwSecIgnoreFlag = SECURITY_FLAG_IGNORE_UNKNOWN_CA;
+			else if (dwLastError == ERROR_INTERNET_SEC_CERT_REV_FAILED)
+				dwSecIgnoreFlag = SECURITY_FLAG_IGNORE_REVOCATION;
+		}
+		if (dwSecIgnoreFlag)
 		{
 			DWORD dwSecFlags;
 			DWORD dwSecFlagsLen = sizeof(dwSecFlags);
 			if (InternetQueryOption(hResourceHandle, INTERNET_OPTION_SECURITY_FLAGS, &dwSecFlags, &dwSecFlagsLen))
 			{
-				dwSecFlags |= SECURITY_FLAG_IGNORE_UNKNOWN_CA;
+				dwSecFlags |= dwSecIgnoreFlag;
 				InternetSetOption(hResourceHandle, INTERNET_OPTION_SECURITY_FLAGS, &dwSecFlags, sizeof(dwSecFlags));
 			}
 			if (!HttpSendRequest(hResourceHandle, NULL, 0, NULL, 0))
