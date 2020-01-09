@@ -1,3 +1,10 @@
+Mingw
+-----
+
+http://mingw.org/
+https://osdn.net/projects/mingw/
+
+
 FFMPEG command line versions
 ----------------------------
 
