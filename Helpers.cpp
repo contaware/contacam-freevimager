@@ -2747,28 +2747,22 @@ LPBYTE GetURL(LPCTSTR lpszURL, size_t& Size, BOOL bAllowInvalidCert, BOOL bShowM
 	if (!HttpSendRequest(hResourceHandle, NULL, 0, NULL, 0))
 	{
 		// ERROR_INTERNET_CONNECTION_RESET can be returned because the server doesn't accept
-		// our OS's used SSL/TLS version (this happens for example for Windows Vista)
+		// our OS's used SSL/TLS version (this happens for example for Windows Vista).
+		// In this case we have to go with http.
 		DWORD dwLastError = GetLastError();
-		DWORD dwSecIgnoreFlag = 0;
-		if (bAllowInvalidCert)
-		{
-			if (dwLastError == ERROR_INTERNET_INVALID_CA)
-				dwSecIgnoreFlag = SECURITY_FLAG_IGNORE_UNKNOWN_CA;
-			else if (dwLastError == ERROR_INTERNET_SEC_CERT_REV_FAILED)
-				dwSecIgnoreFlag = SECURITY_FLAG_IGNORE_REVOCATION;
-		}
-		if (dwSecIgnoreFlag)
+		if (bAllowInvalidCert &&
+			(dwLastError == ERROR_INTERNET_INVALID_CA || dwLastError == ERROR_INTERNET_SEC_CERT_REV_FAILED))
 		{
 			DWORD dwSecFlags;
 			DWORD dwSecFlagsLen = sizeof(dwSecFlags);
 			if (InternetQueryOption(hResourceHandle, INTERNET_OPTION_SECURITY_FLAGS, &dwSecFlags, &dwSecFlagsLen))
 			{
-				dwSecFlags |= dwSecIgnoreFlag;
+				dwSecFlags |= (SECURITY_FLAG_IGNORE_UNKNOWN_CA | SECURITY_FLAG_IGNORE_REVOCATION);
 				InternetSetOption(hResourceHandle, INTERNET_OPTION_SECURITY_FLAGS, &dwSecFlags, sizeof(dwSecFlags));
 			}
 			if (!HttpSendRequest(hResourceHandle, NULL, 0, NULL, 0))
 			{
-				ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("HttpSendRequest(allow invalid cert): "));
+				ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("HttpSendRequest(): "));
 				goto error;
 			}
 		}
@@ -2928,28 +2922,22 @@ BOOL SaveURL(LPCTSTR lpszURL, LPCTSTR lpszFileName, BOOL bAllowInvalidCert, BOOL
 	if (!HttpSendRequest(hResourceHandle, NULL, 0, NULL, 0))
 	{
 		// ERROR_INTERNET_CONNECTION_RESET can be returned because the server doesn't accept
-		// our OS's used SSL/TLS version (this happens for example for Windows Vista)
+		// our OS's used SSL/TLS version (this happens for example for Windows Vista).
+		// In this case we have to go with http.
 		DWORD dwLastError = GetLastError();
-		DWORD dwSecIgnoreFlag = 0;
-		if (bAllowInvalidCert)
-		{
-			if (dwLastError == ERROR_INTERNET_INVALID_CA)
-				dwSecIgnoreFlag = SECURITY_FLAG_IGNORE_UNKNOWN_CA;
-			else if (dwLastError == ERROR_INTERNET_SEC_CERT_REV_FAILED)
-				dwSecIgnoreFlag = SECURITY_FLAG_IGNORE_REVOCATION;
-		}
-		if (dwSecIgnoreFlag)
+		if (bAllowInvalidCert &&
+			(dwLastError == ERROR_INTERNET_INVALID_CA || dwLastError == ERROR_INTERNET_SEC_CERT_REV_FAILED))
 		{
 			DWORD dwSecFlags;
 			DWORD dwSecFlagsLen = sizeof(dwSecFlags);
 			if (InternetQueryOption(hResourceHandle, INTERNET_OPTION_SECURITY_FLAGS, &dwSecFlags, &dwSecFlagsLen))
 			{
-				dwSecFlags |= dwSecIgnoreFlag;
+				dwSecFlags |= (SECURITY_FLAG_IGNORE_UNKNOWN_CA | SECURITY_FLAG_IGNORE_REVOCATION);
 				InternetSetOption(hResourceHandle, INTERNET_OPTION_SECURITY_FLAGS, &dwSecFlags, sizeof(dwSecFlags));
 			}
 			if (!HttpSendRequest(hResourceHandle, NULL, 0, NULL, 0))
 			{
-				ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("HttpSendRequest(allow invalid cert): "));
+				ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("HttpSendRequest(): "));
 				goto error;
 			}
 		}
