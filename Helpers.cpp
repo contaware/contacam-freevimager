@@ -2687,7 +2687,7 @@ BOOL IsFontSupported(LPCTSTR szFontFamily)
 // and INTERNET_OPTION_USERNAME values and then resend the request to the server.
 //
 // Reference: https://docs.microsoft.com/en-us/windows/desktop/wininet/handling-authentication
-LPBYTE GetURL(LPCTSTR lpszURL, size_t& Size, BOOL bAllowInvalidCert, BOOL bShowMessageBoxOnError, URLDOWNLOADPROGRESSCALLBACK lpfnCallback)
+LPBYTE GetURL(LPCTSTR lpszURL, size_t& Size, BOOL bAllowInvalidCert, BOOL bSilent, URLDOWNLOADPROGRESSCALLBACK lpfnCallback)
 {
 	// Return vars
 	LPBYTE lpBuf = NULL;
@@ -2705,10 +2705,8 @@ LPBYTE GetURL(LPCTSTR lpszURL, size_t& Size, BOOL bAllowInvalidCert, BOOL bShowM
 	INTERNET_PORT nPort;
 	if (!AfxParseURL(lpszURL, dwServiceType, strServerName, strObject, nPort))
 	{
-		CString sMsg(_T("AfxParseURL(): failed"));
-		LogLine(_T("%s"), sMsg);
-		if (bShowMessageBoxOnError)
-			AfxMessageBox(sMsg, MB_ICONSTOP);
+		if (!bSilent)
+			LogLine(_T("%s"), _T("AfxParseURL(): failed"));
 		goto error;
 	}
 
@@ -2716,7 +2714,8 @@ LPBYTE GetURL(LPCTSTR lpszURL, size_t& Size, BOOL bAllowInvalidCert, BOOL bShowM
 	hInternetRoot = InternetOpen(AfxGetAppName(), INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
 	if (hInternetRoot == NULL)
 	{
-		ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("InternetOpen(): "));
+		if (!bSilent)
+			ShowErrorMsg(GetLastError(), FALSE, _T("InternetOpen(): "));
 		goto error;
 	}
 
@@ -2724,7 +2723,8 @@ LPBYTE GetURL(LPCTSTR lpszURL, size_t& Size, BOOL bAllowInvalidCert, BOOL bShowM
 	hConnectHandle = InternetConnect(hInternetRoot, strServerName, nPort, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
 	if (hConnectHandle == NULL)
 	{
-		ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("InternetConnect(): "));
+		if (!bSilent)
+			ShowErrorMsg(GetLastError(), FALSE, _T("InternetConnect(): "));
 		goto error;
 	}
 
@@ -2739,7 +2739,8 @@ LPBYTE GetURL(LPCTSTR lpszURL, size_t& Size, BOOL bAllowInvalidCert, BOOL bShowM
 	hResourceHandle = HttpOpenRequest(hConnectHandle, _T("GET"), strObject, _T("HTTP/1.1"), NULL, NULL, dwFlags, 0);
 	if (hResourceHandle == NULL)
 	{
-		ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("HttpOpenRequest(): "));
+		if (!bSilent)
+			ShowErrorMsg(GetLastError(), FALSE, _T("HttpOpenRequest(): "));
 		goto error;
 	}
 
@@ -2762,13 +2763,15 @@ LPBYTE GetURL(LPCTSTR lpszURL, size_t& Size, BOOL bAllowInvalidCert, BOOL bShowM
 			}
 			if (!HttpSendRequest(hResourceHandle, NULL, 0, NULL, 0))
 			{
-				ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("HttpSendRequest(): "));
+				if (!bSilent)
+					ShowErrorMsg(GetLastError(), FALSE, _T("HttpSendRequest(): "));
 				goto error;
 			}
 		}
 		else
 		{
-			ShowErrorMsg(dwLastError, bShowMessageBoxOnError, _T("HttpSendRequest(): "));
+			if (!bSilent)
+				ShowErrorMsg(dwLastError, FALSE, _T("HttpSendRequest(): "));
 			goto error;
 		}
 	}
@@ -2778,16 +2781,18 @@ LPBYTE GetURL(LPCTSTR lpszURL, size_t& Size, BOOL bAllowInvalidCert, BOOL bShowM
 	DWORD dwStatusCodeLen = sizeof(dwStatusCode);
 	if (!HttpQueryInfo(hResourceHandle, HTTP_QUERY_STATUS_CODE | HTTP_QUERY_FLAG_NUMBER, &dwStatusCode, &dwStatusCodeLen, NULL))
 	{
-		ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("HttpQueryInfo(): "));
+		if (!bSilent)
+			ShowErrorMsg(GetLastError(), FALSE, _T("HttpQueryInfo(): "));
 		goto error;
 	}
 	if (dwStatusCode < 200 || dwStatusCode >= 300)
 	{
-		CString sMsg;
-		sMsg.Format(_T("HttpQueryInfo() returned: %u"), dwStatusCode);
-		LogLine(_T("%s"), sMsg);
-		if (bShowMessageBoxOnError)
-			AfxMessageBox(sMsg, MB_ICONSTOP);
+		if (!bSilent)
+		{
+			CString sMsg;
+			sMsg.Format(_T("HttpQueryInfo() returned: %u"), dwStatusCode);
+			LogLine(_T("%s"), sMsg);
+		}
 		goto error;
 	}
 
@@ -2810,11 +2815,12 @@ LPBYTE GetURL(LPCTSTR lpszURL, size_t& Size, BOOL bAllowInvalidCert, BOOL bShowM
 		{
 			if (lpOldBuf)
 				free(lpOldBuf);		// free original block
-			CString sMsg;
-			sMsg.Format(CString(_T("realloc() failed for %Iu")) + ML_STRING(1244, "Bytes"), Size + (size_t)dwReadBytes);
-			LogLine(_T("%s"), sMsg);
-			if (bShowMessageBoxOnError)
-				AfxMessageBox(sMsg, MB_ICONSTOP);
+			if (!bSilent)
+			{
+				CString sMsg;
+				sMsg.Format(CString(_T("realloc() failed for %Iu")) + ML_STRING(1244, "Bytes"), Size + (size_t)dwReadBytes);
+				LogLine(_T("%s"), sMsg);
+			}
 			goto error;
 		}
 		else
@@ -2827,7 +2833,8 @@ LPBYTE GetURL(LPCTSTR lpszURL, size_t& Size, BOOL bAllowInvalidCert, BOOL bShowM
 		if (lpfnCallback)
 			lpfnCallback(0, Size);
 	}
-	ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("InternetReadFile(): "));
+	if (!bSilent)
+		ShowErrorMsg(GetLastError(), FALSE, _T("InternetReadFile(): "));
 
 error:
 	if (lpBuf)
@@ -2861,7 +2868,7 @@ cleanup:
 // and INTERNET_OPTION_USERNAME values and then resend the request to the server.
 //
 // Reference: https://docs.microsoft.com/en-us/windows/desktop/wininet/handling-authentication
-BOOL SaveURL(LPCTSTR lpszURL, LPCTSTR lpszFileName, BOOL bAllowInvalidCert, BOOL bShowMessageBoxOnError, URLDOWNLOADPROGRESSCALLBACK lpfnCallback)
+BOOL SaveURL(LPCTSTR lpszURL, LPCTSTR lpszFileName, BOOL bAllowInvalidCert, BOOL bSilent, URLDOWNLOADPROGRESSCALLBACK lpfnCallback)
 {
 	// Return var
 	BOOL bOK = TRUE;
@@ -2880,10 +2887,8 @@ BOOL SaveURL(LPCTSTR lpszURL, LPCTSTR lpszFileName, BOOL bAllowInvalidCert, BOOL
 	INTERNET_PORT nPort;
 	if (!AfxParseURL(lpszURL, dwServiceType, strServerName, strObject, nPort))
 	{
-		CString sMsg(_T("AfxParseURL(): failed"));
-		LogLine(_T("%s"), sMsg);
-		if (bShowMessageBoxOnError)
-			AfxMessageBox(sMsg, MB_ICONSTOP);
+		if (!bSilent)
+			LogLine(_T("%s"), _T("AfxParseURL(): failed"));
 		goto error;
 	}
 
@@ -2891,7 +2896,8 @@ BOOL SaveURL(LPCTSTR lpszURL, LPCTSTR lpszFileName, BOOL bAllowInvalidCert, BOOL
 	hInternetRoot = InternetOpen(AfxGetAppName(), INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
 	if (hInternetRoot == NULL)
 	{
-		ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("InternetOpen(): "));
+		if (!bSilent)
+			ShowErrorMsg(GetLastError(), FALSE, _T("InternetOpen(): "));
 		goto error;
 	}
 
@@ -2899,7 +2905,8 @@ BOOL SaveURL(LPCTSTR lpszURL, LPCTSTR lpszFileName, BOOL bAllowInvalidCert, BOOL
 	hConnectHandle = InternetConnect(hInternetRoot, strServerName, nPort, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
 	if (hConnectHandle == NULL)
 	{
-		ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("InternetConnect(): "));
+		if (!bSilent)
+			ShowErrorMsg(GetLastError(), FALSE, _T("InternetConnect(): "));
 		goto error;
 	}
 
@@ -2914,7 +2921,8 @@ BOOL SaveURL(LPCTSTR lpszURL, LPCTSTR lpszFileName, BOOL bAllowInvalidCert, BOOL
 	hResourceHandle = HttpOpenRequest(hConnectHandle, _T("GET"), strObject, _T("HTTP/1.1"), NULL, NULL, dwFlags, 0);
 	if (hResourceHandle == NULL)
 	{
-		ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("HttpOpenRequest(): "));
+		if (!bSilent)
+			ShowErrorMsg(GetLastError(), FALSE, _T("HttpOpenRequest(): "));
 		goto error;
 	}
 
@@ -2937,13 +2945,15 @@ BOOL SaveURL(LPCTSTR lpszURL, LPCTSTR lpszFileName, BOOL bAllowInvalidCert, BOOL
 			}
 			if (!HttpSendRequest(hResourceHandle, NULL, 0, NULL, 0))
 			{
-				ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("HttpSendRequest(): "));
+				if (!bSilent)
+					ShowErrorMsg(GetLastError(), FALSE, _T("HttpSendRequest(): "));
 				goto error;
 			}
 		}
 		else
 		{
-			ShowErrorMsg(dwLastError, bShowMessageBoxOnError, _T("HttpSendRequest(): "));
+			if (!bSilent)
+				ShowErrorMsg(dwLastError, FALSE, _T("HttpSendRequest(): "));
 			goto error;
 		}
 	}
@@ -2953,16 +2963,18 @@ BOOL SaveURL(LPCTSTR lpszURL, LPCTSTR lpszFileName, BOOL bAllowInvalidCert, BOOL
 	DWORD dwStatusCodeLen = sizeof(dwStatusCode);
 	if (!HttpQueryInfo(hResourceHandle, HTTP_QUERY_STATUS_CODE | HTTP_QUERY_FLAG_NUMBER, &dwStatusCode, &dwStatusCodeLen, NULL))
 	{
-		ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("HttpQueryInfo(): "));
+		if (!bSilent)
+			ShowErrorMsg(GetLastError(), FALSE, _T("HttpQueryInfo(): "));
 		goto error;
 	}
 	if (dwStatusCode < 200 || dwStatusCode >= 300)
 	{
-		CString sMsg;
-		sMsg.Format(_T("HttpQueryInfo() returned: %u"), dwStatusCode);
-		LogLine(_T("%s"), sMsg);
-		if (bShowMessageBoxOnError)
-			AfxMessageBox(sMsg, MB_ICONSTOP);
+		if (!bSilent)
+		{
+			CString sMsg;
+			sMsg.Format(_T("HttpQueryInfo() returned: %u"), dwStatusCode);
+			LogLine(_T("%s"), sMsg);
+		}
 		goto error;
 	}
 
@@ -2970,7 +2982,8 @@ BOOL SaveURL(LPCTSTR lpszURL, LPCTSTR lpszFileName, BOOL bAllowInvalidCert, BOOL
 	hFile = CreateFile(lpszFileName, GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hFile == INVALID_HANDLE_VALUE)
 	{
-		ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("CreateFile(): "));
+		if (!bSilent)
+			ShowErrorMsg(GetLastError(), FALSE, _T("CreateFile(): "));
 		goto error;
 	}
 	BYTE lpReadBuf[4096];
@@ -2989,7 +3002,8 @@ BOOL SaveURL(LPCTSTR lpszURL, LPCTSTR lpszFileName, BOOL bAllowInvalidCert, BOOL
 		DWORD dwNumberOfBytesWritten;
 		if (!WriteFile(hFile, lpReadBuf, dwReadBytes, &dwNumberOfBytesWritten, NULL))
 		{
-			ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("WriteFile(): "));
+			if (!bSilent)
+				ShowErrorMsg(GetLastError(), FALSE, _T("WriteFile(): "));
 			goto error;
 		}
 		else
@@ -2999,7 +3013,8 @@ BOOL SaveURL(LPCTSTR lpszURL, LPCTSTR lpszFileName, BOOL bAllowInvalidCert, BOOL
 		if (lpfnCallback)
 			lpfnCallback(0, Size);
 	}
-	ShowErrorMsg(GetLastError(), bShowMessageBoxOnError, _T("InternetReadFile(): "));
+	if (!bSilent)
+		ShowErrorMsg(GetLastError(), FALSE, _T("InternetReadFile(): "));
 
 error:
 	bOK = FALSE;

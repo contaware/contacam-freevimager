@@ -416,11 +416,11 @@ typedef void(CALLBACK* URLDOWNLOADPROGRESSCALLBACK)(int,size_t);	// int nStatus:
 																	// size_t Size: downloaded size in bytes
 extern LPBYTE GetURL(LPCTSTR lpszURL, size_t& Size,					// remember to free() the returned buffer
 					BOOL bAllowInvalidCert,
-					BOOL bShowMessageBoxOnError,
+					BOOL bSilent,
 					URLDOWNLOADPROGRESSCALLBACK lpfnCallback);
 extern BOOL SaveURL(LPCTSTR lpszURL, LPCTSTR lpszFileName,			// lpszFileName must not exist, otherwise it fails
 					BOOL bAllowInvalidCert,
-					BOOL bShowMessageBoxOnError,
+					BOOL bSilent,
 					URLDOWNLOADPROGRESSCALLBACK lpfnCallback);
 
 #endif // !defined(AFX_HELPERS_H__8FD88286_7192_47B9_B311_4C2F27BF8B85__INCLUDED_)

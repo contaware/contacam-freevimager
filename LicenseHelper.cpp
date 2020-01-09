@@ -66,7 +66,7 @@ int CDonorEmailValidateThread::DonorEmailValidate()
 	sURL += _T("&lang=");
 	sURL += ::UrlEncode(GetAppLanguage(), TRUE);
 	size_t Size;
-	LPBYTE p = ::GetURL(sURL, Size, FALSE, FALSE, NULL);
+	LPBYTE p = ::GetURL(sURL, Size, FALSE, TRUE, NULL);
 	if (p)
 	{
 		CString s(::FromUTF8(p, Size));
