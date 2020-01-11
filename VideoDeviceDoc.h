@@ -578,7 +578,8 @@ public:
 		PIXORD_RTSP = 1170,				// Pixord RTSP
 		PLANET_RTSP = 1180,				// Planet RTSP
 		REOLINK_RTSP = 1185,			// Reolink RTSP
-		SAMSUNG_RTSP = 1190,			// Samsung RTSP
+		SAMSUNG_PROFILE5_RTSP = 1190,	// Samsung Profile5 RTSP
+		SAMSUNG_PROFILE4_RTSP = 1191,	// Samsung Profile4 RTSP
 		SONY_RTSP = 1200,				// Sony RTSP
 		SRICAM_RTSP = 1205,				// Sricam RTSP
 		SUMPPLE_RTSP = 1207,			// Sumpple RTSP

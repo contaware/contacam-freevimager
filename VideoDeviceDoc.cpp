@@ -8788,8 +8788,12 @@ void CVideoDeviceDoc::ConnectRtsp()
 			sPathAndQuery = _T("/h264Preview_01_main");
 			break;
 
-		case SAMSUNG_RTSP:			
-			sPathAndQuery = _T("/profile1/media.smp");
+		case SAMSUNG_PROFILE5_RTSP:
+			sPathAndQuery = _T("/profile5/media.smp"); // 1080P
+			break;
+
+		case SAMSUNG_PROFILE4_RTSP:
+			sPathAndQuery = _T("/profile4/media.smp"); // 720P
 			break;
 
 		case SONY_RTSP:				
