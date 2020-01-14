@@ -594,13 +594,22 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			{
 				if (nSaveFreqDiv > 1)
 				{
-					::LogLine(_T("%s, %s %0.1fx @ %0.1ffps/%d"),
-						m_pDoc->GetAssignedDeviceName(), ML_STRING(1849, "Saved"), dSaveFrameListSpeed, dCalcFrameRate, nSaveFreqDiv);
+					::LogLine(	_T("%s, %s %s %0.1fx %0.1ffps/%d"),
+								m_pDoc->GetAssignedDeviceName(),
+								ML_STRING(1849, "Saved"),
+								_T("rec_") + sFirstTime,
+								dSaveFrameListSpeed,
+								dCalcFrameRate,
+								nSaveFreqDiv);
 				}
 				else
 				{
-					::LogLine(_T("%s, %s %0.1fx @ %0.1ffps"),
-						m_pDoc->GetAssignedDeviceName(), ML_STRING(1849, "Saved"), dSaveFrameListSpeed, dCalcFrameRate);
+					::LogLine(	_T("%s, %s %s %0.1fx %0.1ffps"),
+								m_pDoc->GetAssignedDeviceName(),
+								ML_STRING(1849, "Saved"),
+								_T("rec_") + sFirstTime,
+								dSaveFrameListSpeed,
+								dCalcFrameRate);
 				}
 			}
 
