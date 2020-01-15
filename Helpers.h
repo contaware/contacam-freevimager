@@ -33,7 +33,7 @@ extern void InitHelpers();
 extern int SystemDPIScale(int n);
 
 // Always load system dlls through this
-HMODULE LoadLibraryFromSystem32(LPCTSTR lpFileName);
+extern HMODULE LoadLibraryFromSystem32(LPCTSTR lpFileName);
 
 /*
 c:\mydir1\mydir2\hello.jpeg
