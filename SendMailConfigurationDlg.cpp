@@ -3,7 +3,6 @@
 
 #include "stdafx.h"
 #include "uimager.h"
-#include "Helpers.h"
 #include "VideoDeviceDoc.h"
 #include "SendMailConfigurationDlg.h"
 

@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "MainFrm.h"
 #include "resource.h"
-#include "Helpers.h"
 #include "NotificationWnd.h"
 
 #ifndef WP_CLOSEBUTTON

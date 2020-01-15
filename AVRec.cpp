@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "AVRec.h"
 #include "Round.h"
-#include "Helpers.h"
 #include "YuvToYuv.h"
 
 #ifdef _DEBUG
