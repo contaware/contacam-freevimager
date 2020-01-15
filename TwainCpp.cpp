@@ -75,7 +75,14 @@ BOOL CTwain::InitTwain(HWND hWnd)
 		return FALSE;
 	m_hTwainMessageWnd = hWnd;
 	
-	m_hTwainDLL = ::LoadLibrary(_T("TWAIN_32.DLL"));
+	// TWAIN_32.DLL is placed under Windows and not in System32
+	TCHAR szFullPath[_MAX_PATH];
+	szFullPath[0] = _T('\0');
+	if (::GetWindowsDirectory(szFullPath, _countof(szFullPath)) == 0)
+		return FALSE;
+	_tcscat_s(szFullPath, _countof(szFullPath), _T("\\"));
+	_tcscat_s(szFullPath, _countof(szFullPath), _T("TWAIN_32.DLL"));
+	m_hTwainDLL = ::LoadLibrary(szFullPath);
 	if (m_hTwainDLL)
 	{
 		if (!(m_pTwainDSMProc = (DSMENTRYPROC)::GetProcAddress(m_hTwainDLL, (LPCSTR)MAKEINTRESOURCE(1))))
