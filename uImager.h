@@ -502,9 +502,6 @@ public:
 	BOOL m_bPrinterInit;
 	CEnumPrinters m_PrinterControl;
 
-	// MAPI Mail Support Available Flag
-	BOOL m_bMailAvailable;
-
 	// Xmp Dialogs
 	CXmpDlg* m_pXmpImportDlg;
 	CXmpDlg* m_pXmpDlg;

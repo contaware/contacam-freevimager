@@ -1019,7 +1019,7 @@ BOOL CNetCom::StringToAddress(const TCHAR* sHost, const TCHAR* sPort, sockaddr* 
 		return FALSE;
 
 	BOOL res = FALSE;
-	HINSTANCE hInstLib = ::LoadLibrary(_T("Ws2_32.dll"));
+	HINSTANCE hInstLib = ::LoadLibraryFromSystem32(_T("Ws2_32.dll"));
 	if (hInstLib)
 	{
 		INT (WSAAPI *lpfGetAddrInfo)(PCWSTR pNodeName, PCWSTR pServiceName, const ADDRINFOW* pHints, PADDRINFOW* ppResult);

@@ -166,7 +166,6 @@ CUImagerApp::CUImagerApp()
 	m_bFirstRun = FALSE;
 	m_bFirstRunEver = FALSE;
 	m_bSilentInstall = FALSE;
-	m_bMailAvailable = FALSE;
 	m_bStartMaximized = FALSE;
 	m_nThreadCount = 1;
 	m_sLastOpenedDir = _T("");
@@ -823,9 +822,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 
 		// Create Named Mutex For Installer / Uninstaller
 		m_hAppMutex = ::CreateMutex(NULL, FALSE, APPMUTEXNAME);
-
-		// Is Mail Available?
-		m_bMailAvailable = (::SearchPath(NULL, _T("MAPI32.DLL"), NULL, 0, NULL, NULL) != 0);
 
 		// Check for MMX
 		if (!g_bMMX)
@@ -1791,13 +1787,8 @@ void CUImagerApp::OnUpdateFileShrinkDirDocs(CCmdUI* pCmdUI)
 
 void CUImagerApp::OnFileSendmailOpenDocs() 
 {
-	// Check and prompt to open files if none open
-	if (!m_bMailAvailable)
-	{
-		::AfxMessageBox(ML_STRING(1175, "No Email Program Installed."), MB_OK | MB_ICONINFORMATION);
-		return;
-	}
-	else if (!ArePictureDocsOpen())
+	// Prompt to open files if none open
+	if (!ArePictureDocsOpen())
 		OnFileOpen();
 
 	// Send open doc(s)
@@ -3672,7 +3663,7 @@ BOOL CUImagerApp::SendMail(LPCTSTR szAttachment)
 	
 	CMailState* pMailState = MailState;
 	if (pMailState->m_hInstMail == NULL)
-		pMailState->m_hInstMail = ::LoadLibraryA("MAPI32.DLL");
+		pMailState->m_hInstMail = ::LoadLibraryFromSystem32(_T("MAPI32.DLL"));
 
 	if (pMailState->m_hInstMail == NULL)
 	{

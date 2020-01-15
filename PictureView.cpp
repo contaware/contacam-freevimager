@@ -178,7 +178,7 @@ int CPictureView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
 
 	typedef BOOL (WINAPI * FPSETGESTURECONFIG)(HWND hwnd, DWORD dwReserved, UINT cIDs, PGESTURECONFIG pGestureConfig, UINT cbSize);
-	HINSTANCE h = ::LoadLibrary(_T("user32.dll"));
+	HINSTANCE h = ::LoadLibraryFromSystem32(_T("user32.dll"));
 	if (h)
 	{
 		FPSETGESTURECONFIG fpSetGestureConfig = (FPSETGESTURECONFIG)::GetProcAddress(h, "SetGestureConfig");
@@ -1490,7 +1490,7 @@ LRESULT CPictureView::OnGesture(WPARAM /*wParam*/, LPARAM lParam)
 	// Get gesture function pointers
 	typedef	BOOL (WINAPI *FPGETGESTUREINFO)(HGESTUREINFO_COMPATIBLE, PGESTUREINFO_COMPATIBLE);
 	typedef	BOOL (WINAPI *FPCLOSEGESTUREINFOHANDLE)(HGESTUREINFO_COMPATIBLE);
-	HINSTANCE h = ::LoadLibrary(_T("user32.dll"));
+	HINSTANCE h = ::LoadLibraryFromSystem32(_T("user32.dll"));
 	if (!h)
 		return Default();
 	FPGETGESTUREINFO fpGetGestureInfo = (FPGETGESTUREINFO)::GetProcAddress(h, "GetGestureInfo");

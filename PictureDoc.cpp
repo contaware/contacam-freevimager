@@ -1987,14 +1987,14 @@ CPictureDoc::CPictureDoc()
 	m_nLayeredDlgOpacity = MAX_LAYERED_DLG_OPACITY;
 
 	// Alpha-Blend Transition
-	m_hMSIMG32 = ::LoadLibrary(_T("msimg32.dll"));
+	m_hMSIMG32 = ::LoadLibraryFromSystem32(_T("msimg32.dll"));
 	if (m_hMSIMG32)
 		m_fpAlphaBlend = (FPALPHABLEND)::GetProcAddress(m_hMSIMG32, "AlphaBlend");
 	else
 		m_fpAlphaBlend = NULL;
 
 	// Window Transparency
-	m_hUser32 = ::LoadLibrary(_T("user32.dll"));
+	m_hUser32 = ::LoadLibraryFromSystem32(_T("user32.dll"));
 	if (m_hUser32)
 	{
 		m_pSetLayeredWindowAttributes = (lpfnSetLayeredWindowAttributes)

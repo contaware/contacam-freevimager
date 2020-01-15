@@ -84,7 +84,7 @@ CXThemeHelper::CXThemeHelper()
 
 void CXThemeHelper::Init()
 {
-	m_hThemeLib = LoadLibrary(_T("UXTHEME.DLL"));
+	m_hThemeLib = ::LoadLibraryFromSystem32(_T("UXTHEME.DLL"));
 
 	if (m_hThemeLib)
 	{
@@ -165,7 +165,7 @@ int CXThemeHelper::GetComCtl32Version()
 
 	typedef HRESULT (CALLBACK *DLLGETVERSION)(DLLVERSIONINFO*);
 	DLLGETVERSION pDLLGETVERSION = NULL;
-	HMODULE hModComCtl = ::LoadLibrary(_T("comctl32.dll"));
+	HMODULE hModComCtl = ::LoadLibraryFromSystem32(_T("comctl32.dll"));
     if (hModComCtl)
     {
         pDLLGETVERSION = (DLLGETVERSION)(::GetProcAddress(hModComCtl, "DllGetVersion"));

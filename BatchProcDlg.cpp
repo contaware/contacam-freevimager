@@ -4974,7 +4974,7 @@ int CBatchProcDlg::GetComCtl32MajorVersion()
 
 	typedef HRESULT (CALLBACK *DLLGETVERSION)(DLLVERSIONINFO*);
 	DLLGETVERSION pDLLGETVERSION = NULL;
-	HMODULE hModComCtl = ::LoadLibrary(_T("comctl32.dll"));
+	HMODULE hModComCtl = ::LoadLibraryFromSystem32(_T("comctl32.dll"));
     if (hModComCtl)
     {
         pDLLGETVERSION = (DLLGETVERSION)(

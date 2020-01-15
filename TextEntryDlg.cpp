@@ -61,7 +61,7 @@ int CTextEntryDlg::Show(CWnd* pParent, CWnd* pCenterIn, LPCTSTR pszTitle, BOOL b
 
 	// OK button
 	typedef LPCWSTR(WINAPI * FPMB_GETSTRING)(int);
-	HMODULE hMod = ::LoadLibrary(_T("user32.dll"));
+	HMODULE hMod = ::LoadLibraryFromSystem32(_T("user32.dll"));
 	FPMB_GETSTRING fpMB_GetString = (FPMB_GETSTRING)::GetProcAddress(hMod, "MB_GetString");
 	if (!m_ctlOK.Create(fpMB_GetString(0), WS_CHILD | WS_TABSTOP | WS_VISIBLE | BS_DEFPUSHBUTTON,
 		CRect(	rcClient.Width() - nMarginX - nButtonWidth - nButtonSpacing - nButtonWidth,

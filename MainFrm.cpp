@@ -884,11 +884,6 @@ void CMainFrame::OnFileAcquireAndEmail()
 		::AfxMessageBox(ML_STRING(1224, "No twain source found."), MB_OK | MB_ICONINFORMATION);
 		return;
 	}
-	if (!((CUImagerApp*)::AfxGetApp())->m_bMailAvailable)
-	{
-		::AfxMessageBox(ML_STRING(1175, "No Email Program Installed."), MB_OK | MB_ICONINFORMATION);
-		return;
-	}
 
 	// Create & Empty Temp Dir
 	CString sScanAndEmailDir;

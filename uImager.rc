@@ -3098,7 +3098,6 @@ BEGIN
     IDS_MULTILANG_1170      "Error: No MMX Processor"
     IDS_MULTILANG_1171      "No usable WinSock DLL found"
     IDS_MULTILANG_1174      "Failed to Open:\n%s\nThe following extension is not supported:\n%s"
-    IDS_MULTILANG_1175      "No Email Program Installed."
     IDS_MULTILANG_1178      "No picture file loaded."
     IDS_MULTILANG_1179      "Please try again later, a command is executed when picture fully loaded."
     IDS_MULTILANG_1180      "Try again after saving the picture file."

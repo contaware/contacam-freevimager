@@ -14,7 +14,7 @@ static char THIS_FILE[] = __FILE__;
 CTryEnterCriticalSection::CTryEnterCriticalSection()
 {
 	// Mutex or Critical Section?
-	m_hKernel32 = ::LoadLibrary(_T("kernel32.dll"));
+	m_hKernel32 = ::LoadLibraryFromSystem32(_T("kernel32.dll"));
 	if (m_hKernel32)
 		m_fpTryEnterCriticalSection = (FPTRYENTERCRITICALSECTION)
 										::GetProcAddress(m_hKernel32,
