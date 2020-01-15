@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "MainFrm.h"
 #include "resource.h"
+#include "Helpers.h"
 #include "NotificationWnd.h"
 
 #ifndef WP_CLOSEBUTTON
@@ -65,7 +66,7 @@ CNotificationWnd::CNotificationWnd(const CString& sTitle, const CString& sText, 
 	m_bSafeToClose = FALSE;
 
 	// Dynamically pull in the uxtheme functions
-	m_hUXTheme = LoadLibraryFromSystem32(_T("UxTheme.dll"));
+	m_hUXTheme = ::LoadLibraryFromSystem32(_T("UxTheme.dll"));
 	if (m_hUXTheme != NULL)
 	{
 		m_lpfnOpenThemeData = reinterpret_cast<LPOPENTHEMEDATA>(GetProcAddress(m_hUXTheme, "OpenThemeData"));
@@ -110,21 +111,6 @@ CNotificationWnd::~CNotificationWnd()
 		DestroyIcon(m_TitleIcon);
 		m_TitleIcon = NULL;
 	}
-}
-
-HMODULE CNotificationWnd::LoadLibraryFromSystem32(LPCTSTR lpFileName)
-{
-	// Get the Windows System32 directory
-	TCHAR szFullPath[_MAX_PATH];
-	szFullPath[0] = _T('\0');
-	if (GetSystemDirectory(szFullPath, _countof(szFullPath)) == 0)
-		return NULL;
-
-	// Setup the full path and delegate to LoadLibrary
-	#pragma warning(suppress: 6102) //There is a bug with the SAL annotation of GetSystemDirectory in the Windows 8.1 SDK
-	_tcscat_s(szFullPath, _countof(szFullPath), _T("\\"));
-	_tcscat_s(szFullPath, _countof(szFullPath), lpFileName);
-	return LoadLibrary(szFullPath);
 }
 
 CRect CNotificationWnd::CalculatePopupPosition()

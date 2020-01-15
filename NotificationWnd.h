@@ -19,7 +19,6 @@ public:
 								// default: DT_NOPREFIX | DT_CENTER | DT_WORDBREAK | DT_EDITCONTROL
 
 protected:
-	HMODULE LoadLibraryFromSystem32(LPCTSTR lpFileName);
 	virtual void DrawCloseButton(CDC* pDC);
 	virtual void DrawThemeCloseButton(CDC* pDC);
 	virtual void DrawLegacyCloseButton(CDC* pDC);

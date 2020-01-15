@@ -92,7 +92,7 @@ void InitHelpers()
 	GlobalMemoryStatusEx(&MemoryStatusEx);
 	g_nPCInstalledPhysRamMB = g_nOSUsablePhysRamMB = (int)(MemoryStatusEx.ullTotalPhys >> 20);
 	g_nAppUsableAddressSpaceMB = (int)(MemoryStatusEx.ullTotalVirtual >> 20);
-	HINSTANCE h = LoadLibrary(_T("kernel32.dll"));
+	HINSTANCE h = LoadLibraryFromSystem32(_T("kernel32.dll"));
 	if (h)
 	{
 		typedef BOOL(WINAPI * FPGETPHYSICALLYINSTALLEDSYSTEMMEMORY)(PULONGLONG TotalMemoryInKilobytes);
@@ -108,6 +108,20 @@ void InitHelpers()
 int SystemDPIScale(int n)
 {
 	return MulDiv(n, g_nSystemDPI, 96);
+}
+
+HMODULE LoadLibraryFromSystem32(LPCTSTR lpFileName)
+{
+	// Get the Windows System32 directory
+	TCHAR szFullPath[_MAX_PATH];
+	szFullPath[0] = _T('\0');
+	if (GetSystemDirectory(szFullPath, _countof(szFullPath)) == 0)
+		return NULL;
+
+	// Setup the full path and delegate to LoadLibrary
+	_tcscat_s(szFullPath, _countof(szFullPath), _T("\\"));
+	_tcscat_s(szFullPath, _countof(szFullPath), lpFileName);
+	return LoadLibrary(szFullPath);
 }
 
 /*
@@ -1851,7 +1865,7 @@ CString ShowErrorMsg(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, CString sHe
 	DWORD dwRes = 0;
 	if (dwErrorCode >= INTERNET_ERROR_BASE && dwErrorCode <= INTERNET_ERROR_LAST)
 	{
-		HMODULE hMod = LoadLibrary(_T("wininet.dll"));
+		HMODULE hMod = LoadLibraryFromSystem32(_T("wininet.dll"));
 		dwRes = FormatMessage(	FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_HMODULE | FORMAT_MESSAGE_IGNORE_INSERTS,
 								hMod,
 								dwErrorCode,
