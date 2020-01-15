@@ -569,7 +569,7 @@ CLoadDirectDraw::~CLoadDirectDraw()
 
 // On a multi monitor system, we can get the DirectDraw object for any
 // monitor (device) with the optional szDevice parameter
-
+extern HMODULE LoadLibraryFromSystem32(LPCTSTR lpFileName);
 HRESULT CLoadDirectDraw::LoadDirectDraw(LPSTR szDevice)
 {
     PDRAWCREATE pDrawCreate;
@@ -592,7 +592,7 @@ HRESULT CLoadDirectDraw::LoadDirectDraw(LPSTR szDevice)
     if(!m_hDirectDraw)
     {
         UINT ErrorMode = SetErrorMode(SEM_NOOPENFILEERRORBOX);
-        m_hDirectDraw = LoadLibrary(TEXT("DDRAW.DLL"));
+        m_hDirectDraw = ::LoadLibraryFromSystem32(TEXT("DDRAW.DLL"));
         SetErrorMode(ErrorMode);
 
         if (m_hDirectDraw == NULL) {

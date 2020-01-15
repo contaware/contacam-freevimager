@@ -72,12 +72,12 @@ CBaseObject::~CBaseObject()
 }
 
 static const TCHAR szOle32Aut[]   = TEXT("OleAut32.dll");
-
+extern HMODULE LoadLibraryFromSystem32(LPCTSTR lpFileName);
 HINSTANCE LoadOLEAut32()
 {
     if (hlibOLEAut32 == 0) {
 
-	hlibOLEAut32 = LoadLibrary(szOle32Aut);
+	hlibOLEAut32 = LoadLibraryFromSystem32(szOle32Aut);
     }
 
     return hlibOLEAut32;
