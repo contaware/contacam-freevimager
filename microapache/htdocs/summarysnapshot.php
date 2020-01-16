@@ -433,11 +433,20 @@ if ($handle = @opendir($dir)) {
 else
 	PrintNoFilesDate();
 ?>
+<a id="back2top" href="#" onclick="window.scroll({left: 0, top: 0, behavior: 'smooth'}); return false;">&#x276f;</a>
 <script type="text/javascript">
 //<![CDATA[
+window.addEventListener('scroll', function() {
+	var back2TopButton = document.getElementById('back2top');
+	var minScrollHeight = 2 * <?php echo THUMBHEIGHT; ?>;
+	if (document.body.scrollTop > minScrollHeight || document.documentElement.scrollTop > minScrollHeight)
+		back2TopButton.style.display = 'block';
+	else
+		back2TopButton.style.display = 'none';
+}, false);
 if (parent.window.name != '' && document.getElementById(parent.window.name))
 	document.getElementById(parent.window.name).className = 'lastselected';
-document.getElementById('DatePicker').addEventListener("input", function(ev) {
+document.getElementById('DatePicker').addEventListener('input', function(ev) {
 	if (ev.target.value == '') {// if pressing X in date picker
 		window.location.href = '<?php echo "$scriptname"; ?>';
 	}
