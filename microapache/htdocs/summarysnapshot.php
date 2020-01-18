@@ -433,7 +433,7 @@ if ($handle = @opendir($dir)) {
 else
 	PrintNoFilesDate();
 ?>
-<a id="back2top" href="#" onclick="window.scroll({left: 0, top: 0, behavior: 'smooth'}); return false;">&#x276f;</a>
+<a id="back2top" href="#" onclick="window.scrollTo(0, 0); return false;">&#x276f;</a>
 <script type="text/javascript">
 //<![CDATA[
 window.addEventListener('scroll', function() {
