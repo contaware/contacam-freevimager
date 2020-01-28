@@ -585,9 +585,9 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		DWORD dwSaveTimeMs = ::timeGetTime() - dwStartUpTime;
 		if (dwSaveTimeMs > 0 && dwFramesTimeMs > MOVDET_MIN_LENGTH_SAVESPEED_MSEC)
 		{
-			// Update the doc variable used to alert in title bar
+			// Update the atomic doc variable used to alert in title bar
 			double dSaveFrameListSpeed = (double)dwFramesTimeMs / (double)dwSaveTimeMs;
-			m_pDoc->m_nSaveFrameListSpeedPercent = Round(dSaveFrameListSpeed * 100.0);
+			m_pDoc->m_dSaveFrameListSpeed = dSaveFrameListSpeed;
 
 			// Log alert
 			if (dSaveFrameListSpeed < 1.0)
@@ -3506,7 +3506,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nDeleteRecordingsOlderThanDays = DEFAULT_DEL_RECS_OLDER_THAN_DAYS;
 	m_nMaxCameraFolderSizeMB = 0;
 	m_nMinDiskFreePermillion = MIN_DISK_FREE_PERMILLION;
-	m_nSaveFrameListSpeedPercent = 0;
+	m_dSaveFrameListSpeed = 0.0;
 
 	// Movement Detection
 	m_pDifferencingDib = NULL;
@@ -3918,7 +3918,7 @@ void CVideoDeviceDoc::SetDocumentTitle()
 		if (m_DocRect.Width() > 0 && m_DocRect.Height() > 0)
 		{
 			// Saving speed
-			double dSaveFrameListSpeed = (double)m_nSaveFrameListSpeedPercent / 100.0;
+			double dSaveFrameListSpeed = m_dSaveFrameListSpeed;
 			if (dSaveFrameListSpeed > 0.0)
 			{
 				CString sSaveFrameListSpeed;

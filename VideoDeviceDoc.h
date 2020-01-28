@@ -17,6 +17,7 @@
 #include "SortableFileFind.h"
 #include "HostPortDlg.h"
 #include "SendMailConfigurationDlg.h"
+#include <atomic>
 extern "C"
 {
 #include "libavutil/opt.h"
@@ -870,7 +871,7 @@ public:
 	volatile int m_nMaxCameraFolderSizeMB;				// Maximum size of a camera folder, after that oldest files are removed,
 														// 0 means no limit
 	volatile int m_nMinDiskFreePermillion;				// Minimum disk free size in permillion, if the free space is lower than that the oldest files are removed
-	volatile int m_nSaveFrameListSpeedPercent;			// Frames saving speed: if greater than 100 then the PC can realtime save
+	std::atomic<double> m_dSaveFrameListSpeed;			// Frames saving speed
 
 	// Networking
 	CNetCom* volatile m_pVideoNetCom;					// HTTP Video Instance
