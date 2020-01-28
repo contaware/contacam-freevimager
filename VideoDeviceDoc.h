@@ -107,7 +107,6 @@ class CCameraAdvancedSettingsDlg;
 #define MOVDET_DEFAULT_POST_BUFFER_MSEC			5000			// ms
 #define MOVDET_MIN_LENGTH_MSEC					1000			// Default minimum detection length in ms, below this value frames are not saved
 #define MOVDET_MIN_LENGTH_SAVESPEED_MSEC		8000U			// Saving speed calculation is considered reliable for frame sequences longer than this
-#define MOVDET_SAVE_MAX_FREQDIV					4				// Maximum save frame-rate divider
 #define MOVDET_DEFAULT_LEVEL					50				// Detection level default value (0 = Off .. 99 = Max Sensitivity, 100 = Continuous Recording)
 #define MOVDET_MAX_ZONES_BLOCK_SIZE				1024			// Subdivide settings in blocks (MOVDET_MAX_ZONES must be a multiple of this)
 #define MOVDET_MAX_ZONES						8192			// Maximum number of zones
@@ -908,8 +907,9 @@ public:
 	volatile int m_nCurrentDetectionZoneSize;			// Current detection zone size: 0->Big, 1->Medium, 2->Small
 	volatile DWORD m_dwFirstDetFrameUpTime;				// Uptime of first movement detection frame
 	volatile DWORD m_dwLastDetFrameUpTime;				// Uptime of last movement detection frame
-	volatile int m_nMilliSecondsRecBeforeMovementBegin;	// Do record in the circular buffer list this amount of millisec. before det.
-	volatile int m_nMilliSecondsRecAfterMovementEnd;	// Keep Recording this amount of millisec. after det. end
+	volatile int m_nSaveFreqDiv;						// Saving frequency divider 
+	volatile int m_nMilliSecondsRecBeforeMovementBegin;	// Do record in the circular buffer list this amount of milliseconds before start
+	volatile int m_nMilliSecondsRecAfterMovementEnd;	// Keep recording this amount of milliseconds after end
 	volatile int m_nDetectionMinLengthMilliSeconds;		// Minimum detection length in ms, below this value SaveFrameList() is not called
 	volatile int m_nDetectionMaxFrames;					// Maximum number of frames for a detection sequence
 	volatile BOOL m_bSaveVideo;							// Save Video File

@@ -179,7 +179,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 	CString sTempRecordingDir;
 	sTempRecordingDir.Format(_T("Recording%X"), dwCurrentThreadId);
 	sTempRecordingDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + sTempRecordingDir;
-	int nSaveFreqDiv = 1;
 
 	// Save loop
 	for (;;)
@@ -366,6 +365,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			if (dCalcFrameRate / m_pDoc->m_dEffectiveFrameRate < MOVDET_SAVE_MIN_FRAMERATE_RATIO)
 				dCalcFrameRate = m_pDoc->m_dEffectiveFrameRate;
 		}
+		int nSaveFreqDiv = MAX(1, m_pDoc->m_nSaveFreqDiv);
 		while (!m_pFrameList->IsEmpty() && nextpos && nFrames)
 		{
 			// Shutdown?
@@ -583,49 +583,17 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 
 		// Saving speed
 		DWORD dwSaveTimeMs = ::timeGetTime() - dwStartUpTime;
-		if (dwSaveTimeMs > 0)
+		if (dwSaveTimeMs > 0 && dwFramesTimeMs > MOVDET_MIN_LENGTH_SAVESPEED_MSEC)
 		{
-			// Calc.
+			// Update the doc variable used to alert in title bar
 			double dSaveFrameListSpeed = (double)dwFramesTimeMs / (double)dwSaveTimeMs;
 			m_pDoc->m_nSaveFrameListSpeedPercent = Round(dSaveFrameListSpeed * 100.0);
 
-			// Log
-			if (g_nLogLevel > 0)
+			// Log alert
+			if (dSaveFrameListSpeed < 1.0)
 			{
-				if (nSaveFreqDiv > 1)
-				{
-					::LogLine(	_T("%s, %s %s %0.1fx %0.1ffps/%d"),
-								m_pDoc->GetAssignedDeviceName(),
-								ML_STRING(1849, "Saved"),
-								_T("rec_") + sFirstTime,
-								dSaveFrameListSpeed,
-								dCalcFrameRate,
-								nSaveFreqDiv);
-				}
-				else
-				{
-					::LogLine(	_T("%s, %s %s %0.1fx %0.1ffps"),
-								m_pDoc->GetAssignedDeviceName(),
-								ML_STRING(1849, "Saved"),
-								_T("rec_") + sFirstTime,
-								dSaveFrameListSpeed,
-								dCalcFrameRate);
-				}
-			}
-
-			// Adjust the frame-rate divider
-			if (dwFramesTimeMs > MOVDET_MIN_LENGTH_SAVESPEED_MSEC)
-			{
-				if (dSaveFrameListSpeed < 1.0)
-				{
-					if (nSaveFreqDiv < MOVDET_SAVE_MAX_FREQDIV)
-						++nSaveFreqDiv;
-				}
-				else
-				{
-					if (nSaveFreqDiv > 1)
-						--nSaveFreqDiv;
-				}
+				::LogLine(	ML_STRING(1839, "%s, CANNOT REALTIME SAVE (%fx): 1. decrease framerate (or increase \"Save framerate divider\") 2. decrease video resolution"),
+							m_pDoc->GetAssignedDeviceName(), dSaveFrameListSpeed);
 			}
 		}
 
@@ -3546,6 +3514,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nShowEditDetectionZones = 0;
 	m_bDetectingMovement = FALSE;
 	m_bDetectingMinLengthMovement = FALSE;
+	m_nSaveFreqDiv = 1;
 	m_nMilliSecondsRecBeforeMovementBegin = MOVDET_DEFAULT_PRE_BUFFER_MSEC;
 	m_nMilliSecondsRecAfterMovementEnd = MOVDET_DEFAULT_POST_BUFFER_MSEC;
 	m_nDetectionMinLengthMilliSeconds = MOVDET_MIN_LENGTH_MSEC;
@@ -3946,54 +3915,54 @@ void CVideoDeviceDoc::SetDocumentTitle()
 		sTitle = GetAssignedDeviceName();
 
 		// General info
-		CString sWidthHeight;
-		CString sSaveFrameListSpeed;
-		CString sFrameRate;
-		CString sDataRate;
-		CString sFormat;
 		if (m_DocRect.Width() > 0 && m_DocRect.Height() > 0)
 		{
-			// Width and Height
-			sWidthHeight.Format(_T("%dx%d"), m_DocRect.Width(), m_DocRect.Height());
-
-			// Framerate
-			if (m_dEffectiveFrameRate > 0.0)
-				sFrameRate.Format(_T("%0.1ffps"), m_dEffectiveFrameRate);
-
 			// Saving speed
 			double dSaveFrameListSpeed = (double)m_nSaveFrameListSpeedPercent / 100.0;
 			if (dSaveFrameListSpeed > 0.0)
-				sSaveFrameListSpeed.Format(_T("%0.1fx"), dSaveFrameListSpeed);
+			{
+				CString sSaveFrameListSpeed;
+				if (dSaveFrameListSpeed < 1.0)
+					sSaveFrameListSpeed.Format(_T("*** %0.1fx ***"), dSaveFrameListSpeed);
+				else
+					sSaveFrameListSpeed.Format(_T("%0.1fx"), dSaveFrameListSpeed);
+				sTitle += _T(" , ") + sSaveFrameListSpeed;
+			}
+
+			// Width and Height
+			CString sWidthHeight;
+			sWidthHeight.Format(_T("%dx%d"), m_DocRect.Width(), m_DocRect.Height());
+			sTitle += _T(" , ") + sWidthHeight;
+
+			// Framerate
+			if (m_dEffectiveFrameRate > 0.0)
+			{
+				CString sFrameRate;
+				sFrameRate.Format(_T("%0.1ffps"), m_dEffectiveFrameRate);
+				sTitle += _T("@") + sFrameRate;
+			}
+
+			// Format
+			CString sFormat(GetDeviceFormat());
+			if (!sFormat.IsEmpty())
+				sTitle += _T(" , ") + sFormat;
 
 			// Datarate
 			if (m_lEffectiveDataRate > 0)
 			{
+				CString sDataRate;
 				int kbps = m_lEffectiveDataRate / 125; // 1000 bits are 1 kbit, while 1024 bytes are 1 KB (or KiB)
 				if (kbps >= 1000)
 					sDataRate.Format(_T("%0.1fMbps"), (double)kbps / 1000.0);
 				else
 					sDataRate.Format(_T("%dkbps"), kbps);
+				sTitle += _T(" , ") + sDataRate;
 			}
-
-			// Format
-			sFormat = GetDeviceFormat();
 		}
 
 		// Update Camera Advanced Settings Title and Recording Dir
 		if (m_pCameraAdvancedSettingsDlg)
 			m_pCameraAdvancedSettingsDlg->UpdateTitleAndDir();
-
-		// Set main title
-		if (!sWidthHeight.IsEmpty())
-			sTitle += _T(" , ") + sWidthHeight;
-		if (!sFrameRate.IsEmpty())
-			sTitle += _T(" , ") + sFrameRate;
-		if (!sSaveFrameListSpeed.IsEmpty())
-			sTitle += _T(" , ") + sSaveFrameListSpeed;
-		if (!sDataRate.IsEmpty())
-			sTitle += _T(" , ") + sDataRate;
-		if (!sFormat.IsEmpty())
-			sTitle += _T(" , ") + sFormat;
 	}
 	CDocument::SetTitle(sTitle);
 }
@@ -4404,6 +4373,7 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_nDeviceFormatId = (int) pApp->GetProfileInt(sSection, _T("VideoCaptureDeviceFormatID"), -1);
 	m_nDeviceFormatWidth = (int) pApp->GetProfileInt(sSection, _T("VideoCaptureDeviceFormatWidth"), 0);
 	m_nDeviceFormatHeight = (int) pApp->GetProfileInt(sSection, _T("VideoCaptureDeviceFormatHeight"), 0);
+	m_nSaveFreqDiv = (int)pApp->GetProfileInt(sSection, _T("SaveFreqDiv"), 1);
 	m_nMilliSecondsRecBeforeMovementBegin = (int) pApp->GetProfileInt(sSection, _T("MilliSecondsRecBeforeMovementBegin"), MOVDET_DEFAULT_PRE_BUFFER_MSEC);
 	m_nMilliSecondsRecAfterMovementEnd = (int) pApp->GetProfileInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), MOVDET_DEFAULT_POST_BUFFER_MSEC);
 	m_nDetectionMinLengthMilliSeconds = (int) pApp->GetProfileInt(sSection, _T("DetectionMinLengthMilliSeconds"), MOVDET_MIN_LENGTH_MSEC);
@@ -4560,6 +4530,7 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("VideoCaptureDeviceFormatID"), m_nDeviceFormatId);
 	pApp->WriteProfileInt(sSection, _T("VideoCaptureDeviceFormatWidth"), m_nDeviceFormatWidth);
 	pApp->WriteProfileInt(sSection, _T("VideoCaptureDeviceFormatHeight"), m_nDeviceFormatHeight);
+	pApp->WriteProfileInt(sSection, _T("SaveFreqDiv"), m_nSaveFreqDiv);
 	pApp->WriteProfileInt(sSection, _T("MilliSecondsRecBeforeMovementBegin"), m_nMilliSecondsRecBeforeMovementBegin);
 	pApp->WriteProfileInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), m_nMilliSecondsRecAfterMovementEnd);
 	pApp->WriteProfileInt(sSection, _T("DetectionMinLengthMilliSeconds"), m_nDetectionMinLengthMilliSeconds);

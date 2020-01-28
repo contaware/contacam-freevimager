@@ -28,6 +28,7 @@ public:
 
 	// Dialog data
 	enum { IDD = IDD_CAMERAADVANCEDSETTINGS };
+	int m_nSaveFreqDiv;
 	int	m_nSecondsBeforeMovementBegin;
 	int	m_nSecondsAfterMovementEnd;
 	int	m_nDetectionMinLengthSeconds;
@@ -67,6 +68,7 @@ protected:
 	afx_msg void OnClose();
 	afx_msg void OnChangeFrameRate();
 	afx_msg void OnTimer(UINT nIDEvent);
+	afx_msg void OnChangeSaveFreqDiv();
 	afx_msg void OnChangeSecondsBeforeMovementBegin();
 	afx_msg void OnChangeSecondsAfterMovementEnd();
 	afx_msg void OnChangeEditDetectionMinLength();

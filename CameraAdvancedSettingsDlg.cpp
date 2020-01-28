@@ -140,6 +140,8 @@ void CCameraAdvancedSettingsDlg::PostNcDestroy()
 void CCameraAdvancedSettingsDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
+	DDX_Text(pDX, IDC_EDIT_SAVE_FREQ_DIV, m_nSaveFreqDiv);
+	DDV_MinMaxInt(pDX, m_nSaveFreqDiv, 1, 9);
 	DDX_Text(pDX, IDC_SECONDS_BEFORE_MOVEMENT_BEGIN, m_nSecondsBeforeMovementBegin);
 	DDV_MinMaxInt(pDX, m_nSecondsBeforeMovementBegin, 1, 99);
 	DDX_Text(pDX, IDC_SECONDS_AFTER_MOVEMENT_END, m_nSecondsAfterMovementEnd);
@@ -165,6 +167,7 @@ BEGIN_MESSAGE_MAP(CCameraAdvancedSettingsDlg, CDialog)
 	ON_WM_CLOSE()
 	ON_EN_CHANGE(IDC_FRAMERATE, OnChangeFrameRate)
 	ON_WM_TIMER()
+	ON_EN_CHANGE(IDC_EDIT_SAVE_FREQ_DIV, OnChangeSaveFreqDiv)
 	ON_EN_CHANGE(IDC_SECONDS_BEFORE_MOVEMENT_BEGIN, OnChangeSecondsBeforeMovementBegin)
 	ON_EN_CHANGE(IDC_SECONDS_AFTER_MOVEMENT_END, OnChangeSecondsAfterMovementEnd)
 	ON_EN_CHANGE(IDC_EDIT_DETECTION_MIN_LENGTH, OnChangeEditDetectionMinLength)
@@ -238,6 +241,7 @@ void CCameraAdvancedSettingsDlg::UpdateTitleAndDir()
 BOOL CCameraAdvancedSettingsDlg::OnInitDialog() 
 {
 	// Init vars
+	m_nSaveFreqDiv = m_pDoc->m_nSaveFreqDiv;
 	m_nSecondsBeforeMovementBegin = m_pDoc->m_nMilliSecondsRecBeforeMovementBegin / 1000;
 	m_nSecondsAfterMovementEnd = m_pDoc->m_nMilliSecondsRecAfterMovementEnd / 1000;
 	m_nDetectionMinLengthSeconds = m_pDoc->m_nDetectionMinLengthMilliSeconds / 1000;
@@ -530,6 +534,12 @@ void CCameraAdvancedSettingsDlg::OnTimer(UINT nIDEvent)
 		m_bInOnTimer = FALSE;
 	}
 	CDialog::OnTimer(nIDEvent);
+}
+
+void CCameraAdvancedSettingsDlg::OnChangeSaveFreqDiv()
+{
+	if (!IsEmpty(IDC_EDIT_SAVE_FREQ_DIV) && UpdateData(TRUE))
+		m_pDoc->m_nSaveFreqDiv = m_nSaveFreqDiv;
 }
 
 void CCameraAdvancedSettingsDlg::OnChangeSecondsBeforeMovementBegin()
