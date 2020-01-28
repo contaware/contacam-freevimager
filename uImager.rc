@@ -1080,12 +1080,12 @@ BEGIN
     EDITTEXT        IDC_SECONDS_AFTER_MOVEMENT_END,107,43,17,12,ES_AUTOHSCROLL | ES_NUMBER
     EDITTEXT        IDC_EDIT_DETECTION_MIN_LENGTH,87,59,37,12,ES_AUTOHSCROLL | ES_NUMBER
     EDITTEXT        IDC_EDIT_DETECTION_MAX_FRAMES,87,75,37,12,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "Flip-H",IDC_CHECK_FLIP_H,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,92,34,10
-    CONTROL         "Flip-V",IDC_CHECK_FLIP_V,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,75,92,34,10
-    PUSHBUTTON      "Source\nSettings",IDC_VIDEO_SOURCE,164,11,39,19,BS_MULTILINE
-    PUSHBUTTON      "Size &&\nFormat",IDC_VIDEO_FORMAT,164,35,39,19,BS_MULTILINE
-    PUSHBUTTON      "Input\nSelect",IDC_VIDEO_INPUT,164,59,39,19,BS_MULTILINE
-    PUSHBUTTON      "TV\nTuner",IDC_VIDEO_TUNER,164,83,39,19,BS_MULTILINE
+    CONTROL         "Flip Horizontally",IDC_CHECK_FLIP_H,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,92,66,10
+    CONTROL         "Flip Vertically",IDC_CHECK_FLIP_V,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,87,92,57,10
+    PUSHBUTTON      "Source",IDC_VIDEO_SOURCE,162,11,41,19,BS_MULTILINE
+    PUSHBUTTON      "Size &&\nFormat",IDC_VIDEO_FORMAT,162,35,41,19,BS_MULTILINE
+    PUSHBUTTON      "Input\nSelect",IDC_VIDEO_INPUT,162,59,41,19,BS_MULTILINE
+    PUSHBUTTON      "TV",IDC_VIDEO_TUNER,162,83,41,19,BS_MULTILINE
     CONTROL         "Enable",IDC_REC_AUDIO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,123,38,10
     CONTROL         "Live Listen",IDC_CHECK_AUDIO_LISTEN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,75,123,51,10
     CONTROL         "Audio from stream (only for RTSP cameras with audio)",IDC_REC_AUDIO_FROM_STREAM,
@@ -1141,7 +1141,7 @@ BEGIN
     LTEXT           "Examples",IDC_STATIC,225,228,31,8
     LTEXT           "Camera source on/off (argument: on,off)",IDC_STATIC,225,24,184,8
     LTEXT           "Camera rec sensitivity (argument: 0,10,20..100)",IDC_STATIC,225,49,184,8
-    LTEXT           "Save framerate divider",IDC_STATIC2156,13,28,92,8
+    LTEXT           "Recording framerate divider",IDC_STATIC2156,13,28,92,8
 END
 
 IDD_REDEYE DIALOGEX 0, 0, 223, 268
@@ -4037,7 +4037,7 @@ BEGIN
     IDS_STRING1834          "SSL/TLS (Port 465)"
     IDS_STRING1835          "STARTTLS (Port 25 or 587)"
     IDS_STRING1836          "Unsupported Video or Zones Size!"
-    IDS_STRING1839          "%s, CANNOT REALTIME SAVE (%fx): 1. decrease framerate (or increase ""Save framerate divider"") 2. decrease video resolution"
+    IDS_STRING1839          "%s, CANNOT REALTIME SAVE (%fx): 1. decrease framerate (or increase ""Recording framerate divider"") 2. decrease video resolution"
 END
 
 STRINGTABLE

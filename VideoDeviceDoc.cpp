@@ -592,7 +592,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			// Log alert
 			if (dSaveFrameListSpeed < 1.0)
 			{
-				::LogLine(	ML_STRING(1839, "%s, CANNOT REALTIME SAVE (%fx): 1. decrease framerate (or increase \"Save framerate divider\") 2. decrease video resolution"),
+				::LogLine(	ML_STRING(1839, "%s, CANNOT REALTIME SAVE (%fx): 1. decrease framerate (or increase \"Recording framerate divider\") 2. decrease video resolution"),
 							m_pDoc->GetAssignedDeviceName(), dSaveFrameListSpeed);
 			}
 		}
