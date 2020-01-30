@@ -1,11 +1,13 @@
 CONTACAM HISTORY
 
-9.9.7 (Month xxth 2020)
+9.9.7 (January 30th 2020)
 
 - Supporting high DPI aware NSIS 3 (Nullsoft Scriptable Install System)
 - In case that the camera framerate cannot be reduced there is a saving
   framerate divider parameter in Camera Advanced Settings dialog
   (removed the saving speed adaptation logic introduced in 9.9.5)
+- Better support for Samsung cameras
+- Web interface got a Back to Top button
 - Removed Camera Basic Settings toolbar button as this command is
   already under the Settings menu
 

@@ -1,8 +1,8 @@
 TRANSLATIONS HISTORY
 
-9.9.7 (Month xxth 2020)
+9.9.7 (January 30th 2020)
 
-- ... 
+- Minor fixes
 
 9.9.5 (December 19th 2019)
 
