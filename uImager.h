@@ -84,10 +84,14 @@
 // Default wait time before autostarting first device
 #define DEFAULT_FIRSTSTART_DELAY_MS						0U
 
-// Default number of simultaneous saving
-// Note: two cameras saving at the same time is a good value
-// for RAM usage (H.264 consumes a lot of heap memory while
-// encoding) and optimal threads distribution
+// Default number of simultaneous video savings
+// - Two savings at the same time is a good value for RAM usage
+//   (H.264 consumes a lot of heap memory while encoding) and
+//   optimal threads distribution. Moreover if the daily summary
+//   video is saving at least a camera can still save its detection.
+// - When using several cameras with ultra high definition (more 
+//   than full HD) the heap usage is big and m_nSimultaneousSaving
+//   has to be set to 1 through the "SimultaneousSaving" setting.
 #define DEFAULT_SIMULTANEOUS_SAVING						2
 
 // Service

@@ -30,7 +30,6 @@ CSettingsDlgVideoDeviceDoc::CSettingsDlgVideoDeviceDoc(CWnd* pParent /*=NULL*/)
 	m_bAutostart =		((CUImagerApp*)::AfxGetApp())->IsAutostart();
 	m_bStartFromService = CUImagerApp::GetContaCamServiceState() > 0;
 	m_nFirstStartDelay = ((CUImagerApp*)::AfxGetApp())->m_dwFirstStartDelayMs / 1000;
-	m_nSimultaneousSavingIndex = ((CUImagerApp*)::AfxGetApp())->m_nSimultaneousSaving - 1;
 	m_bStartMicroApache = ((CUImagerApp*)::AfxGetApp())->m_bStartMicroApache;
 	m_nMicroApachePort = ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort;
 	m_nMicroApachePortSSL = ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePortSSL;
@@ -58,7 +57,6 @@ void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_STARTWITH_WINDOWS, m_bAutostart);
 	DDX_Check(pDX, IDC_CHECK_TOPMOST, m_bTopMost);
 	DDX_Check(pDX, IDC_CHECK_WEBSERVER, m_bStartMicroApache);
-	DDX_CBIndex(pDX, IDC_COMBO_SIMULTANEOUS_SAVING, m_nSimultaneousSavingIndex);
 	DDX_Text(pDX, IDC_EDIT_PORT, m_nMicroApachePort);
 	DDV_MinMaxInt(pDX, m_nMicroApachePort, 0, 65535);
 	DDX_Text(pDX, IDC_EDIT_PORT_SSL, m_nMicroApachePortSSL);
@@ -145,9 +143,6 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsInit()
 
 	// Wait time before autostarting first device
 	pApp->m_dwFirstStartDelayMs = 1000 * m_nFirstStartDelay;
-
-	// Simultaneous saving
-	pApp->m_nSimultaneousSaving = m_nSimultaneousSavingIndex + 1;
 
 	// Micro Apache
 	if (pApp->m_bStartMicroApache != m_bStartMicroApache				||
@@ -246,9 +241,6 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsEnd()
 									_T("FirstStartDelayMs"),
 									1000 * m_nFirstStartDelay);
 	pApp->WriteProfileInt(			_T("GeneralApp"),
-									_T("SimultaneousSaving"),
-									m_nSimultaneousSavingIndex + 1);
-	pApp->WriteProfileInt(			_T("GeneralApp"),
 									_T("StartMicroApache"),
 									m_bStartMicroApache);
 	pApp->WriteProfileInt(			_T("GeneralApp"),
@@ -341,8 +333,6 @@ void CSettingsDlgVideoDeviceDoc::EnableDisableAllCtrls(BOOL bEnable)
 	pButton->EnableWindow(bEnable);
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_WEBSERVER);
 	pCheck->EnableWindow(bEnable);
-	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_SIMULTANEOUS_SAVING);
-	pComboBox->EnableWindow(bEnable);
 	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PORT);
 	pEdit->EnableWindow(bEnable);
 	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PORT_SSL);

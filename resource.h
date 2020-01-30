@@ -2990,7 +2990,6 @@
 #define IDC_SYSLINK_PARAMS_HELP         2575
 #define IDC_CHECK_FLIP_H                2576
 #define IDC_CHECK_FLIP_V                2577
-#define IDC_COMBO_SIMULTANEOUS_SAVING   2578
 #define IDC_SYSLINK_CONTROL_HELP        2578
 #define IDC_SYSLINK_HOMEPAGE            2580
 #define IDC_BUTTON_PLAY_SOUND           2582
