@@ -12,10 +12,6 @@ ContaCam Program
   crap and difficult, not wanting to play their game...
   
 - Rotate by 0,90,180,270 degrees
-
-- Configurable saving frame-rate and resolution or skip excess frames
-  in cases where the source doesn't listen to the requested framerate
-  (chris@weldtest.com)
   
 - Possibility to speed-up or slow-down animated gif preview
   (mankovv@hotmail.com). Every animated gif stops at the end (before it
