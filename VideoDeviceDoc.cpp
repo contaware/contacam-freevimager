@@ -7318,7 +7318,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 								WM_THREADSAFE_CAPTURECAMERABASICSETTINGS,
 								0, 0);
 			}
-			::LogLine(_T("%s starting, %dx%d, %s"), GetAssignedDeviceName(), m_DocRect.Width(), m_DocRect.Height(), GetDeviceFormat());
+			::LogLine(_T("%s %s (%dx%d, %s)"), ML_STRING(1764, "Starting"), GetAssignedDeviceName(), m_DocRect.Width(), m_DocRect.Height(), GetDeviceFormat());
 		}
 	}
 

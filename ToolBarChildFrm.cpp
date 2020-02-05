@@ -1091,47 +1091,13 @@ void CVideoDeviceChildFrame::OnClose()
 			// Save Settings
 			pDoc->SaveSettings();
 
-			// Log the stopping
+			// Log Closing
 			if (pDoc->m_bCaptureStarted)
 			{
-				CTimeSpan TimeSpan = CTime::GetCurrentTime() - pDoc->m_CaptureStartTime;
-				CString sMsg;
-				if (TimeSpan.GetDays() > 0)
-				{
-					sMsg.Format(_T("%s stopping, running for %I64dday%s, %dhour%s, %dmin and %dsec"),
-						pDoc->GetAssignedDeviceName(),
-						TimeSpan.GetDays(),
-						(TimeSpan.GetDays() == 1) ? _T("") : _T("s"),
-						TimeSpan.GetHours(),
-						(TimeSpan.GetHours() == 1) ? _T("") : _T("s"),
-						TimeSpan.GetMinutes(),
-						TimeSpan.GetSeconds());
-				}
-				else if (TimeSpan.GetTotalHours() > 0)
-				{
-					sMsg.Format(_T("%s stopping, running for %I64dhour%s, %dmin and %dsec"),
-						pDoc->GetAssignedDeviceName(),
-						(LONGLONG)TimeSpan.GetTotalHours(),
-						(TimeSpan.GetTotalHours() == 1) ? _T("") : _T("s"),
-						TimeSpan.GetMinutes(),
-						TimeSpan.GetSeconds());
-				}
-				else if (TimeSpan.GetTotalMinutes() > 0)
-				{
-					sMsg.Format(_T("%s stopping, running for %I64dmin and %dsec"),
-						pDoc->GetAssignedDeviceName(),
-						(LONGLONG)TimeSpan.GetTotalMinutes(),
-						TimeSpan.GetSeconds());
-				}
-				else if (TimeSpan.GetTotalSeconds() > 0)
-				{
-					sMsg.Format(_T("%s stopping, running for %I64dsec"),
-						pDoc->GetAssignedDeviceName(),
-						(LONGLONG)TimeSpan.GetTotalSeconds());
-				}
-				else
-					sMsg.Format(_T("%s stopping"), pDoc->GetAssignedDeviceName());
-				::LogLine(_T("%s"), sMsg);
+				CTimeSpan TimeRunning = CTime::GetCurrentTime() - pDoc->m_CaptureStartTime;
+				::LogLine(	_T("%s %s (%I64d:%02d:%02d:%02d)"),
+							ML_STRING(1566, "Closing"), pDoc->GetAssignedDeviceName(),
+							TimeRunning.GetDays(), TimeRunning.GetHours(), TimeRunning.GetMinutes(), TimeRunning.GetSeconds());
 			}
 
 			// Set Closing Flag
