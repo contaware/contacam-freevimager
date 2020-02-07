@@ -583,7 +583,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 
 		// Saving speed
 		DWORD dwSaveTimeMs = ::timeGetTime() - dwStartUpTime;
-		if (dwSaveTimeMs > 0 && dwFramesTimeMs > MOVDET_MIN_LENGTH_SAVESPEED_MSEC)
+		if (dwSaveTimeMs > 0U && dwFramesTimeMs > MOVDET_MIN_LENGTH_SAVESPEED_MSEC)
 		{
 			// Update the atomic doc variable used to alert in title bar
 			double dSaveFrameListSpeed = (double)dwFramesTimeMs / (double)dwSaveTimeMs;
@@ -592,8 +592,13 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			// Log alert
 			if (dSaveFrameListSpeed < 1.0)
 			{
-				::LogLine(	ML_STRING(1839, "%s, CANNOT REALTIME SAVE (%fx): 1. decrease framerate (or increase \"Recording framerate divider\") 2. decrease video resolution"),
-							m_pDoc->GetAssignedDeviceName(), dSaveFrameListSpeed);
+				CString sSpeedAndFreq;
+				if (nSaveFreqDiv > 1)
+					sSpeedAndFreq.Format(_T("%fx, %0.1ffps/%d"), dSaveFrameListSpeed, dCalcFrameRate, nSaveFreqDiv);
+				else
+					sSpeedAndFreq.Format(_T("%fx, %0.1ffps"), dSaveFrameListSpeed, dCalcFrameRate);
+				::LogLine(	ML_STRING(1839, "%s, CANNOT REALTIME SAVE (%s): 1. decrease framerate (or increase \"Recording framerate divider\") 2. decrease video resolution"),
+							m_pDoc->GetAssignedDeviceName(), sSpeedAndFreq);
 			}
 		}
 
