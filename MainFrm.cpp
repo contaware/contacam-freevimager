@@ -2033,7 +2033,7 @@ void CMainFrame::OnViewAllNextPicture()
 }
 
 #ifdef VIDEODEVICEDOC
-BOOL CMainFrame::GetRecBufStats(CString& sBufStats)
+unsigned int CMainFrame::GetRecBufStats(CString& sBufStats)
 {
 	// Maximum buffers size
 	LONGLONG llMaxOverallQueueSize = 0;
@@ -2047,30 +2047,32 @@ BOOL CMainFrame::GetRecBufStats(CString& sBufStats)
 	}
 	double dMaxOverallQueueSizeGB = (double)(llMaxOverallQueueSize >> 20) / 1024.0;
 
-	// Overall Commit size = what we already got + what we are allowed to take more
-	//
-	// MemoryStatusEx.ullTotalPageFile = RAM + allocated page file size under Performance Options - Advanced
-	// MemoryStatusEx.ullAvailPageFile = what the OS can give use (a lot less than MemoryStatusEx.ullTotalPageFile)
-	//                                   Note: the system gives us a bit more when we reach the limit
+	// Maximum Overall Commit size
+	// - MemoryStatusEx.ullTotalPageFile = RAM + allocated page file size
+	// - MemoryStatusEx.ullAvailPageFile = what the OS can give use (always less than MemoryStatusEx.ullTotalPageFile)
 	MEMORYSTATUSEX MemoryStatusEx;
 	MemoryStatusEx.dwLength = sizeof(MemoryStatusEx);
 	::GlobalMemoryStatusEx(&MemoryStatusEx);
-	double dOverallCommitSizeGB = (double)((CDib::m_llOverallSharedMemoryBytes + MemoryStatusEx.ullAvailPageFile) >> 20) / 1024.0;
-
-	// RAM
-	double dRamGB = (double)g_nOSUsablePhysRamMB / 1024.0;
-
-	// Limit = minimum of dOverallCommitSizeGB and dRamGB
-	double dLimitGB = min(dOverallCommitSizeGB, dRamGB);
+	double dAvailCommitSizeGB = (double)(MemoryStatusEx.ullAvailPageFile >> 20) / 1024.0;
+	double dMaxOverallCommitSizeGB = (double)((CDib::m_llOverallSharedMemoryBytes + MemoryStatusEx.ullAvailPageFile) >> 20) / 1024.0;
+	double dAlertCommitSizeGB = max(1.0, dMaxOverallCommitSizeGB / 20.0); // 5% with a minimum of 1 GB
+	dMaxOverallCommitSizeGB -= dAlertCommitSizeGB;
+	if (dMaxOverallCommitSizeGB < 0.0)
+		dMaxOverallCommitSizeGB = 0.0;
 
 	// Format stats
 	sBufStats.Format(_T("BUF: %0.1f(max %0.1f)/%0.1f") + ML_STRING(1826, "GB"),
 					(double)(CDib::m_llOverallSharedMemoryBytes >> 20) / 1024.0,
 					dMaxOverallQueueSizeGB,
-					dLimitGB);
-
-	// return TRUE to alert!
-	return (dMaxOverallQueueSizeGB > dLimitGB);
+					dMaxOverallCommitSizeGB);
+	
+	// Return
+	unsigned int uiRet = 0U;
+	if (dMaxOverallQueueSizeGB > dMaxOverallCommitSizeGB)
+		uiRet |= GETRECBUF_QUEUESIZE_ALERT;
+	if (dAvailCommitSizeGB < dAlertCommitSizeGB)
+		uiRet |= GETRECBUF_COMMITSIZE_ALERT;
+	return uiRet;
 }
 #endif
 
@@ -2316,16 +2318,13 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 				LogSysUsage();
 		}
 
-		// Restore Movement Detection Buffering?
-		if (((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames && CDib::m_llOverallSharedMemoryBytes == 0)
-			((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = FALSE;
-
 		// Text flash state flag
 		static int nFlashState = 0;
 
-		// Show BUF Usage
+		// BUF Usage
 		CString sBufStats;
-		if (GetRecBufStats(sBufStats))
+		unsigned int uiBufRet = GetRecBufStats(sBufStats);
+		if ((uiBufRet & GETRECBUF_QUEUESIZE_ALERT) == GETRECBUF_QUEUESIZE_ALERT)
 		{
 			if (nFlashState == 2)
 				GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_BUF_USAGE), _T(""));
@@ -2334,8 +2333,15 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		}
 		else
 			GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_BUF_USAGE), _T(" ") + sBufStats + _T(" "));
+		if ((uiBufRet & GETRECBUF_COMMITSIZE_ALERT) == GETRECBUF_COMMITSIZE_ALERT && !((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames)
+		{
+			((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = TRUE;
+			::LogLine(_T("%s"), ML_STRING(1815, "OUT OF MEMORY / OVERLOAD: dropping frames"));
+		}
+		else if (((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames && CDib::m_llOverallSharedMemoryBytes == 0)
+			((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = FALSE;
 
-		// Show HD Usage
+		// HD Usage
 		CString sSaveDir = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
 		int nMinDiskFreePermillion = 0;
 		CMDIChildWnd* pChild = MDIGetActive();
@@ -2348,9 +2354,8 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 				nMinDiskFreePermillion = pDoc->m_nMinDiskFreePermillion;
 			}
 		}
-		// Note: GetDiskStats() calcs the stats for directory symbolic link targets
 		CString sDiskStats;
-		BOOL bDiskStatsAlert = GetDiskStats(sDiskStats, sSaveDir, nMinDiskFreePermillion);
+		BOOL bDiskStatsAlert = GetDiskStats(sDiskStats, sSaveDir, nMinDiskFreePermillion); // calcs stats for directory symbolic link targets
 		if (bDiskStatsAlert)
 		{
 			if (nFlashState == 2)

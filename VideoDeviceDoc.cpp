@@ -604,7 +604,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 
 		// Log error
 		if (dwLoadDetFrameErrorCode != ERROR_SUCCESS)
-			::LogLine(ML_STRING(1815, "OUT OF MEMORY / OVERLOAD (0x%08X): dropping frames"), dwLoadDetFrameErrorCode);
+			::LogLine(_T("%s (0x%08X)"), ML_STRING(1815, "OUT OF MEMORY / OVERLOAD: dropping frames"), dwLoadDetFrameErrorCode);
 	}
 	ASSERT(FALSE); // should never end up here...
 	return 0;
@@ -2007,7 +2007,7 @@ end_of_software_detection:
 	if (dwError != ERROR_SUCCESS)
 	{
 		((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = bDropFrame = TRUE;
-		::LogLine(ML_STRING(1815, "OUT OF MEMORY / OVERLOAD (0x%08X): dropping frames"), dwError);
+		::LogLine(_T("%s (0x%08X)"), ML_STRING(1815, "OUT OF MEMORY / OVERLOAD: dropping frames"), dwError);
 	}
 
 	// Drop frames

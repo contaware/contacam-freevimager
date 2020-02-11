@@ -227,7 +227,9 @@ protected:
 	typedef CArray<HEAPREGION, HEAPREGION> HEAPREGIONARRAY;
 	BOOL IsAddressInHeapRegion(LPVOID p, HEAPREGIONARRAY& Regions);
 #ifdef VIDEODEVICEDOC
-	BOOL GetRecBufStats(CString& sBufStats);
+	#define GETRECBUF_QUEUESIZE_ALERT	0x01	// return bit set if the max overall queue size is too big
+	#define GETRECBUF_COMMITSIZE_ALERT	0x02	// return bit set when the remaining commit size is low
+	unsigned int GetRecBufStats(CString& sBufStats);
 	void CleanupFileMenu(CMenu* pPopupMenu);
 	void PopulateCaptureMenu(CMenu* pPopupMenu);
 #endif
