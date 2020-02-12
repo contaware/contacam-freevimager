@@ -84,9 +84,6 @@
 // Default wait time before autostarting first device
 #define DEFAULT_FIRSTSTART_DELAY_MS						0U
 
-// Under this value of left commit size we are dropping frames
-#define MIN_AVAILABLE_COMMITSIZE						1073741824ULL /* 1GB */
-
 // Default number of simultaneous video savings
 // - Two savings at the same time is a good value for RAM usage
 //   (H.264 consumes a lot of heap memory while encoding) and

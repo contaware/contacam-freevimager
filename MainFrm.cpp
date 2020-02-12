@@ -2054,14 +2054,18 @@ unsigned int CMainFrame::GetRecBufStats(CString& sBufStats)
 	MemoryStatusEx.dwLength = sizeof(MemoryStatusEx);
 	::GlobalMemoryStatusEx(&MemoryStatusEx);
 	LONGLONG llOverallSharedMemoryBytes = CDib::m_llOverallSharedMemoryBytes;
+	double dAvailCommitSizeGB = (double)(MemoryStatusEx.ullAvailPageFile >> 20) / 1024.0;
 	double dMaxOverallCommitSizeGB = (double)((llOverallSharedMemoryBytes + MemoryStatusEx.ullAvailPageFile) >> 20) / 1024.0;
 
 	// RAM
 	double dRamGB = (double)g_nOSUsablePhysRamMB / 1024.0;
 
+	// Alert threshold for the available commit size
+	double dAlertCommitSizeGB = max(1.0, dRamGB / 8.0);				// minimum 1 GB
+
 	// Limit
 	double dLimitGB = min(dMaxOverallCommitSizeGB, dRamGB);			// better to avoid storing in page file on HD/SSD
-	dLimitGB -= (double)(MIN_AVAILABLE_COMMITSIZE >> 20) / 1024.0;	// take into account the commit size threshold
+	dLimitGB -= dAlertCommitSizeGB;
 	if (dLimitGB < 0.0)
 		dLimitGB = 0.0;
 
@@ -2075,7 +2079,7 @@ unsigned int CMainFrame::GetRecBufStats(CString& sBufStats)
 	unsigned int uiRet = 0U;
 	if (dMaxOverallQueueSizeGB > dLimitGB)
 		uiRet |= GETRECBUF_QUEUESIZE_ALERT;
-	if (MemoryStatusEx.ullAvailPageFile < MIN_AVAILABLE_COMMITSIZE)
+	if (dAvailCommitSizeGB < dAlertCommitSizeGB)
 		uiRet |= GETRECBUF_COMMITSIZE_ALERT;
 	return uiRet;
 }
