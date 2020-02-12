@@ -1,5 +1,9 @@
 FREEVIMAGER HISTORY
 
+9.9.8 (Month XXth 2020)
+
+- ...
+
 9.9.7 (January 30th 2020)
 
 - Supporting high DPI aware NSIS 3 (Nullsoft Scriptable Install System)
