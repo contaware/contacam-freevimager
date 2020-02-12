@@ -2053,24 +2053,29 @@ unsigned int CMainFrame::GetRecBufStats(CString& sBufStats)
 	MEMORYSTATUSEX MemoryStatusEx;
 	MemoryStatusEx.dwLength = sizeof(MemoryStatusEx);
 	::GlobalMemoryStatusEx(&MemoryStatusEx);
-	double dAvailCommitSizeGB = (double)(MemoryStatusEx.ullAvailPageFile >> 20) / 1024.0;
-	double dMaxOverallCommitSizeGB = (double)((CDib::m_llOverallSharedMemoryBytes + MemoryStatusEx.ullAvailPageFile) >> 20) / 1024.0;
-	double dAlertCommitSizeGB = max(1.0, dMaxOverallCommitSizeGB / 20.0); // 5% with a minimum of 1 GB
-	dMaxOverallCommitSizeGB -= dAlertCommitSizeGB;
-	if (dMaxOverallCommitSizeGB < 0.0)
-		dMaxOverallCommitSizeGB = 0.0;
+	LONGLONG llOverallSharedMemoryBytes = CDib::m_llOverallSharedMemoryBytes;
+	double dMaxOverallCommitSizeGB = (double)((llOverallSharedMemoryBytes + MemoryStatusEx.ullAvailPageFile) >> 20) / 1024.0;
+
+	// RAM
+	double dRamGB = (double)g_nOSUsablePhysRamMB / 1024.0;
+
+	// Limit
+	double dLimitGB = min(dMaxOverallCommitSizeGB, dRamGB);			// better to avoid storing in page file on HD/SSD
+	dLimitGB -= (double)(MIN_AVAILABLE_COMMITSIZE >> 20) / 1024.0;	// take into account the commit size threshold
+	if (dLimitGB < 0.0)
+		dLimitGB = 0.0;
 
 	// Format stats
 	sBufStats.Format(_T("BUF: %0.1f(max %0.1f)/%0.1f") + ML_STRING(1826, "GB"),
-					(double)(CDib::m_llOverallSharedMemoryBytes >> 20) / 1024.0,
+					(double)(llOverallSharedMemoryBytes >> 20) / 1024.0,
 					dMaxOverallQueueSizeGB,
-					dMaxOverallCommitSizeGB);
+					dLimitGB);
 	
 	// Return
 	unsigned int uiRet = 0U;
-	if (dMaxOverallQueueSizeGB > dMaxOverallCommitSizeGB)
+	if (dMaxOverallQueueSizeGB > dLimitGB)
 		uiRet |= GETRECBUF_QUEUESIZE_ALERT;
-	if (dAvailCommitSizeGB < dAlertCommitSizeGB)
+	if (MemoryStatusEx.ullAvailPageFile < MIN_AVAILABLE_COMMITSIZE)
 		uiRet |= GETRECBUF_COMMITSIZE_ALERT;
 	return uiRet;
 }
