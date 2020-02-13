@@ -52,7 +52,7 @@ a:visited {
 a:active {
 	color: #1188bb;
 }
-a:hover {
+a:hover, a:focus {
 	color: #116699;
 	text-decoration: underline;
 }
