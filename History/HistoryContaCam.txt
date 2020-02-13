@@ -2,7 +2,8 @@ CONTACAM HISTORY
 
 9.9.8 (Month XXth 2020)
 
-- Dropping frames when the available commit size is less than 1 GB
+- Dropping frames when the available commit size gets low
+- Web interface has got bigger buttons
 
 9.9.7 (January 30th 2020)
 
