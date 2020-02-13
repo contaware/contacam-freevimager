@@ -37,6 +37,7 @@ CUImagerDoc::CUImagerDoc()
 	m_nHelpMenuPos = -2;
 	m_bClosing = FALSE;
 	m_sFileName = _T("");
+	m_sTabTitle = _T("");
 	m_DocRect = CRect(0,0,0,0);
 	m_dZoomFactor = 1.0;
 	m_crBackgroundColor = RGB(0,0,0);

@@ -9,6 +9,7 @@
 
 #include "stdafx.h"
 #include "MainFrm.h"
+#include "uImagerDoc.h"
 #include "MDITabs.h"
 
 #ifdef _DEBUG
@@ -169,21 +170,18 @@ void CMDITabs::Update()
 		// Update the tab
 		else
 		{
-			// Get document title
+			// Get tab title from document
 			szTitle[0] = _T('\0');
 			CMDIChildWnd* pChildFrameWnd = (CMDIChildWnd*)FromHandlePermanent(ChildFrameWndArray[nTabInChildFrameWndArrayPos]);
 			if (pChildFrameWnd != NULL)
 			{
-				CDocument* pDoc = pChildFrameWnd->GetActiveDocument();
+				CUImagerDoc* pDoc = (CUImagerDoc*)pChildFrameWnd->GetActiveDocument();
 				if (pDoc != NULL)
 				{
-					_tcsncpy(szTitle, pDoc->GetTitle(), MAX_PATH);
+					_tcsncpy(szTitle, pDoc->m_sTabTitle, MAX_PATH);
 					szTitle[MAX_PATH - 1] = _T('\0');
 				}
 			}
-			TCHAR* szTitleShort = _tcsstr(szTitle, _T(" , "));
-			if (szTitleShort)
-				szTitle[szTitleShort - szTitle] = _T('\0');
 
 			// Update image
 			if (m_bImages)
@@ -206,21 +204,18 @@ void CMDITabs::Update()
 	i = GetItemCount();
 	for (int n = 0; n < ChildFrameWndArray.GetCount(); n++)
 	{
-		// Get document title
+		// Get tab title from document
 		szTitle[0] = _T('\0');
 		CMDIChildWnd* pChildFrameWnd = (CMDIChildWnd*)FromHandlePermanent(ChildFrameWndArray[n]);
 		if (pChildFrameWnd != NULL)
 		{
-			CDocument* pDoc = pChildFrameWnd->GetActiveDocument();
+			CUImagerDoc* pDoc = (CUImagerDoc*)pChildFrameWnd->GetActiveDocument();
 			if (pDoc != NULL)
 			{
-				_tcsncpy(szTitle, pDoc->GetTitle(), MAX_PATH);
+				_tcsncpy(szTitle, pDoc->m_sTabTitle, MAX_PATH);
 				szTitle[MAX_PATH - 1] = _T('\0');
 			}
 		}
-		TCHAR* szTitleShort = _tcsstr(szTitle, _T(" , "));
-		if (szTitleShort)
-			szTitle[szTitleShort - szTitle] = _T('\0');
 
 		// Add image
 		if (m_bImages)

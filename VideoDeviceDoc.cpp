@@ -3913,11 +3913,17 @@ void CVideoDeviceDoc::SetDocumentTitle()
 			sTitle += _T("..");
 		else
 			sTitle += _T(".");
+
+		// Set tab title
+		m_sTabTitle = sTitle;
 	}
 	else
 	{
 		// Get name
 		sTitle = GetAssignedDeviceName();
+
+		// Set tab title
+		m_sTabTitle = sTitle;
 
 		// General info
 		if (m_DocRect.Width() > 0 && m_DocRect.Height() > 0)

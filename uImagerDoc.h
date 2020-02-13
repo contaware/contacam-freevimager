@@ -29,13 +29,13 @@ public:
 	CRect m_DocRect;				// The Document Size
 	double m_dZoomFactor;			// The Zoom Factor: 1.0 is 100% (original size)
 	CString m_sFileName;			// The Document File Name
+	CString m_sTabTitle;			// The Document Tab Title
 	COLORREF m_crBackgroundColor;	// Background Color
 	BOOL m_bNoBorders;				// Hide / Show borders
 
 public:
-	// Set The Title of the Document,
-	// implemented in the derived classes
-	virtual void SetDocumentTitle() {CDocument::SetTitle(_T("Empty Doc"));};
+	// Set The Title of the Document (implemented in the derived classes)
+	virtual void SetDocumentTitle() {CDocument::SetTitle(_T("Empty Doc")); m_sTabTitle = _T("Empty Doc");};
 	void InvalidateAllViews(BOOL bErase = TRUE);
 
 // Overrides

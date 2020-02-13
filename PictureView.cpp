@@ -3339,6 +3339,9 @@ void CPictureView::OnInitialUpdate()
 	pDoc->SetView(this);
 	pDoc->SetFrame((CPictureChildFrame*)GetParentFrame());
 
+	// Set Initial Tab Title
+	pDoc->m_sTabTitle = pDoc->GetTitle();
+
 	// Call Base Class Implementation
 	CUImagerView::OnInitialUpdate();
 	

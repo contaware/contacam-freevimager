@@ -759,6 +759,9 @@ void CVideoDeviceView::OnInitialUpdate()
 	pDoc->SetView(this);
 	pDoc->SetFrame((CVideoDeviceChildFrame*)GetParentFrame());
 
+	// Set Initial Tab Title
+	pDoc->m_sTabTitle = pDoc->GetTitle();
+
 	// Call Base Class Implementation
 	CUImagerView::OnInitialUpdate();
 }

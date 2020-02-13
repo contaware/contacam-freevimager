@@ -2167,10 +2167,19 @@ BOOL CPictureDoc::DoEnableCommand()
 
 void CPictureDoc::SetDocumentTitle()
 {
+	CString sName;
 	CString strInfo;
-	CString sShortFileName = ::GetShortFileName(m_sFileName);
-	if (sShortFileName == _T(""))
-		sShortFileName = _T("Picture");
+
+	if (m_sFileName.IsEmpty())
+	{
+		sName = _T("Picture");
+		m_sTabTitle = sName;
+	}
+	else
+	{
+		sName = m_sFileName;
+		m_sTabTitle = ::GetShortFileName(m_sFileName);
+	}
 
 	if (m_pDib && m_pDib->GetBMI())
 	{
@@ -2315,7 +2324,7 @@ void CPictureDoc::SetDocumentTitle()
 	if (IsModified())
 		strInfo += _T(" *");
 
-	CDocument::SetTitle(sShortFileName + strInfo);
+	CDocument::SetTitle(sName + strInfo);
 }
 
 
