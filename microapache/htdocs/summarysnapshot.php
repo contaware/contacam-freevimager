@@ -242,17 +242,16 @@ echo "<iframe style=\"display: block; float: right; border: 0; overflow: hidden;
 // Top Menu
 echo "<div>\n";
 echo "<span class=\"globalbuttons\">";
-echo "<a style=\"font-size: 16px;\" href=\"" . getParentUrl() . "\" target=\"_top\">&#x2302;</a>&nbsp;";
+echo "<a style=\"font-size: 20px;\" href=\"" . getParentUrl() . "\" target=\"_top\">&#x2302;</a>&nbsp;";
 if (isset($_SESSION['username'])) {
 	echo "<a href=\"" . getParentUrl() . "authenticate.php\">[&#x2192;</a>&nbsp;";
 }
-echo "<a style=\"font-size: 16px;\" href=\"#\" onclick=\"window.location.reload(); return false;\">&#x21bb;</a>&nbsp;";
 if ($show_camera_commands) {
 	echo "<a class=\"camoffbuttons\" href=\"#\" onclick=\"toggleCamera(); return false;\">&nbsp;</a>&nbsp;";
 }
 if ($show_trash_command) {
-	echo "<a style=\"font-size: 12px; position: relative;\" href=\"#\" onclick=\"toggleCheckBoxes(); return false;\"><span style=\"display: inline-block; position: absolute; left: 11px; top: 5px; width: 12px; height: 12px; border: 1px solid #000000;\">&nbsp;</span>&#x2713;</a>&nbsp;";
-	echo "<a style=\"font-size: 16px;\" href=\"#\" onclick=\"deleteCheckedElements(); return false;\">&#x1F5D1;</a>&nbsp;";
+	echo "<a style=\"font-size: 12px; position: relative;\" href=\"#\" onclick=\"toggleCheckBoxes(); return false;\"><span style=\"display: inline-block; position: absolute; left: 12px; top: 7px; width: 12px; height: 12px; border: 1px solid #000000;\">&nbsp;</span>&#x2713;</a>&nbsp;";
+	echo "<a style=\"font-size: 18px;\" href=\"#\" onclick=\"deleteCheckedElements(); return false;\">&#x1F5D1;</a>&nbsp;";
 }
 echo "</span>\n";
 echo "</div>\n";

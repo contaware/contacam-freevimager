@@ -22,17 +22,17 @@ echo "<link rel=\"stylesheet\" href=\"" . STYLEFILEPATH . "\" type=\"text/css\" 
 ?>
 </head>
 <body>
-<div>
-<span class="globalbuttons">
-<a style="font-size: 16px;" href="<?php echo getParentUrl();?>" target="_top">&#x2302;</a>
 <?php
+echo "<div>\n";
+echo "<span class=\"globalbuttons\">";
+echo "<a style=\"font-size: 20px;\" href=\"" . getParentUrl() . "\" target=\"_top\">&#x2302;</a>&nbsp;";
 if (isset($_SESSION['username'])) {
-	echo "<a href=\"" . getParentUrl() . "authenticate.php\">[&#x2192;</a>\n";
+	echo "<a href=\"" . getParentUrl() . "authenticate.php\">[&#x2192;</a>&nbsp;";
 }
+echo "</span>\n";
+echo "</div>\n";
+echo "<div style=\"text-align: center\"><h1>" . SNAPSHOTTITLE . "</h1></div>\n";
 ?>
-</span>
-</div>
-<?php echo "<div style=\"text-align: center\"><h1>" . SNAPSHOTTITLE . "</h1></div>"; ?>
 <div class="wrap">
 <form>
 <span class="globalbuttons">
