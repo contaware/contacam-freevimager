@@ -8,7 +8,6 @@ define("DAYAGO","den před");
 define("DAYSAGO","dny před");
 define("NOFILE","Žádné soubory");
 define("NOFILESFOR","Žádné soubory z");
-define("PAGES","stránky");
 define("IMAGERELOADIN","Obraz bude obnoven za");
 define("SECONDS","sekund");
 define("FULLDAY","Celý den");

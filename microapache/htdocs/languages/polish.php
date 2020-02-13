@@ -8,7 +8,6 @@ define("DAYAGO","dzień temu");
 define("DAYSAGO","dni temu");
 define("NOFILE","Brak pliku");
 define("NOFILESFOR","Brak plików do");
-define("PAGES","strony");
 define("IMAGERELOADIN","Zdjęcie załaduje się w");
 define("SECONDS","sekund");
 define("FULLDAY","Cały dzień");

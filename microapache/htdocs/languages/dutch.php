@@ -8,7 +8,6 @@ define("DAYAGO","dag geleden");
 define("DAYSAGO","dagen geleden");
 define("NOFILE","Geen bestand");
 define("NOFILESFOR","Geen bestanden voor");
-define("PAGES","pagina's");
 define("IMAGERELOADIN","Afbeelding word geladen in");
 define("SECONDS","seconden");
 define("FULLDAY","Hele dag");

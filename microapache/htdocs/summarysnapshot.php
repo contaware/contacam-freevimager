@@ -191,7 +191,7 @@ function PrintPageNavigation() {
 	
 	// Show pages navigation if more than a page available
 	if ($pages > 1) {
-		echo "<div style=\"text-align: center\">" . PAGES . " [\n";
+		echo "<div style=\"text-align: center\">\n";
 		$current_page_offset = 0;
 		$file_time_array = array_values($file_array);
 		for ($page=1 ; $page <= $pages ; $page++) {
@@ -200,33 +200,33 @@ function PrintPageNavigation() {
 			if ($page == 1) {
 				if ($current_page_offset == $page_offset) {
 					if ($dateparams == "")
-						echo " <a class=\"highlight\" href=\"$scriptname\">$page_text</a>\n";
+						echo "<a class=\"highlight\" href=\"$scriptname\">$page_text</a>\n";
 					else
-						echo " <a class=\"highlight\" href=\"$scriptname?" . $dateparams . "\">$page_text</a>\n";
+						echo "<a class=\"highlight\" href=\"$scriptname?" . $dateparams . "\">$page_text</a>\n";
 				}
 				else {
 					if ($dateparams == "")
-						echo " <a href=\"$scriptname\">$page_text</a>\n";
+						echo "<a href=\"$scriptname\">$page_text</a>\n";
 					else
-						echo " <a href=\"$scriptname?" . $dateparams . "\">$page_text</a>\n";
+						echo "<a href=\"$scriptname?" . $dateparams . "\">$page_text</a>\n";
 				}
 			} else {
 				if ($current_page_offset == $page_offset) {
 					if ($dateparams == "")
-						echo " <a class=\"highlight\" href=\"$scriptname?pageoffset=$current_page_offset\">$page_text</a>\n";
+						echo "<a class=\"highlight\" href=\"$scriptname?pageoffset=$current_page_offset\">$page_text</a>\n";
 					else
-						echo " <a class=\"highlight\" href=\"$scriptname?" . $dateparams . "&amp;pageoffset=$current_page_offset\">$page_text</a>\n";
+						echo "<a class=\"highlight\" href=\"$scriptname?" . $dateparams . "&amp;pageoffset=$current_page_offset\">$page_text</a>\n";
 				}
 				else {
 					if ($dateparams == "")
-						echo " <a href=\"$scriptname?pageoffset=$current_page_offset\">$page_text</a>\n";
+						echo "<a href=\"$scriptname?pageoffset=$current_page_offset\">$page_text</a>\n";
 					else
-						echo " <a href=\"$scriptname?" . $dateparams . "&amp;pageoffset=$current_page_offset\">$page_text</a>\n";
+						echo "<a href=\"$scriptname?" . $dateparams . "&amp;pageoffset=$current_page_offset\">$page_text</a>\n";
 				}
 			}
 			$current_page_offset += $max_per_page;
 		}
-		echo "]</div>\n";
+		echo "</div>\n";
 	}
 }
             

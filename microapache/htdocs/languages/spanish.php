@@ -8,7 +8,6 @@ define("DAYAGO","día antes");
 define("DAYSAGO","días antes");
 define("NOFILE","No hay archivos");
 define("NOFILESFOR","No hay archivos por");
-define("PAGES","Páginas");
 define("IMAGERELOADIN","La imagen se actualizará en");
 define("SECONDS","Segundos");
 define("FULLDAY","Día completo");

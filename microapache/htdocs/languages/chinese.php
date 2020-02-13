@@ -8,7 +8,6 @@ define("DAYAGO","一天前");
 define("DAYSAGO","几天前");
 define("NOFILE","没有文件");
 define("NOFILESFOR","没有文件");
-define("PAGES","页");
 define("IMAGERELOADIN","图像将重新加载");
 define("SECONDS","秒");
 define("FULLDAY","全日");
