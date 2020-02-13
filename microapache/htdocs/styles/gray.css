@@ -53,7 +53,7 @@ a:active {
 	color: #33ccff;
 }
 a:hover {
-	color: #ddffff;
+	color: #60d9ff;
 	text-decoration: underline;
 }
 
@@ -105,32 +105,20 @@ span.globalbuttons {
 	white-space: nowrap;
 }
 span.globalbuttons a {
-	font-size: 12px;
+	font-size: 13px;
 	font-style: normal;
 	font-weight: bold;
 	font-family: sans-serif,Arial,Helvetica;
 	display: inline-block;
-	width: 36px;
-	height: 24px;
-	line-height: 24px;
+	width: 38px;
+	height: 28px;
+	line-height: 28px;
 	text-align: center;
 	vertical-align: middle;
 	text-decoration: none;
 	color: #333333;
 	background-color: #dddddd;
-	border: 1px solid;
-	border-color: #33ccff #039ccf #039ccf #33ccff;
-}
-span.globalbuttons a:hover, span.globalbuttons a:focus {
-	border-color: #33ccff #039ccf #039ccf #33ccff;
-}
-span.globalbuttons a:active {
-	border-color: #039ccf #33ccff #33ccff #039ccf;
-}
-span.globalbuttons a.highlight:link, span.globalbuttons a.highlight:visited, span.globalbuttons a.highlight:active, span.globalbuttons a.highlight:hover, span.globalbuttons a.highlight:focus {
-	color: #333333;
-	text-decoration: underline;
-	border-color: #33ccff #039ccf #039ccf #33ccff;
+	border: 1px solid #d0d0d0;
 }
 a.camoffbuttons {
 	background: transparent url('camoff_gray.png') no-repeat center center;
@@ -149,12 +137,14 @@ input {
 	color: #333333;
 	text-align: center;
 	background-color: #dddddd; 
-	border: 1px solid;
-	border-color: #33ccff #039ccf #039ccf #33ccff;
+	border: 1px solid #d0d0d0;
 }
 input[type='date'] {
+	height: 28px;
+	margin: 0;
+	padding: 0;
 	vertical-align: middle;
-	font-size: 12px;
+	font-size: 14px;
 }
 input[type='password'] {
 	text-align: left;
@@ -177,7 +167,7 @@ a#back2top {
     -ms-transform: rotate(270deg);
     transform: rotate(270deg);
     cursor: pointer;
-    background-color: #DDD;
+    background-color: #ddd;
     color: #555;
     text-align: center;
     font-size: 30px;
