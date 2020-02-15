@@ -1375,8 +1375,12 @@ void CUImagerApp::OnFileOpen()
 		TCHAR* InitDir = new TCHAR[MAX_FILEDLG_PATH];
 		FileNames[0] = _T('\0');
 		InitDir[0] = _T('\0');
+		CString sActiveDocDriveAndDir(GetActiveDocDriveAndDirName());
+		sActiveDocDriveAndDir.TrimRight(_T('\\'));
 		m_sLastOpenedDir.TrimRight(_T('\\'));
-		if (::IsExistingDir(m_sLastOpenedDir))
+		if (::IsExistingDir(sActiveDocDriveAndDir))
+			_tcscpy(InitDir, (LPCTSTR)sActiveDocDriveAndDir);
+		else if (::IsExistingDir(m_sLastOpenedDir))
 			_tcscpy(InitDir, (LPCTSTR)m_sLastOpenedDir);
 		else
 			_tcscpy(InitDir, (LPCTSTR)::GetSpecialFolderPath(CSIDL_MYPICTURES));
@@ -1888,6 +1892,19 @@ BOOL CUImagerApp::ArePictureDocsOpen()
 	return FALSE;
 }
 
+CString CUImagerApp::GetActiveDocDriveAndDirName()
+{
+	CString sDriveDir;
+	CMDIChildWnd* pChild = ::AfxGetMainFrame()->MDIGetActive();
+	if (pChild)
+	{
+		CUImagerDoc* pDoc = (CUImagerDoc*)pChild->GetActiveDocument();
+		if (pDoc)
+			sDriveDir = ::GetDriveAndDirName(pDoc->m_sFileName);
+	}
+	return sDriveDir;
+}
+
 #ifdef VIDEODEVICEDOC
 
 BOOL CUImagerApp::AreVideoDeviceDocsOpen()
@@ -2328,11 +2345,18 @@ void CUImagerApp::OnFileOpenDir()
 {
 	if (!::AfxGetMainFrame()->m_bFullScreenMode)
 	{
+		CString sInitDir;
+		CString sActiveDocDriveAndDir(GetActiveDocDriveAndDirName());
+		sActiveDocDriveAndDir.TrimRight(_T('\\'));
 		m_sLastOpenedDir.TrimRight(_T('\\'));
-		if (!::IsExistingDir(m_sLastOpenedDir))
-			m_sLastOpenedDir = ::GetSpecialFolderPath(CSIDL_MYPICTURES);
+		if (::IsExistingDir(sActiveDocDriveAndDir))
+			sInitDir = sActiveDocDriveAndDir;
+		else if (::IsExistingDir(m_sLastOpenedDir))
+			sInitDir = m_sLastOpenedDir;
+		else
+			sInitDir = ::GetSpecialFolderPath(CSIDL_MYPICTURES);
 		CBrowseDlg dlg(	::AfxGetMainFrame(),
-						&m_sLastOpenedDir,
+						&sInitDir,
 						ML_STRING(1212, "Loading Folder's First Picture"),
 						FALSE,
 						TRUE,
@@ -2340,7 +2364,11 @@ void CUImagerApp::OnFileOpenDir()
 						TRUE);
 		if (dlg.DoModal() == IDOK)
 		{
-			SlideShow(m_sLastOpenedDir, dlg.IsChecked());
+			// Open Dir
+			SlideShow(sInitDir, dlg.IsChecked());
+
+			// Store Last Opened Directory
+			m_sLastOpenedDir = sInitDir;
 			WriteProfileString(	_T("GeneralApp"),
 								_T("LastOpenedDir"),
 								m_sLastOpenedDir);

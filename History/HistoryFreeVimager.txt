@@ -3,6 +3,7 @@ FREEVIMAGER HISTORY
 9.9.8 (Month XXth 2020)
 
 - Showing the full path in title-bar
+- File/directory dialogs open now the folder of the active image
 
 9.9.7 (January 30th 2020)
 

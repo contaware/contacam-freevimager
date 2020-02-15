@@ -345,6 +345,9 @@ public:
 
 	// Is At least One Picture Document Open?
 	BOOL ArePictureDocsOpen();
+
+	// Returns the path of the active document
+	CString GetActiveDocDriveAndDirName();
 	
 #ifdef VIDEODEVICEDOC
 	// Is At least One Video Device Document Open?
