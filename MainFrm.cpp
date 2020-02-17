@@ -178,6 +178,14 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	}
 	m_wndStatusBar.SetHandCursor(IDC_HAND_CURSOR);
 
+	// By default the minimum width for the stretching of the status text is set to 1/4
+	// of the screen width, we set that to 0 because the other panes are more important
+	UINT nID;
+	UINT nStyle;
+	int cxWidth;
+	m_wndStatusBar.GetPaneInfo(0, nID, nStyle, cxWidth);
+	m_wndStatusBar.SetPaneInfo(0, nID, nStyle, 0);
+
 	// Dock Toolbar
 #ifndef VIDEODEVICEDOC
 	m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);
