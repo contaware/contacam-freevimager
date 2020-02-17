@@ -66,3 +66,5 @@ ContaCam Program
   call it through ajax and update the style of the image with:
   outline: 1px solid red; outline-offset: -1px;
   (djkothbauer@gmail.com)  
+  
+- Remove Interlocked... functions replacing volatile int with std::atomic<int>

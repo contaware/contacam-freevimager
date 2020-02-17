@@ -74,6 +74,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 #ifdef VIDEODEVICEDOC
 	ON_WM_INITMENUPOPUP()
 	ON_MESSAGE(WM_AUTORUN_VIDEODEVICES, OnAutorunVideoDevices)
+	ON_COMMAND(ID_INDICATOR_REC_SPEED, OnRecSpeedClick)
 	ON_COMMAND(ID_INDICATOR_BUF_USAGE, OnBufUsageClick)
 #else
 	ON_COMMAND(ID_INDICATOR_XCOORDINATE, OnXCoordinatesDoubleClick)
@@ -84,6 +85,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 END_MESSAGE_MAP()
 
 #ifdef VIDEODEVICEDOC
+static TCHAR sba_RECSPEEDHelp[MAX_PATH];
 static TCHAR sba_BUFUSAGEHelp[MAX_PATH];
 static TCHAR sba_HDHelp[MAX_PATH];
 #else
@@ -93,6 +95,7 @@ static SBACTPANEINFO sba_indicators[] =
 {
 	{ ID_SEPARATOR, _T(""), SBACTF_NORMAL },		// status line indicator
 #ifdef VIDEODEVICEDOC
+	{ ID_INDICATOR_REC_SPEED, sba_RECSPEEDHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_SINGLECLICK | SBACTF_DOUBLECLICK | SBACTF_HANDCURSOR },
 	{ ID_INDICATOR_BUF_USAGE, sba_BUFUSAGEHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_SINGLECLICK | SBACTF_DOUBLECLICK | SBACTF_HANDCURSOR },
 	{ ID_INDICATOR_HD_USAGE, sba_HDHelp, SBACTF_AUTOFIT },
 #else
@@ -162,6 +165,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	// Create Statusbar
 #ifdef VIDEODEVICEDOC
+	_tcsncpy(sba_RECSPEEDHelp, ML_STRING(1762, "REC speed\n(click for more information)"), MAX_PATH);
+	sba_RECSPEEDHelp[MAX_PATH - 1] = _T('\0');
 	_tcsncpy(sba_BUFUSAGEHelp, ML_STRING(1763, "REC buffers usage\n(click for more information)"), MAX_PATH);
 	sba_BUFUSAGEHelp[MAX_PATH - 1] = _T('\0');
 	_tcsncpy(sba_HDHelp, ML_STRING(1761, "HD usage"), MAX_PATH);
@@ -179,12 +184,12 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_wndStatusBar.SetHandCursor(IDC_HAND_CURSOR);
 
 	// By default the minimum width for the stretching of the status text is set to 1/4
-	// of the screen width, we set that to 0 because the other panes are more important
+	// of the screen width, we set that to 50 because the other panes are more important
 	UINT nID;
 	UINT nStyle;
 	int cxWidth;
 	m_wndStatusBar.GetPaneInfo(0, nID, nStyle, cxWidth);
-	m_wndStatusBar.SetPaneInfo(0, nID, nStyle, 0);
+	m_wndStatusBar.SetPaneInfo(0, nID, nStyle, ::SystemDPIScale(50));
 
 	// Dock Toolbar
 #ifndef VIDEODEVICEDOC
@@ -239,13 +244,21 @@ void CMainFrame::OnYCoordinatesDoubleClick()
 void CMainFrame::OnUpdateIndicatorXCoordinate(CCmdUI* pCmdUI)
 {
 	if (!((CUImagerApp*)::AfxGetApp())->AreDocsOpen())
-		pCmdUI->SetText(_T(" X:        "));
+	{
+		CString sPaneText;
+		sPaneText.LoadString(ID_INDICATOR_XCOORDINATE);
+		pCmdUI->SetText(sPaneText);
+	}
 }
 
 void CMainFrame::OnUpdateIndicatorYCoordinate(CCmdUI* pCmdUI)
 {
 	if (!((CUImagerApp*)::AfxGetApp())->AreDocsOpen())
-		pCmdUI->SetText(_T(" Y:        "));
+	{
+		CString sPaneText;
+		sPaneText.LoadString(ID_INDICATOR_YCOORDINATE);
+		pCmdUI->SetText(sPaneText);
+	}
 }
 
 void CMainFrame::ChangeCoordinatesUnit()
@@ -740,7 +753,7 @@ LONG CMainFrame::OnThreadSafePopupNotificationWnd(WPARAM wparam, LPARAM lparam)
 		CloseNotificationWnd();
 
 		// Create
-		m_pNotificationWnd = new CNotificationWnd(sTitle, sText, 360, 80, dwWaitTimeMs);
+		m_pNotificationWnd = new CNotificationWnd(sTitle, sText, 360, 110, dwWaitTimeMs);
 
 		// Show
 		if (m_pNotificationWnd && !m_pNotificationWnd->Show())
@@ -1014,6 +1027,11 @@ LONG CMainFrame::OnAutorunVideoDevices(WPARAM wparam, LPARAM lparam)
 		}
 	}
 	return 0;
+}
+
+void CMainFrame::OnRecSpeedClick()
+{
+	PopupNotificationWnd(APPNAME_NOEXT, ML_STRING(1839, "To increase the recording speed 1. decrease framerate (or increase the \"Recording framerate divider\" value under Settings - Camera Advanced Settings) 2. decrease video resolution"), 0);
 }
 
 void CMainFrame::OnBufUsageClick()
@@ -2337,6 +2355,52 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 
 		// Text flash state flag
 		static int nFlashState = 0;
+
+		// REC Speed
+		int nMinSaveFrameListSpeedPercent = -1;
+		CString sMinSaveFrameListAssignedDeviceName;
+		POSITION posTemplate = ((CUImagerApp*)::AfxGetApp())->GetFirstDocTemplatePosition();
+		while (posTemplate)
+		{
+			CUImagerMultiDocTemplate* curTemplate = (CUImagerMultiDocTemplate*)((CUImagerApp*)::AfxGetApp())->GetNextDocTemplate(posTemplate);
+			POSITION posDoc = curTemplate->GetFirstDocPosition();
+			while (posDoc)
+			{
+				CDocument* pDoc = curTemplate->GetNextDoc(posDoc);
+				if (pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CVideoDeviceDoc)))
+				{
+					int nSaveFrameListSpeedPercent = ((CVideoDeviceDoc*)pDoc)->m_nSaveFrameListSpeedPercent;
+					if (nSaveFrameListSpeedPercent >= 0)
+					{
+						if (nMinSaveFrameListSpeedPercent == -1 || nSaveFrameListSpeedPercent < nMinSaveFrameListSpeedPercent)
+						{
+							nMinSaveFrameListSpeedPercent = nSaveFrameListSpeedPercent;
+							sMinSaveFrameListAssignedDeviceName = ((CVideoDeviceDoc*)pDoc)->GetAssignedDeviceName();
+						}
+					}
+				}
+			}
+		}
+		if (nMinSaveFrameListSpeedPercent >= 0)
+		{
+			CString sMinSaveFrameListSpeed;
+			sMinSaveFrameListSpeed.Format(_T("%s: %0.2fx"), sMinSaveFrameListAssignedDeviceName, (double)nMinSaveFrameListSpeedPercent / 100.0);
+			if (nMinSaveFrameListSpeedPercent < 100)
+			{
+				if (nFlashState == 2)
+					GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_REC_SPEED), _T(""));
+				else
+					GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_REC_SPEED), _T(" *** ") + sMinSaveFrameListSpeed + _T(" *** "));
+			}
+			else
+				GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_REC_SPEED), _T(" ") + sMinSaveFrameListSpeed + _T(" "));
+		}
+		else
+		{
+			CString sRecSpeedPaneText;
+			sRecSpeedPaneText.LoadString(ID_INDICATOR_REC_SPEED);
+			GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_REC_SPEED), sRecSpeedPaneText);
+		}
 
 		// BUF Usage
 		CString sBufStats;

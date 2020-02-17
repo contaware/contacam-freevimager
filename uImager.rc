@@ -3418,8 +3418,9 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_INDICATOR_BUF_USAGE  " BUF:            "
-    ID_INDICATOR_HD_USAGE   " HD:             "
+    ID_INDICATOR_REC_SPEED  " REC speed "
+    ID_INDICATOR_BUF_USAGE  " BUF:      "
+    ID_INDICATOR_HD_USAGE   " HD:       "
     ID_INDICATOR_XCOORDINATE " X:        "
     ID_INDICATOR_YCOORDINATE " Y:        "
     ID_SETTINGS_LOG_ALL_MESSAGES 
@@ -3974,6 +3975,7 @@ END
 STRINGTABLE
 BEGIN
     IDS_STRING1761          "HD usage"
+    IDS_STRING1762          "REC speed\n(click for more information)"
     IDS_STRING1763          "REC buffers usage\n(click for more information)"
     IDS_STRING1764          "Starting"
     IDS_STRING1765          "%s already exists.\nDo you want to proceed and merge the files?"
@@ -4026,7 +4028,7 @@ BEGIN
     IDS_STRING1834          "SSL/TLS (Port 465)"
     IDS_STRING1835          "STARTTLS (Port 25 or 587)"
     IDS_STRING1836          "Unsupported Video or Zones Size!"
-    IDS_STRING1839          "%s, CANNOT REALTIME SAVE (%s): 1. decrease framerate (or increase ""Recording framerate divider"") 2. decrease video resolution"
+    IDS_STRING1839          "To increase the recording speed 1. decrease framerate (or increase the ""Recording framerate divider"" value under Settings - Camera Advanced Settings) 2. decrease video resolution"
 END
 
 STRINGTABLE

@@ -585,20 +585,25 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		DWORD dwSaveTimeMs = ::timeGetTime() - dwStartUpTime;
 		if (dwSaveTimeMs > 0U && dwFramesTimeMs > MOVDET_MIN_LENGTH_SAVESPEED_MSEC)
 		{
-			// Update the atomic doc variable used to alert in title bar
-			double dSaveFrameListSpeed = (double)dwFramesTimeMs / (double)dwSaveTimeMs;
-			m_pDoc->m_dSaveFrameListSpeed = dSaveFrameListSpeed;
+			// Update the doc variable used to alert
+			int nSaveFrameListSpeedPercent = 100 * dwFramesTimeMs / dwSaveTimeMs;
+			m_pDoc->m_nSaveFrameListSpeedPercent = nSaveFrameListSpeedPercent;
 
 			// Log alert
-			if (dSaveFrameListSpeed < 1.0)
+			if (nSaveFrameListSpeedPercent < 100)
 			{
-				CString sSpeedAndFreq;
+				CString sSpeed, sFreq;
+				sSpeed.Format(_T("%0.2fx"), (double)nSaveFrameListSpeedPercent / 100.0);
 				if (nSaveFreqDiv > 1)
-					sSpeedAndFreq.Format(_T("%fx, %0.1ffps/%d"), dSaveFrameListSpeed, dCalcFrameRate, nSaveFreqDiv);
+					sFreq.Format(_T("%0.1ffps/%d"), dCalcFrameRate, nSaveFreqDiv);
 				else
-					sSpeedAndFreq.Format(_T("%fx, %0.1ffps"), dSaveFrameListSpeed, dCalcFrameRate);
-				::LogLine(	ML_STRING(1839, "%s, CANNOT REALTIME SAVE (%s): 1. decrease framerate (or increase \"Recording framerate divider\") 2. decrease video resolution"),
-							m_pDoc->GetAssignedDeviceName(), sSpeedAndFreq);
+					sFreq.Format(_T("%0.1ffps"), dCalcFrameRate);
+				::LogLine(	_T("%s, %s %s (%s): %s"),
+							m_pDoc->GetAssignedDeviceName(),
+							ML_STRING(1849, "Saved"),
+							sSpeed,
+							sFreq,
+							ML_STRING(1839, "To increase the recording speed 1. decrease framerate (or increase the \"Recording framerate divider\" value under Settings - Camera Advanced Settings) 2. decrease video resolution"));
 			}
 		}
 
@@ -3511,7 +3516,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nDeleteRecordingsOlderThanDays = DEFAULT_DEL_RECS_OLDER_THAN_DAYS;
 	m_nMaxCameraFolderSizeMB = 0;
 	m_nMinDiskFreePermillion = MIN_DISK_FREE_PERMILLION;
-	m_dSaveFrameListSpeed = 0.0;
+	m_nSaveFrameListSpeedPercent = -1;
 
 	// Movement Detection
 	m_pDifferencingDib = NULL;
@@ -3928,18 +3933,6 @@ void CVideoDeviceDoc::SetDocumentTitle()
 		// General info
 		if (m_DocRect.Width() > 0 && m_DocRect.Height() > 0)
 		{
-			// Saving speed
-			double dSaveFrameListSpeed = m_dSaveFrameListSpeed;
-			if (dSaveFrameListSpeed > 0.0)
-			{
-				CString sSaveFrameListSpeed;
-				if (dSaveFrameListSpeed < 1.0)
-					sSaveFrameListSpeed.Format(_T("*** %0.1fx ***"), dSaveFrameListSpeed);
-				else
-					sSaveFrameListSpeed.Format(_T("%0.1fx"), dSaveFrameListSpeed);
-				sTitle += _T(" , ") + sSaveFrameListSpeed;
-			}
-
 			// Width and Height
 			CString sWidthHeight;
 			sWidthHeight.Format(_T("%dx%d"), m_DocRect.Width(), m_DocRect.Height());
