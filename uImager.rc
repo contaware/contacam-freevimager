@@ -4013,7 +4013,7 @@ BEGIN
     IDS_STRING1815          "OUT OF MEMORY / OVERLOAD: dropping frames"
     IDS_STRING1816          "Create a text file where each line represents a Paste\ncommand at the given position:\n  1. Origin: top left, top right, bottom left, bottom right\n  2. horizontal and vertical positions with sign and unit\n      (px, in, cm, mm)\n\nExample:\n\ntop left 1.57cm -1.32cm\nbottom right 12.1mm 5.5mm"
     IDS_STRING1818          "Aborting"
-    IDS_STRING1819          "To reduce the max usage lower the ""Split longer than"" value under Settings - Camera Advanced Settings"
+    IDS_STRING1819          "To reduce the max usage, lower ""Split longer than"" under Settings - Camera Advanced Settings"
     IDS_STRING1820          "usable"
     IDS_STRING1821          "addressable"
     IDS_STRING1822          "Fit"
@@ -4028,7 +4028,7 @@ BEGIN
     IDS_STRING1834          "SSL/TLS (Port 465)"
     IDS_STRING1835          "STARTTLS (Port 25 or 587)"
     IDS_STRING1836          "Unsupported Video or Zones Size!"
-    IDS_STRING1839          "To increase the recording speed 1. decrease framerate (or increase the ""Recording framerate divider"" value under Settings - Camera Advanced Settings) 2. decrease video resolution"
+    IDS_STRING1839          "To increase the recording speed 1. decrease framerate (or increase ""Recording framerate divider"" under Settings - Camera Advanced Settings) 2. decrease video resolution"
 END
 
 STRINGTABLE

@@ -183,13 +183,13 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	}
 	m_wndStatusBar.SetHandCursor(IDC_HAND_CURSOR);
 
-	// By default the minimum width for the stretching of the status text is set to 1/4
-	// of the screen width, we set that to 50 because the other panes are more important
+	// Size Statusbar
 	UINT nID;
 	UINT nStyle;
 	int cxWidth;
 	m_wndStatusBar.GetPaneInfo(0, nID, nStyle, cxWidth);
-	m_wndStatusBar.SetPaneInfo(0, nID, nStyle, ::SystemDPIScale(50));
+	m_wndStatusBar.SetPaneInfo(0, nID, nStyle, ::SystemDPIScale(50));		// set minimum width (default is too big = 1/4 screen width)
+	m_wndStatusBar.GetStatusBarCtrl().SetMinHeight(::SystemDPIScale(20));	// set minimum height (default is too small on high dpi devices)
 
 	// Dock Toolbar
 #ifndef VIDEODEVICEDOC
@@ -1031,12 +1031,12 @@ LONG CMainFrame::OnAutorunVideoDevices(WPARAM wparam, LPARAM lparam)
 
 void CMainFrame::OnRecSpeedClick()
 {
-	PopupNotificationWnd(APPNAME_NOEXT, ML_STRING(1839, "To increase the recording speed 1. decrease framerate (or increase the \"Recording framerate divider\" value under Settings - Camera Advanced Settings) 2. decrease video resolution"), 0);
+	PopupNotificationWnd(APPNAME_NOEXT, ML_STRING(1839, "To increase the recording speed 1. decrease framerate (or increase \"Recording framerate divider\" under Settings - Camera Advanced Settings) 2. decrease video resolution"), 0);
 }
 
 void CMainFrame::OnBufUsageClick()
 {
-	PopupNotificationWnd(APPNAME_NOEXT, ML_STRING(1819, "To reduce the max usage lower the \"Split longer than\" value under Settings - Camera Advanced Settings"), 0);
+	PopupNotificationWnd(APPNAME_NOEXT, ML_STRING(1819, "To reduce the max usage, lower \"Split longer than\" under Settings - Camera Advanced Settings"), 0);
 }
 
 #endif

@@ -603,7 +603,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 							ML_STRING(1849, "Saved"),
 							sSpeed,
 							sFreq,
-							ML_STRING(1839, "To increase the recording speed 1. decrease framerate (or increase the \"Recording framerate divider\" value under Settings - Camera Advanced Settings) 2. decrease video resolution"));
+							ML_STRING(1839, "To increase the recording speed 1. decrease framerate (or increase \"Recording framerate divider\" under Settings - Camera Advanced Settings) 2. decrease video resolution"));
 			}
 		}
 
