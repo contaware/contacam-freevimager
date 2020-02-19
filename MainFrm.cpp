@@ -997,11 +997,13 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 		}
 	}
 	// App Exit Pressing ESC
+#ifndef VIDEODEVICEDOC
 	else if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_ESCAPE)
 	{
 		if (!((CUImagerApp*)::AfxGetApp())->AreDocsOpen())
 			PostMessage(WM_CLOSE, 0, 0);
 	}
+#endif
 	
 	return CMDIFrameWnd::PreTranslateMessage(pMsg);
 }
