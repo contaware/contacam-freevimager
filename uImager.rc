@@ -168,25 +168,7 @@ IDR_VIDEODEVICE MENU
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "New...",                      ID_FILE_NEW
-        MENUITEM "&Open File...\tCtrl+O",       ID_FILE_OPEN
-        MENUITEM "Open &Dir...",                ID_FILE_OPEN_DIR
-        MENUITEM "&Close\tEsc",                 ID_FILE_CLOSE
-        MENUITEM SEPARATOR
-        POPUP "Scan"
-        BEGIN
-            MENUITEM "Scan Single",                 ID_FILE_ACQUIRE
-            MENUITEM "Scan to Tiff",                ID_FILE_ACQUIRE_TO_TIFF
-            MENUITEM SEPARATOR
-            MENUITEM "Scan to Pdf",                 ID_FILE_ACQUIRE_TO_PDF
-            MENUITEM "Scan to Pdf && Email",        ID_FILE_ACQUIRE_AND_EMAIL
-            MENUITEM SEPARATOR
-            MENUITEM "S&elect Source",              ID_FILE_SELECTTWAINSOURCE
-        END
-        MENUITEM "Email",                       ID_FILE_SENDMAIL_OPEN_DOCS
-        MENUITEM "Batch Processing...",         ID_FILE_SHRINK_DIR_DOCS
-        MENUITEM SEPARATOR
-        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM "&Close",                      ID_FILE_CLOSE
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_APP_EXIT
     END
@@ -1123,7 +1105,7 @@ BEGIN
     GROUPBOX        "Control",IDC_STATIC2291,218,3,198,71
     LTEXT           "Drop shorter than",IDC_STATIC,13,58,72,8
     LTEXT           "sec",IDC_STATIC2292,128,58,11,8
-    LTEXT           "Split longer than\n(max rec buffer size)",IDC_STATIC,13,70,72,16
+    LTEXT           "Split longer than\n(max rec buffer)",IDC_STATIC,13,70,72,16
     LTEXT           "frames",IDC_STATIC2293,128,73,23,8
     GROUPBOX        "Recording Save",IDC_STATIC2288,6,171,202,55
     LTEXT           "Pre && Post buffers",IDC_STATIC,13,43,72,8
