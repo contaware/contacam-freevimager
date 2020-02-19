@@ -591,25 +591,12 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 
 			// Log alert
 			if (nSaveFrameListSpeedPercent < 100)
-			{
-				CString sSpeed, sFreq;
-				sSpeed.Format(_T("%0.2fx"), (double)nSaveFrameListSpeedPercent / 100.0);
-				if (nSaveFreqDiv > 1)
-					sFreq.Format(_T("%0.1ffps/%d"), dCalcFrameRate, nSaveFreqDiv);
-				else
-					sFreq.Format(_T("%0.1ffps"), dCalcFrameRate);
-				::LogLine(	_T("%s, %s %s (%s): %s"),
-							m_pDoc->GetAssignedDeviceName(),
-							ML_STRING(1849, "Saved"),
-							sSpeed,
-							sFreq,
-							ML_STRING(1839, "To increase the recording speed 1. decrease framerate (or increase \"Recording framerate divider\" under Settings - Camera Advanced Settings) 2. decrease video resolution"));
-			}
+				::LogLine(_T("*** %s: %0.2fx ***"), m_pDoc->GetAssignedDeviceName(), (double)nSaveFrameListSpeedPercent / 100.0);
 		}
 
 		// Log error
 		if (dwLoadDetFrameErrorCode != ERROR_SUCCESS)
-			::LogLine(_T("%s (0x%08X)"), ML_STRING(1815, "OUT OF MEMORY / OVERLOAD: dropping frames"), dwLoadDetFrameErrorCode);
+			::LogLine(_T("*** %s *** (0x%08X)"), ML_STRING(1815, "OUT OF MEMORY / OVERLOAD: dropping frames"), dwLoadDetFrameErrorCode);
 	}
 	ASSERT(FALSE); // should never end up here...
 	return 0;
@@ -2012,7 +1999,7 @@ end_of_software_detection:
 	if (dwError != ERROR_SUCCESS)
 	{
 		((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = bDropFrame = TRUE;
-		::LogLine(_T("%s (0x%08X)"), ML_STRING(1815, "OUT OF MEMORY / OVERLOAD: dropping frames"), dwError);
+		::LogLine(_T("*** %s *** (0x%08X)"), ML_STRING(1815, "OUT OF MEMORY / OVERLOAD: dropping frames"), dwError);
 	}
 
 	// Drop frames

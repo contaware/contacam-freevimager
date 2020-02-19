@@ -1075,11 +1075,11 @@ CAPTION "Camera Advanced Settings"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_FRAMERATE,87,11,37,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_SAVE_FREQ_DIV,107,27,17,12,ES_AUTOHSCROLL | ES_NUMBER
-    EDITTEXT        IDC_SECONDS_BEFORE_MOVEMENT_BEGIN,87,43,17,12,ES_AUTOHSCROLL | ES_NUMBER
-    EDITTEXT        IDC_SECONDS_AFTER_MOVEMENT_END,107,43,17,12,ES_AUTOHSCROLL | ES_NUMBER
-    EDITTEXT        IDC_EDIT_DETECTION_MIN_LENGTH,87,59,37,12,ES_AUTOHSCROLL | ES_NUMBER
-    EDITTEXT        IDC_EDIT_DETECTION_MAX_FRAMES,87,75,37,12,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_EDIT_SAVE_FREQ_DIV,107,26,17,12,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_SECONDS_BEFORE_MOVEMENT_BEGIN,87,41,17,12,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_SECONDS_AFTER_MOVEMENT_END,107,41,17,12,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_EDIT_DETECTION_MIN_LENGTH,87,56,37,12,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_EDIT_DETECTION_MAX_FRAMES,87,71,37,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Flip Horizontally",IDC_CHECK_FLIP_H,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,92,66,10
     CONTROL         "Flip Vertically",IDC_CHECK_FLIP_V,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,87,92,57,10
     PUSHBUTTON      "Source",IDC_VIDEO_SOURCE,162,11,41,19,BS_MULTILINE
@@ -1118,15 +1118,15 @@ BEGIN
     PUSHBUTTON      "Plate Recognizer",IDC_BUTTON_PLATERECOGNIZER,319,239,90,16
     PUSHBUTTON      "Ftp Upload",IDC_BUTTON_FTP_UPLOAD,225,258,90,16
     PUSHBUTTON      "Backup Files",IDC_BUTTON_BACKUP_FILES,319,258,90,16
-    LTEXT           "sec",IDC_STATIC2283,128,45,11,8
+    LTEXT           "sec",IDC_STATIC2283,128,43,11,8
     GROUPBOX        "Video",IDC_STATIC2286,6,3,202,103
     GROUPBOX        "Control",IDC_STATIC2291,218,3,198,71
-    LTEXT           "Drop shorter than",IDC_STATIC,13,61,72,11
-    LTEXT           "sec",IDC_STATIC2292,128,61,11,8
-    LTEXT           "Split longer than",IDC_STATIC,13,77,72,8
-    LTEXT           "frames",IDC_STATIC2293,128,77,23,8
+    LTEXT           "Drop shorter than",IDC_STATIC,13,58,72,8
+    LTEXT           "sec",IDC_STATIC2292,128,58,11,8
+    LTEXT           "Split longer than\n(max rec buffer size)",IDC_STATIC,13,70,72,16
+    LTEXT           "frames",IDC_STATIC2293,128,73,23,8
     GROUPBOX        "Recording Save",IDC_STATIC2288,6,171,202,55
-    LTEXT           "Pre && Post buffers",IDC_STATIC,13,45,72,8
+    LTEXT           "Pre && Post buffers",IDC_STATIC,13,43,72,8
     LTEXT           "qual.",IDC_VIDEO_COMPRESSION_QUALITY_INFO,160,182,46,8
     LTEXT           "Framerate",IDC_STATIC2155,13,13,72,8
     LTEXT           "fps",IDC_STATIC2183,128,13,11,8
@@ -4013,7 +4013,6 @@ BEGIN
     IDS_STRING1815          "OUT OF MEMORY / OVERLOAD: dropping frames"
     IDS_STRING1816          "Create a text file where each line represents a Paste\ncommand at the given position:\n  1. Origin: top left, top right, bottom left, bottom right\n  2. horizontal and vertical positions with sign and unit\n      (px, in, cm, mm)\n\nExample:\n\ntop left 1.57cm -1.32cm\nbottom right 12.1mm 5.5mm"
     IDS_STRING1818          "Aborting"
-    IDS_STRING1819          "To reduce the max usage, lower ""Split longer than"" under Settings - Camera Advanced Settings"
     IDS_STRING1820          "usable"
     IDS_STRING1821          "addressable"
     IDS_STRING1822          "Fit"
@@ -4028,7 +4027,6 @@ BEGIN
     IDS_STRING1834          "SSL/TLS (Port 465)"
     IDS_STRING1835          "STARTTLS (Port 25 or 587)"
     IDS_STRING1836          "Unsupported Video or Zones Size!"
-    IDS_STRING1839          "To increase the recording speed 1. decrease framerate (or increase ""Recording framerate divider"" under Settings - Camera Advanced Settings) 2. decrease video resolution"
 END
 
 STRINGTABLE

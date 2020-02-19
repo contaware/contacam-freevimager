@@ -753,7 +753,7 @@ LONG CMainFrame::OnThreadSafePopupNotificationWnd(WPARAM wparam, LPARAM lparam)
 		CloseNotificationWnd();
 
 		// Create
-		m_pNotificationWnd = new CNotificationWnd(sTitle, sText, 360, 110, dwWaitTimeMs);
+		m_pNotificationWnd = new CNotificationWnd(sTitle, sText, 360, 95, dwWaitTimeMs);
 
 		// Show
 		if (m_pNotificationWnd && !m_pNotificationWnd->Show())
@@ -1031,12 +1031,12 @@ LONG CMainFrame::OnAutorunVideoDevices(WPARAM wparam, LPARAM lparam)
 
 void CMainFrame::OnRecSpeedClick()
 {
-	PopupNotificationWnd(APPNAME_NOEXT, ML_STRING(1839, "To increase the recording speed 1. decrease framerate (or increase \"Recording framerate divider\" under Settings - Camera Advanced Settings) 2. decrease video resolution"), 0);
+	::ShellExecute(NULL, _T("open"), LOAD_OPTIMIZATION_ONLINE_PAGE, NULL, NULL, SW_SHOWNORMAL);
 }
 
 void CMainFrame::OnBufUsageClick()
 {
-	PopupNotificationWnd(APPNAME_NOEXT, ML_STRING(1819, "To reduce the max usage, lower \"Split longer than\" under Settings - Camera Advanced Settings"), 0);
+	::ShellExecute(NULL, _T("open"), LOAD_OPTIMIZATION_ONLINE_PAGE, NULL, NULL, SW_SHOWNORMAL);
 }
 
 #endif
@@ -2417,7 +2417,7 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		if ((uiBufRet & GETRECBUF_COMMITSIZE_ALERT) == GETRECBUF_COMMITSIZE_ALERT && !((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames)
 		{
 			((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = TRUE;
-			::LogLine(_T("%s"), ML_STRING(1815, "OUT OF MEMORY / OVERLOAD: dropping frames"));
+			::LogLine(_T("*** %s ***"), ML_STRING(1815, "OUT OF MEMORY / OVERLOAD: dropping frames"));
 		}
 		else if (((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames && CDib::m_llOverallSharedMemoryBytes == 0)
 			((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = FALSE;

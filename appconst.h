@@ -20,6 +20,7 @@
 #define SERVICENAME_NOEXT								_T("ContaCamService")
 #define APPMUTEXNAME									_T("ContaCamAppMutex")
 #define MANUAL_ONLINE_PAGE								_T("https://www.contaware.com/contacammanual/")
+#define LOAD_OPTIMIZATION_ONLINE_PAGE					_T("https://www.contaware.com/contacamloadoptimization/")
 #define EXAMPLE_CONTROL_ONLINE_PAGE						_T("https://www.contaware.com/contacamexamplecontrol/")
 #define EXAMPLE_COMMANDS_ONLINE_PAGE					_T("https://www.contaware.com/contacamexamplecmd/")
 #define IPCAM_HELP_ONLINE_PAGE							_T("https://www.contaware.com/contacamipcamhelp/")
