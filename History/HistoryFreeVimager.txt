@@ -1,9 +1,10 @@
 FREEVIMAGER HISTORY
 
-9.9.8 (Month XXth 2020)
+9.9.8 (February 20th 2020)
 
-- Showing the full path in title-bar
+- Showing the full path in titlebar
 - File/directory dialogs open now the folder of the active image
+- Fixed statusbar for high dpi devices
 
 9.9.7 (January 30th 2020)
 

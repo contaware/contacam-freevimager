@@ -1,9 +1,11 @@
 CONTACAM HISTORY
 
-9.9.8 (Month XXth 2020)
+9.9.8 (February 20th 2020)
 
-- Dropping frames when the available commit size gets low
 - Web interface has got bigger buttons
+- New statusbar pane which shows slowest saving speed
+- Dropping frames when the available commit size gets low
+- Fixed statusbar for high dpi devices
 
 9.9.7 (January 30th 2020)
 
