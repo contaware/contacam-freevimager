@@ -2324,9 +2324,20 @@ void CPictureDoc::SetDocumentTitle()
 	if (IsModified())
 		strInfo += _T(" *");
 
+	// The maximum mainframe title size is 159 characters
+	// (that's given by the Win32 native MDI logic, not MFC)
+	// Title format for a maximized MDI child: sAppName - [SetTitle]
+	CString sAppName;
+	sAppName.LoadString(IDR_MAINFRAME);
+	int nMaxName = 159 - sAppName.GetLength() - strInfo.GetLength() - 5; // 5 = 2x spaces [] -
+	if (sName.GetLength() > nMaxName)
+	{
+		sName = sName.Right(nMaxName - 3); // safety: Right() with a negative parameter returns an empty string
+		sName = _T("...") + sName;
+	}
+
 	CDocument::SetTitle(sName + strInfo);
 }
-
 
 void CPictureDoc::OnFileExtract() 
 {
