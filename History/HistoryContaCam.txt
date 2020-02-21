@@ -1,5 +1,9 @@
 CONTACAM HISTORY
 
+9.9.9 (Month XXth 2020)
+
+- ...
+
 9.9.8 (February 20th 2020)
 
 - Web interface has got bigger buttons
