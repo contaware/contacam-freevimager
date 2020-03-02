@@ -3118,19 +3118,12 @@ BEGIN
     IDS_MULTILANG_1232      "No Redeye with Hue: %0.1f° , Red/Green: %0.1f "
     IDS_MULTILANG_1233      "Hue: %0.1f° "
     IDS_MULTILANG_1235      "*** CTRL Lock Ratio, ENTER Apply, ESC Cancel ***"
-    IDS_MULTILANG_1239      " , %dx%d , %s , Image: %d %s"
-    IDS_MULTILANG_1241      " , File %i of %i in Directories, Frame %i of %i, %dx%d , %s , File: %d %s"
-    IDS_MULTILANG_1242      " , File %i of %i in Directory, Frame %i of %i, %dx%d , %s , File: %d %s"
     IDS_MULTILANG_1243      "KB"
     IDS_MULTILANG_1244      "Bytes"
-    IDS_MULTILANG_1245      " , File %i of %i in Directories, Page %i of %i, %dx%d , %s , File: %d %s"
-    IDS_MULTILANG_1246      " , File %i of %i in Directory, Page %i of %i, %dx%d , %s , File: %d %s"
-    IDS_MULTILANG_1247      " , File %i of %i in Directories, %dx%d , %s , File: %d %s"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_MULTILANG_1248      " , File %i of %i in Directory, %dx%d , %s , File: %d %s"
     IDS_MULTILANG_1249      "Cannot save a copy to ourselves"
     IDS_MULTILANG_1250      "The file %s\nis read only"
     IDS_MULTILANG_1251      "Access denied to %s"

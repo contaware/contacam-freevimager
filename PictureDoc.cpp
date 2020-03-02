@@ -2185,13 +2185,11 @@ void CPictureDoc::SetDocumentTitle()
 	{
 		if (m_sFileName == _T(""))
 		{
-			strInfo.Format(
-			   ML_STRING(1239, " , %dx%d , %s , Image: %d %s"),
-				m_pDib->GetWidth(), 
-				m_pDib->GetHeight(),
-				m_pDib->GetCompressionName(), 
-				(m_pDib->GetImageSize() >= 1024) ? m_pDib->GetImageSize() >> 10 : m_pDib->GetImageSize(),
-				(m_pDib->GetImageSize() >= 1024) ? ML_STRING(1243, "KB") : ML_STRING(1244, "Bytes"));
+			strInfo.Format(	_T(" , %dx%d %s , %s"),
+							m_pDib->GetWidth(), 
+							m_pDib->GetHeight(),
+							m_pDib->GetCompressionName(),
+							::FormatBytes(m_pDib->GetImageSize()));
 		}
 		else
 		{
@@ -2199,92 +2197,37 @@ void CPictureDoc::SetDocumentTitle()
 				!m_GifAnimationThread.IsRunning() &&
 				m_GifAnimationThread.m_dwDibAnimationCount > 1)
 			{
-				if (m_SlideShowThread.IsRecursive())
-				{
-					strInfo.Format(
-					   ML_STRING(1241, " , File %i of %i in Directories, Frame %i of %i, %dx%d , %s , File: %d %s"),
-						m_FileFind.GetFilePosition() + 1,
-						m_FileFind.GetFilesCount(),
-						m_GifAnimationThread.m_dwDibAnimationPos + 1,
-						m_GifAnimationThread.m_dwDibAnimationCount,
-						m_pDib->GetWidth(), 
-						m_pDib->GetHeight(),
-						m_pDib->GetCompressionName(), 
-						(m_pDib->GetFileSize() >= 1024) ? m_pDib->GetFileSize() >> 10 : m_pDib->GetFileSize(),
-						(m_pDib->GetFileSize() >= 1024) ? ML_STRING(1243, "KB") : ML_STRING(1244, "Bytes"));
-				}
-				else
-				{
-					strInfo.Format(
-					   ML_STRING(1242, " , File %i of %i in Directory, Frame %i of %i, %dx%d , %s , File: %d %s"),
-						m_FileFind.GetFilePosition() + 1,
-						m_FileFind.GetFilesCount(),
-						m_GifAnimationThread.m_dwDibAnimationPos + 1,
-						m_GifAnimationThread.m_dwDibAnimationCount,
-						m_pDib->GetWidth(), 
-						m_pDib->GetHeight(),
-						m_pDib->GetCompressionName(), 
-						(m_pDib->GetFileSize() >= 1024) ? m_pDib->GetFileSize() >> 10 : m_pDib->GetFileSize(),
-						(m_pDib->GetFileSize() >= 1024) ? ML_STRING(1243, "KB") : ML_STRING(1244, "Bytes"));
-				}
+				strInfo.Format(	_T(" , %i/%i {%i/%i} , %dx%d %s , %s"),
+								m_FileFind.GetFilePosition() + 1,
+								m_FileFind.GetFilesCount(),
+								m_GifAnimationThread.m_dwDibAnimationPos + 1,
+								m_GifAnimationThread.m_dwDibAnimationCount,
+								m_pDib->GetWidth(), 
+								m_pDib->GetHeight(),
+								m_pDib->GetCompressionName(), 
+								::FormatBytes(m_pDib->GetFileSize()));
 			}
 			else if (IsMultiPageTIFF())
 			{
-				if (m_SlideShowThread.IsRecursive())
-				{
-					strInfo.Format(
-					   ML_STRING(1245, " , File %i of %i in Directories, Page %i of %i, %dx%d , %s , File: %d %s"),
-						m_FileFind.GetFilePosition() + 1,
-						m_FileFind.GetFilesCount(),
-						m_pDib->m_FileInfo.m_nImagePos + 1,
-						m_pDib->m_FileInfo.m_nImageCount,
-						m_pDib->GetWidth(), 
-						m_pDib->GetHeight(),
-						m_pDib->GetCompressionName(), 
-						(m_pDib->GetFileSize() >= 1024) ? m_pDib->GetFileSize() >> 10 : m_pDib->GetFileSize(),
-						(m_pDib->GetFileSize() >= 1024) ? ML_STRING(1243, "KB") : ML_STRING(1244, "Bytes"));
-				}
-				else
-				{
-					strInfo.Format(
-					   ML_STRING(1246, " , File %i of %i in Directory, Page %i of %i, %dx%d , %s , File: %d %s"),
-						m_FileFind.GetFilePosition() + 1,
-						m_FileFind.GetFilesCount(),
-						m_pDib->m_FileInfo.m_nImagePos + 1,
-						m_pDib->m_FileInfo.m_nImageCount,
-						m_pDib->GetWidth(), 
-						m_pDib->GetHeight(),
-						m_pDib->GetCompressionName(), 
-						(m_pDib->GetFileSize() >= 1024) ? m_pDib->GetFileSize() >> 10 : m_pDib->GetFileSize(),
-						(m_pDib->GetFileSize() >= 1024) ? ML_STRING(1243, "KB") : ML_STRING(1244, "Bytes"));
-				}
+				strInfo.Format(	_T(" , %i/%i {%i/%i} , %dx%d %s , %s"),
+								m_FileFind.GetFilePosition() + 1,
+								m_FileFind.GetFilesCount(),
+								m_pDib->m_FileInfo.m_nImagePos + 1,
+								m_pDib->m_FileInfo.m_nImageCount,
+								m_pDib->GetWidth(), 
+								m_pDib->GetHeight(),
+								m_pDib->GetCompressionName(), 
+								::FormatBytes(m_pDib->GetFileSize()));
 			}
 			else
 			{
-				if (m_SlideShowThread.IsRecursive())
-				{
-					strInfo.Format(
-					   ML_STRING(1247, " , File %i of %i in Directories, %dx%d , %s , File: %d %s"),
-						m_FileFind.GetFilePosition() + 1,
-						m_FileFind.GetFilesCount(),
-						m_pDib->GetWidth(), 
-						m_pDib->GetHeight(),
-						m_pDib->GetCompressionName(), 
-						(m_pDib->GetFileSize() >= 1024) ? m_pDib->GetFileSize() >> 10 : m_pDib->GetFileSize(),
-						(m_pDib->GetFileSize() >= 1024) ? ML_STRING(1243, "KB") : ML_STRING(1244, "Bytes"));
-				}
-				else
-				{
-					strInfo.Format(
-					   ML_STRING(1248, " , File %i of %i in Directory, %dx%d , %s , File: %d %s"),
-						m_FileFind.GetFilePosition() + 1,
-						m_FileFind.GetFilesCount(),
-						m_pDib->GetWidth(), 
-						m_pDib->GetHeight(),
-						m_pDib->GetCompressionName(), 
-						(m_pDib->GetFileSize() >= 1024) ? m_pDib->GetFileSize() >> 10 : m_pDib->GetFileSize(),
-						(m_pDib->GetFileSize() >= 1024) ? ML_STRING(1243, "KB") : ML_STRING(1244, "Bytes"));
-				}
+				strInfo.Format(	_T(" , %i/%i , %dx%d %s , %s"),
+								m_FileFind.GetFilePosition() + 1,
+								m_FileFind.GetFilesCount(),
+								m_pDib->GetWidth(), 
+								m_pDib->GetHeight(),
+								m_pDib->GetCompressionName(), 
+								::FormatBytes(m_pDib->GetFileSize()));
 			}
 		}
 	}
