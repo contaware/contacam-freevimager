@@ -2172,7 +2172,7 @@ void CPictureDoc::SetDocumentTitle()
 
 	if (m_sFileName.IsEmpty())
 	{
-		sName = _T("Picture");
+		sName = ML_STRING(1260, "Picture");
 		m_sTabTitle = sName;
 	}
 	else
@@ -2446,7 +2446,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 	if (m_sFileName == _T(""))
 	{
 		sLastNewFileSaveAsExt = ::AfxGetApp()->GetProfileString(_T("PictureDoc"), _T("LastNewFileSaveAsExt"), DEFAULT_SAVEAS_EXT);
-		_tcscpy(FileName, _T("Picture") + sLastNewFileSaveAsExt);
+		_tcscpy(FileName, ML_STRING(1260, "Picture") + sLastNewFileSaveAsExt);
 		bNewFile = TRUE;
 	}
 	else
@@ -3727,13 +3727,14 @@ BOOL CPictureDoc::SaveModified()
 		{
 			if (m_pDib && m_pDib->GetBMI())
 			{
-				Str.Format( ML_STRING(1260, "Picture %dx%d %dbpp"),
+				Str.Format(	_T("%s %dx%d %dbpp"),
+							ML_STRING(1260, "Picture"),
 							m_pDib->GetWidth(), 
 							m_pDib->GetHeight(),
 							m_pDib->GetBitCount());
 			}
 			else
-				Str = ML_STRING(1261, "New Document");
+				Str = ML_STRING(1260, "Picture");
 		}
 		else
 			Str = m_sFileName;

@@ -3141,8 +3141,7 @@ BEGIN
     IDS_MULTILANG_1257      "Access denied to %s.\nUse Save As with a different file name!"
     IDS_MULTILANG_1258      "Copy To"
     IDS_MULTILANG_1259      "Move To"
-    IDS_MULTILANG_1260      "Picture %dx%d %dbpp"
-    IDS_MULTILANG_1261      "New Document"
+    IDS_MULTILANG_1260      "Picture"
     IDS_MULTILANG_1262      "Save Copy As"
     IDS_MULTILANG_1263      "Save As Pdf"
 END
