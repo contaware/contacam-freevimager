@@ -3895,7 +3895,7 @@ BOOL CPictureDoc::SaveAsPdf()
 	CSaveFileDlg dlgFile(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, NULL, GetView());
 	TCHAR FileName[MAX_PATH] = _T("");
 	if (m_sFileName == _T(""))
-		_tcscpy(FileName, _T("Picture.pdf"));
+		_tcscpy(FileName, ML_STRING(1260, "Picture") + _T(".pdf"));
 	else
 		_tcscpy(FileName, ::GetFileNameNoExt(m_sFileName) + _T(".pdf"));
 	dlgFile.m_ofn.lpstrFile = FileName;

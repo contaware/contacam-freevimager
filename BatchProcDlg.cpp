@@ -1355,7 +1355,7 @@ CBatchProcDlg::CBatchProcDlg(CWnd* pParent)
 	m_nOutputSelection = OUTPUT_DIR;
 	m_nInputSelection = INPUT_DIR;
 	m_bRename = FALSE;
-	m_sRename = _T("Picture #####");
+	m_sRename = ML_STRING(1260, "Picture") + _T(" #####");
 	m_bConversion = FALSE;
 	//}}AFX_DATA_INIT
 
@@ -1671,7 +1671,7 @@ void CBatchProcDlg::LoadSettings()
 	m_JpegTab.m_bAutoOrientate = (BOOL)pApp->GetProfileInt(sSection, _T("AutoOrientate"), FALSE);
 	m_JpegTab.m_bForceJpegQuality = (BOOL)pApp->GetProfileInt(sSection, _T("ForceJpegQuality"), FALSE);
 	m_bRename = (BOOL)pApp->GetProfileInt(sSection, _T("Rename"), TRUE);
-	m_sRename = pApp->GetProfileString(sSection, _T("RenamePattern"), _T("Picture #####"));
+	m_sRename = pApp->GetProfileString(sSection, _T("RenamePattern"), ML_STRING(1260, "Picture") + _T(" #####"));
 	m_bConversion = (BOOL)pApp->GetProfileInt(sSection, _T("Conversion"), FALSE);
 	m_ShrinkTab.m_bSharpen = (BOOL)pApp->GetProfileInt(sSection, _T("Sharpen"), FALSE);
 	m_TiffTab.m_bWorkOnAllPages = (BOOL)pApp->GetProfileInt(sSection, _T("WorkOnAllPages"), FALSE);
@@ -1887,7 +1887,7 @@ void CBatchProcDlg::OnButtonDstFile()
 	{
 		TCHAR FileName[MAX_PATH] = _T("");
 		if ( m_sOutputFileName == _T(""))
-			 m_sOutputFileName = _T("Pictures.zip");
+			 m_sOutputFileName = ML_STRING(1260, "Picture") + _T(".zip");
 		_tcscpy(FileName, m_sOutputFileName);
 		CSaveFileDlg fd(FALSE,
 						NULL,
