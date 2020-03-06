@@ -5682,9 +5682,6 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 				sAuthenticate += _T("	background-color: #333333;\r\n");
 				sAuthenticate += _T("	color: #bbbbbb;\r\n");
 				sAuthenticate += _T("}\r\n");
-				sAuthenticate += _T("form span {\r\n");
-				sAuthenticate += _T("	mix-blend-mode: difference;\r\n");
-				sAuthenticate += _T("}\r\n");
 				sAuthenticate += _T("input[type=\'text\'], input[type=\'password\'], input[type=\'submit\'] {\r\n");
 				sAuthenticate += _T("	font-size: 14px;\r\n");
 				sAuthenticate += _T("	font-style: normal;\r\n");
