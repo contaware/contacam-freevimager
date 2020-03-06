@@ -55,19 +55,24 @@ span.previewscontainer {
 	padding: 0;
 	border: 0;
 }
-a.logout {
-	line-height: 16px;
-	height: 16px;
-	color: #33ccff;
-	display: inline-block;
-	border: 1px solid #33ccff;
-	padding: 3px 5px 5px 5px;
-	margin: 5px 0 3px 0;
+span.globalbuttons {
+	white-space: nowrap;
 }
-a.logout:hover, a.logout:focus {
-	color: #ffffff;
+span.globalbuttons a {
+	font-size: 13px;
+	font-style: normal;
+	font-weight: bold;
+	font-family: sans-serif,Arial,Helvetica;
+	display: inline-block;
+	width: 38px;
+	height: 28px;
+	line-height: 28px;
+	text-align: center;
+	vertical-align: middle;
 	text-decoration: none;
-	border: 1px solid #ffffff;
+	color: #111111;
+	background-color: #ededed;
+	border: 1px solid #d0d0d0;
 }
 /*]]>*/
 </style>
@@ -75,7 +80,11 @@ a.logout:hover, a.logout:focus {
 <body>
 <?php
 if (isset($_SESSION['username'])) {
-	echo "<p style=\"text-align: right\"><a class=\"logout\" href=\"authenticate.php\">[&#x2192;</a>&nbsp;</p>\n";
+	echo "<div>\n";
+	echo "<span class=\"globalbuttons\">";
+	echo "<a href=\"authenticate.php\">[&#x2192;</a>&nbsp;";
+	echo "</span>\n";
+	echo "</div>\n";
 }
 $rel_path = dirname($_SERVER['PHP_SELF']);
 $rel_path = str_replace("\\", "/", $rel_path);
