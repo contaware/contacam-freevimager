@@ -74,6 +74,31 @@ span.globalbuttons a {
 	background-color: #ededed;
 	border: 1px solid #d0d0d0;
 }
+a#back2top {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	display: none;
+	position: fixed;
+    top: 4px;
+    right: 4px;
+    width: 40px;
+    line-height: 40px;
+    overflow: hidden;
+    z-index: 999;
+    -moz-transform: rotate(270deg);
+    -webkit-transform: rotate(270deg);
+    -o-transform: rotate(270deg);
+    -ms-transform: rotate(270deg);
+    transform: rotate(270deg);
+    cursor: pointer;
+    background-color: #ddd;
+    color: #555;
+    text-align: center;
+    font-size: 30px;
+    text-decoration: none;
+	font-family: Arial, Helvetica, sans-serif;
+}
 /*]]>*/
 </style>
 </head>
@@ -91,6 +116,8 @@ $rel_path = str_replace("\\", "/", $rel_path);
 $rel_path = rtrim($rel_path, "/");
 $dir = rtrim(str_replace("\\", "/", dirname($_SERVER['SCRIPT_FILENAME'])), '/');
 $hasdir = false;
+$iframe_width = 100;
+$iframe_height = 100;
 if ($handle = @opendir($dir)) {
 	$count = 0;
 	echo "<div style=\"text-align: center\">";
@@ -119,8 +146,21 @@ if ($handle = @opendir($dir)) {
 	echo "</div>\n";
 }
 if (!$hasdir) {
-	echo "No device found";
+	echo "<p>No device found</p>\n";
 }
 ?>
+<a id="back2top" href="#" onclick="window.scrollTo(0, 0); return false;">&#x276f;</a>
+<script type="text/javascript">
+//<![CDATA[
+window.addEventListener('scroll', function() {
+	var back2TopButton = document.getElementById('back2top');
+	var minScrollHeight = 2 * <?php echo $iframe_height; ?>;
+	if (document.body.scrollTop > minScrollHeight || document.documentElement.scrollTop > minScrollHeight)
+		back2TopButton.style.display = 'block';
+	else
+		back2TopButton.style.display = 'none';
+}, false);
+//]]>
+</script>
 </body>
 </html>
