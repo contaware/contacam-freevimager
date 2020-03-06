@@ -242,10 +242,10 @@ echo "<iframe style=\"display: block; float: right; border: 0; overflow: hidden;
 // Top Menu
 echo "<div>\n";
 echo "<span class=\"globalbuttons\">";
-echo "<a style=\"font-size: 20px;\" href=\"" . getParentUrl() . "\" target=\"_top\">&#x2302;</a>&nbsp;";
 if (isset($_SESSION['username'])) {
 	echo "<a href=\"" . getParentUrl() . "authenticate.php\">[&#x2192;</a>&nbsp;";
 }
+echo "<a style=\"font-size: 20px;\" href=\"" . getParentUrl() . "\" target=\"_top\">&#x2302;</a>&nbsp;";
 if ($show_camera_commands) {
 	echo "<a class=\"camoffbuttons\" href=\"#\" onclick=\"toggleCamera(); return false;\">&nbsp;</a>&nbsp;";
 }
