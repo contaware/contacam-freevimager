@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "TraceLogFile.h"
 
 #ifdef _DEBUG
@@ -6,20 +7,9 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
-extern BOOL CreateDir(LPCTSTR szNewDir);
-extern BOOL IsExistingDir(LPCTSTR lpszFileName);
-extern CString GetDriveAndDirName(const CString& sFullFilePath);
-extern CString GetFileNameNoExt(const CString& sFullFilePath);
-extern ULARGE_INTEGER GetFileSize64(LPCTSTR lpszFileName);
-extern int ToUTF8(const CString& s, LPBYTE* ppUtf8);
-
 volatile int g_nLogLevel = 0;
 CString g_sLogFileName;
 volatile ULONGLONG g_ullMaxLogFileSize = 0;
-#ifdef _DEBUG
-CRITICAL_SECTION g_csTraceDebug;
-CString g_sTraceDebugFileAndLine;
-#endif
 CRITICAL_SECTION g_csLogFile;
 volatile BOOL g_bTraceLogFileInited = FALSE;
 
@@ -28,9 +18,6 @@ void InitTraceLogFile(LPCTSTR szLogFileName,
 {
 	if (!g_bTraceLogFileInited)
 	{
-#ifdef _DEBUG
-		InitializeCriticalSection(&g_csTraceDebug);
-#endif
 		InitializeCriticalSection(&g_csLogFile);
 		g_ullMaxLogFileSize = ullMaxLogFileSize;
 		g_sLogFileName = szLogFileName;
@@ -44,9 +31,6 @@ void EndTraceLogFile()
 	{
 		g_bTraceLogFileInited = FALSE;
 		DeleteCriticalSection(&g_csLogFile);
-#ifdef _DEBUG
-		DeleteCriticalSection(&g_csTraceDebug);
-#endif
 	}
 }
 
@@ -81,9 +65,6 @@ void LogLine(const TCHAR* pFormat, ...)
 
 	// Make single line with no line ending
 	s = SingleLine(s);
-	
-	// Trace (current time is added by TRACE)
-	TRACE(_T("%s\n"), s);
 
 	// Add current time
 	time_t CurrentTime;
@@ -91,6 +72,9 @@ void LogLine(const TCHAR* pFormat, ...)
 	CString sCurrentTime(_tctime(&CurrentTime));
 	sCurrentTime.TrimRight(_T('\n'));
 	s = _T("[") + sCurrentTime + _T("] ") + s;
+
+	// Trace
+	TRACE(_T("%s\n"), s);
 
 	// Check file size
 	if (g_ullMaxLogFileSize > 0)
@@ -133,49 +117,3 @@ void LogLine(const TCHAR* pFormat, ...)
 	// Leave CS
 	LeaveCriticalSection(&g_csLogFile);
 }
-
-#ifdef _DEBUG
-void TraceDebugEnterCS(CString sFileName, int nLine)
-{
-	// Check
-	if (!g_bTraceLogFileInited)
-		return;
-
-	// Enter CS
-	EnterCriticalSection(&g_csTraceDebug);
-
-	// Format
-	g_sTraceDebugFileAndLine.Format(_T("%s(%i)"), sFileName, nLine);
-}
-
-void TraceDebugLeaveCS(const TCHAR* pFormat, ...)
-{
-	// Check
-	if (!g_bTraceLogFileInited)
-		return;
-
-	// Format
-	CString s;
-	va_list arguments;
-	va_start(arguments, pFormat);	
-	s.FormatV(pFormat, arguments);
-    va_end(arguments);
-
-	// Add current time
-	time_t CurrentTime;
-	time(&CurrentTime);
-	CString sCurrentTime(_tctime(&CurrentTime));
-	sCurrentTime.TrimRight(_T('\n'));
-	s = _T("[") + sCurrentTime + _T("] ") + s;
-
-	// Add file and line names
-	CString sWithFileAndLine;
-	sWithFileAndLine.Format(_T("%-") TRACEDEBUG_CHARS_INDENT _T("s : %s"), g_sTraceDebugFileAndLine, s);
-
-	// Trace
-	afxDump << sWithFileAndLine;
-
-	// Leave CS
-	LeaveCriticalSection(&g_csTraceDebug);
-}
-#endif
