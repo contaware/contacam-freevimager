@@ -1302,8 +1302,6 @@ BOOL CPictureView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 	if (m_bDoScrollMove)
 		return TRUE;
 
-	CRect Client;
-	GetClientRect(&Client);
 	BOOL bDoMouseMove = FALSE;
 	
 	CPictureDoc* pDoc = GetDocument();
@@ -1376,7 +1374,9 @@ BOOL CPictureView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 		}
 	}
 	
-	// Update
+	// This function sends a WM_PAINT message directly,
+	// bypassing the application queue. If the update
+	// region is empty, WM_PAINT is not sent
 	UpdateWindow();
 
 	// Call this after UpdateWindow(),
