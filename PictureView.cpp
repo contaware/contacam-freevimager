@@ -246,6 +246,9 @@ LONG CPictureView::OnThreadSafeSlideshowLoadPicture(WPARAM wparam, LPARAM lparam
 		}
 		else
 		{
+			// Sends a WM_PAINT message directly, bypassing the application queue
+			UpdateWindow();
+
 			if (pDoc->m_SlideShowThread.m_bDoRunSlideshow)
 				pDoc->m_SlideShowThread.RunSlideshow();
 		}
