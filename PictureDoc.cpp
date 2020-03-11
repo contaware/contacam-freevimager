@@ -341,7 +341,6 @@ CPictureDoc::CSlideShowThread::CSlideShowThread()
 	m_bRecursive = FALSE;
 	m_bLoop = FALSE;
 	m_bRandom = FALSE;
-	m_bNext = TRUE;
 	m_bDoRunSlideshow = FALSE;
 	m_bSlideshowLoadPictureDone = TRUE;
 }
@@ -444,44 +443,44 @@ void CPictureDoc::CSlideShowThread::PauseSlideshow()
 
 BOOL CPictureDoc::CSlideShowThread::LoadPicture(LPCTSTR sFileName, BOOL bNext)
 {
-	// The Main UI Thread Loads the Picture and sets m_bSlideshowLoadPictureDone.
-	// Load Picture Only if Previous one has been completely loaded, otherwise wait!
+	// We load the new picture only if the previous load completed.
+	// Note that the previous load could still be running in case
+	// that this thread exited (see below)
 	while (!m_bSlideshowLoadPictureDone)
 	{
-		DWORD Event = ::WaitForSingleObject(GetKillEvent(),
-											SLIDESHOW_LOADPICTURE_WAIT);
-		switch (Event)
-		{
-			// Shutdown Event
-			case WAIT_OBJECT_0 :		return FALSE;
-			// Continue
-			case WAIT_TIMEOUT :			break;
-
-			default: break;
-		}
+		// Shutdown?
+		if (::WaitForSingleObject(GetKillEvent(), SLIDESHOW_LOADPICTURE_WAIT) == WAIT_OBJECT_0)
+			return FALSE;
 	}
-
-	// Set m_bNext
-	m_bNext = bNext;
-
-	// Reset m_bSlideshowLoadPictureDone
-	m_bSlideshowLoadPictureDone = FALSE;
 
 	// Load
-	if (m_pDoc->m_bClosing)
+	if (!m_pDoc->m_bClosing)
 	{
-		// We are closing, do not load picture!
-		return TRUE;
-	}
-	else
-	{
+		// Clear flag
+		m_bSlideshowLoadPictureDone = FALSE;
+
 		// We do not use SendMessage to avoid dead
 		// locks on exiting the application!
-		return ::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-								WM_THREADSAFE_SLIDESHOW_LOAD_PICTURE,
-								(WPARAM)(new CString(sFileName)),
-								(LPARAM)0);
+		if (::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
+							WM_THREADSAFE_SLIDESHOW_LOAD_PICTURE,
+							(WPARAM)(new CString(sFileName)),
+							(LPARAM)bNext))
+		{
+			// The main UI thread tries to load the picture and when done
+			// always sets m_bSlideshowLoadPictureDone. Here we wait until
+			// done; we stop waiting when exiting this thread!
+			while (!m_bSlideshowLoadPictureDone)
+			{
+				// Shutdown?
+				if (::WaitForSingleObject(GetKillEvent(), SLIDESHOW_LOADPICTURE_WAIT) == WAIT_OBJECT_0)
+					return FALSE;
+			}
+		}
+		else
+			m_bSlideshowLoadPictureDone = TRUE;
 	}
+
+	return TRUE;
 }
 
 int CPictureDoc::CSlideShowThread::Work() 

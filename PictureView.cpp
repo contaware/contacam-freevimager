@@ -225,21 +225,15 @@ LONG CPictureView::OnThreadSafeSlideshowLoadPicture(WPARAM wparam, LPARAM lparam
 	CPictureDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-	BOOL res = FALSE;
 	CString* pFileName = (CString*)wparam;
+	BOOL bNext = (BOOL)lparam;
 
-	if (pDoc					&&
-		pFileName				&&
-		!pDoc->m_bClosing		&&
-		pDoc->m_SlideShowThread.m_bSlideshowLoadPictureDone == FALSE)
+	if (pFileName && !pDoc->m_bClosing)
 	{
-		// Load Picture
-		res = pDoc->LoadPicture(&pDoc->m_pDib, *pFileName);
-
-		// On Error Skip Picture!
-		if (!res)
+		// On error skip picture
+		if (!pDoc->LoadPicture(&pDoc->m_pDib, *pFileName))
 		{
-			if (pDoc->m_SlideShowThread.IsNext())
+			if (bNext)
 				pDoc->m_SlideShowThread.NextPicture();
 			else
 				pDoc->m_SlideShowThread.PreviousPicture();
@@ -252,17 +246,16 @@ LONG CPictureView::OnThreadSafeSlideshowLoadPicture(WPARAM wparam, LPARAM lparam
 			if (pDoc->m_SlideShowThread.m_bDoRunSlideshow)
 				pDoc->m_SlideShowThread.RunSlideshow();
 		}
-
-		// To Signal That We Are Done With Loading.
-		// (Signal also if we failed with the loading!) 
-		pDoc->m_SlideShowThread.m_bSlideshowLoadPictureDone = TRUE;
 	}
 
 	// Delete
 	if (pFileName)
 		delete pFileName;
 
-	return res;
+	// Signal that we are done with loading, also if we failed
+	pDoc->m_SlideShowThread.m_bSlideshowLoadPictureDone = TRUE;
+
+	return 0;
 }
 
 LONG CPictureView::OnThreadUpdateImageInfo(WPARAM wparam, LPARAM lparam)

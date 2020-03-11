@@ -156,7 +156,6 @@ public:
 			BOOL IsRecursive() const {return m_bRecursive;};
 			BOOL IsLoop() const {return m_bLoop;};
 			BOOL IsRandom() const {return m_bRandom;};
-			BOOL IsNext() const {return m_bNext;};
 
 			// The Slideshow Timer Event Handle
 			HANDLE m_hSlideshowTimerEvent;
@@ -224,9 +223,6 @@ public:
 
 			// Random Slideshow?
 			volatile BOOL m_bRandom;
-
-			// Load Next or Previous Picture?
-			volatile BOOL m_bNext;
 	};
 
 	// The LayeredDlgThread Thread Class
