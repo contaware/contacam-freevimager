@@ -581,8 +581,7 @@ public:
 	CString m_sPrevDibName;			// Previous Picture Name
 	CString m_sDirName;				// Current Directory Name
 	CString m_sCopyOrMoveDirName;	// Current Copy or Move Directory Name
-	CSortableFileFind m_FileFind;	// File Find Object		
-	CSortableFileFind m_NewFileFind;// New File Find Object
+	CSortableFileFind m_FileFind;	// File Find Object
 	CDib* m_pCropBkgDib;			// The darker dib for cropping
 	CDib* volatile m_pLoadFullJpegDib;// Used To Load the Full Size Jpeg
 	CTryEnterCriticalSection m_csLoadFullJpegDib;

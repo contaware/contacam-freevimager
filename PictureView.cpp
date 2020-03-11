@@ -3348,9 +3348,8 @@ void CPictureView::OnInitialUpdate()
 	pBkgColorButtonPicker->SetColor(pDoc->m_crBackgroundColor);
 	pBkgColorButtonPicker->SetDefaultColor(::GetSysColor(COLOR_WINDOW));
 
-	// Set Window Pointers
+	// Set Window Pointer
 	pDoc->m_FileFind.SetWnd(GetSafeHwnd());
-	pDoc->m_NewFileFind.SetWnd(GetSafeHwnd());
 }
 
 BOOL CPictureView::OnEraseBkgnd(CDC* pDC) 

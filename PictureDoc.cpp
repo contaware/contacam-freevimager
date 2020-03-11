@@ -2052,21 +2052,6 @@ CPictureDoc::CPictureDoc()
 	m_FileFind.AddAllowedExtension(_T("jfx"));
 	m_FileFind.AddAllowedExtension(_T("dib"));
 	m_FileFind.AddAllowedNumericExtensions();
-	m_NewFileFind.AddAllowedExtension(_T("jpg"));
-	m_NewFileFind.AddAllowedExtension(_T("gif"));
-	m_NewFileFind.AddAllowedExtension(_T("bmp"));
-	m_NewFileFind.AddAllowedExtension(_T("png"));
-	m_NewFileFind.AddAllowedExtension(_T("tif"));
-	m_NewFileFind.AddAllowedExtension(_T("pcx"));
-	m_NewFileFind.AddAllowedExtension(_T("emf"));
-	m_NewFileFind.AddAllowedExtension(_T("jpeg"));
-	m_NewFileFind.AddAllowedExtension(_T("tiff"));
-	m_NewFileFind.AddAllowedExtension(_T("jpe"));
-	m_NewFileFind.AddAllowedExtension(_T("jfif"));
-	m_NewFileFind.AddAllowedExtension(_T("thm"));
-	m_NewFileFind.AddAllowedExtension(_T("jfx"));
-	m_NewFileFind.AddAllowedExtension(_T("dib"));
-	m_NewFileFind.AddAllowedNumericExtensions();
 
 	// Load the Settings
 	LoadSettings();
