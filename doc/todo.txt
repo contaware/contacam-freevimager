@@ -1,8 +1,7 @@
 FreeVimager Program
 -------------------
 
-- The speed when quickly forwarding about 5-10 pictures slows down
-  (kryden@gmail.com)
+- ...
 
 
 ContaCam Program

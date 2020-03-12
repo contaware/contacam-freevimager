@@ -518,42 +518,22 @@ int CPictureDoc::CSlideShowThread::Work()
 
 void CPictureDoc::CSlideShowThread::NextPicture()
 {
-	if (IsAlive())
-	{
-		if (!IsRunning())
-			Start();
-		::SetEvent(m_hNextPictureEvent);
-	}
+	::SetEvent(m_hNextPictureEvent);
 }
 
 void CPictureDoc::CSlideShowThread::PreviousPicture()
 {
-	if (IsAlive())
-	{
-		if (!IsRunning())
-			Start();
-		::SetEvent(m_hPreviousPictureEvent);
-	}
+	::SetEvent(m_hPreviousPictureEvent);
 }
 
 void CPictureDoc::CSlideShowThread::FirstPicture()
 {
-	if (IsAlive())
-	{
-		if (!IsRunning())
-			Start();
-		::SetEvent(m_hFirstPictureEvent);
-	}
+	::SetEvent(m_hFirstPictureEvent);
 }
 
 void CPictureDoc::CSlideShowThread::LastPicture()
 {
-	if (IsAlive())
-	{
-		if (!IsRunning())
-			Start();
-		::SetEvent(m_hLastPictureEvent);
-	}
+	::SetEvent(m_hLastPictureEvent);
 }
 
 BOOL CPictureDoc::CSlideShowThread::SlideShow(CString sStartFileName)
