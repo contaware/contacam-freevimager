@@ -112,35 +112,35 @@ public:
 			CSlideShowThread();
 			virtual ~CSlideShowThread();
 
-			// Restart timer if it is running
-			void RestartRunningTimer();
-
-			// Run Slideshow
+			// Run slideshow
+			// Please call only from the Main UI Thread!
 			void RunSlideshow();
 
-			// Pause Slideshow
+			// Pause slideshow
+			// Please call only from the Main UI Thread!
 			void PauseSlideshow();
 
-			// Is Slideshow Running?
+			// Check whether the Slideshow is Running
+			// Please call only from the Main UI Thread!
 			BOOL IsSlideshowRunning() {return ((m_uiSlideshowTimerId > 0) && IsRunning());};
 
-			// Called by the Main UI Thread to go to the next picture
+			// Go to the next picture
 			void NextPicture();
 
-			// Called by the Main UI Thread to go to the previous picture
+			// Go to the previous picture
 			void PreviousPicture();
 
-			// Called by the Main UI Thread to go to the first picture
+			// Go to the first picture
 			void FirstPicture();
 
-			// Called by the Main UI Thread to go to the last picture
+			// Go to the last picture
 			void LastPicture();
 
 			// Get / Set Functions
 			void SetDoc(CPictureDoc* pDoc) {m_pDoc = pDoc;};
 			void SetStartName(CString sStartName) {m_sStartName = sStartName;};
 			void SetMilliSecondsDelay(int nMilliSecondsDelay) {	m_nMilliSecondsDelay = nMilliSecondsDelay;
-																if (IsSlideshowRunning()) RunSlideshow();};
+																if (IsSlideshowRunning()) RunSlideshow();}; // please call only from the Main UI Thread!
 			int  GetMilliSecondsDelay() {return m_nMilliSecondsDelay;};
 			void SetRecursive(BOOL bRecursive) {m_bRecursive = bRecursive;};
 			void SetLoop(BOOL bLoop) {m_bLoop = bLoop;};
@@ -151,18 +151,12 @@ public:
 			BOOL IsLoop() const {return m_bLoop;};
 			BOOL IsRandom() const {return m_bRandom;};
 
-			// The Slideshow Timer Event Handle
-			HANDLE m_hSlideshowTimerEvent;
-
 			// Slideshow Load Picture Done Flag
 			volatile BOOL m_bSlideshowLoadPictureDone;
 
 		protected:
 			// Worker Thread Entry
 			int Work();
-
-			// Exiting Thread When an Error Occurs
-			int OnError();
 
 			// SlideShow returns FALSE if an error occurs and
 			// TRUE if it's time to Shutdown the Thread
@@ -174,15 +168,12 @@ public:
 			// The Slideshow Timer
 			UINT m_uiSlideshowTimerId;
 
-			// Next, Previous, First and Last Picture Event Handles,
-			// triggered by NextPicture(), PreviousPicture(),
-			// FirstPicture() and LastPicture()
-			HANDLE m_hNextPictureEvent;
+			// Events
 			HANDLE m_hPreviousPictureEvent;
 			HANDLE m_hFirstPictureEvent;
 			HANDLE m_hLastPictureEvent;
-
-			// Events
+			HANDLE m_hNextPictureEvent;
+			HANDLE m_hSlideshowTimerEvent;
 			HANDLE m_hEventArray[6];
 
 			// The Doc Pointer

@@ -364,36 +364,18 @@ CPictureDoc::CSlideShowThread::~CSlideShowThread()
 	m_hSlideshowTimerEvent = NULL;
 }
 
-void CPictureDoc::CSlideShowThread::RestartRunningTimer()
-{
-	// Is Timer Running?
-	if (m_uiSlideshowTimerId)
-	{
-		// Kill Timer
-		::timeKillEvent(m_uiSlideshowTimerId);
-		m_uiSlideshowTimerId = 0;
-
-		// Setup Timer
-		m_uiSlideshowTimerId = ::timeSetEvent(	m_nMilliSecondsDelay,
-												DEFAULT_TIMER_RESOLUTION,
-												(LPTIMECALLBACK)m_hSlideshowTimerEvent,
-												0,
-												TIME_PERIODIC | TIME_CALLBACK_EVENT_SET | TIME_KILL_SYNCHRONOUS);
-	}
-}
-
 void CPictureDoc::CSlideShowThread::RunSlideshow()
 {
-	// Start Thread
-	if (!IsRunning())
-		Start();
-
 	// Kill Timer
 	if (m_uiSlideshowTimerId)
 	{
 		::timeKillEvent(m_uiSlideshowTimerId);
 		m_uiSlideshowTimerId = 0;
 	}
+
+	// Start Thread
+	if (!IsRunning())
+		Start();
 
 	// Setup Timer
 	m_uiSlideshowTimerId = ::timeSetEvent(	m_nMilliSecondsDelay,
@@ -402,15 +384,12 @@ void CPictureDoc::CSlideShowThread::RunSlideshow()
 											0,
 											TIME_PERIODIC | TIME_CALLBACK_EVENT_SET | TIME_KILL_SYNCHRONOUS);
 
+	// Avoid jpeg full loading
 	m_pDoc->m_bDoJPEGGet = FALSE;
 }
 
 void CPictureDoc::CSlideShowThread::PauseSlideshow()
 {
-	// Start Thread
-	if (!IsRunning())
-		Start();
-
 	// Kill Timer
 	if (m_uiSlideshowTimerId)
 	{
@@ -418,6 +397,11 @@ void CPictureDoc::CSlideShowThread::PauseSlideshow()
 		m_uiSlideshowTimerId = 0;
 	}
 
+	// Start Thread
+	if (!IsRunning())
+		Start();
+
+	// Enable jpeg full loading
 	if (!m_pDoc->m_bDoJPEGGet)
 	{	
 		m_pDoc->m_bDoJPEGGet = TRUE;
@@ -497,7 +481,10 @@ int CPictureDoc::CSlideShowThread::Work()
 		}
 	}
 	else
-		return OnError();
+	{
+		m_pDoc->CloseDocumentForce();
+		return 0;
+	}
 	
 	// Adjust Directory Name
 	m_pDoc->m_sDirName.TrimRight(_T('\\'));
@@ -506,44 +493,26 @@ int CPictureDoc::CSlideShowThread::Work()
 	if (m_bRecursive)
 	{
 		if (!m_pDoc->m_FileFind.InitRecursive(m_pDoc->m_sDirName + _T("\\*")))
-			return OnError();
+		{
+			m_pDoc->CloseDocumentForce();
+			return 0;
+		}
 	}
 	// Init Normal File Find
 	else
 	{
 		if (!m_pDoc->m_FileFind.Init(m_pDoc->m_sDirName + _T("\\*")))
-			return OnError();
+		{
+			m_pDoc->CloseDocumentForce();
+			return 0;
+		}
 	}
 
 	// SlideShow returns FALSE if an error occurs and
 	// TRUE if it's time to Shutdown the Thread
 	if (!SlideShow(sStartFileName))
-		return OnError();
-	else
-	{
-		// Reset Timer
-		if (m_uiSlideshowTimerId)
-		{
-			::timeKillEvent(m_uiSlideshowTimerId);
-			m_uiSlideshowTimerId = 0;
-		}
-
-		return 0;
-	}
-}
-
-int CPictureDoc::CSlideShowThread::OnError()
-{
-	// Close Document
-	m_pDoc->CloseDocumentForce();
-
-	// Reset Timer
-	if (m_uiSlideshowTimerId)
-	{
-		::timeKillEvent(m_uiSlideshowTimerId);
-		m_uiSlideshowTimerId = 0;
-	}
-
+		m_pDoc->CloseDocumentForce();
+	
 	return 0;
 }
 
@@ -646,7 +615,6 @@ BOOL CPictureDoc::CSlideShowThread::SlideShow(CString sStartFileName)
 
 			// Previous Picture Event
 			case WAIT_OBJECT_0 + 1 :	::ResetEvent(m_hPreviousPictureEvent);
-										RestartRunningTimer();
 										if (!m_pDoc->m_FileFind.FindPreviousFile())
 											LastPicture();
 										else
@@ -655,21 +623,18 @@ BOOL CPictureDoc::CSlideShowThread::SlideShow(CString sStartFileName)
 
 			// First Picture Event
 			case WAIT_OBJECT_0 + 2 :	::ResetEvent(m_hFirstPictureEvent);
-										RestartRunningTimer();
 										if (m_pDoc->m_FileFind.FindFirstFile())
 											LoadPicture(m_pDoc->m_FileFind.GetFileName(), TRUE);
 										break;
 
 			// Last Picture Event
 			case WAIT_OBJECT_0 + 3 :	::ResetEvent(m_hLastPictureEvent);
-										RestartRunningTimer();
 										if (m_pDoc->m_FileFind.FindLastFile())
 											LoadPicture(m_pDoc->m_FileFind.GetFileName(), FALSE);
 										break;
 
 			// Next Picture
 			case WAIT_OBJECT_0 + 4 :	::ResetEvent(m_hNextPictureEvent);
-										RestartRunningTimer();
 										if (!::IsExistingFile(m_pDoc->m_FileFind.GetFileName())) // in case picture was deleted
 										{
 											m_pDoc->m_FileFind.DeleteFileName(m_pDoc->m_FileFind.GetFilePosition()); // it jumps to first position if it was at last
