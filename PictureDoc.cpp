@@ -441,7 +441,7 @@ void CPictureDoc::CSlideShowThread::PauseSlideshow()
 	}
 }
 
-BOOL CPictureDoc::CSlideShowThread::LoadPicture(LPCTSTR sFileName, BOOL bNext)
+void CPictureDoc::CSlideShowThread::LoadPicture(LPCTSTR sFileName, BOOL bNext)
 {
 	// We load the new picture only if the previous load completed.
 	// Note that the previous load could still be running in case
@@ -450,7 +450,7 @@ BOOL CPictureDoc::CSlideShowThread::LoadPicture(LPCTSTR sFileName, BOOL bNext)
 	{
 		// Shutdown?
 		if (::WaitForSingleObject(GetKillEvent(), SLIDESHOW_LOADPICTURE_WAIT) == WAIT_OBJECT_0)
-			return FALSE;
+			return;
 	}
 
 	// Load
@@ -473,14 +473,12 @@ BOOL CPictureDoc::CSlideShowThread::LoadPicture(LPCTSTR sFileName, BOOL bNext)
 			{
 				// Shutdown?
 				if (::WaitForSingleObject(GetKillEvent(), SLIDESHOW_LOADPICTURE_WAIT) == WAIT_OBJECT_0)
-					return FALSE;
+					return;
 			}
 		}
 		else
 			m_bSlideshowLoadPictureDone = TRUE;
 	}
-
-	return TRUE;
 }
 
 int CPictureDoc::CSlideShowThread::Work() 
@@ -531,7 +529,7 @@ int CPictureDoc::CSlideShowThread::Work()
 	}
 
 	// SlideShow returns FALSE if an error occurs and
-	// TRUE if it's time to Shutdown the Thread.
+	// TRUE if it's time to Shutdown the Thread
 	if (!SlideShow(sStartFileName))
 		return OnError();
 	else
@@ -562,64 +560,44 @@ int CPictureDoc::CSlideShowThread::OnError()
 	return 0;
 }
 
-BOOL CPictureDoc::CSlideShowThread::NextPicture()
+void CPictureDoc::CSlideShowThread::NextPicture()
 {
 	if (IsAlive())
 	{
 		if (!IsRunning())
 			Start();
-		if (::SetEvent(m_hNextPictureEvent) == 0)
-			return FALSE;
-		else
-			return TRUE;
+		::SetEvent(m_hNextPictureEvent);
 	}
-	else
-		return FALSE;
 }
 
-BOOL CPictureDoc::CSlideShowThread::PreviousPicture()
+void CPictureDoc::CSlideShowThread::PreviousPicture()
 {
 	if (IsAlive())
 	{
 		if (!IsRunning())
 			Start();
-		if (::SetEvent(m_hPreviousPictureEvent) == 0)
-			return FALSE;
-		else
-			return TRUE;
+		::SetEvent(m_hPreviousPictureEvent);
 	}
-	else
-		return FALSE;
 }
 
-BOOL CPictureDoc::CSlideShowThread::FirstPicture()
+void CPictureDoc::CSlideShowThread::FirstPicture()
 {
 	if (IsAlive())
 	{
 		if (!IsRunning())
 			Start();
-		if (::SetEvent(m_hFirstPictureEvent) == 0)
-			return FALSE;
-		else
-			return TRUE;
+		::SetEvent(m_hFirstPictureEvent);
 	}
-	else
-		return FALSE;
 }
 
-BOOL CPictureDoc::CSlideShowThread::LastPicture()
+void CPictureDoc::CSlideShowThread::LastPicture()
 {
 	if (IsAlive())
 	{
 		if (!IsRunning())
 			Start();
-		if (::SetEvent(m_hLastPictureEvent) == 0)
-			return FALSE;
-		else
-			return TRUE;
+		::SetEvent(m_hLastPictureEvent);
 	}
-	else
-		return FALSE;
 }
 
 BOOL CPictureDoc::CSlideShowThread::SlideShow(CString sStartFileName)
@@ -638,7 +616,10 @@ BOOL CPictureDoc::CSlideShowThread::SlideShow(CString sStartFileName)
 	// Wait that the String Array of m_FileFind is filling up
 	if (m_bRecursive)
 	{
-		if (m_pDoc->m_FileFind.WaitRecursiveStarted(GetKillEvent()) != 1)
+		int nRet = m_pDoc->m_FileFind.WaitRecursiveStarted(GetKillEvent());
+		if (nRet == -1)						// shutdown event
+			return TRUE;
+		else if (nRet == 0 || nRet == -2)	// no files or error
 			return FALSE;
 	}
 
@@ -672,10 +653,7 @@ BOOL CPictureDoc::CSlideShowThread::SlideShow(CString sStartFileName)
 	// Load the first picture, if necessary the timer is started
 	// from the slideshow load picture message handler
 	else
-	{
-		if (!LoadPicture(m_pDoc->m_FileFind.GetFileName(), TRUE))
-			return FALSE;
-	}
+		LoadPicture(m_pDoc->m_FileFind.GetFileName(), TRUE);
 
 	// Do Slideshow
 	while (TRUE)
@@ -689,45 +667,62 @@ BOOL CPictureDoc::CSlideShowThread::SlideShow(CString sStartFileName)
 			// Previous Picture Event
 			case WAIT_OBJECT_0 + 1 :	::ResetEvent(m_hPreviousPictureEvent);
 										RestartRunningTimer();
-										if (!ProcessPrevFileEvent())
-											return FALSE;
+										if (!m_pDoc->m_FileFind.FindPreviousFile())
+											LastPicture();
+										else
+											LoadPicture(m_pDoc->m_FileFind.GetFileName(), FALSE);
 										break;
 
 			// First Picture Event
 			case WAIT_OBJECT_0 + 2 :	::ResetEvent(m_hFirstPictureEvent);
 										RestartRunningTimer();
-										if (m_pDoc->m_FileFind.GetFilesCount() > 1)
-										{
-											if (!m_pDoc->m_FileFind.FindFirstFile())
-												return FALSE;
-											if (!LoadPicture(m_pDoc->m_FileFind.GetFileName(), TRUE))
-												return FALSE;
-										}
+										if (m_pDoc->m_FileFind.FindFirstFile())
+											LoadPicture(m_pDoc->m_FileFind.GetFileName(), TRUE);
 										break;
 
 			// Last Picture Event
 			case WAIT_OBJECT_0 + 3 :	::ResetEvent(m_hLastPictureEvent);
 										RestartRunningTimer();
-										if (m_pDoc->m_FileFind.GetFilesCount() > 1)
-										{
-											if (!m_pDoc->m_FileFind.FindLastFile())
-												return FALSE;
-											if (!LoadPicture(m_pDoc->m_FileFind.GetFileName(), FALSE))
-												return FALSE;
-										}
+										if (m_pDoc->m_FileFind.FindLastFile())
+											LoadPicture(m_pDoc->m_FileFind.GetFileName(), FALSE);
 										break;
 
 			// Next Picture
 			case WAIT_OBJECT_0 + 4 :	::ResetEvent(m_hNextPictureEvent);
 										RestartRunningTimer();
-										if (!ProcessNextFileEvent(FALSE))
-											return FALSE;
+										if (!::IsExistingFile(m_pDoc->m_FileFind.GetFileName())) // in case picture was deleted
+										{
+											m_pDoc->m_FileFind.DeleteFileName(m_pDoc->m_FileFind.GetFilePosition()); // it jumps to first position if it was at last
+											if (m_pDoc->m_FileFind.GetFilesCount() <= 0)
+												return FALSE;
+											else
+												LoadPicture(m_pDoc->m_FileFind.GetFileName(), TRUE);
+										}
+										else
+										{
+											if (!m_pDoc->m_FileFind.FindNextFile())
+												FirstPicture();
+											else
+												LoadPicture(m_pDoc->m_FileFind.GetFileName(), TRUE);
+										}
 										break;
 
 			// Slideshow Timer
 			case WAIT_OBJECT_0 + 5 :	::ResetEvent(m_hSlideshowTimerEvent);
-										if (!ProcessNextFileEvent(m_bRandom))
-											return FALSE;
+										BOOL res;
+										if (m_bRandom)
+											res = m_pDoc->m_FileFind.FindRandomFile();
+										else
+											res = m_pDoc->m_FileFind.FindNextFile();
+										if (!res)
+										{
+											if (m_bLoop)
+												FirstPicture();
+											else
+												::PostMessage(m_pDoc->GetView()->GetSafeHwnd(), WM_THREADSAFE_PAUSESLIDESHOW, (WPARAM)0, (LPARAM)0);
+										}
+										else
+											LoadPicture(m_pDoc->m_FileFind.GetFileName(), TRUE);
 										break;
 
 			// Timeout
@@ -741,90 +736,6 @@ BOOL CPictureDoc::CSlideShowThread::SlideShow(CString sStartFileName)
 		if (!::IsExistingDir(m_pDoc->m_sDirName))
 			return FALSE;
     }
-}
-
-BOOL CPictureDoc::CSlideShowThread::ProcessNextFileEvent(BOOL bRandom)
-{
-	int nCurrentFilePosition = m_pDoc->m_FileFind.GetFilePosition();
-	BOOL bExisting = ::IsExistingFile(m_pDoc->m_FileFind.GetFileName());
-	BOOL res;
-	if (bRandom)
-		res = m_pDoc->m_FileFind.FindRandomFile();
-	else
-		res = m_pDoc->m_FileFind.FindNextFile();
-	if (!res)
-	{
-		// Special handling for file delete
-		if (!bExisting)
-		{
-			m_pDoc->m_FileFind.DeleteFileName(nCurrentFilePosition);
-			if (m_pDoc->m_FileFind.GetFilesCount() == 1)
-			{
-				if (!m_pDoc->m_FileFind.FindFirstFile())
-					return FALSE;
-				if (!LoadPicture(m_pDoc->m_FileFind.GetFileName(), TRUE))
-					return FALSE;
-			}
-			else if (m_pDoc->m_FileFind.GetFilesCount() <= 0)
-				return FALSE;
-		}
-
-		if (IsSlideshowRunning())
-		{
-			if (m_bLoop && (m_pDoc->m_FileFind.GetFilesCount() > 1))
-			{
-				if (!FirstPicture())
-					return FALSE;
-			}
-			else
-			{
-				::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-								WM_THREADSAFE_PAUSESLIDESHOW,
-								(WPARAM)0, (LPARAM)0);
-			}
-		}
-		else
-		{
-			if (m_pDoc->m_FileFind.GetFilesCount() > 1)
-			{
-				if (!FirstPicture())
-					return FALSE;
-			}
-		}
-	}
-	else
-	{
-		// Special handling for file delete
-		if (!bExisting)
-			m_pDoc->m_FileFind.DeleteFileName(nCurrentFilePosition);
-		if (m_pDoc->m_FileFind.GetFilesCount() <= 0)
-			return FALSE;
-
-		// Load Next
-		if (!LoadPicture(m_pDoc->m_FileFind.GetFileName(), TRUE))
-			return FALSE;
-	}
-
-	return TRUE;
-}
-
-BOOL CPictureDoc::CSlideShowThread::ProcessPrevFileEvent()
-{
-	if (!m_pDoc->m_FileFind.FindPreviousFile())
-	{
-		if (m_pDoc->m_FileFind.GetFilesCount() > 1)
-		{
-			if (!LastPicture())
-				return FALSE;
-		}
-	}
-	else
-	{
-		if (!LoadPicture(m_pDoc->m_FileFind.GetFileName(), FALSE))
-			return FALSE;
-	}
-
-	return TRUE;
 }
 
 BOOL CPictureDoc::CLayeredDlgThread::DoIt(CWorkerThread* pThread/*=NULL*/) 

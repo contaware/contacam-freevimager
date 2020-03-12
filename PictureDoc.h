@@ -124,23 +124,17 @@ public:
 			// Is Slideshow Running?
 			BOOL IsSlideshowRunning() {return ((m_uiSlideshowTimerId > 0) && IsRunning());};
 
-			// Posts a Message for the Main UI Thread to load a picture.
-			// This Function returns FALSE when the thread should exit,
-			// otherwise it always returns TRUE, even if the picture
-			// cannot be loaded!
-			BOOL LoadPicture(LPCTSTR sFileName, BOOL bNext);
-
 			// Called by the Main UI Thread to go to the next picture
-			BOOL NextPicture();
+			void NextPicture();
 
 			// Called by the Main UI Thread to go to the previous picture
-			BOOL PreviousPicture();
+			void PreviousPicture();
 
 			// Called by the Main UI Thread to go to the first picture
-			BOOL FirstPicture();
+			void FirstPicture();
 
 			// Called by the Main UI Thread to go to the last picture
-			BOOL LastPicture();
+			void LastPicture();
 
 			// Get / Set Functions
 			void SetDoc(CPictureDoc* pDoc) {m_pDoc = pDoc;};
@@ -174,25 +168,17 @@ public:
 			// Exiting Thread When an Error Occurs
 			int OnError();
 
-			// Returns TRUE when finished,
-			// Work() will loop if set so,
-			// otherwise it exits.
-			//
-			// Returns FALSE if an error occurs
-			// or if shutting down the thread.
-			// -> Work() will exit!
+			// SlideShow returns FALSE if an error occurs and
+			// TRUE if it's time to Shutdown the Thread
 			BOOL SlideShow(CString sStartFileName);
 
-			// Process Next File Event
-			BOOL ProcessNextFileEvent(BOOL bRandom);
-
-			// Process Previous File Event
-			BOOL ProcessPrevFileEvent();
+			// Posts a Message to the Main UI Thread to load the picture
+			void LoadPicture(LPCTSTR sFileName, BOOL bNext);
 
 			// The Slideshow Timer
 			UINT m_uiSlideshowTimerId;
 
-			// Next, Previous, First, Last Picture and Change Timeout Event Handles,
+			// Next, Previous, First and Last Picture Event Handles,
 			// triggered by NextPicture(), PreviousPicture(),
 			// FirstPicture() and LastPicture()
 			HANDLE m_hNextPictureEvent;
@@ -200,10 +186,7 @@ public:
 			HANDLE m_hFirstPictureEvent;
 			HANDLE m_hLastPictureEvent;
 
-			// Contains Shutdown Thread,
-			// Find Change, Timer,
-			// Previous, First, Last, Next Picture 
-			// and Slideshow Timer Events
+			// Events
 			HANDLE m_hEventArray[6];
 
 			// The Doc Pointer
