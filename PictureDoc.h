@@ -401,8 +401,7 @@ public:
 						BOOL bOnlyHeader = FALSE);
 	
 	// Picture Slideshow
-	BOOL SlideShow(	BOOL bRecursive,
-					BOOL bRunSlideshow);
+	BOOL SlideShow();
 
 	// Compress / Decompress RLE Bmp's
 	// nCompression may be:

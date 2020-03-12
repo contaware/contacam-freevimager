@@ -2625,7 +2625,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 				ClearPrevNextPictures();
 				SetModifiedFlag(FALSE);
 				if (LoadPicture(&m_pDib, FileName))
-					SlideShow(FALSE, FALSE);	// No Recursive Slideshow in Paused State (also if it was Recursive before...)
+					SlideShow(); // No Recursive Slideshow in Paused State (also if it was Recursive before...)
 			}
 		}
 		else
@@ -2968,7 +2968,7 @@ BOOL CPictureDoc::SaveAsFromAnimGIF(BOOL bSaveCopyAs,
 				ClearPrevNextPictures();
 				SetModifiedFlag(FALSE);
 				if (LoadPicture(&m_pDib, FileName))
-					SlideShow(FALSE, FALSE);	// No Recursive Slideshow in Paused State (also if it was Recursive before...)
+					SlideShow(); // No Recursive Slideshow in Paused State (also if it was Recursive before...)
 			}
 		}
 		else
@@ -4024,7 +4024,7 @@ void CPictureDoc::OnEditRename()
 			// Reload
 			ClearPrevNextPictures();
 			if (LoadPicture(&m_pDib, sNewFileName))
-				SlideShow(FALSE, FALSE);	// No Recursive Slideshow in Paused State (also if it was Recursive before...)
+				SlideShow(); // No Recursive Slideshow in Paused State (also if it was Recursive before...)
 		}
 
 		GetView()->ForceCursor(FALSE);
@@ -4656,18 +4656,15 @@ BOOL CPictureDoc::LoadPicture(CDib *volatile *ppDib,
 	}
 }
 
-BOOL CPictureDoc::SlideShow(BOOL bRecursive, BOOL bRunSlideshow)
+BOOL CPictureDoc::SlideShow()
 {
 	// Stop Thread
 	m_SlideShowThread.Kill();
 
 	// (Re)Start Thread
 	m_SlideShowThread.SetStartName(m_sFileName);
-	m_SlideShowThread.SetRecursive(bRecursive);
-	if (bRunSlideshow)
-		m_SlideShowThread.RunSlideshow();
-	else
-		m_SlideShowThread.PauseSlideshow();
+	m_SlideShowThread.SetRecursive(FALSE);
+	m_SlideShowThread.PauseSlideshow();
 
 	return TRUE;
 }
@@ -9185,7 +9182,7 @@ BOOL CPictureDoc::CopyDelCrop(BOOL bShowMessageBoxOnError, BOOL bCopy, BOOL bDel
 			{
 				ClearPrevNextPictures();
 				if (LoadPicture(&m_pDib, sCroppedFileName)) // Load Picture
-					SlideShow(FALSE, FALSE); // No Recursive Slideshow in Paused State (also if it was Recursive before...)
+					SlideShow(); // No Recursive Slideshow in Paused State (also if it was Recursive before...)
 			}
 			
 			EndWaitCursor();

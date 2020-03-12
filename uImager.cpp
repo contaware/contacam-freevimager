@@ -1465,7 +1465,7 @@ void CUImagerApp::OnFileOpen()
 																								SWP_NOZORDER);
 								((CPictureDoc*)pDoc)->GetView()->UpdateWindowSizes(FALSE, FALSE, TRUE);
 							}
-							((CPictureDoc*)pDoc)->SlideShow(FALSE, FALSE); // No Recursive Slideshow in Paused State
+							((CPictureDoc*)pDoc)->SlideShow(); // No Recursive Slideshow in Paused State
 						}
 					}
 				}
@@ -1526,7 +1526,7 @@ void CUImagerApp::OnFileOpen()
 																									SWP_NOZORDER);
 									((CPictureDoc*)pDoc)->GetView()->UpdateWindowSizes(FALSE, FALSE, TRUE);
 								}
-								((CPictureDoc*)pDoc)->SlideShow(FALSE, FALSE); // No Recursive Slideshow in Paused State
+								((CPictureDoc*)pDoc)->SlideShow(); // No Recursive Slideshow in Paused State
 							}
 						}
 					}
@@ -1739,7 +1739,7 @@ CDocument* CUImagerApp::OpenDocumentFile(LPCTSTR lpszFileName)
 																					SWP_NOZORDER);
 					((CPictureDoc*)pDoc)->GetView()->UpdateWindowSizes(FALSE, FALSE, TRUE);
 				}
-				((CPictureDoc*)pDoc)->SlideShow(FALSE, FALSE); // No Recursive Slideshow in Paused State
+				((CPictureDoc*)pDoc)->SlideShow(); // No Recursive Slideshow in Paused State
 			}
 		}
 	}
