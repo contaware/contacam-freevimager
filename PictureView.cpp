@@ -77,7 +77,6 @@ BEGIN_MESSAGE_MAP(CPictureView, CUImagerView)
 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, CScrollView::OnFilePrintPreview)
 	ON_MESSAGE(WM_THREADSAFE_SLIDESHOW_LOAD_PICTURE, OnThreadSafeSlideshowLoadPicture)
 	ON_MESSAGE(WM_THREADSAFE_UPDATEIMAGEINFO, OnThreadUpdateImageInfo)
-	ON_MESSAGE(WM_THREADSAFE_RUNSLIDESHOW, OnThreadSafeRunSlideshow)
 	ON_MESSAGE(WM_THREADSAFE_PAUSESLIDESHOW, OnThreadSafePauseSlideshow)
 	ON_MESSAGE(WM_RECURSIVEFILEFIND_DONE, OnRecursiveFileFindDone)
 	ON_MESSAGE(WM_COLOR_PICKED, OnColorPicked)
@@ -199,17 +198,6 @@ int CPictureView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 }
 
-LONG CPictureView::OnThreadSafeRunSlideshow(WPARAM wparam, LPARAM lparam)
-{
-	CPictureDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-
-	if (pDoc->m_SlideShowThread.m_bDoRunSlideshow)
-		pDoc->m_SlideShowThread.RunSlideshow();
-	
-	return 1;
-}
-
 LONG CPictureView::OnThreadSafePauseSlideshow(WPARAM wparam, LPARAM lparam)
 {
 	CPictureDoc* pDoc = GetDocument();
@@ -242,9 +230,6 @@ LONG CPictureView::OnThreadSafeSlideshowLoadPicture(WPARAM wparam, LPARAM lparam
 		{
 			// Sends a WM_PAINT message directly, bypassing the application queue
 			UpdateWindow();
-
-			if (pDoc->m_SlideShowThread.m_bDoRunSlideshow)
-				pDoc->m_SlideShowThread.RunSlideshow();
 		}
 	}
 

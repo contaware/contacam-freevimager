@@ -341,7 +341,6 @@ CPictureDoc::CSlideShowThread::CSlideShowThread()
 	m_bRecursive = FALSE;
 	m_bLoop = FALSE;
 	m_bRandom = FALSE;
-	m_bDoRunSlideshow = FALSE;
 	m_bSlideshowLoadPictureDone = TRUE;
 }
 
@@ -385,41 +384,29 @@ void CPictureDoc::CSlideShowThread::RestartRunningTimer()
 
 void CPictureDoc::CSlideShowThread::RunSlideshow()
 {
+	// Start Thread
 	if (!IsRunning())
-	{
-		// Set Flag
-		m_bDoRunSlideshow = TRUE;
-
-		// Start Thread
 		Start();
-	}
-	else
+
+	// Kill Timer
+	if (m_uiSlideshowTimerId)
 	{
-		// Reset Flag
-		m_bDoRunSlideshow = FALSE;
-
-		// Kill Timer
-		if (m_uiSlideshowTimerId)
-		{
-			::timeKillEvent(m_uiSlideshowTimerId);
-			m_uiSlideshowTimerId = 0;
-		}
-
-		// Setup Timer
-		m_uiSlideshowTimerId = ::timeSetEvent(	m_nMilliSecondsDelay,
-												DEFAULT_TIMER_RESOLUTION,
-												(LPTIMECALLBACK)m_hSlideshowTimerEvent,
-												0,
-												TIME_PERIODIC | TIME_CALLBACK_EVENT_SET | TIME_KILL_SYNCHRONOUS);
+		::timeKillEvent(m_uiSlideshowTimerId);
+		m_uiSlideshowTimerId = 0;
 	}
+
+	// Setup Timer
+	m_uiSlideshowTimerId = ::timeSetEvent(	m_nMilliSecondsDelay,
+											DEFAULT_TIMER_RESOLUTION,
+											(LPTIMECALLBACK)m_hSlideshowTimerEvent,
+											0,
+											TIME_PERIODIC | TIME_CALLBACK_EVENT_SET | TIME_KILL_SYNCHRONOUS);
+
 	m_pDoc->m_bDoJPEGGet = FALSE;
 }
 
 void CPictureDoc::CSlideShowThread::PauseSlideshow()
 {
-	// Reset Flag
-	m_bDoRunSlideshow = FALSE;
-
 	// Start Thread
 	if (!IsRunning())
 		Start();
@@ -637,11 +624,6 @@ BOOL CPictureDoc::CSlideShowThread::SlideShow(CString sStartFileName)
 		}
 		while (m_pDoc->m_FileFind.FindNextFile());
 
-		// Start timer if necessary
-		::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-						WM_THREADSAFE_RUNSLIDESHOW,
-						(WPARAM)0, (LPARAM)0);
-
 		// Update
 		::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
 						WM_THREADSAFE_SETDOCUMENTTITLE,
@@ -650,8 +632,6 @@ BOOL CPictureDoc::CSlideShowThread::SlideShow(CString sStartFileName)
 						WM_THREADSAFE_UPDATEIMAGEINFO,
 						(WPARAM)TRUE, (LPARAM)0);
 	}
-	// Load the first picture, if necessary the timer is started
-	// from the slideshow load picture message handler
 	else
 		LoadPicture(m_pDoc->m_FileFind.GetFileName(), TRUE);
 
@@ -4656,7 +4636,7 @@ BOOL CPictureDoc::LoadPicture(CDib *volatile *ppDib,
 	}
 }
 
-BOOL CPictureDoc::SlideShow()
+void CPictureDoc::SlideShow()
 {
 	// Stop Thread
 	m_SlideShowThread.Kill();
@@ -4665,8 +4645,6 @@ BOOL CPictureDoc::SlideShow()
 	m_SlideShowThread.SetStartName(m_sFileName);
 	m_SlideShowThread.SetRecursive(FALSE);
 	m_SlideShowThread.PauseSlideshow();
-
-	return TRUE;
 }
 
 void CPictureDoc::OnSlideshowDelay2() 

@@ -157,10 +157,6 @@ public:
 			// Slideshow Load Picture Done Flag
 			volatile BOOL m_bSlideshowLoadPictureDone;
 
-			// If set after picture load the
-			// RunSlideshow() function is called again!
-			BOOL m_bDoRunSlideshow;
-
 		protected:
 			// Worker Thread Entry
 			int Work();
@@ -401,7 +397,7 @@ public:
 						BOOL bOnlyHeader = FALSE);
 	
 	// Picture Slideshow
-	BOOL SlideShow();
+	void SlideShow();
 
 	// Compress / Decompress RLE Bmp's
 	// nCompression may be:
