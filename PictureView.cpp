@@ -4899,12 +4899,9 @@ void CPictureView::UpdateScrollSize()
 	CPictureDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-	CZoomComboBox* pZoomCB = 
-		&(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->
-										GetToolBar())->m_ZoomComboBox);
 	// Zoom Fit or Fit Big?
-	if (pZoomCB->GetCurSel() == 0	||
-		pZoomCB->GetCurSel() == 1	||
+	if (pDoc->m_nZoomComboBoxIndex == 0	||
+		pDoc->m_nZoomComboBoxIndex == 1	||
 		m_bFullScreenMode)
 		SetScrollSizes(MM_TEXT, CSize(0, 0));
 	else
@@ -4938,29 +4935,20 @@ void CPictureView::UpdateZoomRect()
 
 	// Fit Zoom Factor
 	BOOL bFit = FALSE;
-	CChildToolBar* pToolBar = pDoc->GetFrame()->GetToolBar();
-	if (pToolBar && pToolBar->IsKindOf(RUNTIME_CLASS(CPictureToolBar)))
+	if (pDoc->m_nZoomComboBoxIndex == 0)		// Fit
 	{
-		CZoomComboBox* pZoomCB = &(((CPictureToolBar*)pToolBar)->m_ZoomComboBox);
-		int Index = pZoomCB->GetCurSel();
-		if (Index != CB_ERR)
-		{
-			if (Index == 0)			// Fit
-			{
-				FitZoomFactor();
-				bFit = TRUE;
-			}
-			else if (Index == 1)	// Fit Big
-			{
-				FitBigZoomFactor();
-				bFit = TRUE;
-			}
-			else if (m_bFullScreenMode)
-			{
-				FitZoomFactor();	// Fit
-				bFit = TRUE;
-			}
-		}
+		FitZoomFactor();
+		bFit = TRUE;
+	}
+	else if (pDoc->m_nZoomComboBoxIndex == 1)	// Fit Big
+	{
+		FitBigZoomFactor();
+		bFit = TRUE;
+	}
+	else if (m_bFullScreenMode)
+	{
+		FitZoomFactor();						// Fit
+		bFit = TRUE;
 	}
 
 	// New Zoom Size
