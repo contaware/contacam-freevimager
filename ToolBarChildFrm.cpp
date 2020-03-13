@@ -377,16 +377,26 @@ void CPictureToolBar::UpdateControls(void)
 	// Place Zoom ComboBox
 	if (::IsWindow(m_ZoomComboBox))
 	{
+		// Set Width
 		GetItemRect(m_ZoomComboBoxIndex, rect);
 		rect.right = rect.left + ScaleToolBar(g_nSystemDPI, TOOLBAR_ZOOMCOMBOBOX_WIDTH);
 		SetButtonInfo(	m_ZoomComboBoxIndex,
 						ID_ZOOM_COMBOX,
 						TBBS_SEPARATOR,
 						rect.Width());
+
+		// Center
 		rect.left += 2;
 		(rect.right)--;
-		m_ZoomComboBox.SetItemHeight(-1, rect.Height() - 4*::GetSystemMetrics(SM_CYEDGE) + 1); // height of the static-text control
-		rect.bottom += 10; // set a minimum height for the dropdown to open and size itself
+
+		// To Avoid the Closing of the Dropdown only set the Edit Height if it changes
+		int nNewComboBoxEditHeight = rect.Height() - 4 * ::GetSystemMetrics(SM_CYEDGE) + 1;
+		int nCurrentComboBoxEditHeight = m_ZoomComboBox.GetItemHeight(-1);
+		if (nCurrentComboBoxEditHeight != nNewComboBoxEditHeight)
+			m_ZoomComboBox.SetItemHeight(-1, nNewComboBoxEditHeight);
+
+		// Set a Minimum Height for the Dropdown to open and size itself
+		rect.bottom += 10;
 
 		// To Avoid Flickering Of The ComboBox
 		if (m_rcLastZoomComboBox != rect)
@@ -399,6 +409,7 @@ void CPictureToolBar::UpdateControls(void)
 	// Place Color Button Picker
 	if (::IsWindow(m_BkgColorButtonPicker))
 	{
+		// Set Width
 		// TODO: when I will make the drop-down arrow of the
 		// picker button high-DPI aware then I have to replace:
 		// 15 -> ScaleToolBar(g_nSystemDPI, 15)
@@ -408,6 +419,8 @@ void CPictureToolBar::UpdateControls(void)
 						ID_BACKGROUND_COLOR,
 						TBBS_SEPARATOR,
 						rect.Width());
+		
+		// Center
 		rect.left += 2;
 		(rect.right)--;
 		
