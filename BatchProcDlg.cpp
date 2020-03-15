@@ -2305,9 +2305,6 @@ void CBatchProcDlg::UpdateControls()
 		pEdit = (CEdit*)m_JpegTab.GetDlgItem(IDC_LABEL_REMOVE);
 		if (pEdit)
 			pEdit->EnableWindow(FALSE);
-		pEdit = (CEdit*)m_TiffTab.GetDlgItem(IDC_LABEL_JPEGQUALITY);
-		if (pEdit)
-			pEdit->EnableWindow(FALSE);
 		pEdit = (CEdit*)m_TiffTab.GetDlgItem(IDC_EDIT_QUALITY);
 		if (pEdit)
 			pEdit->EnableWindow(FALSE);
@@ -2455,9 +2452,6 @@ void CBatchProcDlg::UpdateControls()
 		if (pEdit)
 			pEdit->EnableWindow(TRUE);
 		pEdit = (CEdit*)m_JpegTab.GetDlgItem(IDC_LABEL_REMOVE);
-		if (pEdit)
-			pEdit->EnableWindow(TRUE);
-		pEdit = (CEdit*)m_TiffTab.GetDlgItem(IDC_LABEL_JPEGQUALITY);
 		if (pEdit)
 			pEdit->EnableWindow(TRUE);
 		pEdit = (CEdit*)m_TiffTab.GetDlgItem(IDC_EDIT_QUALITY);
@@ -2932,9 +2926,6 @@ void CBatchProcDlg::EnableAllControls(BOOL bEnable, BOOL bIncludeProcessButton)
 	if (pEdit)
 		pEdit->EnableWindow(bEnable);
 	pEdit = (CEdit*)m_JpegTab.GetDlgItem(IDC_LABEL_REMOVE);
-	if (pEdit)
-		pEdit->EnableWindow(bEnable);
-	pEdit = (CEdit*)m_TiffTab.GetDlgItem(IDC_LABEL_JPEGQUALITY);
 	if (pEdit)
 		pEdit->EnableWindow(bEnable);
 	pEdit = (CEdit*)m_TiffTab.GetDlgItem(IDC_EDIT_QUALITY);
