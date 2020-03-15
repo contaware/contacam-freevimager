@@ -359,6 +359,7 @@ BOOL CPictureToolBar::Create(CWnd* pParentWnd)
 		if (!m_BkgColorButtonPicker.Create(_T(""), WS_VISIBLE | WS_CHILD, CRect(0,0,0,0), this, ID_BACKGROUND_COLOR))
 			return FALSE;
 	m_BkgColorButtonPicker.SetToolbarButton(TRUE);
+	m_BkgColorButtonPicker.SetArrowSize(ScaleToolBar(g_nSystemDPI, 4), ScaleToolBar(g_nSystemDPI, 2));
 	m_BkgColorButtonPicker.Color			= ::GetSysColor(COLOR_WINDOW);
 	m_BkgColorButtonPicker.DefaultColor		= ::GetSysColor(COLOR_WINDOW);
 	m_BkgColorButtonPicker.TrackSelection	= TRUE;
@@ -409,12 +410,9 @@ void CPictureToolBar::UpdateControls(void)
 	// Place Color Button Picker
 	if (::IsWindow(m_BkgColorButtonPicker))
 	{
-		// Set Width
-		// TODO: when I will make the drop-down arrow of the
-		// picker button high-DPI aware then I have to replace:
-		// 15 -> ScaleToolBar(g_nSystemDPI, 15)
+		// Set Width (= height + arrow + spacings)
 		GetItemRect(m_BkgColorButtonPickerIndex, rect);
-		rect.right = rect.left + rect.Height() + 15;
+		rect.right = rect.left + rect.Height() + ScaleToolBar(g_nSystemDPI, 4) + 5 * ::GetSystemMetrics(SM_CXEDGE);
 		SetButtonInfo(	m_BkgColorButtonPickerIndex,
 						ID_BACKGROUND_COLOR,
 						TBBS_SEPARATOR,

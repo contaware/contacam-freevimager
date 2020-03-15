@@ -6,6 +6,7 @@ FREEVIMAGER HISTORY
   given maximum titlebar text size of 159 characters
 - Fluid and constant speed when quickly forwarding several images
 - Zoom ComboBox working now correctly when a slideshow plays
+- High DPI Aware background color toolbar button
 
 9.9.8 (February 20th 2020)
 

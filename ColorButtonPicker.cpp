@@ -49,12 +49,6 @@ void AFXAPI DDX_ColorButtonPicker(CDataExchange *pDX, int nIDC, COLORREF& crColo
 }
 
 //***********************************************************************
-//**                             Constants                             **
-//***********************************************************************
-const int g_ciArrowSizeX = 4 ;
-const int g_ciArrowSizeY = 2 ;
-
-//***********************************************************************
 //**                            MFC Macros                            **
 //***********************************************************************
 IMPLEMENT_DYNCREATE(CColorButtonPicker, COddButton)
@@ -66,6 +60,8 @@ IMPLEMENT_DYNCREATE(CColorButtonPicker, COddButton)
 CColorButtonPicker::CColorButtonPicker(void):
 	m_Color(CLR_DEFAULT),
 	m_DefaultColor(::GetSysColor(COLOR_APPWORKSPACE)),
+	m_iArrowSizeX(4),
+	m_iArrowSizeY(2),
 	m_strDefaultText(_T("Automatic")),
 	m_strCustomText(_T("More Colors...")),
 	m_bPopupActive(FALSE),
@@ -187,12 +183,22 @@ void CColorButtonPicker::SetToolbarButton(BOOL bToolbarButton)
 }
 
 //***********************************************************************
-// Method:	CColorButtonPicker::GetDrawFocus()
+// Method:	CColorButtonPicker::GetToolbarButton()
 // Notes:	None.
 //***********************************************************************
 BOOL CColorButtonPicker::GetToolbarButton(void) const
 {
 	return m_bToolbarButton;
+}
+
+//***********************************************************************
+// Method:	CColorButtonPicker::SetArrowSize()
+// Notes:	None.
+//***********************************************************************
+void CColorButtonPicker::SetArrowSize(int iArrowSizeX, int iArrowSizeY)
+{
+	m_iArrowSizeX = iArrowSizeX;
+	m_iArrowSizeY = iArrowSizeY;
 }
 
 //***********************************************************************
@@ -516,10 +522,10 @@ void CColorButtonPicker::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 	//******************************************************
 	//**                     Draw Arrow
 	//******************************************************
-	rArrow.left		= rDraw.right - g_ciArrowSizeX - ::GetSystemMetrics(SM_CXEDGE) /2;
-	rArrow.right	= rArrow.left + g_ciArrowSizeX;
-	rArrow.top		= (rDraw.bottom + rDraw.top)/2 - g_ciArrowSizeY / 2;
-	rArrow.bottom	= (rDraw.bottom + rDraw.top)/2 + g_ciArrowSizeY / 2;
+	rArrow.left		= rDraw.right - m_iArrowSizeX - ::GetSystemMetrics(SM_CXEDGE) /2;
+	rArrow.right	= rArrow.left + m_iArrowSizeX;
+	rArrow.top		= (rDraw.bottom + rDraw.top)/2 - m_iArrowSizeY / 2;
+	rArrow.bottom	= (rDraw.bottom + rDraw.top)/2 + m_iArrowSizeY / 2;
 
 	DrawArrow(pDC,
 			  &rArrow,

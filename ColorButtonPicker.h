@@ -79,7 +79,6 @@ public:
 	//***********************************************************************
 	void SetColor(COLORREF Color);
 
-
 	//***********************************************************************
 	// Name:		GetDefaultColor
 	// Description:	Returns the color associated with the 'default' selection.
@@ -169,6 +168,15 @@ public:
 	//***********************************************************************
 	BOOL GetToolbarButton(void) const;
 
+	//***********************************************************************
+	// Name:		SetArrowSize
+	// Description:	Sets the arrow size.
+	// Parameters:	int, int
+	// Return:		None.
+	// Notes:		None.
+	//***********************************************************************
+	void SetArrowSize(int iArrowSizeX, int iArrowSizeY);
+
 	//{{AFX_VIRTUAL(CColorButtonPicker)
     public:
     virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
@@ -216,6 +224,8 @@ protected:
 	BOOL m_bFirstTime;
 	COLORREF m_Color;
 	COLORREF m_DefaultColor;
+	int		m_iArrowSizeX;
+	int		m_iArrowSizeY;
 	CString m_strDefaultText;
 	CString m_strCustomText;
 	CString	m_strProfileSection;
