@@ -7989,7 +7989,7 @@ void CPictureDoc::JPEGGet()
 		::GdiFlush();
 		
 		// Start Jpeg Thread
-		m_JpegThread.Start(THREAD_PRIORITY_BELOW_NORMAL);
+		m_JpegThread.Start();
 	}
 }
 
