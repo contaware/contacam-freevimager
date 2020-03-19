@@ -8656,7 +8656,8 @@ void CVideoDeviceDoc::ConnectRtsp()
 			break;
 
 		case ABUS_RTSP:
-		case TPLINK_RTSP:			
+		case TPLINK_RTSP:
+		case ZAVIO_MPEG4_RTSP:
 			sPathAndQuery = _T("/video.mp4");
 			break;
 
@@ -8797,6 +8798,10 @@ void CVideoDeviceDoc::ConnectRtsp()
 
 		case ZAVIO_RTSP:			
 			sPathAndQuery = _T("/video.pro1");
+			break;
+
+		case ZAVIO_H264_RTSP:
+			sPathAndQuery = _T("/video.h264");
 			break;
 		
 		default:					
