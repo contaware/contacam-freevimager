@@ -871,7 +871,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,7,159,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,160,159,50,14
     GROUPBOX        "Settings",IDC_STATIC2190,7,4,203,126
-    LTEXT           "Jpeg Quality (100 best, 0 worst):",IDC_STATIC2191,20,114,108,8
+    LTEXT           "JPEG Quality (0 worst, 100 best):",IDC_STATIC2191,20,114,148,8
 END
 
 IDD_HLS DIALOGEX 0, 0, 282, 224
@@ -1706,7 +1706,7 @@ BEGIN
     CONTROL         "JFIF",IDC_CHECK_REMOVE_JFIF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,94,66,28,8
     CONTROL         "ICC",IDC_CHECK_REMOVE_ICC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,132,66,28,8
     CONTROL         "Other APP",IDC_CHECK_REMOVE_OTHER_APPSECTIONS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,168,66,46,8
-    LTEXT           "Quality\n(100 best, 0 worst)",IDC_LABEL_JPEGQUALITY,6,3,86,16
+    LTEXT           "Quality\n(0 worst, 100 best)",IDC_LABEL_JPEGQUALITY,6,3,86,16
     LTEXT           "Remove\nSections:",IDC_LABEL_REMOVE,6,56,32,16
 END
 
@@ -1739,7 +1739,7 @@ BEGIN
                     "Button",BS_AUTORADIOBUTTON,6,39,139,10
     CONTROL         "Lossless (LZW for Tiff and ZIP for Pdf)",IDC_RADIO_COMPRESSION_LZW,
                     "Button",BS_AUTORADIOBUTTON,6,51,137,10
-    CONTROL         "JPEG with quality (100 best, 0 worst)",IDC_RADIO_COMPRESSION_JPEG,
+    CONTROL         "JPEG with quality (0 worst, 100 best)",IDC_RADIO_COMPRESSION_JPEG,
                     "Button",BS_AUTORADIOBUTTON,6,63,135,10
     EDITTEXT        IDC_EDIT_QUALITY,166,62,32,13,ES_AUTOHSCROLL
     CONTROL         "Spin1",IDC_SPIN_QUALITY,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,197,62,11,13
@@ -2037,7 +2037,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,61,81,50,14
     PUSHBUTTON      "Apply",IDC_APPLY,121,81,50,14
     LTEXT           "Resolution",IDC_STATIC2460,7,6,34,8
-    LTEXT           "Quality (0: worst, 100: best)",IDC_STATIC2461,7,43,104,8
+    LTEXT           "Quality (0 worst, 100 best)",IDC_STATIC2461,7,43,104,8
     CONTROL         "Slider1",IDC_COMPRESSION_QUALITY_SLIDER,
                     "msctls_trackbar32",TBS_TOP | TBS_NOTICKS | WS_TABSTOP,7,55,164,20
     EDITTEXT        IDC_COMPRESSION_QUALITY_EDIT,148,43,23,8,ES_READONLY | ES_NUMBER | NOT WS_BORDER
@@ -4028,7 +4028,7 @@ BEGIN
     IDS_STRING1859          "Height"
     IDS_STRING1860          "Path"
     IDS_STRING1861          "Scan more pages?"
-    IDS_STRING1864          "JPEG Quality\n(0: worst, 100: best)"
+    IDS_STRING1864          "JPEG Quality\n(0 worst, 100 best)"
     IDS_STRING1865          "HTTP motion jpeg"
     IDS_STRING1866          "HTTP jpeg snapshots"
     IDS_STRING1867          "Enter an IP or a Hostname or an URL starting with rtsp:// or http:// (ATTENTION: User Name and Password must be provided under Camera Login, not in the URL)"

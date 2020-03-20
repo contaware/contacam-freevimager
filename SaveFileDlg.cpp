@@ -60,7 +60,7 @@ void CSaveFileDlg::OnInitDone()
 							rcDialog.bottom,
 							::SystemDPIScale(SAVEFILEDLG_LEFT_OFFSET + SAVEFILEDLG_SLIDERLABEL_WIDTH),
 							rcDialog.bottom + ::SystemDPIScale(SAVEFILEDLG_SLIDER_HEIGHT));
-		m_SliderLabel.Create(ML_STRING(1864, "JPEG Quality\n(0: worst, 100: best)"), WS_CHILD | WS_VISIBLE, rcSliderLabel, GetParent(), ctl1+16);
+		m_SliderLabel.Create(ML_STRING(1864, "JPEG Quality\n(0 worst, 100 best)"), WS_CHILD | WS_VISIBLE, rcSliderLabel, GetParent(), ctl1+16);
 		m_SliderLabel.SetFont(GetParent()->GetFont(), FALSE);
 
 		// Slider Ctrl
