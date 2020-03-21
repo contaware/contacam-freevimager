@@ -850,10 +850,10 @@ CAPTION "Send Open Documents By E-Mail"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Optimize For E-Mail Sending (Fast Send)",IDC_RADIO_OPTIMIZE_EMAIL,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,12,16,142,10
-    CONTROL         "Leave All Files Unchanged (Maybe Very Slow)",IDC_RADIO_OPTIMIZE_UNCHANGED,
-                    "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,12,31,161,10
-    CONTROL         "Advanced Settings:",IDC_RADIO_OPTIMIZE_ADVANCED,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,12,46,78,10
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,12,16,154,10
+    CONTROL         "Leave All Files Unchanged (Maybe Slow)",IDC_RADIO_OPTIMIZE_UNCHANGED,
+                    "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,12,31,154,10
+    CONTROL         "Advanced Settings:",IDC_RADIO_OPTIMIZE_ADVANCED,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,12,46,83,10
     CONTROL         "Allow Image Extension Change",IDC_CHECK_PICTURE_EXTCHANGE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,62,113,10
     CONTROL         "Enable Image Shrinking:",IDC_CHECK_SHRINKINGPICTURES,
@@ -2151,10 +2151,10 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTI
 CAPTION "Camera Basic Settings"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "Motion detection surveillance",IDC_RADIO_MOVDET,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,15,109,10
-    CONTROL         "Continuous recording",IDC_RADIO_MANUAL,"Button",BS_AUTORADIOBUTTON,16,30,86,10
+    CONTROL         "Motion detection surveillance",IDC_RADIO_MOVDET,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,15,117,10
+    CONTROL         "Continuous recording",IDC_RADIO_MANUAL,"Button",BS_AUTORADIOBUTTON,16,30,94,10
     CONTROL         "Daily summary video",IDC_CHECK_SNAPSHOT_HISTORY_VIDEO,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,182,15,82,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,182,15,89,10
     EDITTEXT        IDC_EDIT_SNAPSHOT_HISTORY_RATE,244,29,29,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Autostart\ncamera",IDC_CHECK_AUTORUN,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,359,14,47,27
     EDITTEXT        IDC_EDIT_NAME,152,65,254,13,ES_AUTOHSCROLL
@@ -2173,21 +2173,21 @@ BEGIN
     COMBOBOX        IDC_ATTACHMENT,152,225,190,124,CBS_DROPDOWNLIST | WS_TABSTOP
     EDITTEXT        IDC_EDIT_SENDMAIL_SEC_BETWEEN_MSG,295,239,29,12,ES_AUTOHSCROLL | ES_NUMBER
     PUSHBUTTON      "To\nSubject\nServer",IDC_SENDMAIL_CONFIGURE,350,211,56,38,BS_MULTILINE
-    PUSHBUTTON      "OK",IDOK,152,262,58,16,BS_MULTILINE
-    PUSHBUTTON      "Cancel",IDCANCEL,221,262,58,16
+    PUSHBUTTON      "OK",IDOK,152,262,56,16,BS_MULTILINE
+    PUSHBUTTON      "Cancel",IDCANCEL,221,262,56,16
     GROUPBOX        "1. Usage",IDC_STATIC,5,3,407,44
     GROUPBOX        "2. Name",IDC_STATIC,5,52,407,33
-    LTEXT           "Enter a friendly name for your camera",IDC_STATIC,16,63,123,8
-    LTEXT           "(that's also the camera folder name)",IDC_STATIC,16,72,117,8
+    LTEXT           "Enter a friendly name for your camera",IDC_STATIC,16,63,135,8
+    LTEXT           "(that's also the camera folder name)",IDC_STATIC,16,72,135,8
     GROUPBOX        "3. Web interface",IDC_STATIC,5,90,407,43
-    LTEXT           "Language",IDC_STATIC,16,102,32,8
-    LTEXT           "Style / color",IDC_STATIC,16,117,39,8
+    LTEXT           "Language",IDC_STATIC,16,102,135,8
+    LTEXT           "Style / color",IDC_STATIC,16,117,135,8
     LTEXT           "Thumbnails per page",IDC_LABEL_THUMBSPERPAGE,362,98,44,17
     GROUPBOX        "4. Storage",IDC_STATIC,5,138,407,56
-    LTEXT           "Keep files for",IDC_STATIC,16,150,133,8
-    LTEXT           "Minimum disk free space",IDC_STATIC,16,163,132,8
+    LTEXT           "Keep files for",IDC_STATIC,16,150,135,8
+    LTEXT           "Minimum disk free space",IDC_STATIC,16,163,135,8
     LTEXT           "%",IDC_STATIC,190,165,8,8
-    LTEXT           "Maximum camera folder size\n(0.0: unlimited)",IDC_STATIC,16,174,133,16
+    LTEXT           "Maximum camera folder size\n(0.0: unlimited)",IDC_STATIC,16,174,135,16
     LTEXT           "GB",IDC_STATIC,190,178,10,8
     LTEXT           "NOTE: if the free disk space becomes low or the maximum camera folder size is reached the oldest files are deleted",IDC_STATIC,211,168,195,20
     GROUPBOX        "5. Email",IDC_STATIC,5,199,407,58
