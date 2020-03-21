@@ -532,7 +532,7 @@ void CColorButtonPicker::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 			  0,
 			  (state & ODS_DISABLED) 
 			  ? ::GetSysColor(COLOR_GRAYTEXT) 
-			  : RGB(0,0,0));
+			  : ::GetSysColor(COLOR_BTNTEXT));
 
 
 	rDraw.right = rArrow.left - ::GetSystemMetrics(SM_CXEDGE)/2;
@@ -563,9 +563,10 @@ void CColorButtonPicker::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 						   ? m_DefaultColor
 						   : m_Color);
 
+		CBrush br(::GetSysColor(COLOR_BTNTEXT));
 		::FrameRect(pDC->m_hDC,
 					&rDraw,
-					(HBRUSH)::GetStockObject(BLACK_BRUSH));
+					(HBRUSH)br);
 	}
 }
 
