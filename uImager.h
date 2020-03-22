@@ -130,7 +130,7 @@
 #endif
 
 // Default settings for auto shrink
-#define	AUTO_SHRINK_MAX_SIZE							1024
+#define	AUTO_SHRINK_MAX_SIZE							1600
 
 // Coordinate Units
 #define COORDINATES_PIX									0
