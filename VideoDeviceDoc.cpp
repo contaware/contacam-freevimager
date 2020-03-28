@@ -7266,9 +7266,32 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 		::EnterCriticalSection(&m_csDib);
 		m_pProcessFrameDib = m_pDib;
 		m_pDib = pDib;
-		if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess &&
+		BOOL bDraw;
+		// ~60 fps -> 1/4 * 60 fps = 15 fps
+		if (m_dEffectiveFrameRate >= 58.0)			
+			bDraw = ((m_dwFrameCountUp % 4U) == 0U);
+		// ~50 fps -> 1/3 * 50 fps = 16.6 fps
+		else if (m_dEffectiveFrameRate >= 48.0)
+			bDraw = ((m_dwFrameCountUp % 3U) == 0U);
+		// ~30 fps -> 1/2 * 30 fps = 15 fps
+		else if (m_dEffectiveFrameRate >= 28.0)
+			bDraw = ((m_dwFrameCountUp % 2U) == 0U);
+		// ~25 fps -> 2/3 * 25 fps = 16.6 fps
+		else if (m_dEffectiveFrameRate >= 23.0)
+			bDraw = ((m_dwFrameCountUp % 3U) != 0U);
+		// ~20 fps -> 3/4 * 20 fps = 15 fps
+		else if (m_dEffectiveFrameRate >= 18.0)
+			bDraw = ((m_dwFrameCountUp % 4U) != 0U);
+		// slow -> full fps
+		else
+			bDraw = TRUE;
+		if (bDraw												&&
+			!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess	&&
 			(!((CUImagerApp*)::AfxGetApp())->m_bTrayIcon || !::AfxGetMainFrame()->m_TrayIcon.IsMinimizedToTray()))
 		{
+			// Decode() can also scale just by setting BmiRgb32.bmiHeader.biWidth
+			// and BmiRgb32.bmiHeader.biHeight, but for some resolutions it doesn't 
+			// work correctly; better to let GDI scale even if it can be slower!
 			BITMAPINFO BmiRgb32;
 			memset(&BmiRgb32, 0, sizeof(BITMAPINFOHEADER));
 			BmiRgb32.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
