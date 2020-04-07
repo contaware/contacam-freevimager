@@ -70,6 +70,27 @@ function getParentUrl() {
 	return "$scheme://$host$parent_path/";
 }
 
+// Escape javascript strings
+function javascriptspecialchars($str) {
+	$output = '';
+	$str = str_split($str);
+	for ($i = 0 ; $i < count($str) ; $i++) {
+		switch ($str[$i]) {
+			case "'":
+			case '"':
+			case "&":
+			case "<":
+			case ">":
+				$output .= sprintf("\\u%04x", ord($str[$i]));
+				break;
+			default:
+				$output .= $str[$i];
+				break;
+		}
+	}
+	return $output;
+}
+
 // Do authentication
 if (file_exists(dirname(dirname($_SERVER['SCRIPT_FILENAME'])).'/authenticate.php'))
 	require_once(dirname(dirname($_SERVER['SCRIPT_FILENAME'])).'/authenticate.php');
