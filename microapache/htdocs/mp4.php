@@ -17,7 +17,7 @@ if ($doc_root == "")
 else
 	$full_path = rtrim($doc_root,"\\/")."/".trim($filename,"\\/");
 $currentmp4 = basename(substr($filename, strrpos($filename, '/') + 1), '.mp4');
-echo "<title>$currentmp4</title>\n";
+echo "<title>" . htmlspecialchars($currentmp4) . "</title>\n";
 echo "<link rel=\"stylesheet\" href=\"" . STYLEFILEPATH . "\" type=\"text/css\" />\n";
 ?>
 <script type="text/javascript">
@@ -54,13 +54,13 @@ if (!is_file("$full_path")) {
 <?php
 $enlarge = !isset($_GET['width']) && !isset($_GET['height']);
 if (!isset($_GET['width']))
-	$width = WIDTH;
+	$width = intval(WIDTH);
 else
-	$width = $_GET['width'];
+	$width = intval($_GET['width']);
 if (!isset($_GET['height']))
-	$height = HEIGHT;
+	$height = intval(HEIGHT);
 else
-	$height = $_GET['height'];
+	$height = intval($_GET['height']);
 echo "<video onloadedmetadata=\"restoreTime(this);\" id=\"myMp4Movie\" width=\"$width\" height=\"$height\" autoplay controls>\n";
 echo "<source src=\"download.php?embed=yes&amp;file=" . urlencode($filename) . "\" type=\"video/mp4\">\n";
 echo "<p>Try this page in a modern browser or <a href=\"download.php?file=" . urlencode($filename) . "\" target=\"_top\">download the video</a> instead.</p>\n";
@@ -85,16 +85,18 @@ echo "<div style=\"text-align: center\">\n";
 echo "<span class=\"globalbuttons\">";
 if ($prevkey >= 0) {
 	$prevrequesturi = str_replace($currentmp4 . '.mp4', $_GET["$prevkey"] . '.mp4', $_SERVER['REQUEST_URI']);
-	$prevrequesturi = htmlspecialchars($prevrequesturi);
-	echo "<a href=\"javascript:;\" onclick=\"parent.window.name = '" . $_GET["$prevkey"] . "'; window.location.href = '" . $prevrequesturi . "'; return false;\">&lt;</a>&nbsp;";
+	$prevrequesturi = javascriptspecialchars($prevrequesturi);
+	$prevval = javascriptspecialchars($_GET["$prevkey"]);
+	echo "<a href=\"javascript:;\" onclick=\"parent.window.name = '" . $prevval . "'; window.location.href = '" . $prevrequesturi . "'; return false;\">&lt;</a>&nbsp;";
 }
 else {
 	echo "<a style=\"color: #c0c0c0;\" href=\"javascript:;\" onclick=\"return false;\">&lt;</a>&nbsp;";
 }
 if ($nextkey <= $lastkey) {
 	$nextrequesturi = str_replace($currentmp4 . '.mp4', $_GET["$nextkey"] . '.mp4', $_SERVER['REQUEST_URI']);
-	$nextrequesturi = htmlspecialchars($nextrequesturi);
-	echo "<a href=\"javascript:;\" onclick=\"parent.window.name = '" . $_GET["$nextkey"] . "'; window.location.href = '" . $nextrequesturi . "'; return false;\">&gt;</a>&nbsp;";
+	$nextrequesturi = javascriptspecialchars($nextrequesturi);
+	$nextval = javascriptspecialchars($_GET["$nextkey"]);
+	echo "<a href=\"javascript:;\" onclick=\"parent.window.name = '" . $nextval . "'; window.location.href = '" . $nextrequesturi . "'; return false;\">&gt;</a>&nbsp;";
 }
 else {
 	echo "<a style=\"color: #c0c0c0;\" href=\"javascript:;\" onclick=\"return false;\">&gt;</a>&nbsp;";
