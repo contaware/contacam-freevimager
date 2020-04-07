@@ -1,7 +1,7 @@
 <?php
 require_once( 'configuration.php' );
 if ($show_camera_commands == 0)
-	exit('Direct access not permitted');
+	exit('Not permitted');
 
 // Source command
 $dir = rtrim(str_replace("\\", "/", dirname($_SERVER['SCRIPT_FILENAME'])), '/');
