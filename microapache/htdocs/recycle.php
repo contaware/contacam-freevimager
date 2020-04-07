@@ -1,7 +1,7 @@
 <?php
 require_once( 'configuration.php' );
 if ($show_trash_command == 0)
-	exit('Direct access not permitted');
+	exit('Not permitted');
 
 function check_safety($name) {
 	if (strpos($name, '/') !== false)
@@ -12,6 +12,8 @@ function check_safety($name) {
 		exit('. not allowed!');
 	else if (strpos($name, ':') !== false)
 		exit(': not allowed!');
+	else if (strpos($name, chr(0)) !== false)
+		exit('null byte not allowed!');
 }
 
 function strong_rename($old, $new) {
