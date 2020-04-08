@@ -111,6 +111,7 @@ BOOL CHostPortDlg::OnInitDialog()
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Samsung 720P (RTSP)")), (DWORD)CVideoDeviceDoc::SAMSUNG_PROFILE4_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Sony (RTSP)")), (DWORD)CVideoDeviceDoc::SONY_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Sricam (RTSP)")), (DWORD)CVideoDeviceDoc::SRICAM_RTSP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Srihome (RTSP)")), (DWORD)CVideoDeviceDoc::SRIHOME_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Sumpple (RTSP)")), (DWORD)CVideoDeviceDoc::SUMPPLE_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Toshiba (RTSP)")), (DWORD)CVideoDeviceDoc::TOSHIBA_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("TP-Link (RTSP)")), (DWORD)CVideoDeviceDoc::TPLINK_RTSP);

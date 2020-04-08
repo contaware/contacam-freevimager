@@ -581,6 +581,7 @@ public:
 		SAMSUNG_PROFILE4_RTSP = 1191,	// Samsung Profile4 RTSP
 		SONY_RTSP = 1200,				// Sony RTSP
 		SRICAM_RTSP = 1205,				// Sricam RTSP
+		SRIHOME_RTSP = 1206,			// Srihome series from Sricam RTSP (SH020, SH025, SH029 do not support RTSP)
 		SUMPPLE_RTSP = 1207,			// Sumpple RTSP
 		TOSHIBA_RTSP = 1210,			// Toshiba RTSP
 		TPLINK_RTSP = 1220,				// TP-Link RTSP

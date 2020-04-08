@@ -8728,6 +8728,7 @@ void CVideoDeviceDoc::ConnectRtsp()
 
 		case FLOUREON_RTSP:
 		case JIDETECH_RTSP:
+		case SRIHOME_RTSP:
 			sPathAndQuery = _T("/1/h264major");
 			break;
 
