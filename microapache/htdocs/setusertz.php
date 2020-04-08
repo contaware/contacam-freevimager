@@ -12,7 +12,7 @@ if (!isset($_SESSION['timezonename']))
 	ajax.open('GET', 'updatetimezonename.php?timezoneoffset=' + encodeURIComponent(timezoneoffset), false); // sync. call
 	ajax.send(null);
 	if (ajax.status == 200)
-		location.href = '<?php echo javascriptspecialchars($_SERVER['REQUEST_URI']); ?>'; // reload page, timezonename session var is set
+		window.location.href = '<?php echo javascriptspecialchars($_SERVER['REQUEST_URI']); ?>'; // reload page, timezonename session var is set
 	//]]>
 	</script>
 	<?php

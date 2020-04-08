@@ -2,6 +2,8 @@ CONTACAM HISTORY
 
 9.9.9 (March XXth 2020)
 
+- Optimized camera preview
+- Security enhancements for the web interface
 - Main web interface index page has now the same button style 
   as the other pages and has also a Back to Top button
 - Web interface logout button is always the most left one
