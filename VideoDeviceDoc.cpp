@@ -1005,11 +1005,10 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 	Dib.SetShowMessageBoxOnError(FALSE);
 	DWORD dwCurrentThreadId = ::GetCurrentThreadId();
 	CAVRec* pAVRecVideo = NULL;
-	CString sBaseYearMonthDayDir;
-	CVideoDeviceDoc::CreateBaseYearMonthDaySubDir(m_pDoc->m_sRecordAutoSaveDir, m_Time, _T(""), sBaseYearMonthDayDir);
-	CString sVideoFileName(_T("shot_") + m_Time.Format(_T("%Y_%m_%d")) + DEFAULT_VIDEO_FILEEXT);
-	if (!sBaseYearMonthDayDir.IsEmpty())
-		sVideoFileName = sBaseYearMonthDayDir + _T("\\") + sVideoFileName;
+	CString sBaseYearMonthDayDir(m_pDoc->m_sRecordAutoSaveDir);
+	sBaseYearMonthDayDir.TrimRight(_T('\\'));
+	sBaseYearMonthDayDir += _T("\\") + m_Time.Format(_T("%Y")) + _T("\\") + m_Time.Format(_T("%m")) + _T("\\") + m_Time.Format(_T("%d"));
+	CString sVideoFileName(sBaseYearMonthDayDir + _T("\\") + _T("shot_") + m_Time.Format(_T("%Y_%m_%d")) + DEFAULT_VIDEO_FILEEXT);
 	CString sVideoTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), sVideoFileName);
 	CSortableFileFind FileFind;
 	FileFind.AddAllowedExtension(_T("jpg"));
