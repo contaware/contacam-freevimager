@@ -8101,7 +8101,7 @@ void CVideoDeviceDoc::OnEditZoneSensitivity(int nSingleZoneSensitivity)
 		GetView()->m_MovDetSingleZoneSensitivity = nSingleZoneSensitivity;
 		GetView()->ForceCursor();
 		GetView()->Invalidate(FALSE);
-		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** Ctrl: Draw <-> Erase ***"));
+		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** CTRL: Draw <-> Erase ***"));
 	}
 	// Switch to nSingleZoneSensitivity
 	else if (m_nShowEditDetectionZones == 1)
@@ -8175,7 +8175,7 @@ void CVideoDeviceDoc::OnEditZoneRemove()
 		m_nShowEditDetectionZones = 2;
 		GetView()->ForceCursor();
 		GetView()->Invalidate(FALSE);
-		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** Ctrl: Draw <-> Erase ***"));
+		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** CTRL: Draw <-> Erase ***"));
 	}
 	// Switch from Add to Remove
 	else if (m_nShowEditDetectionZones == 1)

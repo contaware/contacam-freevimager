@@ -1074,7 +1074,7 @@ void CVideoDeviceView::OnMouseMove(UINT nFlags, CPoint point)
 	ASSERT_VALID(pDoc);
 
 	if (pDoc->m_nShowEditDetectionZones)
-		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** Ctrl: Draw <-> Erase ***"));
+		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** CTRL: Draw <-> Erase ***"));
 	else
 		::AfxGetMainFrame()->StatusText();
 

@@ -3263,7 +3263,7 @@ STRINGTABLE
 BEGIN
     IDS_MULTILANG_1473      "Camera folder must reside inside the document root directory!"
     IDS_MULTILANG_1475      "Failed to start the web server"
-    IDS_MULTILANG_1483      "*** Ctrl: Draw <-> Erase ***"
+    IDS_MULTILANG_1483      "*** CTRL: Draw <-> Erase ***"
     IDS_MULTILANG_1484      "&Copying...\tCtrl+C"
     IDS_MULTILANG_1485      "&Copy\tCtrl+C"
 END
