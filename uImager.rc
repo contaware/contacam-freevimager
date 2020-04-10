@@ -3112,6 +3112,7 @@ BEGIN
     IDS_MULTILANG_1232      "No Redeye with Hue: %0.1f° , Red/Green: %0.1f "
     IDS_MULTILANG_1233      "Hue: %0.1f° "
     IDS_MULTILANG_1235      "*** CTRL Lock Ratio, ENTER Apply, ESC Cancel ***"
+    IDS_MULTILANG_1236      "*** CTRL Lock Ratio ***"
     IDS_MULTILANG_1243      "KB"
     IDS_MULTILANG_1244      "Bytes"
 END

@@ -942,6 +942,8 @@ BEGIN_MESSAGE_MAP(CVideoDeviceChildFrame, CToolBarChildFrame)
 	ON_WM_TIMER()
 	ON_WM_CLOSE()
 	//}}AFX_MSG_MAP
+	ON_MESSAGE(WM_ENTERSIZEMOVE, OnEnterSizeMove)
+	ON_MESSAGE(WM_EXITSIZEMOVE, OnExitSizeMove)
 END_MESSAGE_MAP()
 
 void CVideoDeviceChildFrame::OnSizing(UINT fwSide, LPRECT pRect)
@@ -1015,6 +1017,18 @@ void CVideoDeviceChildFrame::OnSizing(UINT fwSide, LPRECT pRect)
 				break;
 		}
 	}
+}
+
+LONG CVideoDeviceChildFrame::OnEnterSizeMove(WPARAM wparam, LPARAM lparam)
+{
+	::AfxGetMainFrame()->StatusText(ML_STRING(1236, "*** CTRL Lock Ratio ***"));
+	return 0;
+}
+
+LONG CVideoDeviceChildFrame::OnExitSizeMove(WPARAM wparam, LPARAM lparam)
+{
+	::AfxGetMainFrame()->StatusText();
+	return 0;
 }
 
 void CVideoDeviceChildFrame::OnToolbarDropDown(NMHDR* pNMHDR, LRESULT* pResult)

@@ -207,7 +207,8 @@ protected:
 	afx_msg void OnTimer(UINT nIDEvent);
 	afx_msg void OnClose();
 	//}}AFX_MSG
-	
+	afx_msg LONG OnEnterSizeMove(WPARAM wparam, LPARAM lparam);
+	afx_msg LONG OnExitSizeMove(WPARAM wparam, LPARAM lparam);
 	DECLARE_MESSAGE_MAP()
 	DECLARE_DYNCREATE(CVideoDeviceChildFrame)
 };
