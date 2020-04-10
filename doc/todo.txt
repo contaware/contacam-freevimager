@@ -4,6 +4,9 @@ FreeVimager Program
 - I know you changed the icon size in the tool bar a while ago. Actually I preferred the small icons.
   -> make also 1.5x and 2.5x icon sizes so everybody is happy
   (kryden@gmail.com)
+  
+- Add .webp and .heic/heif file support
+  (demonoid@pulsarnet.com)
 
 
 ContaCam Program
@@ -14,6 +17,7 @@ ContaCam Program
   crap and difficult, not wanting to play their game...
   
 - Rotate by 0,90,180,270 degrees
+  (robert.heberlein@gmx.de)
   
 - Possibility to speed-up or slow-down animated gif preview
   (mankovv@hotmail.com). Every animated gif stops at the end (before it
@@ -30,7 +34,7 @@ ContaCam Program
   most convenient if you could toggle between stay/away from either the 
   software or the web interface (tyler.barnes@telus.net)
 - Execute cmd and params separate for snapshots, recs start, saving done, summary 
-  (chrislarsen101@gmail.com)
+  (chrislarsen101@gmail.com, dawsonsampson045@gmail.com)
 ->ALL THAT COULD BE SOLVED WITH THE POSSIBILITY TO CLONE A CAM 
   (gthumberger@gmail.com)
 
