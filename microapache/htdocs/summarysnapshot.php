@@ -236,7 +236,7 @@ echo "<div style=\"width: 100%\">\n";
 // Live Preview
 $clickbackurl = urlencode(urldecode($_SERVER['REQUEST_URI']));
 $clickurl = urlencode("snapshotfull.php?clickurl=$clickbackurl");
-$url_iframe = "snapshot.php?title=no&amp;menu=no&amp;countdown=no&amp;thumb=yes&amp;clickurl=$clickurl";
+$url_iframe = "snapshot.php?title=no&amp;menu=no&amp;countdown=no&amp;scrolling=no&amp;thumb=yes&amp;clickurl=$clickurl";
 echo "<iframe style=\"display: block; float: right; border: 0; overflow: hidden; width: " . THUMBWIDTH . "px; height: " . THUMBHEIGHT . "px;\" id=\"livepreview\" name=\"livepreview\" src=\"$url_iframe\" width=\"" . THUMBWIDTH . "\" height=\"" . THUMBHEIGHT . "\"></iframe>\n";
 
 // Top Menu

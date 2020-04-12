@@ -67,6 +67,13 @@ echo "</script>\n";
 ?>
 <style type="text/css">
 /*<![CDATA[*/
+<?php
+if (isset($_GET['scrolling']) && $_GET['scrolling'] == 'no') {
+	echo "html, body {\n";
+	echo "	overflow: hidden;\n";
+	echo "}\n";
+}
+?>
 div#imgcontainer {
 	position: relative;
 	margin: 0 auto;

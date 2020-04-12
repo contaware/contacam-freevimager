@@ -137,7 +137,7 @@ if ($handle = @opendir($dir)) {
 					$iframe_height = $matches[1];
 				$url = "$rel_path/$file/";
 				$url_for_html = htmlspecialchars(str_replace("%2F", "/", rawurlencode($url)));
-				$url_iframe = $url_for_html . "snapshot.php?title=no&amp;menu=no&amp;countdown=no&amp;thumb=yes&amp;clickurl=" . urlencode($url);
+				$url_iframe = $url_for_html . "snapshot.php?title=no&amp;menu=no&amp;countdown=no&amp;scrolling=no&amp;thumb=yes&amp;clickurl=" . urlencode($url);
 				echo "<span class=\"previewscontainer\"><iframe id=\"iframe$count\" name=\"iframe$count\" src=\"$url_iframe\" style=\"border: 0; overflow: hidden;\" width=\"" . $iframe_width . "\" height=\"" . $iframe_height . "\"></iframe><br /><a href=\"$url_for_html\">$file</a></span>";
 				$count++;
 			}
