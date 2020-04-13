@@ -165,14 +165,15 @@ END_MESSAGE_MAP()
 BOOL CVideoDeviceToolBar::SwitchToolBar(int nDPI, BOOL bCallShowControlBar/*=TRUE*/)
 {
 	// Load and set sizes
-	if (nDPI > 192)		// more than 200%
+	int nScale = CMainFrame::ScaleToolBar(nDPI, 1);
+	if (nScale >= 3)
 	{
 		if (!LoadToolBar(IDR_VIDEO_DEVICE_TOOLBAR3X))
 			return FALSE;
 		SetSizes(	CSize(TOOLBAR_BUTTON_SIZE_3X, TOOLBAR_BUTTON_SIZE_3Y),
 					CSize(TOOLBAR_IMAGE_SIZE_3X, TOOLBAR_IMAGE_SIZE_3Y));
 	}
-	else if (nDPI > 96)	// more than 100%
+	else if (nScale == 2)
 	{
 		if (!LoadToolBar(IDR_VIDEO_DEVICE_TOOLBAR2X))
 			return FALSE;
@@ -288,14 +289,15 @@ END_MESSAGE_MAP()
 BOOL CPictureToolBar::SwitchToolBar(int nDPI, BOOL bCallShowControlBar/*=TRUE*/)
 {
 	// Load and set sizes
-	if (nDPI > 192)		// more than 200%
+	int nScale = CMainFrame::ScaleToolBar(nDPI, 1);
+	if (nScale >= 3)
 	{
 		if (!LoadToolBar(IDR_PICTURE_TOOLBAR3X))
 			return FALSE;
 		SetSizes(	CSize(TOOLBAR_BUTTON_SIZE_3X, TOOLBAR_BUTTON_SIZE_3Y),
 					CSize(TOOLBAR_IMAGE_SIZE_3X, TOOLBAR_IMAGE_SIZE_3Y));
 	}
-	else if (nDPI > 96)	// more than 100%
+	else if (nScale == 2)
 	{
 		if (!LoadToolBar(IDR_PICTURE_TOOLBAR2X))
 			return FALSE;
@@ -317,16 +319,6 @@ BOOL CPictureToolBar::SwitchToolBar(int nDPI, BOOL bCallShowControlBar/*=TRUE*/)
 	return TRUE;
 }
 
-int CPictureToolBar::ScaleToolBar(int nDPI, int n)
-{
-	if (nDPI > 192)		// more than 200%
-		return 3*n;
-	else if (nDPI > 96)	// more than 100%
-		return 2*n;
-	else
-		return n;
-}
-
 BOOL CPictureToolBar::Create(CWnd* pParentWnd)
 {
 	// Create Toolbar
@@ -340,7 +332,7 @@ BOOL CPictureToolBar::Create(CWnd* pParentWnd)
 	memset(&lf, 0, sizeof(LOGFONT));
 	_tcscpy(lf.lfFaceName, TOOLBAR_COMBOBOX_FONTFACENAME);
 	HDC hDC = ::GetDC(GetSafeHwnd());
-	lf.lfHeight = ScaleToolBar(g_nSystemDPI, TOOLBAR_COMBOBOX_FONTHEIGHT);
+	lf.lfHeight = CMainFrame::ScaleToolBar(g_nSystemDPI, TOOLBAR_COMBOBOX_FONTHEIGHT);
 	::ReleaseDC(GetSafeHwnd(), hDC);
 	lf.lfWeight = FW_NORMAL;
 	m_ZoomComboBoxFont.CreateFontIndirect(&lf);
@@ -359,7 +351,7 @@ BOOL CPictureToolBar::Create(CWnd* pParentWnd)
 		if (!m_BkgColorButtonPicker.Create(_T(""), WS_VISIBLE | WS_CHILD, CRect(0,0,0,0), this, ID_BACKGROUND_COLOR))
 			return FALSE;
 	m_BkgColorButtonPicker.SetToolbarButton(TRUE);
-	m_BkgColorButtonPicker.SetArrowSize(ScaleToolBar(g_nSystemDPI, 4), ScaleToolBar(g_nSystemDPI, 2));
+	m_BkgColorButtonPicker.SetArrowSize(CMainFrame::ScaleToolBar(g_nSystemDPI, 4), CMainFrame::ScaleToolBar(g_nSystemDPI, 2));
 	m_BkgColorButtonPicker.Color			= ::GetSysColor(COLOR_WINDOW);
 	m_BkgColorButtonPicker.DefaultColor		= ::GetSysColor(COLOR_WINDOW);
 	m_BkgColorButtonPicker.TrackSelection	= TRUE;
@@ -380,7 +372,7 @@ void CPictureToolBar::UpdateControls(void)
 	{
 		// Set Width
 		GetItemRect(m_ZoomComboBoxIndex, rect);
-		rect.right = rect.left + ScaleToolBar(g_nSystemDPI, TOOLBAR_ZOOMCOMBOBOX_WIDTH);
+		rect.right = rect.left + CMainFrame::ScaleToolBar(g_nSystemDPI, TOOLBAR_ZOOMCOMBOBOX_WIDTH);
 		SetButtonInfo(	m_ZoomComboBoxIndex,
 						ID_ZOOM_COMBOX,
 						TBBS_SEPARATOR,
@@ -412,7 +404,7 @@ void CPictureToolBar::UpdateControls(void)
 	{
 		// Set Width (= height + arrow + spacings)
 		GetItemRect(m_BkgColorButtonPickerIndex, rect);
-		rect.right = rect.left + rect.Height() + ScaleToolBar(g_nSystemDPI, 4) + 5 * ::GetSystemMetrics(SM_CXEDGE);
+		rect.right = rect.left + rect.Height() + CMainFrame::ScaleToolBar(g_nSystemDPI, 4) + 5 * ::GetSystemMetrics(SM_CXEDGE);
 		SetButtonInfo(	m_BkgColorButtonPickerIndex,
 						ID_BACKGROUND_COLOR,
 						TBBS_SEPARATOR,

@@ -113,7 +113,6 @@ public:
 	virtual ~CPictureToolBar();
 	virtual void UpdateControls(void);
 	BOOL SwitchToolBar(int nDPI, BOOL bCallShowControlBar = TRUE);
-	int ScaleToolBar(int nDPI, int n);
 	BOOL Create(CWnd* pParentWnd);
 	CZoomComboBox m_ZoomComboBox;
 	CColorButtonPicker m_BkgColorButtonPicker;

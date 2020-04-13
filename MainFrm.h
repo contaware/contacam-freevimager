@@ -128,6 +128,7 @@ public:
 	CRect GetNextMonitorFullRect();
 
 	// Toolbar
+	static int ScaleToolBar(int nDPI, int n);
 #ifndef VIDEODEVICEDOC
 	CToolBar* GetToolBar() {return &m_wndToolBar;};
 	BOOL SwitchToolBar(int nDPI, BOOL bCallShowControlBar = TRUE);

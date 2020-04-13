@@ -1962,18 +1962,29 @@ void CMainFrame::OnMenuSelect(UINT nItemID, UINT nFlags, HMENU hSysMenu)
 	CMDIFrameWnd::OnMenuSelect(nItemID, nFlags, hSysMenu);
 }
 
+int CMainFrame::ScaleToolBar(int nDPI, int n)
+{
+	if (nDPI > 192)			// more than 200%
+		return 3 * n;
+	else if (nDPI > 120)	// more than 125%
+		return 2 * n;
+	else
+		return n;
+}
+
 #ifndef VIDEODEVICEDOC
 BOOL CMainFrame::SwitchToolBar(int nDPI, BOOL bCallShowControlBar/*=TRUE*/)
 {
 	// Load and set sizes
-	if (nDPI > 192)		// more than 200%
+	int nScale = ScaleToolBar(nDPI, 1);
+	if (nScale >= 3)
 	{
 		if (!m_wndToolBar.LoadToolBar(IDR_MAINFRAME3X))
 			return FALSE;
 		m_wndToolBar.SetSizes(	CSize(TOOLBAR_BUTTON_SIZE_3X, TOOLBAR_BUTTON_SIZE_3Y),
 								CSize(TOOLBAR_IMAGE_SIZE_3X, TOOLBAR_IMAGE_SIZE_3Y));
 	}
-	else if (nDPI > 96)	// more than 100%
+	else if (nScale == 2)
 	{
 		if (!m_wndToolBar.LoadToolBar(IDR_MAINFRAME2X))
 			return FALSE;
