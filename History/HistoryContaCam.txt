@@ -4,11 +4,12 @@ CONTACAM HISTORY
 
 - Optimized camera preview
 - Security enhancements for the web interface
-- Main web interface index page has now the same button style 
+- Main web interface index page has now the same button style
   as the other pages and has also a Back to Top button
 - Web interface logout button is always the most left one
 - Support for Srihome and older Zavio cameras
-- Avoid creating an empty previous day folder 
+- Raised the email send timeout from 20 to 60 sec
+- Avoid creating an empty previous day folder
 
 9.9.8 (February 20th 2020)
 
