@@ -51,6 +51,7 @@ public:
 	virtual void OnDraw(CDC* pDC);
 	virtual void OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView);
 	virtual ULONG GetGestureStatus(CPoint ptTouch);
+	virtual BOOL OnScroll(UINT nScrollCode, UINT nPos, BOOL bDoScroll);
 	//}}AFX_VIRTUAL
 
 public:

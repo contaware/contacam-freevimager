@@ -7,6 +7,7 @@ FREEVIMAGER HISTORY
 - Fluid and constant speed when quickly forwarding several images
 - Zoom ComboBox working now correctly when a slideshow plays
 - Background color toolbar button high DPI and high contrast aware
+- Fixed scrolling for big images and big zoom factors
 
 9.9.8 (February 20th 2020)
 

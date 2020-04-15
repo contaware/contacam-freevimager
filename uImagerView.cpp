@@ -739,6 +739,31 @@ ULONG CUImagerView::GetGestureStatus(CPoint /*ptTouch*/)
 	return 0;
 }
 
+BOOL CUImagerView::OnScroll(UINT nScrollCode, UINT nPos, BOOL bDoScroll)
+{
+	// CUImagerView::OnScroll() is called by CScrollView::OnHScroll() and
+	// CScrollView::OnVScroll() which provide a int16 limited nPos.
+	// Inside the below called CScrollView::OnScroll() only the SB_THUMBTRACK
+	// case uses nPos (SB_THUMBPOSITION is not regarded), so we just correct
+	// nPos for that case:
+
+	// WM_HSCROLL
+	if (LOBYTE(nScrollCode) == SB_THUMBTRACK)
+	{
+		SCROLLINFO info = {};
+		if (GetScrollInfo(SB_HORZ, &info, SIF_TRACKPOS)) // that sets cbSize, fMask and calls ::GetScrollInfo()
+			nPos = info.nTrackPos;
+	}
+	// WM_VSCROLL
+	else if (HIBYTE(nScrollCode) == SB_THUMBTRACK)
+	{
+		SCROLLINFO info = {};
+		if (GetScrollInfo(SB_VERT, &info, SIF_TRACKPOS)) // that sets cbSize, fMask and calls ::GetScrollInfo()
+			nPos = info.nTrackPos;
+	}
+
+	return CScrollView::OnScroll(nScrollCode, nPos, bDoScroll);
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // CUImagerView diagnostics
