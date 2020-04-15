@@ -1836,6 +1836,9 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	CPictureDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
+	CRect rcClient;
+	GetClientRect(&rcClient);
+
 	CMenu menu;
 	CMenu* pPopup = NULL;
 	CPoint Point;
@@ -1927,12 +1930,12 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 		case VK_SUBTRACT :
 			if (!m_bFullScreenMode)
-				Zoom(TRUE); // Zoom-Out
+				ZoomPoint(rcClient.CenterPoint(), TRUE); // Zoom-Out
 			break;
 
 		case VK_ADD :
 			if (!m_bFullScreenMode)
-				Zoom(FALSE); // Zoom-In
+				ZoomPoint(rcClient.CenterPoint(), FALSE); // Zoom-In
 			break;
 
 		case VK_DIVIDE :
@@ -3813,15 +3816,15 @@ void CPictureView::ZoomPoint(CPoint point, BOOL bZoomOut)
 			if (bZoomOut)
 			{
 				--Index; // Zoom Out
-				if (Index <= 1)
-					Index = 0;
+				if (Index < 2)
+					Index = 2;
 				pData = pZoomCB->GetItemDataPtr(Index);
 			}
 			else
 			{
 				++Index; // Zoom In
-				if (Index >= pZoomCB->GetCount())
-					Index = 0;
+				if (Index > (pZoomCB->GetCount() - 1))
+					Index = pZoomCB->GetCount() - 1;
 				pData = pZoomCB->GetItemDataPtr(Index);
 			}
 		}
@@ -3850,55 +3853,6 @@ void CPictureView::ZoomPoint(CPoint point, BOOL bZoomOut)
 					ScrollToPosition(CPoint(	0,
 												ptScrollTo.y));
 			}
-		}
-	}	
-}
-
-void CPictureView::Zoom(BOOL bZoomOut) 
-{
-	CPictureDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-
-	// Avoid Transition While Zooming!
-	pDoc->CancelTransition();
-	pDoc->CancelLoadFullJpegTransition();
-
-	// Get the Zoom Combo Box
-	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
-	int Index = pZoomCB->GetCurSel();
-	if (Index != CB_ERR)
-	{
-		void* pData;
-		if (Index == 0 || Index == 1) // Zoom Fit or Fit Big
-		{
-			if (bZoomOut)
-				Index = pZoomCB->GetPrevZoomIndex(pDoc->m_dZoomFactor); // Zoom Out
-			else
-				Index = pZoomCB->GetNextZoomIndex(pDoc->m_dZoomFactor); // Zoom In
-			pData = pZoomCB->GetItemDataPtr(Index);
-		}
-		else
-		{
-			if (bZoomOut)
-			{
-				--Index; // Zoom Out
-				if (Index <= 1)
-					Index = 0;
-				pData = pZoomCB->GetItemDataPtr(Index);
-			}
-			else
-			{
-				++Index; // Zoom In
-				if (Index >= pZoomCB->GetCount())
-					Index = 0;
-				pData = pZoomCB->GetItemDataPtr(Index);
-			}
-		}
-		if ((int)pData != -1)
-		{
-			pZoomCB->SetCurSel(Index);
-			pZoomCB->OnChangeZoomFactor(*((double*)pData));
-			UpdateWindowSizes(TRUE, TRUE, FALSE);
 		}
 	}	
 }

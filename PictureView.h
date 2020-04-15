@@ -60,13 +60,10 @@ public:
 	void StopAutoScroll();
 
 	// Zoom the passed point,
-	// for ZoomTool and Mouse Wheel Zoom.
+	// for ZoomTool, Mouse Wheel Zoom and the +/- Keys.
 	// bZoomOut = TRUE: Zoom-Out
 	// bZoomIn = FALSE: Zoom-In
 	void ZoomPoint(CPoint point, BOOL bZoomOut);
-
-	// Zoom In/Out for the +/- Keys
-	void Zoom(BOOL bZoomOut); 
 
 	// Calculate the Zoomed Pixel Align From the Zoom Factor and Doc Pixel Align
 	void CalcZoomedPixelAlign();
