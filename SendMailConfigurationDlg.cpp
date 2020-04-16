@@ -181,6 +181,7 @@ void CSendMailConfigurationDlg::CopyToStruct()
 
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_RECEIVER_MAIL);
 	pEdit->GetWindowText(sText);
+	sText.Trim();
 	m_SendMailConfiguration.m_sTo = sText;
 
 	pEdit = (CEdit*)GetDlgItem(IDC_SENDER_NAME);
@@ -189,6 +190,7 @@ void CSendMailConfigurationDlg::CopyToStruct()
 
 	pEdit = (CEdit*)GetDlgItem(IDC_SENDER_MAIL);
 	pEdit->GetWindowText(sText);
+	sText.Trim();
 	m_SendMailConfiguration.m_sFrom = sText;
 
 	pEdit = (CEdit*)GetDlgItem(IDC_SUBJECT_LINE);
@@ -199,6 +201,7 @@ void CSendMailConfigurationDlg::CopyToStruct()
 
 	pEdit = (CEdit*)GetDlgItem(IDC_HOST_NAME);
 	pEdit->GetWindowText(sText);
+	sText.Trim();
 	m_SendMailConfiguration.m_sHost = sText;
 
 	pEdit = (CEdit*)GetDlgItem(IDC_HOST_PORT);
@@ -222,21 +225,65 @@ void CSendMailConfigurationDlg::CopyToStruct()
 	m_SendMailConfiguration.m_ConnectionType = (ConnectionType)pComboBox->GetCurSel();
 }
 
+BOOL CSendMailConfigurationDlg::IsEmail(const CString& sEmail)
+{
+	// Min. lenght of 3 chars
+	if (sEmail.GetLength() < 3)
+		return FALSE;
+
+	// Quite all chars are allowed in the local part
+	// (also @ in double quotes), so we must reverse search @
+	int nLocalPartLength = sEmail.ReverseFind(_T('@'));
+	if (nLocalPartLength <= 0)
+		return FALSE;
+	int nDomainLength = sEmail.GetLength() - nLocalPartLength - 1;
+	if (nDomainLength <= 0)
+		return FALSE;
+
+	return TRUE;
+}
+
+BOOL CSendMailConfigurationDlg::ValidateEmailsAndHost()
+{
+	if (!IsEmail(m_SendMailConfiguration.m_sTo))
+	{
+		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_RECEIVER_MAIL);
+		pEdit->SetFocus();
+		pEdit->SetSel(0xFFFF0000);
+		::AlertUser(GetSafeHwnd());
+		return FALSE;
+	}
+	if (!IsEmail(m_SendMailConfiguration.m_sFrom))
+	{
+		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_SENDER_MAIL);
+		pEdit->SetFocus();
+		pEdit->SetSel(0xFFFF0000);
+		::AlertUser(GetSafeHwnd());
+		return FALSE;
+	}
+	if (m_SendMailConfiguration.m_sHost.IsEmpty())
+	{
+		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_HOST_NAME);
+		pEdit->SetFocus();
+		pEdit->SetSel(0xFFFF0000);
+		::AlertUser(GetSafeHwnd());
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
 void CSendMailConfigurationDlg::OnOK() 
 {
 	CopyToStruct();
-	CDialog::OnOK();
+	if (ValidateEmailsAndHost())
+		CDialog::OnOK();
 }
 
 void CSendMailConfigurationDlg::OnButtonTest() 
 {
 	CopyToStruct();
-
-	if (m_SendMailConfiguration.m_sHost.IsEmpty()	||
-		m_SendMailConfiguration.m_sFrom.IsEmpty()	||
-		m_SendMailConfiguration.m_sTo.IsEmpty()) 
-		::AfxMessageBox(ML_STRING(1406, "Please Enter A Host Name, a From and a To Address"));
-	else
+	if (ValidateEmailsAndHost())
 		CVideoDeviceDoc::SendMail(m_SendMailConfiguration, m_sName, CTime::GetCurrentTime(), _T("TEST"), _T(""), _T(""), TRUE);
 }
 

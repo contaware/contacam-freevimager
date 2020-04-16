@@ -3247,7 +3247,6 @@ BEGIN
     IDS_MULTILANG_1398      "No Xml available."
     IDS_MULTILANG_1400      "Please enter a number between %s and %s"
     IDS_MULTILANG_1404      "Please Save Before Doing A Lossless Jpeg Transformation."
-    IDS_MULTILANG_1406      "Please Enter A Host Name, a From and a To Address"
 END
 
 STRINGTABLE

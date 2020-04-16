@@ -54,6 +54,8 @@ public:
 protected:
 	CString m_sName;
 	void CopyToStruct();
+	BOOL IsEmail(const CString& sEmail);
+	BOOL ValidateEmailsAndHost();
 	// Generated message map functions
 	//{{AFX_MSG(CSendMailConfigurationDlg)
 	virtual BOOL OnInitDialog();
