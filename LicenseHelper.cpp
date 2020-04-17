@@ -66,7 +66,9 @@ int CDonorEmailValidateThread::DonorEmailValidate()
 	sURL += _T("&lang=");
 	sURL += ::UrlEncode(GetAppLanguage(), TRUE);
 	size_t Size;
-	LPBYTE p = ::GetURL(sURL, Size, FALSE, TRUE, NULL);
+	LPBYTE p = ::GetURL(sURL, Size, FALSE, FALSE, TRUE, NULL);	// 1. first try without proxy as it may have been misconfigured
+	if (!p)
+		p = ::GetURL(sURL, Size, FALSE, TRUE, TRUE, NULL);		// 2. then try with proxy
 	if (p)
 	{
 		CString s(::FromUTF8(p, Size));

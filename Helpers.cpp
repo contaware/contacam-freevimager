@@ -2701,7 +2701,12 @@ BOOL IsFontSupported(LPCTSTR szFontFamily)
 // and INTERNET_OPTION_USERNAME values and then resend the request to the server.
 //
 // Reference: https://docs.microsoft.com/en-us/windows/desktop/wininet/handling-authentication
-LPBYTE GetURL(LPCTSTR lpszURL, size_t& Size, BOOL bAllowInvalidCert, BOOL bSilent, URLDOWNLOADPROGRESSCALLBACK lpfnCallback)
+LPBYTE GetURL(	LPCTSTR lpszURL,
+				size_t& Size,
+				BOOL bAllowInvalidCert,
+				BOOL bUseProxyIfConfig,
+				BOOL bSilent,
+				URLDOWNLOADPROGRESSCALLBACK lpfnCallback)
 {
 	// Return vars
 	LPBYTE lpBuf = NULL;
@@ -2725,7 +2730,7 @@ LPBYTE GetURL(LPCTSTR lpszURL, size_t& Size, BOOL bAllowInvalidCert, BOOL bSilen
 	}
 
 	// 2. Open internet directly (no proxy)
-	hInternetRoot = InternetOpen(AfxGetAppName(), INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
+	hInternetRoot = InternetOpen(AfxGetAppName(), bUseProxyIfConfig ? INTERNET_OPEN_TYPE_PRECONFIG : INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
 	if (hInternetRoot == NULL)
 	{
 		if (!bSilent)
@@ -2882,7 +2887,12 @@ cleanup:
 // and INTERNET_OPTION_USERNAME values and then resend the request to the server.
 //
 // Reference: https://docs.microsoft.com/en-us/windows/desktop/wininet/handling-authentication
-BOOL SaveURL(LPCTSTR lpszURL, LPCTSTR lpszFileName, BOOL bAllowInvalidCert, BOOL bSilent, URLDOWNLOADPROGRESSCALLBACK lpfnCallback)
+BOOL SaveURL(	LPCTSTR lpszURL,
+				LPCTSTR lpszFileName,
+				BOOL bAllowInvalidCert,
+				BOOL bUseProxyIfConfig,
+				BOOL bSilent,
+				URLDOWNLOADPROGRESSCALLBACK lpfnCallback)
 {
 	// Return var
 	BOOL bOK = TRUE;
@@ -2907,7 +2917,7 @@ BOOL SaveURL(LPCTSTR lpszURL, LPCTSTR lpszFileName, BOOL bAllowInvalidCert, BOOL
 	}
 
 	// 2. Open internet directly (no proxy)
-	hInternetRoot = InternetOpen(AfxGetAppName(), INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
+	hInternetRoot = InternetOpen(AfxGetAppName(), bUseProxyIfConfig ? INTERNET_OPEN_TYPE_PRECONFIG : INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
 	if (hInternetRoot == NULL)
 	{
 		if (!bSilent)

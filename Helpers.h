@@ -417,12 +417,16 @@ extern BOOL IsFontSupported(LPCTSTR szFontFamily);
 // Download given http(s) URL to memory or file
 typedef void(CALLBACK* URLDOWNLOADPROGRESSCALLBACK)(int,size_t);	// int nStatus: -1 = error, 0 = downloading, 1 = done
 																	// size_t Size: downloaded size in bytes
-extern LPBYTE GetURL(LPCTSTR lpszURL, size_t& Size,					// remember to free() the returned buffer
+extern LPBYTE GetURL(LPCTSTR lpszURL,								// remember to free() the returned buffer
+					size_t& Size,
 					BOOL bAllowInvalidCert,
+					BOOL bUseProxyIfConfig,
 					BOOL bSilent,
 					URLDOWNLOADPROGRESSCALLBACK lpfnCallback);
-extern BOOL SaveURL(LPCTSTR lpszURL, LPCTSTR lpszFileName,			// lpszFileName must not exist, otherwise it fails
+extern BOOL SaveURL(LPCTSTR lpszURL,
+					LPCTSTR lpszFileName,							// lpszFileName must not exist, otherwise it fails
 					BOOL bAllowInvalidCert,
+					BOOL bUseProxyIfConfig,
 					BOOL bSilent,
 					URLDOWNLOADPROGRESSCALLBACK lpfnCallback);
 
