@@ -64,6 +64,7 @@
 #define MAILPROG_DIR									_T("mail")
 #define MAILPROG_FILENAME								_T("mailsend.exe")
 #define MAILPROG_RELPATH								(CString(MAILPROG_DIR) + CString(_T("\\")) + CString(MAILPROG_FILENAME))
+#define MAILPROG_TEST_TIMEOUT_SEC						20 /* connect and read timeouts (both default to 5 sec which is too low) */
 #define MAILPROG_TIMEOUT_SEC							60 /* connect and read timeouts (both default to 5 sec which is too low) */
 
 // Php, Css and icons

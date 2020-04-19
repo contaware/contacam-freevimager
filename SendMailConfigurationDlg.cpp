@@ -284,7 +284,16 @@ void CSendMailConfigurationDlg::OnButtonTest()
 {
 	CopyToStruct();
 	if (ValidateEmailsAndHost())
-		CVideoDeviceDoc::SendMail(m_SendMailConfiguration, m_sName, CTime::GetCurrentTime(), _T("TEST"), _T(""), _T(""), TRUE);
+	{
+		CVideoDeviceDoc::SendMail(	m_SendMailConfiguration,
+									m_sName,
+									CTime::GetCurrentTime(),
+									_T("TEST"),
+									_T(""),
+									_T(""),
+									MAILPROG_TEST_TIMEOUT_SEC,
+									TRUE);
+	}
 }
 
 #endif

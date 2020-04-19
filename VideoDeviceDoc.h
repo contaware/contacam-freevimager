@@ -771,9 +771,10 @@ public:
 						const CString& sName,				// sName is replaced in subject if %name% present
 						const CTime& Time,					// Time is replaced in subject if %date% and/or %time% present
 						const CString& sNote,				// sNote is replaced in subject if %note% present
-						CString sBody = _T(""),				// if no body given use the format "name: date time note"
-						const CString& sFileName = _T(""),	// attachment
-						BOOL bShow = FALSE);				// show / hide the console window
+						CString sBody,						// if no body given use the format "name: date time note"
+						const CString& sFileName,			// attachment
+						int nTimeoutSec,					// mailsend.exe defaults to 5 sec which is really too low!
+						BOOL bShow);						// show / hide the console window
 
 	// Php config file manipulation
 	CString PhpGetConfigFileName();
