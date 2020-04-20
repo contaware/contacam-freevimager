@@ -647,7 +647,6 @@ public:
 	static void AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime, const CString& sFrameAnnotation, int nRefFontSize, BOOL bShowFrameUptime);
 	static void AddFrameCount(CDib* pDib, const CString& sCount, int nRefFontSize);
 	static void AddNoDonationTag(CDib* pDib, int nRefFontSize);
-	static void AddRecSymbol(CDib* pDib, int nRefFontSize);
 
 	// Function called when the directx video grabbing format has been changed
 	void OnChangeDxVideoFormat();

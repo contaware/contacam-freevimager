@@ -10,6 +10,8 @@ CONTACAM HISTORY
 - Support for Srihome and older Zavio cameras
 - Raised the email send timeout from 20 to 60 sec
 - Avoid creating an empty previous day folder
+- Removed the unnecessary red dot symbol showing in live snapshots
+  (the created videos are already a feedback for recording)
 
 9.9.8 (February 20th 2020)
 

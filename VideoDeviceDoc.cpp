@@ -1162,11 +1162,6 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 		AddNoDonationTag(&m_Dib, m_pDoc->m_nRefFontSize);
 		AddNoDonationTag(&DibThumb, m_pDoc->m_nRefFontSize);
 	}
-	if (m_pDoc->m_bDetectingMinLengthMovement)
-	{
-		AddRecSymbol(&m_Dib, m_pDoc->m_nRefFontSize);
-		AddRecSymbol(&DibThumb, m_pDoc->m_nRefFontSize);
-	}
 
 	// Save to temp location
 	CVideoDeviceDoc::SaveJpegFast(&m_Dib, &m_MJPEGEncoder, sTempFileName, DEFAULT_SNAPSHOT_COMPR_QUALITY);
@@ -6526,38 +6521,6 @@ void CVideoDeviceDoc::AddNoDonationTag(CDib* pDib, int nRefFontSize)
 							(DT_RIGHT | DT_BOTTOM),
 							NODONATION_MESSAGE_COLOR,
 							OPAQUE,
-							DRAW_BKG_COLOR);
-}
-
-void CVideoDeviceDoc::AddRecSymbol(CDib* pDib, int nRefFontSize)
-{
-	// Check
-	if (!pDib)
-		return;
-
-	// Calc. rectangle
-	CRect rcRect;
-	rcRect.left = 0;
-	rcRect.top = 0;
-	rcRect.right = pDib->GetWidth();
-	rcRect.bottom = pDib->GetHeight();
-
-	// Create font
-	CFont Font;
-	int nFontSize = ScaleFont(rcRect.right, rcRect.bottom, nRefFontSize, FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
-	LOGFONT lf = {};
-	_tcscpy(lf.lfFaceName, g_szDefaultFontFace);
-	lf.lfHeight = -MulDiv(nFontSize, 96, 72); // use 96 and not GetDeviceCaps(hDC, LOGPIXELSY) otherwise it scales with DPI changes!
-	lf.lfWeight = FW_NORMAL;
-	Font.CreateFontIndirect(&lf);
-
-	// Record symbol
-	pDib->AddSingleLineText(_T("\u25cf"), // note: if using more than 16 bits, use a uppercase U (for example \U0001F3C3)
-							rcRect,
-							&Font,
-							(DT_RIGHT | DT_BOTTOM),
-							REC_MESSAGE_COLOR,
-							TRANSPARENT,
 							DRAW_BKG_COLOR);
 }
 
