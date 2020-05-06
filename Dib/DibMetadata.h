@@ -22,6 +22,7 @@
 #define USER_COMMENT_HEADER_SIZE	8
 #define DEFAULT_EXIF_VERSION_STR	"0220"
 #define DEFAULT_EXIF_VERSION_INT	220
+#define MAX_TIFFDIR_DEPTH			16
 
 // Iptc
 #define MAX_IPTC_FIELD_SIZE			2048
@@ -844,7 +845,8 @@ protected:
 						unsigned char* pData,
 						unsigned char* pOffsetBase,
 						int nLength,
-						EXIFINFO* pExifInfo);
+						EXIFINFO* pExifInfo,
+						int nRecursionDepth);
 
 	// Protected Member Vars
 	int m_nExifImageWidth;

@@ -2639,7 +2639,7 @@ bool CMetadata::ParseTIFFData(	int nStartIFD,
 		pNextDirStart = GetNextDirPointer(pNextDirStart, pData, nLength);
 
     // Parse directory
-    if (!ParseTIFFDir(nStartIFD, bOnlyParseGivenIFD, bExifSection, pNextDirStart, pData, nLength, &m_ExifInfo))
+    if (!ParseTIFFDir(nStartIFD, bOnlyParseGivenIFD, bExifSection, pNextDirStart, pData, nLength, &m_ExifInfo, 0))
 		return false;
 
 	// Compute the CCD width, in millimeters
@@ -2840,12 +2840,19 @@ bool CMetadata::ParseTIFFDir(	int nIFD,
 								unsigned char* pData,
 								unsigned char* pOffsetBase,
 								int nLength,
-								CMetadata::EXIFINFO* pExifInfo)
+								CMetadata::EXIFINFO* pExifInfo,
+								int nRecursionDepth)
 {
     int de;
     int a;
     unsigned int ThumbnailOffset = 0;
     unsigned int ThumbnailSize = 0;
+
+	if (nRecursionDepth > MAX_TIFFDIR_DEPTH)
+	{
+		TRACE(_T("Maximum recursion depth exceeded\n"));
+		return false;
+	}
 
     int NumDirEntries = Get16u(pData);
 
@@ -3570,7 +3577,8 @@ bool CMetadata::ParseTIFFDir(	int nIFD,
 								SubdirStart,
 								pOffsetBase,
 								nLength,
-								pExifInfo);
+								pExifInfo,
+								nRecursionDepth + 1);
 				break;
 			}
 
@@ -3596,7 +3604,8 @@ bool CMetadata::ParseTIFFDir(	int nIFD,
 							pNextDirStart,
 							pOffsetBase,
 							nLength,
-							pExifInfo);
+							pExifInfo,
+							nRecursionDepth + 1);
 		}
 	}
 
