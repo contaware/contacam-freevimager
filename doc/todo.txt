@@ -1,9 +1,5 @@
 FreeVimager Program
 -------------------
-
-- I know you changed the icon size in the tool bar a while ago. Actually I preferred the small icons.
-  -> make also 1.5x and 2.5x icon sizes so everybody is happy
-  (kryden@gmail.com)
   
 - Add .webp and .heic/heif file support
   (demonoid@pulsarnet.com)
