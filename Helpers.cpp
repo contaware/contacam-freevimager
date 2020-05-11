@@ -975,34 +975,87 @@ BOOL DeleteToRecycleBin(LPCTSTR szName)
 
 CString FormatIntegerNumber(const CString& sNumber)
 {
+	NUMBERFMT nf = {};
+	TCHAR szDecSep[10];
+	TCHAR szThousandsSep[10];
+	TCHAR szBuffer[10];
+
+	// Number of fractional digits (LOCALE_IDIGITS)
+	nf.NumDigits = 0;
+
+	// Leading zeroes from locale default
+	GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_ILZERO, szBuffer, sizeof(szBuffer) / sizeof(TCHAR));
+	nf.LeadingZero = _tcstoul(szBuffer, NULL, 10);
+
+	// Decimal separator string from locale default
+	GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SDECIMAL, szDecSep, sizeof(szDecSep) / sizeof(TCHAR));
+	nf.lpDecimalSep = szDecSep;
+
+	// Thousand separator string from locale default
+	GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_STHOUSAND, szThousandsSep, sizeof(szThousandsSep) / sizeof(TCHAR));
+	nf.lpThousandSep = szThousandsSep;
+
+	// Negative number mode from locale default
+	GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_INEGNUMBER, szBuffer, sizeof(szBuffer) / sizeof(TCHAR));
+	nf.NegativeOrder = _tcstoul(szBuffer, NULL, 10);
+
+	// Grouping of digits from locale default
+	// LOCALE_SGROUPING expresses grouping as a series of semicolon-separated numbers, 
+	// each expressing the number of digits in each group (least-significant group first).
+	// A trailing zero indicates that the last grouping should be repeated indefinitely.
+	// The Grouping member expresses the grouping similarly with a base 10 UINT (semicolons removed).
+	// Except that the meaning of the trailing zero is reversed, so if LOCALE_SGROUPING has a trailing
+	// zero, you have to remove it to get the Grouping, and if it lacks a trailing zero, then you have
+	// to add one to the Grouping.
+	// https://devblogs.microsoft.com/oldnewthing/20060418-11/?p=31493
+	// https://docs.microsoft.com/en-us/archive/blogs/shawnste/oddities-of-locale_sgrouping-numbergroupsizes-and-numberfmt
+	// https://mihai-nita.net/2005/07/07/customized-getnumberformat-and-getcurrencyformat/
+	// Note: both "3" and "3;0;0" are valid and must give the same result of 30,
+	//       funny formats like "3;0;1" or "3;0;1;0" are also correctly converted and displayed.
+	GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SGROUPING, szBuffer, sizeof(szBuffer) / sizeof(TCHAR));
+	TCHAR* pGrouping = szBuffer;
+	nf.Grouping = 0;
+	while (pGrouping[0])
+	{
+		// For '1'..'9' (example: "3;0" or "3;2;0")
+		if ((pGrouping[0] >= _T('1')) && (pGrouping[0] <= _T('9')))
+			nf.Grouping = 10 * nf.Grouping + (pGrouping[0] - _T('0'));
+
+		// Last one?
+		if (pGrouping[1] == NULL)
+		{
+			// As per specs if last one is not '0' then append 0 to nf.Grouping to indicate no repetition (example: "3" or "3;2")
+			if (pGrouping[0] != _T('0'))
+				nf.Grouping *= 10;
+		}
+		else
+		{
+			// Treat '0' in none-last position like '1'..'9' (example: "3;0;0")
+			if (pGrouping[0] == _T('0'))
+				nf.Grouping *= 10; // simplification of: nf.Grouping = 10 * nf.Grouping + (pGrouping[0] - _T('0'));
+		}
+
+		// Next
+		pGrouping++;
+	}
+
 	// Format
+	// returns the number of TCHARs required to hold the formatted 
+	// number string, including a terminating null character
 	int nSize = GetNumberFormat(LOCALE_USER_DEFAULT,
 								0,
 								sNumber,
-								NULL,
+								&nf,
 								NULL,
 								0);
 	CString sOutNumber;
 	GetNumberFormat(LOCALE_USER_DEFAULT,
 					0,
 					sNumber,
-					NULL,
+					&nf,
 					sOutNumber.GetBuffer(nSize),
 					nSize);
 	sOutNumber.ReleaseBuffer();
-
-	// Remove Decimals
-	CString sDecSeparator;
-	nSize = GetLocaleInfo(	LOCALE_USER_DEFAULT,
-							LOCALE_SDECIMAL,
-							NULL,
-							0);
-	GetLocaleInfo(	LOCALE_USER_DEFAULT,
-					LOCALE_SDECIMAL,
-					sDecSeparator.GetBuffer(nSize),
-					nSize);
-	int nPos = sOutNumber.Find(sDecSeparator);
-	sOutNumber = sOutNumber.Left(nPos);
 
 	return sOutNumber;
 }
