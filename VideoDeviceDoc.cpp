@@ -3355,35 +3355,31 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 					// Log
 					if (llStartDiskFreeSpaceDaysAgo != 0)
 					{
-						CString sStartDiskFreeSpaceMB, sDiskFreeSpaceMB, sMinDiskFreeSpaceMB, sDaysAgo;
-						sStartDiskFreeSpaceMB.Format(_T("%I64u"), ullStartDiskFreeSpace >> 20);
-						sDiskFreeSpaceMB.Format(_T("%I64u"), ullDiskFreeSpace >> 20);
-						sMinDiskFreeSpaceMB.Format(_T("%I64u"), ullMinDiskFreeSpace >> 20);
+						CString sDaysAgo;
 						if (llStartDiskFreeSpaceDaysAgo == (llDaysAgo + 1))
 							sDaysAgo.Format(_T("%I64d day%s ago"), llStartDiskFreeSpaceDaysAgo, llStartDiskFreeSpaceDaysAgo == 1 ? _T("") : _T("s"));
 						else
 							sDaysAgo.Format(_T("%I64d->%I64d days ago"), llStartDiskFreeSpaceDaysAgo, llDaysAgo + 1);
-						::LogLine(	_T("%s, deleted %s: HD space %s->%s ") + ML_STRING(1825, "MB") +
-									_T(" (set min %s ") + ML_STRING(1825, "MB") + _T(")"),
-									m_pDoc->GetAssignedDeviceName(), sDaysAgo,
-									::FormatIntegerNumber(sStartDiskFreeSpaceMB), ::FormatIntegerNumber(sDiskFreeSpaceMB),
-									::FormatIntegerNumber(sMinDiskFreeSpaceMB));
+						::LogLine(	_T("%s, deleted %s: HD space %s->%s (set min %s)"),
+									m_pDoc->GetAssignedDeviceName(),
+									sDaysAgo,
+									::FormatBytes(ullStartDiskFreeSpace),
+									::FormatBytes(ullDiskFreeSpace),
+									::FormatBytes(ullMinDiskFreeSpace));
 					}
 					if (llStartCameraFolderSizeDaysAgo != 0)
 					{
-						CString sStartCameraFolderSizeMB, sCameraFolderSizeMB, sMaxCameraFolderSizeMB, sDaysAgo;
-						sStartCameraFolderSizeMB.Format(_T("%I64u"), ullStartCameraFolderSize >> 20);
-						sCameraFolderSizeMB.Format(_T("%I64u"), ullCameraFolderSize >> 20);
-						sMaxCameraFolderSizeMB.Format(_T("%I64u"), ullMaxCameraFolderSize >> 20);
+						CString sDaysAgo;
 						if (llStartCameraFolderSizeDaysAgo == (llDaysAgo + 1))
 							sDaysAgo.Format(_T("%I64d day%s ago"), llStartCameraFolderSizeDaysAgo, llStartCameraFolderSizeDaysAgo == 1 ? _T("") : _T("s"));
 						else
 							sDaysAgo.Format(_T("%I64d->%I64d days ago"), llStartCameraFolderSizeDaysAgo, llDaysAgo + 1);
-						::LogLine(	_T("%s, deleted %s: camera folder size %s->%s ") + ML_STRING(1825, "MB") +
-									_T(" (set max %s ") + ML_STRING(1825, "MB") + _T(")"),
-									m_pDoc->GetAssignedDeviceName(), sDaysAgo,
-									::FormatIntegerNumber(sStartCameraFolderSizeMB), ::FormatIntegerNumber(sCameraFolderSizeMB),
-									::FormatIntegerNumber(sMaxCameraFolderSizeMB));
+						::LogLine(	_T("%s, deleted %s: camera folder size %s->%s (set max %s)"),
+									m_pDoc->GetAssignedDeviceName(),
+									sDaysAgo,
+									::FormatBytes(ullStartCameraFolderSize),
+									::FormatBytes(ullCameraFolderSize),
+									::FormatBytes(ullMaxCameraFolderSize));
 					}
 				}
 				break;
