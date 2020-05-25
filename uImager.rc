@@ -1118,9 +1118,9 @@ BEGIN
     LTEXT           "Quality",IDC_STATIC,75,182,24,8
     LTEXT           "Take each",IDC_STATIC2476,13,245,47,8
     LTEXT           "Thumbnail",IDC_STATIC2478,13,263,53,8
-    LTEXT           "Arguments",IDC_STATIC,225,129,35,8
-    LTEXT           "Program",IDC_STATIC,225,104,28,8
-    LTEXT           "Examples",IDC_STATIC,225,228,31,8
+    LTEXT           "Arguments",IDC_STATIC,225,129,184,8
+    LTEXT           "Program",IDC_STATIC,225,104,184,8
+    LTEXT           "Examples",IDC_STATIC,225,228,184,8
     LTEXT           "Camera source on/off (argument: on,off)",IDC_STATIC,225,24,184,8
     LTEXT           "Camera rec sensitivity (argument: 0,10,20..100)",IDC_STATIC,225,49,184,8
     LTEXT           "Recording framerate divider",IDC_STATIC2156,13,28,92,8
