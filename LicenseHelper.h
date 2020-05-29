@@ -17,8 +17,8 @@ public:
 	virtual ~CDonorEmailValidateThread() { Kill(); };
 
 	// return:	-1:	unknown answer or server busy or no answer from server
-	//			0:	server answered bad email
-	//			1:	server answered good email
+	//			0:	bad email
+	//			1:	good email
 	int DonorEmailValidate();
 
 	volatile BOOL m_bNoDonation;

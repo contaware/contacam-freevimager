@@ -56,40 +56,42 @@ int CDonorEmailValidateThread::DonorEmailValidate()
 {
 	int ret = -1;
 
-	// Connect to server and verify email
-	// Note: in case that our server does not answer correctly, or if it is
-	//       busy or when there is no internet connection, leave m_bNoDonation
-	//       as it is and leave also ret -1
-	CString sURL(_T("https://www.contaware.com/validate-437837653763456231.php"));
-	sURL += _T("?email=");
-	sURL += ::UrlEncode(m_sDonorEmail, TRUE);
-	sURL += _T("&lang=");
-	sURL += ::UrlEncode(GetAppLanguage(), TRUE);
-	size_t Size;
-	LPBYTE p = ::GetURL(sURL, Size, FALSE, FALSE, TRUE, NULL);	// 1. first try without proxy as it may have been misconfigured
-	if (!p)
-		p = ::GetURL(sURL, Size, FALSE, TRUE, TRUE, NULL);		// 2. then try with proxy
-	if (p)
-	{
-		CString s(::FromUTF8(p, Size));
-		free(p);
-		if (s.Find(_T("OK")) >= 0)
-		{
-			ret = 1;	// good email
-			m_bNoDonation = FALSE;
-		}
-		else if (s.Find(_T("BAD")) >= 0)
-		{
-			ret = 0;	// bad email
-			m_bNoDonation = TRUE;
-		}
-	}
-
-	// But if empty then it is for sure a "bad" email
+	// If empty
 	if (m_sDonorEmail.IsEmpty())
 	{
 		ret = 0;		// bad email
 		m_bNoDonation = TRUE;
+	}
+	else
+	{
+		// Connect to server and verify email
+		// Note: in case that our server does not answer correctly, or if it is
+		//       busy or when there is no internet connection, leave m_bNoDonation
+		//       as it is and leave also ret -1
+		CString sURL(_T("https://www.contaware.com/validate-437837653763456231.php"));
+		sURL += _T("?email=");
+		sURL += ::UrlEncode(m_sDonorEmail, TRUE);
+		sURL += _T("&lang=");
+		sURL += ::UrlEncode(GetAppLanguage(), TRUE);
+		size_t Size;
+		LPBYTE p = ::GetURL(sURL, Size, FALSE, FALSE, TRUE, NULL);	// 1. first try without proxy as it may have been misconfigured
+		if (!p)
+			p = ::GetURL(sURL, Size, FALSE, TRUE, TRUE, NULL);		// 2. then try with proxy
+		if (p)
+		{
+			CString s(::FromUTF8(p, Size));
+			free(p);
+			if (s.Find(_T("OK")) >= 0)
+			{
+				ret = 1;	// good email
+				m_bNoDonation = FALSE;
+			}
+			else if (s.Find(_T("BAD")) >= 0)
+			{
+				ret = 0;	// bad email
+				m_bNoDonation = TRUE;
+			}
+		}
 	}
 
 	return ret;
