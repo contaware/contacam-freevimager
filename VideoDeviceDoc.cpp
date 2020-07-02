@@ -3527,6 +3527,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_MovementDetectionsUpTime = new DWORD[MOVDET_MAX_ZONES];
 	m_MovementDetections = new BYTE[MOVDET_MAX_ZONES];
 	m_DoMovementDetection = new BYTE[MOVDET_MAX_ZONES];
+	if (m_DoMovementDetection)
+		memset(m_DoMovementDetection, 1, MOVDET_MAX_ZONES);
 	m_lMovDetXZonesCount = MOVDET_MIN_ZONES_XORY;
 	m_lMovDetYZonesCount = MOVDET_MIN_ZONES_XORY;
 	m_lMovDetTotalZones = 0;
@@ -4376,6 +4378,7 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 		if (WriteDetectionLevelToFile(nDetectionLevel, m_sRecordAutoSaveDir))
 			m_nDetectionLevel = nDetectionLevel; // always after the write as in OnTimer() it gets polled!
 	}
+	LoadZonesSettings(sSection);
 	m_nCurrentDetectionZoneSize = m_nDetectionZoneSize = (int) pApp->GetProfileInt(sSection, _T("DetectionZoneSize"), 0);
 	m_bSaveVideo = (BOOL) pApp->GetProfileInt(sSection, _T("SaveVideoMovementDetection"), TRUE);
 	m_bSaveAnimGIF = (BOOL) pApp->GetProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), TRUE);
