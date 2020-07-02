@@ -293,12 +293,9 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 		::InterlockedExchange(&pDoc->m_lMovDetTotalZones, lMovDetTotalZones);
 	}
 
-	// Update current detection zone size and store new value
-	if (pDoc->m_nCurrentDetectionZoneSize != pDoc->m_nDetectionZoneSize)
-	{
-		pDoc->m_nCurrentDetectionZoneSize = pDoc->m_nDetectionZoneSize;
-		::AfxGetApp()->WriteProfileInt(pDoc->GetDevicePathName(), _T("DetectionZoneSize"), pDoc->m_nDetectionZoneSize);
-	}
+	// Update the old detection zone size so that this function is not called again
+	if (pDoc->m_nOldDetectionZoneSize != pDoc->m_nDetectionZoneSize)
+		pDoc->m_nOldDetectionZoneSize = pDoc->m_nDetectionZoneSize;
 
 	return 1;
 }

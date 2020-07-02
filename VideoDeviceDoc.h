@@ -906,8 +906,8 @@ public:
 	volatile BOOL m_bDetectingMovement;					// Flag indicating a Detection
 	volatile BOOL m_bDetectingMinLengthMovement;		// Flag indicating a Movement of at least m_nDetectionMinLengthMilliSeconds
 	volatile int m_nDetectionLevel;						// 0 = Off, 10 = Min Sensitivity, 20, 30, 40, 50, 60, 70, 80, 90 = Max Sensitivity, 100 = Continuous Recording
-	volatile int m_nDetectionZoneSize;					// Configured detection zone size: 0->Big, 1->Medium, 2->Small
-	volatile int m_nCurrentDetectionZoneSize;			// Current detection zone size: 0->Big, 1->Medium, 2->Small
+	volatile int m_nDetectionZoneSize;					// Detection zone size: 0->Big, 1->Medium, 2->Small
+	volatile int m_nOldDetectionZoneSize;				// To check for a detection zone size change
 	volatile DWORD m_dwFirstDetFrameUpTime;				// Uptime of first movement detection frame
 	volatile DWORD m_dwLastDetFrameUpTime;				// Uptime of last movement detection frame
 	volatile int m_nSaveFreqDiv;						// Saving frequency divider 

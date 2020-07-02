@@ -1729,9 +1729,9 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, const CTime& Time,
 	int nDetectionLevel = m_nDetectionLevel; // use local var
 	int nMovementDetectorIntensityLimit = 50 - nDetectionLevel / 2;	// noise floor
 
-	// Init from UI thread because of a UI control update and
-	// initialization of variables used by the UI drawing
-	if (m_lMovDetTotalZones == 0 || m_nCurrentDetectionZoneSize != m_nDetectionZoneSize)
+	// Init from UI thread because of the CloseNotificationWnd() call and
+	// because of the initialization of variables used by the UI drawing
+	if (m_lMovDetTotalZones == 0 || m_nOldDetectionZoneSize != m_nDetectionZoneSize)
 	{
 		if (::SendMessage(	GetView()->GetSafeHwnd(),
 							WM_THREADSAFE_INIT_MOVDET,
@@ -3520,7 +3520,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bWaitExecCommand = FALSE;
 	m_hExecCommand = NULL;
 	m_nDetectionLevel = MOVDET_DEFAULT_LEVEL;
-	m_nCurrentDetectionZoneSize = m_nDetectionZoneSize = 0;
+	m_nOldDetectionZoneSize = m_nDetectionZoneSize = 0;
 	m_dwAnimatedGifWidth = MOVDET_ANIMGIF_DEFAULT_WIDTH;
 	m_dwAnimatedGifHeight = MOVDET_ANIMGIF_DEFAULT_HEIGHT;
 	m_MovementDetectorCurrentIntensity = new int[MOVDET_MAX_ZONES];
@@ -4379,7 +4379,7 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 			m_nDetectionLevel = nDetectionLevel; // always after the write as in OnTimer() it gets polled!
 	}
 	LoadZonesSettings(sSection);
-	m_nCurrentDetectionZoneSize = m_nDetectionZoneSize = (int) pApp->GetProfileInt(sSection, _T("DetectionZoneSize"), 0);
+	m_nOldDetectionZoneSize = m_nDetectionZoneSize = (int) pApp->GetProfileInt(sSection, _T("DetectionZoneSize"), 0);
 	m_bSaveVideo = (BOOL) pApp->GetProfileInt(sSection, _T("SaveVideoMovementDetection"), TRUE);
 	m_bSaveAnimGIF = (BOOL) pApp->GetProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), TRUE);
 	m_bSaveStartPicture = (BOOL)pApp->GetProfileInt(sSection, _T("SaveStartPictureMovementDetection"), TRUE);
@@ -8166,7 +8166,8 @@ void CVideoDeviceDoc::OnUpdateEditZoneObscureRemoved(CCmdUI* pCmdUI)
 
 void CVideoDeviceDoc::OnEditZoneBig()
 {
-	m_nDetectionZoneSize = 0; // changing this triggers OnThreadSafeInitMovDet() which calls WriteProfileInt()
+	m_nDetectionZoneSize = 0; // changing this triggers OnThreadSafeInitMovDet()
+	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionZoneSize"), m_nDetectionZoneSize);
 }
 
 void CVideoDeviceDoc::OnUpdateEditZoneBig(CCmdUI* pCmdUI)
@@ -8176,7 +8177,8 @@ void CVideoDeviceDoc::OnUpdateEditZoneBig(CCmdUI* pCmdUI)
 
 void CVideoDeviceDoc::OnEditZoneMedium()
 {
-	m_nDetectionZoneSize = 1; // changing this triggers OnThreadSafeInitMovDet() which calls WriteProfileInt()
+	m_nDetectionZoneSize = 1; // changing this triggers OnThreadSafeInitMovDet()
+	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionZoneSize"), m_nDetectionZoneSize);
 }
 
 void CVideoDeviceDoc::OnUpdateEditZoneMedium(CCmdUI* pCmdUI)
@@ -8186,7 +8188,8 @@ void CVideoDeviceDoc::OnUpdateEditZoneMedium(CCmdUI* pCmdUI)
 
 void CVideoDeviceDoc::OnEditZoneSmall()
 {
-	m_nDetectionZoneSize = 2; // changing this triggers OnThreadSafeInitMovDet() which calls WriteProfileInt()
+	m_nDetectionZoneSize = 2; // changing this triggers OnThreadSafeInitMovDet()
+	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("DetectionZoneSize"), m_nDetectionZoneSize);
 }
 
 void CVideoDeviceDoc::OnUpdateEditZoneSmall(CCmdUI* pCmdUI)

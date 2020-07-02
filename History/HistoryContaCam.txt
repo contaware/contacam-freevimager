@@ -2,7 +2,10 @@ CONTACAM HISTORY
 
 9.9.10 (Month XX 2020)
 
-- ...
+- Because the video resolution of some cams changed for a few seconds
+  and afterwards restored, we decided to never reset the sensitivity
+  settings of the single zones (it's up to you to re-configure them 
+  if you change the video resolution or the zones size)
 
 9.9.9 (May 2nd 2020)
 
