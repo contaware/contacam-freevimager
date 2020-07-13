@@ -2433,7 +2433,11 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 			::LogLine(_T("*** %s ***"), ML_STRING(1815, "OUT OF MEMORY / OVERLOAD: dropping frames"));
 		}
 		else if (((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames && CDib::m_llOverallSharedMemoryBytes == 0)
+		{
 			((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = FALSE;
+			if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
+				PopupNotificationWnd(APPNAME_NOEXT, ML_STRING(1815, "OUT OF MEMORY / OVERLOAD: dropping frames"), 0);
+		}
 
 		// HD Usage
 		CString sSaveDir = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
