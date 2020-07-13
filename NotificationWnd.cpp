@@ -407,12 +407,15 @@ void CNotificationWnd::HandleClosing()
 
 BOOL CNotificationWnd::IsBodyTextClickable(const CString& sText)
 {
-	return (::IsExistingFile(sText)											||
-			::IsExistingDir(sText)											||
-			sText.Find(_T("http://")) == 0									||
-			sText.Find(_T("https://")) == 0									||
-			sText.Find(ML_STRING(1570, "In Power Options disable: ")) == 0	||
-			sText.Find(ML_STRING(1815, "OUT OF MEMORY / OVERLOAD: dropping frames")) == 0);
+	return (
+#ifdef VIDEODEVICEDOC
+			sText.Find(ML_STRING(1570, "In Power Options disable: ")) == 0					||
+			sText.Find(ML_STRING(1815, "OUT OF MEMORY / OVERLOAD: dropping frames")) == 0	||
+#endif
+			::IsExistingFile(sText)															||
+			::IsExistingDir(sText)															||
+			sText.Find(_T("http://")) == 0													||
+			sText.Find(_T("https://")) == 0);
 }
 
 void CNotificationWnd::OnLButtonUp(UINT /*nFlags*/, CPoint point) 
@@ -431,11 +434,13 @@ void CNotificationWnd::OnLButtonUp(UINT /*nFlags*/, CPoint point)
 		{
 			if (IsBodyTextClickable(m_sText))
 			{
+#ifdef VIDEODEVICEDOC
 				if (m_sText.Find(ML_STRING(1570, "In Power Options disable: ")) == 0)
 					::ShellExecute(NULL, NULL, _T("control.exe"), _T("/name Microsoft.PowerOptions /page pagePlanSettings"), NULL, SW_SHOWNORMAL);
 				else if (m_sText.Find(ML_STRING(1815, "OUT OF MEMORY / OVERLOAD: dropping frames")) == 0)
 					::ShellExecute(NULL, _T("open"), LOAD_OPTIMIZATION_ONLINE_PAGE, NULL, NULL, SW_SHOWNORMAL);
 				else
+#endif
 					::ShellExecute(NULL, _T("open"), m_sText, NULL, NULL, SW_SHOWNORMAL);
 
 				::AfxGetMainFrame()->CloseNotificationWnd();
