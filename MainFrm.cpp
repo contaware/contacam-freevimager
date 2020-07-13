@@ -2435,6 +2435,9 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		else if (((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames && CDib::m_llOverallSharedMemoryBytes == 0)
 		{
 			((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = FALSE;
+
+			// To avoid overloading / crashing ourself we better pop-up
+			// the notification dialog after the frames have been dropped
 			if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
 				PopupNotificationWnd(APPNAME_NOEXT, ML_STRING(1815, "OUT OF MEMORY / OVERLOAD: dropping frames"), 0);
 		}

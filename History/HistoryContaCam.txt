@@ -6,7 +6,9 @@ CONTACAM HISTORY
   and afterwards restored, we decided to never reset the sensitivity
   settings of the single zones (it's up to you to re-configure them 
   if you change the video resolution or the zones size)
-
+- A warning message is now shown when frames get dropped because of
+  memory shortage and system overload
+			
 9.9.9 (May 2nd 2020)
 
 - Optimized camera preview
