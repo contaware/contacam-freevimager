@@ -3390,7 +3390,6 @@ STRINGTABLE
 BEGIN
     ID_INDICATOR_REC_SPEED  " REC speed "
     ID_INDICATOR_BUF_USAGE  " BUF:      "
-    ID_INDICATOR_HD_USAGE   " HD:       "
     ID_INDICATOR_XCOORDINATE " X:        "
     ID_INDICATOR_YCOORDINATE " Y:        "
     ID_SETTINGS_LOG_ALL_MESSAGES 
@@ -3944,7 +3943,6 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_STRING1761          "HD usage"
     IDS_STRING1762          "REC speed\n(click for more information)"
     IDS_STRING1763          "REC buffers usage\n(click for more information)"
     IDS_STRING1764          "Starting"

@@ -220,7 +220,7 @@ protected:
 #ifndef VIDEODEVICEDOC
 	void ChangeCoordinatesUnit();
 #endif
-	static BOOL GetDiskStats(CString& sDiskStats, LPCTSTR lpszPath, int nMinDiskFreePermillion);
+	static CString GetDiskStats(LPCTSTR lpszPath);
 	typedef struct {
 		LPVOID lpFirstBlock;
 		LPVOID lpLastBlock;

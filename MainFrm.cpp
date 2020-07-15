@@ -87,7 +87,6 @@ END_MESSAGE_MAP()
 #ifdef VIDEODEVICEDOC
 static TCHAR sba_RECSPEEDHelp[MAX_PATH];
 static TCHAR sba_BUFUSAGEHelp[MAX_PATH];
-static TCHAR sba_HDHelp[MAX_PATH];
 #else
 static TCHAR sba_CoordinateHelp[MAX_PATH];
 #endif
@@ -97,7 +96,6 @@ static SBACTPANEINFO sba_indicators[] =
 #ifdef VIDEODEVICEDOC
 	{ ID_INDICATOR_REC_SPEED, sba_RECSPEEDHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_SINGLECLICK | SBACTF_DOUBLECLICK | SBACTF_HANDCURSOR },
 	{ ID_INDICATOR_BUF_USAGE, sba_BUFUSAGEHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_SINGLECLICK | SBACTF_DOUBLECLICK | SBACTF_HANDCURSOR },
-	{ ID_INDICATOR_HD_USAGE, sba_HDHelp, SBACTF_AUTOFIT },
 #else
 	{ ID_INDICATOR_XCOORDINATE, sba_CoordinateHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_SINGLECLICK | SBACTF_DOUBLECLICK | SBACTF_HANDCURSOR },
 	{ ID_INDICATOR_YCOORDINATE, sba_CoordinateHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_SINGLECLICK | SBACTF_DOUBLECLICK | SBACTF_HANDCURSOR },
@@ -169,8 +167,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	sba_RECSPEEDHelp[MAX_PATH - 1] = _T('\0');
 	_tcsncpy(sba_BUFUSAGEHelp, ML_STRING(1763, "REC buffers usage\n(click for more information)"), MAX_PATH);
 	sba_BUFUSAGEHelp[MAX_PATH - 1] = _T('\0');
-	_tcsncpy(sba_HDHelp, ML_STRING(1761, "HD usage"), MAX_PATH);
-	sba_HDHelp[MAX_PATH - 1] = _T('\0');
 #else
 	_tcsncpy(sba_CoordinateHelp, ML_STRING(1768, "Click to change unit"), MAX_PATH);
 	sba_CoordinateHelp[MAX_PATH - 1] = _T('\0');
@@ -2124,8 +2120,10 @@ unsigned int CMainFrame::GetRecBufStats(CString& sBufStats)
 }
 #endif
 
-BOOL CMainFrame::GetDiskStats(CString& sDiskStats, LPCTSTR lpszPath, int nMinDiskFreePermillion)
+CString CMainFrame::GetDiskStats(LPCTSTR lpszPath)
 {
+	CString sDiskStats;
+
 	// - GetDiskFreeSpaceEx's lpDirectoryName must include a trailing backslash
 	// - GetDiskFreeSpaceEx's lpDirectoryName does not have to specify the
 	//   root directory (the function accepts any directory on a disk)
@@ -2136,21 +2134,18 @@ BOOL CMainFrame::GetDiskStats(CString& sDiskStats, LPCTSTR lpszPath, int nMinDis
 	// Get the disk free space and the total disk size
 	ULARGE_INTEGER FreeBytesAvailableToCaller;
 	ULARGE_INTEGER TotalNumberOfBytesAvailableToCaller;
-	if (!::GetDiskFreeSpaceEx(	sPath,
-								&FreeBytesAvailableToCaller,
-								&TotalNumberOfBytesAvailableToCaller,
-								NULL))
-		return FALSE;
-	else
+	if (::GetDiskFreeSpaceEx(sPath,
+							&FreeBytesAvailableToCaller,
+							&TotalNumberOfBytesAvailableToCaller,
+							NULL))
 	{
 		// Format stats
 		sDiskStats.Format(_T("HD: %I64u/%I64u") + ML_STRING(1826, "GB"),
 						(TotalNumberOfBytesAvailableToCaller.QuadPart - FreeBytesAvailableToCaller.QuadPart) >> 30,
 						TotalNumberOfBytesAvailableToCaller.QuadPart >> 30);
-
-		// return TRUE to alert!
-		return (FreeBytesAvailableToCaller.QuadPart < TotalNumberOfBytesAvailableToCaller.QuadPart / 1000000 * nMinDiskFreePermillion);
 	}
+
+	return sDiskStats;
 }
 
 BOOL CMainFrame::IsAddressInHeapRegion(LPVOID p, HEAPREGIONARRAY& Regions)
@@ -2285,24 +2280,9 @@ void CMainFrame::LogSysUsage()
 
 	// Get HD Usage
 #ifdef VIDEODEVICEDOC
-	int nMinDiskFreePermillion = 0;
-	CString sSaveDir = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
-	CMDIChildWnd* pChild = MDIGetActive();
-	if (pChild)
-	{
-		CVideoDeviceDoc* pDoc = (CVideoDeviceDoc*)pChild->GetActiveDocument();
-		if (pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CVideoDeviceDoc)))
-		{
-			sSaveDir = pDoc->m_sRecordAutoSaveDir;
-			nMinDiskFreePermillion = pDoc->m_nMinDiskFreePermillion;
-		}
-	}
-	// Note: GetDiskStats() calcs the stats for directory symbolic link targets
-	CString sDiskStats;
-	GetDiskStats(sDiskStats, sSaveDir, nMinDiskFreePermillion);
+	CString sDiskStats(GetDiskStats(((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot));
 #else
-	CString sDiskStats;
-	GetDiskStats(sDiskStats, ((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), 0);
+	CString sDiskStats(GetDiskStats(((CUImagerApp*)::AfxGetApp())->GetAppTempDir()));
 #endif
 
 	// Message
@@ -2441,31 +2421,6 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 			if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
 				PopupNotificationWnd(APPNAME_NOEXT, ML_STRING(1815, "OUT OF MEMORY / OVERLOAD: dropping frames"), 0);
 		}
-
-		// HD Usage
-		CString sSaveDir = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
-		int nMinDiskFreePermillion = 0;
-		CMDIChildWnd* pChild = MDIGetActive();
-		if (pChild)
-		{
-			CVideoDeviceDoc* pDoc = (CVideoDeviceDoc*)pChild->GetActiveDocument();
-			if (pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CVideoDeviceDoc)))
-			{
-				sSaveDir = pDoc->m_sRecordAutoSaveDir;
-				nMinDiskFreePermillion = pDoc->m_nMinDiskFreePermillion;
-			}
-		}
-		CString sDiskStats;
-		BOOL bDiskStatsAlert = GetDiskStats(sDiskStats, sSaveDir, nMinDiskFreePermillion); // calcs stats for directory symbolic link targets
-		if (bDiskStatsAlert)
-		{
-			if (nFlashState == 2)
-				GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_HD_USAGE), _T(""));
-			else
-				GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_HD_USAGE), _T(" *** ") + sDiskStats + _T(" *** "));
-		}
-		else
-			GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_HD_USAGE), _T(" ") + sDiskStats + _T(" "));
 
 		// Toggle flash state
 		nFlashState = (nFlashState+1)%3;
