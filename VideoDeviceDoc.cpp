@@ -125,7 +125,7 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
-void CVideoDeviceDoc::CreateBaseYearMonthDaySubDir(CString sBaseDir, CTime Time, CString sSubDir, CString& sBaseYearMonthDaySubDir)
+CString CVideoDeviceDoc::CreateBaseYearMonthDaySubDir(CString sBaseDir, CTime Time, CString sSubDir/*=_T("")*/)
 {
 	// Remove Trailing '\'
 	sBaseDir.TrimRight(_T('\\'));
@@ -134,26 +134,16 @@ void CVideoDeviceDoc::CreateBaseYearMonthDaySubDir(CString sBaseDir, CTime Time,
 	sSubDir.Trim(_T('\\'));
 
 	// Create if not already existing
-	if (!sBaseDir.IsEmpty())
+	CString sDir(sBaseDir + _T("\\") + Time.Format(_T("%Y")) + _T("\\") + Time.Format(_T("%m")) + _T("\\") + Time.Format(_T("%d")));
+	if (!sSubDir.IsEmpty())
+		sDir += _T("\\") + sSubDir;
+	if (!::IsExistingDir(sDir))
 	{
-		CString sDir(sBaseDir + _T("\\") + Time.Format(_T("%Y")) + _T("\\") + Time.Format(_T("%m")) + _T("\\") + Time.Format(_T("%d")));
-		if (!sSubDir.IsEmpty())
-			sDir += _T("\\") + sSubDir;
-		if (!::IsExistingDir(sDir))
-		{
-			if (!::CreateDir(sDir))
-			{
-				::ShowErrorMsg(::GetLastError(), FALSE);
-				sBaseYearMonthDaySubDir = _T("");
-			}
-			else
-				sBaseYearMonthDaySubDir = sDir;
-		}
-		else
-			sBaseYearMonthDaySubDir = sDir;
+		if (!::CreateDir(sDir))
+			::ShowErrorMsg(::GetLastError(), FALSE, _T("\"") + sDir + _T("\" "));
 	}
-	else
-		sBaseYearMonthDaySubDir = _T("");
+	
+	return sDir;
 }
 
 void CVideoDeviceDoc::CSaveFrameListThread::LoadDetFrame(CDib* pDib, DWORD& dwUpdatedIfErrorNoSuccess)
@@ -321,10 +311,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		// Detection creation flags and File Names
 		BOOL bMakeVideo = m_pDoc->m_bSaveVideo;
 		BOOL bMakeGif = m_pDoc->m_bSaveAnimGIF;
-		CString sVideoFileName;
-		CVideoDeviceDoc::CreateBaseYearMonthDaySubDir(m_pDoc->m_sRecordAutoSaveDir, FirstTime, _T(""), sVideoFileName);
-		if (!sVideoFileName.IsEmpty())
-			sVideoFileName += _T("\\");
+		CString sVideoFileName(CVideoDeviceDoc::CreateBaseYearMonthDaySubDir(m_pDoc->m_sRecordAutoSaveDir, FirstTime));
+		sVideoFileName += _T("\\");
 		CString sGIFFileName(sVideoFileName);
 		sVideoFileName += _T("rec_") + sFirstTime + DEFAULT_VIDEO_FILEEXT;
 		sGIFFileName += _T("rec_") + sFirstTime + _T(".gif");
@@ -1136,7 +1124,7 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	CString sBaseYearMonthDaySubDir;
 	BOOL bSaveHistoryJpeg = m_pDoc->m_bSnapshotHistoryVideo && !m_pDoc->m_bObscureSource;
 	if (bSaveHistoryJpeg)
-		CVideoDeviceDoc::CreateBaseYearMonthDaySubDir(m_pDoc->m_sRecordAutoSaveDir, m_Time, DEFAULT_SNAPSHOT_HISTORY_FOLDER, sBaseYearMonthDaySubDir);
+		sBaseYearMonthDaySubDir = CVideoDeviceDoc::CreateBaseYearMonthDaySubDir(m_pDoc->m_sRecordAutoSaveDir, m_Time, DEFAULT_SNAPSHOT_HISTORY_FOLDER);
 	CString sHistoryFileName(_T("shot_") + m_Time.Format(_T("%Y_%m_%d_%H_%M_%S")) + _T(".jpg"));
 	if (!sBaseYearMonthDaySubDir.IsEmpty())
 		sHistoryFileName = sBaseYearMonthDaySubDir + _T("\\") + sHistoryFileName;
@@ -7500,16 +7488,8 @@ BOOL CVideoDeviceDoc::EditCopy(CDib* pDib, const CTime& Time)
 
 void CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 {
-	// Create directory
-	CString sBaseYearMonthDayDir;
-	CreateBaseYearMonthDaySubDir(m_sRecordAutoSaveDir, Time, _T(""), sBaseYearMonthDayDir);
-
 	// Make File Name
-	CString sFileName;
-	if (sBaseYearMonthDayDir.IsEmpty())
-		sFileName = _T("manualshot_") + Time.Format(_T("%Y_%m_%d_%H_%M_%S")) + _T(".jpg");
-	else
-		sFileName = sBaseYearMonthDayDir + _T("\\") + _T("manualshot_") + Time.Format(_T("%Y_%m_%d_%H_%M_%S")) + _T(".jpg");
+	CString sFileName(CreateBaseYearMonthDaySubDir(m_sRecordAutoSaveDir, Time) + _T("\\") + _T("manualshot_") + Time.Format(_T("%Y_%m_%d_%H_%M_%S")) + _T(".jpg"));
 
 	// Do not overwrite existing because of below PopupNotificationWnd()
 	if (::IsExistingFile(sFileName))
@@ -7548,16 +7528,8 @@ void CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 
 CString CVideoDeviceDoc::SaveJpegRec(CDib* pDib, const CTime& Time)
 {
-	// Create directory
-	CString sBaseYearMonthDayDir;
-	CreateBaseYearMonthDaySubDir(m_sRecordAutoSaveDir, Time, _T(""), sBaseYearMonthDayDir);
-
 	// Make File Name
-	CString sFileName;
-	if (sBaseYearMonthDayDir.IsEmpty())
-		sFileName = _T("rec_") + Time.Format(_T("%Y_%m_%d_%H_%M_%S")) + _T(".jpg");
-	else
-		sFileName = sBaseYearMonthDayDir + _T("\\") + _T("rec_") + Time.Format(_T("%Y_%m_%d_%H_%M_%S")) + _T(".jpg");
+	CString sFileName(CreateBaseYearMonthDaySubDir(m_sRecordAutoSaveDir, Time) + _T("\\") + _T("rec_") + Time.Format(_T("%Y_%m_%d_%H_%M_%S")) + _T(".jpg"));
 
 	// Do not overwrite previous save, use it.
 	// Attention: it's ok to call this function several times per second,
@@ -8291,9 +8263,7 @@ void CVideoDeviceDoc::OnViewWeb()
 
 void CVideoDeviceDoc::OnViewFiles()
 {
-	CString sBaseYearMonthDayDir;
-	CreateBaseYearMonthDaySubDir(m_sRecordAutoSaveDir, CTime::GetCurrentTime(), _T(""), sBaseYearMonthDayDir);
-	::ShellExecute(NULL, _T("open"), sBaseYearMonthDayDir, NULL, NULL, SW_SHOWNORMAL);
+	::ShellExecute(NULL, _T("open"), CreateBaseYearMonthDaySubDir(m_sRecordAutoSaveDir, CTime::GetCurrentTime()), NULL, NULL, SW_SHOWNORMAL);
 }
 
 void CVideoDeviceDoc::OnEditCopy() 

@@ -624,7 +624,7 @@ public:
 	void SetView(CVideoDeviceView* pView) {m_pView = pView;};
 	CVideoDeviceChildFrame* GetFrame() const {return m_pFrame;};
 	void SetFrame(CVideoDeviceChildFrame* pFrame) {m_pFrame = pFrame;};
-	static void CreateBaseYearMonthDaySubDir(CString sBaseDir, CTime Time, CString sSubDir, CString& sBaseYearMonthDaySubDir);
+	static CString CreateBaseYearMonthDaySubDir(CString sBaseDir, CTime Time, CString sSubDir = _T(""));
 
 	// Open Dx Video Device
 	void OpenDxVideoDevice(int nId, CString sDevicePathName, CString sDeviceName);
