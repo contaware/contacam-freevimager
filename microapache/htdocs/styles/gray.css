@@ -7,11 +7,16 @@ body {
 	font-family: Helvetica,Arial,sans-serif;
 	font-size: 16px;
 	background-color: #666666;
-	color: #bbbbbb;
+	color: #ededed;
 }
 form {
 	margin: 0;
 	padding: 0;
+}
+
+/* Header */
+div#header {
+	width: 100%;
 }
 
 /* Pages title */
@@ -20,7 +25,7 @@ h1 {
 	margin: 10px 0 10px 0;
 	font-weight: bold;
 	vertical-align: bottom;
-	color: #bbbbbb;
+	color: #ededed;
 }
 
 /* Smaller titles */
@@ -29,7 +34,7 @@ h2 {
 	margin: 8px 0 6px 0;
 	font-weight: bold;
 	vertical-align: bottom;
-	color: #bbbbbb;
+	color: #ededed;
 }
 
 /* Centered containers */
@@ -53,12 +58,24 @@ a:active {
 	color: #33ccff;
 }
 a:hover, a:focus {
-	color: #ddffff;
+	color: #ededed;
 	text-decoration: underline;
 }
 
-/* Highlight currently selected page offset */
-a.highlight:link, a.highlight:visited, a.highlight:active, a.highlight:hover, a.highlight:focus {
+/* Pagination */
+div.pagination {
+	margin: 20px;
+	text-align: center;
+}
+div.pagination a {
+	display: inline-block;
+	padding: 5px 10px;
+}
+div.pagination a.highlight:link,
+div.pagination a.highlight:visited,
+div.pagination a.highlight:active,
+div.pagination a.highlight:hover,
+div.pagination a.highlight:focus {
 	color: #ffa23c;
 	text-decoration: underline;
 }
@@ -75,6 +92,13 @@ span.thumbcontainer a:visited {
 }
 span.thumbcontainer a:active, span.thumbcontainer a:focus {
 	color: #ffa23c;
+}
+span.shot {
+	display: block;
+	margin: 30px auto;
+	padding: 0;
+	text-align: center;
+	font-weight: bold;
 }
 
 /* Thumbs margin for summaries */
@@ -117,7 +141,7 @@ span.globalbuttons a {
 	vertical-align: middle;
 	text-decoration: none;
 	color: #333333;
-	background-color: #dddddd;
+	background-color: #ededed;
 	border: 1px solid #d0d0d0;
 }
 a.camoffbuttons {
@@ -136,7 +160,7 @@ input {
 	margin: 2px 0;
 	color: #333333;
 	text-align: center;
-	background-color: #dddddd; 
+	background-color: #ededed; 
 	border: 1px solid #d0d0d0;
 }
 input[type='date'] {
