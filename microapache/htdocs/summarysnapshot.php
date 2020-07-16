@@ -191,12 +191,29 @@ function PrintPageNavigation() {
 	
 	// Show pages navigation if more than a page available
 	if ($pages > 1) {
-		echo "<div style=\"text-align: center\">\n";
+		echo "<div class=\"pagination\">\n";
+		
+		// Previous page
+		$prev_page_offset = $page_offset - $max_per_page;
+		if ($prev_page_offset <= 0) {
+			if ($dateparams == "")
+				echo "<a href=\"$scriptname\">&lt;</a>\n";
+			else
+				echo "<a href=\"$scriptname?" . $dateparams . "\">&lt;</a>\n";
+		}
+		else {
+			if ($dateparams == "")
+				echo "<a href=\"$scriptname?pageoffset=$prev_page_offset\">&lt;</a>\n";
+			else
+				echo "<a href=\"$scriptname?" . $dateparams . "&amp;pageoffset=$prev_page_offset\">&lt;</a>\n";
+		}
+		
+		// Pages
 		$current_page_offset = 0;
 		$file_time_array = array_values($file_array);
 		for ($page=1 ; $page <= $pages ; $page++) {
 			$file_date = getdate($file_time_array[$current_page_offset]);
-			$page_text = sprintf("%d(%02d:%02d)", $page, $file_date['hours'], $file_date['minutes']);
+			$page_text = sprintf("%d&nbsp;<small>(%02d:%02d)</small>", $page, $file_date['hours'], $file_date['minutes']);
 			if ($page == 1) {
 				if ($current_page_offset == $page_offset) {
 					if ($dateparams == "")
@@ -226,12 +243,29 @@ function PrintPageNavigation() {
 			}
 			$current_page_offset += $max_per_page;
 		}
+		
+		// Next page
+		$last_page_offset = ($pages - 1) * $max_per_page;
+		$next_page_offset = $page_offset + $max_per_page;
+		if ($next_page_offset >= $last_page_offset) {
+			if ($dateparams == "")
+				echo "<a href=\"$scriptname?pageoffset=$last_page_offset\">&gt;</a>\n";
+			else
+				echo "<a href=\"$scriptname?" . $dateparams . "&amp;pageoffset=$last_page_offset\">&gt;</a>\n";
+		}
+		else {
+			if ($dateparams == "")
+				echo "<a href=\"$scriptname?pageoffset=$next_page_offset\">&gt;</a>\n";
+			else
+				echo "<a href=\"$scriptname?" . $dateparams . "&amp;pageoffset=$next_page_offset\">&gt;</a>\n";
+		}
+		
 		echo "</div>\n";
 	}
 }
             
 // Header
-echo "<div style=\"width: 100%\">\n";
+echo "<div id=\"header\">\n";
 
 // Live Preview
 $clickbackurl = urlencode(urldecode($_SERVER['REQUEST_URI']));
@@ -397,7 +431,7 @@ if ($handle = @opendir($dir)) {
 				$uribasenoext = "$filesdirpath/$selected_year_string/$selected_month_string/$selected_day_string/$filenamenoext";
 				$mp4uri = "$uribasenoext.mp4"; $mp4uri_get = urlencode($mp4uri);
 				$gifuri = "$uribasenoext.gif"; $gifuri_get = urlencode($gifuri);
-				echo "<span class=\"thumbcontainer\">";
+				echo "<span class=\"thumbcontainer " . strtolower($file_prefix) . "\">";
 				if ($path_parts['extension'] == 'gif') {
 					if (is_file("$dir/$filenamenoext.mp4"))
 						echo "<a href=\"mp4.php?file=$mp4uri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . $mp4s . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"download.php?embed=yes&amp;file=$gifuri_get\" title=\"$file_timestamp\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a>";
