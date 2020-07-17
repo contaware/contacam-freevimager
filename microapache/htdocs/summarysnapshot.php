@@ -199,13 +199,13 @@ function PrintPageNavigation() {
 			if ($dateparams == "")
 				echo "<a href=\"$scriptname\">&lt;</a>\n";
 			else
-				echo "<a href=\"$scriptname?" . $dateparams . "\">&lt;</a>\n";
+				echo "<a href=\"$scriptname?$dateparams\">&lt;</a>\n";
 		}
 		else {
 			if ($dateparams == "")
 				echo "<a href=\"$scriptname?pageoffset=$prev_page_offset\">&lt;</a>\n";
 			else
-				echo "<a href=\"$scriptname?" . $dateparams . "&amp;pageoffset=$prev_page_offset\">&lt;</a>\n";
+				echo "<a href=\"$scriptname?$dateparams&amp;pageoffset=$prev_page_offset\">&lt;</a>\n";
 		}
 		
 		// Pages
@@ -219,26 +219,26 @@ function PrintPageNavigation() {
 					if ($dateparams == "")
 						echo "<a class=\"highlight\" href=\"$scriptname\">$page_text</a>\n";
 					else
-						echo "<a class=\"highlight\" href=\"$scriptname?" . $dateparams . "\">$page_text</a>\n";
+						echo "<a class=\"highlight\" href=\"$scriptname?$dateparams\">$page_text</a>\n";
 				}
 				else {
 					if ($dateparams == "")
 						echo "<a href=\"$scriptname\">$page_text</a>\n";
 					else
-						echo "<a href=\"$scriptname?" . $dateparams . "\">$page_text</a>\n";
+						echo "<a href=\"$scriptname?$dateparams\">$page_text</a>\n";
 				}
 			} else {
 				if ($current_page_offset == $page_offset) {
 					if ($dateparams == "")
 						echo "<a class=\"highlight\" href=\"$scriptname?pageoffset=$current_page_offset\">$page_text</a>\n";
 					else
-						echo "<a class=\"highlight\" href=\"$scriptname?" . $dateparams . "&amp;pageoffset=$current_page_offset\">$page_text</a>\n";
+						echo "<a class=\"highlight\" href=\"$scriptname?$dateparams&amp;pageoffset=$current_page_offset\">$page_text</a>\n";
 				}
 				else {
 					if ($dateparams == "")
 						echo "<a href=\"$scriptname?pageoffset=$current_page_offset\">$page_text</a>\n";
 					else
-						echo "<a href=\"$scriptname?" . $dateparams . "&amp;pageoffset=$current_page_offset\">$page_text</a>\n";
+						echo "<a href=\"$scriptname?$dateparams&amp;pageoffset=$current_page_offset\">$page_text</a>\n";
 				}
 			}
 			$current_page_offset += $max_per_page;
@@ -251,13 +251,13 @@ function PrintPageNavigation() {
 			if ($dateparams == "")
 				echo "<a href=\"$scriptname?pageoffset=$last_page_offset\">&gt;</a>\n";
 			else
-				echo "<a href=\"$scriptname?" . $dateparams . "&amp;pageoffset=$last_page_offset\">&gt;</a>\n";
+				echo "<a href=\"$scriptname?$dateparams&amp;pageoffset=$last_page_offset\">&gt;</a>\n";
 		}
 		else {
 			if ($dateparams == "")
 				echo "<a href=\"$scriptname?pageoffset=$next_page_offset\">&gt;</a>\n";
 			else
-				echo "<a href=\"$scriptname?" . $dateparams . "&amp;pageoffset=$next_page_offset\">&gt;</a>\n";
+				echo "<a href=\"$scriptname?$dateparams&amp;pageoffset=$next_page_offset\">&gt;</a>\n";
 		}
 		
 		echo "</div>\n";
