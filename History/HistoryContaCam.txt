@@ -8,7 +8,9 @@ CONTACAM HISTORY
   if you change the video resolution or the zones size)
 - A warning message is now shown when frames get dropped because of
   memory shortage and system overload
-			
+- Small but nice enhancements to the web interface
+  (thanks to Yan Anquetil for helping with that)
+
 9.9.9 (May 2nd 2020)
 
 - Optimized camera preview
