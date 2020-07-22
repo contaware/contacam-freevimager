@@ -80,7 +80,7 @@ div.pagination a.highlight:focus {
 	text-decoration: underline;
 }
 
-/* Thumb container */
+/* Thumbs */
 span.thumbcontainer {
 	display: inline-block;
 	padding: 10px;
@@ -93,15 +93,14 @@ span.thumbcontainer a:visited {
 span.thumbcontainer a:active, span.thumbcontainer a:focus {
 	color: #ffa23c;
 }
-span.shot {
-	display: block;
-	margin: 30px auto;
-	padding: 0;
-	text-align: center;
-	font-weight: bold;
+span.thumbcontainer span {
+	font-family: Consolas, Inconsolata, Menlo, Monaco, monospace;
+	display: inline-block;
+	box-sizing: border-box;
+	padding: 5px;
+	margin: 5px; /* same margin as for the below: a img */
+	background: #555555;
 }
-
-/* Thumbs margin for summaries */
 a.notselected, a.lastselected {
 	outline: none;
 }
@@ -121,7 +120,7 @@ a.lastselected img, a.lastselected:visited img, a:active img, a:focus img {
 	padding: 0;
 }
 
-/* Controls style */
+/* Controls */
 video {
 	background-color: transparent;
 }
