@@ -342,10 +342,13 @@ if ($handle = @opendir($dir)) {
 	$day_has_files = false;
 			
 	// First catch all the wanted files
+	$gif_width = 0;
+	$gif_height = 0;
 	$file_array = array();
 	while (false !== ($file = readdir($handle))) {
 		$path_parts = pathinfo($file);
 		if (is_file("$dir/$file")) {
+			// Split filename
 			list($file_prefix, $file_year, $file_month, $file_day, $file_hour, $file_min, $file_sec, $file_postfix) = sscanf($file, "%[a-z,A-Z]_%d_%d_%d_%d_%d_%d_%[a-z,A-Z]");
 			if (!isset($file_year))
 				$file_year = 2000;
@@ -359,6 +362,12 @@ if ($handle = @opendir($dir)) {
 				$file_min = 0;
 			if (!isset($file_sec))
 				$file_sec = 0;
+			
+			// Get gif thumbs width and height
+			if (($gif_width <= 0 || $gif_height <= 0) && $path_parts['extension'] == 'gif')
+				list($gif_width, $gif_height) = getimagesize("$dir/$file");
+				
+			// Fill array
 			$hasgif = is_file($dir."/".basename($file, ".".$path_parts['extension']).".gif");
 			if ($path_parts['extension'] == 'gif' ||				// Gif thumb
 				($path_parts['extension'] == 'mp4' && !$hasgif)) {	// Mp4 without Gif thumb
@@ -431,7 +440,7 @@ if ($handle = @opendir($dir)) {
 				$uribasenoext = "$filesdirpath/$selected_year_string/$selected_month_string/$selected_day_string/$filenamenoext";
 				$mp4uri = "$uribasenoext.mp4"; $mp4uri_get = urlencode($mp4uri);
 				$gifuri = "$uribasenoext.gif"; $gifuri_get = urlencode($gifuri);
-				echo "<span class=\"thumbcontainer " . strtolower($file_prefix) . "\">";
+				echo "<span class=\"thumbcontainer\">";
 				if ($path_parts['extension'] == 'gif') {
 					if (is_file("$dir/$filenamenoext.mp4"))
 						echo "<a href=\"mp4.php?file=$mp4uri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . $mp4s . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"download.php?embed=yes&amp;file=$gifuri_get\" title=\"$file_timestamp\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a>";
@@ -440,10 +449,15 @@ if ($handle = @opendir($dir)) {
 				}
 				else if ($path_parts['extension'] == 'mp4') {
 					$file_prefix_upper = strtoupper($file_prefix);
+					if ($gif_width > 0 && $gif_height > 0)
+						echo "<span style=\"width: {$gif_width}px; height: {$gif_height}px\">";
+					else
+						echo "<span>";
 					if ($file_prefix_upper == 'SHOT')
 						echo "REC<br /><a href=\"mp4.php?file=$mp4uri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\" >" . FULLDAY . "</a>";
 					else
 						echo "$file_prefix_upper<br /><a href=\"mp4.php?file=$mp4uri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\" >$file_timestamp</a>";
+					echo "</span>";
 				}
 				if ($show_trash_command)
 					echo "&nbsp;<input style=\"vertical-align: bottom\" type=\"checkbox\" name=\"checklist\" value=\"" . htmlspecialchars($filenamenoext) . "\" />";
