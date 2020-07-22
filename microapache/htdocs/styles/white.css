@@ -169,6 +169,10 @@ input[type='date'] {
 	vertical-align: middle;
 	font-size: 14px;
 }
+div#day {
+	margin: 0;
+	padding: 8px 0;
+}
 a#back2top {
 	margin: 0;
 	padding: 0;
