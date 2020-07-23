@@ -47,9 +47,6 @@ CSettingsDlgVideoDeviceDoc::CSettingsDlgVideoDeviceDoc(CWnd* pParent /*=NULL*/)
 
 	// Applying the settings
 	m_bDoApplySettings = FALSE;
-
-	// Will be initialized in OnInitDialog()
-	m_cPasswordChar = 0;
 }
 
 void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
@@ -490,13 +487,11 @@ BOOL CSettingsDlgVideoDeviceDoc::OnInitDialog()
 	
 	// Shield Icon on OK Button
 	CButton* pOK = (CButton*)GetDlgItem(IDOK);
-	if (pOK)
-		pOK->SendMessage(BCM_SETSHIELD, 0, TRUE);
+	pOK->SendMessage(BCM_SETSHIELD, 0, TRUE);
 
 	// Get default password char
 	CEdit* pEditPw = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
-	if (pEditPw)
-		m_cPasswordChar = pEditPw->GetPasswordChar();
+	m_cPasswordChar = pEditPw->GetPasswordChar();
 
 	// Init timer
 	SetTimer(ID_TIMER_SETTINGSDLG, SETTINGSDLG_TIMER_MS, NULL);
