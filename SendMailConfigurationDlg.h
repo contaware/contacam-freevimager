@@ -56,7 +56,7 @@ protected:
 	TCHAR m_cPasswordChar;
 	void CopyToStruct();
 	static BOOL IsEmail(const CString& sEmail);
-	BOOL ValidateEmails();
+	BOOL ValidateEmailsAndHost();
 	// Generated message map functions
 	//{{AFX_MSG(CSendMailConfigurationDlg)
 	virtual BOOL OnInitDialog();
