@@ -8,6 +8,7 @@ CONTACAM HISTORY
   if you change the video resolution or the zones size)
 - A warning message is now shown when frames get dropped because of
   memory shortage and system overload
+- Added the "Show password" checkbox
 - Small but nice enhancements to the web interface
   (thanks to Yan Anquetil for helping with that)
 
