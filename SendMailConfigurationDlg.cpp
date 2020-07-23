@@ -37,6 +37,7 @@ void CSendMailConfigurationDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CSendMailConfigurationDlg, CDialog)
 	//{{AFX_MSG_MAP(CSendMailConfigurationDlg)
 	ON_BN_CLICKED(IDC_BUTTON_TEST, OnButtonTest)
+	ON_BN_CLICKED(IDC_CHECK_SHOW_PASSWORD, OnCheckShowPassword)
 	ON_EN_CHANGE(IDC_SENDER_MAIL, OnChangeEditSenderMail)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -84,6 +85,7 @@ BOOL CSendMailConfigurationDlg::OnInitDialog()
 	pEdit->SetWindowText(m_SendMailConfiguration.m_sUsername);
 	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
 	pEdit->SetWindowText(m_SendMailConfiguration.m_sPassword);
+	m_cPasswordChar = pEdit->GetPasswordChar();
 
 	// Connection Type
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_CONNECTIONTYPE);
@@ -94,6 +96,17 @@ BOOL CSendMailConfigurationDlg::OnInitDialog()
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+void CSendMailConfigurationDlg::OnCheckShowPassword()
+{
+	CEdit* pEditPw = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
+	CButton* pCheckPw = (CButton*)GetDlgItem(IDC_CHECK_SHOW_PASSWORD);
+	if (pCheckPw->GetCheck() > 0)
+		pEditPw->SetPasswordChar(0);
+	else
+		pEditPw->SetPasswordChar(m_cPasswordChar);
+	pEditPw->Invalidate();
 }
 
 void CSendMailConfigurationDlg::OnChangeEditSenderMail() 
