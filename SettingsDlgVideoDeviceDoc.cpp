@@ -47,6 +47,9 @@ CSettingsDlgVideoDeviceDoc::CSettingsDlgVideoDeviceDoc(CWnd* pParent /*=NULL*/)
 
 	// Applying the settings
 	m_bDoApplySettings = FALSE;
+
+	// Will be initialized in OnInitDialog()
+	m_cPasswordChar = 0;
 }
 
 void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
@@ -75,6 +78,7 @@ void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CSettingsDlgVideoDeviceDoc, CDialog)
 	//{{AFX_MSG_MAP(CSettingsDlgVideoDeviceDoc)
 	ON_BN_CLICKED(IDC_BUTTON_DOCROOT, OnButtonDocRoot)
+	ON_BN_CLICKED(IDC_CHECK_SHOW_PASSWORD, OnCheckShowPassword)
 	ON_BN_CLICKED(IDC_BUTTON_CERT_SSL, OnButtonCertSsl)
 	ON_BN_CLICKED(IDC_BUTTON_KEY_SSL, OnButtonKeySsl)
 	ON_WM_SETCURSOR()
@@ -341,6 +345,8 @@ void CSettingsDlgVideoDeviceDoc::EnableDisableAllCtrls(BOOL bEnable)
 	pEdit->EnableWindow(bEnable);
 	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
 	pEdit->EnableWindow(bEnable);
+	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SHOW_PASSWORD);
+	pCheck->EnableWindow(bEnable);
 	pButton = (CButton*)GetDlgItem(IDC_BUTTON_CERT_SSL);
 	pButton->EnableWindow(bEnable);
 	pButton = (CButton*)GetDlgItem(IDC_BUTTON_KEY_SSL);
@@ -431,6 +437,17 @@ void CSettingsDlgVideoDeviceDoc::OnButtonDocRoot()
 	}
 }
 
+void CSettingsDlgVideoDeviceDoc::OnCheckShowPassword()
+{
+	CEdit* pEditPw = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
+	CButton* pCheckPw = (CButton*)GetDlgItem(IDC_CHECK_SHOW_PASSWORD);
+	if (pCheckPw->GetCheck() > 0)
+		pEditPw->SetPasswordChar(0);
+	else
+		pEditPw->SetPasswordChar(m_cPasswordChar);
+	pEditPw->Invalidate();
+}
+
 void CSettingsDlgVideoDeviceDoc::OnButtonCertSsl()
 {
 	// Validate entered data
@@ -475,6 +492,11 @@ BOOL CSettingsDlgVideoDeviceDoc::OnInitDialog()
 	CButton* pOK = (CButton*)GetDlgItem(IDOK);
 	if (pOK)
 		pOK->SendMessage(BCM_SETSHIELD, 0, TRUE);
+
+	// Get default password char
+	CEdit* pEditPw = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
+	if (pEditPw)
+		m_cPasswordChar = pEditPw->GetPasswordChar();
 
 	// Init timer
 	SetTimer(ID_TIMER_SETTINGSDLG, SETTINGSDLG_TIMER_MS, NULL);
