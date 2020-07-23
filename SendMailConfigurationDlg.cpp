@@ -256,9 +256,9 @@ BOOL CSendMailConfigurationDlg::IsEmail(const CString& sEmail)
 	return TRUE;
 }
 
-BOOL CSendMailConfigurationDlg::ValidateEmailsAndHost()
+BOOL CSendMailConfigurationDlg::ValidateEmails()
 {
-	if (!IsEmail(m_SendMailConfiguration.m_sTo))
+	if (!m_SendMailConfiguration.m_sTo.IsEmpty() && !IsEmail(m_SendMailConfiguration.m_sTo))
 	{
 		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_RECEIVER_MAIL);
 		pEdit->SetFocus();
@@ -266,17 +266,10 @@ BOOL CSendMailConfigurationDlg::ValidateEmailsAndHost()
 		::AlertUser(GetSafeHwnd());
 		return FALSE;
 	}
-	if (!IsEmail(m_SendMailConfiguration.m_sFrom))
+
+	if (!m_SendMailConfiguration.m_sFrom.IsEmpty() && !IsEmail(m_SendMailConfiguration.m_sFrom))
 	{
 		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_SENDER_MAIL);
-		pEdit->SetFocus();
-		pEdit->SetSel(0xFFFF0000);
-		::AlertUser(GetSafeHwnd());
-		return FALSE;
-	}
-	if (m_SendMailConfiguration.m_sHost.IsEmpty())
-	{
-		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_HOST_NAME);
 		pEdit->SetFocus();
 		pEdit->SetSel(0xFFFF0000);
 		::AlertUser(GetSafeHwnd());
@@ -289,14 +282,14 @@ BOOL CSendMailConfigurationDlg::ValidateEmailsAndHost()
 void CSendMailConfigurationDlg::OnOK() 
 {
 	CopyToStruct();
-	if (ValidateEmailsAndHost())
+	if (ValidateEmails())
 		CDialog::OnOK();
 }
 
 void CSendMailConfigurationDlg::OnButtonTest() 
 {
 	CopyToStruct();
-	if (ValidateEmailsAndHost())
+	if (ValidateEmails())
 	{
 		CVideoDeviceDoc::SendMail(	m_SendMailConfiguration,
 									m_sName,
