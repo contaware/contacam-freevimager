@@ -57,6 +57,7 @@ protected:
 	CDWordArray m_Ports;
 	CDWordArray m_DeviceTypeModes;
 	CString m_sInitialDlgTitle;
+	TCHAR m_cPasswordChar;
 
 	// Generated message map functions
 	//{{AFX_MSG(CHostPortDlg)
@@ -66,6 +67,7 @@ protected:
 	afx_msg void OnEditchangeComboHost();
 	afx_msg void OnChangeEditPort();
 	afx_msg void OnSelchangeComboDeviceTypeMode();
+	afx_msg void OnCheckShowPassword();
 	afx_msg void OnButtonHelp();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
