@@ -2137,7 +2137,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,108,229,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,193,229,47,14
     LTEXT           "User Name",IDC_STATIC,11,156,47,8
-    LTEXT           "Password",IDC_STATIC,174,156,40,8
+    LTEXT           "Password",IDC_STATIC,175,156,40,8
     GROUPBOX        "General",IDC_STATIC2248,5,5,339,60
     LTEXT           "HTTP Port\n(8800, 80, 81)",IDC_STATIC,175,133,49,15
     GROUPBOX        "Parent Directory of all Cameras",IDC_STATIC,5,74,339,41

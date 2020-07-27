@@ -71,4 +71,7 @@ ContaCam Program
 - Take multiple jpg snapshots on motion, not just one
   (randy3xyz@gmail.com)
   
+- In web interface main view when clicking the camera thumb show it fullscreen,
+  when clicking the camera name show the videos (n1fbg2@yahoo.com)
+  
 - Remove Interlocked... functions replacing volatile int with std::atomic<int>
