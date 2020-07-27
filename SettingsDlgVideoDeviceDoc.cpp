@@ -226,7 +226,7 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsEnd()
 		if (m_bStartMicroApache && !CVideoDeviceDoc::MicroApacheStart(MICROAPACHE_TIMEOUT_MS))
 		{
 			EndWaitCursor();
-			::AfxMessageBox(ML_STRING(1475, "Failed to start the web server"), MB_ICONSTOP);
+			::AfxMessageBox(ML_STRING(1475, "Failed to start the web server, try other HTTP(S) ports and allow them in your firewall!"), MB_ICONSTOP);
 			BeginWaitCursor();
 		}
 	}
