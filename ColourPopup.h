@@ -115,6 +115,7 @@ protected:
     // Generated message map functions
 protected:
     //{{AFX_MSG(CColourPopup)
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg void OnNcDestroy();
     afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
     afx_msg void OnPaint();

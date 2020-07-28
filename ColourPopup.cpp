@@ -243,6 +243,14 @@ BOOL CColourPopup::Create(CPoint p, COLORREF crColour, CWnd* pParentWnd,
     m_pParent  = pParentWnd;
     m_crColour = m_crInitialColour = crColour;
 
+	// Store the Custom text
+	if (szCustomText != NULL)
+		m_strCustomText = szCustomText;
+
+	// Store the Default Area text
+	if (szDefaultText != NULL)
+		m_strDefaultText = szDefaultText;
+
 	// Get the class name and create the window
 	UINT nClassStyle = CS_CLASSDC|CS_SAVEBITS|CS_HREDRAW|CS_VREDRAW;
 	if (m_bThemed)
@@ -263,7 +271,7 @@ BOOL CColourPopup::Create(CPoint p, COLORREF crColour, CWnd* pParentWnd,
 		pTopParent->SetRedraw( FALSE );
 
 	BOOL bCreate = CWnd::CreateEx(0, szClassName, _T(""), WS_VISIBLE|WS_POPUP, 
-                        p.x, p.y, 100, 100, // size updated soon
+                        p.x, p.y, 100, 100, // size updated in OnCreate()
                         pParentWnd->GetSafeHwnd(), 0, NULL);
 	if (pTopParent != NULL)
 	{
@@ -272,20 +280,6 @@ BOOL CColourPopup::Create(CPoint p, COLORREF crColour, CWnd* pParentWnd,
 	}
 	if (!bCreate)
 		return FALSE;
-
-    // Store the Custom text
-    if (szCustomText != NULL) 
-        m_strCustomText = szCustomText;
-
-    // Store the Default Area text
-    if (szDefaultText != NULL) 
-        m_strDefaultText = szDefaultText;
-        
-    // Set the window size
-    SetWindowSize();
-
-    // Create the tooltips
-    CreateToolTips();
 
     // Find which cell (if any) corresponds to the initial colour
     FindCellFromColour(crColour);
@@ -298,6 +292,7 @@ BOOL CColourPopup::Create(CPoint p, COLORREF crColour, CWnd* pParentWnd,
 
 BEGIN_MESSAGE_MAP(CColourPopup, CWnd)
     //{{AFX_MSG_MAP(CColourPopup)
+	ON_WM_CREATE()
     ON_WM_NCDESTROY()
     ON_WM_LBUTTONUP()
     ON_WM_PAINT()
@@ -312,6 +307,22 @@ END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CColourPopup message handlers
+
+// The CWnd object receives this call after the window is created but before it becomes visible.
+// OnCreate is called before CreateEx member function returns.
+int CColourPopup::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+	if (CWnd::OnCreate(lpCreateStruct) == -1)
+		return -1;
+
+	// Set the window size
+	SetWindowSize();
+
+	// Create the tooltips
+	CreateToolTips();
+
+	return 0;
+}
 
 // For tooltips
 BOOL CColourPopup::PreTranslateMessage(MSG* pMsg) 
