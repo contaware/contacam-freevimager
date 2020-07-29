@@ -4196,7 +4196,7 @@ void CPictureDoc::CancelZoomTool()
 	::AfxGetMainFrame()->StatusText();
 }
 
-void CPictureDoc::StretchHalftone() 
+void CPictureDoc::OnViewStretchHalftone() 
 {
 	m_bStretchModeHalftone = !m_bStretchModeHalftone;
 	::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
@@ -4206,11 +4206,6 @@ void CPictureDoc::StretchHalftone()
 		m_pLayeredDlg->m_CurrentLayeredDib.Free();
 	GetView()->Draw();
 	InvalidateAllViews(FALSE);
-}
-
-void CPictureDoc::OnViewStretchHalftone() 
-{
-	StretchHalftone();
 }
 
 void CPictureDoc::OnUpdateViewStretchHalftone(CCmdUI* pCmdUI) 
@@ -8358,7 +8353,7 @@ void CPictureDoc::UpdateImageInfo(BOOL bUpdateFileInfoOnly/*=FALSE*/)
 		pOldActiveWnd->SetActiveWindow();
 }
 
-void CPictureDoc::FileInfo() 
+void CPictureDoc::OnFileInfo() 
 {
 	if (m_pImageInfoDlg)
 	{
@@ -8373,11 +8368,6 @@ void CPictureDoc::FileInfo()
 		m_pImageInfoDlg->ShowWindow(SW_SHOWNA);
 		UpdateImageInfo();
 	}
-}
-
-void CPictureDoc::OnFileInfo() 
-{
-	FileInfo();
 }
 
 void CPictureDoc::OnUpdateFileInfo(CCmdUI* pCmdUI) 
@@ -9535,7 +9525,7 @@ void CPictureDoc::OnUpdateViewLockBackgroundColor(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(m_bLockBackgroundColor ? 1 : 0);
 }
 
-void CPictureDoc::ViewMap()
+void CPictureDoc::OnViewMap() 
 {
 	if (m_pDib && !GetView()->m_bFullScreenMode)
 	{
@@ -9661,28 +9651,18 @@ void CPictureDoc::ViewMap()
 	}
 }
 
-void CPictureDoc::OnViewMap() 
-{
-	ViewMap();
-}
-
 void CPictureDoc::OnUpdateViewMap(CCmdUI* pCmdUI) 
 {
 	pCmdUI->Enable(m_pDib && !GetView()->m_bFullScreenMode);
 }
 
-void CPictureDoc::ViewNoBorders()
+void CPictureDoc::OnViewNoBorders() 
 {
 	m_bNoBorders = !m_bNoBorders;
 	::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
 									_T("NoBorders"),
 									m_bNoBorders);
 	GetView()->UpdateWindowSizes(TRUE, TRUE, FALSE);
-}
-
-void CPictureDoc::OnViewNoBorders() 
-{
-	ViewNoBorders();
 }
 
 void CPictureDoc::OnUpdateViewNoBorders(CCmdUI* pCmdUI) 

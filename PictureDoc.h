@@ -484,24 +484,12 @@ public:
 	BOOL ViewNextPageFrame();
 	BOOL ViewPreviousPageFrame();
 
-	// View position in google map
-	void ViewMap();
-
-	// Enable / Disable Borders
-	void ViewNoBorders();
-
 	// Enable / disable zoom tool
 	void ViewZoomTool();
 	void CancelZoomTool();
 
 	// Show / Hide OSD Dialog
 	void ShowOsd(BOOL bShow);
-
-	// Show / Hide File Info Dialog
-	void FileInfo();
-
-	// Enable / Disable Halftone Stretch Mode
-	void StretchHalftone();
 
 	// Save
 	BOOL Save();
