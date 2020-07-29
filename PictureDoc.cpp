@@ -162,8 +162,8 @@ BEGIN_MESSAGE_MAP(CPictureDoc, CUImagerDoc)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_FILTER_SOFTEN, OnUpdateEditFilterSoften)
 	ON_COMMAND(ID_EDIT_REMOVE_IPTC, OnEditRemoveIptc)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_REMOVE_IPTC, OnUpdateEditRemoveIptc)
-	ON_COMMAND(ID_VIEW_BACKGROUND_COLOR_MENU, OnViewBackgroundColorMenu)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_BACKGROUND_COLOR_MENU, OnUpdateViewBackgroundColorMenu)
+	ON_COMMAND(ID_VIEW_LOCK_BACKGROUND_COLOR, OnViewLockBackgroundColor)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_LOCK_BACKGROUND_COLOR, OnUpdateViewLockBackgroundColor)
 	ON_COMMAND(ID_EDIT_ADD_BORDERS, OnEditAddBorders)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_ADD_BORDERS, OnUpdateEditAddBorders)
 	ON_COMMAND(ID_EDIT_SOFT_BORDERS, OnEditSoftBorders)
@@ -1784,7 +1784,8 @@ CPictureDoc::CPictureDoc()
 	// reset by CSlideShowThread::SlideShow()
 	m_bShowMessageBoxOnError = TRUE;
 
-	// The Image Has no Defined Background Color
+	// Init Background Color Variables
+	m_bLockBackgroundColor = FALSE;
 	m_bImageBackgroundColor = FALSE;
 	m_crImageBackgroundColor = RGB(0,0,0);
 
@@ -3969,6 +3970,7 @@ void CPictureDoc::LoadSettings()
 	m_uiMaxColors16 = (BOOL)pApp->GetProfileInt(sSection, _T("MaxColors16"), 16);
 	m_uiMaxColors256 = (BOOL)pApp->GetProfileInt(sSection, _T("MaxColors256"), 256);
 	m_crBackgroundColor = (COLORREF)pApp->GetProfileInt(sSection, _T("BackgroundColor"), ::GetSysColor(COLOR_WINDOW));
+	m_bLockBackgroundColor = (BOOL)pApp->GetProfileInt(sSection, _T("LockBackgroundColor"), FALSE);
 	m_bForceLossyTrafo = (BOOL)pApp->GetProfileInt(sSection, _T("ForceLossyTrafo"), FALSE);
 	m_bStretchModeHalftone = (BOOL)pApp->GetProfileInt(sSection, _T("StretchModeHalftone"), TRUE);
 	m_bEnableOsd = (BOOL)pApp->GetProfileInt(sSection, _T("EnableOSD"), TRUE);
@@ -4505,13 +4507,13 @@ BOOL CPictureDoc::LoadPicture(CDib *volatile *ppDib,
 		// Update Control
 		if (m_bImageBackgroundColor)
 		{
-			m_crImageBackgroundColor = (*ppDib)->m_FileInfo.m_crBackgroundColor;
+			m_crImageBackgroundColor = m_bLockBackgroundColor ? m_crBackgroundColor : (*ppDib)->m_FileInfo.m_crBackgroundColor;
 			CColorButtonPicker* pBkgColorButtonPicker =
 				&(((CPictureToolBar*)((CToolBarChildFrame*)
 				(GetView()->GetParentFrame()))->GetToolBar())->m_BkgColorButtonPicker);
 			pBkgColorButtonPicker->SetDefaultText(ML_STRING(1272, "Image Default Backgnd"));
 			pBkgColorButtonPicker->SetColor(m_crImageBackgroundColor);
-			pBkgColorButtonPicker->SetDefaultColor(m_crImageBackgroundColor);
+			pBkgColorButtonPicker->SetDefaultColor((*ppDib)->m_FileInfo.m_crBackgroundColor);
 		}
 		// Restore Control
 		else
@@ -9520,60 +9522,17 @@ BOOL CPictureDoc::ViewLastPageFrame()
 	return FALSE;
 }
 
-void CPictureDoc::ViewBackgroundColorDlg() 
+void CPictureDoc::OnViewLockBackgroundColor()
 {
-	// Image Has a Defined Background Color?
-	COLORREF* pBackgroundColor;
-	if (m_bImageBackgroundColor)
-		pBackgroundColor = &m_crImageBackgroundColor;
-	else
-		pBackgroundColor = &m_crBackgroundColor;
-
-	// Force Cursor
-	GetView()->ForceCursor();
-
-	// Show Color Dialog
-	if (((CUImagerApp*)::AfxGetApp())->ShowColorDlg(*pBackgroundColor, GetView()))
-	{
-		// Update Control
-		CColorButtonPicker* pBkgColorButtonPicker =
-					&(((CPictureToolBar*)((CToolBarChildFrame*)
-					(GetView()->GetParentFrame()))->GetToolBar())->m_BkgColorButtonPicker);
-		pBkgColorButtonPicker->SetColor(*pBackgroundColor);
-
-		// Re-Render Animated Gif frames with new background color
-		if (::GetFileExt(m_sFileName) == _T(".gif")	&&
-			m_GifAnimationThread.IsAlive()			&&
-			m_GifAnimationThread.m_dwDibAnimationCount > 1)
-		{
-			m_GifAnimationThread.AlphaRender(*pBackgroundColor);
-		}
-
-		// Re-Render with new background color
-		UpdateAlphaRenderedDib();
-
-		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-										_T("BackgroundColor"),
-										m_crBackgroundColor);
-
-		InvalidateAllViews(FALSE);
-	}
-
-	// Do not Force Cursor
-	GetView()->ForceCursor(FALSE);
+	m_bLockBackgroundColor = !m_bLockBackgroundColor;
+	::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+									_T("LockBackgroundColor"),
+									m_bLockBackgroundColor);
 }
 
-void CPictureDoc::OnViewBackgroundColorMenu() 
+void CPictureDoc::OnUpdateViewLockBackgroundColor(CCmdUI* pCmdUI)
 {
-	ViewBackgroundColorDlg();
-}
-
-void CPictureDoc::OnUpdateViewBackgroundColorMenu(CCmdUI* pCmdUI) 
-{
-	pCmdUI->Enable(	!m_pHLSDlg				&&
-					!m_bCrop				&&
-					!m_pRedEyeDlg			&&
-					!m_bDoRedEyeColorPickup);	
+	pCmdUI->SetCheck(m_bLockBackgroundColor ? 1 : 0);
 }
 
 void CPictureDoc::ViewMap()
@@ -9739,25 +9698,18 @@ void CPictureDoc::OnBackgroundColor()
 		&(((CPictureToolBar*)((CToolBarChildFrame*)
 		(GetView()->GetParentFrame()))->GetToolBar())->m_BkgColorButtonPicker);
 	
-	// Image Has a Defined Background Color?
-	COLORREF* pBackgroundColor;
-	if (m_bImageBackgroundColor)
-		pBackgroundColor = &m_crImageBackgroundColor;
-	else
-		pBackgroundColor = &m_crBackgroundColor;
-
 	// Get The Color
 	if (pBkgColorButtonPicker->GetColor() == CLR_DEFAULT)
-		*pBackgroundColor = pBkgColorButtonPicker->GetDefaultColor();
+		m_crImageBackgroundColor = m_crBackgroundColor = pBkgColorButtonPicker->GetDefaultColor();
 	else
-		*pBackgroundColor = pBkgColorButtonPicker->GetColor();
+		m_crImageBackgroundColor = m_crBackgroundColor = pBkgColorButtonPicker->GetColor();
 
 	// Re-Render Animated Gif frames with new background color
 	if (::GetFileExt(m_sFileName) == _T(".gif")	&&
 		m_GifAnimationThread.IsAlive()			&&
 		m_GifAnimationThread.m_dwDibAnimationCount > 1)
 	{
-		m_GifAnimationThread.AlphaRender(*pBackgroundColor);
+		m_GifAnimationThread.AlphaRender(m_crBackgroundColor);
 	}
 
 	// Re-Render with new background color

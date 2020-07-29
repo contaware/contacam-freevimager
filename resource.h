@@ -3091,7 +3091,7 @@
 #define ID_EDIT_FILTER_SHARPEN          32973
 #define ID_EDIT_FILTER_SOFTEN           32974
 #define ID_EDIT_REMOVE_IPTC             32980
-#define ID_VIEW_BACKGROUND_COLOR_MENU   32989
+#define ID_VIEW_LOCK_BACKGROUND_COLOR   32989
 #define ID_VIEW_ZOOM_FIT                32990
 #define ID_VIEW_ZOOM_FITBIG             32991
 #define ID_VIEW_ZOOM_625                32992

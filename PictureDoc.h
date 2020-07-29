@@ -490,9 +490,6 @@ public:
 	// Enable / Disable Borders
 	void ViewNoBorders();
 
-	// Show Background Color Dialog
-	void ViewBackgroundColorDlg();
-
 	// Enable / disable zoom tool
 	void ViewZoomTool();
 	void CancelZoomTool();
@@ -657,9 +654,11 @@ public:
 	// Note: Slideshow disables this!
 	volatile BOOL m_bDoJPEGGet;
 
-	// If the Image Has a Defined Background Color,
-	// in all the code m_crImageBackgroundColor
-	// is used instead of m_crBackgroundColor!
+	// If the Image Has a Defined Background Color, in all the code
+	// m_crImageBackgroundColor is used instead of m_crBackgroundColor.
+	// If m_bLockBackgroundColor is set, then m_crImageBackgroundColor
+	// is init with m_crBackgroundColor instead of the image's background.
+	BOOL m_bLockBackgroundColor;
 	BOOL m_bImageBackgroundColor;
 	COLORREF m_crImageBackgroundColor;
 
@@ -901,8 +900,8 @@ protected:
 	afx_msg void OnUpdateEditFilterSoften(CCmdUI* pCmdUI);
 	afx_msg void OnEditRemoveIptc();
 	afx_msg void OnUpdateEditRemoveIptc(CCmdUI* pCmdUI);
-	afx_msg void OnViewBackgroundColorMenu();
-	afx_msg void OnUpdateViewBackgroundColorMenu(CCmdUI* pCmdUI);
+	afx_msg void OnViewLockBackgroundColor();
+	afx_msg void OnUpdateViewLockBackgroundColor(CCmdUI* pCmdUI);
 	afx_msg void OnEditAddBorders();
 	afx_msg void OnUpdateEditAddBorders(CCmdUI* pCmdUI);
 	afx_msg void OnEditSoftBorders();

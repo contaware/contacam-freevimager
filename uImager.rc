@@ -347,7 +347,7 @@ BEGIN
             MENUITEM "1600 %",                      ID_VIEW_ZOOM_1600
         END
         MENUITEM "&Zoom Click",                 ID_VIEW_ZOOM_TOOL
-        MENUITEM "Background Color...",         ID_VIEW_BACKGROUND_COLOR_MENU
+        MENUITEM "Lock Background Color",       ID_VIEW_LOCK_BACKGROUND_COLOR
         MENUITEM "No Borders",                  ID_VIEW_NO_BORDERS
         MENUITEM SEPARATOR
         MENUITEM "Preview Display\tCtrl+U",     ID_VIEW_LAYERED_DLG
@@ -3438,7 +3438,8 @@ END
 STRINGTABLE
 BEGIN
     ID_EDIT_REMOVE_IPTC     "Remove the legacy IPTC section\nRemove Legacy IPTC"
-    ID_VIEW_BACKGROUND_COLOR_MENU "Background color\nBackground Color"
+    ID_VIEW_LOCK_BACKGROUND_COLOR 
+                            "Lock background color\nLock Background Color"
     ID_VIEW_ZOOM_FIT        "Fit all images\nFit All"
     ID_VIEW_ZOOM_FITBIG     "Fit big images only\nFit Big Images"
 END
