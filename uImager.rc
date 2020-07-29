@@ -346,7 +346,6 @@ BEGIN
             MENUITEM "800 %",                       ID_VIEW_ZOOM_800
             MENUITEM "1600 %",                      ID_VIEW_ZOOM_1600
         END
-        MENUITEM "&Zoom Click",                 ID_VIEW_ZOOM_TOOL
         MENUITEM "Lock Background Color",       ID_VIEW_LOCK_BACKGROUND_COLOR
         MENUITEM "No Borders",                  ID_VIEW_NO_BORDERS
         MENUITEM SEPARATOR
@@ -384,8 +383,6 @@ BEGIN
         MENUITEM "&Previous Image\tBackspace",  ID_VIEW_PREVIOUS_PICTURE
         MENUITEM "All Next Image\tCtrl+Space",  ID_VIEW_ALL_NEXT_PICTURE
         MENUITEM "All Prev. Image\tCtrl+Backspace", ID_VIEW_ALL_PREVIOUS_PICTURE
-        MENUITEM SEPARATOR
-        MENUITEM "High Quality Stretch",        ID_VIEW_STRETCH_HALFTONE
         MENUITEM SEPARATOR
         MENUITEM "Next Page/Frame\tPageDn",     ID_VIEW_NEXT_PAGE_FRAME
         MENUITEM "Prev. Page/Frame\tPageUp",    ID_VIEW_PREVIOUS_PAGE_FRAME
