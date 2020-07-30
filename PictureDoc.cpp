@@ -3989,9 +3989,6 @@ void CPictureDoc::LoadSettings()
 	else if (m_nLayeredDlgOpacity > MAX_LAYERED_DLG_OPACITY)
 		m_nLayeredDlgOpacity = MAX_LAYERED_DLG_OPACITY;
 	m_sCopyOrMoveDirName = pApp->GetProfileString(sSection, _T("CopyOrMoveDirName"), _T(""));
-	m_bZoomTool = pApp->GetProfileInt(sSection, _T("ZoomTool"), FALSE);
-	if (m_bZoomTool)
-		::AfxGetMainFrame()->StatusText(ML_STRING(1226, "*** Right Click to Zoom Out ***"));
 }
 
 CDib* CPictureDoc::AddUndo(CDib* pDib/*=NULL*/)
@@ -4179,9 +4176,6 @@ void CPictureDoc::ViewZoomTool()
 	if (!GetView()->m_bFullScreenMode)
 	{
 		m_bZoomTool = TRUE;
-		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-										_T("ZoomTool"),
-										TRUE);
 		::AfxGetMainFrame()->StatusText(ML_STRING(1226, "*** Right Click to Zoom Out ***"));
 	}
 }
@@ -4190,9 +4184,6 @@ void CPictureDoc::CancelZoomTool()
 {
 	m_bZoomTool = FALSE;
 	m_bZoomToolMinus = FALSE;
-	::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-									_T("ZoomTool"),
-									FALSE);
 	::AfxGetMainFrame()->StatusText();
 }
 
