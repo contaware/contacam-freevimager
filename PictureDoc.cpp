@@ -3977,8 +3977,7 @@ void CPictureDoc::LoadSettings()
 	m_bNoBorders = (BOOL)pApp->GetProfileInt(sSection, _T("NoBorders"), FALSE);
 	m_bPrintMargin = (BOOL)pApp->GetProfileInt(sSection, _T("PrintMargin"), TRUE);
 	m_nZoomComboBoxIndex = (int)pApp->GetProfileInt(sSection, _T("ZoomComboBoxIndex"), 0); // Default Fit
-	if (m_nZoomComboBoxIndex < MIN_ZOOM_COMBOBOX_INDEX ||
-		m_nZoomComboBoxIndex > MAX_ZOOM_COMBOBOX_INDEX)
+	if (m_nZoomComboBoxIndex != 0 && m_nZoomComboBoxIndex != 1) // Only start with Fit or Fit Big
 		m_nZoomComboBoxIndex = 0; // Fit
 	m_nLayeredDlgMaxsizePercent = (int)pApp->GetProfileInt(sSection, _T("LayeredDlgMaxsizePercent"), MIN_LAYERED_DLG_MAXSIZE_PERCENT);
 	m_nLayeredDlgSizePerthousand = (int)pApp->GetProfileInt(sSection, _T("LayeredDlgSizePerthousand"), 0);

@@ -2,8 +2,14 @@ FREEVIMAGER HISTORY
 
 9.9.10 (Month XX 2020)
 
+- Always open images with zoom level Fit or Fit Big
+- File formats like .png and .gif can store a background color which is
+  used to render the images. When watching pictures one after the other 
+  a fixed background color may be preferred. That's now possible with 
+  the "Lock Background Color" option found in View menu 
 - More robust exif metadata reader, for some corrupted jpeg files
   the program could crash
+- Solved a Color Picker display bug (thanks to Veksha for helping)
 
 9.9.9 (May 2nd 2020)
 

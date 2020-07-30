@@ -10,9 +10,6 @@
 #include "uxtheme.h"
 #include "ColorButtonPicker.h"
 
-#define MIN_ZOOM_COMBOBOX_INDEX						0
-#define MAX_ZOOM_COMBOBOX_INDEX						10
-
 /////////////////////////////////////////////////////////////////////////////
 // CChildToolBar
 
