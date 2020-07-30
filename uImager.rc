@@ -332,20 +332,6 @@ BEGIN
     BEGIN
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
         MENUITEM SEPARATOR
-        POPUP "Zoom"
-        BEGIN
-            MENUITEM "Fit\tShift + /",              ID_VIEW_ZOOM_FIT
-            MENUITEM "Fit Big\t/",                  ID_VIEW_ZOOM_FITBIG
-            MENUITEM "6.25 %",                      ID_VIEW_ZOOM_625
-            MENUITEM "12.5 %",                      ID_VIEW_ZOOM_125
-            MENUITEM "25 %",                        ID_VIEW_ZOOM_25
-            MENUITEM "50 %",                        ID_VIEW_ZOOM_50
-            MENUITEM "100 %\t*",                    ID_VIEW_ZOOM_100
-            MENUITEM "200 %",                       ID_VIEW_ZOOM_200
-            MENUITEM "400 %",                       ID_VIEW_ZOOM_400
-            MENUITEM "800 %",                       ID_VIEW_ZOOM_800
-            MENUITEM "1600 %",                      ID_VIEW_ZOOM_1600
-        END
         MENUITEM "Lock Background Color",       ID_VIEW_LOCK_BACKGROUND_COLOR
         MENUITEM "No Borders",                  ID_VIEW_NO_BORDERS
         MENUITEM SEPARATOR
@@ -489,7 +475,7 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "Zoom"
         BEGIN
-            MENUITEM "Fit\tShift + /",              ID_VIEW_ZOOM_FIT
+            MENUITEM "Fit\t*",                      ID_VIEW_ZOOM_FIT
             MENUITEM "Fit Big\t/",                  ID_VIEW_ZOOM_FITBIG
         END
         POPUP "Monitor"
@@ -3443,15 +3429,6 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_VIEW_ZOOM_625        "Zoom to 6.25 %\nZoom 6.25 %"
-    ID_VIEW_ZOOM_125        "Zoom to 12.5 %\nZoom 12.5 %"
-    ID_VIEW_ZOOM_25         "Zoom to 25 %\nZoom 25 %"
-    ID_VIEW_ZOOM_50         "Zoom to 50 %\nZoom 50 %"
-    ID_VIEW_ZOOM_100        "Zoom to 100 %\nZoom 100 %"
-    ID_VIEW_ZOOM_200        "Zoom to 200 %\nZoom 200 %"
-    ID_VIEW_ZOOM_400        "Zoom to 400 %\nZoom 400 %"
-    ID_VIEW_ZOOM_800        "Zoom to 800 %\nZoom 800 %"
-    ID_VIEW_ZOOM_1600       "Zoom to 1600 %\nZoom 1600 %"
     ID_EDIT_ADD_BORDERS     "Add borders to current image\nAdd Borders"
     ID_EDIT_SOFT_BORDERS    "Soft borders of current image\nSoft Borders"
     ID_EDIT_NEGATIVE        "Convert current image to negative\nTo Negative"

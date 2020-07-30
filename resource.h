@@ -3094,15 +3094,6 @@
 #define ID_VIEW_LOCK_BACKGROUND_COLOR   32989
 #define ID_VIEW_ZOOM_FIT                32990
 #define ID_VIEW_ZOOM_FITBIG             32991
-#define ID_VIEW_ZOOM_625                32992
-#define ID_VIEW_ZOOM_125                32993
-#define ID_VIEW_ZOOM_25                 32994
-#define ID_VIEW_ZOOM_50                 32995
-#define ID_VIEW_ZOOM_100                32996
-#define ID_VIEW_ZOOM_200                32997
-#define ID_VIEW_ZOOM_400                32998
-#define ID_VIEW_ZOOM_800                32999
-#define ID_VIEW_ZOOM_1600               33000
 #define ID_EDIT_ADD_BORDERS             33001
 #define ID_EDIT_SOFT_BORDERS            33002
 #define ID_EDIT_NEGATIVE                33003

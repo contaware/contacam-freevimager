@@ -269,24 +269,6 @@ protected:
 	afx_msg void OnUpdateViewZoomFit(CCmdUI* pCmdUI);
 	afx_msg void OnViewZoomFitbig();
 	afx_msg void OnUpdateViewZoomFitbig(CCmdUI* pCmdUI);
-	afx_msg void OnViewZoom625();
-	afx_msg void OnUpdateViewZoom625(CCmdUI* pCmdUI);
-	afx_msg void OnViewZoom125();
-	afx_msg void OnUpdateViewZoom125(CCmdUI* pCmdUI);
-	afx_msg void OnViewZoom25();
-	afx_msg void OnUpdateViewZoom25(CCmdUI* pCmdUI);
-	afx_msg void OnViewZoom50();
-	afx_msg void OnUpdateViewZoom50(CCmdUI* pCmdUI);
-	afx_msg void OnViewZoom100();
-	afx_msg void OnUpdateViewZoom100(CCmdUI* pCmdUI);
-	afx_msg void OnViewZoom200();
-	afx_msg void OnUpdateViewZoom200(CCmdUI* pCmdUI);
-	afx_msg void OnViewZoom400();
-	afx_msg void OnUpdateViewZoom400(CCmdUI* pCmdUI);
-	afx_msg void OnViewZoom800();
-	afx_msg void OnUpdateViewZoom800(CCmdUI* pCmdUI);
-	afx_msg void OnViewZoom1600();
-	afx_msg void OnUpdateViewZoom1600(CCmdUI* pCmdUI);
 	afx_msg void OnViewNextMonitor();
 	afx_msg void OnViewPreviousMonitor();
 	//}}AFX_MSG

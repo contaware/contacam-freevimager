@@ -50,24 +50,6 @@ BEGIN_MESSAGE_MAP(CPictureView, CUImagerView)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_ZOOM_FIT, OnUpdateViewZoomFit)
 	ON_COMMAND(ID_VIEW_ZOOM_FITBIG, OnViewZoomFitbig)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_ZOOM_FITBIG, OnUpdateViewZoomFitbig)
-	ON_COMMAND(ID_VIEW_ZOOM_625, OnViewZoom625)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_ZOOM_625, OnUpdateViewZoom625)
-	ON_COMMAND(ID_VIEW_ZOOM_125, OnViewZoom125)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_ZOOM_125, OnUpdateViewZoom125)
-	ON_COMMAND(ID_VIEW_ZOOM_25, OnViewZoom25)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_ZOOM_25, OnUpdateViewZoom25)
-	ON_COMMAND(ID_VIEW_ZOOM_50, OnViewZoom50)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_ZOOM_50, OnUpdateViewZoom50)
-	ON_COMMAND(ID_VIEW_ZOOM_100, OnViewZoom100)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_ZOOM_100, OnUpdateViewZoom100)
-	ON_COMMAND(ID_VIEW_ZOOM_200, OnViewZoom200)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_ZOOM_200, OnUpdateViewZoom200)
-	ON_COMMAND(ID_VIEW_ZOOM_400, OnViewZoom400)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_ZOOM_400, OnUpdateViewZoom400)
-	ON_COMMAND(ID_VIEW_ZOOM_800, OnViewZoom800)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_ZOOM_800, OnUpdateViewZoom800)
-	ON_COMMAND(ID_VIEW_ZOOM_1600, OnViewZoom1600)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_ZOOM_1600, OnUpdateViewZoom1600)
 	ON_COMMAND(ID_VIEW_NEXT_MONITOR, OnViewNextMonitor)
 	ON_COMMAND(ID_VIEW_PREVIOUS_MONITOR, OnViewPreviousMonitor)
 	//}}AFX_MSG_MAP
@@ -1031,204 +1013,6 @@ void CPictureView::OnUpdateViewZoomFitbig(CCmdUI* pCmdUI)
 		pCmdUI->SetCheck(pZoomCB->GetCurSel() == 1 ? 1 : 0);
 }
 
-void CPictureView::OnViewZoom625() 
-{
-	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
-	if (pZoomCB)
-	{
-		void* pData = pZoomCB->GetItemDataPtr(2);
-		if ((int)pData != -1)
-		{
-			pZoomCB->SetCurSel(2);
-			pZoomCB->OnChangeZoomFactor(*((double*)pData));
-			UpdateWindowSizes(TRUE, TRUE, FALSE);
-		}
-	}
-}
-
-void CPictureView::OnUpdateViewZoom625(CCmdUI* pCmdUI) 
-{
-	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
-	if (pZoomCB)
-		pCmdUI->SetCheck(pZoomCB->GetCurSel() == 2 ? 1 : 0);
-}
-
-void CPictureView::OnViewZoom125() 
-{
-	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
-	if (pZoomCB)
-	{
-		void* pData = pZoomCB->GetItemDataPtr(3);
-		if ((int)pData != -1)
-		{
-			pZoomCB->SetCurSel(3);
-			pZoomCB->OnChangeZoomFactor(*((double*)pData));
-			UpdateWindowSizes(TRUE, TRUE, FALSE);
-		}
-	}	
-}
-
-void CPictureView::OnUpdateViewZoom125(CCmdUI* pCmdUI) 
-{
-	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
-	if (pZoomCB)
-		pCmdUI->SetCheck(pZoomCB->GetCurSel() == 3 ? 1 : 0);
-}
-
-void CPictureView::OnViewZoom25() 
-{
-	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
-	if (pZoomCB)
-	{
-		void* pData = pZoomCB->GetItemDataPtr(4);
-		if ((int)pData != -1)
-		{
-			pZoomCB->SetCurSel(4);
-			pZoomCB->OnChangeZoomFactor(*((double*)pData));
-			UpdateWindowSizes(TRUE, TRUE, FALSE);
-		}
-	}	
-}
-
-void CPictureView::OnUpdateViewZoom25(CCmdUI* pCmdUI) 
-{
-	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
-	if (pZoomCB)
-		pCmdUI->SetCheck(pZoomCB->GetCurSel() == 4 ? 1 : 0);
-}
-
-void CPictureView::OnViewZoom50() 
-{
-	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
-	if (pZoomCB)
-	{
-		void* pData = pZoomCB->GetItemDataPtr(5);
-		if ((int)pData != -1)
-		{
-			pZoomCB->SetCurSel(5);
-			pZoomCB->OnChangeZoomFactor(*((double*)pData));
-			UpdateWindowSizes(TRUE, TRUE, FALSE);
-		}
-	}	
-}
-
-void CPictureView::OnUpdateViewZoom50(CCmdUI* pCmdUI) 
-{
-	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
-	if (pZoomCB)
-		pCmdUI->SetCheck(pZoomCB->GetCurSel() == 5 ? 1 : 0);
-}
-
-void CPictureView::OnViewZoom100() 
-{
-	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
-	if (pZoomCB)
-	{
-		void* pData = pZoomCB->GetItemDataPtr(6);
-		if ((int)pData != -1)
-		{
-			pZoomCB->SetCurSel(6);
-			pZoomCB->OnChangeZoomFactor(*((double*)pData));
-			UpdateWindowSizes(TRUE, TRUE, FALSE);
-		}
-	}	
-}
-
-void CPictureView::OnUpdateViewZoom100(CCmdUI* pCmdUI) 
-{
-	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
-	if (pZoomCB)
-		pCmdUI->SetCheck(pZoomCB->GetCurSel() == 6 ? 1 : 0);
-}
-
-void CPictureView::OnViewZoom200() 
-{
-	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
-	if (pZoomCB)
-	{
-		void* pData = pZoomCB->GetItemDataPtr(7);
-		if ((int)pData != -1)
-		{
-			pZoomCB->SetCurSel(7);
-			pZoomCB->OnChangeZoomFactor(*((double*)pData));
-			UpdateWindowSizes(TRUE, TRUE, FALSE);
-		}
-	}
-}
-
-void CPictureView::OnUpdateViewZoom200(CCmdUI* pCmdUI) 
-{
-	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
-	if (pZoomCB)
-		pCmdUI->SetCheck(pZoomCB->GetCurSel() == 7 ? 1 : 0);
-}
-
-void CPictureView::OnViewZoom400() 
-{
-	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
-	if (pZoomCB)
-	{
-		void* pData = pZoomCB->GetItemDataPtr(8);
-		if ((int)pData != -1)
-		{
-			pZoomCB->SetCurSel(8);
-			pZoomCB->OnChangeZoomFactor(*((double*)pData));
-			UpdateWindowSizes(TRUE, TRUE, FALSE);
-		}
-	}	
-}
-
-void CPictureView::OnUpdateViewZoom400(CCmdUI* pCmdUI) 
-{
-	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
-	if (pZoomCB)
-		pCmdUI->SetCheck(pZoomCB->GetCurSel() == 8 ? 1 : 0);
-}
-
-void CPictureView::OnViewZoom800() 
-{
-	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
-	if (pZoomCB)
-	{
-		void* pData = pZoomCB->GetItemDataPtr(9);
-		if ((int)pData != -1)
-		{
-			pZoomCB->SetCurSel(9);
-			pZoomCB->OnChangeZoomFactor(*((double*)pData));
-			UpdateWindowSizes(TRUE, TRUE, FALSE);
-		}
-	}	
-}
-
-void CPictureView::OnUpdateViewZoom800(CCmdUI* pCmdUI) 
-{
-	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
-	if (pZoomCB)
-		pCmdUI->SetCheck(pZoomCB->GetCurSel() == 9 ? 1 : 0);
-}
-
-void CPictureView::OnViewZoom1600() 
-{
-	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
-	if (pZoomCB)
-	{
-		void* pData = pZoomCB->GetItemDataPtr(10);
-		if ((int)pData != -1)
-		{
-			pZoomCB->SetCurSel(10);
-			pZoomCB->OnChangeZoomFactor(*((double*)pData));
-			UpdateWindowSizes(TRUE, TRUE, FALSE);
-		}
-	}	
-}
-
-void CPictureView::OnUpdateViewZoom1600(CCmdUI* pCmdUI) 
-{
-	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
-	if (pZoomCB)
-		pCmdUI->SetCheck(pZoomCB->GetCurSel() == 10 ? 1 : 0);
-}
-
 void CPictureView::OnViewZoomTool() 
 {
 	CPictureDoc* pDoc = GetDocument();
@@ -1939,15 +1723,11 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			break;
 
 		case VK_DIVIDE :
-			if (::GetKeyState(VK_SHIFT) < 0)
-				OnViewZoomFit();
-			else
-				OnViewZoomFitbig();
+			OnViewZoomFitbig();
 			break;
 
 		case VK_MULTIPLY :
-			if (!m_bFullScreenMode)
-				OnViewZoom100();
+			OnViewZoomFit();
 			break;
 
 		case VK_RETURN : // Enter
