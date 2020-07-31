@@ -397,21 +397,6 @@ public:
 	// BI_RLE4 : Compress to RLE4
 	BOOL CompressRLE(int nCompression);
 
-	// Edit Palette
-	BOOL EditPalette();
-
-	// Resize
-	BOOL EditResize(BOOL bShowMessageBoxOnError);
-
-	// Grayscale
-	BOOL EditGrayscale(BOOL bShowMessageBoxOnError);
-
-	// Negative
-	BOOL EditNegative(BOOL bShowMessageBoxOnError);
-	
-	// Borders Add
-	BOOL EditAddBorders();
-
 	// Layered Dialog
 	BOOL ViewLayeredDlg();
 
@@ -424,9 +409,6 @@ public:
 	//               otherwise in top-down dib pixels
 	// nAlphaOffset: -255 .. +255
 	BOOL EditPasteInto(int nCorner, CPoint pt, int nAlphaOffset = 0, BOOL bClientCoordinates = TRUE);
-
-	// Unique Colors Count
-	BOOL EditColorsCount();
 
 	// Is the Clicked Point Inside a Red-Eye?
 	BOOL IsClickPointRedEye(CPoint point, CDib* pSrcDib);

@@ -5129,44 +5129,30 @@ void CPictureDoc::OnUpdateEditRotateFlip(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(m_pRotationFlippingDlg != NULL ? 1 : 0);
 }
 
-BOOL CPictureDoc::EditPalette()
+void CPictureDoc::OnEditPalette() 
 {
 	if (m_pWndPalette)
-	{	
 		m_pWndPalette->Close();
-		return TRUE;
-	}
 	else
 	{
 		// Wait and schedule command if dib not fully loaded!
 		if (!IsDibReadyForCommand(ID_EDIT_PALETTE))
-			return FALSE;
+			return;
 
 		if (m_pDib && m_pDib->GetColors())
 		{
 			m_pWndPalette = (CPaletteWnd*)new CPaletteWnd;
-			if (!m_pWndPalette)
-				return FALSE;
-
-			CRect rcClient;
-			GetView()->GetClientRect(&rcClient);
-			GetView()->ClientToScreen(&rcClient);
-			m_pWndPalette->Create(	rcClient.TopLeft(),
-									GetView(),
-									m_pDib->GetPalette());
-			GetView()->ForceCursor();
-			m_pWndPalette->ShowWindow(SW_SHOW);
-
-			return TRUE;
+			if (m_pWndPalette)
+			{
+				CRect rcClient;
+				GetView()->GetClientRect(&rcClient);
+				GetView()->ClientToScreen(&rcClient);
+				m_pWndPalette->Create(rcClient.TopLeft(), GetView(), m_pDib->GetPalette());
+				GetView()->ForceCursor();
+				m_pWndPalette->ShowWindow(SW_SHOW);
+			}
 		}
-		else
-			return FALSE;
 	}
-}
-
-void CPictureDoc::OnEditPalette() 
-{
-	EditPalette();
 }
 
 void CPictureDoc::OnUpdateEditPalette(CCmdUI* pCmdUI) 
@@ -5190,13 +5176,13 @@ void CPictureDoc::OnUpdateEditPalette(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(m_pWndPalette ? 1 : 0);
 }
 
-BOOL CPictureDoc::EditColorsCount()
+void CPictureDoc::OnEditColorsCount() 
 {
 	if (m_pDib)
 	{
 		// Wait and schedule command if dib not fully loaded!
 		if (!IsDibReadyForCommand(ID_EDIT_COLORS_COUNT))
-			return FALSE;
+			return;
 
 		// Show Cursor & Begin Wait Cursor
 		GetView()->ForceCursor();
@@ -5215,16 +5201,7 @@ BOOL CPictureDoc::EditColorsCount()
 
 		// End Force Cursor
 		GetView()->ForceCursor(FALSE);
-
-		return TRUE;
 	}
-	else
-		return FALSE;
-}
-
-void CPictureDoc::OnEditColorsCount() 
-{
-	EditColorsCount();
 }
 
 void CPictureDoc::OnUpdateEditColorsCount(CCmdUI* pCmdUI) 
@@ -5234,13 +5211,13 @@ void CPictureDoc::OnUpdateEditColorsCount(CCmdUI* pCmdUI)
 					DoEnableCommand());
 }
 
-BOOL CPictureDoc::EditResize(BOOL bShowMessageBoxOnError) 
+void CPictureDoc::OnEditResize() 
 {
 	if (m_pDib)
 	{
 		// Wait and schedule command if dib not fully loaded!
 		if (!IsDibReadyForCommand(ID_EDIT_RESIZE))
-			return FALSE;
+			return;
 
 		// Force Cursor
 		GetView()->ForceCursor();
@@ -5268,7 +5245,7 @@ BOOL CPictureDoc::EditResize(BOOL bShowMessageBoxOnError)
 				dlg.m_nYDpi == nYDpi)
 			{
 				GetView()->ForceCursor(FALSE);
-				return TRUE;
+				return;
 			}
 
 			BeginWaitCursor();
@@ -5287,7 +5264,7 @@ BOOL CPictureDoc::EditResize(BOOL bShowMessageBoxOnError)
 				Undo();
 				EndWaitCursor();
 				GetView()->ForceCursor(FALSE);
-				return FALSE;
+				return;
 			}
 
 			m_pDib->SetXDpi(dlg.m_nXDpi);
@@ -5298,7 +5275,7 @@ BOOL CPictureDoc::EditResize(BOOL bShowMessageBoxOnError)
 		else
 		{
 			GetView()->ForceCursor(FALSE);
-			return FALSE;
+			return;
 		}
 
 		m_DocRect.bottom = m_pDib->GetHeight();
@@ -5311,16 +5288,7 @@ BOOL CPictureDoc::EditResize(BOOL bShowMessageBoxOnError)
 		SetDocumentTitle();
 		UpdateAllViews(NULL);
 		UpdateImageInfo();
-
-		return TRUE;
 	}
-	else
-		return FALSE;
-}
-
-void CPictureDoc::OnEditResize() 
-{
-	EditResize(TRUE);
 }
 
 void CPictureDoc::OnUpdateEditResize(CCmdUI* pCmdUI) 
@@ -5986,13 +5954,13 @@ void CPictureDoc::OnEditPasteIntoFileHelp()
 	GetView()->ForceCursor(FALSE);
 }
 
-BOOL CPictureDoc::EditAddBorders() 
+void CPictureDoc::OnEditAddBorders() 
 {
 	if (m_pDib)
 	{
 		// Wait and schedule command if dib not fully loaded!
 		if (!IsDibReadyForCommand(ID_EDIT_ADD_BORDERS))
-			return FALSE;
+			return;
 
 		// Force Cursor
 		GetView()->ForceCursor();
@@ -6016,7 +5984,7 @@ BOOL CPictureDoc::EditAddBorders()
 				dlg.m_uiRightBorder == 0)
 			{
 				GetView()->ForceCursor(FALSE);
-				return FALSE;
+				return;
 			}
 
 			BeginWaitCursor();
@@ -6038,7 +6006,7 @@ BOOL CPictureDoc::EditAddBorders()
 				Undo();
 				EndWaitCursor();
 				GetView()->ForceCursor(FALSE);
-				return FALSE;
+				return;
 			}
 			else
 				EndWaitCursor();
@@ -6046,7 +6014,7 @@ BOOL CPictureDoc::EditAddBorders()
 		else
 		{
 			GetView()->ForceCursor(FALSE);
-			return FALSE;
+			return;
 		}
 
 		m_DocRect.bottom = m_pDib->GetHeight();
@@ -6059,16 +6027,7 @@ BOOL CPictureDoc::EditAddBorders()
 		SetDocumentTitle();
 		UpdateAllViews(NULL);
 		UpdateImageInfo();
-
-		return TRUE;
 	}
-	else
-		return FALSE;
-}
-
-void CPictureDoc::OnEditAddBorders() 
-{
-	EditAddBorders();
 }
 
 void CPictureDoc::OnUpdateEditAddBorders(CCmdUI* pCmdUI) 
@@ -6164,13 +6123,13 @@ void CPictureDoc::OnUpdateEditTextToAlpha(CCmdUI* pCmdUI)
 					DoEnableCommand());
 }
 
-BOOL CPictureDoc::EditGrayscale(BOOL bShowMessageBoxOnError) 
+void CPictureDoc::OnEditGrayscale() 
 {
 	if (m_pDib)
 	{
 		// Wait and schedule command if dib not fully loaded!
 		if (!IsDibReadyForCommand(ID_EDIT_GRAYSCALE))
-			return FALSE;
+			return;
 
 		// Show Cursor & Begin Wait Cursor
 		GetView()->ForceCursor();
@@ -6210,16 +6169,7 @@ BOOL CPictureDoc::EditGrayscale(BOOL bShowMessageBoxOnError)
 
 		// Update Image Info
 		UpdateImageInfo();
-
-		return TRUE;
 	}
-	else
-		return FALSE;
-}
-
-void CPictureDoc::OnEditGrayscale() 
-{
-	EditGrayscale(TRUE);
 }
 
 void CPictureDoc::OnUpdateEditGrayscale(CCmdUI* pCmdUI) 
@@ -6229,13 +6179,13 @@ void CPictureDoc::OnUpdateEditGrayscale(CCmdUI* pCmdUI)
 					DoEnableCommand());
 }
 
-BOOL CPictureDoc::EditNegative(BOOL bShowMessageBoxOnError) 
+void CPictureDoc::OnEditNegative() 
 {
 	if (m_pDib)
 	{
 		// Wait and schedule command if dib not fully loaded!
 		if (!IsDibReadyForCommand(ID_EDIT_NEGATIVE))
-			return FALSE;
+			return;
 
 		// Show Cursor & Begin Wait Cursor
 		GetView()->ForceCursor();
@@ -6265,16 +6215,7 @@ BOOL CPictureDoc::EditNegative(BOOL bShowMessageBoxOnError)
 
 		// Update Image Info
 		UpdateImageInfo();
-
-		return TRUE;
 	}
-	else
-		return FALSE;
-}
-
-void CPictureDoc::OnEditNegative() 
-{
-	EditNegative(TRUE);
 }
 
 void CPictureDoc::OnUpdateEditNegative(CCmdUI* pCmdUI) 
