@@ -3954,10 +3954,10 @@ void CUImagerApp::OnFileNew()
 			pDoc->SetDocumentTitle();
 			pDoc->UpdateAlphaRenderedDib();
 
-			// Set Zoom to Fit Big
+			// Zoom
 			CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)(pDoc->GetFrame()))->GetToolBar())->m_ZoomComboBox);
-			pZoomCB->SetCurSel(pDoc->m_nZoomComboBoxIndex = 1); // Fit Big
-			pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(1))));
+			pZoomCB->SetCurSel(pDoc->m_nZoomComboBoxIndex);
+			pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(pDoc->m_nZoomComboBoxIndex))));
 
 			// Fit to document
 			if (!pDoc->GetFrame()->IsZoomed())
@@ -4009,10 +4009,10 @@ void CUImagerApp::OnEditPaste()
 			pDoc->SetDocumentTitle();
 			pDoc->UpdateAlphaRenderedDib();
 
-			// Set Zoom to Fit Big
+			// Zoom
 			CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)(pDoc->GetFrame()))->GetToolBar())->m_ZoomComboBox);
-			pZoomCB->SetCurSel(pDoc->m_nZoomComboBoxIndex = 1); // Fit Big
-			pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(1))));
+			pZoomCB->SetCurSel(pDoc->m_nZoomComboBoxIndex);
+			pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(pDoc->m_nZoomComboBoxIndex))));
 
 			// Fit to document
 			if (!pDoc->GetFrame()->IsZoomed())
