@@ -4670,35 +4670,11 @@ void CPictureDoc::OnUpdateSlideshowDelay60(CCmdUI* pCmdUI)
 
 void CPictureDoc::OnEditRotate90cw()
 {
-	Rotate90cw();
-}
-
-void CPictureDoc::OnUpdateEditRotate90cw(CCmdUI* pCmdUI) 
-{
-	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0					||
-					m_dwIDAfterFullLoadCommand == ID_EDIT_ROTATE_90CW)	&&
-					DoEnableCommand());
-}
-
-void CPictureDoc::OnEditRotate90ccw() 
-{
-	Rotate90ccw();
-}
-
-void CPictureDoc::OnUpdateEditRotate90ccw(CCmdUI* pCmdUI) 
-{
-	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0					||
-					m_dwIDAfterFullLoadCommand == ID_EDIT_ROTATE_90CCW) &&
-					DoEnableCommand());
-}
-
-BOOL CPictureDoc::Rotate90cw()
-{
 	if (m_pDib)
 	{
 		// Wait and schedule command if dib not fully loaded!
 		if (!IsDibReadyForCommand(ID_EDIT_ROTATE_90CW))
-			return FALSE;
+			return;
 
 		// Show Cursor & Begin Wait Cursor
 		GetView()->ForceCursor();
@@ -4777,20 +4753,23 @@ BOOL CPictureDoc::Rotate90cw()
 
 		EndWaitCursor();
 		GetView()->ForceCursor(FALSE);
-
-		return TRUE;
 	}
-	else
-		return FALSE;
 }
 
-BOOL CPictureDoc::Rotate90ccw() 
+void CPictureDoc::OnUpdateEditRotate90cw(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0					||
+					m_dwIDAfterFullLoadCommand == ID_EDIT_ROTATE_90CW)	&&
+					DoEnableCommand());
+}
+
+void CPictureDoc::OnEditRotate90ccw() 
 {
 	if (m_pDib)
 	{
 		// Wait and schedule command if dib not fully loaded!
 		if (!IsDibReadyForCommand(ID_EDIT_ROTATE_90CCW))
-			return FALSE;
+			return;
 
 		// Show Cursor & Begin Wait Cursor
 		GetView()->ForceCursor();
@@ -4869,11 +4848,14 @@ BOOL CPictureDoc::Rotate90ccw()
 
 		EndWaitCursor();
 		GetView()->ForceCursor(FALSE);
-
-		return TRUE;
 	}
-	else
-		return FALSE;
+}
+
+void CPictureDoc::OnUpdateEditRotate90ccw(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0					||
+					m_dwIDAfterFullLoadCommand == ID_EDIT_ROTATE_90CCW) &&
+					DoEnableCommand());
 }
 
 void CPictureDoc::OnEditRotateFlip() 

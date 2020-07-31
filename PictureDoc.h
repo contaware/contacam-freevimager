@@ -400,10 +400,6 @@ public:
 	// Edit Palette
 	BOOL EditPalette();
 
-	// Rotations
-	BOOL Rotate90cw();
-	BOOL Rotate90ccw();
-
 	// Resize
 	BOOL EditResize(BOOL bShowMessageBoxOnError);
 
