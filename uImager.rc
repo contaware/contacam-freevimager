@@ -272,16 +272,10 @@ BEGIN
         MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
         MENUITEM "Re&name\tF2",                 ID_EDIT_RENAME
         MENUITEM SEPARATOR
-        MENUITEM "Rotate 90° CW\tCtrl+Right",   ID_EDIT_ROTATE_90CW
-        MENUITEM "Rotate 90° CCW\tCtrl+Left",   ID_EDIT_ROTATE_90CCW
-        MENUITEM "Rotate 180°\tCtrl+Down",      ID_EDIT_ROTATE_180
         MENUITEM "Rotate && Flip...\tCtrl+J",   ID_EDIT_ROTATE_FLIP
-        MENUITEM "Resize...\tCtrl+R",           ID_EDIT_RESIZE
-        MENUITEM "Crop/Copy/Cut rectangle\tCtrl+K", ID_EDIT_CROP
         MENUITEM SEPARATOR
         MENUITEM "Grayscale\tCtrl+G",           ID_EDIT_GRAYSCALE
         MENUITEM "Negative",                    ID_EDIT_NEGATIVE
-        MENUITEM "Brightness, Contrast...\tCtrl+B", ID_EDIT_HLS
         MENUITEM "Red Eye...",                  ID_EDIT_REDEYE
         MENUITEM "Sharpen...",                  ID_EDIT_FILTER_SHARPEN
         MENUITEM "Soften...",                   ID_EDIT_FILTER_SOFTEN
@@ -750,8 +744,6 @@ BEGIN
     "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
     "Y",            ID_EDIT_REDO,           VIRTKEY, CONTROL, NOINVERT
     "R",            ID_EDIT_RESIZE,         VIRTKEY, CONTROL, NOINVERT
-    VK_DOWN,        ID_EDIT_ROTATE_180,     VIRTKEY, CONTROL, NOINVERT
-    VK_UP,          ID_EDIT_ROTATE_180,     VIRTKEY, CONTROL, NOINVERT
     VK_LEFT,        ID_EDIT_ROTATE_90CCW,   VIRTKEY, CONTROL, NOINVERT
     VK_RIGHT,       ID_EDIT_ROTATE_90CW,    VIRTKEY, CONTROL, NOINVERT
     "J",            ID_EDIT_ROTATE_FLIP,    VIRTKEY, CONTROL, NOINVERT
@@ -3296,17 +3288,17 @@ STRINGTABLE
 BEGIN
     ID_SLIDESHOW_DELAY_60   "Set slideshow delay to 1 minute\n1 min"
     ID_PLAY_LOOP            "Infinite loop\nInfinite Loop"
-    ID_EDIT_HLS             "Adjust brightness, contrast, saturation, ... of current image\nAdjust Brightness,..."
+    ID_EDIT_HLS             "Adjust brightness, contrast, saturation, ... of current image (CTRL + B)\nAdjust Brightness,..."
     ID_EDIT_GRAYSCALE       "Convert current image to grayscales\nTo Grayscales"
 END
 
 STRINGTABLE
 BEGIN
     ID_EDIT_DELETE          "Delete\nDelete"
-    ID_EDIT_ROTATE_90CW     "Rotate current image 90° clockwise (Ctrl + Right Arrow)\nRotate 90° CW"
-    ID_EDIT_ROTATE_90CCW    "Rotate current image 90° counter clockwise (Ctrl + Left Arrow)\nRotate 90° CCW"
-    ID_VIEW_NEXT_PICTURE    "Show next image\nNext Image"
-    ID_VIEW_PREVIOUS_PICTURE "Show previous image\nPrevious Image"
+    ID_EDIT_ROTATE_90CW     "Rotate current image 90° clockwise (CTRL + Right Arrow)\nRotate 90° CW"
+    ID_EDIT_ROTATE_90CCW    "Rotate current image 90° counter clockwise (CTRL + Left Arrow)\nRotate 90° CCW"
+    ID_VIEW_NEXT_PICTURE    "Show next image (SPACE)\nNext Image"
+    ID_VIEW_PREVIOUS_PICTURE "Show previous image (BACKSPACE)\nPrevious Image"
 END
 
 STRINGTABLE
@@ -3328,10 +3320,10 @@ STRINGTABLE
 BEGIN
     ID_PLAY_TRANSITION_CHESSBOARD 
                             "Chessboard transition effect\nChessboard Transition"
-    ID_EDIT_CROP            "Operation on rectangle, see context menu\nRectangle Operation"
+    ID_EDIT_CROP            "Operation on rectangle, see context menu (CTRL + K)\nRectangle Operation"
     ID_EDIT_CROP_APPLY      "Apply crop to current image\nCrop It"
     ID_EDIT_CROP_CANCEL     "Cancel operation\nCancel Operation"
-    ID_EDIT_RESIZE          "Resize current image\nResize"
+    ID_EDIT_RESIZE          "Resize current image (CTRL + R)\nResize"
     ID_EDIT_TO24BITS        "Convert current image to true color (16 millions colors) and 24 bits per pixel\nTo 24 bpp"
     ID_EDIT_TO32BITS        "Convert current image to true color (16 millions colors) and 32 bits per pixel\nTo 32 bpp"
     ID_EDIT_TO16BITS        "Convert current image to 65536 colors and 16 bits per pixel\nTo 16 bpp"
@@ -3555,7 +3547,6 @@ END
 STRINGTABLE
 BEGIN
     ID_VIEW_WEB             "Open web browser to watch live stream / recordings\nBrowse Live Stream / Recordings"
-    ID_EDIT_ROTATE_180      "Rotate current image 180° (Ctrl + Down Arrow)\nRotate 180°"
 END
 
 STRINGTABLE

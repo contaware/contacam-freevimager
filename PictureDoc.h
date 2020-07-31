@@ -403,7 +403,6 @@ public:
 	// Rotations
 	BOOL Rotate90cw();
 	BOOL Rotate90ccw();
-	BOOL Rotate180();
 
 	// Resize
 	BOOL EditResize(BOOL bShowMessageBoxOnError);
@@ -1031,8 +1030,6 @@ protected:
 	afx_msg void OnUpdateEditPasteIntoBottomright(CCmdUI* pCmdUI);
 	afx_msg void OnEditPasteIntoFile();
 	afx_msg void OnUpdateEditPasteIntoFile(CCmdUI* pCmdUI);
-	afx_msg void OnEditRotate180();
-	afx_msg void OnUpdateEditRotate180(CCmdUI* pCmdUI);
 	afx_msg void OnEditPasteIntoFileHelp();
 	afx_msg void OnPlayRandom();
 	afx_msg void OnUpdatePlayRandom(CCmdUI* pCmdUI);

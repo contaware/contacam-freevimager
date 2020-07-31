@@ -305,8 +305,6 @@ BEGIN_MESSAGE_MAP(CPictureDoc, CUImagerDoc)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_PASTE_INTO_BOTTOMRIGHT, OnUpdateEditPasteIntoBottomright)
 	ON_COMMAND(ID_EDIT_PASTE_INTO_FILE, OnEditPasteIntoFile)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_PASTE_INTO_FILE, OnUpdateEditPasteIntoFile)
-	ON_COMMAND(ID_EDIT_ROTATE_180, OnEditRotate180)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_ROTATE_180, OnUpdateEditRotate180)
 	ON_COMMAND(ID_EDIT_PASTE_INTO_FILE_HELP, OnEditPasteIntoFileHelp)
 	ON_COMMAND(ID_PLAY_RANDOM, OnPlayRandom)
 	ON_UPDATE_COMMAND_UI(ID_PLAY_RANDOM, OnUpdatePlayRandom)
@@ -4694,18 +4692,6 @@ void CPictureDoc::OnUpdateEditRotate90ccw(CCmdUI* pCmdUI)
 					DoEnableCommand());
 }
 
-void CPictureDoc::OnEditRotate180() 
-{
-	Rotate180();
-}
-
-void CPictureDoc::OnUpdateEditRotate180(CCmdUI* pCmdUI) 
-{
-	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0					||
-					m_dwIDAfterFullLoadCommand == ID_EDIT_ROTATE_180)	&&
-					DoEnableCommand());
-}
-
 BOOL CPictureDoc::Rotate90cw()
 {
 	if (m_pDib)
@@ -4872,98 +4858,6 @@ BOOL CPictureDoc::Rotate90ccw()
 			// A Duplicated Dib is created
 			AddUndo();
 			m_pDib->Rotate90CCW();
-			SetModifiedFlag();
-			m_DocRect.bottom = m_pDib->GetHeight();
-			m_DocRect.right = m_pDib->GetWidth();
-			UpdateAlphaRenderedDib();
-			SetDocumentTitle();
-			UpdateAllViews(NULL);
-			UpdateImageInfo();
-		}
-
-		EndWaitCursor();
-		GetView()->ForceCursor(FALSE);
-
-		return TRUE;
-	}
-	else
-		return FALSE;
-}
-
-BOOL CPictureDoc::Rotate180() 
-{
-	if (m_pDib)
-	{
-		// Wait and schedule command if dib not fully loaded!
-		if (!IsDibReadyForCommand(ID_EDIT_ROTATE_180))
-			return FALSE;
-
-		// Show Cursor & Begin Wait Cursor
-		GetView()->ForceCursor();
-		BeginWaitCursor();
-
-		// Check for JPEG Extensions and make sure the file has not been modified
-		BOOL bLosslessDone = FALSE;
-		if (CDib::IsJPEG(m_sFileName) && !IsModified() && !m_bPrintPreviewMode)
-		{
-			// Kill Jpeg Thread
-			m_JpegThread.Kill();
-
-			// Make Sure The File has the right Orientation
-			CDib::JPEGAutoOrientate(m_sFileName,
-									((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
-									FALSE,
-									GetView(),
-									TRUE);
-
-			// Temporary File
-			CString sTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), m_sFileName);
-
-			// Do Transformation
-			if (m_pDib->LossLessJPEGTrans(	m_sFileName,
-											sTempFileName,
-											JXFORM_ROT_180,
-											TRUE,
-											FALSE,
-											TRUE,
-											"",
-											FALSE,
-											0, 0, 0, 0,
-											FALSE,
-											GetView(),
-											TRUE))
-			{
-				// Remove and Rename Files
-				try
-				{
-					// Get Last Write File Time
-					FILETIME LastWriteTime;
-					::GetFileTime(m_sFileName, NULL, NULL, &LastWriteTime);
-
-					CFile::Remove(m_sFileName);
-					CFile::Rename(sTempFileName, m_sFileName);
-
-					// Set Last Write File Time
-					::SetFileTime(m_sFileName, NULL, NULL, &LastWriteTime);
-
-					// OK
-					bLosslessDone = TRUE;
-				}
-				catch (CFileException* e)
-				{
-					::DeleteFile(sTempFileName);
-					e->Delete();
-				}
-			}
-		}
-
-		if (bLosslessDone)
-			LoadPicture(&m_pDib, m_sFileName);
-		else
-		{
-			// A Duplicated Dib is created
-			AddUndo();
-			m_pDib->Rotate180();
 			SetModifiedFlag();
 			m_DocRect.bottom = m_pDib->GetHeight();
 			m_DocRect.right = m_pDib->GetWidth();
