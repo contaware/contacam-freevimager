@@ -2150,7 +2150,7 @@ BEGIN
     CONTROL         "Recording event with",IDC_CHECK_SENDMAIL_RECORDING,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,226,92,10
     COMBOBOX        IDC_ATTACHMENT,152,225,190,124,CBS_DROPDOWNLIST | WS_TABSTOP
-    EDITTEXT        IDC_EDIT_SENDMAIL_SEC_BETWEEN_MSG,295,239,29,12,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_EDIT_SENDMAIL_SEC_BETWEEN_MSG,295,240,29,12,ES_AUTOHSCROLL | ES_NUMBER
     PUSHBUTTON      "To\nSubject\nServer",IDC_SENDMAIL_CONFIGURE,350,211,56,38,BS_MULTILINE
     PUSHBUTTON      "OK",IDOK,152,262,56,16,BS_MULTILINE
     PUSHBUTTON      "Cancel",IDCANCEL,221,262,56,16
@@ -2170,8 +2170,8 @@ BEGIN
     LTEXT           "GB",IDC_STATIC,190,178,10,8
     LTEXT           "NOTE: if the free disk space becomes low or the maximum camera folder size is reached the oldest files are deleted",IDC_STATIC,211,168,195,20
     GROUPBOX        "5. Email",IDC_STATIC,5,199,407,58
-    LTEXT           "minimum time between recording event messages",IDC_STATIC,27,239,264,8
-    LTEXT           "sec",IDC_STATIC2295,330,241,15,8
+    LTEXT           "minimum time between recording event messages",IDC_STATIC,27,240,264,8
+    LTEXT           "sec",IDC_STATIC2295,330,242,15,8
     LTEXT           "sec",IDC_STATIC2296,278,31,15,8
     LTEXT           "frame interval",IDC_STATIC,193,31,47,8
 END

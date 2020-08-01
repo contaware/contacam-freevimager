@@ -1,6 +1,6 @@
 FREEVIMAGER HISTORY
 
-9.9.10 (Month XX 2020)
+9.9.10 (August 1st 2020)
 
 - Always open images with zoom level Fit or Fit Big
 - File formats like .png and .gif can store a background color which is
