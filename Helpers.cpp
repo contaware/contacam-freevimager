@@ -973,6 +973,40 @@ BOOL DeleteToRecycleBin(LPCTSTR szName)
 	return (SHFileOperation(&FileOp) == 0);
 }
 
+CString TailOfTextFile(LPCTSTR lpszFileName, int nLines)
+{
+	CString sTail;
+	CStringList StringList;
+	FILE* stream = NULL;
+	// ccs=UNICODE translates to _open's _O_WTEXT mode which signifies that in
+	// read mode if there is a BOM, the file is treated as UTF-8 or UTF-16LE,
+	// depending on the BOM. If no BOM is present, the file is treated as ANSI
+	if (_tfopen_s(&stream, lpszFileName, _T("rt, ccs=UNICODE")) == 0)
+	{
+		try
+		{
+			CStdioFile f(stream); // note: destructor will not fclose the attached stream
+			CString sLine;
+			while (f.ReadString(sLine))
+			{
+				StringList.AddTail(sLine);
+				if (StringList.GetCount() > nLines)
+					StringList.RemoveHead();
+			}
+		}
+		catch (CFileException* pe)
+		{
+			pe->Delete();
+		}
+	}
+	if (stream)
+		fclose(stream);
+	for (POSITION pos = StringList.GetHeadPosition(); pos != NULL;)
+		sTail += StringList.GetNext(pos) + _T("\n");
+
+	return sTail;
+}
+
 CString FormatIntegerNumber(const CString& sNumber)
 {
 	NUMBERFMT nf = {};

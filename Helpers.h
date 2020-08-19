@@ -132,6 +132,7 @@ extern BOOL MergeDirContent(LPCTSTR szFromDir,
 extern BOOL DeleteDir(LPCTSTR szDirName);
 extern BOOL DeleteDirContent(LPCTSTR szDirName);
 extern BOOL DeleteToRecycleBin(LPCTSTR szName); // delete file or directory
+extern CString TailOfTextFile(LPCTSTR lpszFileName, int nLines);
 
 // Format Integer Number
 extern CString FormatIntegerNumber(const CString& sNumber);
