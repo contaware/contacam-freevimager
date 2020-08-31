@@ -1163,6 +1163,11 @@ public:
 					CWorkerThread* pThread = NULL);		// Optional Worker Thread pointer from which we call DoExit()
 														// to check whether interruption of the load is wante
 
+	// Load through WIC
+	HRESULT LoadWIC(LPCTSTR lpszPathName, BOOL bOnlyHeader = FALSE);
+	__forceinline double ReadMetadataWICRational(PROPVARIANT& value);
+	HRESULT ReadMetadataWIC(CComPtr<IWICBitmapDecoder> pDecoder, CComPtr<IWICBitmapFrameDecode> pFrame);
+
 	// Memory Mapped BMP Support
 	BOOL MapBMP(LPCTSTR lpszPathName, BOOL bReadOnly);	// Load a Memory Mapped File,
 														// m_pBMI and m_pBits are set

@@ -3196,8 +3196,804 @@ BOOL CDib::LoadImage(LPCTSTR lpszPathName,
 						bProgressSend,
 						pThread);
 	}
+	else
+		return SUCCEEDED(LoadWIC(lpszPathName, bOnlyHeader));
+}
+
+HRESULT CDib::LoadWIC(LPCTSTR lpszPathName, BOOL bOnlyHeader/*=FALSE*/)
+{
+	HRESULT hr = E_FAIL;
 	
-	return FALSE;
+	// Free
+	m_FileInfo.Clear();
+	m_bAlpha = FALSE;
+	m_bGrayscale = FALSE;
+	Free();
+
+	// Init COM
+	::CoInitialize(NULL);
+	{
+		CComPtr<IWICImagingFactory> pFactory;
+		CComPtr<IWICBitmapDecoder> pDecoder;
+		CComPtr<IWICBitmapFrameDecode> pFrame;
+
+		// Check file size
+		ULARGE_INTEGER FileSize = ::GetFileSize64(lpszPathName);
+		m_FileInfo.m_dwFileSize = (DWORD)FileSize.QuadPart;
+		if (FileSize.QuadPart == 0)
+		{
+			hr = E_FAIL;
+			goto exit;
+		}
+
+		// Create the COM imaging factory
+		hr = ::CoCreateInstance(CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pFactory));
+		if (FAILED(hr))
+			goto exit;
+
+		// Create the decoder
+		//
+		// Note: if this function returns WINCODEC_ERR_COMPONENTNOTFOUND it's good practice
+		//       to instruct the user to install the codec from the microsoft Store, do a
+		//       page on contware.com with all the links for all codecs:
+		//
+		// .heic (pre-installed on every Windows 10 since v1809)
+		// https://www.microsoft.com/en-us/p/heif-image-extensions/9pmmsr1cgpwg
+		// https://www.microsoft.com/en-us/p/hevc-video-extensions-from-device-manufacturer/9n4wgh0z6vhq?irgwc=1&OCID=AID681541_aff_7593_159229&tduid=(ir_wJC0gNTClQca0BAzqwxkEXPhUkjTGXQhW1412Y0)(7593)(159229)()(UUwpUdUnU56397YYwYd)&irclickid=wJC0gNTClQca0BAzqwxkEXPhUkjTGXQhW1412Y0
+		// For older Windows versions:
+		// https://www.copytrans.net/copytransheic/
+		//
+		// .webp
+		// https://www.microsoft.com/en-us/p/webp-image-extensions/9pg2dk419drg
+		//
+		// .avif (AV1 Video Extension) -> in 2020 it is buggy, wait a bit before supporting it
+		// https://www.microsoft.com/en-us/p/av1-video-extension-beta/9mvzqvxjbq9v
+		//
+		hr = pFactory->CreateDecoderFromFilename(lpszPathName, NULL, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &pDecoder);
+		if (FAILED(hr))
+			goto exit;
+
+		// Retrieve the First frame from the image
+		UINT uiFramesCount = 0;
+		hr = pDecoder->GetFrameCount(&uiFramesCount);
+		if (FAILED(hr))
+			goto exit;
+		if (uiFramesCount == 0)
+		{
+			hr = WINCODEC_ERR_FRAMEMISSING;
+			goto exit;
+		}
+		hr = pDecoder->GetFrame(0, &pFrame);
+		if (FAILED(hr))
+			goto exit;
+		
+		// Get format
+		UINT uiWidth;
+		UINT uiHeight;
+		hr = pFrame->GetSize(&uiWidth, &uiHeight);
+		if (FAILED(hr))
+			goto exit;
+		double dXDpi;
+		double dYDpi;
+		hr = pFrame->GetResolution(&dXDpi, &dYDpi);
+		if (FAILED(hr))
+		{
+			dXDpi = 0.0;
+			dYDpi = 0.0;
+		}
+		WICPixelFormatGUID pixelFormatGUID;
+		hr = pFrame->GetPixelFormat(&pixelFormatGUID);
+		if (FAILED(hr))
+			goto exit;
+		UINT uiBitsPerPixelDst;
+		BOOL bConvert32bpp;
+		if (pixelFormatGUID == GUID_WICPixelFormat24bppBGR)
+		{
+			uiBitsPerPixelDst = 24;
+			bConvert32bpp = FALSE;
+			m_bAlpha = FALSE;
+			m_FileInfo.m_bAlphaChannel = FALSE;
+			m_FileInfo.m_nBpp = 24;
+		}
+		else if (pixelFormatGUID == GUID_WICPixelFormat32bppBGR)
+		{
+			uiBitsPerPixelDst = 32;
+			bConvert32bpp = FALSE;
+			m_bAlpha = FALSE;
+			m_FileInfo.m_bAlphaChannel = FALSE;
+			m_FileInfo.m_nBpp = 32;
+		}
+		else if (pixelFormatGUID == GUID_WICPixelFormat32bppBGRA)
+		{
+			uiBitsPerPixelDst = 32;
+			bConvert32bpp = FALSE;
+			m_bAlpha = TRUE;
+			m_FileInfo.m_bAlphaChannel = TRUE;
+			m_FileInfo.m_nBpp = 32;
+		}
+		else
+		{
+			// The SupportsTransparency() function of the IWICPixelFormatInfo2 interface does not
+			// detect indexed transparency formats. Thus we always convert to 32 bpp with alpha
+			uiBitsPerPixelDst = 32;
+			bConvert32bpp = TRUE;
+			m_bAlpha = TRUE;
+			m_FileInfo.m_bAlphaChannel = TRUE;	// TODO: check original file whether it has alpha channel or is indexed with or without alpha
+			m_FileInfo.m_nBpp = 32;				// TODO: get original file bpp
+		}
+
+		// Allocate BMI
+		m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER)];
+		if (!m_pBMI)
+		{
+			hr = E_OUTOFMEMORY;
+			goto exit;
+		}
+
+		// DWORD aligned target DIB ScanLineSize 
+		DWORD uiDIBScanLineSize = DWALIGNEDWIDTHBYTES(uiWidth * uiBitsPerPixelDst);
+
+		// Fill in the DIB header fields
+		m_pBMI->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+		m_pBMI->bmiHeader.biWidth = uiWidth;
+		m_pBMI->bmiHeader.biHeight = uiHeight;
+		m_pBMI->bmiHeader.biPlanes = 1;
+		m_pBMI->bmiHeader.biBitCount = (WORD)uiBitsPerPixelDst;
+		m_pBMI->bmiHeader.biCompression = BI_RGB;
+		m_pBMI->bmiHeader.biSizeImage = uiHeight * uiDIBScanLineSize;
+		m_pBMI->bmiHeader.biXPelsPerMeter = (LONG)PIXPERMETER(dXDpi);
+		m_pBMI->bmiHeader.biYPelsPerMeter = (LONG)PIXPERMETER(dYDpi);
+		m_pBMI->bmiHeader.biClrUsed = 0;
+		m_pBMI->bmiHeader.biClrImportant = 0;
+		m_pColors = NULL;
+		m_dwImageSize = m_pBMI->bmiHeader.biSizeImage;
+
+		// Init Masks For 16 and 32 bits Pictures
+		InitMasks();
+
+		// Init File Info
+		m_FileInfo.m_nType = CFileInfo::JPEG; // just set JPEG as WIC can load many formats
+		m_FileInfo.m_nWidth = m_pBMI->bmiHeader.biWidth;
+		m_FileInfo.m_nHeight = m_pBMI->bmiHeader.biHeight;
+		m_FileInfo.m_nCompression = m_pBMI->bmiHeader.biCompression;
+		m_FileInfo.m_dwImageSize = m_pBMI->bmiHeader.biSizeImage;
+		m_FileInfo.m_nXPixsPerMeter = m_pBMI->bmiHeader.biXPelsPerMeter;
+		m_FileInfo.m_nYPixsPerMeter = m_pBMI->bmiHeader.biYPelsPerMeter;
+		m_FileInfo.m_nImageCount = 1; // just load the first image, do not care about other ones
+		m_FileInfo.m_nImagePos = 0;
+
+		// Read Metadata
+		ReadMetadataWIC(pDecoder, pFrame);
+
+		// If only header wanted return now
+		if (bOnlyHeader)
+			goto exit;
+
+		// Get bits
+		if (!bConvert32bpp)
+		{
+			CComPtr<IWICBitmap> pBitmap;
+			CComPtr<IWICBitmapLock> pBitmapLock;
+
+			// Lock source bits
+			WICRect rcLock = {0, 0, (INT)uiWidth, (INT)uiHeight};
+			hr = pFactory->CreateBitmapFromSource(pFrame, WICBitmapCacheOnDemand, &pBitmap);
+			if (FAILED(hr))
+				goto exit;
+			hr = pBitmap->Lock(&rcLock, WICBitmapLockRead, &pBitmapLock);
+			if (FAILED(hr))
+				goto exit;
+
+			// Get source stride
+			UINT uiStrideSrc;
+			hr = pBitmapLock->GetStride(&uiStrideSrc);
+			if (FAILED(hr))
+				goto exit;
+
+			// Get source buffer
+			UINT cbBufferSize = 0;
+			BYTE* pSrc = NULL;
+			hr = pBitmapLock->GetDataPointer(&cbBufferSize, &pSrc);
+			if (FAILED(hr))
+				goto exit;
+
+			// Allocate Bits
+			m_pBits = (LPBYTE)BIGALLOC(m_dwImageSize);
+			if (m_pBits == NULL)
+			{
+				hr = E_OUTOFMEMORY;
+				goto exit;
+			}
+
+			// Copy bits (WIC image bits are always top-down)
+			BYTE* pDst = m_pBits + (uiDIBScanLineSize * (uiHeight - 1));
+			UINT uiStrideMin = min(uiStrideSrc, uiDIBScanLineSize);
+			for (UINT line = 0; line < uiHeight; line++)
+			{
+				memcpy(pDst, pSrc, uiStrideMin);
+				pSrc += uiStrideSrc;
+				pDst -= uiDIBScanLineSize;
+			}
+		}
+		else
+		{
+			CComPtr<IWICBitmapSource> pBitmap32;
+			CComPtr<IWICBitmap> pBitmap;
+			CComPtr<IWICBitmapLock> pBitmapLock;
+
+			// Convert to 32bpp
+			hr = WICConvertBitmapSource(m_bAlpha ? GUID_WICPixelFormat32bppBGRA : GUID_WICPixelFormat32bppBGR, pFrame, &pBitmap32);
+			if (FAILED(hr))
+				goto exit;
+
+			// Lock source bits
+			WICRect rcLock = {0, 0, (INT)uiWidth, (INT)uiHeight};
+			hr = pFactory->CreateBitmapFromSource(pBitmap32, WICBitmapCacheOnDemand, &pBitmap);
+			if (FAILED(hr))
+				goto exit;
+			hr = pBitmap->Lock(&rcLock, WICBitmapLockRead, &pBitmapLock);
+			if (FAILED(hr))
+				goto exit;
+
+			// Get source stride
+			UINT uiStrideSrc;
+			hr = pBitmapLock->GetStride(&uiStrideSrc);
+			if (FAILED(hr))
+				goto exit;
+
+			// Get source buffer
+			UINT cbBufferSize = 0;
+			BYTE* pSrc = NULL;
+			hr = pBitmapLock->GetDataPointer(&cbBufferSize, &pSrc);
+			if (FAILED(hr))
+				goto exit;
+
+			// Allocate Bits
+			m_pBits = (LPBYTE)BIGALLOC(m_dwImageSize);
+			if (m_pBits == NULL)
+			{
+				hr = E_OUTOFMEMORY;
+				goto exit;
+			}
+
+			// Copy bits (WIC image bits are always top-down)
+			BYTE* pDst = m_pBits + (uiDIBScanLineSize * (uiHeight - 1));
+			UINT uiStrideMin = min(uiStrideSrc, uiDIBScanLineSize);
+			for (UINT line = 0; line < uiHeight; line++)
+			{
+				memcpy(pDst, pSrc, uiStrideMin);
+				pSrc += uiStrideSrc;
+				pDst -= uiDIBScanLineSize;
+			}
+		}
+
+		// Note: COM pointers must be released before 'CoUninitialize()' is called!
+	}
+	
+exit:
+
+	// Uninit COM
+	::CoUninitialize();
+
+	return hr;
+}
+
+double CDib::ReadMetadataWICRational(PROPVARIANT& value)
+{
+	// Note: Microsoft doc inverted num & den:
+	// https://docs.microsoft.com/en-us/windows/win32/wic/-wic-native-image-format-metadata-queries
+
+	if (value.vt == VT_UI8)
+		return (double)value.uhVal.LowPart / (double)value.uhVal.HighPart;
+	else if (value.vt == VT_I8) // num & den can both be negative -> cast LowPart to LONG
+		return (double)(LONG)value.hVal.LowPart / (double)value.hVal.HighPart;
+	else
+		return 0.0;
+}
+
+HRESULT CDib::ReadMetadataWIC(CComPtr<IWICBitmapDecoder> pDecoder, CComPtr<IWICBitmapFrameDecode> pFrame)
+{
+	// Native Image Format Metadata Queries:
+	// https://docs.microsoft.com/en-us/windows/win32/wic/-wic-native-image-format-metadata-queries
+	
+	CComPtr<IWICMetadataQueryReader> pRootQueryReader;
+	CStringW sPath(L"/ifd/");
+	GUID guidFormat = {0};
+	HRESULT hr = pDecoder->GetContainerFormat(&guidFormat);
+	if (FAILED(hr))
+		return hr;
+	if (IsEqualGUID(guidFormat, GUID_ContainerFormatJpeg))
+		sPath = L"/app1" + sPath;
+	hr = pFrame->GetMetadataQueryReader(&pRootQueryReader);
+	if (FAILED(hr))
+		return hr;
+
+	// Alloc/free metadata
+	CMetadata* pMetadata = CDib::GetMetadata(); // this allocates if necessary
+	if (!pMetadata)
+		return E_OUTOFMEMORY;
+	else
+		pMetadata->Free(); // clear data
+
+	PROPVARIANT value;
+	::PropVariantInit(&value);
+
+	// TAG path
+	// Attention: GetMetadataByName() expects decimal values for the TAGs not hex!
+	#define TIFFTAG_CONCAT(x) {ushort= ## x ## }
+	#define EXIFTAG_CONCAT(x) exif/{ushort= ## x ## }
+	#define GPSTAG_CONCAT(x) gps/{ushort= ## x ## }
+	#define DO_STRINGIFY_HELPER(x) #x
+	#define DO_STRINGIFY(x) DO_STRINGIFY_HELPER(x)
+	#define DO_WCHAR_HELPER(x) L ## x
+	#define DO_WCHAR(x) DO_WCHAR_HELPER(x)
+	#define TIFFTAG_QUERY(x) DO_WCHAR(DO_STRINGIFY(TIFFTAG_CONCAT(x)))
+	#define EXIFTAG_QUERY(x) DO_WCHAR(DO_STRINGIFY(EXIFTAG_CONCAT(x)))
+	#define GPSTAG_QUERY(x) DO_WCHAR(DO_STRINGIFY(GPSTAG_CONCAT(x)))
+
+	// TIFFTAG_ORIENTATION
+	hr = pRootQueryReader->GetMetadataByName(sPath + TIFFTAG_QUERY(TIFFTAG_ORIENTATION), &value);
+	if (SUCCEEDED(hr) && (value.vt == VT_UI2))
+		m_pMetadata->m_ExifInfo.Orientation = value.uiVal;
+	::PropVariantClear(&value);
+
+	// TIFFTAG_XRESOLUTION
+	hr = pRootQueryReader->GetMetadataByName(sPath + TIFFTAG_QUERY(TIFFTAG_XRESOLUTION), &value);
+	if (SUCCEEDED(hr))
+		m_pMetadata->m_ExifInfo.Xresolution = (float)ReadMetadataWICRational(value);
+	::PropVariantClear(&value);
+
+	// TIFFTAG_YRESOLUTION
+	hr = pRootQueryReader->GetMetadataByName(sPath + TIFFTAG_QUERY(TIFFTAG_YRESOLUTION), &value);
+	if (SUCCEEDED(hr))
+		m_pMetadata->m_ExifInfo.Yresolution = (float)ReadMetadataWICRational(value);
+	::PropVariantClear(&value);
+
+	// TIFFTAG_RESOLUTIONUNIT
+	hr = pRootQueryReader->GetMetadataByName(sPath + TIFFTAG_QUERY(TIFFTAG_RESOLUTIONUNIT), &value);
+	if (SUCCEEDED(hr) && (value.vt == VT_UI2))
+	{
+		switch (value.uiVal)
+		{
+			case 1: m_pMetadata->m_ExifInfo.ResolutionUnit = 1.0f;			break;	// inch
+			case 2:	m_pMetadata->m_ExifInfo.ResolutionUnit = 1.0f;			break;	// inch
+			case 3: m_pMetadata->m_ExifInfo.ResolutionUnit = 0.393701f;		break;	// centimeter
+			case 4: m_pMetadata->m_ExifInfo.ResolutionUnit = 0.0393701f;	break;	// millimeter
+			case 5: m_pMetadata->m_ExifInfo.ResolutionUnit = 0.0000393701f;	break;	// micrometer
+		}
+	}
+	::PropVariantClear(&value);
+
+	// TIFFTAG_MAKE
+	hr = pRootQueryReader->GetMetadataByName(sPath + TIFFTAG_QUERY(TIFFTAG_MAKE), &value);
+	if (SUCCEEDED(hr))
+	{
+		if (value.vt == VT_LPSTR)
+		{
+			strncpy(m_pMetadata->m_ExifInfo.CameraMake, value.pszVal, 31);
+			m_pMetadata->m_ExifInfo.CameraMake[31] = '\0';
+		}
+		else if (value.vt == (VT_VECTOR | VT_LPSTR) && value.calpstr.cElems >= 1)
+		{
+			strncpy(m_pMetadata->m_ExifInfo.CameraMake, value.calpstr.pElems[0], 31);
+			m_pMetadata->m_ExifInfo.CameraMake[31] = '\0';
+		}
+	}
+	::PropVariantClear(&value);
+
+	// TIFFTAG_MODEL
+	hr = pRootQueryReader->GetMetadataByName(sPath + TIFFTAG_QUERY(TIFFTAG_MODEL), &value);
+	if (SUCCEEDED(hr))
+	{
+		if (value.vt == VT_LPSTR)
+		{
+			strncpy(m_pMetadata->m_ExifInfo.CameraModel, value.pszVal, 39);
+			m_pMetadata->m_ExifInfo.CameraModel[39] = '\0';
+		}
+		else if (value.vt == (VT_VECTOR | VT_LPSTR) && value.calpstr.cElems >= 1)
+		{
+			strncpy(m_pMetadata->m_ExifInfo.CameraModel, value.calpstr.pElems[0], 39);
+			m_pMetadata->m_ExifInfo.CameraModel[39] = '\0';
+		}
+	}
+	::PropVariantClear(&value);
+
+	// TIFFTAG_IMAGEDESCRIPTION
+	hr = pRootQueryReader->GetMetadataByName(sPath + TIFFTAG_QUERY(TIFFTAG_IMAGEDESCRIPTION), &value);
+	if (SUCCEEDED(hr))
+	{
+		if (value.vt == VT_LPSTR)
+		{
+			strncpy(m_pMetadata->m_ExifInfo.ImageDescription, value.pszVal, MAX_IMAGE_DESC - 1);
+			m_pMetadata->m_ExifInfo.ImageDescription[MAX_IMAGE_DESC - 1] = '\0';
+		}
+		else if (value.vt == (VT_VECTOR | VT_LPSTR) && value.calpstr.cElems >= 1)
+		{
+			strncpy(m_pMetadata->m_ExifInfo.ImageDescription, value.calpstr.pElems[0], MAX_IMAGE_DESC - 1);
+			m_pMetadata->m_ExifInfo.ImageDescription[MAX_IMAGE_DESC - 1] = '\0';
+		}
+	}
+	::PropVariantClear(&value);
+
+	// TIFFTAG_SOFTWARE
+	hr = pRootQueryReader->GetMetadataByName(sPath + TIFFTAG_QUERY(TIFFTAG_SOFTWARE), &value);
+	if (SUCCEEDED(hr))
+	{
+		if (value.vt == VT_LPSTR)
+		{
+			strncpy(m_pMetadata->m_ExifInfo.Software, value.pszVal, MAX_SOFTWARE - 1);
+			m_pMetadata->m_ExifInfo.Software[MAX_SOFTWARE - 1] = '\0';
+		}
+		else if (value.vt == (VT_VECTOR | VT_LPSTR) && value.calpstr.cElems >= 1)
+		{
+			strncpy(m_pMetadata->m_ExifInfo.Software, value.calpstr.pElems[0], MAX_SOFTWARE - 1);
+			m_pMetadata->m_ExifInfo.Software[MAX_SOFTWARE - 1] = '\0';
+		}
+	}
+	::PropVariantClear(&value);
+
+	// TIFFTAG_ARTIST
+	hr = pRootQueryReader->GetMetadataByName(sPath + TIFFTAG_QUERY(TIFFTAG_ARTIST), &value);
+	if (SUCCEEDED(hr))
+	{
+		if (value.vt == VT_LPSTR)
+		{
+			strncpy(m_pMetadata->m_ExifInfo.Artist, value.pszVal, MAX_ARTIST - 1);
+			m_pMetadata->m_ExifInfo.Artist[MAX_ARTIST - 1] = '\0';
+		}
+		else if (value.vt == (VT_VECTOR | VT_LPSTR) && value.calpstr.cElems >= 1)
+		{
+			strncpy(m_pMetadata->m_ExifInfo.Artist, value.calpstr.pElems[0], MAX_ARTIST - 1);
+			m_pMetadata->m_ExifInfo.Artist[MAX_ARTIST - 1] = '\0';
+		}
+	}
+	::PropVariantClear(&value);
+
+	// TIFFTAG_COPYRIGHT
+	hr = pRootQueryReader->GetMetadataByName(sPath + TIFFTAG_QUERY(TIFFTAG_COPYRIGHT), &value);
+	if (SUCCEEDED(hr))
+	{
+		// Photographer Copyright
+		if (value.vt == VT_LPSTR)
+		{
+			strncpy(m_pMetadata->m_ExifInfo.CopyrightPhotographer, value.pszVal, MAX_COPYRIGHT - 1);
+			m_pMetadata->m_ExifInfo.CopyrightPhotographer[MAX_COPYRIGHT - 1] = '\0';
+		}
+		// Photographer and Editor Copyright
+		else if (value.vt == (VT_VECTOR | VT_LPSTR))
+		{
+			// Photographer
+			if (value.calpstr.cElems >= 1)
+			{
+				strncpy(m_pMetadata->m_ExifInfo.CopyrightPhotographer, value.calpstr.pElems[0], MAX_COPYRIGHT - 1);
+				m_pMetadata->m_ExifInfo.CopyrightPhotographer[MAX_COPYRIGHT - 1] = '\0';
+			}
+
+			// Editor
+			if (value.calpstr.cElems >= 2)
+			{
+				strncpy(m_pMetadata->m_ExifInfo.CopyrightEditor, value.calpstr.pElems[1], MAX_COPYRIGHT - 1);
+				m_pMetadata->m_ExifInfo.CopyrightEditor[MAX_COPYRIGHT - 1] = '\0';
+			}
+		}
+	}
+	::PropVariantClear(&value);
+
+	// TIFFTAG_DATETIME
+	hr = pRootQueryReader->GetMetadataByName(sPath + TIFFTAG_QUERY(TIFFTAG_DATETIME), &value);
+	if (SUCCEEDED(hr) && (value.vt == VT_LPSTR))
+	{
+		strncpy(m_pMetadata->m_ExifInfo.DateTime, value.pszVal, 19);
+		m_pMetadata->m_ExifInfo.DateTime[19] = '\0';
+	}
+	::PropVariantClear(&value);
+
+	// -------------
+	// Exif specific
+	// -------------
+
+	// EXIFTAG_DATETIMEDIGITIZED
+	hr = pRootQueryReader->GetMetadataByName(sPath + EXIFTAG_QUERY(EXIFTAG_DATETIMEDIGITIZED), &value);
+	if (SUCCEEDED(hr) && (value.vt == VT_LPSTR))
+	{
+		strncpy(m_pMetadata->m_ExifInfo.DateTime, value.pszVal, 19);
+		m_pMetadata->m_ExifInfo.DateTime[19] = '\0';
+	}
+	::PropVariantClear(&value);
+	
+	// EXIFTAG_DATETIMEORIGINAL (give highest priority)
+	hr = pRootQueryReader->GetMetadataByName(sPath + EXIFTAG_QUERY(EXIFTAG_DATETIMEORIGINAL), &value);
+	if (SUCCEEDED(hr) && (value.vt == VT_LPSTR))
+	{
+		strncpy(m_pMetadata->m_ExifInfo.DateTime, value.pszVal, 19);
+		m_pMetadata->m_ExifInfo.DateTime[19] = '\0';
+	}
+	::PropVariantClear(&value);
+
+	// EXIFTAG_EXIFVERSION
+	hr = pRootQueryReader->GetMetadataByName(sPath + EXIFTAG_QUERY(EXIFTAG_EXIFVERSION), &value);
+	if (SUCCEEDED(hr) && (value.vt == VT_BLOB))
+	{
+		memcpy(m_pMetadata->m_ExifInfo.Version, value.blob.pBlobData, min(4, value.blob.cbSize));
+		m_pMetadata->m_ExifInfo.Version[4] = '\0';
+	}
+	::PropVariantClear(&value);
+
+	// EXIFTAG_USERCOMMENT
+	hr = pRootQueryReader->GetMetadataByName(sPath + EXIFTAG_QUERY(EXIFTAG_USERCOMMENT), &value);
+	if (SUCCEEDED(hr) && (value.vt == VT_LPWSTR))
+	{
+		wcsncpy(m_pMetadata->m_ExifInfo.UserComment, value.pwszVal, MAX_USER_COMMENT - 1);
+		m_pMetadata->m_ExifInfo.UserComment[MAX_USER_COMMENT - 1] = L'\0';
+	}
+	::PropVariantClear(&value);
+
+	// EXIFTAG_FLASH
+	hr = pRootQueryReader->GetMetadataByName(sPath + EXIFTAG_QUERY(EXIFTAG_FLASH), &value);
+	if (SUCCEEDED(hr) && (value.vt == VT_UI2))
+		m_pMetadata->m_ExifInfo.Flash = value.uiVal;
+	::PropVariantClear(&value);
+
+	// EXIFTAG_FOCALLENGTH
+	hr = pRootQueryReader->GetMetadataByName(sPath + EXIFTAG_QUERY(EXIFTAG_FOCALLENGTH), &value);
+	if (SUCCEEDED(hr))
+		m_pMetadata->m_ExifInfo.FocalLength = (float)ReadMetadataWICRational(value);
+	::PropVariantClear(&value);
+
+	// EXIFTAG_FOCALLENGTHIN35MMFILM
+	hr = pRootQueryReader->GetMetadataByName(sPath + EXIFTAG_QUERY(EXIFTAG_FOCALLENGTHIN35MMFILM), &value);
+	if (SUCCEEDED(hr) && (value.vt == VT_UI2))
+		m_pMetadata->m_ExifInfo.FocalLength35mmEquiv = value.uiVal;
+	::PropVariantClear(&value);
+
+	// EXIFTAG_DIGITALZOOMRATIO
+	hr = pRootQueryReader->GetMetadataByName(sPath + EXIFTAG_QUERY(EXIFTAG_DIGITALZOOMRATIO), &value);
+	if (SUCCEEDED(hr))
+		m_pMetadata->m_ExifInfo.DigitalZoomRatio = (float)ReadMetadataWICRational(value);
+	::PropVariantClear(&value);
+
+	// EXIFTAG_EXPOSURETIME
+	hr = pRootQueryReader->GetMetadataByName(sPath + EXIFTAG_QUERY(EXIFTAG_EXPOSURETIME), &value);
+	if (SUCCEEDED(hr))
+		m_pMetadata->m_ExifInfo.ExposureTime = (float)ReadMetadataWICRational(value);
+	::PropVariantClear(&value);
+
+	// EXIFTAG_BRIGHTNESSVALUE
+	hr = pRootQueryReader->GetMetadataByName(sPath + EXIFTAG_QUERY(EXIFTAG_BRIGHTNESSVALUE), &value);
+	if (SUCCEEDED(hr))
+		m_pMetadata->m_ExifInfo.Brightness = (float)ReadMetadataWICRational(value);
+	::PropVariantClear(&value);
+
+	// EXIFTAG_FNUMBER
+	hr = pRootQueryReader->GetMetadataByName(sPath + EXIFTAG_QUERY(EXIFTAG_FNUMBER), &value);
+	if (SUCCEEDED(hr))
+		m_pMetadata->m_ExifInfo.ApertureFNumber = (float)ReadMetadataWICRational(value);
+	::PropVariantClear(&value);
+
+	// EXIFTAG_SUBJECTDISTANCE
+	hr = pRootQueryReader->GetMetadataByName(sPath + EXIFTAG_QUERY(EXIFTAG_SUBJECTDISTANCE), &value);
+	if (SUCCEEDED(hr))
+		m_pMetadata->m_ExifInfo.Distance = (float)ReadMetadataWICRational(value);
+	::PropVariantClear(&value);
+
+	// EXIFTAG_ISOSPEEDRATINGS or EXIFTAG_EXPOSUREINDEX
+	hr = pRootQueryReader->GetMetadataByName(sPath + EXIFTAG_QUERY(EXIFTAG_ISOSPEEDRATINGS), &value);
+	if (SUCCEEDED(hr) && (value.vt == VT_UI2))
+		m_pMetadata->m_ExifInfo.ISOequivalent = value.uiVal;
+	::PropVariantClear(&value);
+	if (m_pMetadata->m_ExifInfo.ISOequivalent == 0)
+	{
+		hr = pRootQueryReader->GetMetadataByName(sPath + EXIFTAG_QUERY(EXIFTAG_EXPOSUREINDEX), &value);
+		if (SUCCEEDED(hr))
+			m_pMetadata->m_ExifInfo.ISOequivalent = (unsigned short)ReadMetadataWICRational(value);
+		::PropVariantClear(&value);
+	}
+
+	// EXIFTAG_FOCALPLANEXRESOLUTION
+	hr = pRootQueryReader->GetMetadataByName(sPath + EXIFTAG_QUERY(EXIFTAG_FOCALPLANEXRESOLUTION), &value);
+	if (SUCCEEDED(hr))
+		m_pMetadata->m_ExifInfo.FocalplaneXRes = (float)ReadMetadataWICRational(value);
+	::PropVariantClear(&value);
+
+	// EXIFTAG_FOCALPLANEYRESOLUTION
+	hr = pRootQueryReader->GetMetadataByName(sPath + EXIFTAG_QUERY(EXIFTAG_FOCALPLANEYRESOLUTION), &value);
+	if (SUCCEEDED(hr))
+		m_pMetadata->m_ExifInfo.FocalplaneYRes = (float)ReadMetadataWICRational(value);
+	::PropVariantClear(&value);
+
+	// EXIFTAG_FOCALPLANERESOLUTIONUNIT
+	hr = pRootQueryReader->GetMetadataByName(sPath + EXIFTAG_QUERY(EXIFTAG_FOCALPLANERESOLUTIONUNIT), &value);
+	if (SUCCEEDED(hr) && (value.vt == VT_UI2))
+	{
+		switch (value.uiVal)
+		{
+			case 1: m_pMetadata->m_ExifInfo.FocalplaneUnits = 25.4f;	break;	// inch
+			case 2: m_pMetadata->m_ExifInfo.FocalplaneUnits = 25.4f;	break;	// inch
+			case 3: m_pMetadata->m_ExifInfo.FocalplaneUnits = 10.0f;	break;	// centimeter
+			case 4: m_pMetadata->m_ExifInfo.FocalplaneUnits = 1.0f;		break;	// millimeter
+			case 5: m_pMetadata->m_ExifInfo.FocalplaneUnits = 0.001f;	break;	// micrometer
+		}
+	}
+	::PropVariantClear(&value);
+
+	// EXIFTAG_EXPOSUREBIASVALUE
+	hr = pRootQueryReader->GetMetadataByName(sPath + EXIFTAG_QUERY(EXIFTAG_EXPOSUREBIASVALUE), &value);
+	if (SUCCEEDED(hr))
+		m_pMetadata->m_ExifInfo.ExposureBias = (float)ReadMetadataWICRational(value);
+	::PropVariantClear(&value);
+
+	// EXIFTAG_WHITEBALANCE
+	hr = pRootQueryReader->GetMetadataByName(sPath + EXIFTAG_QUERY(EXIFTAG_WHITEBALANCE), &value);
+	if (SUCCEEDED(hr) && (value.vt == VT_UI2))
+		m_pMetadata->m_ExifInfo.WhiteBalance = value.uiVal;
+	::PropVariantClear(&value);
+	
+	// EXIFTAG_LIGHTSOURCE
+	hr = pRootQueryReader->GetMetadataByName(sPath + EXIFTAG_QUERY(EXIFTAG_LIGHTSOURCE), &value);
+	if (SUCCEEDED(hr) && (value.vt == VT_UI2))
+		m_pMetadata->m_ExifInfo.LightSource = value.uiVal;
+	::PropVariantClear(&value);
+
+	// EXIFTAG_METERINGMODE
+	hr = pRootQueryReader->GetMetadataByName(sPath + EXIFTAG_QUERY(EXIFTAG_METERINGMODE), &value);
+	if (SUCCEEDED(hr) && (value.vt == VT_UI2))
+		m_pMetadata->m_ExifInfo.MeteringMode = value.uiVal;
+	::PropVariantClear(&value);
+
+	// EXIFTAG_EXPOSUREPROGRAM
+	hr = pRootQueryReader->GetMetadataByName(sPath + EXIFTAG_QUERY(EXIFTAG_EXPOSUREPROGRAM), &value);
+	if (SUCCEEDED(hr) && (value.vt == VT_UI2))
+		m_pMetadata->m_ExifInfo.ExposureProgram = value.uiVal;
+	::PropVariantClear(&value);
+
+	// EXIFTAG_EXPOSUREMODE
+	hr = pRootQueryReader->GetMetadataByName(sPath + EXIFTAG_QUERY(EXIFTAG_EXPOSUREMODE), &value);
+	if (SUCCEEDED(hr) && (value.vt == VT_UI2))
+		m_pMetadata->m_ExifInfo.ExposureMode = value.uiVal;
+	::PropVariantClear(&value);
+
+	// EXIFTAG_SUBJECTDISTANCERANGE
+	hr = pRootQueryReader->GetMetadataByName(sPath + EXIFTAG_QUERY(EXIFTAG_SUBJECTDISTANCERANGE), &value);
+	if (SUCCEEDED(hr) && (value.vt == VT_UI2))
+		m_pMetadata->m_ExifInfo.DistanceRange = value.uiVal;
+	::PropVariantClear(&value);
+
+	// EXIFTAG_COMPRESSEDBITSPERPIXEL
+	hr = pRootQueryReader->GetMetadataByName(sPath + EXIFTAG_QUERY(EXIFTAG_COMPRESSEDBITSPERPIXEL), &value);
+	if (SUCCEEDED(hr))
+		m_pMetadata->m_ExifInfo.CompressionLevel = (float)ReadMetadataWICRational(value);
+	::PropVariantClear(&value);
+	
+	// EXIFTAG_AMBIENT_TEMPERATURE
+	hr = pRootQueryReader->GetMetadataByName(sPath + EXIFTAG_QUERY(EXIFTAG_AMBIENT_TEMPERATURE), &value);
+	if (SUCCEEDED(hr))
+		m_pMetadata->m_ExifInfo.AmbientTemperature = (float)ReadMetadataWICRational(value);
+	::PropVariantClear(&value);
+
+	// EXIFTAG_HUMIDITY
+	hr = pRootQueryReader->GetMetadataByName(sPath + EXIFTAG_QUERY(EXIFTAG_HUMIDITY), &value);
+	if (SUCCEEDED(hr))
+		m_pMetadata->m_ExifInfo.Humidity = (float)ReadMetadataWICRational(value);
+	::PropVariantClear(&value);
+
+	// EXIFTAG_PRESSURE
+	hr = pRootQueryReader->GetMetadataByName(sPath + EXIFTAG_QUERY(EXIFTAG_PRESSURE), &value);
+	if (SUCCEEDED(hr))
+		m_pMetadata->m_ExifInfo.Pressure = (float)ReadMetadataWICRational(value);
+	::PropVariantClear(&value);
+
+	// EXIFTAG_WATERDEPTH
+	hr = pRootQueryReader->GetMetadataByName(sPath + EXIFTAG_QUERY(EXIFTAG_WATERDEPTH), &value);
+	if (SUCCEEDED(hr))
+		m_pMetadata->m_ExifInfo.WaterDepth = (float)ReadMetadataWICRational(value);
+	::PropVariantClear(&value);
+
+	// ------------
+	// Gps specific
+	// ------------
+
+	// TAG_GPS_VERSION
+	hr = pRootQueryReader->GetMetadataByName(sPath + GPSTAG_QUERY(TAG_GPS_VERSION), &value);
+	if (SUCCEEDED(hr) && (value.vt == (VT_VECTOR | VT_UI1)))
+	{
+		m_pMetadata->m_ExifInfo.bGpsInfoPresent = true;
+		memcpy(m_pMetadata->m_ExifInfo.GpsVersion, value.calpstr.pElems, min(4, value.calpstr.cElems));
+	}
+	::PropVariantClear(&value);
+
+	// TAG_GPS_LAT_REF
+	hr = pRootQueryReader->GetMetadataByName(sPath + GPSTAG_QUERY(TAG_GPS_LAT_REF), &value);
+	if (SUCCEEDED(hr) && (value.vt == VT_LPSTR))
+	{
+		m_pMetadata->m_ExifInfo.bGpsInfoPresent = true;
+		m_pMetadata->m_ExifInfo.GpsLatRef[0] = value.pszVal[0];
+		m_pMetadata->m_ExifInfo.GpsLatRef[1] = '\0';
+	}
+	::PropVariantClear(&value);
+
+	// TAG_GPS_LAT
+	hr = pRootQueryReader->GetMetadataByName(sPath + GPSTAG_QUERY(TAG_GPS_LAT), &value);
+	if (SUCCEEDED(hr) && (value.vt == (VT_VECTOR | VT_UI8)))
+	{
+		m_pMetadata->m_ExifInfo.bGpsInfoPresent = true;
+		if (value.cauh.cElems >= 1)
+			m_pMetadata->m_ExifInfo.GpsLat[GPS_DEGREE] = (float)((double)value.cauh.pElems[0].LowPart / (double)value.cauh.pElems[0].HighPart);
+		if (value.cauh.cElems >= 2)
+			m_pMetadata->m_ExifInfo.GpsLat[GPS_MINUTES] = (float)((double)value.cauh.pElems[1].LowPart / (double)value.cauh.pElems[1].HighPart);
+		if (value.cauh.cElems >= 3)
+			m_pMetadata->m_ExifInfo.GpsLat[GPS_SECONDS] = (float)((double)value.cauh.pElems[2].LowPart / (double)value.cauh.pElems[2].HighPart);
+		CMetadata::GpsNormalizeCoord(m_pMetadata->m_ExifInfo.GpsLat[GPS_DEGREE], m_pMetadata->m_ExifInfo.GpsLat[GPS_MINUTES], m_pMetadata->m_ExifInfo.GpsLat[GPS_SECONDS]);
+	}
+	::PropVariantClear(&value);
+
+	// TAG_GPS_LONG_REF
+	hr = pRootQueryReader->GetMetadataByName(sPath + GPSTAG_QUERY(TAG_GPS_LONG_REF), &value);
+	if (SUCCEEDED(hr) && (value.vt == VT_LPSTR))
+	{
+		m_pMetadata->m_ExifInfo.bGpsInfoPresent = true;
+		m_pMetadata->m_ExifInfo.GpsLongRef[0] = value.pszVal[0];
+		m_pMetadata->m_ExifInfo.GpsLongRef[1] = '\0';
+	}
+	::PropVariantClear(&value);
+
+	// TAG_GPS_LONG
+	hr = pRootQueryReader->GetMetadataByName(sPath + GPSTAG_QUERY(TAG_GPS_LONG), &value);
+	if (SUCCEEDED(hr) && (value.vt == (VT_VECTOR | VT_UI8)))
+	{
+		m_pMetadata->m_ExifInfo.bGpsInfoPresent = true;
+		if (value.cauh.cElems >= 1)
+			m_pMetadata->m_ExifInfo.GpsLong[GPS_DEGREE] = (float)((double)value.cauh.pElems[0].LowPart / (double)value.cauh.pElems[0].HighPart);
+		if (value.cauh.cElems >= 2)
+			m_pMetadata->m_ExifInfo.GpsLong[GPS_MINUTES] = (float)((double)value.cauh.pElems[1].LowPart / (double)value.cauh.pElems[1].HighPart);
+		if (value.cauh.cElems >= 3)
+			m_pMetadata->m_ExifInfo.GpsLong[GPS_SECONDS] = (float)((double)value.cauh.pElems[2].LowPart / (double)value.cauh.pElems[2].HighPart);
+		CMetadata::GpsNormalizeCoord(m_pMetadata->m_ExifInfo.GpsLong[GPS_DEGREE], m_pMetadata->m_ExifInfo.GpsLong[GPS_MINUTES], m_pMetadata->m_ExifInfo.GpsLong[GPS_SECONDS]);
+	}
+	::PropVariantClear(&value);
+
+	// TAG_GPS_ALT_REF
+	hr = pRootQueryReader->GetMetadataByName(sPath + GPSTAG_QUERY(TAG_GPS_ALT_REF), &value);
+	if (SUCCEEDED(hr) && (value.vt == VT_UI1))
+	{
+		m_pMetadata->m_ExifInfo.bGpsInfoPresent = true;
+		m_pMetadata->m_ExifInfo.GpsAltRef = value.bVal;
+	}
+	::PropVariantClear(&value);
+
+	// TAG_GPS_ALT
+	hr = pRootQueryReader->GetMetadataByName(sPath + GPSTAG_QUERY(TAG_GPS_ALT), &value);
+	if (SUCCEEDED(hr) && (value.vt == VT_UI8))
+	{
+		m_pMetadata->m_ExifInfo.bGpsInfoPresent = true;
+		m_pMetadata->m_ExifInfo.GpsAlt = (float)((double)value.uhVal.LowPart / (double)value.uhVal.HighPart);
+	}
+	::PropVariantClear(&value);
+
+	// TAG_GPS_TIMESTAMP
+	hr = pRootQueryReader->GetMetadataByName(sPath + GPSTAG_QUERY(TAG_GPS_TIMESTAMP), &value);
+	if (SUCCEEDED(hr) && (value.vt == (VT_VECTOR | VT_UI8)))
+	{
+		m_pMetadata->m_ExifInfo.bGpsInfoPresent = true;
+		if (value.cauh.cElems >= 1)
+			m_pMetadata->m_ExifInfo.GpsTime[GPS_HOUR] = (float)((double)value.cauh.pElems[0].LowPart / (double)value.cauh.pElems[0].HighPart);
+		if (value.cauh.cElems >= 2)
+			m_pMetadata->m_ExifInfo.GpsTime[GPS_MINUTES] = (float)((double)value.cauh.pElems[1].LowPart / (double)value.cauh.pElems[1].HighPart);
+		if (value.cauh.cElems >= 3)
+			m_pMetadata->m_ExifInfo.GpsTime[GPS_SECONDS] = (float)((double)value.cauh.pElems[2].LowPart / (double)value.cauh.pElems[2].HighPart);
+	}
+	::PropVariantClear(&value);
+
+	// TAG_GPS_MAPDATUM
+	hr = pRootQueryReader->GetMetadataByName(sPath + GPSTAG_QUERY(TAG_GPS_MAPDATUM), &value);
+	if (SUCCEEDED(hr) && (value.vt == VT_LPSTR))
+	{
+		m_pMetadata->m_ExifInfo.bGpsInfoPresent = true;
+		strncpy(m_pMetadata->m_ExifInfo.GpsMapDatum, value.pszVal, 19);
+		m_pMetadata->m_ExifInfo.GpsMapDatum[19] = '\0';
+	}
+	::PropVariantClear(&value);
+
+	return S_OK;
 }
 
 BOOL CDib::LoadDibSection(HBITMAP hDibSection)

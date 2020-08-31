@@ -3865,6 +3865,9 @@ BOOL CUImagerApp::IsSupportedPictureFile(CString sFileName)
 		(sExt == _T(".png"))	||
 		(sExt == _T(".pcx"))	||
 		(sExt == _T(".gif"))	||
+		(sExt == _T(".jxr"))	||
+		(sExt == _T(".webp"))	||
+		(sExt == _T(".heic"))	||
 		CDib::IsJPEGExt(sExt)	||
 		CDib::IsTIFFExt(sExt))
 		return TRUE;

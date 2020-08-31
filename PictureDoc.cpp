@@ -1886,6 +1886,9 @@ CPictureDoc::CPictureDoc()
 	m_FileFind.AddAllowedExtension(_T("thm"));
 	m_FileFind.AddAllowedExtension(_T("jfx"));
 	m_FileFind.AddAllowedExtension(_T("dib"));
+	m_FileFind.AddAllowedExtension(_T("jxr"));
+	m_FileFind.AddAllowedExtension(_T("webp"));
+	m_FileFind.AddAllowedExtension(_T("heic"));
 	m_FileFind.AddAllowedNumericExtensions();
 
 	// Load the Settings
