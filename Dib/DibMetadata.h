@@ -30,11 +30,11 @@
 #define IPTC_VERSION				4
 
 // Gps
+// Attention: GetMetadataByName() expects decimal values for the TAGs not hex!
 #define GPS_DEGREE					0
 #define GPS_HOUR					0
 #define GPS_MINUTES					1
 #define GPS_SECONDS					2
-#define MAX_GPS_TAG					0x1E
 #define TAG_GPS_VERSION				0
 #define TAG_GPS_LAT_REF				1
 #define TAG_GPS_LAT					2
@@ -43,7 +43,7 @@
 #define TAG_GPS_ALT_REF				5
 #define TAG_GPS_ALT					6
 #define TAG_GPS_TIMESTAMP			7
-#define TAG_GPS_MAPDATUM			0x12
+#define TAG_GPS_MAPDATUM			18
 #define DEFAULT_GPS_VERSION_0		2
 #define DEFAULT_GPS_VERSION_1		2
 #define DEFAULT_GPS_VERSION_2		0
@@ -687,6 +687,7 @@ public:
 	static void FillExifDateTimeString(const CTime& Time, char* DateTime);
 	static CTime GetDateFromIptcLegacyString(const CString& sIptcDate);
 	static CTime GetDateFromXmpString(const CString& sXmpDate);
+	static void GpsNormalizeCoord(float& fDegree, float& fMinutes, float& fSeconds);
 	bool ParseProcessJPEG(unsigned char* pData, int nLength, bool bDoWrite = false);
 	bool ParseTIFF(int nStartIFD, unsigned char* pData, int nLength);
 	void ParseIPTCLegacy(const unsigned char* pData, int nLength);
@@ -770,7 +771,6 @@ public:
 	DWORD m_dwIccSize;
 	LPBYTE m_pPhotoshopData;
 	DWORD m_dwPhotoshopSize;
-	static const char* m_GpsTags[MAX_GPS_TAG + 1];
 	static const unsigned char m_ExifHeader[EXIF_HEADER_SIZE];
 	static const unsigned char m_XmpHeader[XMP_HEADER_SIZE];
 	static const unsigned char m_IccHeader[ICC_HEADER_SIZE];
@@ -817,7 +817,6 @@ protected:
 								unsigned char* pOffsetBase, 
 								int nLength,
 								CMetadata::EXIFINFO* pExifInfo);
-	void GpsNormalizeCoord(float& fDegree, float& fMinutes, float& fSeconds);
 	void ParseGpsInfo(	unsigned char* pDirStart,
 						unsigned char* pOffsetBase,
 						int nLength,
