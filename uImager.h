@@ -268,6 +268,7 @@ public:
 	CUImagerMultiDocTemplate* GetPictureDocTemplate() {return m_pPictureDocTemplate;};
 	CUImagerMultiDocTemplate* GetTemplateFromFileExtension(CString sFileName);
 	static BOOL IsSupportedPictureFile(CString sFileName);
+	static BOOL IsLoadOnlyPictureFile(CString sFileName);
 
 	// Close All Open Documents
 	BOOL CloseAll();

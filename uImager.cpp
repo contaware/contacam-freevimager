@@ -3875,6 +3875,17 @@ BOOL CUImagerApp::IsSupportedPictureFile(CString sFileName)
 		return FALSE;
 }
 
+BOOL CUImagerApp::IsLoadOnlyPictureFile(CString sFileName)
+{
+	CString sExt = ::GetFileExt(sFileName);
+	if ((sExt == _T(".jxr"))	||
+		(sExt == _T(".webp"))	||
+		(sExt == _T(".heic")))
+		return TRUE;
+	else
+		return FALSE;
+}
+
 CUImagerMultiDocTemplate* CUImagerApp::GetTemplateFromFileExtension(CString sFileName)
 {
 	if (IsSupportedPictureFile(sFileName))

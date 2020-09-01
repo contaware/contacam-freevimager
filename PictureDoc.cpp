@@ -2206,23 +2206,29 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 
 	// Init Save As Dialog
 	TCHAR FileName[MAX_PATH] = _T("");
-	BOOL bNewFile = FALSE;
-	CString sLastNewFileSaveAsExt(DEFAULT_SAVEAS_EXT);
+	CString sSrcExt(::GetFileExt(m_sFileName));
+	CString sDefExt;
 	if (m_sFileName == _T(""))
 	{
-		sLastNewFileSaveAsExt = ::AfxGetApp()->GetProfileString(_T("PictureDoc"), _T("LastNewFileSaveAsExt"), DEFAULT_SAVEAS_EXT);
-		_tcscpy(FileName, ML_STRING(1260, "Picture") + sLastNewFileSaveAsExt);
-		bNewFile = TRUE;
+		sDefExt = ::AfxGetApp()->GetProfileString(_T("PictureDoc"), _T("LastNewFileSaveAsExt"), DEFAULT_SAVEAS_EXT);
+		_tcscpy(FileName, ML_STRING(1260, "Picture") + sDefExt);
+	}
+	else if (CUImagerApp::IsLoadOnlyPictureFile(m_sFileName))
+	{
+		sDefExt = DEFAULT_SAVEAS_EXT;
+		_tcscpy(FileName, ::GetFileNameNoExt(m_sFileName) + sDefExt);
 	}
 	else
+	{
+		sDefExt = sSrcExt;
 		_tcscpy(FileName, m_sFileName);
+	}
 	CSaveFileDlg dlgFile(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, NULL, GetView());
-	CString defextension(::GetFileExt(FileName));
-	CString defextension_nodot(defextension);
-	defextension_nodot.TrimLeft(_T('.'));
+	CString sDefExtNoDot(sDefExt);
+	sDefExtNoDot.TrimLeft(_T('.'));
 	dlgFile.m_ofn.lpstrFile = FileName;
 	dlgFile.m_ofn.nMaxFile = MAX_PATH;
-	dlgFile.m_ofn.lpstrDefExt = defextension_nodot.GetBuffer();
+	dlgFile.m_ofn.lpstrDefExt = sDefExtNoDot.GetBuffer();
 	dlgFile.m_ofn.lpstrFilter = _T("Windows Bitmap (*.bmp)\0*.bmp\0")
 								_T("Graphics Interchange Format (*.gif)\0*.gif\0")
 								_T("Portable Network Graphics (*.png)\0*.png\0")
@@ -2232,31 +2238,31 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 								_T("Enhanced Metafile (*.emf)\0*.emf\0");
 	if (sDlgTitle != _T(""))
 		dlgFile.m_ofn.lpstrTitle = sDlgTitle;
-	if ((defextension == _T(".bmp")) || (defextension == _T(".dib")))
+	if ((sDefExt == _T(".bmp")) || (sDefExt == _T(".dib")))
 	{
 		dlgFile.m_ofn.nFilterIndex = 1;
 	}
-	else if (defextension == _T(".gif"))
+	else if (sDefExt == _T(".gif"))
 	{
 		dlgFile.m_ofn.nFilterIndex = 2;
 	}
-	else if (defextension == _T(".png"))
+	else if (sDefExt == _T(".png"))
 	{
 		dlgFile.m_ofn.nFilterIndex = 3;
 	}
-	else if (CDib::IsJPEGExt(defextension))
+	else if (CDib::IsJPEGExt(sDefExt))
 	{
 		dlgFile.m_ofn.nFilterIndex = 4;
 	}
-	else if (CDib::IsTIFFExt(defextension))
+	else if (CDib::IsTIFFExt(sDefExt))
 	{
 		dlgFile.m_ofn.nFilterIndex = 5;
 	}
-	else if (defextension == _T(".pcx"))
+	else if (sDefExt == _T(".pcx"))
 	{
 		dlgFile.m_ofn.nFilterIndex = 6;
 	}
-	else if (defextension == _T(".emf"))
+	else if (sDefExt == _T(".emf"))
 	{
 		dlgFile.m_ofn.nFilterIndex = 7;
 	}
@@ -2264,10 +2270,10 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 	// Show Save As Dialog
 	if (dlgFile.DoModal() == IDOK)
 	{
-		// Store default extension for new files
-		CString extension(::GetFileExt(FileName));
-		if (bNewFile)
-			::AfxGetApp()->WriteProfileString(_T("PictureDoc"), _T("LastNewFileSaveAsExt"), extension);
+		// Store chosen extension for new files
+		CString sDstExt(::GetFileExt(FileName));
+		if (m_sFileName == _T(""))
+			::AfxGetApp()->WriteProfileString(_T("PictureDoc"), _T("LastNewFileSaveAsExt"), sDstExt);
 
 		// Save to itself?
 		if (m_sFileName.CompareNoCase(FileName) == 0 && bSaveCopyAs)
@@ -2299,7 +2305,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 
 		BOOL res = FALSE;
 		CDib Dib;
-		if ((extension == _T(".bmp")) || (extension == _T(".dib")))
+		if ((sDstExt == _T(".bmp")) || (sDstExt == _T(".dib")))
 		{
 			BeginWaitCursor();
 			if (m_pDib->GetBitCount() == 8 || m_pDib->GetBitCount() == 4)
@@ -2343,7 +2349,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 			}
 			EndWaitCursor();
 		}
-		else if (extension == _T(".gif"))
+		else if (sDstExt == _T(".gif"))
 		{
 			BeginWaitCursor();
 			if (m_bImageBackgroundColor)
@@ -2356,7 +2362,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 							TRUE);
 			EndWaitCursor();
 		}
-		else if (extension == _T(".png"))
+		else if (sDstExt == _T(".png"))
 		{
 			BeginWaitCursor();
 			if (m_bImageBackgroundColor)
@@ -2372,7 +2378,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 							TRUE);
 			EndWaitCursor();
 		}
-		else if (CDib::IsJPEGExt(extension))
+		else if (CDib::IsJPEGExt(sDstExt))
 		{
 			BeginWaitCursor();
 			if (m_pDib->HasAlpha() && m_pDib->GetBitCount() == 32)
@@ -2380,7 +2386,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 				Dib = *m_pDib;
 				Dib.RenderAlphaWithSrcBackground();
 				Dib.SetAlpha(FALSE);
-				if (!CDib::IsJPEGExt(defextension))
+				if (!CDib::IsJPEGExt(sSrcExt))
 				{
 					// Clear Orientation
 					Dib.GetExifInfo()->Orientation = 1;
@@ -2418,7 +2424,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 			}
 			else
 			{
-				if (!CDib::IsJPEGExt(defextension))
+				if (!CDib::IsJPEGExt(sSrcExt))
 				{
 					// Clear Orientation
 					int nOrientation = m_pDib->GetExifInfo()->Orientation;
@@ -2458,11 +2464,11 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 			}
 			EndWaitCursor();
 		}
-		else if (CDib::IsTIFFExt(extension))
+		else if (CDib::IsTIFFExt(sDstExt))
 		{
 			BeginWaitCursor();
 			int nTiffCompression;
-			if (CDib::IsTIFFExt(defextension))
+			if (CDib::IsTIFFExt(sSrcExt))
 				nTiffCompression = m_pDib->m_FileInfo.m_nCompression;
 			else
 			{
@@ -2494,7 +2500,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 			m_pDib->GetExifInfo()->Orientation = nOrientation;
 			EndWaitCursor();
 		}
-		else if (extension == _T(".pcx"))
+		else if (sDstExt == _T(".pcx"))
 		{
 			BeginWaitCursor();
 			if (m_pDib->HasAlpha() && m_pDib->GetBitCount() == 32)
@@ -2512,7 +2518,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 										TRUE);
 			EndWaitCursor();
 		}
-		else if (extension == _T(".emf"))
+		else if (sDstExt == _T(".emf"))
 		{
 			// Unfortunately with the given windows APIs we cannot choose the wanted dpi,
 			// only a reference dc with a given dpi can be chosen.
@@ -3116,7 +3122,7 @@ CString CPictureDoc::ExtractFromAnimGIFToBMP(const CString& sFileName)
 
 BOOL CPictureDoc::Save() 
 {
-	if (m_sFileName == _T(""))
+	if (m_sFileName == _T("") || CUImagerApp::IsLoadOnlyPictureFile(m_sFileName))
 		return SaveAs(FALSE);
 	else
 	{
