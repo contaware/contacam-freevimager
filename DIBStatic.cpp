@@ -103,7 +103,7 @@ int CDibStatic::CThumbLoadThread::WorkHdr()
 			throw (int)HDRLOAD_DOEXIT;
 
 		// Is it a Picture?
-		if (((CUImagerApp*)::AfxGetApp())->IsSupportedPictureFile(m_sFileName))
+		if (CUImagerApp::IsSupportedPictureFile(m_sFileName))
 		{
 			// Load Header (for Jpeg this loads also exif data)
 			if (!m_pDibStatic->m_pDibHdr->LoadImage(m_sFileName, 0, 0, 0, TRUE, TRUE))
@@ -184,7 +184,7 @@ int CDibStatic::CThumbLoadThread::WorkFull()
 			m_pDibStatic->m_pAlphaRenderedDib->Free();
 
 		// Is it a Picture?
-		if (((CUImagerApp*)::AfxGetApp())->IsSupportedPictureFile(m_sFileName))
+		if (CUImagerApp::IsSupportedPictureFile(m_sFileName))
 		{
 			// Load Header (for Jpeg this loads also exif data)
 			if (!m_pDibStatic->m_pDibHdr->LoadImage(m_sFileName, 0, 0, 0, TRUE, TRUE))
