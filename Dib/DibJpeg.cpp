@@ -789,7 +789,7 @@ BOOL CDib::LoadJPEG(LPBYTE pInput,
 			m_dwImageSize = m_pBMI->bmiHeader.biSizeImage;
 
 			// Init File Info
-			m_FileInfo.m_nType = CFileInfo::BMP;
+			m_FileInfo.m_nType = CFileInfo::JPEG;
 			m_FileInfo.m_nWidth = m_pBMI->bmiHeader.biWidth;
 			m_FileInfo.m_nHeight = m_pBMI->bmiHeader.biHeight;
 			m_FileInfo.m_nBpp = cinfo.output_components * 8;
