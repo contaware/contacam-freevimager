@@ -3233,9 +3233,9 @@ HRESULT CDib::LoadWIC(LPCTSTR lpszPathName, BOOL bOnlyHeader/*=FALSE*/)
 
 		// Create the decoder
 		//
-		// Note: if this function returns WINCODEC_ERR_COMPONENTNOTFOUND it's good practice
-		//       to instruct the user to install the codec from the microsoft Store, do a
-		//       page on contware.com with all the links for all codecs:
+		// Note: if this function returns WINCODEC_ERR_COMPONENTNOTFOUND (0x88982f50) it's good 
+		//       practice to instruct the user to install the codec, do a page on contware.com
+		//       with all the links for all codecs:
 		//
 		// .heic (pre-installed on every Windows 10 since v1809)
 		// https://www.microsoft.com/en-us/p/heif-image-extensions/9pmmsr1cgpwg
@@ -3250,6 +3250,10 @@ HRESULT CDib::LoadWIC(LPCTSTR lpszPathName, BOOL bOnlyHeader/*=FALSE*/)
 		// https://www.microsoft.com/en-us/p/av1-video-extension-beta/9mvzqvxjbq9v
 		//
 		hr = pFactory->CreateDecoderFromFilename(lpszPathName, NULL, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &pDecoder);
+		if (FAILED(hr))
+			goto exit;
+		GUID containerFormatGUID;
+		hr = pDecoder->GetContainerFormat(&containerFormatGUID);
 		if (FAILED(hr))
 			goto exit;
 
@@ -3352,7 +3356,7 @@ HRESULT CDib::LoadWIC(LPCTSTR lpszPathName, BOOL bOnlyHeader/*=FALSE*/)
 		InitMasks();
 
 		// Init File Info
-		m_FileInfo.m_nType = CFileInfo::JPEG; // just set JPEG as WIC can load many formats
+		m_FileInfo.m_nType = CFileInfo::WIC;
 		m_FileInfo.m_nWidth = m_pBMI->bmiHeader.biWidth;
 		m_FileInfo.m_nHeight = m_pBMI->bmiHeader.biHeight;
 		m_FileInfo.m_nCompression = m_pBMI->bmiHeader.biCompression;
@@ -3363,7 +3367,7 @@ HRESULT CDib::LoadWIC(LPCTSTR lpszPathName, BOOL bOnlyHeader/*=FALSE*/)
 		m_FileInfo.m_nImagePos = 0;
 
 		// Read Metadata
-		ReadMetadataWIC(pDecoder, pFrame);
+		ReadMetadataWIC(containerFormatGUID, pFrame);
 
 		// If only header wanted return now
 		if (bOnlyHeader)
@@ -3491,20 +3495,16 @@ double CDib::ReadMetadataWICRational(PROPVARIANT& value)
 		return 0.0;
 }
 
-HRESULT CDib::ReadMetadataWIC(CComPtr<IWICBitmapDecoder> pDecoder, CComPtr<IWICBitmapFrameDecode> pFrame)
+HRESULT CDib::ReadMetadataWIC(const GUID& containerFormatGUID, CComPtr<IWICBitmapFrameDecode> pFrame)
 {
 	// Native Image Format Metadata Queries:
 	// https://docs.microsoft.com/en-us/windows/win32/wic/-wic-native-image-format-metadata-queries
 	
 	CComPtr<IWICMetadataQueryReader> pRootQueryReader;
 	CStringW sPath(L"/ifd/");
-	GUID guidFormat = {0};
-	HRESULT hr = pDecoder->GetContainerFormat(&guidFormat);
-	if (FAILED(hr))
-		return hr;
-	if (IsEqualGUID(guidFormat, GUID_ContainerFormatJpeg))
+	if (IsEqualGUID(containerFormatGUID, GUID_ContainerFormatJpeg))
 		sPath = L"/app1" + sPath;
-	hr = pFrame->GetMetadataQueryReader(&pRootQueryReader);
+	HRESULT hr = pFrame->GetMetadataQueryReader(&pRootQueryReader);
 	if (FAILED(hr))
 		return hr;
 

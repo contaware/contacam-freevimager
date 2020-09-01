@@ -1166,7 +1166,7 @@ public:
 	// Load through WIC
 	HRESULT LoadWIC(LPCTSTR lpszPathName, BOOL bOnlyHeader = FALSE);
 	__forceinline double ReadMetadataWICRational(PROPVARIANT& value);
-	HRESULT ReadMetadataWIC(CComPtr<IWICBitmapDecoder> pDecoder, CComPtr<IWICBitmapFrameDecode> pFrame);
+	HRESULT ReadMetadataWIC(const GUID& containerFormatGUID, CComPtr<IWICBitmapFrameDecode> pFrame);
 
 	// Memory Mapped BMP Support
 	BOOL MapBMP(LPCTSTR lpszPathName, BOOL bReadOnly);	// Load a Memory Mapped File,
@@ -1888,7 +1888,7 @@ public:
 	class CFileInfo
 	{
 	public:
-		enum {BMP, EMF, JPEG, PNG, GIF, PCX, TIFF};
+		enum {BMP, EMF, JPEG, PNG, GIF, PCX, TIFF, WIC}; // WIC means that the file has been loaded by Windows Imaging Component
 		enum {	COLORSPACE_UNKNOWN,		// Unspecified
 				COLORSPACE_GRAYSCALE,	// Monochrome
 				COLORSPACE_RGB,			// red/green/blue
