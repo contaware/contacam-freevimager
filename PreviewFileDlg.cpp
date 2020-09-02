@@ -305,8 +305,23 @@ LONG CPreviewFileDlg::OnLoadDone(WPARAM wparam, LPARAM lparam)
 		t.Format(_T("%s\r\n"), pDib->m_FileInfo.GetDepthName());
 		s += t;
 
-		// Exif
-		if (pDib->GetExifInfo()->bHasExif)
+		// Gif
+		if (::GetFileExt(sLastFileName) == _T(".gif"))
+		{
+			t.Format(_T("%s"), CDib::GIFGetVersion(sLastFileName, FALSE));
+			s += t;
+			if (m_DibStaticCtrl.GetGifAnimationThread()->IsRunning() &&
+				m_DibStaticCtrl.GetGifAnimationThread()->m_dwDibAnimationCount > 1)
+			{
+				// Note: use the white square with black shadow because only Windows 10
+				//       supports the correct frame symbol \U0001f39e
+				t.Format(_T(", %d\u2750"), m_DibStaticCtrl.GetGifAnimationThread()->m_dwDibAnimationCount > 1 ?
+					m_DibStaticCtrl.GetGifAnimationThread()->m_dwDibAnimationCount : 1);
+				s += t;
+			}
+			s += _T("\r\n");
+		}
+		else
 		{			
 			if (pDib->GetExifInfo()->CameraModel[0])
 			{
@@ -338,25 +353,9 @@ LONG CPreviewFileDlg::OnLoadDone(WPARAM wparam, LPARAM lparam)
 				s += t;
 			}
 		}
-		// Gif
-		else if (::GetFileExt(sLastFileName) == _T(".gif"))
-		{
-			t.Format(_T("%s"), CDib::GIFGetVersion(sLastFileName, FALSE));
-			s += t;
-			if (m_DibStaticCtrl.GetGifAnimationThread()->IsRunning() &&
-				m_DibStaticCtrl.GetGifAnimationThread()->m_dwDibAnimationCount > 1)
-			{
-				// Note: use the white square with black shadow because only Windows 10
-				//       supports the correct frame symbol \U0001f39e
-				t.Format(_T(", %d\u2750"),	m_DibStaticCtrl.GetGifAnimationThread()->m_dwDibAnimationCount > 1 ?
-											m_DibStaticCtrl.GetGifAnimationThread()->m_dwDibAnimationCount : 1);
-				s += t;
-			}
-			s += _T("\r\n");
-		}
 
 		// Time
-		if (pDib->GetExifInfo()->bHasExif && pDib->GetExifInfo()->DateTime[0])
+		if (pDib->GetExifInfo()->DateTime[0])
 		{
 			CTime Time = CMetadata::GetDateTimeFromExifString(CString(pDib->GetExifInfo()->DateTime));
 			CString sTime = ::MakeDateLocalFormat(Time) + _T(" ") + ::MakeTimeLocalFormat(Time, TRUE);
