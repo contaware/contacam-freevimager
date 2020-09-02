@@ -2723,7 +2723,7 @@ BOOL CDib::UpdateExifWidthHeightThumbLossLess(	LPCTSTR lpszPathName,
 
 	CDib Dib;
 	Dib.SetShowMessageBoxOnError(bShowMessageBoxOnError);
-	if (Dib.JPEGLoadMetadata(lpszPathName) && Dib.GetMetadata()->m_ExifInfo.bHasExif)
+	if (Dib.JPEGLoadMetadata(lpszPathName) && Dib.GetMetadata()->m_ExifInfo.bHasExifSubIFD)
 	{
 		// If the thumbnail is not jpeg 
 		// -> do a lossy thumbnail transformation
@@ -2790,7 +2790,7 @@ BOOL CDib::UpdateExifWidthHeightThumb(LPCTSTR lpszPathName, BOOL bShowMessageBox
 
 	CDib Dib;
 	Dib.SetShowMessageBoxOnError(bShowMessageBoxOnError);
-	if (Dib.JPEGLoadMetadata(lpszPathName) && Dib.GetMetadata()->m_ExifInfo.bHasExif)
+	if (Dib.JPEGLoadMetadata(lpszPathName) && Dib.GetMetadata()->m_ExifInfo.bHasExifSubIFD)
 	{
 		memset(&Dib.GetMetadata()->m_ExifInfoWrite, 0, sizeof(CMetadata::EXIFINFOINPLACEWRITE));
 		LPBYTE pJpegOutThumbData = NULL;
@@ -2843,7 +2843,7 @@ BOOL CDib::UpdateExifWidthHeightThumbLossLess(	LPBYTE pJpegData,
 
 	CDib Dib;
 	Dib.SetShowMessageBoxOnError(bShowMessageBoxOnError);
-	if (Dib.JPEGLoadMetadata(pJpegData, nJpegDataSize) && Dib.GetMetadata()->m_ExifInfo.bHasExif)
+	if (Dib.JPEGLoadMetadata(pJpegData, nJpegDataSize) && Dib.GetMetadata()->m_ExifInfo.bHasExifSubIFD)
 	{
 		// If the thumbnail is not jpeg 
 		// -> do a lossy thumbnail transformation
@@ -2910,7 +2910,7 @@ BOOL CDib::UpdateExifWidthHeightThumb(LPBYTE pJpegData, int nJpegDataSize, BOOL 
 
 	CDib Dib;
 	Dib.SetShowMessageBoxOnError(bShowMessageBoxOnError);
-	if (Dib.JPEGLoadMetadata(pJpegData, nJpegDataSize) && Dib.GetMetadata()->m_ExifInfo.bHasExif)
+	if (Dib.JPEGLoadMetadata(pJpegData, nJpegDataSize) && Dib.GetMetadata()->m_ExifInfo.bHasExifSubIFD)
 	{
 		memset(&Dib.GetMetadata()->m_ExifInfoWrite, 0, sizeof(CMetadata::EXIFINFOINPLACEWRITE));
 		LPBYTE pJpegOutThumbData = NULL;
@@ -3250,8 +3250,8 @@ BOOL CDib::JPEGLoadMetadata(LPBYTE pJpegData, DWORD dwSize)
 
 BOOL CDib::LoadEXIFThumbnail()
 {
-	if (GetMetadata()->m_ExifInfo.bHasExif &&
-		GetMetadata()->m_ExifInfo.ThumbnailPointer &&
+	if (GetMetadata()->m_ExifInfo.bHasExifSubIFD	&&
+		GetMetadata()->m_ExifInfo.ThumbnailPointer	&&
 		GetMetadata()->m_ExifInfo.ThumbnailSize)
 	{
 		BOOL res = FALSE;
@@ -3628,7 +3628,7 @@ BOOL CDib::AddEXIFThumbnail(LPCTSTR lpszInPathName,
 			throw 0;
 
 		// If No EXIF -> Add Simple EXIF Section with Thumbnail
-		if (!Dib.GetMetadata()->m_ExifInfo.bHasExif)
+		if (!Dib.GetMetadata()->m_ExifInfo.bHasExifSubIFD)
 		{
 			int section;
 			int startsection = 0;
@@ -3937,8 +3937,8 @@ BOOL CDib::RemoveEXIFThumbnail(	LPCTSTR lpszInPathName,
 			throw 0;
 
 		// Has EXIF and Thumbnail -> Remove Thumbnail
-		if (Dib.GetMetadata()->m_ExifInfo.bHasExif &&
-			Dib.GetExifInfo()->ThumbnailPointer != NULL &&
+		if (Dib.GetMetadata()->m_ExifInfo.bHasExifSubIFD	&&
+			Dib.GetExifInfo()->ThumbnailPointer != NULL		&&
 			Dib.GetExifInfo()->ThumbnailSize > 0)
 		{
 			// Remove EXIF Thumbnail
@@ -4821,7 +4821,7 @@ BOOL CDib::JPEGWriteEXIFInplace(LPCTSTR lpszPathName)
 	}
 	::CloseHandle(hFile);
 
-	return (GetMetadata()->m_ExifInfo.bHasExif);
+	return (GetMetadata()->m_ExifInfo.bHasExifSubIFD);
 }
 
 BOOL CDib::JPEGWriteEXIFInplace(LPBYTE pJpegData, DWORD dwSize)
@@ -4832,7 +4832,7 @@ BOOL CDib::JPEGWriteEXIFInplace(LPBYTE pJpegData, DWORD dwSize)
 	// Parse & Process Exif Data
 	GetMetadata()->ParseProcessJPEG(pJpegData, dwSize, true);
 
-	return (GetMetadata()->m_ExifInfo.bHasExif);
+	return (GetMetadata()->m_ExifInfo.bHasExifSubIFD);
 }
 
 BOOL CDib::CreatePreviewDibFromJPEG(	LPCTSTR lpszPathName,

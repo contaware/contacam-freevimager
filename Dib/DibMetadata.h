@@ -345,8 +345,8 @@ public:
 	struct EXIFINFO
 	{
 		// Flags
-		bool bHasExif;					// Is set if the TAG_EXIF_OFFSET tag is found,
-										// for simple Tiff this is not set!
+		bool bHasExifSubIFD;			// Only set if TAG_EXIF_SUBIFD tag is found
+		
 		bool bHasExifSection;			// Has EXIF Section in Jpeg APP1,
 										// this is set even if EXIF is corrupted!
 

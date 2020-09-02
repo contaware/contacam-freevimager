@@ -6282,7 +6282,7 @@ void CPictureDoc::OnUpdateEditUpdateExifthumb(CCmdUI* pCmdUI)
 					m_dwIDAfterFullLoadCommand == ID_EDIT_UPDATE_EXIFTHUMB) &&
 					DoEnableCommand() &&
 					CDib::IsJPEG(m_sFileName) &&
-					m_pDib->GetExifInfo()->bHasExif &&
+					m_pDib->GetExifInfo()->bHasExifSubIFD &&
 					m_pDib->GetExifInfo()->ThumbnailPointer);
 }
 
@@ -6365,7 +6365,7 @@ void CPictureDoc::OnUpdateEditAddExifthumb(CCmdUI* pCmdUI)
 					m_dwIDAfterFullLoadCommand == ID_EDIT_ADD_EXIFTHUMB) &&
 					DoEnableCommand() &&
 					CDib::IsJPEG(m_sFileName) &&
-					(!m_pDib->GetExifInfo()->bHasExif ||
+					(!m_pDib->GetExifInfo()->bHasExifSubIFD ||
 					!m_pDib->GetExifInfo()->ThumbnailPointer));
 }
 
@@ -6450,7 +6450,7 @@ void CPictureDoc::OnUpdateEditRemoveExifthumb(CCmdUI* pCmdUI)
 					m_dwIDAfterFullLoadCommand == ID_EDIT_REMOVE_EXIFTHUMB) &&
 					DoEnableCommand() &&
 					CDib::IsJPEG(m_sFileName) &&
-					m_pDib->GetExifInfo()->bHasExif &&
+					m_pDib->GetExifInfo()->bHasExifSubIFD &&
 					m_pDib->GetExifInfo()->ThumbnailPointer);
 }
 

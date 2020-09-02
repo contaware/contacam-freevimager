@@ -3519,7 +3519,7 @@ bool CMetadata::ParseTIFFDir(	int nIFD,
 
 			case TAG_EXIF_SUBIFD :
 				// Set Exif Flag
-				m_ExifInfo.bHasExif = true;
+				m_ExifInfo.bHasExifSubIFD = true;
 			case TAG_INTEROP_SUBIFD :
 			{		
 				unsigned char * SubdirStart;
