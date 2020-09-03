@@ -377,6 +377,9 @@ Section "${APPNAME_NOEXT} Program (required)"
   !insertmacro ADDREMOVE_FILEASSOCIATION $TIF tiff
   !insertmacro ADDREMOVE_FILEASSOCIATION $TIF jfx
   !insertmacro ADDREMOVE_FILEASSOCIATION $GIF gif
+  !insertmacro ADDREMOVE_FILEASSOCIATION $JXR jxr
+  !insertmacro ADDREMOVE_FILEASSOCIATION $WEBP webp
+  !insertmacro ADDREMOVE_FILEASSOCIATION $HEIC heic
 
   ; Refresh Icons
   call RefreshShellIcons
@@ -552,6 +555,12 @@ Section "Uninstall"
   StrCpy $FILEEXTENSION "jfx"
   call un.RemoveFileAssociation
   StrCpy $FILEEXTENSION "gif"
+  call un.RemoveFileAssociation
+  StrCpy $FILEEXTENSION "jxr"
+  call un.RemoveFileAssociation
+  StrCpy $FILEEXTENSION "webp"
+  call un.RemoveFileAssociation
+  StrCpy $FILEEXTENSION "heic"
   call un.RemoveFileAssociation
   
   ; Remove / Restore associations from older program versions

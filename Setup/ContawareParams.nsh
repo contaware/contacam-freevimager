@@ -8,6 +8,9 @@ Var EMF
 Var PNG
 Var TIF
 Var GIF
+Var JXR
+Var WEBP
+Var HEIC
 Var ALL
 Var KILL
 Function InitParams
@@ -20,6 +23,9 @@ Function InitParams
   ${GetOptions} $R0 /png= $PNG
   ${GetOptions} $R0 /tif= $TIF
   ${GetOptions} $R0 /gif= $GIF
+  ${GetOptions} $R0 /jxr= $JXR
+  ${GetOptions} $R0 /webp= $WEBP
+  ${GetOptions} $R0 /heic= $HEIC
   ${GetOptions} $R0 /all= $ALL
   ${GetOptions} $R0 /kill= $KILL
   StrCmp $ALL "1" 0 all_off
@@ -37,6 +43,12 @@ Function InitParams
   StrCpy $TIF "1"
   StrCmp $GIF "" 0 +2
   StrCpy $GIF "1"
+  StrCmp $JXR "" 0 +2
+  StrCpy $JXR "1"
+  StrCmp $WEBP "" 0 +2
+  StrCpy $WEBP "1"
+  StrCmp $HEIC "" 0 +2
+  StrCpy $HEIC "1"
   goto all_end
 all_off:
   StrCmp $ALL "0" 0 all_end
@@ -54,6 +66,12 @@ all_off:
   StrCpy $TIF "0"
   StrCmp $GIF "" 0 +2
   StrCpy $GIF "0"
+  StrCmp $JXR "" 0 +2
+  StrCpy $JXR "0"
+  StrCmp $WEBP "" 0 +2
+  StrCpy $WEBP "0"
+  StrCmp $HEIC "" 0 +2
+  StrCpy $HEIC "0"
 all_end:
   
 FunctionEnd
