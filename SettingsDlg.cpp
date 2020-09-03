@@ -143,6 +143,15 @@ void CSettingsDlg::FileAssociation(BOOL bDoAssociation)
 
 		// Gif
 		pApp->AssociateFileType(_T("gif"));
+
+		// Jxr
+		pApp->AssociateFileType(_T("jxr"));
+		
+		// Webp
+		pApp->AssociateFileType(_T("webp"));
+		
+		// Heic
+		pApp->AssociateFileType(_T("heic"));
 	}
 	else
 	{
@@ -172,6 +181,15 @@ void CSettingsDlg::FileAssociation(BOOL bDoAssociation)
 
 		// Gif
 		pApp->UnassociateFileType(_T("gif"));
+
+		// Jxr
+		pApp->UnassociateFileType(_T("jxr"));
+
+		// Webp
+		pApp->UnassociateFileType(_T("webp"));
+
+		// Heic
+		pApp->UnassociateFileType(_T("heic"));
 	}
 
 	// Notify Changes

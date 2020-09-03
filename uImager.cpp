@@ -4114,6 +4114,10 @@ void CUImagerApp::UpdateFileAssociations()
 	BOOL bPng = FALSE;
 	BOOL bTiff = FALSE;
 	BOOL bGif = FALSE;
+	BOOL bJxr = FALSE;
+	BOOL bWebp = FALSE;
+	BOOL bHeic = FALSE;
+
 #ifndef VIDEODEVICEDOC
 	bBmp =		IsFileTypeAssociated(_T("bmp"));
 	bJpeg =		IsFileTypeAssociated(_T("jpg"))		&&
@@ -4128,6 +4132,9 @@ void CUImagerApp::UpdateFileAssociations()
 				IsFileTypeAssociated(_T("tiff"))	&&
 				IsFileTypeAssociated(_T("jfx"));
 	bGif =		IsFileTypeAssociated(_T("gif"));
+	bJxr =		IsFileTypeAssociated(_T("jxr"));
+	bWebp =		IsFileTypeAssociated(_T("webp"));
+	bHeic =		IsFileTypeAssociated(_T("heic"));
 #endif
 	
 	if (bBmp)
@@ -4184,6 +4191,21 @@ void CUImagerApp::UpdateFileAssociations()
 		AssociateFileType(_T("gif"));
 	else
 		UnassociateFileType(_T("gif"));
+
+	if (bJxr)
+		AssociateFileType(_T("jxr"));
+	else
+		UnassociateFileType(_T("jxr"));
+
+	if (bWebp)
+		AssociateFileType(_T("webp"));
+	else
+		UnassociateFileType(_T("webp"));
+
+	if (bHeic)
+		AssociateFileType(_T("heic"));
+	else
+		UnassociateFileType(_T("heic"));
 
 	// Remove associations from older program versions
 	UnassociateFileType(_T("aif")); UnassociateFileType(_T("aiff"));
