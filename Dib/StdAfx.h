@@ -17,6 +17,7 @@
 #include <wingdi.h>
 #include <math.h>
 #include <windowsx.h>
+#include <afxtaskdialog.h>
 #include "..\appconst.h"
 #include "..\bigalloc.h"
 

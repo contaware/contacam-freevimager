@@ -3233,20 +3233,20 @@ HRESULT CDib::LoadWIC(LPCTSTR lpszPathName, BOOL bOnlyHeader/*=FALSE*/)
 
 		// Create the decoder
 		//
-		// Note: if this function returns WINCODEC_ERR_COMPONENTNOTFOUND (0x88982f50) it's good 
-		//       practice to instruct the user to install the codec, do a page on contware.com
-		//       with all the links for all codecs:
-		//
-		// .heic (pre-installed on every Windows 10 since v1809)
-		// https://www.microsoft.com/en-us/p/heif-image-extensions/9pmmsr1cgpwg
+		// .heic
+		// https://www.microsoft.com/p/heif-image-extensions/9pmmsr1cgpwg
 		// https://www.microsoft.com/en-us/p/hevc-video-extensions-from-device-manufacturer/9n4wgh0z6vhq?irgwc=1&OCID=AID681541_aff_7593_159229&tduid=(ir_wJC0gNTClQca0BAzqwxkEXPhUkjTGXQhW1412Y0)(7593)(159229)()(UUwpUdUnU56397YYwYd)&irclickid=wJC0gNTClQca0BAzqwxkEXPhUkjTGXQhW1412Y0
 		// For older Windows versions:
 		// https://www.copytrans.net/copytransheic/
 		//
 		// .webp
-		// https://www.microsoft.com/en-us/p/webp-image-extensions/9pg2dk419drg
+		// https://www.microsoft.com/p/webp-image-extensions/9pg2dk419drg
+		// For older Windows versions:
+		// https://storage.googleapis.com/downloads.webmproject.org/releases/webp/WebpCodecSetup.exe
+		// or
+		// http://downloads.webmproject.org/releases/webp/WebpCodecSetup.exe
 		//
-		// .avif (AV1 Video Extension) -> in 2020 it is buggy, wait a bit before supporting it
+		// .avif (in 2020 it is buggy, wait a bit before supporting it)
 		// https://www.microsoft.com/en-us/p/av1-video-extension-beta/9mvzqvxjbq9v
 		//
 		hr = pFactory->CreateDecoderFromFilename(lpszPathName, NULL, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &pDecoder);
@@ -3475,6 +3475,32 @@ HRESULT CDib::LoadWIC(LPCTSTR lpszPathName, BOOL bOnlyHeader/*=FALSE*/)
 	}
 	
 exit:
+
+	// Error message
+	if (!SUCCEEDED(hr))
+	{
+		CString str;
+#ifdef _DEBUG
+		str.Format(_T("LoadWIC(%s):\n"), lpszPathName);
+#endif
+		str += _T("Cannot load file\n");
+		TRACE(str);
+		if (m_bShowMessageBoxOnError)
+		{
+			if (hr == WINCODEC_ERR_COMPONENTNOTFOUND)
+			{
+				CTaskDialog dlg(_T("<a href=\"") + CString(CODEC_MISSING_ONLINE_PAGE) + _T("\">Download</a>"),
+								_T("Codec Missing"),
+								APPNAME_NOEXT,
+								TDCBF_OK_BUTTON,
+								TDF_ENABLE_HYPERLINKS | TDF_USE_COMMAND_LINKS | TDF_SIZE_TO_CONTENT);
+				dlg.SetMainIcon(TD_ERROR_ICON);
+				dlg.DoModal();
+			}
+			else
+				::AfxMessageBox(str, MB_ICONSTOP);
+		}
+	}
 
 	// Uninit COM
 	::CoUninitialize();

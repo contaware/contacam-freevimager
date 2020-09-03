@@ -11,6 +11,7 @@
 // *** Remember To Change the Version in the Installer                 ***
 // *** Update the History.txt files                                    ***
 // *** Update the web site .htaccess file to reflect the online pages  ***
+#define CODEC_MISSING_ONLINE_PAGE						_T("https://www.contaware.com/codecmissing/")
 #ifdef VIDEODEVICEDOC
 #define APPNAME_EXT										_T("ContaCam.exe")
 #define APPNAME_NOEXT									_T("ContaCam")
