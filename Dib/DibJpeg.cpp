@@ -4891,7 +4891,7 @@ BOOL CDib::CreatePreviewDibFromJPEG(	LPCTSTR lpszPathName,
 
 	// Do nothing and return FALSE if preview dib
 	// would be the same size as main dib
-	if (dScaleFactor <= 1.5)
+	if (dScaleFactor < 2.0)
 		return FALSE;
 
 	// Free
@@ -4903,8 +4903,9 @@ BOOL CDib::CreatePreviewDibFromJPEG(	LPCTSTR lpszPathName,
 		return FALSE;
 
 	// Load Scaled JPEG
+	// so that the preview dib is only shrinked when painting
 	int nScaleFactor;
-	if (dScaleFactor <= 3.0)
+	if (dScaleFactor < 4.0)
 	{
 		res = m_pPreviewDib->LoadJPEG(	lpszPathName,
 										nScaleFactor = 2,
@@ -4914,7 +4915,7 @@ BOOL CDib::CreatePreviewDibFromJPEG(	LPCTSTR lpszPathName,
 										bProgressSend,
 										pThread);
 	}
-	else if (dScaleFactor <= 6.0)
+	else if (dScaleFactor < 8.0)
 	{
 		res = m_pPreviewDib->LoadJPEG(	lpszPathName,
 										nScaleFactor = 4,
@@ -5005,6 +5006,7 @@ BOOL CDib::CreateThumbnailDibFromJPEG(	LPCTSTR lpszPathName,
 		return FALSE;
 
 	// Load Scaled JPEG
+	// so that the thumbnail dib is slightly enlarged or slightly shrinked when painting
 	int nScaleFactor;
 	if (dScaleFactor <= 1.5)
 	{
