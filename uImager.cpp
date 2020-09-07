@@ -2714,28 +2714,23 @@ void CUImagerApp::ShrinkOpenDocs(LPCTSTR szDstDirPath,
 		::AfxGetMainFrame()->StatusText(sStatusText);
 
 		// Only Copy File?
-		if (bOnlyCopyFiles)
+		if (bOnlyCopyFiles || ShrinkPicture(sSrcFileName,
+											sDstFileName,
+											dwMaxSize,
+											bMaxSizePercent,
+											dwJpegQuality,
+											FALSE,				// Do not force jpeg quality change if already a jpeg
+											COMPRESSION_JPEG,	// Use Jpeg Compression inside Tiff
+											TRUE,				// Force the change to Jpeg Compression for Tiff files
+											bShrinkPictures,
+											FALSE,				// Do not sharpen after shrink
+											TRUE,				// Work on all pages of a multi-page Tiff
+											::AfxGetMainFrame(),
+											TRUE,
+											NULL) == 0)
 		{
 			::CopyFile(sSrcFileName, sDstFileName, FALSE);
 			::SetFileAttributes(sDstFileName, FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_TEMPORARY);
-		}
-		// Shrink
-		else
-		{
-			ShrinkPicture(	sSrcFileName,
-							sDstFileName,
-							dwMaxSize,
-							bMaxSizePercent,
-							dwJpegQuality,
-							FALSE,				// Do not force jpeg quality change if already a jpeg
-							COMPRESSION_JPEG,	// Use Jpeg Compression inside Tiff
-							TRUE,				// Force the change to Jpeg Compression for Tiff files
-							bShrinkPictures,
-							FALSE,				// Do not sharpen after shrink
-							TRUE,				// Work on all pages of a multi-page Tiff
-							::AfxGetMainFrame(),
-							TRUE,
-							NULL);
 		}
 	}
 
@@ -3173,8 +3168,10 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 		if (!pSaveDib->SaveEMF(szDstFileName))
 			return 0;
 	}
+	else
+		return 0; // unsupported extension
 
-	return 1; // Saved
+	return 1; // saved
 }
 
 // Return Value:
@@ -3332,8 +3329,13 @@ CString CUImagerApp::ShrinkGetDstExt(CString sSrcExt)
 	sSrcExt.TrimLeft(_T('.'));
 	sSrcExt.MakeLower();
 
-	if ((sSrcExt == _T("bmp")) || (sSrcExt == _T("dib")) ||
-		(sSrcExt == _T("emf")) || (sSrcExt == _T("pcx")) ||
+	if ((sSrcExt == _T("bmp"))	||
+		(sSrcExt == _T("dib"))	||
+		(sSrcExt == _T("emf"))	||
+		(sSrcExt == _T("pcx"))	||
+		(sSrcExt == _T("jxr"))	||
+		(sSrcExt == _T("webp"))	||
+		(sSrcExt == _T("heic"))	||
 		CDib::IsJPEGExt(sSrcExt))
 		return _T(".jpg");
 	else if (CDib::IsTIFFExt(sSrcExt))
