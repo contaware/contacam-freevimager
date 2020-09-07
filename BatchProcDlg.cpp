@@ -3715,12 +3715,11 @@ BOOL CBatchProcDlg::ListLoad(CString sFileName)
 				CFile::shareDenyWrite);
 		DWORD dwLength = (DWORD)f.GetLength();
 		if (dwLength == 0)
-			return FALSE;
+			AfxThrowUserException();
 
 		// Allocate Buffer
-		pData = new BYTE [dwLength];
-		if (!pData)
-			return FALSE;
+		pData = new BYTE [dwLength];	// new will throw a CMemoryException if the allocation fails
+										// (for malloc() we need to call AfxThrowMemoryException())
 		
 		// Read Data
 		dwLength = f.Read(pData, dwLength);
@@ -3768,15 +3767,17 @@ BOOL CBatchProcDlg::ListLoad(CString sFileName)
 
 		return TRUE;
 	}
-	catch (CFileException* e)
+	catch (CException* e)
 	{
 		if (pData)
 			delete [] pData;
-		e->ReportError();
+		if (!e->IsKindOf(RUNTIME_CLASS(CUserException))) // ignore empty files
+			e->ReportError();
 		e->Delete();
 
 		// Re-Enable Controls
 		EnableAllControls(TRUE, TRUE);
+		UpdateControls();
 		
 		return FALSE;
 	}
