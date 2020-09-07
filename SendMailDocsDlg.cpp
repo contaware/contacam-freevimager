@@ -27,7 +27,6 @@ CSendMailDocsDlg::CSendMailDocsDlg(CWnd* pParent /*=NULL*/)
 	m_nShrinkingPixels = AUTO_SHRINK_MAX_SIZE;
 	m_nJpegQuality = DEFAULT_JPEGCOMPRESSION;
 	m_sZipFileName = _T("Files.zip");
-	m_bPictureExtChange = TRUE;
 	//}}AFX_DATA_INIT
 }
 
@@ -46,7 +45,6 @@ void CSendMailDocsDlg::DoDataExchange(CDataExchange* pDX)
 	DDV_MinMaxInt(pDX, m_nShrinkingPixels, 1, 30000);
 	DDX_Text(pDX, IDC_EDIT_QUALITY, m_nJpegQuality);
 	DDV_MinMaxInt(pDX, m_nJpegQuality, 1, 100);
-	DDX_Check(pDX, IDC_CHECK_PICTURE_EXTCHANGE, m_bPictureExtChange);
 	//}}AFX_DATA_MAP
 }
 
@@ -101,9 +99,6 @@ BOOL CSendMailDocsDlg::OnInitDialog()
 		pEdit->EnableWindow(FALSE);
 
 	CButton* pCheck;
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_PICTURE_EXTCHANGE);
-	if (pCheck)
-		pCheck->EnableWindow(FALSE);
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SHRINKINGPICTURES);
 	if (pCheck)
 		pCheck->EnableWindow(FALSE);
@@ -147,9 +142,6 @@ void CSendMailDocsDlg::OnRadioOptimizeAdvanced()
 		pEdit->EnableWindow(TRUE);
 
 	CButton* pCheck;
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_PICTURE_EXTCHANGE);
-	if (pCheck)
-		pCheck->EnableWindow(TRUE);
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SHRINKINGPICTURES);
 	if (pCheck)
 		pCheck->EnableWindow(TRUE);
@@ -188,9 +180,6 @@ void CSendMailDocsDlg::OnRadioOptimizeEmail()
 		pEdit->EnableWindow(FALSE);
 
 	CButton* pCheck;
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_PICTURE_EXTCHANGE);
-	if (pCheck)
-		pCheck->EnableWindow(FALSE);
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SHRINKINGPICTURES);
 	if (pCheck)
 		pCheck->EnableWindow(FALSE);
@@ -229,9 +218,6 @@ void CSendMailDocsDlg::OnRadioOptimizeUnchanged()
 		pEdit->EnableWindow(FALSE);
 
 	CButton* pCheck;
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_PICTURE_EXTCHANGE);
-	if (pCheck)
-		pCheck->EnableWindow(FALSE);
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SHRINKINGPICTURES);
 	if (pCheck)
 		pCheck->EnableWindow(FALSE);

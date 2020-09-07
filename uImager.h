@@ -306,7 +306,6 @@ public:
 						DWORD dwMaxSize,
 						BOOL bMaxSizePercent,
 						DWORD dwJpegQuality,
-						BOOL bPictureExtChange,
 						BOOL bShrinkPictures,
 						BOOL bOnlyCopyFiles);
 

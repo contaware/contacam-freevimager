@@ -1344,7 +1344,6 @@
 #define IDS_MULTILANG_1333              1333
 #define IDS_MULTILANG_1334              1334
 #define IDS_MULTILANG_1335              1335
-#define IDC_CHECK_PICTURE_EXTCHANGE     1335
 #define IDS_MULTILANG_1336              1336
 #define IDC_RADIO_INPUT                 1336
 #define IDS_MULTILANG_1337              1337

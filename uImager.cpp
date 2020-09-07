@@ -2661,7 +2661,6 @@ void CUImagerApp::ShrinkOpenDocs(LPCTSTR szDstDirPath,
 								 DWORD dwMaxSize,
 								 BOOL bMaxSizePercent,
 								 DWORD dwJpegQuality,
-								 BOOL bPictureExtChange,
 								 BOOL bShrinkPictures,
 								 BOOL bOnlyCopyFiles)
 {
@@ -2702,7 +2701,7 @@ void CUImagerApp::ShrinkOpenDocs(LPCTSTR szDstDirPath,
 			sDstFileName.Format(_T("%s(%d)%s"), ::GetFileNameNoExt(sOrigDstFileName), ++i, ::GetFileExt(sOrigDstFileName));
 		DstFileNames.Add(sDstFileName);
 		sDstFileName = sDstDirPath + _T("\\") + sDstFileName;
-		if (bPictureExtChange && !bOnlyCopyFiles)
+		if (!bOnlyCopyFiles)
 		{
 			CString sDstExt = ShrinkGetDstExt(::GetFileExt(sSrcFileName));
 			sDstFileName = ::GetFileNameNoExt(sDstFileName) + sDstExt;
@@ -3600,7 +3599,6 @@ void CUImagerApp::SendOpenDocsAsMail()
 							FALSE,
 							DEFAULT_JPEGCOMPRESSION,
 							TRUE,
-							TRUE,
 							FALSE);
 		}
 		else if (dlg.m_nOptimizationSelection == CSendMailDocsDlg::NO_OPT) // Leave Unchanged
@@ -3610,7 +3608,6 @@ void CUImagerApp::SendOpenDocsAsMail()
 							FALSE,
 							0,
 							FALSE,
-							FALSE,
 							TRUE);
 		}
 		else if (dlg.m_nOptimizationSelection == CSendMailDocsDlg::ADV_OPT) // Advanced Settings
@@ -3619,7 +3616,6 @@ void CUImagerApp::SendOpenDocsAsMail()
 							(dlg.m_nPixelsPercentSel == 0) ? dlg.m_nShrinkingPixels : dlg.m_nShrinkingPercent,
 							(dlg.m_nPixelsPercentSel == 1),
 							dlg.m_nJpegQuality,
-							dlg.m_bPictureExtChange,
 							dlg.m_bShrinkingPictures,
 							FALSE);
 		}
