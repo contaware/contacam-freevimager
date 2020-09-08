@@ -3452,8 +3452,8 @@ void CBatchProcDlg::OnButtonListAdd()
 	dlgFile.m_ofn.lpstrDefExt = _T("bmp");
 	dlgFile.m_ofn.lpstrCustomFilter = NULL;
 	dlgFile.m_ofn.lpstrFilter = 
-				_T("Supported Files (*.bmp;*.gif;*.jpg;*.tif;*.png;*.pcx;*.emf)\0")
-				_T("*.bmp;*.dib;*.gif;*.png;*.jpg;*.jpeg;*.jpe;*.jfif;*.thm;*.tif;*.tiff;*.jfx;*.pcx;*.emf\0")
+				_T("Supported Files (*.bmp;*.gif;*.jpg;*.tif;*.png;*.pcx;*.emf;*.jxr;*.webp;*.heic)\0")
+				_T("*.bmp;*.dib;*.gif;*.png;*.jpg;*.jpeg;*.jpe;*.jfif;*.thm;*.tif;*.tiff;*.jfx;*.pcx;*.emf;*.jxr;*.webp;*.heic\0")
 				_T("All Files (*.*)\0*.*\0")
 				_T("Windows Bitmap (*.bmp;*.dib)\0*.bmp;*.dib\0")
 				_T("Graphics Interchange Format (*.gif)\0*.gif\0")
@@ -3461,7 +3461,10 @@ void CBatchProcDlg::OnButtonListAdd()
 				_T("JPEG File Interchange Format (*.jpg;*.jpeg;*.jpe;*.jfif;*.thm)\0*.jpg;*.jpeg;*.jpe;*.jfif;*.thm\0")
 				_T("Tag Image File Format (*.tif;*.tiff;*.jfx)\0*.tif;*.tiff;*.jfx\0")
 				_T("PC Paintbrush (*.pcx)\0*.pcx\0")
-				_T("Enhanced Metafile (*.emf)\0*.emf\0");
+				_T("Enhanced Metafile (*.emf)\0*.emf\0")
+				_T("JPEG XR (*.jxr)\0*.jxr\0")
+				_T("Weppy Format (*.webp)\0*.webp\0")
+				_T("High Efficiency Image Format (*.heic)\0*.heic\0");
 	dlgFile.m_ofn.Flags |= OFN_FILEMUSTEXIST | OFN_ALLOWMULTISELECT;
 	dlgFile.m_ofn.lpstrFile = FileNames;
 	dlgFile.m_ofn.nMaxFile = MAX_FILEDLG_PATH;
