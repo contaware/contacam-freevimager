@@ -131,7 +131,7 @@ public:
 		m_color[c_blue] = static_cast<unsigned char>(blue);
 		m_bIsHLS = false;
 	};
-	__forceinline void SetRGB(int red, int blue, int green)
+	__forceinline void SetRGB(int red, int green, int blue)
 	{
 		ASSERT(0 <= red && red <= 255);
 		ASSERT(0 <= green && green <= 255);
