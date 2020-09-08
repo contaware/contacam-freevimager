@@ -3293,37 +3293,56 @@ HRESULT CDib::LoadWIC(LPCTSTR lpszPathName, BOOL bOnlyHeader/*=FALSE*/)
 		BOOL bConvert32bpp;
 		if (pixelFormatGUID == GUID_WICPixelFormat24bppBGR)
 		{
-			uiBitsPerPixelDst = 24;
+			uiBitsPerPixelDst = m_FileInfo.m_nBpp = 24;
 			bConvert32bpp = FALSE;
-			m_bAlpha = FALSE;
-			m_FileInfo.m_bAlphaChannel = FALSE;
-			m_FileInfo.m_nBpp = 24;
+			m_bAlpha = m_FileInfo.m_bAlphaChannel = FALSE;
 		}
 		else if (pixelFormatGUID == GUID_WICPixelFormat32bppBGR)
 		{
-			uiBitsPerPixelDst = 32;
+			uiBitsPerPixelDst = m_FileInfo.m_nBpp = 32;
 			bConvert32bpp = FALSE;
-			m_bAlpha = FALSE;
-			m_FileInfo.m_bAlphaChannel = FALSE;
-			m_FileInfo.m_nBpp = 32;
+			m_bAlpha = m_FileInfo.m_bAlphaChannel = FALSE;
 		}
 		else if (pixelFormatGUID == GUID_WICPixelFormat32bppBGRA)
 		{
-			uiBitsPerPixelDst = 32;
+			uiBitsPerPixelDst = m_FileInfo.m_nBpp = 32;
 			bConvert32bpp = FALSE;
-			m_bAlpha = TRUE;
-			m_FileInfo.m_bAlphaChannel = TRUE;
-			m_FileInfo.m_nBpp = 32;
+			m_bAlpha = m_FileInfo.m_bAlphaChannel = TRUE;
 		}
 		else
 		{
-			// The SupportsTransparency() function of the IWICPixelFormatInfo2 interface does not
-			// detect indexed transparency formats. Thus we always convert to 32 bpp with alpha
+			// Get bpp and alpha channel availability from pixelFormatGUID
+			UINT uiBitsPerPixelSrc = 32;
+			BOOL bSupportsTransparency = FALSE;
+			CComPtr<IWICComponentInfo> pComponentInfo;
+			hr = pFactory->CreateComponentInfo(pixelFormatGUID, &pComponentInfo);
+			if (SUCCEEDED(hr))
+			{
+				CComPtr<IWICPixelFormatInfo2> pPixelFormatInfo2;
+				hr = pComponentInfo->QueryInterface(IID_IWICPixelFormatInfo2, (void**)&pPixelFormatInfo2);
+				if (SUCCEEDED(hr))
+				{
+					pPixelFormatInfo2->GetBitsPerPixel(&uiBitsPerPixelSrc);
+					pPixelFormatInfo2->SupportsTransparency(&bSupportsTransparency);
+				}
+				else
+				{
+					CComPtr<IWICPixelFormatInfo> pPixelFormatInfo;
+					hr = pComponentInfo->QueryInterface(IID_IWICPixelFormatInfo, (void**)&pPixelFormatInfo);
+					if (SUCCEEDED(hr))
+						pPixelFormatInfo->GetBitsPerPixel(&uiBitsPerPixelSrc);
+				}
+			}
+			m_FileInfo.m_nBpp = uiBitsPerPixelSrc;
+			m_FileInfo.m_bAlphaChannel = bSupportsTransparency;
+			
+			// The SupportsTransparency() functions returns FALSE for indexed transparency formats.
+			// Because of that we cannot use bSupportsTransparency to decide whether to convert to
+			// 32 bpp with or without alpha -> we always convert to 32 bpp with alpha!
+			// https://docs.microsoft.com/en-us/windows/win32/api/wincodec/nf-wincodec-iwicpixelformatinfo2-supportstransparency
 			uiBitsPerPixelDst = 32;
 			bConvert32bpp = TRUE;
 			m_bAlpha = TRUE;
-			m_FileInfo.m_bAlphaChannel = TRUE;	// TODO: check original file whether it has alpha channel or is indexed with or without alpha
-			m_FileInfo.m_nBpp = 32;				// TODO: get original file bpp
 		}
 
 		// Allocate BMI
@@ -3544,7 +3563,7 @@ HRESULT CDib::ReadMetadataWIC(const GUID& containerFormatGUID, CComPtr<IWICBitma
 	PROPVARIANT value;
 	::PropVariantInit(&value);
 
-	// TAG path
+	// Macros to make the TAG path
 	// Attention: GetMetadataByName() expects decimal values for the TAGs not hex!
 	#define TIFFTAG_CONCAT(x) {ushort= ## x ## }
 	#define EXIFTAG_CONCAT(x) exif/{ushort= ## x ## }
@@ -3988,10 +4007,10 @@ HRESULT CDib::ReadMetadataWIC(const GUID& containerFormatGUID, CComPtr<IWICBitma
 
 	// TAG_GPS_ALT
 	hr = pRootQueryReader->GetMetadataByName(sPath + GPSTAG_QUERY(TAG_GPS_ALT), &value);
-	if (SUCCEEDED(hr) && (value.vt == VT_UI8))
+	if (SUCCEEDED(hr))
 	{
 		m_pMetadata->m_ExifInfo.bGpsInfoPresent = true;
-		m_pMetadata->m_ExifInfo.GpsAlt = (float)((double)value.uhVal.LowPart / (double)value.uhVal.HighPart);
+		m_pMetadata->m_ExifInfo.GpsAlt = (float)ReadMetadataWICRational(value);
 	}
 	::PropVariantClear(&value);
 
