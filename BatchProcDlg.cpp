@@ -27,13 +27,11 @@ int CBatchProcDlg::CProcessThread::Work()
 	int pos;
 	CSortableFileFind FileFind;
 	int nFilesCount;
-	CString sTempFileName(_T(""));
-	CString sSrcFileName(_T(""));
-	CString sSrcDirPath(_T(""));
-	CString sDstFileName(_T(""));
-	CString sDstFileNameSameExt(_T(""));
-	CString sTempDstDirPath(_T(""));
-	CString sOrigDstDirPath(_T(""));
+	CString sTempFileName;
+	CString sSrcFileName;
+	CString sSrcDirPath;
+	CString sTempDstDirPath;
+	CString sOrigDstDirPath;
 
 	::CoInitialize(NULL);
 
@@ -177,68 +175,54 @@ int CBatchProcDlg::CProcessThread::Work()
 			if (::GetShortFileName(sSrcFileName).CompareNoCase(THUMBS_DB) == 0)
 				continue;
 
-			// Destination File Name and Extension
-			sDstFileName = sSrcFileName;
-			sDstFileName = sDstFileName.Mid(sSrcDirPath.GetLength() + 1);
-			sDstFileNameSameExt = sDstFileName = sTempDstDirPath + _T("\\") + sDstFileName;
-			CString sDstExt = ::GetFileExt(sDstFileNameSameExt);
+			// Destination File Name
+			CString sDstFileNameSameExt(sSrcFileName);
+			sDstFileNameSameExt = sDstFileNameSameExt.Mid(sSrcDirPath.GetLength() + 1);
+			sDstFileNameSameExt = sTempDstDirPath + _T("\\") + sDstFileNameSameExt;
+			CString sDstFileName;
 			if (m_pDlg->m_bConversion &&
 				!(m_pDlg->m_nOutputSelection == OUTPUT_FILE && ::GetFileExt(m_pDlg->m_sOutputFileName) != _T(".zip")))
 			{
 				if (m_pDlg->m_nOptimizationSelection == AUTO_OPT)
-				{
-					sDstExt = CUImagerApp::ShrinkGetDstExt(::GetFileExt(sSrcFileName));
-					sDstFileName = ::GetFileNameNoExt(sDstFileName) + sDstExt;
-				}
+					sDstFileName = ::GetFileNameNoExt(sDstFileNameSameExt) + CUImagerApp::ShrinkGetDstExt(::GetFileExt(sSrcFileName));
 				else
 				{
 					switch (m_pDlg->m_GeneralTab.m_nExtChangeType)
 					{
-						case CBatchProcGeneralTab::NO_CHANGE :
-							sDstFileName = sDstFileNameSameExt;
-							break;
-
 						case CBatchProcGeneralTab::AUTO_CHANGE :
-							sDstExt = CUImagerApp::ShrinkGetDstExt(::GetFileExt(sSrcFileName));
-							sDstFileName = ::GetFileNameNoExt(sDstFileName) + sDstExt;
+							sDstFileName = ::GetFileNameNoExt(sDstFileNameSameExt) + CUImagerApp::ShrinkGetDstExt(::GetFileExt(sSrcFileName));
 							break;
 
 						case CBatchProcGeneralTab::ALL_JPEG :
-							sDstExt = _T(".jpg");
-							sDstFileName = ::GetFileNameNoExt(sDstFileName) + sDstExt;
+							sDstFileName = ::GetFileNameNoExt(sDstFileNameSameExt) + _T(".jpg");
 							break;
 
 						case CBatchProcGeneralTab::ALL_PNG :
-							sDstExt = _T(".png");
-							sDstFileName = ::GetFileNameNoExt(sDstFileName) + sDstExt;
+							sDstFileName = ::GetFileNameNoExt(sDstFileNameSameExt) + _T(".png");
 							break;
 
 						case CBatchProcGeneralTab::ALL_GIF :
-							sDstExt = _T(".gif");
-							sDstFileName = ::GetFileNameNoExt(sDstFileName) + sDstExt;
+							sDstFileName = ::GetFileNameNoExt(sDstFileNameSameExt) + _T(".gif");
 							break;
 
 						case CBatchProcGeneralTab::ALL_TIFF :
-							sDstExt = _T(".tif");
-							sDstFileName = ::GetFileNameNoExt(sDstFileName) + sDstExt;
+							sDstFileName = ::GetFileNameNoExt(sDstFileNameSameExt) + _T(".tif");
 							break;
 
 						case CBatchProcGeneralTab::ALL_BMP :
-							sDstExt = _T(".bmp");
-							sDstFileName = ::GetFileNameNoExt(sDstFileName) + sDstExt;
+							sDstFileName = ::GetFileNameNoExt(sDstFileNameSameExt) + _T(".bmp");
 							break;
 
 						case CBatchProcGeneralTab::ALL_PCX :
-							sDstExt = _T(".pcx");
-							sDstFileName = ::GetFileNameNoExt(sDstFileName) + sDstExt;
+							sDstFileName = ::GetFileNameNoExt(sDstFileNameSameExt) + _T(".pcx");
 							break;
 
 						case CBatchProcGeneralTab::ALL_EMF :
-							sDstExt = _T(".emf");
-							sDstFileName = ::GetFileNameNoExt(sDstFileName) + sDstExt;
+							sDstFileName = ::GetFileNameNoExt(sDstFileNameSameExt) + _T(".emf");
 							break;
 					
-						default :
+						default : // CBatchProcGeneralTab::NO_CHANGE
+							sDstFileName = sDstFileNameSameExt;
 							break;
 					}
 				}
