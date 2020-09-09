@@ -380,6 +380,7 @@ Section "${APPNAME_NOEXT} Program (required)"
   !insertmacro ADDREMOVE_FILEASSOCIATION $JXR jxr
   !insertmacro ADDREMOVE_FILEASSOCIATION $WEBP webp
   !insertmacro ADDREMOVE_FILEASSOCIATION $HEIC heic
+  !insertmacro ADDREMOVE_FILEASSOCIATION $AVIF avif
 
   ; Refresh Icons
   call RefreshShellIcons
@@ -561,6 +562,8 @@ Section "Uninstall"
   StrCpy $FILEEXTENSION "webp"
   call un.RemoveFileAssociation
   StrCpy $FILEEXTENSION "heic"
+  call un.RemoveFileAssociation
+  StrCpy $FILEEXTENSION "avif"
   call un.RemoveFileAssociation
   
   ; Remove / Restore associations from older program versions

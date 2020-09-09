@@ -152,6 +152,9 @@ void CSettingsDlg::FileAssociation(BOOL bDoAssociation)
 		
 		// Heic
 		pApp->AssociateFileType(_T("heic"));
+
+		// Avif
+		pApp->AssociateFileType(_T("avif"));
 	}
 	else
 	{
@@ -190,6 +193,9 @@ void CSettingsDlg::FileAssociation(BOOL bDoAssociation)
 
 		// Heic
 		pApp->UnassociateFileType(_T("heic"));
+
+		// Avif
+		pApp->UnassociateFileType(_T("avif"));
 	}
 
 	// Notify Changes

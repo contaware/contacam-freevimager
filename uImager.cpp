@@ -1394,8 +1394,8 @@ void CUImagerApp::OnFileOpen()
 		dlgFile.m_ofn.lpstrDefExt = _T("bmp");
 		dlgFile.m_ofn.lpstrCustomFilter = NULL;
 		dlgFile.m_ofn.lpstrFilter = 
-					_T("Supported Files (*.bmp;*.gif;*.jpg;*.tif;*.png;*.pcx;*.emf;*.jxr;*.webp;*.heic)\0")
-					_T("*.bmp;*.dib;*.gif;*.png;*.jpg;*.jpeg;*.jpe;*.jfif;*.thm;*.tif;*.tiff;*.jfx;*.pcx;*.emf;*.jxr;*.webp;*.heic\0")
+					_T("Supported Files (*.bmp;*.gif;*.jpg;*.tif;*.png;*.pcx;*.emf;*.jxr;*.webp;*.heic;*.avif)\0")
+					_T("*.bmp;*.dib;*.gif;*.png;*.jpg;*.jpeg;*.jpe;*.jfif;*.thm;*.tif;*.tiff;*.jfx;*.pcx;*.emf;*.jxr;*.webp;*.heic;*.avif\0")
 					_T("All Files (*.*)\0*.*\0")
 					_T("Windows Bitmap (*.bmp;*.dib)\0*.bmp;*.dib\0")
 					_T("Graphics Interchange Format (*.gif)\0*.gif\0")
@@ -1406,7 +1406,8 @@ void CUImagerApp::OnFileOpen()
 					_T("Enhanced Metafile (*.emf)\0*.emf\0")
 					_T("JPEG XR (*.jxr)\0*.jxr\0")
 					_T("Weppy Format (*.webp)\0*.webp\0")
-					_T("High Efficiency Image Format (*.heic)\0*.heic\0");
+					_T("High Efficiency Image Format (*.heic)\0*.heic\0")
+					_T("AV1 Image File Format (*.avif)\0*.avif\0");
 		dlgFile.m_ofn.Flags |= OFN_FILEMUSTEXIST | OFN_ALLOWMULTISELECT;
 		dlgFile.m_ofn.lpstrFile = FileNames;
 		dlgFile.m_ofn.nMaxFile = MAX_FILEDLG_PATH;
@@ -3335,6 +3336,7 @@ CString CUImagerApp::ShrinkGetDstExt(CString sSrcExt)
 		(sSrcExt == _T("jxr"))	||
 		(sSrcExt == _T("webp"))	||
 		(sSrcExt == _T("heic"))	||
+		(sSrcExt == _T("avif")) ||
 		CDib::IsJPEGExt(sSrcExt))
 		return _T(".jpg");
 	else if (CDib::IsTIFFExt(sSrcExt))
@@ -3869,6 +3871,7 @@ BOOL CUImagerApp::IsSupportedPictureFile(CString sFileName)
 		(sExt == _T(".jxr"))	||
 		(sExt == _T(".webp"))	||
 		(sExt == _T(".heic"))	||
+		(sExt == _T(".avif"))	||
 		CDib::IsJPEGExt(sExt)	||
 		CDib::IsTIFFExt(sExt))
 		return TRUE;
@@ -3881,7 +3884,8 @@ BOOL CUImagerApp::IsLoadOnlyPictureFile(CString sFileName)
 	CString sExt = ::GetFileExt(sFileName);
 	if ((sExt == _T(".jxr"))	||
 		(sExt == _T(".webp"))	||
-		(sExt == _T(".heic")))
+		(sExt == _T(".heic"))	||
+		(sExt == _T(".avif")))
 		return TRUE;
 	else
 		return FALSE;
@@ -4115,6 +4119,7 @@ void CUImagerApp::UpdateFileAssociations()
 	BOOL bJxr = FALSE;
 	BOOL bWebp = FALSE;
 	BOOL bHeic = FALSE;
+	BOOL bAvif = FALSE;
 
 #ifndef VIDEODEVICEDOC
 	bBmp =		IsFileTypeAssociated(_T("bmp"));
@@ -4133,6 +4138,7 @@ void CUImagerApp::UpdateFileAssociations()
 	bJxr =		IsFileTypeAssociated(_T("jxr"));
 	bWebp =		IsFileTypeAssociated(_T("webp"));
 	bHeic =		IsFileTypeAssociated(_T("heic"));
+	bAvif =		IsFileTypeAssociated(_T("avif"));
 #endif
 	
 	if (bBmp)
@@ -4204,6 +4210,11 @@ void CUImagerApp::UpdateFileAssociations()
 		AssociateFileType(_T("heic"));
 	else
 		UnassociateFileType(_T("heic"));
+
+	if (bAvif)
+		AssociateFileType(_T("avif"));
+	else
+		UnassociateFileType(_T("avif"));
 
 	// Remove associations from older program versions
 	UnassociateFileType(_T("aif")); UnassociateFileType(_T("aiff"));

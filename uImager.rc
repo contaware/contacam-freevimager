@@ -937,7 +937,7 @@ BEGIN
     PUSHBUTTON      "Unassociate",IDC_BUTTON_UNASSOCIATE,137,75,70,18
     GROUPBOX        "File Association",IDC_STATIC2247,7,60,208,51
     GROUPBOX        "General",IDC_STATIC2248,7,6,208,44
-    LTEXT           "bmp, emf, gif, jpg, pcx, png, tif, jxr, webp, heic",IDC_STATIC,15,98,192,8
+    LTEXT           "bmp, emf, gif, jpg, pcx, png, tif, jxr, webp, heic, avif",IDC_STATIC,15,98,192,8
 END
 
 IDD_DX_VIDEOFORMAT DIALOGEX 0, 0, 178, 91

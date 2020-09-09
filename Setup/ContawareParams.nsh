@@ -11,6 +11,7 @@ Var GIF
 Var JXR
 Var WEBP
 Var HEIC
+Var AVIF
 Var ALL
 Var KILL
 Function InitParams
@@ -26,6 +27,7 @@ Function InitParams
   ${GetOptions} $R0 /jxr= $JXR
   ${GetOptions} $R0 /webp= $WEBP
   ${GetOptions} $R0 /heic= $HEIC
+  ${GetOptions} $R0 /avif= $AVIF
   ${GetOptions} $R0 /all= $ALL
   ${GetOptions} $R0 /kill= $KILL
   StrCmp $ALL "1" 0 all_off
@@ -49,6 +51,8 @@ Function InitParams
   StrCpy $WEBP "1"
   StrCmp $HEIC "" 0 +2
   StrCpy $HEIC "1"
+  StrCmp $AVIF "" 0 +2
+  StrCpy $AVIF "1"
   goto all_end
 all_off:
   StrCmp $ALL "0" 0 all_end
@@ -72,6 +76,8 @@ all_off:
   StrCpy $WEBP "0"
   StrCmp $HEIC "" 0 +2
   StrCpy $HEIC "0"
+  StrCmp $AVIF "" 0 +2
+  StrCpy $AVIF "0"
 all_end:
   
 FunctionEnd
