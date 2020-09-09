@@ -3233,21 +3233,24 @@ HRESULT CDib::LoadWIC(LPCTSTR lpszPathName, BOOL bOnlyHeader/*=FALSE*/)
 
 		// Create the decoder
 		//
-		// .heic
+		// *.heic
 		// https://www.microsoft.com/p/heif-image-extensions/9pmmsr1cgpwg
-		// https://www.microsoft.com/en-us/p/hevc-video-extensions-from-device-manufacturer/9n4wgh0z6vhq?irgwc=1&OCID=AID681541_aff_7593_159229&tduid=(ir_wJC0gNTClQca0BAzqwxkEXPhUkjTGXQhW1412Y0)(7593)(159229)()(UUwpUdUnU56397YYwYd)&irclickid=wJC0gNTClQca0BAzqwxkEXPhUkjTGXQhW1412Y0
+		// + free:
+		// https://www.microsoft.com/p/hevc-video-extensions-from-device-manufacturer/9n4wgh0z6vhq
+		// or payed (if free not installing):
+		// https://www.microsoft.com/p/hevc-video-extensions/9nmzlz57r3t7
 		// For older Windows versions:
 		// https://www.copytrans.net/copytransheic/
 		//
-		// .webp
+		// *.webp
 		// https://www.microsoft.com/p/webp-image-extensions/9pg2dk419drg
 		// For older Windows versions:
 		// https://storage.googleapis.com/downloads.webmproject.org/releases/webp/WebpCodecSetup.exe
-		// or
+		// or:
 		// http://downloads.webmproject.org/releases/webp/WebpCodecSetup.exe
 		//
-		// .avif (in 2020 it is buggy, wait a bit before supporting it)
-		// https://www.microsoft.com/en-us/p/av1-video-extension-beta/9mvzqvxjbq9v
+		// *.avif
+		// https://www.microsoft.com/p/av1-video-extension/9mvzqvxjbq9v
 		//
 		hr = pFactory->CreateDecoderFromFilename(lpszPathName, NULL, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &pDecoder);
 		if (FAILED(hr))
