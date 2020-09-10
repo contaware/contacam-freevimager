@@ -2,7 +2,7 @@ FREEVIMAGER HISTORY
 
 9.9.11 (Month XXth 2020)
 
-- Added support for .heic, .webp and .jxr files
+- Added support for .heic, .webp, .avif and .jxr files
 - Correctly displaying exif ISO equivalent values smaller than 50
 
 9.9.10 (August 2nd 2020)
