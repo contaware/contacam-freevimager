@@ -3202,8 +3202,6 @@ BOOL CDib::LoadImage(LPCTSTR lpszPathName,
 
 HRESULT CDib::LoadWIC(LPCTSTR lpszPathName, BOOL bOnlyHeader/*=FALSE*/)
 {
-	HRESULT hr = E_FAIL;
-	
 	// Free
 	m_FileInfo.Clear();
 	m_bAlpha = FALSE;
@@ -3211,6 +3209,7 @@ HRESULT CDib::LoadWIC(LPCTSTR lpszPathName, BOOL bOnlyHeader/*=FALSE*/)
 	Free();
 
 	// Init COM
+	HRESULT hr;
 	::CoInitialize(NULL);
 	{
 		CComPtr<IWICImagingFactory> pFactory;
@@ -3222,7 +3221,7 @@ HRESULT CDib::LoadWIC(LPCTSTR lpszPathName, BOOL bOnlyHeader/*=FALSE*/)
 		m_FileInfo.m_dwFileSize = (DWORD)FileSize.QuadPart;
 		if (FileSize.QuadPart == 0)
 		{
-			hr = E_FAIL;
+			hr = WINCODEC_ERR_UNEXPECTEDSIZE;
 			goto exit;
 		}
 
@@ -3517,10 +3516,10 @@ exit:
 		{
 			// On missing codec different errors are returned by CreateDecoderFromFilename()
 			// (WINCODEC_ERR_COMPONENTNOTFOUND, WINCODEC_ERR_COMPONENTINITIALIZEFAILURE or ...),
-			// but also Lock() can fail for example with 0xC00D5212. Better to always return
-			// "Codec Missing" if not having one of our assigned error codes:
-			if (hr != E_FAIL					&&
-				hr != WINCODEC_ERR_FRAMEMISSING	&&
+			// but also Lock() can fail for example with E_FAIL or with 0xC00D5212. Better to 
+			// always return "Codec Missing" if not having one of our assigned error codes:
+			if (hr != WINCODEC_ERR_UNEXPECTEDSIZE	&&
+				hr != WINCODEC_ERR_FRAMEMISSING		&&
 				hr != E_OUTOFMEMORY)
 			{
 				CTaskDialog dlg(_T("<a href=\"") + CString(CODEC_MISSING_ONLINE_PAGE) + _T("\">Download</a>"),
