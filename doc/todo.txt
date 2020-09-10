@@ -1,8 +1,7 @@
 FreeVimager Program
 -------------------
   
-- Add .webp and .heic/heif file support
-  (demonoid@pulsarnet.com)
+- ...
 
 
 ContaCam Program
@@ -58,8 +57,9 @@ ContaCam Program
 - Execute command on camera failure, add the option of "camera failure" to the command execute area
   (n1fbg@arrl.net)
   
-- As an option record the motion "grid" turning red along with the motion video
-  (gthumberger@gmail.com)
+- As an option preview / record the motion "grid" turning red along with the motion video and
+  also show the red dot record symbol
+  (zeroin@ya.ru, gthumberger@gmail.com)
   
 - It would be helpful to have the image maybe dim, or have a message saying not connected or
   something like that if the snapshot.jpg and snapshot_thumb.jpg are too old. Implement a param
@@ -70,7 +70,13 @@ ContaCam Program
   
 - Take multiple jpg snapshots on motion, not just one
   (randy3xyz@gmail.com)
+
+- Shortcuts for media player in web interface, left and right arrow keys for 2 sec moves,
+  space to start/stop (t__o__n__y@hotmail.com or tony.ganner@gmail.com)
   
+- Delete button directly on the page where a video is displayed and
+  switch to the next video as with a click on ">" (joerg@joergmahn.de)
+
 - In web interface main view when clicking the camera thumb show it fullscreen,
   when clicking the camera name show the videos (n1fbg2@yahoo.com)
   
