@@ -3234,23 +3234,29 @@ HRESULT CDib::LoadWIC(LPCTSTR lpszPathName, BOOL bOnlyHeader/*=FALSE*/)
 		// Create the decoder
 		//
 		// *.heic
-		// https://www.microsoft.com/p/heif-image-extensions/9pmmsr1cgpwg
-		// + free:
+		// free:
 		// https://www.microsoft.com/p/hevc-video-extensions-from-device-manufacturer/9n4wgh0z6vhq
-		// or payed (if free not installing):
+		// or payed (if free is not installing):
 		// https://www.microsoft.com/p/hevc-video-extensions/9nmzlz57r3t7
-		// For older Windows versions:
-		// https://www.copytrans.net/copytransheic/
-		//
-		// *.webp
-		// https://www.microsoft.com/p/webp-image-extensions/9pg2dk419drg
-		// For older Windows versions:
-		// https://storage.googleapis.com/downloads.webmproject.org/releases/webp/WebpCodecSetup.exe
-		// or:
-		// http://downloads.webmproject.org/releases/webp/WebpCodecSetup.exe
 		//
 		// *.avif
 		// https://www.microsoft.com/p/av1-video-extension/9mvzqvxjbq9v
+		//
+		// Note: both .heic and .avif are based on the HEIF container format and both need the usually already installed:
+		// https://www.microsoft.com/p/heif-image-extensions/9pmmsr1cgpwg
+		//
+		// *.webp
+		// https://www.microsoft.com/p/webp-image-extensions/9pg2dk419drg
+		//
+		// For older Windows versions
+		//
+		// *.heic
+		// https://www.copytrans.net/copytransheic/
+		// 
+		// *.webp
+		// https://storage.googleapis.com/downloads.webmproject.org/releases/webp/WebpCodecSetup.exe
+		// or:
+		// http://downloads.webmproject.org/releases/webp/WebpCodecSetup.exe
 		//
 		hr = pFactory->CreateDecoderFromFilename(lpszPathName, NULL, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &pDecoder);
 		if (FAILED(hr))
@@ -3509,7 +3515,13 @@ exit:
 		TRACE(str);
 		if (m_bShowMessageBoxOnError)
 		{
-			if (hr == WINCODEC_ERR_COMPONENTNOTFOUND)
+			// On missing codec different errors are returned by CreateDecoderFromFilename()
+			// (WINCODEC_ERR_COMPONENTNOTFOUND, WINCODEC_ERR_COMPONENTINITIALIZEFAILURE or ...),
+			// but also Lock() can fail for example with 0xC00D5212. Better to always return
+			// "Codec Missing" if not having one of our assigned error codes:
+			if (hr != E_FAIL					&&
+				hr != WINCODEC_ERR_FRAMEMISSING	&&
+				hr != E_OUTOFMEMORY)
 			{
 				CTaskDialog dlg(_T("<a href=\"") + CString(CODEC_MISSING_ONLINE_PAGE) + _T("\">Download</a>"),
 								_T("Codec Missing"),
