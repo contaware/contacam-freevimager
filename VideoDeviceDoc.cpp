@@ -5466,9 +5466,9 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	sConfig += _T("PidFile \"") + sConfigDir + MICROAPACHE_PIDNAME_EXT + _T("\"\r\n");
 	
 	// PHP session
-	// 1. session.gc_maxlifetime specifies the number of seconds after which inactive session data will be seen as garbage.
-	//    For performance reasons session_start() calls the garbage collector (which cleans-up the above mentioned garbage)
-	//    with a frequency of session.gc_probability / session.gc_divisor.
+	// 1. session.gc_maxlifetime specifies on the server the number of seconds after which inactive session data will be seen
+	//    as garbage. For performance reasons session_start() calls the garbage collector (which cleans-up the above mentioned
+	//    garbage) with a frequency of session.gc_probability / session.gc_divisor.
 	//    Note1: on heavily used servers set session.gc_divisor to a bigger value (session.gc_probability is usually left 1).
 	//    Note2: it's not possible to expire its own session (on the same browser) because session_start() first refreshes its
 	//           own session updating the session file timestamp and only after that the garbage collector is called. To expire
@@ -5476,9 +5476,10 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	//    Note3: in ContaCam web interface sessions will not expire as long as the page polls snapshots or refreshes with the
 	//           html meta tag, only if a video is open the session can be expired by another user/browser.
 	//
-	// 2. session.cookie_lifetime (default 0, which means until the browser's next restart) defines how long (in seconds) a
-	//    session cookie will live. Sounds similar to session.gc_maxlifetime, but it's a completely different approach. This
-	//    value defines the absolute maximum lifetime of a session, whether the user is active or not.
+	// 2. session.cookie_lifetime is usually set to its default of 0 which means that the browser drops the cookie when it
+	//    closes. A positive value means that the cookie will exactly life for the given amount of seconds, during this time
+	//    the user can close and re-open the browser or refresh the page, it doesn't matter, the cookie will exactly expire
+	//    after the given amount of seconds from its creation.
 	CString sTempDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir(); // directory has been created in InitInstance()
 	sTempDir = ::GetASCIICompatiblePath(sTempDir); // directory must exist!
 	sTempDir.Replace(_T('\\'), _T('/')); // change path from \ to / (otherwise apache is not happy)
