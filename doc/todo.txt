@@ -57,9 +57,8 @@ ContaCam Program
 - Execute command on camera failure, add the option of "camera failure" to the command execute area
   (n1fbg@arrl.net)
   
-- As an option preview / record the motion "grid" turning red along with the motion video and
-  also show the red dot record symbol
-  (zeroin@ya.ru, gthumberger@gmail.com)
+- Option to record the red + blue motion grid rectangles + the red dot record symbol
+  (zeroin@ya.ru, gthumberger@gmail.com, nicholas.blake.au@gmail.com)
   
 - It would be helpful to have the image maybe dim, or have a message saying not connected or
   something like that if the snapshot.jpg and snapshot_thumb.jpg are too old. Implement a param
