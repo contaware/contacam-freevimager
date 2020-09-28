@@ -6123,19 +6123,49 @@ BOOL CVideoDeviceDoc::PhpSaveConfigFile(const CString& sConfig)
 												::GetFileNameNoExt(sPhpConfigFile) + _T(".tmp")));
 	
 	// Write to temp file and free data
-	try
+	// 
+	// Normal file writes are all cached, they initially just extend the file size 
+	// accordingly but leave VDL (valid data length) untouched. Data beyond VDL 
+	// always reads back as zeros. The data sitting in file cache will eventually 
+	// get written to disk (that could happen also many seconds after a CloseHandle())
+	// and following that, the VDL will get advanced on disk to reflect the data written.
+	//
+	// Some customers reported configuration.php files with all NULs but having a
+	// correct size. Given the above explained logic my guess is that a crash/hang/reboot 
+	// happened shortly after the configuration.php was updated but probably still sitting
+	// in file cache. Because of that I now move the new file only when it has been forced 
+	// to the disk with FlushFileBuffers(). Note that the below MOVEFILE_WRITE_THROUGH 
+	// flag was obviously not enough as the described problem happened with this flag 
+	// already implemented.
+	//
+	// https://stackoverflow.com/questions/49260358/what-could-cause-an-xml-file-to-be-filled-with-null-characters
+	// https://devblogs.microsoft.com/oldnewthing/20170510-00/?p=95505
+	// https://devblogs.microsoft.com/oldnewthing/20170524-00/?p=96215
+	//
+	HANDLE hFile = ::CreateFile(sTmpPhpConfigFile, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (hFile != INVALID_HANDLE_VALUE)
 	{
-		CFile f(sTmpPhpConfigFile,
-				CFile::modeCreate		|
-				CFile::modeWrite		|
-				CFile::shareDenyWrite);
-		f.Write(pData, nLen);
-		delete [] pData;
+		DWORD dwNumberOfBytesWritten;
+		if (!::WriteFile(hFile, pData, nLen, &dwNumberOfBytesWritten, NULL))
+		{
+			::CloseHandle(hFile);
+			::DeleteFile(sTmpPhpConfigFile);
+			delete[] pData;
+			return FALSE;
+		}
+		if (!::FlushFileBuffers(hFile))
+		{
+			::CloseHandle(hFile);
+			::DeleteFile(sTmpPhpConfigFile);
+			delete[] pData;
+			return FALSE;
+		}
+		::CloseHandle(hFile);
+		delete[] pData;
 	}
-	catch (CFileException* e)
+	else
 	{
-		delete [] pData;
-		e->Delete();
+		delete[] pData;
 		return FALSE;
 	}
 
