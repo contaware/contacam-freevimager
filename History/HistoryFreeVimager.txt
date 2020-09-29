@@ -4,6 +4,7 @@ FREEVIMAGER HISTORY
 
 - Added support for .heic, .webp, .avif and .jxr files
 - Correctly displaying exif ISO equivalent values smaller than 50
+- Updated the avir library to version 2.6
 
 9.9.10 (August 2nd 2020)
 
