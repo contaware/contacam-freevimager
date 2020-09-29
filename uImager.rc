@@ -705,7 +705,6 @@ IDR_CONTEXT_ADD_REMOVE_ZONES MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
-        MENUITEM "Draw/Erase OFF",              ID_EDIT_ZONES_HIDE
         MENUITEM "Draw active zones (100% main sensitivity)", ID_EDIT_ZONE_SENSITIVITY_100
         MENUITEM "Draw active zones (50% main sensitivity)", ID_EDIT_ZONE_SENSITIVITY_50
         MENUITEM "Draw active zones (25% main sensitivity)", ID_EDIT_ZONE_SENSITIVITY_25

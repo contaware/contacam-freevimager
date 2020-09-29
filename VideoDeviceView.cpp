@@ -897,6 +897,8 @@ void CVideoDeviceView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 				pDoc->m_pCameraAdvancedSettingsDlg->Hide();
 			else if (m_bFullScreenMode)
 				::AfxGetMainFrame()->EnterExitFullscreen();	// Exit Full-Screen Mode
+			else if (pDoc->m_nShowEditDetectionZones)
+				pDoc->HideDetectionZones();
 			break;
 
 		case VK_INSERT :
