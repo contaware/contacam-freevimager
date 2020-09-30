@@ -136,7 +136,7 @@
       <AssemblerListingLocation>..\Obj\DebugContaCam\libjpeg\</AssemblerListingLocation>
       <ObjectFileName>..\Obj\DebugContaCam\libjpeg\</ObjectFileName>
       <ProgramDataBaseFileName>..\Obj\DebugContaCam\libjpeg\</ProgramDataBaseFileName>
-      <BrowseInformation>true</BrowseInformation>
+      <BrowseInformation>false</BrowseInformation>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
@@ -165,7 +165,7 @@
       <AssemblerListingLocation>..\Obj\DebugFreeVimager\libjpeg\</AssemblerListingLocation>
       <ObjectFileName>..\Obj\DebugFreeVimager\libjpeg\</ObjectFileName>
       <ProgramDataBaseFileName>..\Obj\DebugFreeVimager\libjpeg\</ProgramDataBaseFileName>
-      <BrowseInformation>true</BrowseInformation>
+      <BrowseInformation>false</BrowseInformation>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>

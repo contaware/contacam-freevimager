@@ -107,7 +107,7 @@
       <AssemblerListingLocation>..\Obj\DebugContaCam\libpng\</AssemblerListingLocation>
       <ObjectFileName>..\Obj\DebugContaCam\libpng\</ObjectFileName>
       <ProgramDataBaseFileName>..\Obj\DebugContaCam\libpng\</ProgramDataBaseFileName>
-      <BrowseInformation>true</BrowseInformation>
+      <BrowseInformation>false</BrowseInformation>
       <WarningLevel>Level2</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
@@ -140,7 +140,7 @@
       <AssemblerListingLocation>..\Obj\DebugFreeVimager\libpng\</AssemblerListingLocation>
       <ObjectFileName>..\Obj\DebugFreeVimager\libpng\</ObjectFileName>
       <ProgramDataBaseFileName>..\Obj\DebugFreeVimager\libpng\</ProgramDataBaseFileName>
-      <BrowseInformation>true</BrowseInformation>
+      <BrowseInformation>false</BrowseInformation>
       <WarningLevel>Level2</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>

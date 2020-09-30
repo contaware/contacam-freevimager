@@ -166,7 +166,7 @@
       <AssemblerListingLocation>..\Obj\DebugContaCam\zlib\</AssemblerListingLocation>
       <ObjectFileName>..\Obj\DebugContaCam\zlib\</ObjectFileName>
       <ProgramDataBaseFileName>..\Obj\DebugContaCam\zlib\</ProgramDataBaseFileName>
-      <BrowseInformation>true</BrowseInformation>
+      <BrowseInformation>false</BrowseInformation>
       <WarningLevel>Level2</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
@@ -195,7 +195,7 @@
       <AssemblerListingLocation>..\Obj\DebugFreeVimager\zlib\</AssemblerListingLocation>
       <ObjectFileName>..\Obj\DebugFreeVimager\zlib\</ObjectFileName>
       <ProgramDataBaseFileName>..\Obj\DebugFreeVimager\zlib\</ProgramDataBaseFileName>
-      <BrowseInformation>true</BrowseInformation>
+      <BrowseInformation>false</BrowseInformation>
       <WarningLevel>Level2</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>

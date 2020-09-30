@@ -104,7 +104,7 @@
       <AssemblerListingLocation>..\Obj\DebugContaCam\icclib\</AssemblerListingLocation>
       <ObjectFileName>..\Obj\DebugContaCam\icclib\</ObjectFileName>
       <ProgramDataBaseFileName>..\Obj\DebugContaCam\icclib\</ProgramDataBaseFileName>
-      <BrowseInformation>true</BrowseInformation>
+      <BrowseInformation>false</BrowseInformation>
       <WarningLevel>Level2</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
@@ -133,7 +133,7 @@
       <AssemblerListingLocation>..\Obj\DebugFreeVimager\icclib\</AssemblerListingLocation>
       <ObjectFileName>..\Obj\DebugFreeVimager\icclib\</ObjectFileName>
       <ProgramDataBaseFileName>..\Obj\DebugFreeVimager\icclib\</ProgramDataBaseFileName>
-      <BrowseInformation>true</BrowseInformation>
+      <BrowseInformation>false</BrowseInformation>
       <WarningLevel>Level2</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>

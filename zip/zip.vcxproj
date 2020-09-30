@@ -106,7 +106,7 @@
       <AssemblerListingLocation>..\Obj\DebugContaCam\Zip\</AssemblerListingLocation>
       <ObjectFileName>..\Obj\DebugContaCam\Zip\</ObjectFileName>
       <ProgramDataBaseFileName>..\Obj\DebugContaCam\Zip\</ProgramDataBaseFileName>
-      <BrowseInformation>true</BrowseInformation>
+      <BrowseInformation>false</BrowseInformation>
       <WarningLevel>Level4</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
@@ -137,7 +137,7 @@
       <AssemblerListingLocation>..\Obj\DebugFreeVimager\Zip\</AssemblerListingLocation>
       <ObjectFileName>..\Obj\DebugFreeVimager\Zip\</ObjectFileName>
       <ProgramDataBaseFileName>..\Obj\DebugFreeVimager\Zip\</ProgramDataBaseFileName>
-      <BrowseInformation>true</BrowseInformation>
+      <BrowseInformation>false</BrowseInformation>
       <WarningLevel>Level4</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>

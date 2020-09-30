@@ -155,7 +155,7 @@
       <AssemblerListingLocation>Obj\FreeVimager\</AssemblerListingLocation>
       <ObjectFileName>Obj\FreeVimager\</ObjectFileName>
       <ProgramDataBaseFileName>Obj\FreeVimager\</ProgramDataBaseFileName>
-      <BrowseInformation>true</BrowseInformation>
+      <BrowseInformation>false</BrowseInformation>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -209,7 +209,7 @@
       <AssemblerListingLocation>Obj\DebugContaCam\</AssemblerListingLocation>
       <ObjectFileName>Obj\DebugContaCam\</ObjectFileName>
       <ProgramDataBaseFileName>Obj\DebugContaCam\</ProgramDataBaseFileName>
-      <BrowseInformation>true</BrowseInformation>
+      <BrowseInformation>false</BrowseInformation>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
@@ -261,7 +261,7 @@
       <AssemblerListingLocation>Obj\DebugFreeVimager\</AssemblerListingLocation>
       <ObjectFileName>Obj\DebugFreeVimager\</ObjectFileName>
       <ProgramDataBaseFileName>Obj\DebugFreeVimager\</ProgramDataBaseFileName>
-      <BrowseInformation>true</BrowseInformation>
+      <BrowseInformation>false</BrowseInformation>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
@@ -321,7 +321,7 @@
       <AssemblerListingLocation>Obj\ContaCam\</AssemblerListingLocation>
       <ObjectFileName>Obj\ContaCam\</ObjectFileName>
       <ProgramDataBaseFileName>Obj\ContaCam\</ProgramDataBaseFileName>
-      <BrowseInformation>true</BrowseInformation>
+      <BrowseInformation>false</BrowseInformation>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IntrinsicFunctions>true</IntrinsicFunctions>

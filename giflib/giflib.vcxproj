@@ -104,7 +104,7 @@
       <AssemblerListingLocation>..\Obj\DebugContaCam\giflib\</AssemblerListingLocation>
       <ObjectFileName>..\Obj\DebugContaCam\giflib\</ObjectFileName>
       <ProgramDataBaseFileName>..\Obj\DebugContaCam\giflib\</ProgramDataBaseFileName>
-      <BrowseInformation>true</BrowseInformation>
+      <BrowseInformation>false</BrowseInformation>
       <WarningLevel>Level2</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
@@ -133,7 +133,7 @@
       <AssemblerListingLocation>..\Obj\DebugFreeVimager\giflib\</AssemblerListingLocation>
       <ObjectFileName>..\Obj\DebugFreeVimager\giflib\</ObjectFileName>
       <ProgramDataBaseFileName>..\Obj\DebugFreeVimager\giflib\</ProgramDataBaseFileName>
-      <BrowseInformation>true</BrowseInformation>
+      <BrowseInformation>false</BrowseInformation>
       <WarningLevel>Level2</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>

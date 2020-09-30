@@ -175,7 +175,7 @@
       <AssemblerListingLocation>..\Obj\DebugContaCam\Dib\</AssemblerListingLocation>
       <ObjectFileName>..\Obj\DebugContaCam\Dib\</ObjectFileName>
       <ProgramDataBaseFileName>..\Obj\DebugContaCam\Dib\</ProgramDataBaseFileName>
-      <BrowseInformation>true</BrowseInformation>
+      <BrowseInformation>false</BrowseInformation>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
@@ -208,7 +208,7 @@
       <AssemblerListingLocation>..\Obj\DebugFreeVimager\Dib\</AssemblerListingLocation>
       <ObjectFileName>..\Obj\DebugFreeVimager\Dib\</ObjectFileName>
       <ProgramDataBaseFileName>..\Obj\DebugFreeVimager\Dib\</ProgramDataBaseFileName>
-      <BrowseInformation>true</BrowseInformation>
+      <BrowseInformation>false</BrowseInformation>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>

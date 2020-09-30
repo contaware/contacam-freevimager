@@ -105,7 +105,7 @@
       <AssemblerListingLocation>..\Obj\DebugContaCam\libtiff\</AssemblerListingLocation>
       <ObjectFileName>..\Obj\DebugContaCam\libtiff\</ObjectFileName>
       <ProgramDataBaseFileName>..\Obj\DebugContaCam\libtiff\</ProgramDataBaseFileName>
-      <BrowseInformation>true</BrowseInformation>
+      <BrowseInformation>false</BrowseInformation>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
@@ -134,7 +134,7 @@
       <AssemblerListingLocation>..\Obj\DebugFreeVimager\libtiff\</AssemblerListingLocation>
       <ObjectFileName>..\Obj\DebugFreeVimager\libtiff\</ObjectFileName>
       <ProgramDataBaseFileName>..\Obj\DebugFreeVimager\libtiff\</ProgramDataBaseFileName>
-      <BrowseInformation>true</BrowseInformation>
+      <BrowseInformation>false</BrowseInformation>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
