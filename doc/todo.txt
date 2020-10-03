@@ -69,9 +69,6 @@ ContaCam Program
   
 - Take multiple jpg snapshots on motion, not just one
   (randy3xyz@gmail.com)
-
-- Shortcuts for media player in web interface, left and right arrow keys for 2 sec moves,
-  space to start/stop (t__o__n__y@hotmail.com or tony.ganner@gmail.com)
   
 - Delete button directly on the page where a video is displayed and
   switch to the next video as with a click on ">" (joerg@joergmahn.de)

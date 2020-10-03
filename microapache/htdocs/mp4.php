@@ -34,6 +34,51 @@ function playRate(rate) {
 function restoreTime(v) {
 	v.currentTime = previousTime; // currentTime can now be set
 }
+function playRateInc() {
+	var v = document.getElementById("myMp4Movie");
+	if (v.playbackRate < 0.125)
+		playRate(0.125);
+	else if (v.playbackRate < 0.25)
+		playRate(0.25);
+	else if (v.playbackRate < 0.5)
+		playRate(0.5);
+	else if (v.playbackRate < 1.0)
+		playRate(1.0);
+	else if (v.playbackRate < 2.0)
+		playRate(2.0);
+	else if (v.playbackRate < 4.0)
+		playRate(4.0);
+	else if (v.playbackRate < 8.0)
+		playRate(8.0);
+}
+function playRateDec() {
+	var v = document.getElementById("myMp4Movie");
+	if (v.playbackRate > 8.0)
+		playRate(8.0);
+	else if (v.playbackRate > 4.0)
+		playRate(4.0);
+	else if (v.playbackRate > 2.0)
+		playRate(2.0);
+	else if (v.playbackRate > 1.0)
+		playRate(1.0);
+	else if (v.playbackRate > 0.5)
+		playRate(0.5);
+	else if (v.playbackRate > 0.25)
+		playRate(0.25);
+	else if (v.playbackRate > 0.125)
+		playRate(0.125);
+}
+function stepFrame() {
+	var v = document.getElementById("myMp4Movie");
+	if (!v.paused)
+		v.pause(); // first pause, then with the next clicks step the frames
+	else {
+		if (typeof v.seekToNextFrame === "function")
+			v.seekToNextFrame(); // only Firefox supports that (in year 2020)
+		else
+			v.currentTime += 0.03333; // for other Browsers use 30 fps (daily summary video has that framerate)
+	}
+}
 //]]>
 </script>
 </head>
@@ -80,7 +125,7 @@ foreach($_GET as $key=>$val) {
 }
 $prevkey = intval($currentkey) - 1;
 $nextkey = intval($currentkey) + 1;
-echo "<br/>\n";
+echo "<br />\n";
 echo "<div style=\"text-align: center\">\n";
 echo "<span class=\"globalbuttons\">";
 if ($prevkey >= 0) {
@@ -103,10 +148,9 @@ else {
 }
 if (isset($_GET['backuri']))
 	echo "<a style=\"font-size: 18px;\" href=\"" . htmlspecialchars($_GET['backuri']) . "\">&#x2191;</a>&nbsp;";
-echo "<a href=\"javascript:;\" onclick=\"playRate(0.25);\">0.25x</a>&nbsp;";
-echo "<a href=\"javascript:;\" onclick=\"playRate(0.5);\">0.5x</a>&nbsp;";
-echo "<a href=\"javascript:;\" onclick=\"playRate(1.0);\">1.0x</a>&nbsp;";
-echo "<a href=\"javascript:;\" onclick=\"playRate(2.0);\">2.0x</a>&nbsp;";
+echo "<a href=\"javascript:;\" onclick=\"playRateDec();\">&#x231a;-</a>&nbsp;";
+echo "<a href=\"javascript:;\" id=\"myStepFrameButton\" style=\"font-size: 10px; line-height: 14px;\" onclick=\"stepFrame();\">0.00<br />1x</a>&nbsp;";
+echo "<a href=\"javascript:;\" onclick=\"playRateInc();\">&#x231a;+</a>&nbsp;";
 echo "<a style=\"font-size: 16px;\" href=\"download.php?file=" . urlencode($filename) . "\" target=\"_top\">&#x1f4be;</a>";
 echo "</span>\n";
 echo "</div>\n";
@@ -157,8 +201,17 @@ function resizeMp4() {
 	mp4Movie.width = fittedWidth;
 	mp4Movie.height = fittedHeight;
 }
-window.addEventListener('resize', resizeMp4);
+window.addEventListener("resize", resizeMp4);
 resizeMp4();
+function videoPoll() {
+	var v = document.getElementById("myMp4Movie");
+	var btn = document.getElementById("myStepFrameButton");
+	if (!isNaN(v.duration)) // make sure currentTime is valid
+		btn.innerHTML = v.currentTime.toFixed(2) + "<br />" + v.playbackRate + "x";
+	// Do not use the 'timeupdate' event as it is not fast enough
+	window.setTimeout("videoPoll()", 100);
+}
+videoPoll();
 //]]>
 </script>
 </body>
