@@ -79,6 +79,19 @@ function stepFrame() {
 			v.currentTime += 0.03333; // for other Browsers use 30 fps (daily summary video has that framerate)
 	}
 }
+function unloadVideo() {
+	/* Chrome and all browsers based on it will defer loading another php script 
+	as long as the video player buffers from download.php (it's not a problem 
+	when the video src attribute is a direct .mp4 file). Note that Chrome only
+	buffers	bigger files; a file with a few MBs is directly downloaded and does
+	not	manifest the problem. So before switching to any other php script always 
+	interrupt the buffering with this javascript function */
+	var v = document.getElementById("myMp4Movie");
+	if (!v.paused)
+		v.pause();
+	v.src = "";
+    v.load();
+}
 //]]>
 </script>
 </head>
@@ -132,7 +145,7 @@ if ($prevkey >= 0) {
 	$prevrequesturi = str_replace($currentmp4 . '.mp4', $_GET["$prevkey"] . '.mp4', $_SERVER['REQUEST_URI']);
 	$prevrequesturi = javascriptspecialchars($prevrequesturi);
 	$prevval = javascriptspecialchars($_GET["$prevkey"]);
-	echo "<a href=\"javascript:;\" onclick=\"parent.window.name = '" . $prevval . "'; window.location.href = '" . $prevrequesturi . "'; return false;\">&lt;</a>&nbsp;";
+	echo "<a href=\"javascript:;\" onclick=\"unloadVideo(); parent.window.name = '" . $prevval . "'; window.location.href = '" . $prevrequesturi . "'; return false;\">&lt;</a>&nbsp;";
 }
 else {
 	echo "<a style=\"color: #c0c0c0;\" href=\"javascript:;\" onclick=\"return false;\">&lt;</a>&nbsp;";
@@ -141,13 +154,13 @@ if ($nextkey <= $lastkey) {
 	$nextrequesturi = str_replace($currentmp4 . '.mp4', $_GET["$nextkey"] . '.mp4', $_SERVER['REQUEST_URI']);
 	$nextrequesturi = javascriptspecialchars($nextrequesturi);
 	$nextval = javascriptspecialchars($_GET["$nextkey"]);
-	echo "<a href=\"javascript:;\" onclick=\"parent.window.name = '" . $nextval . "'; window.location.href = '" . $nextrequesturi . "'; return false;\">&gt;</a>&nbsp;";
+	echo "<a href=\"javascript:;\" onclick=\"unloadVideo(); parent.window.name = '" . $nextval . "'; window.location.href = '" . $nextrequesturi . "'; return false;\">&gt;</a>&nbsp;";
 }
 else {
 	echo "<a style=\"color: #c0c0c0;\" href=\"javascript:;\" onclick=\"return false;\">&gt;</a>&nbsp;";
 }
 if (isset($_GET['backuri']))
-	echo "<a style=\"font-size: 18px;\" href=\"" . htmlspecialchars($_GET['backuri']) . "\">&#x2191;</a>&nbsp;";
+	echo "<a style=\"font-size: 18px;\" href=\"" . htmlspecialchars($_GET['backuri']) . "\" onclick=\"unloadVideo(); return true;\">&#x2191;</a>&nbsp;";
 echo "<a href=\"javascript:;\" onclick=\"playRateDec();\">&#x231a;-</a>&nbsp;";
 echo "<a href=\"javascript:;\" id=\"myStepFrameButton\" style=\"font-size: 10px; line-height: 14px;\" onclick=\"stepFrame();\">0.00<br />1x</a>&nbsp;";
 echo "<a href=\"javascript:;\" onclick=\"playRateInc();\">&#x231a;+</a>&nbsp;";
