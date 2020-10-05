@@ -120,8 +120,8 @@ if (!isset($_GET['height']))
 else
 	$height = intval($_GET['height']);
 echo "<video onloadedmetadata=\"restoreTime(this);\" id=\"myMp4Movie\" width=\"$width\" height=\"$height\" autoplay controls>\n";
-echo "<source src=\"download.php?embed=yes&amp;file=" . urlencode($filename) . "\" type=\"video/mp4\">\n";
-echo "<p>Try this page in a modern browser or <a href=\"download.php?file=" . urlencode($filename) . "\" target=\"_top\">download the video</a> instead.</p>\n";
+echo "<source src=\"download.php?file=" . urlencode($filename) . "\" type=\"video/mp4\">\n";
+echo "<p>Try this page in a modern browser or <a download=\"$currentmp4.mp4\" href=\"download.php?file=" . urlencode($filename) . "\" target=\"_top\">download the video</a> instead.</p>\n";
 echo "</video>\n";
 ?>
 </div>
@@ -164,7 +164,7 @@ if (isset($_GET['backuri']))
 echo "<a href=\"javascript:;\" onclick=\"playRateDec();\">&#x231a;-</a>&nbsp;";
 echo "<a href=\"javascript:;\" id=\"myStepFrameButton\" style=\"font-size: 10px; line-height: 14px;\" onclick=\"stepFrame();\">0.00<br />1x</a>&nbsp;";
 echo "<a href=\"javascript:;\" onclick=\"playRateInc();\">&#x231a;+</a>&nbsp;";
-echo "<a style=\"font-size: 16px;\" href=\"download.php?file=" . urlencode($filename) . "\" target=\"_top\">&#x1f4be;</a>";
+echo "<a style=\"font-size: 16px;\" download=\"$currentmp4.mp4\" href=\"download.php?file=" . urlencode($filename) . "\" target=\"_top\">&#x1f4be;</a>";
 echo "</span>\n";
 echo "</div>\n";
 ?>

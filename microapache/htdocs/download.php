@@ -23,17 +23,6 @@ else {
 	exit;
 }
 
-// Save file to disk?
-// Note: iOS cannot be forced to save a file, it will always play it in the browser
-if (!isset($_GET['embed']) || $_GET['embed'] == 'no') {
-	header("Pragma: public");
-	header("Expires: Thu, 01 Dec 1994 16:00:00 GMT");
-	header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-	header("Cache-Control: private", false);
-	header("Content-Disposition: attachment; filename=\"".basename($full_path)."\"");
-	header("Content-Transfer-Encoding: binary");
-}
-
 // Output given file
 header("Content-Type: $ctype");
 if (isset($_SERVER['HTTP_RANGE'])) { // especially iOS wants byte-ranges
