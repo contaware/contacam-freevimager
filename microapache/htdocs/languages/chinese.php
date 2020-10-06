@@ -11,3 +11,4 @@ define("NOFILESFOR","没有文件");
 define("IMAGERELOADIN","图像将重新加载");
 define("SECONDS","秒");
 define("FULLDAY","全日");
+define("VIDEOOFFFORDOWNLOAD","视频已关闭以进行下载");

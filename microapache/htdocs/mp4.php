@@ -110,7 +110,7 @@ function unloadVideo(showmsg) {
 			var p = document.createElement("p");
 			p.style.marginTop = "25px";
 			p.style.marginBottom = "5px";
-			var p_content = document.createTextNode("VIDEO UNLOADED FOR DOWNLOAD");
+			var p_content = document.createTextNode("<?php echo VIDEOOFFFORDOWNLOAD;?>");
 			p.appendChild(p_content);
 			v.parentNode.replaceChild(p, v);
 		}

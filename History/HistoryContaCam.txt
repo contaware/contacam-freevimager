@@ -2,6 +2,10 @@ CONTACAM HISTORY
 
 9.9.11 (Month XXth 2020)
 
+- While watching a bigger video file, Chrome and all browsers based 
+  on it, would not allow changing to the next/prev video or going 
+  back to the summary. This buffering problem has now been fixed 
+  by always first unloading the current video
 - In web interface the video player speed can now be reduced or 
   increased up to a factor of 8x. Moreover it's possible to forward 
   step frame by frame (Firefox browser supports that best)

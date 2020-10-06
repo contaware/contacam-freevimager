@@ -11,3 +11,4 @@ define("NOFILESFOR","No files for");
 define("IMAGERELOADIN","Image will reload in");
 define("SECONDS","seconds");
 define("FULLDAY","Full day");
+define("VIDEOOFFFORDOWNLOAD","VIDEO OFF FOR DOWNLOAD");

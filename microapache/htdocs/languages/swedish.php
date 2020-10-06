@@ -11,3 +11,4 @@ define("NOFILESFOR","Inga filer för");
 define("IMAGERELOADIN","Bilden uppdateras om");
 define("SECONDS","sekunder");
 define("FULLDAY","Hel dag");
+define("VIDEOOFFFORDOWNLOAD","VIDEO AV FÖR NEDLADDNING");

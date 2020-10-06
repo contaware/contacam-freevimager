@@ -11,3 +11,4 @@ define("NOFILESFOR","Žádné soubory z");
 define("IMAGERELOADIN","Obraz bude obnoven za");
 define("SECONDS","sekund");
 define("FULLDAY","Celý den");
+define("VIDEOOFFFORDOWNLOAD","VIDEO JE VYPNUTO KE STAŽENÍ");

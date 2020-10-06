@@ -11,3 +11,4 @@ define("NOFILESFOR","Geen bestanden voor");
 define("IMAGERELOADIN","Afbeelding word geladen in");
 define("SECONDS","seconden");
 define("FULLDAY","Hele dag");
+define("VIDEOOFFFORDOWNLOAD","VIDEO UITGESCHAKELD OM DOWNLOADEN");

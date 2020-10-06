@@ -11,3 +11,4 @@ define("NOFILESFOR","Нет файлов для");
 define("IMAGERELOADIN","Изображение будет перезагружено в");
 define("SECONDS","секунд");
 define("FULLDAY","Полный день");
+define("VIDEOOFFFORDOWNLOAD","ВИДЕО ОТКЛЮЧЕНО ДЛЯ ЗАГРУЗКИ");

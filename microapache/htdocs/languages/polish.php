@@ -11,3 +11,4 @@ define("NOFILESFOR","Brak plików do");
 define("IMAGERELOADIN","Zdjęcie załaduje się w");
 define("SECONDS","sekund");
 define("FULLDAY","Cały dzień");
+define("VIDEOOFFFORDOWNLOAD","WIDEO WYŁĄCZONE DO POBRANIA");

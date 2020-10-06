@@ -11,3 +11,4 @@ define("NOFILESFOR","Липсват файлове за");
 define("IMAGERELOADIN","Презареждане на снимката след");
 define("SECONDS","секунди");
 define("FULLDAY","Пълен ден");
+define("VIDEOOFFFORDOWNLOAD","ВИДЕО ИЗКЛЮЧЕНО ЗА ИЗТЕГЛЯНЕ");
