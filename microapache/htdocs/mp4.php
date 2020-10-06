@@ -25,72 +25,96 @@ echo "<link rel=\"stylesheet\" href=\"" . STYLEFILEPATH . "\" type=\"text/css\" 
 var previousTime = 0; 
 function playRate(rate) {
 	var v = document.getElementById("myMp4Movie");
-	if (!isNaN(v.duration))	// make sure currentTime is valid
-		previousTime = v.currentTime;
-	v.defaultPlaybackRate = rate;
-	v.playbackRate = rate;
-	v.load();
+	if (v !== null) {
+		if (!isNaN(v.duration))	// make sure currentTime is valid
+			previousTime = v.currentTime;
+		v.defaultPlaybackRate = rate;
+		v.playbackRate = rate;
+		v.load();
+	}
 }
 function restoreTime(v) {
 	v.currentTime = previousTime; // currentTime can now be set
 }
 function playRateInc() {
 	var v = document.getElementById("myMp4Movie");
-	if (v.playbackRate < 0.125)
-		playRate(0.125);
-	else if (v.playbackRate < 0.25)
-		playRate(0.25);
-	else if (v.playbackRate < 0.5)
-		playRate(0.5);
-	else if (v.playbackRate < 1.0)
-		playRate(1.0);
-	else if (v.playbackRate < 2.0)
-		playRate(2.0);
-	else if (v.playbackRate < 4.0)
-		playRate(4.0);
-	else if (v.playbackRate < 8.0)
-		playRate(8.0);
+	if (v !== null) {
+		if (v.playbackRate < 0.125)
+			playRate(0.125);
+		else if (v.playbackRate < 0.25)
+			playRate(0.25);
+		else if (v.playbackRate < 0.5)
+			playRate(0.5);
+		else if (v.playbackRate < 1.0)
+			playRate(1.0);
+		else if (v.playbackRate < 2.0)
+			playRate(2.0);
+		else if (v.playbackRate < 4.0)
+			playRate(4.0);
+		else if (v.playbackRate < 8.0)
+			playRate(8.0);
+	}
 }
 function playRateDec() {
 	var v = document.getElementById("myMp4Movie");
-	if (v.playbackRate > 8.0)
-		playRate(8.0);
-	else if (v.playbackRate > 4.0)
-		playRate(4.0);
-	else if (v.playbackRate > 2.0)
-		playRate(2.0);
-	else if (v.playbackRate > 1.0)
-		playRate(1.0);
-	else if (v.playbackRate > 0.5)
-		playRate(0.5);
-	else if (v.playbackRate > 0.25)
-		playRate(0.25);
-	else if (v.playbackRate > 0.125)
-		playRate(0.125);
+	if (v !== null) {
+		if (v.playbackRate > 8.0)
+			playRate(8.0);
+		else if (v.playbackRate > 4.0)
+			playRate(4.0);
+		else if (v.playbackRate > 2.0)
+			playRate(2.0);
+		else if (v.playbackRate > 1.0)
+			playRate(1.0);
+		else if (v.playbackRate > 0.5)
+			playRate(0.5);
+		else if (v.playbackRate > 0.25)
+			playRate(0.25);
+		else if (v.playbackRate > 0.125)
+			playRate(0.125);
+	}
 }
 function stepFrame() {
 	var v = document.getElementById("myMp4Movie");
-	if (!v.paused)
-		v.pause(); // first pause, then with the next clicks step the frames
-	else {
-		if (typeof v.seekToNextFrame === "function")
-			v.seekToNextFrame(); // only Firefox supports that (in year 2020)
-		else
-			v.currentTime += 0.03333; // for other Browsers use 30 fps (daily summary video has that framerate)
+	if (v !== null) {
+		if (!v.paused)
+			v.pause(); // first pause, then with the next clicks step the frames
+		else {
+			if (typeof v.seekToNextFrame === "function")
+				v.seekToNextFrame(); // only Firefox supports that (in year 2020)
+			else
+				v.currentTime += 0.03333; // for other Browsers use 30 fps (daily summary video has that framerate)
+		}
 	}
 }
-function unloadVideo() {
-	/* Chrome and all browsers based on it will defer loading another php script 
+function unloadVideo(showmsg) {
+	/* 
+	Chrome and all browsers based on it will defer loading another php script 
 	as long as the video player buffers from download.php (it's not a problem 
 	when the video src attribute is a direct .mp4 file). Note that Chrome only
 	buffers	bigger files; a file with a few MBs is directly downloaded and does
 	not	manifest the problem. So before switching to any other php script always 
-	interrupt the buffering with this javascript function */
+	interrupt the buffering with this javascript function. 
+	https://html.spec.whatwg.org/multipage/media.html#best-practices-for-authors-using-media-elements
+	*/
 	var v = document.getElementById("myMp4Movie");
-	if (!v.paused)
-		v.pause();
-	v.src = "";
-    v.load();
+	if (v !== null) {
+		if (!v.paused)
+			v.pause();
+		var sourceTag = document.getElementById("myMp4MovieSource");
+		if (sourceTag !== null) {
+			v.removeChild(sourceTag);
+			v.load();
+		}
+		if (showmsg === true) {
+			var p = document.createElement("p");
+			p.style.marginTop = "25px";
+			p.style.marginBottom = "5px";
+			var p_content = document.createTextNode("VIDEO UNLOADED FOR DOWNLOAD");
+			p.appendChild(p_content);
+			v.parentNode.replaceChild(p, v);
+		}
+	}
 }
 //]]>
 </script>
@@ -120,7 +144,7 @@ if (!isset($_GET['height']))
 else
 	$height = intval($_GET['height']);
 echo "<video onloadedmetadata=\"restoreTime(this);\" id=\"myMp4Movie\" width=\"$width\" height=\"$height\" autoplay controls>\n";
-echo "<source src=\"download.php?file=" . urlencode($filename) . "\" type=\"video/mp4\">\n";
+echo "<source id=\"myMp4MovieSource\" src=\"download.php?file=" . urlencode($filename) . "\" type=\"video/mp4\">\n";
 echo "<p>Try this page in a modern browser or <a download=\"$currentmp4.mp4\" href=\"download.php?file=" . urlencode($filename) . "\" target=\"_top\">download the video</a> instead.</p>\n";
 echo "</video>\n";
 ?>
@@ -164,7 +188,7 @@ if (isset($_GET['backuri']))
 echo "<a href=\"javascript:;\" onclick=\"playRateDec();\">&#x231a;-</a>&nbsp;";
 echo "<a href=\"javascript:;\" id=\"myStepFrameButton\" style=\"font-size: 10px; line-height: 14px;\" onclick=\"stepFrame();\">0.00<br />1x</a>&nbsp;";
 echo "<a href=\"javascript:;\" onclick=\"playRateInc();\">&#x231a;+</a>&nbsp;";
-echo "<a style=\"font-size: 16px;\" download=\"$currentmp4.mp4\" href=\"download.php?file=" . urlencode($filename) . "\" target=\"_top\">&#x1f4be;</a>";
+echo "<a style=\"font-size: 16px;\" download=\"$currentmp4.mp4\" href=\"download.php?file=" . urlencode($filename) . "\" target=\"_top\" onclick=\"unloadVideo(true); return true;\">&#x1f4be;</a>";
 echo "</span>\n";
 echo "</div>\n";
 ?>
@@ -210,17 +234,24 @@ function resizeMp4() {
 		fittedWidth = parseInt((fittedHeight * width) / height);
 	else
 		fittedHeight = parseInt((fittedWidth * height) / width);
-	var mp4Movie = document.getElementById("myMp4Movie");
-	mp4Movie.width = fittedWidth;
-	mp4Movie.height = fittedHeight;
+	var v = document.getElementById("myMp4Movie");
+	if (v !== null) {
+		v.width = fittedWidth;
+		v.height = fittedHeight;
+	}
 }
 window.addEventListener("resize", resizeMp4);
 resizeMp4();
 function videoPoll() {
 	var v = document.getElementById("myMp4Movie");
-	var btn = document.getElementById("myStepFrameButton");
-	if (!isNaN(v.duration)) // make sure currentTime is valid
-		btn.innerHTML = v.currentTime.toFixed(2) + "<br />" + v.playbackRate + "x";
+	if (v !== null) {
+		var btn = document.getElementById("myStepFrameButton");
+		if (btn !== null) {
+			if (!isNaN(v.duration)) // make sure currentTime is valid
+				btn.innerHTML = v.currentTime.toFixed(2) + "<br />" + v.playbackRate + "x";
+		}
+	}
+	
 	// Do not use the 'timeupdate' event as it is not fast enough
 	window.setTimeout("videoPoll()", 100);
 }
