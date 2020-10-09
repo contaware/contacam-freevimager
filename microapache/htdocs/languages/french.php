@@ -11,4 +11,3 @@ define("NOFILESFOR","Aucun fichier pour");
 define("IMAGERELOADIN","L'image est ajournée dans");
 define("SECONDS","secondes");
 define("FULLDAY","Journée complète");
-define("VIDEOOFFFORDOWNLOAD","VIDEO OFF POUR TÉLÉCHARGEMENT");

@@ -87,33 +87,29 @@ function stepFrame() {
 		}
 	}
 }
-function unloadVideo(showmsg) {
+function stopVideoBuffering() {
 	/* 
-	Chrome and all browsers based on it will defer loading another php script 
-	as long as the video player buffers from download.php (it's not a problem 
-	when the video src attribute is a direct .mp4 file). Note that Chrome only
-	buffers	bigger files; a file with a few MBs is directly downloaded and does
-	not	manifest the problem. So before switching to any other php script always 
-	interrupt the buffering with this javascript function. 
-	https://html.spec.whatwg.org/multipage/media.html#best-practices-for-authors-using-media-elements
+	This function permits solving two problems: 
+	
+	1. In year 2020 Chromium-based browsers will defer loading another php script as long 
+	as the video player buffers from download.php (when directly buffering from a .mp4 file
+	there are no problems). Note also that Chromium-based browser only buffer bigger files;
+	a file with a few MBs is fully downloaded and does not manifest any problems. For this 
+	reason, before calling another php script, we must seek to the end of the video so that 
+	buffering quickly stops	(it only has to download a few bytes from the end of the file). 
+	
+	2. IEs on older Windows are slow in stopping the buffering, and also for these browsers
+	it helps to seek to the end to quickly stop buffering. Attention that IEs on older 
+	Windows need the "Accept-Ranges: bytes" header already sent with the first download 
+	answer to convince them to use range downloads when seeking to the end (see the 
+	comment in download.php file).
 	*/
 	var v = document.getElementById("myMp4Movie");
 	if (v !== null) {
-		if (!v.paused)
-			v.pause();
-		var sourceTag = document.getElementById("myMp4MovieSource");
-		if (sourceTag !== null) {
-			v.removeChild(sourceTag);
-			v.load();
-		}
-		if (showmsg === true) {
-			var p = document.createElement("p");
-			p.style.marginTop = "25px";
-			p.style.marginBottom = "5px";
-			var p_content = document.createTextNode("<?php echo VIDEOOFFFORDOWNLOAD;?>");
-			p.appendChild(p_content);
-			v.parentNode.replaceChild(p, v);
-		}
+		if (typeof v.loop === "boolean" && v.loop === true) // make sure loop is off!
+			v.loop = false;
+		if (!isNaN(v.duration))
+			v.currentTime = v.duration;
 	}
 }
 //]]>
@@ -144,7 +140,7 @@ if (!isset($_GET['height']))
 else
 	$height = intval($_GET['height']);
 echo "<video onloadedmetadata=\"restoreTime(this);\" id=\"myMp4Movie\" width=\"$width\" height=\"$height\" autoplay controls>\n";
-echo "<source id=\"myMp4MovieSource\" src=\"download.php?file=" . urlencode($filename) . "\" type=\"video/mp4\">\n";
+echo "<source src=\"download.php?file=" . urlencode($filename) . "\" type=\"video/mp4\">\n";
 echo "<p>Try this page in a modern browser or <a download=\"$currentmp4.mp4\" href=\"download.php?file=" . urlencode($filename) . "\" target=\"_top\">download the video</a> instead.</p>\n";
 echo "</video>\n";
 ?>
@@ -169,7 +165,7 @@ if ($prevkey >= 0) {
 	$prevrequesturi = str_replace($currentmp4 . '.mp4', $_GET["$prevkey"] . '.mp4', $_SERVER['REQUEST_URI']);
 	$prevrequesturi = javascriptspecialchars($prevrequesturi);
 	$prevval = javascriptspecialchars($_GET["$prevkey"]);
-	echo "<a href=\"javascript:;\" onclick=\"unloadVideo(); parent.window.name = '" . $prevval . "'; window.location.href = '" . $prevrequesturi . "'; return false;\">&lt;</a>&nbsp;";
+	echo "<a href=\"javascript:;\" onclick=\"stopVideoBuffering(); parent.window.name = '" . $prevval . "'; window.location.href = '" . $prevrequesturi . "'; return false;\">&lt;</a>&nbsp;";
 }
 else {
 	echo "<a style=\"color: #c0c0c0;\" href=\"javascript:;\" onclick=\"return false;\">&lt;</a>&nbsp;";
@@ -178,17 +174,17 @@ if ($nextkey <= $lastkey) {
 	$nextrequesturi = str_replace($currentmp4 . '.mp4', $_GET["$nextkey"] . '.mp4', $_SERVER['REQUEST_URI']);
 	$nextrequesturi = javascriptspecialchars($nextrequesturi);
 	$nextval = javascriptspecialchars($_GET["$nextkey"]);
-	echo "<a href=\"javascript:;\" onclick=\"unloadVideo(); parent.window.name = '" . $nextval . "'; window.location.href = '" . $nextrequesturi . "'; return false;\">&gt;</a>&nbsp;";
+	echo "<a href=\"javascript:;\" onclick=\"stopVideoBuffering(); parent.window.name = '" . $nextval . "'; window.location.href = '" . $nextrequesturi . "'; return false;\">&gt;</a>&nbsp;";
 }
 else {
 	echo "<a style=\"color: #c0c0c0;\" href=\"javascript:;\" onclick=\"return false;\">&gt;</a>&nbsp;";
 }
 if (isset($_GET['backuri']))
-	echo "<a style=\"font-size: 18px;\" href=\"" . htmlspecialchars($_GET['backuri']) . "\" onclick=\"unloadVideo(); return true;\">&#x2191;</a>&nbsp;";
+	echo "<a style=\"font-size: 18px;\" href=\"" . htmlspecialchars($_GET['backuri']) . "\" onclick=\"stopVideoBuffering(); return true;\">&#x2191;</a>&nbsp;";
 echo "<a href=\"javascript:;\" onclick=\"playRateDec();\">&#x231a;-</a>&nbsp;";
 echo "<a href=\"javascript:;\" id=\"myStepFrameButton\" style=\"font-size: 10px; line-height: 14px;\" onclick=\"stepFrame();\">0.00<br />1x</a>&nbsp;";
 echo "<a href=\"javascript:;\" onclick=\"playRateInc();\">&#x231a;+</a>&nbsp;";
-echo "<a style=\"font-size: 16px;\" download=\"$currentmp4.mp4\" href=\"download.php?file=" . urlencode($filename) . "\" target=\"_top\" onclick=\"unloadVideo(true); return true;\">&#x1f4be;</a>";
+echo "<a style=\"font-size: 16px;\" download=\"$currentmp4.mp4\" href=\"download.php?file=" . urlencode($filename) . "\" target=\"_top\" onclick=\"stopVideoBuffering(); return true;\">&#x1f4be;</a>";
 echo "</span>\n";
 echo "</div>\n";
 ?>

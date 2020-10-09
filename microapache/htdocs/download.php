@@ -28,6 +28,18 @@ header("Content-Type: $ctype");
 if (isset($_SERVER['HTTP_RANGE'])) { // especially iOS wants byte-ranges
 	rangedownload($full_path);
 } else {
+	// IEs on older Windows do support range downloads but they want to see
+	// the "Accept-Ranges: bytes" header for the target resource before 
+	// starting with the range requests (for example to perform efficient 
+	// seek operations). IE11 on Win10 and all new browsers do not need that
+	// header to start the range requests. They just send the range requests 
+	// and see whether the server supports them. If a server supports ranges, 
+	// it replies with the "Accept-Ranges: bytes" header like done below in 
+	// our rangedownload() function. Emitting a "Accept-Ranges: bytes" 
+	// header here will make IEs on older Windows happy without hurting the 
+	// new browsers; the specs allow that: 
+	// https://tools.ietf.org/html/rfc7233#section-2.3
+	header('Accept-Ranges: bytes');
 	header("Content-Length: " . filesize($full_path));
 	@ob_flush(); // suppress notice ob_flush(): failed to flush buffer...
 	flush();
