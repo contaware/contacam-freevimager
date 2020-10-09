@@ -46,17 +46,6 @@ if (defined('SHOW_CAMERA_COMMANDS'))
 else
 	$show_camera_commands = 0;
 
-// Get Internet Explorer version
-function getIEVersion() {
-	$match = preg_match('/MSIE ([0-9]+\.[0-9]+)/', $_SERVER['HTTP_USER_AGENT'], $reg);
-	if ($match == 0) {
-		$match = preg_match('/Trident\/.*rv:([0-9]+\.[0-9]+)/', $_SERVER['HTTP_USER_AGENT'], $reg);
-		if ($match == 0)
-			return -1;
-	}
-	return floatval($reg[1]);
-}
-
 // Get parent URL
 function getParentUrl() {
 	global $scheme;
