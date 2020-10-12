@@ -1,8 +1,8 @@
 FREEVIMAGER HISTORY
 
-9.9.11 (Month XXth 2020)
+9.9.11 (October 11th 2020)
 
-- Added support for .heic, .webp, .avif and .jxr files
+- Added viewing support for .heic, .webp, .avif and .jxr files
 - Correctly displaying exif ISO equivalent values smaller than 50
 - Updated the avir library to version 2.6
 
