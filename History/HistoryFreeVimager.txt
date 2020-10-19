@@ -1,5 +1,9 @@
 FREEVIMAGER HISTORY
 
+9.9.12 (Month XXth 2020)
+
+- ...
+
 9.9.11 (October 11th 2020)
 
 - Added viewing support for .heic, .webp, .avif and .jxr files
