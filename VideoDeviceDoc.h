@@ -585,6 +585,8 @@ public:
 		SUMPPLE_RTSP = 1207,			// Sumpple RTSP
 		TOSHIBA_RTSP = 1210,			// Toshiba RTSP
 		TPLINK_RTSP = 1220,				// TP-Link RTSP
+		TPLINK_NCXXX_RTSP = 1221,		// TP-Link NC2XX/NC4XX RTSP
+		TPLINK_TAPO_RTSP = 1222,		// TP-Link Tapo RTSP
 		TRENDNET_RTSP = 1230,			// TrendNet RTSP
 		UBIQUITI_RTSP = 1235,			// Ubiquiti RTSP
 		UOKOO_RTSP = 1237,				// Uokoo RTSP

@@ -8766,6 +8766,7 @@ void CVideoDeviceDoc::ConnectRtsp()
 			break;
 
 		case PLANET_RTSP:			
+		case TPLINK_TAPO_RTSP:
 			sPathAndQuery = _T("/stream1");
 			break;
 
@@ -8794,6 +8795,10 @@ void CVideoDeviceDoc::ConnectRtsp()
 		case TOSHIBA_RTSP:
 		case VIVOTEK_RTSP:			
 			sPathAndQuery = _T("/live.sdp");
+			break;
+
+		case TPLINK_NCXXX_RTSP:
+			sPathAndQuery = _T("/h264_hd.sdp");
 			break;
 
 		case UBIQUITI_RTSP:			

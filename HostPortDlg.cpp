@@ -116,6 +116,8 @@ BOOL CHostPortDlg::OnInitDialog()
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Sumpple (RTSP)")), (DWORD)CVideoDeviceDoc::SUMPPLE_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Toshiba (RTSP)")), (DWORD)CVideoDeviceDoc::TOSHIBA_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("TP-Link (RTSP)")), (DWORD)CVideoDeviceDoc::TPLINK_RTSP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("TP-Link NC2XX/NC4XX (RTSP)")), (DWORD)CVideoDeviceDoc::TPLINK_NCXXX_RTSP);
+	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("TP-Link Tapo (RTSP)")), (DWORD)CVideoDeviceDoc::TPLINK_TAPO_RTSP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("TP-Link (") + ML_STRING(1865, "HTTP motion jpeg") + _T(")")), (DWORD)CVideoDeviceDoc::TPLINK_SP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("TP-Link (") + ML_STRING(1866, "HTTP jpeg snapshots") + _T(")")), (DWORD)CVideoDeviceDoc::TPLINK_CP);
 	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("TrendNet (RTSP)")), (DWORD)CVideoDeviceDoc::TRENDNET_RTSP);
