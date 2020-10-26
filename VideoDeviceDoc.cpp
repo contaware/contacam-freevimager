@@ -5450,10 +5450,15 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	sConfig += _T("KeepAliveTimeout 15\r\n");
 	sConfig += _T("MaxKeepAliveRequests 0\r\n");
 	sConfig += _T("TimeOut 300\r\n");
+
+	// Indexes
 	sConfig += _T("DirectoryIndex index.html index.htm index.php\r\n");
-	sConfig += _T("LogLevel crit\r\n");
+	sConfig += _T("<IfModule mod_autoindex.c>\r\n");	// Options directive by default does not enable the Indexes feature, 
+	sConfig += _T("IndexIgnore *\r\n");					// this is an additional measure to disable the auto-indexing
+	sConfig += _T("</IfModule>\r\n");
 	
-	// Error log and pid file locations
+	// Error log and pid file
+	sConfig += _T("LogLevel crit\r\n");
 	CString sMicroapacheConfigFile = MicroApacheGetConfigFileName();
 	CString sConfigDir = ::GetDriveAndDirName(sMicroapacheConfigFile);
 	if (!::IsExistingDir(sConfigDir))
@@ -8771,7 +8776,7 @@ void CVideoDeviceDoc::ConnectRtsp()
 			break;
 
 		case REOLINK_RTSP:			
-			sPathAndQuery = _T("/h264Preview_01_main");
+			sPathAndQuery = _T("/h264Preview_01_main"); // substream is: /h264Preview_01_sub
 			break;
 
 		case SAMSUNG_PROFILE5_RTSP:
