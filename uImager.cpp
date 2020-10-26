@@ -1315,6 +1315,7 @@ void CUImagerApp::OnAppLicense()
 	{
 		// Update and validate email
 		BeginWaitCursor();
+		licenseDlg.m_sEmail.Trim();
 		g_DonorEmailValidateThread.m_sDonorEmail = licenseDlg.m_sEmail;
 		WriteProfileString(_T("GeneralApp"), _T("DonorEmail"), g_DonorEmailValidateThread.m_sDonorEmail);
 		int ret = g_DonorEmailValidateThread.DonorEmailValidate();
