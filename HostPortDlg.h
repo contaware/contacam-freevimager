@@ -10,6 +10,16 @@
 
 #include "HostComboBox.h"
 
+class CDeviceTypeModePair
+{
+	public:
+		CDeviceTypeModePair() { m_dwMode = 0U; };
+		CDeviceTypeModePair(const CString& sMode, DWORD dwMode) { m_sMode = sMode;  m_dwMode = dwMode; };
+		virtual ~CDeviceTypeModePair() { ; };
+		CString m_sMode;
+		DWORD m_dwMode;
+};
+
 /////////////////////////////////////////////////////////////////////////////
 // CHostPortDlg dialog
 
@@ -19,6 +29,7 @@ class CHostPortDlg : public CDialog
 public:
 	CHostPortDlg(CWnd* pParent = NULL);   // standard constructor
 	virtual ~CHostPortDlg() {;};
+	static void InitDeviceTypeModeArrayForCB(CArray<CDeviceTypeModePair>& a);
 	static void ParseUrl(const CString& sInHost,
 						int nInPort,
 						int nInDeviceTypeMode,

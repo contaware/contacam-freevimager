@@ -50,6 +50,7 @@ protected:
 	BOOL m_bInOnTimer;
 	BOOL m_bDoChangeFrameRate;
 	int m_nFrameRateChangeTimeout;
+	CString m_sHostPortDlgDeviceTypeMode;
 
 	// Helper functions
 	static int GetRevertedPos(CSliderCtrl* pSliderCtrl);

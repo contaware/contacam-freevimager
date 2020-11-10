@@ -9,6 +9,7 @@
 #include "VideoDeviceView.h"
 #include "DxCapture.h"
 #include "DxVideoInputDlg.h"
+#include "HostPortDlg.h"
 #include "ResizingDlg.h"
 #include "BrowseDlg.h"
 #include "PlateRecognizerDlg.h"
@@ -209,14 +210,62 @@ END_MESSAGE_MAP()
 
 void CCameraAdvancedSettingsDlg::UpdateTitleAndDir()
 {
-	if (m_pDoc->GetDeviceName() != m_pDoc->GetAssignedDeviceName())
-		SetWindowText(m_pDoc->GetAssignedDeviceName() + _T(" (") + m_pDoc->GetDeviceName() + _T(")"));
+	// Title
+	CString sTitle;
+	if (m_pDoc->m_pDxCapture)
+	{
+		if (m_pDoc->GetDeviceName() != m_pDoc->GetAssignedDeviceName())
+			sTitle = m_pDoc->GetAssignedDeviceName() + _T(" , ") + m_pDoc->GetDeviceName();
+		else
+			sTitle = m_pDoc->GetDeviceName();
+	}
+	else if (m_pDoc->m_pVideoNetCom)
+	{
+		// URL?
+		if ((m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::GENERIC_CP	||
+			m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::GENERIC_SP)	&&
+			m_pDoc->m_HttpGetFrameLocations[0] != _T("/"))
+		{
+			CString sOutHost;
+			int nOutPort;
+			int nOutDeviceTypeMode;
+			CHostPortDlg::MakeUrl(	m_pDoc->m_sGetFrameVideoHost,
+									m_pDoc->m_nGetFrameVideoPort,
+									m_pDoc->m_HttpGetFrameLocations[0],
+									m_pDoc->m_nNetworkDeviceTypeMode,
+									sOutHost,
+									nOutPort,
+									nOutDeviceTypeMode);
+			sTitle = m_pDoc->GetAssignedDeviceName() + _T(" , ") + sOutHost;
+		}
+		else
+			sTitle = m_pDoc->GetAssignedDeviceName() + _T(" , ") + m_pDoc->GetDeviceName() + _T(" , ") + m_sHostPortDlgDeviceTypeMode;
+	}
 	else
-		SetWindowText(m_pDoc->GetDeviceName());
+	{
+		// URL?
+		if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::URL_RTSP)
+		{
+			CString sOutHost;
+			int nOutPort;
+			int nOutDeviceTypeMode;
+			CHostPortDlg::MakeUrl(	m_pDoc->m_sGetFrameVideoHost,
+									m_pDoc->m_nGetFrameVideoPort,
+									m_pDoc->m_HttpGetFrameLocations[0],
+									m_pDoc->m_nNetworkDeviceTypeMode,
+									sOutHost,
+									nOutPort,
+									nOutDeviceTypeMode);
+			sTitle = m_pDoc->GetAssignedDeviceName() + _T(" , ") + sOutHost;
+		}
+		else
+			sTitle = m_pDoc->GetAssignedDeviceName() + _T(" , ") + m_pDoc->GetDeviceName() + _T(" , ") + m_sHostPortDlgDeviceTypeMode;
+	}
+	SetWindowText(sTitle);
 
+	// Dirs
 	CString sRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
 	sRecordAutoSaveDir.TrimRight(_T('\\'));
-
 	CEdit* pEditBatch = (CEdit*)GetDlgItem(IDC_EDIT_BATCH);
 	if (pEditBatch)
 	{
@@ -226,7 +275,6 @@ void CCameraAdvancedSettingsDlg::UpdateTitleAndDir()
 		if (sCurrentBatch != sNewBatch)
 			pEditBatch->SetWindowText(sNewBatch);
 	}
-
 	pEditBatch = (CEdit*)GetDlgItem(IDC_EDIT_BATCH_SENSITIVITY);
 	if (pEditBatch)
 	{
@@ -255,6 +303,25 @@ BOOL CCameraAdvancedSettingsDlg::OnInitDialog()
 	m_sExecParams = m_pDoc->m_sExecParams;
 	m_bHideExecCommand = m_pDoc->m_bHideExecCommand;
 	m_bWaitExecCommand = m_pDoc->m_bWaitExecCommand;
+
+	// Init m_sHostPortDlgDeviceTypeMode
+	if (!m_pDoc->m_pDxCapture)
+	{
+		// When m_pDoc->m_nNetworkDeviceTypeMode is CVideoDeviceDoc::URL_RTSP
+		// then there is no pair and m_sHostPortDlgDeviceTypeMode will be empty.
+		// This behaviour is not a problem, see the UpdateTitleAndDir() function
+		CArray<CDeviceTypeModePair> DeviceTypeModeArrayForCB;
+		CHostPortDlg::InitDeviceTypeModeArrayForCB(DeviceTypeModeArrayForCB);
+		for (int nModeIndex = 0; nModeIndex < DeviceTypeModeArrayForCB.GetSize(); nModeIndex++)
+		{
+			CDeviceTypeModePair& pair = DeviceTypeModeArrayForCB.ElementAt(nModeIndex);
+			if (pair.m_dwMode == (DWORD)m_pDoc->m_nNetworkDeviceTypeMode)
+			{
+				m_sHostPortDlgDeviceTypeMode = pair.m_sMode;
+				break;
+			}
+		}
+	}
 
 	// Init Combo Boxes
 	CComboBox* pComboBoxSnapshotRate = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOT_RATE);

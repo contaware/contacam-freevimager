@@ -50,90 +50,105 @@ BEGIN_MESSAGE_MAP(CHostPortDlg, CDialog)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
-BOOL CHostPortDlg::OnInitDialog() 
+void CHostPortDlg::InitDeviceTypeModeArrayForCB(CArray<CDeviceTypeModePair>& a)
+{
+	// Clear
+	a.RemoveAll();
+
+	// Freely order the following pairs
+	a.Add(CDeviceTypeModePair(ML_STRING(1548, "Generic") + _T(" /11 (RTSP)"), (DWORD)CVideoDeviceDoc::GENERIC_1_RTSP));
+	a.Add(CDeviceTypeModePair(ML_STRING(1548, "Generic") + _T(" /onvif1 (RTSP)"), (DWORD)CVideoDeviceDoc::GENERIC_2_RTSP));
+	a.Add(CDeviceTypeModePair(ML_STRING(1548, "Generic") + _T(" /live/ch0 (RTSP)"), (DWORD)CVideoDeviceDoc::GENERIC_3_RTSP));
+	a.Add(CDeviceTypeModePair(ML_STRING(1548, "Generic") + _T(" /ch01.264 (RTSP)"), (DWORD)CVideoDeviceDoc::GENERIC_4_RTSP));
+	a.Add(CDeviceTypeModePair(ML_STRING(1548, "Generic") + _T(" /channel=1&stream=0.sdp (RTSP)"), (DWORD)CVideoDeviceDoc::GENERIC_5_RTSP));
+	a.Add(CDeviceTypeModePair(ML_STRING(1548, "Generic") + _T(" /channel=1_stream=0.sdp (RTSP)"), (DWORD)CVideoDeviceDoc::GENERIC_6_RTSP));
+	a.Add(CDeviceTypeModePair(ML_STRING(1548, "Generic") + _T(" (") + ML_STRING(1865, "HTTP motion jpeg") + _T(")"), (DWORD)CVideoDeviceDoc::GENERIC_SP));
+	a.Add(CDeviceTypeModePair(ML_STRING(1548, "Generic") + _T(" (") + ML_STRING(1866, "HTTP jpeg snapshots") + _T(")"), (DWORD)CVideoDeviceDoc::GENERIC_CP));
+	a.Add(CDeviceTypeModePair(_T("7Links (RTSP)"), (DWORD)CVideoDeviceDoc::SEVENLINKS_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Abus (RTSP)"), (DWORD)CVideoDeviceDoc::ABUS_RTSP));
+	a.Add(CDeviceTypeModePair(_T("ACTi (RTSP)"), (DWORD)CVideoDeviceDoc::ACTI_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Amcrest (RTSP)"), (DWORD)CVideoDeviceDoc::AMCREST_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Arecont Vision (RTSP)"), (DWORD)CVideoDeviceDoc::ARECONT_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Axis (RTSP)"), (DWORD)CVideoDeviceDoc::AXIS_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Axis (") + ML_STRING(1865, "HTTP motion jpeg") + _T(")"), (DWORD)CVideoDeviceDoc::AXIS_SP));
+	a.Add(CDeviceTypeModePair(_T("Axis (") + ML_STRING(1866, "HTTP jpeg snapshots") + _T(")"), (DWORD)CVideoDeviceDoc::AXIS_CP));
+	a.Add(CDeviceTypeModePair(_T("Bosch (RTSP)"), (DWORD)CVideoDeviceDoc::BOSCH_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Canon (RTSP)"), (DWORD)CVideoDeviceDoc::CANON_RTSP));
+	a.Add(CDeviceTypeModePair(_T("D-Link /live1.sdp (RTSP)"), (DWORD)CVideoDeviceDoc::DLINK_LIVE1_RTSP));
+	a.Add(CDeviceTypeModePair(_T("D-Link /play1.sdp (RTSP)"), (DWORD)CVideoDeviceDoc::DLINK_PLAY1_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Dahua (RTSP)"), (DWORD)CVideoDeviceDoc::DAHUA_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Digoo (RTSP)"), (DWORD)CVideoDeviceDoc::DIGOO_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Edimax H.264 (RTSP)"), (DWORD)CVideoDeviceDoc::EDIMAX_H264_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Edimax MPEG4 (RTSP)"), (DWORD)CVideoDeviceDoc::EDIMAX_MPEG4_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Edimax (") + ML_STRING(1865, "HTTP motion jpeg") + _T(")"), (DWORD)CVideoDeviceDoc::EDIMAX_SP));
+	a.Add(CDeviceTypeModePair(_T("Edimax (") + ML_STRING(1866, "HTTP jpeg snapshots") + _T(")"), (DWORD)CVideoDeviceDoc::EDIMAX_CP));
+	a.Add(CDeviceTypeModePair(_T("FalconEye (RTSP)"), (DWORD)CVideoDeviceDoc::FALCONEYE_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Floureon (RTSP)"), (DWORD)CVideoDeviceDoc::FLOUREON_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Foscam (RTSP)"), (DWORD)CVideoDeviceDoc::FOSCAM_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Foscam (") + ML_STRING(1865, "HTTP motion jpeg") + _T(")"), (DWORD)CVideoDeviceDoc::FOSCAM_SP));
+	a.Add(CDeviceTypeModePair(_T("Foscam (") + ML_STRING(1866, "HTTP jpeg snapshots") + _T(")"), (DWORD)CVideoDeviceDoc::FOSCAM_CP));
+	a.Add(CDeviceTypeModePair(_T("Gembird (RTSP)"), (DWORD)CVideoDeviceDoc::GEMBIRD_RTSP));
+	a.Add(CDeviceTypeModePair(_T("GeoVision (RTSP)"), (DWORD)CVideoDeviceDoc::GEOVISION_RTSP));
+	a.Add(CDeviceTypeModePair(_T("HiKam (RTSP)"), (DWORD)CVideoDeviceDoc::HIKAM_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Hikvision (RTSP)"), (DWORD)CVideoDeviceDoc::HIKVISION_RTSP));
+	a.Add(CDeviceTypeModePair(_T("IP Webcam (Pro) for Android (RTSP)"), (DWORD)CVideoDeviceDoc::IPWEBCAM_ANDROID_RTSP));
+	a.Add(CDeviceTypeModePair(_T("JideTech (RTSP)"), (DWORD)CVideoDeviceDoc::JIDETECH_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Kucam (RTSP)"), (DWORD)CVideoDeviceDoc::KUCAM_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Linksys (RTSP)"), (DWORD)CVideoDeviceDoc::LINKSYS_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Logitech (RTSP)"), (DWORD)CVideoDeviceDoc::LOGITECH_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Monacor 3MP/4MP/5MP/.. Series (RTSP)"), (DWORD)CVideoDeviceDoc::MONACOR_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Monacor 2MP Series (RTSP)"), (DWORD)CVideoDeviceDoc::MONACOR_2MP_RTSP));
+	a.Add(CDeviceTypeModePair(_T("NexGadget (RTSP)"), (DWORD)CVideoDeviceDoc::NEXGADGET_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Panasonic (RTSP)"), (DWORD)CVideoDeviceDoc::PANASONIC_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Panasonic (") + ML_STRING(1865, "HTTP motion jpeg") + _T(")"), (DWORD)CVideoDeviceDoc::PANASONIC_SP));
+	a.Add(CDeviceTypeModePair(_T("Panasonic (") + ML_STRING(1866, "HTTP jpeg snapshots") + _T(")"), (DWORD)CVideoDeviceDoc::PANASONIC_CP));
+	a.Add(CDeviceTypeModePair(_T("Pixord (RTSP)"), (DWORD)CVideoDeviceDoc::PIXORD_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Pixord (") + ML_STRING(1865, "HTTP motion jpeg") + _T(")"), (DWORD)CVideoDeviceDoc::PIXORD_SP));
+	a.Add(CDeviceTypeModePair(_T("Pixord (") + ML_STRING(1866, "HTTP jpeg snapshots") + _T(")"), (DWORD)CVideoDeviceDoc::PIXORD_CP));
+	a.Add(CDeviceTypeModePair(_T("Planet (RTSP)"), (DWORD)CVideoDeviceDoc::PLANET_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Reolink (RTSP)"), (DWORD)CVideoDeviceDoc::REOLINK_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Samsung 1080P (RTSP)"), (DWORD)CVideoDeviceDoc::SAMSUNG_PROFILE5_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Samsung 720P (RTSP)"), (DWORD)CVideoDeviceDoc::SAMSUNG_PROFILE4_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Sony (RTSP)"), (DWORD)CVideoDeviceDoc::SONY_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Sricam (RTSP)"), (DWORD)CVideoDeviceDoc::SRICAM_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Srihome (RTSP)"), (DWORD)CVideoDeviceDoc::SRIHOME_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Sumpple (RTSP)"), (DWORD)CVideoDeviceDoc::SUMPPLE_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Toshiba (RTSP)"), (DWORD)CVideoDeviceDoc::TOSHIBA_RTSP));
+	a.Add(CDeviceTypeModePair(_T("TP-Link (RTSP)"), (DWORD)CVideoDeviceDoc::TPLINK_RTSP));
+	a.Add(CDeviceTypeModePair(_T("TP-Link NC2XX/NC4XX (RTSP)"), (DWORD)CVideoDeviceDoc::TPLINK_NCXXX_RTSP));
+	a.Add(CDeviceTypeModePair(_T("TP-Link Tapo (RTSP)"), (DWORD)CVideoDeviceDoc::TPLINK_TAPO_RTSP));
+	a.Add(CDeviceTypeModePair(_T("TP-Link (") + ML_STRING(1865, "HTTP motion jpeg") + _T(")"), (DWORD)CVideoDeviceDoc::TPLINK_SP));
+	a.Add(CDeviceTypeModePair(_T("TP-Link (") + ML_STRING(1866, "HTTP jpeg snapshots") + _T(")"), (DWORD)CVideoDeviceDoc::TPLINK_CP));
+	a.Add(CDeviceTypeModePair(_T("TrendNet (RTSP)"), (DWORD)CVideoDeviceDoc::TRENDNET_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Ubiquiti (RTSP)"), (DWORD)CVideoDeviceDoc::UBIQUITI_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Uokoo (RTSP)"), (DWORD)CVideoDeviceDoc::UOKOO_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Vivotek (RTSP)"), (DWORD)CVideoDeviceDoc::VIVOTEK_RTSP));
+	a.Add(CDeviceTypeModePair(_T("VStarCam (RTSP)"), (DWORD)CVideoDeviceDoc::VSTARCAM_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Wanscam (RTSP)"), (DWORD)CVideoDeviceDoc::WANSCAM_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Wansview (RTSP)"), (DWORD)CVideoDeviceDoc::WANSVIEW_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Wyze (RTSP)"), (DWORD)CVideoDeviceDoc::WYZE_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Xiaomi (RTSP)"), (DWORD)CVideoDeviceDoc::XIAOMI_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Y-cam (RTSP)"), (DWORD)CVideoDeviceDoc::YCAM_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Zavio (RTSP)"), (DWORD)CVideoDeviceDoc::ZAVIO_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Zavio H.264 (RTSP)"), (DWORD)CVideoDeviceDoc::ZAVIO_H264_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Zavio MPEG4 (RTSP)"), (DWORD)CVideoDeviceDoc::ZAVIO_MPEG4_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Zmodo (RTSP)"), (DWORD)CVideoDeviceDoc::ZMODO_RTSP));
+}
+
+BOOL CHostPortDlg::OnInitDialog()
 {
 	// Store initial dialog title
 	GetWindowText(m_sInitialDlgTitle);
 
 	// Init Device Type Mode Combo Box
 	CComboBox* pComboBoxDevTypeMode = (CComboBox*)GetDlgItem(IDC_COMBO_DEVICETYPEMODE);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Generic") + _T(" /11 (RTSP)")), (DWORD)CVideoDeviceDoc::GENERIC_1_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Generic") + _T(" /onvif1 (RTSP)")), (DWORD)CVideoDeviceDoc::GENERIC_2_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Generic") + _T(" /live/ch0 (RTSP)")), (DWORD)CVideoDeviceDoc::GENERIC_3_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Generic") + _T(" /ch01.264 (RTSP)")), (DWORD)CVideoDeviceDoc::GENERIC_4_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Generic") + _T(" /channel=1&stream=0.sdp (RTSP)")), (DWORD)CVideoDeviceDoc::GENERIC_5_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Generic") + _T(" /channel=1_stream=0.sdp (RTSP)")), (DWORD)CVideoDeviceDoc::GENERIC_6_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Generic") + _T(" (") + ML_STRING(1865, "HTTP motion jpeg") + _T(")")), (DWORD)CVideoDeviceDoc::GENERIC_SP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Generic") + _T(" (") + ML_STRING(1866, "HTTP jpeg snapshots") + _T(")")), (DWORD)CVideoDeviceDoc::GENERIC_CP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("7Links (RTSP)")), (DWORD)CVideoDeviceDoc::SEVENLINKS_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Abus (RTSP)")), (DWORD)CVideoDeviceDoc::ABUS_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("ACTi (RTSP)")), (DWORD)CVideoDeviceDoc::ACTI_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Amcrest (RTSP)")), (DWORD)CVideoDeviceDoc::AMCREST_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Arecont Vision (RTSP)")), (DWORD)CVideoDeviceDoc::ARECONT_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Axis (RTSP)")), (DWORD)CVideoDeviceDoc::AXIS_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Axis (") + ML_STRING(1865, "HTTP motion jpeg") + _T(")")), (DWORD)CVideoDeviceDoc::AXIS_SP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Axis (") + ML_STRING(1866, "HTTP jpeg snapshots") + _T(")")), (DWORD)CVideoDeviceDoc::AXIS_CP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Bosch (RTSP)")), (DWORD)CVideoDeviceDoc::BOSCH_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Canon (RTSP)")), (DWORD)CVideoDeviceDoc::CANON_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("D-Link /live1.sdp (RTSP)")), (DWORD)CVideoDeviceDoc::DLINK_LIVE1_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("D-Link /play1.sdp (RTSP)")), (DWORD)CVideoDeviceDoc::DLINK_PLAY1_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Dahua (RTSP)")), (DWORD)CVideoDeviceDoc::DAHUA_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Digoo (RTSP)")), (DWORD)CVideoDeviceDoc::DIGOO_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Edimax H.264 (RTSP)")), (DWORD)CVideoDeviceDoc::EDIMAX_H264_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Edimax MPEG4 (RTSP)")), (DWORD)CVideoDeviceDoc::EDIMAX_MPEG4_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Edimax (") + ML_STRING(1865, "HTTP motion jpeg") + _T(")")), (DWORD)CVideoDeviceDoc::EDIMAX_SP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Edimax (") + ML_STRING(1866, "HTTP jpeg snapshots") + _T(")")), (DWORD)CVideoDeviceDoc::EDIMAX_CP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("FalconEye (RTSP)")), (DWORD)CVideoDeviceDoc::FALCONEYE_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Floureon (RTSP)")), (DWORD)CVideoDeviceDoc::FLOUREON_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Foscam (RTSP)")), (DWORD)CVideoDeviceDoc::FOSCAM_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Foscam (") + ML_STRING(1865, "HTTP motion jpeg") + _T(")")), (DWORD)CVideoDeviceDoc::FOSCAM_SP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Foscam (") + ML_STRING(1866, "HTTP jpeg snapshots") + _T(")")), (DWORD)CVideoDeviceDoc::FOSCAM_CP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Gembird (RTSP)")), (DWORD)CVideoDeviceDoc::GEMBIRD_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("GeoVision (RTSP)")), (DWORD)CVideoDeviceDoc::GEOVISION_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("HiKam (RTSP)")), (DWORD)CVideoDeviceDoc::HIKAM_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Hikvision (RTSP)")), (DWORD)CVideoDeviceDoc::HIKVISION_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("IP Webcam (Pro) for Android (RTSP)")), (DWORD)CVideoDeviceDoc::IPWEBCAM_ANDROID_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("JideTech (RTSP)")), (DWORD)CVideoDeviceDoc::JIDETECH_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Kucam (RTSP)")), (DWORD)CVideoDeviceDoc::KUCAM_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Linksys (RTSP)")), (DWORD)CVideoDeviceDoc::LINKSYS_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Logitech (RTSP)")), (DWORD)CVideoDeviceDoc::LOGITECH_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Monacor 3MP/4MP/5MP/.. Series (RTSP)")), (DWORD)CVideoDeviceDoc::MONACOR_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Monacor 2MP Series (RTSP)")), (DWORD)CVideoDeviceDoc::MONACOR_2MP_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("NexGadget (RTSP)")), (DWORD)CVideoDeviceDoc::NEXGADGET_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Panasonic (RTSP)")), (DWORD)CVideoDeviceDoc::PANASONIC_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Panasonic (") + ML_STRING(1865, "HTTP motion jpeg") + _T(")")), (DWORD)CVideoDeviceDoc::PANASONIC_SP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Panasonic (") + ML_STRING(1866, "HTTP jpeg snapshots") + _T(")")), (DWORD)CVideoDeviceDoc::PANASONIC_CP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Pixord (RTSP)")), (DWORD)CVideoDeviceDoc::PIXORD_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Pixord (") + ML_STRING(1865, "HTTP motion jpeg") + _T(")")), (DWORD)CVideoDeviceDoc::PIXORD_SP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Pixord (") + ML_STRING(1866, "HTTP jpeg snapshots") + _T(")")), (DWORD)CVideoDeviceDoc::PIXORD_CP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Planet (RTSP)")), (DWORD)CVideoDeviceDoc::PLANET_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Reolink (RTSP)")), (DWORD)CVideoDeviceDoc::REOLINK_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Samsung 1080P (RTSP)")), (DWORD)CVideoDeviceDoc::SAMSUNG_PROFILE5_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Samsung 720P (RTSP)")), (DWORD)CVideoDeviceDoc::SAMSUNG_PROFILE4_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Sony (RTSP)")), (DWORD)CVideoDeviceDoc::SONY_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Sricam (RTSP)")), (DWORD)CVideoDeviceDoc::SRICAM_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Srihome (RTSP)")), (DWORD)CVideoDeviceDoc::SRIHOME_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Sumpple (RTSP)")), (DWORD)CVideoDeviceDoc::SUMPPLE_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Toshiba (RTSP)")), (DWORD)CVideoDeviceDoc::TOSHIBA_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("TP-Link (RTSP)")), (DWORD)CVideoDeviceDoc::TPLINK_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("TP-Link NC2XX/NC4XX (RTSP)")), (DWORD)CVideoDeviceDoc::TPLINK_NCXXX_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("TP-Link Tapo (RTSP)")), (DWORD)CVideoDeviceDoc::TPLINK_TAPO_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("TP-Link (") + ML_STRING(1865, "HTTP motion jpeg") + _T(")")), (DWORD)CVideoDeviceDoc::TPLINK_SP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("TP-Link (") + ML_STRING(1866, "HTTP jpeg snapshots") + _T(")")), (DWORD)CVideoDeviceDoc::TPLINK_CP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("TrendNet (RTSP)")), (DWORD)CVideoDeviceDoc::TRENDNET_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Ubiquiti (RTSP)")), (DWORD)CVideoDeviceDoc::UBIQUITI_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Uokoo (RTSP)")), (DWORD)CVideoDeviceDoc::UOKOO_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Vivotek (RTSP)")), (DWORD)CVideoDeviceDoc::VIVOTEK_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("VStarCam (RTSP)")), (DWORD)CVideoDeviceDoc::VSTARCAM_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Wanscam (RTSP)")), (DWORD)CVideoDeviceDoc::WANSCAM_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Wansview (RTSP)")), (DWORD)CVideoDeviceDoc::WANSVIEW_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Wyze (RTSP)")), (DWORD)CVideoDeviceDoc::WYZE_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Xiaomi (RTSP)")), (DWORD)CVideoDeviceDoc::XIAOMI_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Y-cam (RTSP)")), (DWORD)CVideoDeviceDoc::YCAM_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Zavio (RTSP)")), (DWORD)CVideoDeviceDoc::ZAVIO_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Zavio H.264 (RTSP)")), (DWORD)CVideoDeviceDoc::ZAVIO_H264_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Zavio MPEG4 (RTSP)")), (DWORD)CVideoDeviceDoc::ZAVIO_MPEG4_RTSP);
-	pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(_T("Zmodo (RTSP)")), (DWORD)CVideoDeviceDoc::ZMODO_RTSP);
+	CArray<CDeviceTypeModePair> DeviceTypeModeArrayForCB;
+	InitDeviceTypeModeArrayForCB(DeviceTypeModeArrayForCB);
+	for (int nModeIndex = 0; nModeIndex < DeviceTypeModeArrayForCB.GetSize(); nModeIndex++)
+	{
+		CDeviceTypeModePair& pair = DeviceTypeModeArrayForCB.ElementAt(nModeIndex);
+		pComboBoxDevTypeMode->SetItemData(pComboBoxDevTypeMode->AddString(pair.m_sMode), pair.m_dwMode);
+	}
 
 	CDialog::OnInitDialog();
 	
