@@ -229,57 +229,15 @@ void CCameraBasicSettingsDlg::OnDestroy()
 	CDialog::OnDestroy();
 }
 
-/* Could also use:
-EnableWindow(bEnable); // Enable/Disable also dialog itself
-CWnd* pwndChild = GetWindow(GW_CHILD);
-while (pwndChild)
-{
-	pwndChild->EnableWindow(bEnable);
-	pwndChild = pwndChild->GetNextWindow();
-}
-*/
 void CCameraBasicSettingsDlg::EnableDisableAllCtrls(BOOL bEnable)
 {
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO);
-	pCheck->EnableWindow(bEnable);
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_SNAPSHOT_HISTORY_RATE);
-	pEdit->EnableWindow(bEnable);
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_AUTORUN);
-	pCheck->EnableWindow(bEnable);
-	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_NAME);
-	pEdit->EnableWindow(bEnable);
-	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_LANGUAGE);
-	pComboBox->EnableWindow(bEnable);
-	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_STYLE);
-	pComboBox->EnableWindow(bEnable);
-	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_THUMBSPERPAGE);
-	pComboBox->EnableWindow(bEnable);
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_FULL_STRETCH);
-	pCheck->EnableWindow(bEnable);
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_TRASHCOMMAND);
-	pCheck->EnableWindow(bEnable);
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_CAMERACOMMANDS);
-	pCheck->EnableWindow(bEnable);
-	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_KEEPFOR);
-	pComboBox->EnableWindow(bEnable);
-	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_MAX_CAMERA_FOLDER_SIZE);
-	pEdit->EnableWindow(bEnable);
-	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_MIN_DISK_FREE_PERCENT);
-	pEdit->EnableWindow(bEnable);
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SENDMAIL_MALFUNCTION);
-	pCheck->EnableWindow(bEnable);
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SENDMAIL_RECORDING);
-	pCheck->EnableWindow(bEnable);
-	pComboBox = (CComboBox*)GetDlgItem(IDC_ATTACHMENT);
-	pComboBox->EnableWindow(bEnable);
-	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_SENDMAIL_SEC_BETWEEN_MSG);
-	pEdit->EnableWindow(bEnable);
-	CButton* pButton = (CButton*)GetDlgItem(IDC_SENDMAIL_CONFIGURE);
-	pButton->EnableWindow(bEnable);
-	pButton = (CButton*)GetDlgItem(IDOK);
-	pButton->EnableWindow(bEnable);
-	pButton = (CButton*)GetDlgItem(IDCANCEL);
-	pButton->EnableWindow(bEnable);
+	CWnd* pwndChild = GetWindow(GW_CHILD);
+	while (pwndChild)
+	{
+		// Note: close X button is working according to IDCANCEL button state which is Enabled/Disabled in this loop
+		pwndChild->EnableWindow(bEnable);
+		pwndChild = pwndChild->GetNextWindow();
+	}
 }
 
 void CCameraBasicSettingsDlg::OnTimer(UINT nIDEvent) 
