@@ -79,16 +79,14 @@ void CDeleteCamFoldersDlg::CloseCam(CString sFolderPath)
 
 void CDeleteCamFoldersDlg::EnableDisableAllCtrls(BOOL bEnable)
 {
-	CHScrollListBox* pListBox = (CHScrollListBox*)GetDlgItem(IDC_CAM_FOLDERS);
-	pListBox->EnableWindow(bEnable);
-	CButton* pButton = (CButton*)GetDlgItem(IDOK);
-	pButton->EnableWindow(bEnable);
-	pButton = (CButton*)GetDlgItem(IDCANCEL);
-	pButton->EnableWindow(bEnable);
-	pButton = (CButton*)GetDlgItem(IDC_BUTTON_LIST_SELECTALL);
-	pButton->EnableWindow(bEnable);
-	pButton = (CButton*)GetDlgItem(IDC_BUTTON_LIST_SELECTNONE);
-	pButton->EnableWindow(bEnable);
+	CWnd* pwndChild = GetWindow(GW_CHILD);
+	while (pwndChild)
+	{
+		// Note: close X button, Esc and Alt+F4 are working according to the
+		//       IDCANCEL button state which is Enabled/Disabled in this loop
+		pwndChild->EnableWindow(bEnable);
+		pwndChild = pwndChild->GetNextWindow();
+	}
 }
 
 BEGIN_MESSAGE_MAP(CDeleteCamFoldersDlg, CDialog)

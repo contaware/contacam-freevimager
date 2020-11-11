@@ -234,7 +234,8 @@ void CCameraBasicSettingsDlg::EnableDisableAllCtrls(BOOL bEnable)
 	CWnd* pwndChild = GetWindow(GW_CHILD);
 	while (pwndChild)
 	{
-		// Note: close X button is working according to IDCANCEL button state which is Enabled/Disabled in this loop
+		// Note: close X button, Esc and Alt+F4 are working according to the
+		//       IDCANCEL button state which is Enabled/Disabled in this loop
 		pwndChild->EnableWindow(bEnable);
 		pwndChild = pwndChild->GetNextWindow();
 	}
