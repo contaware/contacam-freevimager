@@ -2,6 +2,8 @@ CONTACAM HISTORY
 
 9.9.12 (Month XXth 2020)
 
+- Removed Motion vs. Continuous REC option from Camera Basic Settings 
+  because that can be configured with the REC toolbar button
 - Added support for TP-Link NC2XX, NC4XX and Tapo cloud cameras
 
 9.9.11 (October 11th 2020)

@@ -38,7 +38,6 @@ void CCameraBasicSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CCameraBasicSettingsDlg)
 	DDX_CBIndex(pDX, IDC_COMBO_KEEPFOR, m_nComboKeepFor);
 	DDX_Text(pDX, IDC_EDIT_NAME, m_sName);
-	DDX_Radio(pDX, IDC_RADIO_MOVDET, m_nUsage);
 	DDX_Check(pDX, IDC_CHECK_SNAPSHOT_HISTORY_VIDEO, m_bSnapshotHistoryVideo);
 	DDX_Text(pDX, IDC_EDIT_SNAPSHOT_HISTORY_RATE, m_nSnapshotHistoryRate);
 	DDV_MinMaxInt(pDX, m_nSnapshotHistoryRate, 0, INT_MAX);
@@ -150,14 +149,6 @@ BOOL CCameraBasicSettingsDlg::OnInitDialog()
 	m_bCheckFullStretch = (m_pDoc->PhpConfigFileGetParam(PHPCONFIG_FULL_STRETCH) == _T("1"));
 	m_bCheckTrashCommand = (m_pDoc->PhpConfigFileGetParam(PHPCONFIG_SHOW_TRASH_COMMAND) == _T("1"));
 	m_bCheckCameraCommands = (m_pDoc->PhpConfigFileGetParam(PHPCONFIG_SHOW_CAMERA_COMMANDS) == _T("1"));
-	CString sDefaultPage = m_pDoc->PhpConfigFileGetParam(PHPCONFIG_DEFAULTPAGE);
-	if (sDefaultPage.CompareNoCase(PHPCONFIG_SUMMARYSNAPSHOT_PHP) == 0 ||
-		sDefaultPage.CompareNoCase(PHPCONFIG_SNAPSHOTHISTORY_PHP) == 0 ||
-		sDefaultPage.CompareNoCase(PHPCONFIG_SNAPSHOT_PHP) == 0 ||
-		sDefaultPage.CompareNoCase(PHPCONFIG_SNAPSHOTFULL_PHP) == 0)
-		m_nUsage = 0;
-	else
-		m_nUsage = 1;
 	m_bSnapshotHistoryVideo = m_pDoc->m_bSnapshotHistoryVideo;
 	m_nSnapshotHistoryRate = m_pDoc->m_nSnapshotHistoryRate;
 	if (CVideoDeviceDoc::AutorunGetDeviceKey(m_pDoc->GetDevicePathName()) != _T(""))
@@ -249,11 +240,7 @@ while (pwndChild)
 */
 void CCameraBasicSettingsDlg::EnableDisableAllCtrls(BOOL bEnable)
 {
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_RADIO_MOVDET);
-	pCheck->EnableWindow(bEnable);
-	pCheck = (CButton*)GetDlgItem(IDC_RADIO_MANUAL);
-	pCheck->EnableWindow(bEnable);
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO);
+	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO);
 	pCheck->EnableWindow(bEnable);
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_SNAPSHOT_HISTORY_RATE);
 	pEdit->EnableWindow(bEnable);
@@ -483,6 +470,9 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SUMMARYTITLE, m_sName);
 	m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTTITLE, m_sName);
 
+	// Make sure default page is PHPCONFIG_SUMMARYSNAPSHOT_PHP
+	m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SUMMARYSNAPSHOT_PHP);
+
 	// Language
 	CString sLanguageName;
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_LANGUAGE);
@@ -524,59 +514,6 @@ void CCameraBasicSettingsDlg::ApplySettings()
 		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SHOW_CAMERA_COMMANDS, _T("1"));
 	else
 		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SHOW_CAMERA_COMMANDS, _T("0"));
-
-	// Usage
-	switch (m_nUsage)
-	{
-		case 0 :
-		{
-			if (m_pDoc->m_nDetectionLevel == 0 || m_pDoc->m_nDetectionLevel == 100)
-			{
-				if (CVideoDeviceDoc::WriteDetectionLevelToFile(MOVDET_DEFAULT_LEVEL, m_pDoc->m_sRecordAutoSaveDir))
-					m_pDoc->m_nDetectionLevel = MOVDET_DEFAULT_LEVEL; // always after the write as in OnTimer() it gets polled!
-			}
-			if (m_pDoc->m_nMilliSecondsRecBeforeMovementBegin == 1000)
-				m_pDoc->m_nMilliSecondsRecBeforeMovementBegin = MOVDET_DEFAULT_PRE_BUFFER_MSEC;
-			if (m_pDoc->m_nMilliSecondsRecAfterMovementEnd == 1000)
-				m_pDoc->m_nMilliSecondsRecAfterMovementEnd = MOVDET_DEFAULT_POST_BUFFER_MSEC;
-			if (m_pDoc->m_nDetectionMinLengthMilliSeconds == 0)
-				m_pDoc->m_nDetectionMinLengthMilliSeconds = MOVDET_MIN_LENGTH_MSEC;
-			if (m_pDoc->m_pCameraAdvancedSettingsDlg)
-			{
-				m_pDoc->m_pCameraAdvancedSettingsDlg->m_nSecondsBeforeMovementBegin = m_pDoc->m_nMilliSecondsRecBeforeMovementBegin / 1000;
-				m_pDoc->m_pCameraAdvancedSettingsDlg->m_nSecondsAfterMovementEnd = m_pDoc->m_nMilliSecondsRecAfterMovementEnd / 1000;
-				m_pDoc->m_pCameraAdvancedSettingsDlg->m_nDetectionMinLengthSeconds = m_pDoc->m_nDetectionMinLengthMilliSeconds / 1000;
-				m_pDoc->m_pCameraAdvancedSettingsDlg->UpdateData(FALSE); // update data from vars to view
-			}
-
-			// Update configuration.php
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SUMMARYSNAPSHOT_PHP);
-
-			break;
-		}
-		case 1 :
-		{
-			if (CVideoDeviceDoc::WriteDetectionLevelToFile(100, m_pDoc->m_sRecordAutoSaveDir))
-				m_pDoc->m_nDetectionLevel = 100; // always after the write as in OnTimer() it gets polled!
-			m_pDoc->m_nMilliSecondsRecBeforeMovementBegin = 1000;
-			m_pDoc->m_nMilliSecondsRecAfterMovementEnd = 1000;
-			m_pDoc->m_nDetectionMinLengthMilliSeconds = 0;
-			if (m_pDoc->m_pCameraAdvancedSettingsDlg)
-			{
-				m_pDoc->m_pCameraAdvancedSettingsDlg->m_nSecondsBeforeMovementBegin = m_pDoc->m_nMilliSecondsRecBeforeMovementBegin / 1000;
-				m_pDoc->m_pCameraAdvancedSettingsDlg->m_nSecondsAfterMovementEnd = m_pDoc->m_nMilliSecondsRecAfterMovementEnd / 1000;
-				m_pDoc->m_pCameraAdvancedSettingsDlg->m_nDetectionMinLengthSeconds = m_pDoc->m_nDetectionMinLengthMilliSeconds / 1000;
-				m_pDoc->m_pCameraAdvancedSettingsDlg->UpdateData(FALSE); // update data from vars to view
-			}
-
-			// Update configuration.php
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SUMMARYIFRAME_PHP);
-
-			break;
-		}
-		default :
-			break;
-	}
 
 	// Summary video
 	m_pDoc->m_bSnapshotHistoryVideo = m_bSnapshotHistoryVideo;

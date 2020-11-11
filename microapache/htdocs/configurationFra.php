@@ -34,7 +34,6 @@ define("SUMMARYTITLE","Summary");
 define("SNAPSHOTTITLE","Snapshot");
 
 // Default page (index.php redirects to this page)
-// Choose between: summarysnapshot.php and summaryiframe.php
 define ("DEFAULTPAGE","summarysnapshot.php");
 
 // Set the Language

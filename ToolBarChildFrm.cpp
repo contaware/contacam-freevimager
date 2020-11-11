@@ -1285,8 +1285,7 @@ void CVideoDeviceChildFrame::EndShutdown()
 		pDoc->m_pDxCapture = NULL;
 	}
 
-	// The next step must happen last, because it sets to NULL
-	// m_pCameraAdvancedSettingsDlg used inside ProcessI420Frame():
+	// The next step must happen last, because it sets to NULL pDoc->m_pCameraAdvancedSettingsDlg
 	if (pDoc->m_pCameraAdvancedSettingsDlg)
 		pDoc->m_pCameraAdvancedSettingsDlg->DestroyOnAppExit();
 }

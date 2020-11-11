@@ -2129,50 +2129,46 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTI
 CAPTION "Camera Basic Settings"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "Motion detection surveillance",IDC_RADIO_MOVDET,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,15,117,10
-    CONTROL         "Continuous recording",IDC_RADIO_MANUAL,"Button",BS_AUTORADIOBUTTON,16,30,94,10
-    CONTROL         "Daily summary video",IDC_CHECK_SNAPSHOT_HISTORY_VIDEO,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,182,15,89,10
-    EDITTEXT        IDC_EDIT_SNAPSHOT_HISTORY_RATE,244,29,29,12,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "Autostart\ncamera",IDC_CHECK_AUTORUN,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,359,14,47,27
-    EDITTEXT        IDC_EDIT_NAME,152,65,254,13,ES_AUTOHSCROLL
-    COMBOBOX        IDC_COMBO_LANGUAGE,152,99,56,222,CBS_DROPDOWNLIST | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_STYLE,152,116,56,222,CBS_DROPDOWNLIST | WS_TABSTOP
-    CONTROL         "Full stretch live view",IDC_CHECK_FULL_STRETCH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,244,99,81,10
-    CONTROL         "Allow deleting files",IDC_CHECK_TRASHCOMMAND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,244,109,79,10
-    CONTROL         "Allow obscuring source",IDC_CHECK_CAMERACOMMANDS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,244,119,89,10
-    COMBOBOX        IDC_COMBO_THUMBSPERPAGE,361,116,45,288,CBS_DROPDOWNLIST | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_KEEPFOR,152,147,254,116,CBS_DROPDOWNLIST | WS_TABSTOP
-    EDITTEXT        IDC_EDIT_MIN_DISK_FREE_PERCENT,152,162,35,13,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_MAX_CAMERA_FOLDER_SIZE,152,176,35,13,ES_AUTOHSCROLL
+    GROUPBOX        "1. Options",IDC_STATIC,5,4,407,55
+    CONTROL         "Autostart camera",IDC_CHECK_AUTORUN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,18,75,10
+    CONTROL         "Daily summary video with frame interval of",IDC_CHECK_SNAPSHOT_HISTORY_VIDEO,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,18,153,10
+    EDITTEXT        IDC_EDIT_SNAPSHOT_HISTORY_RATE,311,17,29,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "sec",IDC_STATIC2296,346,19,15,8
+    LTEXT           "Enter a friendly name for your camera",IDC_STATIC,16,34,135,8
+    LTEXT           "(that's also the camera folder name)",IDC_STATIC,16,43,135,8
+    EDITTEXT        IDC_EDIT_NAME,152,38,254,13,ES_AUTOHSCROLL
+    GROUPBOX        "2. Web interface",IDC_STATIC,5,67,407,51
+    LTEXT           "Language",IDC_STATIC,16,81,135,8
+    COMBOBOX        IDC_COMBO_LANGUAGE,152,80,56,222,CBS_DROPDOWNLIST | WS_TABSTOP
+    LTEXT           "Style / color",IDC_STATIC,16,99,135,8
+    COMBOBOX        IDC_COMBO_STYLE,152,98,56,222,CBS_DROPDOWNLIST | WS_TABSTOP
+    CONTROL         "Full stretch live view",IDC_CHECK_FULL_STRETCH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,244,78,81,10
+    CONTROL         "Allow deleting files",IDC_CHECK_TRASHCOMMAND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,244,90,79,10
+    CONTROL         "Allow obscuring source",IDC_CHECK_CAMERACOMMANDS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,244,102,89,10
+    LTEXT           "Thumbnails per page",IDC_LABEL_THUMBSPERPAGE,362,78,44,18
+    COMBOBOX        IDC_COMBO_THUMBSPERPAGE,361,98,45,288,CBS_DROPDOWNLIST | WS_TABSTOP
+    GROUPBOX        "3. Storage",IDC_STATIC,5,127,407,62
+    LTEXT           "Keep files for",IDC_STATIC,16,140,135,8
+    COMBOBOX        IDC_COMBO_KEEPFOR,152,138,254,116,CBS_DROPDOWNLIST | WS_TABSTOP
+    LTEXT           "Minimum disk free space",IDC_STATIC,16,155,135,8
+    EDITTEXT        IDC_EDIT_MIN_DISK_FREE_PERCENT,152,154,35,13,ES_AUTOHSCROLL
+    LTEXT           "%",IDC_STATIC,190,157,8,8
+    LTEXT           "Maximum camera folder size\n(0.0: unlimited)",IDC_STATIC,16,168,135,16
+    EDITTEXT        IDC_EDIT_MAX_CAMERA_FOLDER_SIZE,152,170,35,13,ES_AUTOHSCROLL
+    LTEXT           "GB",IDC_STATIC,190,172,10,8
+    LTEXT           "NOTE: if the free disk space becomes low or the maximum camera folder size is reached the oldest files are deleted",IDC_STATIC,211,159,195,20
+    GROUPBOX        "4. Email",IDC_STATIC,5,198,407,59
     CONTROL         "Camera failure",IDC_CHECK_SENDMAIL_MALFUNCTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,211,73,10
     CONTROL         "Recording event with",IDC_CHECK_SENDMAIL_RECORDING,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,226,92,10
-    COMBOBOX        IDC_ATTACHMENT,152,225,190,124,CBS_DROPDOWNLIST | WS_TABSTOP
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,226,94,10
+    COMBOBOX        IDC_ATTACHMENT,152,224,190,124,CBS_DROPDOWNLIST | WS_TABSTOP
+    LTEXT           "minimum time between recording event messages",IDC_STATIC,27,240,264,8
     EDITTEXT        IDC_EDIT_SENDMAIL_SEC_BETWEEN_MSG,295,240,29,12,ES_AUTOHSCROLL | ES_NUMBER
-    PUSHBUTTON      "To\nSubject\nServer",IDC_SENDMAIL_CONFIGURE,350,211,56,38,BS_MULTILINE
+    LTEXT           "sec",IDC_STATIC2295,330,242,15,8
+    PUSHBUTTON      "To\nSubject\nServer",IDC_SENDMAIL_CONFIGURE,350,211,56,40,BS_MULTILINE
     PUSHBUTTON      "OK",IDOK,152,262,56,16,BS_MULTILINE
     PUSHBUTTON      "Cancel",IDCANCEL,221,262,56,16
-    GROUPBOX        "1. Usage",IDC_STATIC,5,3,407,44
-    GROUPBOX        "2. Name",IDC_STATIC,5,52,407,33
-    LTEXT           "Enter a friendly name for your camera",IDC_STATIC,16,63,135,8
-    LTEXT           "(that's also the camera folder name)",IDC_STATIC,16,72,135,8
-    GROUPBOX        "3. Web interface",IDC_STATIC,5,90,407,43
-    LTEXT           "Language",IDC_STATIC,16,102,135,8
-    LTEXT           "Style / color",IDC_STATIC,16,117,135,8
-    LTEXT           "Thumbnails per page",IDC_LABEL_THUMBSPERPAGE,362,98,44,17
-    GROUPBOX        "4. Storage",IDC_STATIC,5,138,407,56
-    LTEXT           "Keep files for",IDC_STATIC,16,150,135,8
-    LTEXT           "Minimum disk free space",IDC_STATIC,16,163,135,8
-    LTEXT           "%",IDC_STATIC,190,165,8,8
-    LTEXT           "Maximum camera folder size\n(0.0: unlimited)",IDC_STATIC,16,174,135,16
-    LTEXT           "GB",IDC_STATIC,190,178,10,8
-    LTEXT           "NOTE: if the free disk space becomes low or the maximum camera folder size is reached the oldest files are deleted",IDC_STATIC,211,168,195,20
-    GROUPBOX        "5. Email",IDC_STATIC,5,199,407,58
-    LTEXT           "minimum time between recording event messages",IDC_STATIC,27,240,264,8
-    LTEXT           "sec",IDC_STATIC2295,330,242,15,8
-    LTEXT           "sec",IDC_STATIC2296,278,31,15,8
-    LTEXT           "frame interval",IDC_STATIC,193,31,47,8
 END
 
 IDD_RENAME DIALOGEX 0, 0, 186, 47
@@ -2741,6 +2737,7 @@ BEGIN
         VERTGUIDE, 406
         TOPMARGIN, 2
         BOTTOMMARGIN, 278
+        HORZGUIDE, 23
     END
 
     IDD_RENAME, DIALOG

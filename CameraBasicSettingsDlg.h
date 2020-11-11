@@ -30,7 +30,6 @@ public:
 	CString	m_sName;
 	CString m_sMaxCameraFolderSizeGB;
 	CString m_sMinDiskFreePercent;
-	int		m_nUsage;
 	BOOL	m_bSnapshotHistoryVideo;
 	int     m_nSnapshotHistoryRate;
 	BOOL	m_bAutorun;

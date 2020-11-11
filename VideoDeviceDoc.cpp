@@ -5816,10 +5816,12 @@ BOOL CVideoDeviceDoc::MicroApacheUpdateWebFiles(CString sAutoSaveDir)
 
 	// Remove old unused files
 	::DeleteFile(sAutoSaveDir + _T("snapshotmobile.php"));
+	::DeleteFile(sAutoSaveDir + _T("snapshothistory.php"));
 	::DeleteFile(sAutoSaveDir + _T("jpeglive.php"));
 	::DeleteFile(sAutoSaveDir + _T("summarylive.php"));
 	::DeleteFile(sAutoSaveDir + _T("summary.php"));
 	::DeleteFile(sAutoSaveDir + _T("summarynav.php"));
+	::DeleteFile(sAutoSaveDir + _T("summaryiframe.php"));
 	::DeleteFile(sAutoSaveDir + _T("separator.php"));
 	::DeleteFile(sAutoSaveDir + _T("swf.php"));
 	::DeleteFile(sAutoSaveDir + _T("avi.php"));
