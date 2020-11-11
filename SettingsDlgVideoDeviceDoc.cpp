@@ -320,38 +320,14 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 
 void CSettingsDlgVideoDeviceDoc::EnableDisableAllCtrls(BOOL bEnable)
 {
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_STARTWITH_WINDOWS);
-	pCheck->EnableWindow(bEnable);
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_TRAYICON);
-	pCheck->EnableWindow(bEnable);
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_STARTFROM_SERVICE);
-	pCheck->EnableWindow(bEnable);
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_TOPMOST);
-	pCheck->EnableWindow(bEnable);
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_FIRSTSTART_DELAY);
-	pEdit->EnableWindow(bEnable);
-	CButton* pButton = (CButton*)GetDlgItem(IDC_BUTTON_DOCROOT);
-	pButton->EnableWindow(bEnable);
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_WEBSERVER);
-	pCheck->EnableWindow(bEnable);
-	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PORT);
-	pEdit->EnableWindow(bEnable);
-	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PORT_SSL);
-	pEdit->EnableWindow(bEnable);
-	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_USERNAME);
-	pEdit->EnableWindow(bEnable);
-	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
-	pEdit->EnableWindow(bEnable);
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SHOW_PASSWORD);
-	pCheck->EnableWindow(bEnable);
-	pButton = (CButton*)GetDlgItem(IDC_BUTTON_CERT_SSL);
-	pButton->EnableWindow(bEnable);
-	pButton = (CButton*)GetDlgItem(IDC_BUTTON_KEY_SSL);
-	pButton->EnableWindow(bEnable);
-	pButton = (CButton*)GetDlgItem(IDOK);
-	pButton->EnableWindow(bEnable);
-	pButton = (CButton*)GetDlgItem(IDCANCEL);
-	pButton->EnableWindow(bEnable);
+	CWnd* pwndChild = GetWindow(GW_CHILD);
+	while (pwndChild)
+	{
+		// Note: close X button, Esc and Alt+F4 are working according to the
+		//       IDCANCEL button state which is Enabled/Disabled in this loop
+		pwndChild->EnableWindow(bEnable);
+		pwndChild = pwndChild->GetNextWindow();
+	}
 }
 
 void CSettingsDlgVideoDeviceDoc::OnButtonDocRoot() 
