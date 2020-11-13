@@ -1208,8 +1208,8 @@ BOOL CVideoDeviceDoc::SendMail(	const SendMailConfigurationStruct& Config,
 		switch (Config.m_ConnectionType)
 		{
 			case 0 : sConnectionTypeOption = _T(""); break;				// Plain Text
-			case 1 : sConnectionTypeOption = _T("-ssl"); break;			// SSL and TLS
-			default: sConnectionTypeOption = _T("-starttls"); break;	// STARTTLS
+			case 1 : sConnectionTypeOption = _T("-ssl"); break;			// SSL and TLS (for that to work user and pw must be provided)
+			default: sConnectionTypeOption = _T("-starttls"); break;	// STARTTLS (for that to work user and pw must be provided)
 		}
 		sOptions.Format(_T("-t \"%s\" -f %s %s %s -port %d %s -smtp %s -ct %d -read-timeout %d -sub \"%s\" +cc +bc -user \"%s\" -pass \"%s\" -cs \"utf-8\" -mime-type \"text/plain\" -enc-type \"base64\" -M \"%s\""),
 						Config.m_sTo,
@@ -1217,7 +1217,7 @@ BOOL CVideoDeviceDoc::SendMail(	const SendMailConfigurationStruct& Config,
 						Config.m_sFromName.IsEmpty() ? _T("") : _T("-name \"") + Config.m_sFromName + _T("\""),
 						sConnectionTypeOption,
 						Config.m_nPort,
-						(Config.m_sUsername.IsEmpty() && Config.m_sPassword.IsEmpty()) ? _T("") : _T("-auth"),
+						(Config.m_sUsername.IsEmpty() && Config.m_sPassword.IsEmpty()) ? _T("") : _T("-auth -ehlo"), // some server don't say ESMTP in the greetings even if they support it, so if using -auth we force -ehlo
 						Config.m_sHost,
 						nTimeoutSec, // connect timeout
 						nTimeoutSec, // read timeout
