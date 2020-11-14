@@ -2132,7 +2132,7 @@ BEGIN
     GROUPBOX        "1. Options",IDC_STATIC,5,4,407,55
     CONTROL         "Autostart camera",IDC_CHECK_AUTORUN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,18,75,10
     CONTROL         "Daily summary video with frame interval of",IDC_CHECK_SNAPSHOT_HISTORY_VIDEO,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,18,153,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,18,155,10
     EDITTEXT        IDC_EDIT_SNAPSHOT_HISTORY_RATE,311,17,29,12,ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "sec",IDC_STATIC2296,346,19,15,8
     LTEXT           "Enter a friendly name for your camera",IDC_STATIC,16,34,135,8
