@@ -266,6 +266,14 @@ BOOL CSendMailConfigurationDlg::ValidateEmailsAndHost()
 		::AlertUser(GetSafeHwnd());
 		return FALSE;
 	}
+	if (m_SendMailConfiguration.m_sFromName.Find(_T('@')) >= 0) // Email here is flagged as SPAM, do not allow that
+	{
+		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_SENDER_NAME);
+		pEdit->SetFocus();
+		pEdit->SetSel(0xFFFF0000);
+		::AlertUser(GetSafeHwnd());
+		return FALSE;
+	}
 	if (!IsEmail(m_SendMailConfiguration.m_sFrom))
 	{
 		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_SENDER_MAIL);

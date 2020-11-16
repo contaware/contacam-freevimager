@@ -5,6 +5,10 @@ CONTACAM HISTORY
 - Removed Motion vs. Continuous REC option from Camera Basic Settings 
   because that can be configured with the REC toolbar button
 - Added support for TP-Link NC2XX, NC4XX and Tapo cloud cameras
+- Some smtp servers don't say ESMTP in the greetings even if they
+  support it; for this reason we now force EHLO when user credentials
+  are provided (thanks to Hajo Ottenbacher for researching that)
+- Trim leading/trailing spaces for entered donation email address
 
 9.9.11 (October 11th 2020)
 
