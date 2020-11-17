@@ -1,6 +1,6 @@
 CONTACAM HISTORY
 
-9.9.12 (Month XXth 2020)
+9.9.12 (November 17th 2020)
 
 - Removed Motion vs. Continuous REC option from Camera Basic Settings 
   because that can be configured with the REC toolbar button

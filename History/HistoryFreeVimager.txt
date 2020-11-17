@@ -1,6 +1,6 @@
 FREEVIMAGER HISTORY
 
-9.9.12 (Month XXth 2020)
+9.9.12 (November 17th 2020)
 
 - Trim leading/trailing spaces for entered donation email address
 
