@@ -1,5 +1,9 @@
 TRANSLATIONS HISTORY
 
+9.9.13 (Month XXth 2020)
+
+- Minor changes
+
 9.9.12 (November 17th 2020)
 
 - Minor changes

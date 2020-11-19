@@ -1,5 +1,10 @@
 CONTACAM HISTORY
 
+9.9.13 (Month XXth 2020)
+
+- Added F1 key for "Online Help", F3 key for "Recordings Browser" and 
+  F4 key for "Recordings Files"
+
 9.9.12 (November 17th 2020)
 
 - Removed Motion vs. Continuous REC option from Camera Basic Settings 
