@@ -79,7 +79,7 @@ int CDonorEmailValidateThread::DonorEmailValidate()
 			p = ::GetURL(sURL, Size, FALSE, TRUE, TRUE, NULL);		// 2. then try with proxy
 		if (p)
 		{
-			CString s(::FromUTF8(p, Size));
+			CString s(::FromUTF8(p, (int)Size));
 			free(p);
 			if (s.Find(_T("OK")) >= 0)
 			{
