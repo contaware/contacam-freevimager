@@ -505,7 +505,7 @@ class CEncryptDecrypt
 		inline ULONG GetVec(ULONG uId)
 		{ ULONG ulCoord = m_ulvecEncrypt.at(uId); return ulCoord; }
 		inline ULONG GetVecSize()
-		{ const vector <ULONG>::size_type stSize = m_ulvecEncrypt.size(); return stSize; }
+		{ const vector <ULONG>::size_type stSize = m_ulvecEncrypt.size(); return (ULONG)stSize; }
 		inline void SetVec(ULONG uId, ULONG ulVal)
 		{ m_ulvecEncrypt.at(uId) = ulVal; }
 	private:
