@@ -20,7 +20,6 @@ extern TCHAR g_szDefaultFontFace[LF_FACESIZE];
 extern BOOL g_bMMX;
 extern BOOL g_bSSE;
 extern BOOL g_bSSE2;
-extern BOOL g_b3DNOW;
 extern DWORD g_dwAllocationGranularity;
 extern int g_nPCInstalledPhysRamMB;
 extern int g_nOSUsablePhysRamMB;

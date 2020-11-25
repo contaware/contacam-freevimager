@@ -47,17 +47,11 @@ TCHAR g_szDefaultFontFace[LF_FACESIZE] = _T("Segoe UI");
 BOOL g_bMMX = FALSE;
 BOOL g_bSSE = FALSE;
 BOOL g_bSSE2 = FALSE;
-BOOL g_b3DNOW = FALSE;
 DWORD g_dwAllocationGranularity = 65536;
 int g_nPCInstalledPhysRamMB = 2048;
 int g_nOSUsablePhysRamMB = 2048;
 int g_nAppUsableAddressSpaceMB = 2047;
 static LONG g_lTempFilesCount = 0;
-#define CPU_FEATURE_MMX		0x0001
-#define CPU_FEATURE_SSE		0x0002
-#define CPU_FEATURE_SSE2	0x0004
-#define CPU_FEATURE_3DNOW	0x0008
-int GetCpuInstr();
 void InitHelpers()
 {
 	// Get System DPI
@@ -73,15 +67,9 @@ void InitHelpers()
 		_tcscpy(g_szDefaultFontFace, _T("Segoe UI Symbol")); // supported by Windows 7 or higher
 
 	// Supported Instruction Sets
-	int nInstructionSets = GetCpuInstr();
-	if (nInstructionSets & CPU_FEATURE_MMX)
-		g_bMMX = TRUE;
-	if (nInstructionSets & CPU_FEATURE_SSE)
-		g_bSSE = TRUE;
-	if (nInstructionSets & CPU_FEATURE_SSE2)
-		g_bSSE2 = TRUE;
-	if (nInstructionSets & CPU_FEATURE_3DNOW)
-		g_b3DNOW = TRUE;
+	g_bMMX = IsProcessorFeaturePresent(PF_MMX_INSTRUCTIONS_AVAILABLE);
+	g_bSSE = IsProcessorFeaturePresent(PF_XMMI_INSTRUCTIONS_AVAILABLE);
+	g_bSSE2 = IsProcessorFeaturePresent(PF_XMMI64_INSTRUCTIONS_AVAILABLE);
 
 	// System Info
 	SYSTEM_INFO sysInfo = {};
@@ -2027,96 +2015,6 @@ void AlertUser(HWND hWnd)
 	fwi.dwTimeout = 70;
 	fwi.uCount = 7;
 	FlashWindowEx(&fwi);
-}
-
-static BOOL HasCpuId()
-{
-    __try
-	{
-        _asm
-		{
-            xor eax, eax
-            cpuid
-        }
-    }
-    __except (EXCEPTION_EXECUTE_HANDLER)
-	{
-        return FALSE;
-    }
-    return TRUE;
-}
-
-#define _MMX_FEATURE_BIT	0x00800000
-#define _SSE_FEATURE_BIT	0x02000000
-#define _SSE2_FEATURE_BIT	0x04000000
-#define _3DNOW_FEATURE_BIT	0x80000000
-
-static int GetCpuInstr()
-{
-    DWORD dwStandard = 0;
-    DWORD dwFeature = 0;
-    DWORD dwMax = 0;
-    DWORD dwExt = 0;
-    int feature = 0;
-    union
-	{
-        char cBuf[12+1];
-        struct
-		{
-            DWORD dw0;
-            DWORD dw1;
-            DWORD dw2;
-        } s;
-    } Ident;
-
-    if (!HasCpuId())
-        return 0;
-
-    _asm
-	{
-        push ebx
-        push ecx
-        push edx
-
-        // get the vendor string
-        xor eax, eax
-        cpuid
-        mov dwMax, eax
-        mov Ident.s.dw0, ebx
-        mov Ident.s.dw1, edx
-        mov Ident.s.dw2, ecx
-
-        // get the Standard bits
-        mov eax, 1
-        cpuid
-        mov dwStandard, eax
-        mov dwFeature, edx
-
-        // get AMD-specials
-        mov eax, 80000000h
-        cpuid
-        cmp eax, 80000000h
-        jc notamd
-        mov eax, 80000001h
-        cpuid
-        mov dwExt, edx
-
-notamd:
-        pop ecx
-        pop ebx
-        pop edx
-    }
-
-    if (dwFeature & _MMX_FEATURE_BIT)
-        feature |= CPU_FEATURE_MMX;
-    if (dwExt & _3DNOW_FEATURE_BIT)
-        feature |= CPU_FEATURE_3DNOW;
-    if (dwFeature & _SSE_FEATURE_BIT)
-        feature |= CPU_FEATURE_SSE;
-    if (dwFeature & _SSE2_FEATURE_BIT)
-        feature |= CPU_FEATURE_SSE2;
-
-    return feature;
 }
 
 CString GetUserName()
