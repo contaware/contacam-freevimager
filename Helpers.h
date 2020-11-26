@@ -401,6 +401,7 @@ Bytes Name   Endianness  Endianness
 Note: 'Native' is Little Endian on Microsoft platforms
 */
 extern CString UuidToCString(const UUID* pUuid); // uuid/guid struct to CString
+extern BOOL UuidFromCString(CString sUuid, UUID* pUuid); // fills passed uuid/guid struct with given CString
 extern CString GetUuidCString(); // generate a uuid/guid CString
 
 // On some systems GetCursorPos() fails for addresses > 2GB,

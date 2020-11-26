@@ -2622,6 +2622,12 @@ CString UuidToCString(const UUID* pUuid)
 	return sUuid;
 }
 
+BOOL UuidFromCString(CString sUuid, UUID* pUuid)
+{
+	RPC_STATUS ret = UuidFromString((unsigned short*)sUuid.GetBuffer(), pUuid);
+	return (ret == RPC_S_OK);
+}
+
 CString GetUuidCString()
 {
 	UUID Uuid;
