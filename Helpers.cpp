@@ -36,7 +36,7 @@ static char THIS_FILE[] = __FILE__;
 #pragma comment(lib, "psapi.lib")	// to support EnumProcesses(), EnumProcessModules(), GetModuleBaseName(), GetProcessMemoryInfo()
 #endif
 #pragma comment(lib, "mpr.lib")		// to support WNetGetConnection()
-#pragma comment(lib, "Rpcrt4.lib")	// to support UuidCreate(), UuidToString(), RpcStringFree(), UuidFromString
+#pragma comment(lib, "Rpcrt4.lib")	// to support UuidCreate(), UuidToString(), RpcStringFree(), UuidFromString()
 #pragma comment(lib, "Wininet.lib")	// to support InternetGetLastResponseInfo(), InternetOpen(), InternetConnect(), ...
 
 // If InitHelpers() is not called vars default to:
