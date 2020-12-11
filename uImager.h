@@ -588,7 +588,7 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CUImagerApp)
 	public:
-	void Pump();
+	BOOL Pump();
 	virtual BOOL InitInstance();
 	virtual CDocument* OpenDocumentFile(LPCTSTR lpszFileName);
 	virtual int ExitInstance();

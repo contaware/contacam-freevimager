@@ -541,14 +541,34 @@ extern "C" void my_handle_aborts(int signal)
 	}
 }
 
-void CUImagerApp::Pump()
+BOOL CUImagerApp::Pump()
 {
     MSG msg;
-    while (::PeekMessage(&msg, NULL,   // pump message until none
-           NULL, NULL, PM_NOREMOVE))   // are left in the queue
-    {
-        ::AfxGetThread()->PumpMessage();
+
+	// Pump messages until none are left in the queue
+	while (::PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) // returns TRUE also for WM_QUIT messages
+	{
+		// Note: from the UI thread all the following pump functions call AfxInternalPumpMessage()
+		//       AfxGetApp()->PumpMessage() = AfxGetThread()->PumpMessage() = AfxPumpMessage()
+		if (!::AfxGetThread()->PumpMessage()) // returns FALSE for WM_QUIT messages
+		{
+#ifdef _DEBUG
+			// Avoid the ASSERT(FALSE) in AfxInternalPumpMessage()
+			::AfxGetThreadState()->m_nDisablePumpCount = 0;
+#endif
+
+			// If we get a WM_QUIT then CWinThread::PumpMessage() removes WM_QUIT
+			// from the message queue and returns FALSE. But we cannot exit 
+			// CWinThread::Run() from this point, we must repost WM_QUIT so that
+			// CWinThread::PumpMessage() in CWinThread::Run() returns FALSE and 
+			// the app can terminate
+			::PostQuitMessage(0);
+			
+			return FALSE;
+		}
     }
+
+	return TRUE;
 }
 
 BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
