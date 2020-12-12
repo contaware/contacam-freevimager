@@ -543,9 +543,8 @@ extern "C" void my_handle_aborts(int signal)
 
 BOOL CUImagerApp::Pump()
 {
-    MSG msg;
-
 	// Pump messages until none are left in the queue
+	MSG msg;
 	while (::PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) // returns TRUE also for WM_QUIT messages
 	{
 		// Note: from the UI thread all the following pump functions call AfxInternalPumpMessage()
@@ -563,10 +562,10 @@ BOOL CUImagerApp::Pump()
 			// CWinThread::PumpMessage() in CWinThread::Run() returns FALSE and 
 			// the app can terminate
 			::PostQuitMessage(0);
-			
+
 			return FALSE;
 		}
-    }
+	}
 
 	return TRUE;
 }
