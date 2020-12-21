@@ -212,10 +212,10 @@ BOOL CVideoDeviceToolBar::Create(CWnd* pParentWnd)
 	dwStyle |= BTNS_WHOLEDROPDOWN;
 	SetButtonStyle(CommandToIndex(ID_CAPTURE_CAMERASETTINGS), dwStyle);
 
-	// ID_VIEW_FRAMEANNOTATION
-	dwStyle = GetButtonStyle(CommandToIndex(ID_VIEW_FRAMEANNOTATION));
-	dwStyle |= BTNS_DROPDOWN;
-	SetButtonStyle(CommandToIndex(ID_VIEW_FRAMEANNOTATION), dwStyle);
+	// ID_EDIT_FRAMESTAMP
+	dwStyle = GetButtonStyle(CommandToIndex(ID_EDIT_FRAMESTAMP));
+	dwStyle |= BTNS_WHOLEDROPDOWN;
+	SetButtonStyle(CommandToIndex(ID_EDIT_FRAMESTAMP), dwStyle);
 
 	// ID_CAPTURE_RECORD
 	dwStyle = GetButtonStyle(CommandToIndex(ID_CAPTURE_RECORD));
@@ -1052,7 +1052,7 @@ void CVideoDeviceChildFrame::OnToolbarDropDown(NMHDR* pNMHDR, LRESULT* pResult)
 			pPopup->TrackPopupMenuEx(TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_VERTICAL, pNMToolBar->rcButton.left, pNMToolBar->rcButton.bottom, this, &tpm);
 			break;
 		}
-		case ID_VIEW_FRAMEANNOTATION:
+		case ID_EDIT_FRAMESTAMP:
 		{
 			CMenu menu;
 			VERIFY(menu.LoadMenu(IDR_CONTEXT_FRAMESTAMP));

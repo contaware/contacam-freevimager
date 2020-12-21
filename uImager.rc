@@ -661,9 +661,6 @@ IDR_CONTEXT_SENSITIVITY MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
-	    MENUITEM "View RECs in Web Browser\tF3", ID_VIEW_WEB
-        MENUITEM "View RECs in File Explorer\tF4", ID_VIEW_FILES
-		MENUITEM SEPARATOR
         MENUITEM "REC OFF",                     ID_SENSITIVITY_0
         MENUITEM SEPARATOR
         MENUITEM "Motion REC with sensitivity 10", ID_SENSITIVITY_10
@@ -677,6 +674,9 @@ BEGIN
         MENUITEM "Motion REC with sensitivity 90", ID_SENSITIVITY_90
         MENUITEM SEPARATOR
         MENUITEM "Continuous REC",              ID_SENSITIVITY_100
+        MENUITEM SEPARATOR
+		MENUITEM "View RECs in Web Browser\tF3", ID_VIEW_WEB
+        MENUITEM "View RECs in File Explorer\tF4", ID_VIEW_FILES
     END
 END
 
@@ -685,7 +685,9 @@ BEGIN
     POPUP "_Context Menu_"
     BEGIN
         MENUITEM "Enable frame stamps",         ID_VIEW_FRAMETIME
+        MENUITEM SEPARATOR
         MENUITEM "Include uptime with time",    ID_VIEW_FRAMEUPTIME
+		MENUITEM "Annotation",                  ID_VIEW_FRAMEANNOTATION
         MENUITEM SEPARATOR
         MENUITEM "4",                           ID_FONTSIZE_4
         MENUITEM "5",                           ID_FONTSIZE_5
@@ -3282,7 +3284,7 @@ STRINGTABLE
 BEGIN
     ID_PLAY_SLIDESHOW       "Start slideshow (inside current directory)\nStart Slideshow"
     ID_STOP_SLIDESHOW       "Stop slideshow\nStop Slideshow"
-    ID_VIEW_FRAMEANNOTATION "Frame stamps\nFrame Stamps"
+	ID_EDIT_FRAMESTAMP      "Frame stamps\nFrame Stamps"
     ID_FILE_INFO            "Show file information\nFile Info"
     ID_PLAY_TRANSITION_OFF  "Turn transition effect off\nTransition Off"
     ID_PLAY_TRANSITION_RANDOM "Random transition effect\nRandom Transition"

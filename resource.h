@@ -3055,6 +3055,7 @@
 #define ID_EDIT_TO8BITS                 32883
 #define ID_EDIT_TO1BIT_DITHER_ERRDIFF   32884
 #define ID_FILE_SETTINGS                32889
+#define ID_EDIT_FRAMESTAMP              32909
 #define ID_EDIT_ZONE                    32910
 #define ID_EDIT_ZONE_REMOVE             32912
 #define ID_EDIT_ADDALL                  32913

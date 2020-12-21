@@ -53,6 +53,7 @@ IMPLEMENT_DYNCREATE(CVideoDeviceDoc, CUImagerDoc)
 BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	//{{AFX_MSG_MAP(CVideoDeviceDoc)
 	ON_UPDATE_COMMAND_UI(ID_CAPTURE_CAMERASETTINGS, OnUpdateCaptureCameraSettings)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_FRAMESTAMP, OnUpdateEditFrameStamp)
 	ON_UPDATE_COMMAND_UI(ID_CAPTURE_RECORD, OnUpdateCaptureRecord)
 	ON_COMMAND(ID_SENSITIVITY_0, OnMovDetSensitivity0)
 	ON_UPDATE_COMMAND_UI(ID_SENSITIVITY_0, OnUpdateMovDetSensitivity0)
@@ -4990,6 +4991,14 @@ void CVideoDeviceDoc::OnUpdateCaptureCameraSettings(CCmdUI* pCmdUI)
 	// Note: ON_COMMAND(ID_CAPTURE_CAMERASETTINGS, OnCaptureCameraSettings) is never called,
 	//       CVideoDeviceChildFrame::OnToolbarDropDown() is responsible for the menu popup
 	pCmdUI->Enable();
+}
+
+void CVideoDeviceDoc::OnUpdateEditFrameStamp(CCmdUI* pCmdUI)
+{
+	// Note: ON_COMMAND(ID_EDIT_FRAMESTAMP, OnEditFrameStamp) is never called,
+	//       CVideoDeviceChildFrame::OnToolbarDropDown() is responsible for the menu popup
+	pCmdUI->Enable();
+	pCmdUI->SetCheck(m_bShowFrameTime ? 1 : 0);
 }
 
 void CVideoDeviceDoc::OnUpdateCaptureRecord(CCmdUI* pCmdUI)
