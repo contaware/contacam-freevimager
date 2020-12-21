@@ -989,6 +989,7 @@ public:
 // Generated message map functions
 protected:
 	//{{AFX_MSG(CVideoDeviceDoc)
+	afx_msg void OnUpdateCaptureCameraSettings(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateCaptureRecord(CCmdUI* pCmdUI);
 	afx_msg void OnMovDetSensitivity0();
 	afx_msg void OnUpdateMovDetSensitivity0(CCmdUI* pCmdUI);

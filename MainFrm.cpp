@@ -111,11 +111,8 @@ CMainFrame::CMainFrame() : m_TrayIcon(IDR_TRAYICON) // Menu ID
 	m_nFileMenuPos = -2;
 	m_nEditMenuPos = -2;
 	m_nCaptureMenuPos = -2;
-	m_nPlayMenuPos = -2;
 	m_nSettingsMenuPos = -2;
-	m_nWindowsPos = -2;
 	m_nHelpMenuPos = -2;
-	m_nHelpMenuItemsCount = -1;
 	m_hMenu = NULL;
 	m_bChildMax = false;
 	m_bChildMin = false;
@@ -1737,7 +1734,7 @@ void CMainFrame::InitMenuPositions(CDocument* pDoc/*=NULL*/)
 		// Main menu entries count
 		int nCount = (int)pMenu->GetMenuItemCount();
 
-		// Init menu positions and remove Capture menu
+		// Init menu positions
 		if (pDoc == NULL) // MainFrame menu
 		{
 			m_nFileMenuPos = 0;
@@ -1774,11 +1771,10 @@ void CMainFrame::InitMenuPositions(CDocument* pDoc/*=NULL*/)
 		else if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoDeviceDoc)))
 		{
 			((CVideoDeviceDoc*)pDoc)->m_nFileMenuPos = 0;
-			((CVideoDeviceDoc*)pDoc)->m_nViewMenuPos = 1;
-			((CVideoDeviceDoc*)pDoc)->m_nCaptureMenuPos = 2;
-			((CVideoDeviceDoc*)pDoc)->m_nSettingsMenuPos = 3;
-			((CVideoDeviceDoc*)pDoc)->m_nWindowsPos = 4;
-			((CVideoDeviceDoc*)pDoc)->m_nHelpMenuPos = 5;
+			((CVideoDeviceDoc*)pDoc)->m_nCaptureMenuPos = 1;
+			((CVideoDeviceDoc*)pDoc)->m_nSettingsMenuPos = 2;
+			((CVideoDeviceDoc*)pDoc)->m_nWindowsPos = 3;
+			((CVideoDeviceDoc*)pDoc)->m_nHelpMenuPos = 4;
 		}
 #endif
 		else

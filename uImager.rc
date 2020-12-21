@@ -160,6 +160,7 @@ BEGIN
     BEGIN
         MENUITEM "&Snapshot\tIns",              ID_EDIT_SNAPSHOT
         MENUITEM SEPARATOR
+        MENUITEM "Fit",                         ID_VIEW_FIT
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
     END
 END
@@ -168,31 +169,17 @@ IDR_VIDEODEVICE MENU
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "&Close",                      ID_FILE_CLOSE
-        MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_APP_EXIT
-    END
-    POPUP "&View"
-    BEGIN
-        MENUITEM "Fit",                         ID_VIEW_FIT
-        MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
-        MENUITEM SEPARATOR
-        MENUITEM "Recordings Browser\tF3",      ID_VIEW_WEB
-        MENUITEM "Recordings Files\tF4",        ID_VIEW_FILES
     END
     POPUP "&Camera"
     BEGIN
         MENUITEM "&Network / IP Camera",        ID_CAPTURE_NETWORK
         MENUITEM SEPARATOR
         MENUITEM "&Remove Cameras",             ID_EDIT_DELETE
-        MENUITEM SEPARATOR
-        MENUITEM "&Snapshot\tIns",              ID_EDIT_SNAPSHOT
     END
     POPUP "&Settings"
     BEGIN
         MENUITEM "Global Settings",             ID_FILE_SETTINGS
-        MENUITEM "Camera Basic Settings",       ID_CAPTURE_CAMERABASICSETTINGS
-        MENUITEM "Camera Advanced Settings",    ID_CAPTURE_CAMERAADVANCEDSETTINGS
         MENUITEM SEPARATOR
         MENUITEM "Normal Logging",              ID_SETTINGS_LOG_NORMAL
         MENUITEM "Verbose Logging",             ID_SETTINGS_LOG_VERBOSE
@@ -445,6 +432,7 @@ BEGIN
         MENUITEM "Activate all zones",          ID_EDIT_ADDALL
         MENUITEM "Deactivate all zones",        ID_EDIT_REMOVEALL
         MENUITEM SEPARATOR
+        MENUITEM "Fit",                         ID_VIEW_FIT
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
     END
 END
@@ -660,10 +648,22 @@ BEGIN
     END
 END
 
+IDR_CONTEXT_CAMERASETTINGS MENU
+BEGIN
+    POPUP "_Context Menu_"
+    BEGIN
+        MENUITEM "Camera Basic Settings",       ID_CAPTURE_CAMERABASICSETTINGS
+        MENUITEM "Camera Advanced Settings",    ID_CAPTURE_CAMERAADVANCEDSETTINGS
+    END
+END
+
 IDR_CONTEXT_SENSITIVITY MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
+	    MENUITEM "View RECs in Web Browser\tF3", ID_VIEW_WEB
+        MENUITEM "View RECs in File Explorer\tF4", ID_VIEW_FILES
+		MENUITEM SEPARATOR
         MENUITEM "REC OFF",                     ID_SENSITIVITY_0
         MENUITEM SEPARATOR
         MENUITEM "Motion REC with sensitivity 10", ID_SENSITIVITY_10
@@ -3241,8 +3241,6 @@ BEGIN
     ID_FILE_SELECTTWAINSOURCE 
                             "Select twain (scanner,...) source\nSelect Twain Source"
     ID_FILE_ACQUIRE         "Scan from selected source\nScan"
-    ID_CAPTURE_CAMERAADVANCEDSETTINGS 
-                            "Camera advanced settings\nCamera Advanced Settings"
 END
 
 STRINGTABLE
@@ -3521,11 +3519,6 @@ BEGIN
     ID_EDIT_PASTE_INTO_BOTTOMRIGHT 
                             "Paste into bottom - right corner\nPaste Into Bottom - Right"
     ID_EDIT_PASTE_INTO_FILE "Paste into from a coordinates text file\nPaste Into From File"
-END
-
-STRINGTABLE
-BEGIN
-    ID_VIEW_WEB             "Open web browser to watch live stream / recordings\nBrowse Live Stream / Recordings"
 END
 
 STRINGTABLE
@@ -3946,8 +3939,8 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_CAPTURE_CAMERABASICSETTINGS 
-                            "Camera basic settings\nCamera Basic Settings"
+    ID_CAPTURE_CAMERASETTINGS
+                            "Camera settings\nCamera Settings"
     ID_FILE_EXTRACT         "Extract all pages/frames\nExtract Pages/Frames"
     ID_EDIT_SCREENSHOT      "Take a screenshot\nScreenshot"
 END
@@ -3988,7 +3981,6 @@ END
 STRINGTABLE
 BEGIN
     ID_FILE_RELOAD          "Reload current file\nReload File"
-    ID_VIEW_FILES           "Open file explorer to access stored files\nBrowse Stored Files"
     ID_SETTINGS_BROWSE_CONFIGLOG_FILES 
                             "Open file explorer to access configuration and log files\nBrowse Config/Log Files"
 END

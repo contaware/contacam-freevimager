@@ -167,13 +167,8 @@ public:
 	int m_nFileMenuPos;
 	int m_nEditMenuPos;
 	int m_nCaptureMenuPos;
-	int m_nPlayMenuPos;
 	int m_nSettingsMenuPos;
-	int m_nWindowsPos;
 	int m_nHelpMenuPos;
-
-	// Help Menu Items Count
-	int m_nHelpMenuItemsCount;
 
 	// Full screen flag
 	volatile bool m_bFullScreenMode;

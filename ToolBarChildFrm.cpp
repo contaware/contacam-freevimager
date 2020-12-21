@@ -206,12 +206,23 @@ BOOL CVideoDeviceToolBar::Create(CWnd* pParentWnd)
 	// Add toolbar button dropdown arrows
 	// See: https://docs.microsoft.com/en-us/windows/win32/controls/toolbar-extended-styles
 	GetToolBarCtrl().SetExtendedStyle(TBSTYLE_EX_DRAWDDARROWS);
-	DWORD dwStyle = GetButtonStyle(CommandToIndex(ID_VIEW_FRAMEANNOTATION));
+
+	// ID_CAPTURE_CAMERASETTINGS
+	DWORD dwStyle = GetButtonStyle(CommandToIndex(ID_CAPTURE_CAMERASETTINGS));
+	dwStyle |= BTNS_WHOLEDROPDOWN;
+	SetButtonStyle(CommandToIndex(ID_CAPTURE_CAMERASETTINGS), dwStyle);
+
+	// ID_VIEW_FRAMEANNOTATION
+	dwStyle = GetButtonStyle(CommandToIndex(ID_VIEW_FRAMEANNOTATION));
 	dwStyle |= BTNS_DROPDOWN;
 	SetButtonStyle(CommandToIndex(ID_VIEW_FRAMEANNOTATION), dwStyle);
+
+	// ID_CAPTURE_RECORD
 	dwStyle = GetButtonStyle(CommandToIndex(ID_CAPTURE_RECORD));
 	dwStyle |= BTNS_WHOLEDROPDOWN;
 	SetButtonStyle(CommandToIndex(ID_CAPTURE_RECORD), dwStyle);
+
+	// ID_EDIT_ZONE
 	dwStyle = GetButtonStyle(CommandToIndex(ID_EDIT_ZONE));
 	dwStyle |= BTNS_WHOLEDROPDOWN;
 	SetButtonStyle(CommandToIndex(ID_EDIT_ZONE), dwStyle);
@@ -1028,6 +1039,19 @@ void CVideoDeviceChildFrame::OnToolbarDropDown(NMHDR* pNMHDR, LRESULT* pResult)
 	LPNMTOOLBAR pNMToolBar = reinterpret_cast<LPNMTOOLBAR>(pNMHDR);
 	switch (pNMToolBar->iItem)
 	{
+		case ID_CAPTURE_CAMERASETTINGS:
+		{
+			CMenu menu;
+			VERIFY(menu.LoadMenu(IDR_CONTEXT_CAMERASETTINGS));
+			CMenu* pPopup = menu.GetSubMenu(0);
+			ASSERT(pPopup != NULL);
+			GetToolBar()->ClientToScreen(&(pNMToolBar->rcButton));
+			TPMPARAMS tpm;
+			tpm.cbSize = sizeof(tpm);
+			tpm.rcExclude = pNMToolBar->rcButton; // prevent the menu from covering the button
+			pPopup->TrackPopupMenuEx(TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_VERTICAL, pNMToolBar->rcButton.left, pNMToolBar->rcButton.bottom, this, &tpm);
+			break;
+		}
 		case ID_VIEW_FRAMEANNOTATION:
 		{
 			CMenu menu;
