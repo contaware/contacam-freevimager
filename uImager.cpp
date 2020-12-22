@@ -4071,7 +4071,8 @@ void CUImagerApp::OnEditPaste()
 void CUImagerApp::OnUpdateEditPaste(CCmdUI* pCmdUI) 
 {
 	pCmdUI->Enable(	(::IsClipboardFormatAvailable(CF_DIB)			||
-					::IsClipboardFormatAvailable(CF_ENHMETAFILE))	&&
+					::IsClipboardFormatAvailable(CF_ENHMETAFILE)	||
+					::IsClipboardFormatAvailable(CF_HDROP))			&&
 					(::AfxGetMainFrame() && !::AfxGetMainFrame()->m_bFullScreenMode));
 }
 

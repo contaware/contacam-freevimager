@@ -5697,7 +5697,8 @@ void CPictureDoc::OnUpdateEditPasteIntoTopleft(CCmdUI* pCmdUI)
 					m_dwIDAfterFullLoadCommand == ID_EDIT_PASTE_INTO_TOPLEFT)		&&
 					DoEnableCommand()												&&
 					(::IsClipboardFormatAvailable(CF_DIB)							||
-					::IsClipboardFormatAvailable(CF_ENHMETAFILE)));
+					::IsClipboardFormatAvailable(CF_ENHMETAFILE)					||
+					::IsClipboardFormatAvailable(CF_HDROP)));
 }
 
 void CPictureDoc::OnEditPasteIntoTopright() 
@@ -5712,7 +5713,8 @@ void CPictureDoc::OnUpdateEditPasteIntoTopright(CCmdUI* pCmdUI)
 					m_dwIDAfterFullLoadCommand == ID_EDIT_PASTE_INTO_TOPRIGHT)		&&
 					DoEnableCommand()												&&
 					(::IsClipboardFormatAvailable(CF_DIB)							||
-					::IsClipboardFormatAvailable(CF_ENHMETAFILE)));
+					::IsClipboardFormatAvailable(CF_ENHMETAFILE)					||
+					::IsClipboardFormatAvailable(CF_HDROP)));
 }
 
 void CPictureDoc::OnEditPasteIntoBottomleft() 
@@ -5727,7 +5729,8 @@ void CPictureDoc::OnUpdateEditPasteIntoBottomleft(CCmdUI* pCmdUI)
 					m_dwIDAfterFullLoadCommand == ID_EDIT_PASTE_INTO_BOTTOMLEFT)	&&
 					DoEnableCommand()												&&
 					(::IsClipboardFormatAvailable(CF_DIB)							||
-					::IsClipboardFormatAvailable(CF_ENHMETAFILE)));
+					::IsClipboardFormatAvailable(CF_ENHMETAFILE)					||
+					::IsClipboardFormatAvailable(CF_HDROP)));
 }
 
 void CPictureDoc::OnEditPasteIntoBottomright() 
@@ -5742,7 +5745,8 @@ void CPictureDoc::OnUpdateEditPasteIntoBottomright(CCmdUI* pCmdUI)
 					m_dwIDAfterFullLoadCommand == ID_EDIT_PASTE_INTO_BOTTOMRIGHT)	&&
 					DoEnableCommand()												&&
 					(::IsClipboardFormatAvailable(CF_DIB)							||
-					::IsClipboardFormatAvailable(CF_ENHMETAFILE)));
+					::IsClipboardFormatAvailable(CF_ENHMETAFILE)					||
+					::IsClipboardFormatAvailable(CF_HDROP)));
 }
 
 void CPictureDoc::OnEditPasteIntoFile() 
@@ -5954,7 +5958,8 @@ void CPictureDoc::OnUpdateEditPasteIntoFile(CCmdUI* pCmdUI)
 					m_dwIDAfterFullLoadCommand == ID_EDIT_PASTE_INTO_FILE)	&&
 					DoEnableCommand()										&&
 					(::IsClipboardFormatAvailable(CF_DIB)					||
-					::IsClipboardFormatAvailable(CF_ENHMETAFILE)));
+					::IsClipboardFormatAvailable(CF_ENHMETAFILE)			||
+					::IsClipboardFormatAvailable(CF_HDROP)));
 }
 
 void CPictureDoc::OnEditPasteIntoFileHelp() 

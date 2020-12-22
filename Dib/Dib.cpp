@@ -5128,6 +5128,20 @@ void CDib::EditPaste(int XDpi/*=0*/, int YDpi/*=0*/)
 					::DeleteDC(hMemDC);
 			}
 		}
+		if (!bOk && ::IsClipboardFormatAvailable(CF_HDROP))
+		{
+			HDROP hDropInfo = NULL;
+			if (hDropInfo = (HDROP)::GetClipboardData(CF_HDROP))
+			{
+				// Try to load first file in list
+				CString sPath;
+				UINT uiSize = ::DragQueryFile(hDropInfo, 0, NULL, 0) + 1;
+				LPTSTR p = sPath.GetBuffer(uiSize);
+				::DragQueryFile(hDropInfo, 0, p, uiSize);
+				sPath.ReleaseBuffer();
+				bOk = LoadImage(sPath);
+			}
+		}
 		::CloseClipboard();
 	}
 }
