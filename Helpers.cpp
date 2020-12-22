@@ -1397,6 +1397,53 @@ CString GetSpecialFolderPath(int nSpecialFolder)
 	return CString(path);
 }
 
+CString GetShortcutTarget(const CString& sLinkPath)
+{
+	// Check
+	if (GetFileExt(sLinkPath) != _T(".lnk"))
+		return sLinkPath;
+
+	// Init COM
+	CoInitialize(NULL);
+
+	// Get Link Target
+	HRESULT hr = E_FAIL;
+	CString sTargetPath;
+	IShellLink* psl = NULL;
+	IPersistFile* ppf = NULL;
+	hr = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (LPVOID*)&psl);
+	if (SUCCEEDED(hr))
+	{
+		// Bind the ShellLink object
+		hr = psl->QueryInterface(IID_IPersistFile, (LPVOID*)&ppf);
+		if (SUCCEEDED(hr))
+		{
+			// Read the link
+			hr = ppf->Load(sLinkPath, STGM_READ);
+			if (SUCCEEDED(hr))
+			{
+				// Read the target information from the link object
+				hr = psl->GetPath(sTargetPath.GetBuffer(MAX_PATH), MAX_PATH, NULL, SLGP_UNCPRIORITY);
+				sTargetPath.ReleaseBuffer();
+			}
+		}
+	}
+
+	// Release
+	if (ppf)
+		ppf->Release();
+	if (psl)
+		psl->Release();
+
+	// Uninit COM
+	CoUninitialize();
+
+	if (SUCCEEDED(hr))
+		return sTargetPath;
+	else
+		return sLinkPath;
+}
+
 BOOL KillProc(HANDLE& hProcess)
 {
 	BOOL res = FALSE;

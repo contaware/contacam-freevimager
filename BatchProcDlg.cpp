@@ -4581,6 +4581,9 @@ void CBatchProcDlg::OnDropFiles(HDROP hDropInfo)
 		::DragQueryFile(hDropInfo, uiFile, p, uiSize);
 		sPath.ReleaseBuffer();
 
+		// In case of .lnk file return its target
+		sPath = ::GetShortcutTarget(sPath);
+
 		// If is File -> Append to List
 		if (::IsExistingFile(sPath))
 		{

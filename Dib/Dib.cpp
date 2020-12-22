@@ -5139,7 +5139,7 @@ void CDib::EditPaste(int XDpi/*=0*/, int YDpi/*=0*/)
 				LPTSTR p = sPath.GetBuffer(uiSize);
 				::DragQueryFile(hDropInfo, 0, p, uiSize);
 				sPath.ReleaseBuffer();
-				bOk = LoadImage(sPath);
+				bOk = LoadImage(::GetShortcutTarget(sPath));
 			}
 		}
 		::CloseClipboard();

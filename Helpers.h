@@ -227,6 +227,11 @@ CSIDL_CDBURN_AREA				CD Burn area
 */
 extern CString GetSpecialFolderPath(int nSpecialFolder);
 
+// Get the target from a .lnk file
+// sLinkPath is returned when no shortcut is provided or in case of failure
+// Note that File Dialogs already return the shortcut target
+extern CString GetShortcutTarget(const CString& sLinkPath);
+
 // Kill process
 // 
 // The process ID is a value associated with the process object,

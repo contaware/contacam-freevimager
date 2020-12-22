@@ -262,12 +262,17 @@ BOOL CPreviewFileDlg::ParseSubstrings(CString s, CStringArray& a)
 
 CString CPreviewFileDlg::GetLastSelectedFilePath()
 {
+	CString s(GetLongFileName());
+
+	// Check whether multiple files selected
 	int nPos;
-	CString sFiles = GetLongFileName();
-	if ((nPos = sFiles.Find(_T('\"'), 1)) > 0)
-		return GetFolderPath() + _T('\\') + sFiles.Mid(1, nPos - 1);
+	if ((nPos = s.Find(_T('\"'), 1)) > 0)
+		s = GetFolderPath() + _T('\\') + s.Mid(1, nPos - 1);
 	else
-		return GetPathName();
+		s = GetPathName();
+
+	// In case of .lnk file return its target
+	return ::GetShortcutTarget(s);
 }
 
 void CPreviewFileDlg::Load(BOOL bOnlyHeader/*=FALSE*/) 

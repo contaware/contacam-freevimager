@@ -1686,15 +1686,18 @@ CDocument* CUImagerApp::OpenDocumentFile(LPCTSTR lpszFileName)
 	// Check
 	if (lpszFileName == NULL || lpszFileName[0] == _T('\0'))
 		return NULL;
+	
+	// In case of .lnk file return its target file/folder
+	CString sTargetPath = ::GetShortcutTarget(lpszFileName);
 
 	// Store Last Opened Directory
-	if (::IsExistingDir(lpszFileName))
-		m_sLastOpenedDir = CString(lpszFileName);
+	if (::IsExistingDir(sTargetPath))
+		m_sLastOpenedDir = sTargetPath;
 	else
 	{
 		TCHAR szDrive[_MAX_DRIVE];
 		TCHAR szDir[_MAX_DIR];
-		_tsplitpath(lpszFileName, szDrive, szDir, NULL, NULL);
+		_tsplitpath(sTargetPath, szDrive, szDir, NULL, NULL);
 		m_sLastOpenedDir = CString(szDrive) + CString(szDir);
 	}
 	m_sLastOpenedDir.TrimRight(_T('\\'));
@@ -1711,15 +1714,15 @@ CDocument* CUImagerApp::OpenDocumentFile(LPCTSTR lpszFileName)
 		PaintDocTitles();
 	}
 
-	CUImagerMultiDocTemplate* curTemplate = GetTemplateFromFileExtension(lpszFileName);
+	CUImagerMultiDocTemplate* curTemplate = GetTemplateFromFileExtension(sTargetPath);
 	if (curTemplate == NULL)
 	{
 		// A Dir may have been dropped -> Start Recursive Slideshow
-		if (::IsExistingDir(lpszFileName))
-			return SlideShow(lpszFileName, TRUE);
+		if (::IsExistingDir(sTargetPath))
+			return SlideShow(sTargetPath, TRUE);
 		else
 		{
-			FileTypeNotSupportedMessageBox(lpszFileName);
+			FileTypeNotSupportedMessageBox(sTargetPath);
 			return NULL;
 		}
 	}
@@ -1727,7 +1730,7 @@ CDocument* CUImagerApp::OpenDocumentFile(LPCTSTR lpszFileName)
 	// If the Path is Already Full, GetFullPathName will not change it.
 	TCHAR szFullPathName[MAX_PATH];
 	LPTSTR lpFilePart;
-	::GetFullPathName(lpszFileName, MAX_PATH, szFullPathName, &lpFilePart);
+	::GetFullPathName(sTargetPath, MAX_PATH, szFullPathName, &lpFilePart);
 
 	// Open Doc
 	CDocument* pDoc = curTemplate->OpenDocumentFile(NULL);
