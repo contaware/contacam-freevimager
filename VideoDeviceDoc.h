@@ -1018,6 +1018,7 @@ protected:
 	afx_msg void OnUpdateCaptureObscureSource(CCmdUI* pCmdUI);
 	afx_msg void OnCaptureCameraAdvancedSettings();
 	afx_msg void OnViewFrameAnnotation();
+	afx_msg void OnUpdateViewFrameAnnotation(CCmdUI* pCmdUI);
 	afx_msg void OnViewFrametime();
 	afx_msg void OnUpdateViewFrametime(CCmdUI* pCmdUI);
 	afx_msg void OnViewFrameUptime();

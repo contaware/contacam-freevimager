@@ -81,6 +81,7 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_UPDATE_COMMAND_UI(ID_CAPTURE_OBSCURESOURCE, OnUpdateCaptureObscureSource)
 	ON_COMMAND(ID_CAPTURE_CAMERAADVANCEDSETTINGS, OnCaptureCameraAdvancedSettings)
 	ON_COMMAND(ID_VIEW_FRAMEANNOTATION, OnViewFrameAnnotation)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_FRAMEANNOTATION, OnUpdateViewFrameAnnotation)
 	ON_COMMAND(ID_VIEW_FRAMETIME, OnViewFrametime)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FRAMETIME, OnUpdateViewFrametime)
 	ON_COMMAND(ID_VIEW_FRAMEUPTIME, OnViewFrameUptime)
@@ -8049,9 +8050,14 @@ void CVideoDeviceDoc::OnViewFrameAnnotation()
 		m_szFrameAnnotation[MAX_PATH - 1] = _T('\0');				// first make sure it is NULL terminated
 		_tcsncpy(m_szFrameAnnotation, dlg.m_sText, MAX_PATH - 1);	// and then copy a maximum of (MAX_PATH - 1) chars
 		::AfxGetApp()->WriteProfileString(GetDevicePathName(), _T("FrameAnnotation"), m_szFrameAnnotation);
-		if (!m_bShowFrameTime)
+		if (m_szFrameAnnotation[0] != _T('\0') && !m_bShowFrameTime)
 			OnViewFrametime();
 	}
+}
+
+void CVideoDeviceDoc::OnUpdateViewFrameAnnotation(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(m_szFrameAnnotation[0] != _T('\0') ? 1 : 0);
 }
 
 void CVideoDeviceDoc::OnViewFrametime() 
@@ -8069,6 +8075,8 @@ void CVideoDeviceDoc::OnViewFrameUptime()
 {
 	m_bShowFrameUptime = !m_bShowFrameUptime;
 	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("ShowFrameUptime"), m_bShowFrameUptime);
+	if (m_bShowFrameUptime && !m_bShowFrameTime)
+		OnViewFrametime();
 }
 
 void CVideoDeviceDoc::OnUpdateViewFrameUptime(CCmdUI* pCmdUI)
