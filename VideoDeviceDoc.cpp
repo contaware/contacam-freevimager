@@ -8751,6 +8751,10 @@ void CVideoDeviceDoc::ConnectRtsp()
 			sPathAndQuery = _T("/ipcam.sdp");
 			break;
 
+		case ESCAM_RTSP:
+			sPathAndQuery = _T("/live/0/main"); // substream is: /live/0/sub
+			break;
+
 		case FLOUREON_RTSP:
 		case JIDETECH_RTSP:
 		case SRIHOME_RTSP:

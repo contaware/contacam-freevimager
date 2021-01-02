@@ -2,9 +2,11 @@ CONTACAM HISTORY
 
 9.9.13 (Month XXth 2020)
 
+- In bottom toolbar re-added Camera Settings button and always pop-up
+  a menu for all buttons with an arrow
 - Added F1 key for "Online Help", F3 key for "View RECs in Web Browser"
   and F4 key for "View RECs in File Explorer"
-- Re-added Camera Settings button to bottom toolbar
+- Added support for Escam
 
 9.9.12 (November 17th 2020)
 

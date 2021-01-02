@@ -82,6 +82,7 @@ void CHostPortDlg::InitDeviceTypeModeArrayForCB(CArray<CDeviceTypeModePair>& a)
 	a.Add(CDeviceTypeModePair(_T("Edimax MPEG4 (RTSP)"), (DWORD)CVideoDeviceDoc::EDIMAX_MPEG4_RTSP));
 	a.Add(CDeviceTypeModePair(_T("Edimax (") + ML_STRING(1865, "HTTP motion jpeg") + _T(")"), (DWORD)CVideoDeviceDoc::EDIMAX_SP));
 	a.Add(CDeviceTypeModePair(_T("Edimax (") + ML_STRING(1866, "HTTP jpeg snapshots") + _T(")"), (DWORD)CVideoDeviceDoc::EDIMAX_CP));
+	a.Add(CDeviceTypeModePair(_T("Escam (RTSP)"), (DWORD)CVideoDeviceDoc::ESCAM_RTSP));
 	a.Add(CDeviceTypeModePair(_T("FalconEye (RTSP)"), (DWORD)CVideoDeviceDoc::FALCONEYE_RTSP));
 	a.Add(CDeviceTypeModePair(_T("Floureon (RTSP)"), (DWORD)CVideoDeviceDoc::FLOUREON_RTSP));
 	a.Add(CDeviceTypeModePair(_T("Foscam (RTSP)"), (DWORD)CVideoDeviceDoc::FOSCAM_RTSP));

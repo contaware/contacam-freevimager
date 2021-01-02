@@ -554,6 +554,7 @@ public:
 		DIGOO_RTSP = 1100,				// Digoo RTSP
 		EDIMAX_H264_RTSP = 1110,		// Edimax H.264 RTSP
 		EDIMAX_MPEG4_RTSP = 1111,		// Edimax MPEG4 RTSP
+		ESCAM_RTSP = 1113,				// Escam RTSP
 		FALCONEYE_RTSP = 1115,			// FalconEye RTSP
 		FLOUREON_RTSP = 1118,			// Floureon RTSP
 		FOSCAM_RTSP = 1120,				// Foscam RTSP
