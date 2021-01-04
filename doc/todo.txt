@@ -1,7 +1,9 @@
 FreeVimager Program
 -------------------
   
-- ...
+- Add possibility to Print all for multi-page tiff. Currently it's only 
+  possible to save to pdf and print all pages from the pdf viewer.
+  (stanislav.soyko@gmail.com)
 
 
 ContaCam Program

@@ -1,7 +1,9 @@
 FREEVIMAGER HISTORY
 
-9.9.13 (Month XXth 2020)
+9.9.13 (January 4th 2021)
 
+- Shortcut files (.lnk files) are now correctly opened
+- Possibility to paste an image copied in Windows File Explorer
 - Added F1 key for "Online Help"
 
 9.9.12 (November 17th 2020)
