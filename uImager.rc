@@ -675,7 +675,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Continuous REC",              ID_SENSITIVITY_100
         MENUITEM SEPARATOR
-		MENUITEM "View RECs in Web Browser\tF3", ID_VIEW_WEB
+        MENUITEM "View RECs in Web Browser\tF3", ID_VIEW_WEB
         MENUITEM "View RECs in File Explorer\tF4", ID_VIEW_FILES
     END
 END
@@ -687,7 +687,7 @@ BEGIN
         MENUITEM "Enable frame stamps",         ID_VIEW_FRAMETIME
         MENUITEM SEPARATOR
         MENUITEM "Include uptime with time",    ID_VIEW_FRAMEUPTIME
-		MENUITEM "Annotation",                  ID_VIEW_FRAMEANNOTATION
+        MENUITEM "Annotation",                  ID_VIEW_FRAMEANNOTATION
         MENUITEM SEPARATOR
         MENUITEM "4",                           ID_FONTSIZE_4
         MENUITEM "5",                           ID_FONTSIZE_5
@@ -3284,7 +3284,6 @@ STRINGTABLE
 BEGIN
     ID_PLAY_SLIDESHOW       "Start slideshow (inside current directory)\nStart Slideshow"
     ID_STOP_SLIDESHOW       "Stop slideshow\nStop Slideshow"
-	ID_EDIT_FRAMESTAMP      "Frame stamps\nFrame Stamps"
     ID_FILE_INFO            "Show file information\nFile Info"
     ID_PLAY_TRANSITION_OFF  "Turn transition effect off\nTransition Off"
     ID_PLAY_TRANSITION_RANDOM "Random transition effect\nRandom Transition"
@@ -3293,6 +3292,12 @@ BEGIN
     ID_PLAY_TRANSITION_ROOLIN "Roll in transition effect\nRoll-In Transition"
     ID_PLAY_TRANSITION_SLIDEIN 
                             "Slide in transition effect\nSlide-In Transition"
+END
+
+STRINGTABLE
+BEGIN
+    ID_EDIT_FRAMESTAMP      "Frame stamps\nFrame Stamps"
+    ID_EDIT_ZONE            "Add / remove / show zones (mask)\nZones (Mask)"
 END
 
 STRINGTABLE
@@ -3321,11 +3326,6 @@ BEGIN
     ID_EDIT_TO1BIT_DITHER_ERRDIFF 
                             "Convert current image to black and white with error diffusion\nTo 1 bpp"
     ID_FILE_SETTINGS        "Global settings\nGlobal Settings"
-END
-
-STRINGTABLE
-BEGIN
-    ID_EDIT_ZONE            "Add / remove / show zones (mask)\nZones (Mask)"
 END
 
 STRINGTABLE
@@ -3871,14 +3871,11 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_STRING1750          "ADD CAMERA"
-    IDS_STRING1751          "1. Make sure your video capture device is plugged-in and drivers are installed"
+    IDS_STRING1750          "ADD / START CAMERA"
+    IDS_STRING1751          "1. Make sure your device is plugged-in and drivers are installed"
     IDS_STRING1752          "(Network cameras do not need drivers)"
     IDS_STRING1753          "2. From the Camera menu select the device you want to use"
-    IDS_STRING1754          "(for network cameras supply host name or ip address, port and camera type)"
-    IDS_STRING1755          "3. Follow the Camera Basic Settings dialog"
-    IDS_STRING1756          "(if it's not popping-up select Camera Basic Settings from the Settings menu)"
-    IDS_STRING1757          "4. To watch live stream / recordings enter in Web Browser's address bar"
+    IDS_STRING1757          "3. To watch live stream / recordings enter in Web Browser's address bar"
     IDS_STRING1758          "&Snapshooting...\tIns"
     IDS_STRING1759          "&Snapshot\tIns"
 END
@@ -3941,8 +3938,7 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_CAPTURE_CAMERASETTINGS
-                            "Camera settings\nCamera Settings"
+    ID_CAPTURE_CAMERASETTINGS "Camera settings\nCamera Settings"
     ID_FILE_EXTRACT         "Extract all pages/frames\nExtract Pages/Frames"
     ID_EDIT_SCREENSHOT      "Take a screenshot\nScreenshot"
 END

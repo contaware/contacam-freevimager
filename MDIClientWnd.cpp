@@ -162,29 +162,21 @@ void CMDIClientWnd::OnPaint()
 	// Draw Add Cam
 	rcDraw.left = m_nLeftMargin;
 	rcDraw.top += 2*nLineHeight;
-	DrawT(memDC,  ML_STRING(1750, "ADD CAMERA"), rcDraw);
+	DrawT(memDC,  ML_STRING(1750, "ADD / START CAMERA"), rcDraw);
 
 	// Draw point 1.
 	rcDraw.top += nLineHeight;
-	DrawT(memDC, ML_STRING(1751, "1. Make sure your video capture device is plugged-in and drivers are installed"), rcDraw);
+	DrawT(memDC, ML_STRING(1751, "1. Make sure your device is plugged-in and drivers are installed"), rcDraw);
 	rcDraw.top += nLineHeight;
 	DrawT(memDC, _T("    ") + ML_STRING(1752, "(Network cameras do not need drivers)"), rcDraw);
 
 	// Draw point 2.
 	rcDraw.top += nLineHeight;
 	DrawT(memDC, ML_STRING(1753, "2. From the Camera menu select the device you want to use"), rcDraw);
-	rcDraw.top += nLineHeight;
-	DrawT(memDC, _T("    ") + ML_STRING(1754, "(for network cameras supply host name or ip address, port and camera type)"), rcDraw);
 
 	// Draw point 3.
-	rcDraw.top += nLineHeight;
-	DrawT(memDC, ML_STRING(1755, "3. Follow the Camera Basic Settings dialog"), rcDraw);
-	rcDraw.top += nLineHeight;
-	DrawT(memDC, _T("    ") + ML_STRING(1756, "(if it's not popping-up select Camera Basic Settings from the Settings menu)"), rcDraw);
-
-	// Draw point 4.
 	rcDraw.top += nLineHeight;	
-	DrawT(memDC, ML_STRING(1757, "4. To watch live stream / recordings enter in Web Browser's address bar") + _T(":"), rcDraw);
+	DrawT(memDC, ML_STRING(1757, "3. To watch live stream / recordings enter in Web Browser's address bar") + _T(":"), rcDraw);
 
 	// Draw indent
 	rcDraw.top += nLineHeight;
