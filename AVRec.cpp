@@ -381,8 +381,12 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 
 	// Set thread count
 	// Note: in ffmpeg source MAX_THREADS definition differs
-	// from header to header ... 32 is a safe value
-	nThreadCount = MIN(nThreadCount, 32);
+	// from header to header, but the lowest I could find is
+	// in pthread_internal.h which says that "H.264 slice threading
+	// seems to be buggy with more than 16 threads, limit the 
+	// number of threads to 16 for automatic detection"
+	// #define MAX_AUTO_THREADS 16
+	nThreadCount = MIN(nThreadCount, 16);
 	if (pCodecCtx->codec_id == AV_CODEC_ID_MJPEG		||
 		pCodecCtx->codec_id == AV_CODEC_ID_MPEG1VIDEO	||
         pCodecCtx->codec_id == AV_CODEC_ID_MPEG2VIDEO	||

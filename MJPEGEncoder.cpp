@@ -122,8 +122,12 @@ DWORD CMJPEGEncoder::Encode(int qscale, LPBITMAPINFO pSrcBMI, LPBYTE pSrcBits, i
 
 	// Limit threads to use
 	// Note: in ffmpeg source MAX_THREADS definition differs
-	// from header to header ... 32 is a safe value
-	nThreadCount = MIN(nThreadCount, 32);
+	// from header to header, but the lowest I could find is
+	// in pthread_internal.h which says that "H.264 slice threading
+	// seems to be buggy with more than 16 threads, limit the 
+	// number of threads to 16 for automatic detection"
+	// #define MAX_AUTO_THREADS 16
+	nThreadCount = MIN(nThreadCount, 16);
 
 	// Re-open?
 	if (!CDib::IsSameBMI(pSrcBMI, (LPBITMAPINFO)(&m_SrcBMI)) ||
