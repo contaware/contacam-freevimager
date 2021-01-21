@@ -1,5 +1,9 @@
 FREEVIMAGER HISTORY
 
+9.9.15 (Month XX 2021)
+
+- ...
+  
 9.9.14 (January 4th 2021)
 
 - No changes (be in sync with ContaCam version)
