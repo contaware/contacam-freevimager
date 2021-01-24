@@ -91,6 +91,12 @@ void InitHelpers()
 			g_nPCInstalledPhysRamMB = (int)(ullTotalMemoryInKilobytes >> 10);
 		FreeLibrary(h);
 	}
+
+	// TEST
+	// TODO: remove that when it's stable
+#ifdef _DEBUG
+	SplitPathTest();
+#endif
 }
 
 int SystemDPIScale(int n)
@@ -174,57 +180,165 @@ GetFileNameNoExt()		-> \\?\UNC\TS109\Public\ContaCam\hello
 GetFileExt()			-> .jpeg
 */
 
+#ifdef _DEBUG
+static void SplitPathCheck(const CString& sFullFilePath)
+{
+	// Microsoft version
+	TCHAR szDrive[_MAX_DRIVE];
+	TCHAR szDir[_MAX_DIR];
+	TCHAR szName[_MAX_FNAME];
+	TCHAR szExt[_MAX_EXT];
+	_tsplitpath(sFullFilePath, szDrive, szDir, szName, szExt);
+
+	// Our version
+	CString sDrive;
+	CString sDir;
+	CString sName;
+	CString sExt;
+	SplitPath(sFullFilePath, &sDrive, &sDir, &sName, &sExt);
+
+	// Check
+	ASSERT(sDrive.Compare(szDrive) == 0);
+	ASSERT(sDir.Compare(szDir) == 0);
+	ASSERT(sName.Compare(szName) == 0);
+	ASSERT(sExt.Compare(szExt) == 0);
+}
+
+void SplitPathTest()
+{
+	// From the examples above
+	SplitPathCheck(_T("c:\\mydir1\\mydir2\\hello.jpeg"));
+	SplitPathCheck(_T("c:\\mydir1\\mydir2\\hello"));
+	SplitPathCheck(_T("c:\\mydir1\\mydir2\\hello\\"));
+	SplitPathCheck(_T("\\\\?\\c:\\mydir1\\mydir2\\hello.jpeg"));
+	SplitPathCheck(_T("\\\\TS109\\Public\\ContaCam\\hello.jpeg"));
+	SplitPathCheck(_T("\\\\?\\UNC\\TS109\\Public\\ContaCam\\hello.jpeg"));	
+	SplitPathCheck(_T("\\\\.\\COM1"));
+
+	// Single chars
+	SplitPathCheck(_T(""));
+	SplitPathCheck(_T(":"));
+	SplitPathCheck(_T("\\"));
+	SplitPathCheck(_T("/"));
+	SplitPathCheck(_T("f"));
+	SplitPathCheck(_T("."));
+
+	// Extensions
+	SplitPathCheck(_T(".jpeg"));
+	SplitPathCheck(_T("sec.ciao."));
+
+	// No path
+	SplitPathCheck(_T("hello.jpeg"));
+	SplitPathCheck(_T("hello"));
+	SplitPathCheck(_T("hello\\"));
+
+	// Relative path
+	SplitPathCheck(_T("C:hello.jpeg"));
+	SplitPathCheck(_T("C:hello"));
+	SplitPathCheck(_T("C:hello\\"));
+	SplitPathCheck(_T("c:\\mydir1\\..\\hello"));
+
+	// No directory
+	SplitPathCheck(_T("C:\\file.jpeg"));
+	SplitPathCheck(_T("C:\\file"));
+	SplitPathCheck(_T("C:\\file\\"));
+
+	// Spaces (note that the drive is not detected)
+	SplitPathCheck(_T(" c:\\mydir1\\mydir2\\hello.jpeg "));
+
+	// Mixed slashes
+	SplitPathCheck(_T("c:/mydir1\\mydir2/hello.jpeg"));
+}
+#endif
+
+void SplitPath(const CString& sFullFilePath, CString* pDrive/*=NULL*/, CString* pDir/*=NULL*/, CString* pName/*=NULL*/, CString* pExt/*=NULL*/)
+{
+	int nIndex;
+	CString s(sFullFilePath);
+
+	// Drive
+	if (s.GetLength() >= 2 && s[1] == _T(':'))
+	{
+		if (pDrive)
+			*pDrive = s.Left(2);
+		s = s.Mid(2);
+	}
+
+	// Dir (backslashes and slashes are allowed as directory separator)
+	nIndex = MAX(s.ReverseFind(_T('\\')), s.ReverseFind(_T('/')));
+	if (nIndex >= 0)
+	{
+		if (pDir)
+			*pDir = s.Left(nIndex + 1);
+		s = s.Mid(nIndex + 1);
+	}
+
+	// Name and Ext
+	nIndex = s.ReverseFind(_T('.'));
+	if (nIndex >= 0)
+	{
+		if (pName)
+			*pName = s.Left(nIndex);
+		if (pExt)
+			*pExt = s.Mid(nIndex);
+	}
+	else
+	{
+		if (pName)
+			*pName = s;
+	}
+}
+
 CString GetDriveName(const CString& sFullFilePath)
 {
-	TCHAR szDrive[_MAX_DRIVE];
-	_tsplitpath(sFullFilePath, szDrive, NULL, NULL, NULL);
-	return CString(szDrive);
+	CString sDrive;
+	SplitPath(sFullFilePath, &sDrive, NULL, NULL, NULL);
+	return sDrive;
 }
 
 CString GetDirName(const CString& sFullFilePath)
 {
-	TCHAR szDir[_MAX_DIR];
-	_tsplitpath(sFullFilePath, NULL, szDir, NULL, NULL);
-	return CString(szDir);
+	CString sDir;
+	SplitPath(sFullFilePath, NULL, &sDir, NULL, NULL);
+	return sDir;
 }
 
 CString GetDriveAndDirName(const CString& sFullFilePath)
 {
-	TCHAR szDrive[_MAX_DRIVE];
-	TCHAR szDir[_MAX_DIR];
-	_tsplitpath(sFullFilePath, szDrive, szDir, NULL, NULL);
-	return CString(szDrive) + CString(szDir);
+	CString sDrive;
+	CString sDir;
+	SplitPath(sFullFilePath, &sDrive, &sDir, NULL, NULL);
+	return sDrive + sDir;
 }
 
 CString GetShortFileName(const CString& sFullFilePath)
 {
-	TCHAR szName[_MAX_FNAME];
-	TCHAR szExt[_MAX_EXT];
-	_tsplitpath(sFullFilePath, NULL, NULL, szName, szExt);
-	return CString(szName) + CString(szExt);
+	CString sName;
+	CString sExt;
+	SplitPath(sFullFilePath, NULL, NULL, &sName, &sExt);
+	return sName + sExt;
 }
 
 CString GetShortFileNameNoExt(const CString& sFullFilePath)
 {
-	TCHAR szName[_MAX_FNAME];
-	_tsplitpath(sFullFilePath, NULL, NULL, szName, NULL);
-	return CString(szName);
+	CString sName;
+	SplitPath(sFullFilePath, NULL, NULL, &sName, NULL);
+	return sName;
 }
 
 CString GetFileNameNoExt(const CString& sFullFilePath)
 {
-	TCHAR szDrive[_MAX_DRIVE];
-	TCHAR szDir[_MAX_DIR];
-	TCHAR szName[_MAX_FNAME];
-	_tsplitpath(sFullFilePath, szDrive, szDir, szName, NULL);
-	return CString(szDrive) + CString(szDir) + CString(szName);
+	CString sDrive;
+	CString sDir;
+	CString sName;
+	SplitPath(sFullFilePath, &sDrive, &sDir, &sName, NULL);
+	return sDrive + sDir + sName;
 }
 
 CString GetFileExt(const CString& sFullFilePath)
 {
-	TCHAR szExt[_MAX_EXT];
-	_tsplitpath(sFullFilePath, NULL, NULL, NULL, szExt);
-	CString sExt(szExt);
+	CString sExt;
+	SplitPath(sFullFilePath, NULL, NULL, NULL, &sExt);
 	sExt.MakeLower();
 	return sExt;
 }
@@ -278,6 +392,46 @@ BOOL HasWriteAccess(LPCTSTR lpszFileName)
 	}
 }
 
+CString MakeExtendedLengthPath(CString sPath)
+{
+	/*
+	- Attention the \\?\ prefix turns off automatic expansion of 
+	  the path string, it permits the use of ".." and "." in the
+	  path parts (thus relative path are not permitted) and it does
+	  not allow forward slashes to represent path separators
+	- Extended-length path can be up to 32767 unicode characters,
+	  NTFS and FAT32 path limit is 32760 (that's without the \\?\ 
+	  prefix which obviously is not stored on disk):
+	  https://docs.microsoft.com/windows/win32/fileio/filesystem-functionality-comparison#limits
+	*/
+
+	// Convert to backslashes
+	sPath.Replace(_T('/'), _T('\\'));
+
+	/* Extended length prefix */
+	if (sPath.GetLength() >= 2)
+	{
+		if (sPath[0] == _T('\\') && sPath[1] == _T('\\'))
+		{
+			/* Already Extended Length Path? */
+			if (sPath.GetLength() >= 3 && sPath[2] == _T('?'))
+				return sPath;
+			else
+			{
+				/* Prepend server\share with \\?\UNC\ instead of \\ */
+				return _T("\\\\?\\UNC") + sPath.Mid(1);
+			}
+		}
+		else if (sPath[1] == _T(':'))
+		{
+			/* Prepend drives with \\?\ */
+			return _T("\\\\?\\") + sPath;
+		}
+	}
+
+	return sPath;
+}
+
 CString UNCPath(const CString& sPath)
 {
 	// Check
@@ -290,22 +444,22 @@ CString UNCPath(const CString& sPath)
 		return sPath;
 
 	// Split path
-	TCHAR szDrive[_MAX_DRIVE];
-	TCHAR szDir[_MAX_DIR];
-	TCHAR szName[_MAX_FNAME];
-	TCHAR szExt[_MAX_EXT];
-	_tsplitpath(sPath, szDrive, szDir, szName, szExt);
+	CString sDrive;
+	CString sDir;
+	CString sName;
+	CString sExt;
+	SplitPath(sPath, &sDrive, &sDir, &sName, &sExt);
 
 	// Return UNC path
 	CString sUNC;
     DWORD dwBufSize = 0;
-    if (ERROR_MORE_DATA == WNetGetConnection(szDrive, NULL, &dwBufSize))
+    if (ERROR_MORE_DATA == WNetGetConnection(sDrive, NULL, &dwBufSize))
     {	
 		LPTSTR p = sUNC.GetBuffer(dwBufSize);
-        if (NO_ERROR == WNetGetConnection(szDrive, p, &dwBufSize))
+        if (NO_ERROR == WNetGetConnection(sDrive, p, &dwBufSize))
         {
 			sUNC.ReleaseBuffer();
-            return sUNC + CString(szDir) + CString(szName) + CString(szExt);
+            return sUNC + sDir + sName + sExt;
         }
 		else
 			sUNC.ReleaseBuffer();

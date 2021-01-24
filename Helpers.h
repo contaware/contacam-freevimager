@@ -95,6 +95,10 @@ GetShortFileNameNoExt()	-> hello
 GetFileNameNoExt()		-> \\?\UNC\TS109\Public\ContaCam\hello
 GetFileExt()			-> .jpeg
 */
+#ifdef _DEBUG
+extern void SplitPathTest();
+#endif
+extern void SplitPath(const CString& sFullFilePath, CString* pDrive = NULL, CString* pDir = NULL, CString* pName = NULL, CString* pExt = NULL);
 extern CString GetDriveName(const CString& sFullFilePath);
 extern CString GetDirName(const CString& sFullFilePath);
 extern CString GetDriveAndDirName(const CString& sFullFilePath);
@@ -108,6 +112,9 @@ extern BOOL IsReadonly(LPCTSTR lpszFileName);
 
 // Do we have write access to the given file
 extern BOOL HasWriteAccess(LPCTSTR lpszFileName);
+
+// Make extended length path supporting more than MAX_PATH
+extern CString MakeExtendedLengthPath(CString sPath);
 
 // If it's a valid drive mount path convert it to a UNC path,
 // otherwise return the given sPath unchanged
