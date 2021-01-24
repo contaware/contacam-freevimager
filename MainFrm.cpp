@@ -399,7 +399,7 @@ LONG CMainFrame::OnScanAndEmail(WPARAM wparam, LPARAM lparam)
 	((CUImagerApp*)::AfxGetApp())->SendMail(((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName);
 
 	// Delete temporary directory containing tiff file and pdf file
-	::DeleteDir(::GetDirName(((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName));
+	::DeleteDir(::GetDriveAndDirName(((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName));
 
 	return 1;
 }
