@@ -38,7 +38,6 @@ extern HMODULE LoadLibraryFromSystem32(LPCTSTR lpFileName);
 c:\mydir1\mydir2\hello.jpeg
 ---------------------------
 GetDriveName()			-> c:
-GetDirName()			-> \mydir1\mydir2\
 GetDriveAndDirName()	-> c:\mydir1\mydir2\
 GetShortFileName()		-> hello.jpeg
 GetShortFileNameNoExt()	-> hello
@@ -48,7 +47,6 @@ GetFileExt()			-> .jpeg
 c:\mydir1\mydir2\hello
 ----------------------
 GetDriveName()			-> c:
-GetDirName()			-> \mydir1\mydir2\
 GetDriveAndDirName()	-> c:\mydir1\mydir2\
 GetShortFileName()		-> hello
 GetShortFileNameNoExt()	-> hello
@@ -58,7 +56,6 @@ GetFileExt()			-> empty string!
 c:\mydir1\mydir2\hello\
 -----------------------
 GetDriveName()			-> c:
-GetDirName()			-> \mydir1\mydir2\hello\
 GetDriveAndDirName()	-> c:\mydir1\mydir2\hello\
 GetShortFileName()		-> empty string!
 GetShortFileNameNoExt()	-> empty string!
@@ -68,7 +65,6 @@ GetFileExt()			-> empty string!
 \\?\c:\mydir1\mydir2\hello.jpeg
 -------------------------------
 GetDriveName()			-> empty string!
-GetDirName()			-> \\?\c:\mydir1\mydir2\
 GetDriveAndDirName()	-> \\?\c:\mydir1\mydir2\
 GetShortFileName()		-> hello.jpeg
 GetShortFileNameNoExt()	-> hello
@@ -78,7 +74,6 @@ GetFileExt()			-> .jpeg
 \\TS109\Public\ContaCam\hello.jpeg
 ----------------------------------
 GetDriveName()			-> empty string!
-GetDirName()			-> \\TS109\Public\ContaCam\
 GetDriveAndDirName()	-> \\TS109\Public\ContaCam\
 GetShortFileName()		-> hello.jpeg
 GetShortFileNameNoExt()	-> hello
@@ -88,7 +83,6 @@ GetFileExt()			-> .jpeg
 \\?\UNC\TS109\Public\ContaCam\hello.jpeg
 ----------------------------------------
 GetDriveName()			-> empty string!
-GetDirName()			-> \\?\UNC\TS109\Public\ContaCam\
 GetDriveAndDirName()	-> \\?\UNC\TS109\Public\ContaCam\
 GetShortFileName()		-> hello.jpeg
 GetShortFileNameNoExt()	-> hello
@@ -100,7 +94,6 @@ extern void SplitPathTest();
 #endif
 extern void SplitPath(const CString& sFullFilePath, CString* pDrive = NULL, CString* pDir = NULL, CString* pName = NULL, CString* pExt = NULL);
 extern CString GetDriveName(const CString& sFullFilePath);
-extern CString GetDirName(const CString& sFullFilePath);
 extern CString GetDriveAndDirName(const CString& sFullFilePath);
 extern CString GetShortFileName(const CString& sFullFilePath);
 extern CString GetShortFileNameNoExt(const CString& sFullFilePath);

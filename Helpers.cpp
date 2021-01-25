@@ -122,7 +122,6 @@ HMODULE LoadLibraryFromSystem32(LPCTSTR lpFileName)
 c:\mydir1\mydir2\hello.jpeg
 ---------------------------
 GetDriveName()			-> c:
-GetDirName()			-> \mydir1\mydir2\
 GetDriveAndDirName()	-> c:\mydir1\mydir2\
 GetShortFileName()		-> hello.jpeg
 GetShortFileNameNoExt()	-> hello
@@ -132,7 +131,6 @@ GetFileExt()			-> .jpeg
 c:\mydir1\mydir2\hello
 ----------------------
 GetDriveName()			-> c:
-GetDirName()			-> \mydir1\mydir2\
 GetDriveAndDirName()	-> c:\mydir1\mydir2\
 GetShortFileName()		-> hello
 GetShortFileNameNoExt()	-> hello
@@ -142,7 +140,6 @@ GetFileExt()			-> empty string!
 c:\mydir1\mydir2\hello\
 -----------------------
 GetDriveName()			-> c:
-GetDirName()			-> \mydir1\mydir2\hello\
 GetDriveAndDirName()	-> c:\mydir1\mydir2\hello\
 GetShortFileName()		-> empty string!
 GetShortFileNameNoExt()	-> empty string!
@@ -152,7 +149,6 @@ GetFileExt()			-> empty string!
 \\?\c:\mydir1\mydir2\hello.jpeg
 -------------------------------
 GetDriveName()			-> empty string!
-GetDirName()			-> \\?\c:\mydir1\mydir2\
 GetDriveAndDirName()	-> \\?\c:\mydir1\mydir2\
 GetShortFileName()		-> hello.jpeg
 GetShortFileNameNoExt()	-> hello
@@ -162,7 +158,6 @@ GetFileExt()			-> .jpeg
 \\TS109\Public\ContaCam\hello.jpeg
 ----------------------------------
 GetDriveName()			-> empty string!
-GetDirName()			-> \\TS109\Public\ContaCam\
 GetDriveAndDirName()	-> \\TS109\Public\ContaCam\
 GetShortFileName()		-> hello.jpeg
 GetShortFileNameNoExt()	-> hello
@@ -172,7 +167,6 @@ GetFileExt()			-> .jpeg
 \\?\UNC\TS109\Public\ContaCam\hello.jpeg
 ----------------------------------------
 GetDriveName()			-> empty string!
-GetDirName()			-> \\?\UNC\TS109\Public\ContaCam\
 GetDriveAndDirName()	-> \\?\UNC\TS109\Public\ContaCam\
 GetShortFileName()		-> hello.jpeg
 GetShortFileNameNoExt()	-> hello
@@ -294,13 +288,6 @@ CString GetDriveName(const CString& sFullFilePath)
 	CString sDrive;
 	SplitPath(sFullFilePath, &sDrive, NULL, NULL, NULL);
 	return sDrive;
-}
-
-CString GetDirName(const CString& sFullFilePath)
-{
-	CString sDir;
-	SplitPath(sFullFilePath, NULL, &sDir, NULL, NULL);
-	return sDir;
 }
 
 CString GetDriveAndDirName(const CString& sFullFilePath)
