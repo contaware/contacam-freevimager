@@ -1070,8 +1070,7 @@ BOOL CPictureView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 	ASSERT_VALID(pDoc);
 
 	// Next / Prev. Picture
-	if ((m_bFullScreenMode ||
-		(!(MK_SHIFT & nFlags) && !(MK_CONTROL & nFlags)))	&&
+	if ((m_bFullScreenMode || !(MK_CONTROL & nFlags))		&&
 		!pDoc->m_bZoomTool									&&
 		!IsXOrYScroll()										&&
 		!pDoc->IsModified()									&&
@@ -1106,10 +1105,9 @@ BOOL CPictureView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 	else 
 	{
 		// Scroll?
-		BOOL bHoriz =	((MK_SHIFT & nFlags) ||
-						(MK_CONTROL & nFlags));
+		BOOL bScrollHoriz = (MK_SHIFT & nFlags) ? TRUE : FALSE;
 		if (!m_bFullScreenMode &&
-			((bHoriz && IsXScroll()) || (!bHoriz && IsYScroll())))
+			((bScrollHoriz && IsXScroll()) || (!bScrollHoriz && IsYScroll())))
 		{
 			CPoint pos = GetScrollPosition();
 			CSize size = GetTotalSize();
@@ -1117,14 +1115,14 @@ BOOL CPictureView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 			int nYStep = size.cy / SCROLLWHEEL_STEPS;
 			if (zDelta > 0)
 			{
-				if (bHoriz)
+				if (bScrollHoriz)
 					ScrollToPosition(CPoint(MAX(pos.x - nXStep, 0), pos.y));
 				else
 					ScrollToPosition(CPoint(pos.x, MAX(pos.y - nYStep, 0)));
 			}
 			else
 			{
-				if (bHoriz)
+				if (bScrollHoriz)
 					ScrollToPosition(CPoint(MIN(pos.x + nXStep, size.cx), pos.y));
 				else
 					ScrollToPosition(CPoint(pos.x, MIN(pos.y + nYStep, size.cy)));

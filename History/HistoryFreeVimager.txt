@@ -2,7 +2,7 @@ FREEVIMAGER HISTORY
 
 9.9.15 (Month XX 2021)
 
-- ...
+- In print preview we can now scale the image with the mouse wheel
   
 9.9.14 (January 4th 2021)
 

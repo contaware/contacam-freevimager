@@ -986,6 +986,16 @@ UINT CPicturePrintPreviewView::GetMouseScrollLines()
 
 BOOL CPicturePrintPreviewView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt) 
 {
+	CPictureDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+
+	// When hovering the scale edit box avoid processing wheel 
+	// messages here as the control itself processes them
+	CRect rcScaleEdit;
+	m_pScaleEdit->GetWindowRect(&rcScaleEdit);
+	if (rcScaleEdit.PtInRect(pt))
+		return FALSE;
+
 	// Scroll Horizontal or Vertical?
 	BOOL bScrollHoriz = (MK_SHIFT & nFlags) ? TRUE : FALSE;
 
@@ -996,8 +1006,31 @@ BOOL CPicturePrintPreviewView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt
 	pBar = GetScrollBarCtrl(SB_HORZ);
 	BOOL bHasHorzBar = ((pBar != NULL) && pBar->IsWindowEnabled()) || (dwStyle & WS_HSCROLL);
 
-	if (!bHasVertBar && !bHasHorzBar)
+	// Adjust the print scale?
+	if ((!bHasVertBar && !bHasHorzBar) || (MK_CONTROL & nFlags))
+	{
+		double dValue;
+		if (zDelta > 0)
+			dValue = pDoc->m_dPrintScale * 101.0;
+		else
+			dValue = pDoc->m_dPrintScale * 99.0;
+		if (dValue >= MIN_PRINT_SCALE && dValue <= MAX_PRINT_SCALE)
+		{
+			// Set new print scale
+			pDoc->m_dPrintScale = dValue / 100.0;
+			m_pScaleEdit->SetPrintScale(pDoc->m_dPrintScale);
+
+			// Clear Print Size Fit Check Box
+			CButton* pCheck = (CButton*)m_pToolBar->GetDlgItem(IDC_CHECK_SIZE_FIT);
+			pCheck->SetCheck(0);
+			pDoc->m_bPrintSizeFit = FALSE;
+
+			// Invalidate
+			Invalidate(FALSE);
+		}
+
 		return FALSE;
+	}
 
 	BOOL bResult = FALSE;
 	UINT uWheelScrollLines = GetMouseScrollLines();
