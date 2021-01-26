@@ -689,17 +689,17 @@ BEGIN
         MENUITEM "Include uptime with time",    ID_VIEW_FRAMEUPTIME
         MENUITEM "Annotation",                  ID_VIEW_FRAMEANNOTATION
         MENUITEM SEPARATOR
-        MENUITEM "4",                           ID_FONTSIZE_4
-        MENUITEM "5",                           ID_FONTSIZE_5
-        MENUITEM "6",                           ID_FONTSIZE_6
-        MENUITEM "7",                           ID_FONTSIZE_7
-        MENUITEM "8",                           ID_FONTSIZE_8
-        MENUITEM "9",                           ID_FONTSIZE_9
-        MENUITEM "10",                          ID_FONTSIZE_10
-        MENUITEM "11",                          ID_FONTSIZE_11
-        MENUITEM "12",                          ID_FONTSIZE_12
-        MENUITEM "14",                          ID_FONTSIZE_14
-        MENUITEM "16",                          ID_FONTSIZE_16
+        MENUITEM "Text size 4",                 ID_FONTSIZE_4
+        MENUITEM "Text size 5",                 ID_FONTSIZE_5
+        MENUITEM "Text size 6",                 ID_FONTSIZE_6
+        MENUITEM "Text size 7",                 ID_FONTSIZE_7
+        MENUITEM "Text size 8",                 ID_FONTSIZE_8
+        MENUITEM "Text size 9",                 ID_FONTSIZE_9
+        MENUITEM "Text size 10",                ID_FONTSIZE_10
+        MENUITEM "Text size 11",                ID_FONTSIZE_11
+        MENUITEM "Text size 12",                ID_FONTSIZE_12
+        MENUITEM "Text size 14",                ID_FONTSIZE_14
+        MENUITEM "Text size 16",                ID_FONTSIZE_16
     END
 END
 
