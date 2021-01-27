@@ -184,13 +184,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_wndStatusBar.SetPaneInfo(0, nID, nStyle, ::SystemDPIScale(50));		// set minimum width (default is too big = 1/4 screen width)
 	m_wndStatusBar.GetStatusBarCtrl().SetMinHeight(::SystemDPIScale(20));	// set minimum height (default is too small on high dpi devices)
 
-	// Dock Toolbar
-#ifndef VIDEODEVICEDOC
-	m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);
-	EnableDocking(CBRS_ALIGN_ANY);
-	DockControlBar(&m_wndToolBar);
-#endif
-
 	// Create tab control
 	m_wndMDITabs.Create(this, MT_TOP | MT_HIDEWLT2VIEWS);
 
