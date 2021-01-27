@@ -3871,7 +3871,7 @@ void CPictureDoc::EditDelete(BOOL bPrompt)
 		if (bPrompt)
 		{
 			CString sMsg;
-			sMsg.Format(ML_STRING(1266, "Are you sure you want to delete %s ?"), ::GetShortFileName(m_sFileName));
+			sMsg.Format(ML_STRING(1266, "Are you sure you want to move this file to the Recycle Bin:\n\n%s"), ::GetShortFileName(m_sFileName));
 			GetView()->ForceCursor();
 			if (::AfxMessageBox(sMsg, MB_YESNO) == IDYES)
 			{	

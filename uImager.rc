@@ -3097,7 +3097,7 @@ END
 STRINGTABLE
 BEGIN
     IDS_MULTILANG_1265      "Cannot delete page %d"
-    IDS_MULTILANG_1266      "Are you sure you want to delete %s ?"
+    IDS_MULTILANG_1266      "Are you sure you want to move this file to the Recycle Bin:\n\n%s"
     IDS_MULTILANG_1267      "Cannot delete the %s file"
     IDS_MULTILANG_1268      "&Undo %d\tCtrl+Z"
     IDS_MULTILANG_1269      "&Undo\tCtrl+Z"
