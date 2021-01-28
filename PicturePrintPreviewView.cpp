@@ -508,7 +508,7 @@ int CPicturePrintPreviewView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		m_pScaleSpin->SubclassDlgItem(IDC_SPIN_SIZE, m_pToolBar);
 		m_pScaleSpin->SetBuddy(m_pScaleEdit);
 		m_pScaleSpin->SetRange(MIN_PRINT_SCALE, MAX_PRINT_SCALE);
-		m_pScaleSpin->SetDelta(0.1);
+		m_pScaleSpin->SetDelta(1.0);
 	}
 	if (m_pScaleEdit)
 		m_pScaleEdit->SetPrintScale(GetDocument()->m_dPrintScale);
