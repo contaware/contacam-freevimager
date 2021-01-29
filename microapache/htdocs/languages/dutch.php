@@ -11,3 +11,6 @@ define("NOFILESFOR","Geen bestanden voor");
 define("IMAGERELOADIN","Afbeelding word geladen in");
 define("SECONDS","seconden");
 define("FULLDAY","Hele dag");
+define("YES","JA");
+define("NO","NEE");
+define("AREYOUSURETODELETE","Weet u zeker dat u alle geselecteerde opnamen definitief wilt verwijderen?");

@@ -11,3 +11,6 @@ define("NOFILESFOR","Kein File für");
 define("IMAGERELOADIN","Bild lädt in");
 define("SECONDS","Sekunden");
 define("FULLDAY","Ganzen Tag");
+define("YES","JA");
+define("NO","NEIN");
+define("AREYOUSURETODELETE","Möchten Sie wirklich alle ausgewählten Aufnahmen dauerhaft löschen?");

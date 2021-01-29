@@ -11,3 +11,6 @@ define("NOFILESFOR","Inga filer för");
 define("IMAGERELOADIN","Bilden uppdateras om");
 define("SECONDS","sekunder");
 define("FULLDAY","Hel dag");
+define("YES","JA");
+define("NO","NEJ");
+define("AREYOUSURETODELETE","Är du säker på att du vill ta bort alla valda inspelningar permanent?");

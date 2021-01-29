@@ -285,10 +285,23 @@ if ($show_camera_commands) {
 }
 if ($show_trash_command) {
 	echo "<a style=\"font-size: 12px; position: relative;\" href=\"#\" onclick=\"toggleCheckBoxes(); return false;\"><span style=\"display: inline-block; position: absolute; left: 12px; top: 7px; width: 12px; height: 12px; border: 1px solid #000000;\">&nbsp;</span>&#x2713;</a>&nbsp;";
-	echo "<a style=\"font-size: 18px;\" href=\"#\" onclick=\"deleteCheckedElements(); return false;\">&#x1F5D1;</a>&nbsp;";
+	echo "<a style=\"font-size: 18px;\" href=\"#\" onclick=\"document.getElementById('del-confirm-container').style.display = 'block'; return false;\">&#x1F5D1;</a>&nbsp;";
 }
 echo "</span>\n";
 echo "</div>\n";
+
+// Deletion confirmation box
+if ($show_trash_command) {
+	echo "<div style=\"display: none;\" class=\"confirm-container\" id=\"del-confirm-container\">\n";
+	echo "<div class=\"confirm-popup\">\n";
+	echo "<p>" . AREYOUSURETODELETE . "</p>\n";
+	echo "<div>\n";
+	echo "<button onclick=\"document.getElementById('del-confirm-container').style.display = 'none'; deleteCheckedElements();\">" . YES . "</button>\n";
+	echo "<button onclick=\"document.getElementById('del-confirm-container').style.display = 'none';\">" . NO . "</button>\n";
+	echo "</div>\n";
+	echo "</div>\n";
+	echo "</div>\n";
+}
 
 // Centered Header
 echo "<div style=\"text-align: center\">\n";

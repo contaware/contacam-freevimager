@@ -5524,6 +5524,8 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	sConfig += _T("</VirtualHost>\r\n");
 
 	// <Directory />
+	// TODO: in future releases remove the .recycled restrictions as now the web
+	//       interface deletes the files instead of renaming them to .recycled
 	sConfig += _T("<Directory />\r\n");
 	sConfig += _T("AllowOverride None\r\n"); // do not allow .htaccess files
 	if (((CUImagerApp*)::AfxGetApp())->m_sMicroApacheUsername != _T("") ||
@@ -5697,7 +5699,7 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 				sAuthenticate += _T("	padding: 15px 10px 6px 10px;\r\n");
 				sAuthenticate += _T("	text-align: center;\r\n");
 				sAuthenticate += _T("	background: #808080;\r\n");
-				sAuthenticate += _T("	border-radius: 3px;\r\n");
+				sAuthenticate += _T("	border-radius: 2px;\r\n");
 				sAuthenticate += _T("	box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);\r\n");
 				sAuthenticate += _T("}\r\n");
 				sAuthenticate += _T("h1 {\r\n");

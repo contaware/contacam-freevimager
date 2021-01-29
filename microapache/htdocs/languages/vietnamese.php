@@ -11,3 +11,6 @@ define("NOFILESFOR","Không có tệp trong");
 define("IMAGERELOADIN","Ảnh sẽ nạp lại sau");
 define("SECONDS","giây");
 define("FULLDAY","Cả ngày");
+define("YES","ĐÚNG");
+define("NO","KHÔNG");
+define("AREYOUSURETODELETE","Bạn có chắc chắn muốn xóa vĩnh viễn tất cả các bản ghi đã chọn không?");

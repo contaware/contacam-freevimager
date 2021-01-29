@@ -2,6 +2,8 @@ CONTACAM HISTORY
 
 9.9.15 (Month XX 2021)
 
+- The web interface trash button is now definitively deleting the 
+  recordings instead of renaming them to .recycled
 - Limit the maximum number of encoding threads to 16 as H.264 can have 
   problems above that count
 

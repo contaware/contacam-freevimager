@@ -11,3 +11,6 @@ define("NOFILESFOR","No hay archivos por");
 define("IMAGERELOADIN","La imagen se actualizará en");
 define("SECONDS","Segundos");
 define("FULLDAY","Día completo");
+define("YES","SI");
+define("NO","NO");
+define("AREYOUSURETODELETE","¿Está seguro de que desea eliminar permanentemente todas las grabaciones seleccionadas?");

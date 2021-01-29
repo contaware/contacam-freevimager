@@ -16,12 +16,12 @@ function check_safety($name) {
 		exit('null byte not allowed!');
 }
 
-function strong_rename($old, $new) {
-	// Try renaming for a maximum of ~ 5 seconds
+function strong_delete($fullfilepath) {
+	// Try deleting for a maximum of ~ 5 seconds
 	$retry = 333;
 	while ($retry > 0) {
 		$retry--;
-		if (@rename($old, $new) === false)
+		if (@unlink($fullfilepath) === false)
 			usleep(15000); // wait 15ms
 		else
 			return;
@@ -50,11 +50,13 @@ if (isset($_GET['year']) && isset($_GET['month']) && isset($_GET['day'])) {
 			else
 				$filenoext = rtrim($doc_root,"\\/")."/".ltrim($filesdirpath,"\\/")."/$filenoext";
 			
-			// Rename filename(s) to .recycled
+			// Delete file(s)
 			if (is_file("$filenoext.mp4"))
-				strong_rename("$filenoext.mp4","$filenoext.mp4.recycled");
+				strong_delete("$filenoext.mp4");
 			if (is_file("$filenoext.gif"))
-				strong_rename("$filenoext.gif","$filenoext.gif.recycled");
+				strong_delete("$filenoext.gif");
+			if (is_file("$filenoext.jpg"))
+				strong_delete("$filenoext.jpg");
 		}
 	}
 }

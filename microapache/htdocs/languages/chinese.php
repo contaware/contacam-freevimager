@@ -11,3 +11,6 @@ define("NOFILESFOR","没有文件");
 define("IMAGERELOADIN","图像将重新加载");
 define("SECONDS","秒");
 define("FULLDAY","全日");
+define("YES","是");
+define("NO","没有");
+define("AREYOUSURETODELETE","您确定要永久删除所有选定的记录吗？");

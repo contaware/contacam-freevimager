@@ -11,3 +11,6 @@ define("NOFILESFOR","Nessun file per");
 define("IMAGERELOADIN","L'immagine verrà aggiornata tra");
 define("SECONDS","secondi");
 define("FULLDAY","Giorno intero");
+define("YES","SI");
+define("NO","NO");
+define("AREYOUSURETODELETE","Sei sicuro di voler eliminare definitivamente tutte le registrazioni selezionate?");

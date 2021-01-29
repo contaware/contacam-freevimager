@@ -11,3 +11,6 @@ define("NOFILESFOR","Нет файлов для");
 define("IMAGERELOADIN","Изображение будет перезагружено в");
 define("SECONDS","секунд");
 define("FULLDAY","Полный день");
+define("YES","ДА");
+define("NO","Нет");
+define("AREYOUSURETODELETE","Вы уверены, что хотите навсегда удалить все выбранные записи?");

@@ -198,3 +198,53 @@ a#back2top {
     text-decoration: none;
 	font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Confirmation prompt */
+div.confirm-container {
+	position: fixed;
+	width: 100%;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0,0,0,0.85);
+	z-index: 10000;
+}
+div.confirm-popup {
+	position: absolute;
+	top: 15%;
+	left: 0;
+	right: 0;
+	width: 80%;
+	max-width: 500px;
+	background: white;
+	border: 1px solid #d0d0d0;
+	border-radius: 2px;
+	box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+	text-align: center;
+	margin: 0 auto;
+	padding: 15px;
+	z-index: 10001;
+}
+div.confirm-popup p {
+	color: #222222;
+	font-size: 18px;
+	margin-top: 15px;
+	margin-bottom: 15px;
+}
+div.confirm-popup button {
+	color: #ffffff;
+	background-color: #444444;
+	border: 1px solid #d0d0d0;
+	font-size: 18px;
+	font-weight: bold;
+	font-family: sans-serif,Arial,Helvetica;
+	width: 30%;
+	height: 40px;
+	min-width: 80px;
+	margin: 15px;
+}
+div.confirm-popup button:hover {
+	cursor: pointer;
+	background-color: #222222;
+}

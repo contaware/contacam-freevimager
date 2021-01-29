@@ -11,3 +11,6 @@ define("NOFILESFOR","Žádné soubory z");
 define("IMAGERELOADIN","Obraz bude obnoven za");
 define("SECONDS","sekund");
 define("FULLDAY","Celý den");
+define("YES","ANO");
+define("NO","NE");
+define("AREYOUSURETODELETE","Opravdu chcete trvale odstranit všechny vybrané nahrávky?");
