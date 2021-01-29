@@ -55,8 +55,6 @@ if (isset($_GET['year']) && isset($_GET['month']) && isset($_GET['day'])) {
 				strong_delete("$filenoext.mp4");
 			if (is_file("$filenoext.gif"))
 				strong_delete("$filenoext.gif");
-			if (is_file("$filenoext.jpg"))
-				strong_delete("$filenoext.jpg");
 		}
 	}
 }
