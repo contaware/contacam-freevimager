@@ -1329,39 +1329,41 @@ LRESULT CPictureView::OnGesture(WPARAM /*wParam*/, LPARAM lParam)
 				// Crop
 				if (pDoc->m_bCrop)
 				{
+					int nRectSizeXInside = ::SystemDPIScale(CROP_RECT_X_INSIDE);
+					int nRectSizeYInside = ::SystemDPIScale(CROP_RECT_Y_INSIDE);
 					pt += GetScrollPosition();
 					switch (m_nGesturePanCropHandle)
 					{
 						// top-left
-						case 0 :	CropTop(pt, CROP_RECT_Y_INSIDE, FALSE);
-									CropLeft(pt, CROP_RECT_X_INSIDE, FALSE);
+						case 0 :	CropTop(pt, nRectSizeYInside, FALSE);
+									CropLeft(pt, nRectSizeXInside, FALSE);
 									break;
 						// bottom-right
-						case 1 :	CropBottom(pt, CROP_RECT_Y_INSIDE, FALSE);
-									CropRight(pt, CROP_RECT_X_INSIDE, FALSE);
+						case 1 :	CropBottom(pt, nRectSizeYInside, FALSE);
+									CropRight(pt, nRectSizeXInside, FALSE);
 									break;
 						// bottom-left
-						case 2 :	CropBottom(pt, CROP_RECT_Y_INSIDE, FALSE);
-									CropLeft(pt, CROP_RECT_X_INSIDE, FALSE);
+						case 2 :	CropBottom(pt, nRectSizeYInside, FALSE);
+									CropLeft(pt, nRectSizeXInside, FALSE);
 									break;
 						// top-right
-						case 3 :	CropTop(pt, CROP_RECT_Y_INSIDE, FALSE);
-									CropRight(pt, CROP_RECT_X_INSIDE, FALSE);
+						case 3 :	CropTop(pt, nRectSizeYInside, FALSE);
+									CropRight(pt, nRectSizeXInside, FALSE);
 									break;
 						// top
-						case 4 :	CropTop(pt, CROP_RECT_Y_INSIDE, FALSE);
+						case 4 :	CropTop(pt, nRectSizeYInside, FALSE);
 									break;
 						// bottom
-						case 5 :	CropBottom(pt, CROP_RECT_Y_INSIDE, FALSE);
+						case 5 :	CropBottom(pt, nRectSizeYInside, FALSE);
 									break;
 						// left
-						case 6 :	CropLeft(pt, CROP_RECT_X_INSIDE, FALSE);
+						case 6 :	CropLeft(pt, nRectSizeXInside, FALSE);
 									break;
 						// right
-						case 7 :	CropRight(pt, CROP_RECT_X_INSIDE, FALSE);
+						case 7 :	CropRight(pt, nRectSizeXInside, FALSE);
 									break;
 						// center
-						case 8 :	CropCenter(CPoint(dx, dy), CROP_RECT_X_INSIDE, CROP_RECT_Y_INSIDE);
+						case 8 :	CropCenter(CPoint(dx, dy), nRectSizeXInside, nRectSizeYInside);
 									break;
 					}
 					UpdateCropRectangles();
@@ -1480,9 +1482,9 @@ void CPictureView::StepLeftCropEdge(BOOL bDirectionLeft, BOOL bCursorTop)
 		else
 			nZoomedPixelAlignX = m_nZoomedPixelAlignX;
 		if (bDirectionLeft)
-			CropLeft(CPoint(m_CropZoomRect.left - nZoomedPixelAlignX, 0), CROP_RECT_X_INSIDE, FALSE);
+			CropLeft(CPoint(m_CropZoomRect.left - nZoomedPixelAlignX, 0), ::SystemDPIScale(CROP_RECT_X_INSIDE), FALSE);
 		else
-			CropLeft(CPoint(m_CropZoomRect.left + nZoomedPixelAlignX, 0), CROP_RECT_X_INSIDE, FALSE);
+			CropLeft(CPoint(m_CropZoomRect.left + nZoomedPixelAlignX, 0), ::SystemDPIScale(CROP_RECT_X_INSIDE), FALSE);
 
 		// Update the crop rectangles
 		UpdateCropRectangles();
@@ -1509,9 +1511,9 @@ void CPictureView::StepRightCropEdge(BOOL bDirectionLeft, BOOL bCursorTop)
 		else
 			nZoomedPixelAlignX = m_nZoomedPixelAlignX;
 		if (bDirectionLeft)
-			CropRight(CPoint(m_CropZoomRect.right - nZoomedPixelAlignX, 0), CROP_RECT_X_INSIDE, FALSE);
+			CropRight(CPoint(m_CropZoomRect.right - nZoomedPixelAlignX, 0), ::SystemDPIScale(CROP_RECT_X_INSIDE), FALSE);
 		else
-			CropRight(CPoint(m_CropZoomRect.right + nZoomedPixelAlignX, 0), CROP_RECT_X_INSIDE, FALSE);
+			CropRight(CPoint(m_CropZoomRect.right + nZoomedPixelAlignX, 0), ::SystemDPIScale(CROP_RECT_X_INSIDE), FALSE);
 
 		// Update the crop rectangles
 		UpdateCropRectangles();
@@ -1538,9 +1540,9 @@ void CPictureView::StepTopCropEdge(BOOL bDirectionUp, BOOL bCursorLeft)
 		else
 			nZoomedPixelAlignY = m_nZoomedPixelAlignY;
 		if (bDirectionUp)
-			CropTop(CPoint(0, m_CropZoomRect.top - nZoomedPixelAlignY), CROP_RECT_Y_INSIDE, FALSE);
+			CropTop(CPoint(0, m_CropZoomRect.top - nZoomedPixelAlignY), ::SystemDPIScale(CROP_RECT_Y_INSIDE), FALSE);
 		else
-			CropTop(CPoint(0, m_CropZoomRect.top + nZoomedPixelAlignY), CROP_RECT_Y_INSIDE, FALSE);
+			CropTop(CPoint(0, m_CropZoomRect.top + nZoomedPixelAlignY), ::SystemDPIScale(CROP_RECT_Y_INSIDE), FALSE);
 
 		// Update the crop rectangles
 		UpdateCropRectangles();
@@ -1567,9 +1569,9 @@ void CPictureView::StepBottomCropEdge(BOOL bDirectionUp, BOOL bCursorLeft)
 		else
 			nZoomedPixelAlignY = m_nZoomedPixelAlignY;
 		if (bDirectionUp)
-			CropBottom(CPoint(0, m_CropZoomRect.bottom - nZoomedPixelAlignY), CROP_RECT_Y_INSIDE, FALSE);
+			CropBottom(CPoint(0, m_CropZoomRect.bottom - nZoomedPixelAlignY), ::SystemDPIScale(CROP_RECT_Y_INSIDE), FALSE);
 		else
-			CropBottom(CPoint(0, m_CropZoomRect.bottom + nZoomedPixelAlignY), CROP_RECT_Y_INSIDE, FALSE);
+			CropBottom(CPoint(0, m_CropZoomRect.bottom + nZoomedPixelAlignY), ::SystemDPIScale(CROP_RECT_Y_INSIDE), FALSE);
 
 		// Update the crop rectangles
 		UpdateCropRectangles();
@@ -1603,7 +1605,7 @@ void CPictureView::StepCropCenter(CPoint delta)
 		pDoc->m_rcCropCenter = pDoc->m_rcCropDelta;
 		delta.x *= nZoomedPixelAlignX;
 		delta.y *= nZoomedPixelAlignY;
-		CropCenter(delta, CROP_RECT_X_INSIDE, CROP_RECT_Y_INSIDE);
+		CropCenter(delta, ::SystemDPIScale(CROP_RECT_X_INSIDE), ::SystemDPIScale(CROP_RECT_Y_INSIDE));
 
 		// Update the crop rectangles
 		UpdateCropRectangles();
@@ -3204,8 +3206,8 @@ void CPictureView::OnLButtonDown(UINT nFlags, CPoint point)
 	}
 	else if (pDoc->m_bCrop)
 	{
-		int nRectSizeXInside = CROP_RECT_X_INSIDE;
-		int nRectSizeYInside = CROP_RECT_Y_INSIDE;
+		int nRectSizeXInside = ::SystemDPIScale(CROP_RECT_X_INSIDE);
+		int nRectSizeYInside = ::SystemDPIScale(CROP_RECT_Y_INSIDE);
 		int nRectSizeXOutside = CROP_RECT_X_OUTSIDE;
 		int nRectSizeYOutside = CROP_RECT_Y_OUTSIDE;
 		int nCropMarkerRectWidth = ::SystemDPIScale(CROP_MARKER_RECT_WIDTH);
@@ -3744,8 +3746,8 @@ void CPictureView::OnMouseMove(UINT nFlags, CPoint point)
 		CPoint ptOrigPoint = point;
 		CRect rcClient; 
 		GetClientRect(&rcClient);
-		int nRectSizeXInside = CROP_RECT_X_INSIDE;
-		int nRectSizeYInside = CROP_RECT_Y_INSIDE;
+		int nRectSizeXInside = ::SystemDPIScale(CROP_RECT_X_INSIDE);
+		int nRectSizeYInside = ::SystemDPIScale(CROP_RECT_Y_INSIDE);
 		int nRectSizeXOutside = CROP_RECT_X_OUTSIDE;
 		int nRectSizeYOutside = CROP_RECT_Y_OUTSIDE;
 		int nCropMarkerRectWidth = ::SystemDPIScale(CROP_MARKER_RECT_WIDTH);
