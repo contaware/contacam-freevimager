@@ -3208,8 +3208,8 @@ void CPictureView::OnLButtonDown(UINT nFlags, CPoint point)
 	{
 		int nRectSizeXInside = ::SystemDPIScale(CROP_RECT_X_INSIDE);
 		int nRectSizeYInside = ::SystemDPIScale(CROP_RECT_Y_INSIDE);
-		int nRectSizeXOutside = CROP_RECT_X_OUTSIDE;
-		int nRectSizeYOutside = CROP_RECT_Y_OUTSIDE;
+		int nRectSizeXOutside = ::SystemDPIScale(CROP_RECT_X_OUTSIDE);
+		int nRectSizeYOutside = ::SystemDPIScale(CROP_RECT_Y_OUTSIDE);
 		int nCropMarkerRectWidth = ::SystemDPIScale(CROP_MARKER_RECT_WIDTH);
 		int nCropMarkerRectHeight = ::SystemDPIScale(CROP_MARKER_RECT_HEIGHT);
 
@@ -3748,8 +3748,8 @@ void CPictureView::OnMouseMove(UINT nFlags, CPoint point)
 		GetClientRect(&rcClient);
 		int nRectSizeXInside = ::SystemDPIScale(CROP_RECT_X_INSIDE);
 		int nRectSizeYInside = ::SystemDPIScale(CROP_RECT_Y_INSIDE);
-		int nRectSizeXOutside = CROP_RECT_X_OUTSIDE;
-		int nRectSizeYOutside = CROP_RECT_Y_OUTSIDE;
+		int nRectSizeXOutside = ::SystemDPIScale(CROP_RECT_X_OUTSIDE);
+		int nRectSizeYOutside = ::SystemDPIScale(CROP_RECT_Y_OUTSIDE);
 		int nCropMarkerRectWidth = ::SystemDPIScale(CROP_MARKER_RECT_WIDTH);
 		int nCropMarkerRectHeight = ::SystemDPIScale(CROP_MARKER_RECT_HEIGHT);
 		CRect rcLastCropDelta = pDoc->m_rcCropDelta;
