@@ -642,14 +642,14 @@ void CZoomComboBox::OnSelEndOk()
 				else
 				{
 					if (pView->IsXAndYScroll())
-						pView->ScrollToPosition(CPoint(	pView->m_CropZoomRect.left - MIN_BORDER,
-														pView->m_CropZoomRect.top - MIN_BORDER));
+						pView->ScrollToPosition(CPoint(	pView->m_CropZoomRect.left - ::SystemDPIScale(MIN_BORDER),
+														pView->m_CropZoomRect.top - ::SystemDPIScale(MIN_BORDER)));
 					else if (pView->IsXScroll())
-						pView->ScrollToPosition(CPoint(	pView->m_CropZoomRect.left - MIN_BORDER,
+						pView->ScrollToPosition(CPoint(	pView->m_CropZoomRect.left - ::SystemDPIScale(MIN_BORDER),
 														0));
 					else if (pView->IsYScroll())
 						pView->ScrollToPosition(CPoint(	0,
-														pView->m_CropZoomRect.top - MIN_BORDER));
+														pView->m_CropZoomRect.top - ::SystemDPIScale(MIN_BORDER)));
 				}
 			}
 		}

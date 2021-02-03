@@ -288,8 +288,8 @@ BOOL CUImagerView::UpdateWindowSizes(BOOL bInvalidate,
 			// Document Borders
 			if (!pDoc->m_bNoBorders)
 			{
-				szDoc.cx += 2 * MIN_BORDER;
-				szDoc.cy += 2 * MIN_BORDER;
+				szDoc.cx += 2 * ::SystemDPIScale(MIN_BORDER);
+				szDoc.cy += 2 * ::SystemDPIScale(MIN_BORDER);
 			}
 
 			// Set Max ToolBar Width

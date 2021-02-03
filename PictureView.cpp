@@ -3143,7 +3143,7 @@ void CPictureView::EraseBkgnd(CDC* pDC)
 		if (pDoc->m_bNoBorders)
 			rcFull.right = TotalSize.cx;
 		else	
-			rcFull.right = TotalSize.cx + 2*MIN_BORDER;
+			rcFull.right = TotalSize.cx + 2 * ::SystemDPIScale(MIN_BORDER);
 	}
 	else
 		rcFull.right = rcClient.right;
@@ -3152,7 +3152,7 @@ void CPictureView::EraseBkgnd(CDC* pDC)
 		if (pDoc->m_bNoBorders)
 			rcFull.bottom = TotalSize.cy;
 		else
-			rcFull.bottom = TotalSize.cy + 2*MIN_BORDER;
+			rcFull.bottom = TotalSize.cy + 2 * ::SystemDPIScale(MIN_BORDER);
 	}
 	else
 		rcFull.bottom = rcClient.bottom;
@@ -4650,8 +4650,8 @@ void CPictureView::UpdateScrollSize()
 		}
 		if (!pDoc->m_bNoBorders)
 		{
-			ZoomedSize.cx += 2*MIN_BORDER;
-			ZoomedSize.cy += 2*MIN_BORDER;
+			ZoomedSize.cx += 2 * ::SystemDPIScale(MIN_BORDER);
+			ZoomedSize.cy += 2 * ::SystemDPIScale(MIN_BORDER);
 		}
 		SetScrollSizes(MM_TEXT, ZoomedSize);
 	}
@@ -4714,26 +4714,26 @@ void CPictureView::UpdateZoomRect()
 	}
 	else
 	{
-		if (bFit || ZoomedSize.cx <= ClientRect.Width() - 2*MIN_BORDER)
+		if (bFit || ZoomedSize.cx <= ClientRect.Width() - 2 * ::SystemDPIScale(MIN_BORDER))
 		{
 			m_ZoomRect.left = (ClientRect.Width() - ZoomedSize.cx) / 2;
 			m_ZoomRect.right = m_ZoomRect.left + ZoomedSize.cx;
 		}
 		else
 		{
-			m_ZoomRect.left = MIN_BORDER;
-			m_ZoomRect.right = ZoomedSize.cx + MIN_BORDER;
+			m_ZoomRect.left = ::SystemDPIScale(MIN_BORDER);
+			m_ZoomRect.right = ZoomedSize.cx + ::SystemDPIScale(MIN_BORDER);
 		}
 
-		if (bFit || ZoomedSize.cy <= ClientRect.Height() - 2*MIN_BORDER)
+		if (bFit || ZoomedSize.cy <= ClientRect.Height() - 2 * ::SystemDPIScale(MIN_BORDER))
 		{
 			m_ZoomRect.top = (ClientRect.Height() - ZoomedSize.cy) / 2;
 			m_ZoomRect.bottom = m_ZoomRect.top + ZoomedSize.cy;
 		}
 		else
 		{
-			m_ZoomRect.top = MIN_BORDER;
-			m_ZoomRect.bottom = ZoomedSize.cy + MIN_BORDER;
+			m_ZoomRect.top = ::SystemDPIScale(MIN_BORDER);
+			m_ZoomRect.bottom = ZoomedSize.cy + ::SystemDPIScale(MIN_BORDER);
 		}
 	}
 
