@@ -22,10 +22,10 @@
 #define VISIBLEDOC_INFLATE						32
 
 // Crop Defines
-#define CROP_RECT_X_INSIDE						6
-#define CROP_RECT_Y_INSIDE						6
-#define CROP_RECT_X_OUTSIDE						14
-#define CROP_RECT_Y_OUTSIDE						14
+#define CROP_RECT_X_INSIDE						8
+#define CROP_RECT_Y_INSIDE						8
+#define CROP_RECT_X_OUTSIDE						16
+#define CROP_RECT_Y_OUTSIDE						16
 #define CROP_MARKER_RECT_WIDTH					10
 #define CROP_MARKER_RECT_HEIGHT					10
 

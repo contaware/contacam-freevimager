@@ -20,7 +20,7 @@
 #define THREAD_SAFE_UPDATEWINDOWSIZES_DELAY		300
 
 // Border in pixels while scrollbars on
-#define MIN_BORDER								16
+#define MIN_BORDER								18
 
 // Border in percent while in fit mode
 #define FIT_ZOOMFACTOR_MARGIN					0.95
