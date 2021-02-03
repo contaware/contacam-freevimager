@@ -22,7 +22,6 @@
 #define VISIBLEDOC_INFLATE						32
 
 // Crop Defines
-#define CROP_MEMDC_USE_MAX_SIZE					4000
 #define CROP_RECT_X_INSIDE						6
 #define CROP_RECT_Y_INSIDE						6
 #define CROP_RECT_X_OUTSIDE						14
