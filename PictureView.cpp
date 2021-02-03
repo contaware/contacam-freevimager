@@ -2743,56 +2743,58 @@ void CPictureView::DrawCropTools(CDC* pDC)
 	}
 
 	// Draw Crop Points
+	int nCropMarkerRectWidth = ::SystemDPIScale(CROP_MARKER_RECT_WIDTH);
+	int nCropMarkerRectHeight = ::SystemDPIScale(CROP_MARKER_RECT_HEIGHT);
 	CBrush Brush;
 	Brush.CreateSolidBrush(RGB(0x80,0x80,0x80));
 	CBrush* pOldBrush = pDC->SelectObject(&Brush);
 	CPen Pen;
 	Pen.CreatePen(PS_SOLID, 1, RGB(0,0,0));
 	CPen* pOldPen = pDC->SelectObject(&Pen);
-	CRect rcTopLeft(		m_CropZoomRect.left - CROP_MARKER_RECT_WIDTH,
-							m_CropZoomRect.top - CROP_MARKER_RECT_HEIGHT,
+	CRect rcTopLeft(		m_CropZoomRect.left - nCropMarkerRectWidth,
+							m_CropZoomRect.top - nCropMarkerRectHeight,
 							m_CropZoomRect.left,
 							m_CropZoomRect.top);
 
 	CRect rcBottomRight(	m_CropZoomRect.right,
 							m_CropZoomRect.bottom,
-							m_CropZoomRect.right + CROP_MARKER_RECT_WIDTH,
-							m_CropZoomRect.bottom + CROP_MARKER_RECT_HEIGHT);
+							m_CropZoomRect.right + nCropMarkerRectWidth,
+							m_CropZoomRect.bottom + nCropMarkerRectHeight);
 
-	CRect rcBottomLeft(		m_CropZoomRect.left - CROP_MARKER_RECT_WIDTH,
+	CRect rcBottomLeft(		m_CropZoomRect.left - nCropMarkerRectWidth,
 							m_CropZoomRect.bottom,
 							m_CropZoomRect.left,
-							m_CropZoomRect.bottom + CROP_MARKER_RECT_HEIGHT);
+							m_CropZoomRect.bottom + nCropMarkerRectHeight);
 
 	CRect rcTopRight(		m_CropZoomRect.right,
-							m_CropZoomRect.top - CROP_MARKER_RECT_HEIGHT,
-							m_CropZoomRect.right + CROP_MARKER_RECT_WIDTH,
+							m_CropZoomRect.top - nCropMarkerRectHeight,
+							m_CropZoomRect.right + nCropMarkerRectWidth,
 							m_CropZoomRect.top);
 
-	CRect rcLeft(			m_CropZoomRect.left - CROP_MARKER_RECT_WIDTH,
-							m_CropZoomRect.top + (m_CropZoomRect.Height()/2) - (CROP_MARKER_RECT_HEIGHT/2),
+	CRect rcLeft(			m_CropZoomRect.left - nCropMarkerRectWidth,
+							m_CropZoomRect.top + (m_CropZoomRect.Height()/2) - (nCropMarkerRectHeight/2),
 							m_CropZoomRect.left,
-							m_CropZoomRect.top + (m_CropZoomRect.Height()/2) + (CROP_MARKER_RECT_HEIGHT/2));
+							m_CropZoomRect.top + (m_CropZoomRect.Height()/2) + (nCropMarkerRectHeight/2));
 
 	CRect rcRight(			m_CropZoomRect.right,
-							m_CropZoomRect.top + (m_CropZoomRect.Height()/2) - (CROP_MARKER_RECT_HEIGHT/2),
-							m_CropZoomRect.right + CROP_MARKER_RECT_WIDTH,
-							m_CropZoomRect.top + (m_CropZoomRect.Height()/2) + (CROP_MARKER_RECT_HEIGHT/2));
+							m_CropZoomRect.top + (m_CropZoomRect.Height()/2) - (nCropMarkerRectHeight/2),
+							m_CropZoomRect.right + nCropMarkerRectWidth,
+							m_CropZoomRect.top + (m_CropZoomRect.Height()/2) + (nCropMarkerRectHeight/2));
 	
-	CRect rcTop(			m_CropZoomRect.left + (m_CropZoomRect.Width()/2) - (CROP_MARKER_RECT_WIDTH/2),
-							m_CropZoomRect.top - CROP_MARKER_RECT_HEIGHT,
-							m_CropZoomRect.left + (m_CropZoomRect.Width()/2) + (CROP_MARKER_RECT_WIDTH/2),
+	CRect rcTop(			m_CropZoomRect.left + (m_CropZoomRect.Width()/2) - (nCropMarkerRectWidth/2),
+							m_CropZoomRect.top - nCropMarkerRectHeight,
+							m_CropZoomRect.left + (m_CropZoomRect.Width()/2) + (nCropMarkerRectWidth/2),
 							m_CropZoomRect.top);
 
-	CRect rcBottom(			m_CropZoomRect.left + (m_CropZoomRect.Width()/2) - (CROP_MARKER_RECT_WIDTH/2),
+	CRect rcBottom(			m_CropZoomRect.left + (m_CropZoomRect.Width()/2) - (nCropMarkerRectWidth/2),
 							m_CropZoomRect.bottom,
-							m_CropZoomRect.left + (m_CropZoomRect.Width()/2) + (CROP_MARKER_RECT_WIDTH/2),
-							m_CropZoomRect.bottom + CROP_MARKER_RECT_HEIGHT);
+							m_CropZoomRect.left + (m_CropZoomRect.Width()/2) + (nCropMarkerRectWidth/2),
+							m_CropZoomRect.bottom + nCropMarkerRectHeight);
 	
-	CRect rcCenter(			m_CropZoomRect.left + (m_CropZoomRect.Width()/2) - (CROP_MARKER_RECT_WIDTH/2),
-							m_CropZoomRect.top + (m_CropZoomRect.Height()/2) - (CROP_MARKER_RECT_HEIGHT/2),
-							m_CropZoomRect.left + (m_CropZoomRect.Width()/2) + (CROP_MARKER_RECT_WIDTH/2),
-							m_CropZoomRect.top + (m_CropZoomRect.Height()/2) + (CROP_MARKER_RECT_HEIGHT/2));
+	CRect rcCenter(			m_CropZoomRect.left + (m_CropZoomRect.Width()/2) - (nCropMarkerRectWidth/2),
+							m_CropZoomRect.top + (m_CropZoomRect.Height()/2) - (nCropMarkerRectHeight/2),
+							m_CropZoomRect.left + (m_CropZoomRect.Width()/2) + (nCropMarkerRectWidth/2),
+							m_CropZoomRect.top + (m_CropZoomRect.Height()/2) + (nCropMarkerRectHeight/2));
 
 	pDC->Rectangle(rcTopLeft);
 	pDC->Rectangle(rcBottomRight);
@@ -3206,6 +3208,8 @@ void CPictureView::OnLButtonDown(UINT nFlags, CPoint point)
 		int nRectSizeYInside = CROP_RECT_Y_INSIDE;
 		int nRectSizeXOutside = CROP_RECT_X_OUTSIDE;
 		int nRectSizeYOutside = CROP_RECT_Y_OUTSIDE;
+		int nCropMarkerRectWidth = ::SystemDPIScale(CROP_MARKER_RECT_WIDTH);
+		int nCropMarkerRectHeight = ::SystemDPIScale(CROP_MARKER_RECT_HEIGHT);
 
 		// Adjust Point Offset
 		point += GetScrollPosition();
@@ -3250,10 +3254,10 @@ void CPictureView::OnLButtonDown(UINT nFlags, CPoint point)
 							m_CropZoomRect.right + nRectSizeXOutside,
 							m_CropZoomRect.bottom + nRectSizeYOutside);
 
-		CRect rcCenter(		m_CropZoomRect.left + (m_CropZoomRect.Width()/2) - ((CROP_MARKER_RECT_WIDTH+nRectSizeXInside)/2),
-							m_CropZoomRect.top + (m_CropZoomRect.Height()/2) - ((CROP_MARKER_RECT_HEIGHT+nRectSizeYInside)/2),
-							m_CropZoomRect.left + (m_CropZoomRect.Width()/2) + ((CROP_MARKER_RECT_WIDTH+nRectSizeXInside)/2),
-							m_CropZoomRect.top + (m_CropZoomRect.Height()/2) + ((CROP_MARKER_RECT_HEIGHT+nRectSizeYInside)/2));
+		CRect rcCenter(		m_CropZoomRect.left + (m_CropZoomRect.Width()/2) - ((nCropMarkerRectWidth + nRectSizeXInside)/2),
+							m_CropZoomRect.top + (m_CropZoomRect.Height()/2) - ((nCropMarkerRectHeight + nRectSizeYInside)/2),
+							m_CropZoomRect.left + (m_CropZoomRect.Width()/2) + ((nCropMarkerRectWidth + nRectSizeXInside)/2),
+							m_CropZoomRect.top + (m_CropZoomRect.Height()/2) + ((nCropMarkerRectHeight + nRectSizeYInside)/2));
 		
 		if (rcTopLeft.PtInRect(point))
 		{
@@ -3744,6 +3748,8 @@ void CPictureView::OnMouseMove(UINT nFlags, CPoint point)
 		int nRectSizeYInside = CROP_RECT_Y_INSIDE;
 		int nRectSizeXOutside = CROP_RECT_X_OUTSIDE;
 		int nRectSizeYOutside = CROP_RECT_Y_OUTSIDE;
+		int nCropMarkerRectWidth = ::SystemDPIScale(CROP_MARKER_RECT_WIDTH);
+		int nCropMarkerRectHeight = ::SystemDPIScale(CROP_MARKER_RECT_HEIGHT);
 		CRect rcLastCropDelta = pDoc->m_rcCropDelta;
 
 		// Adjust Point Offset
@@ -3789,10 +3795,10 @@ void CPictureView::OnMouseMove(UINT nFlags, CPoint point)
 							m_CropZoomRect.right + nRectSizeXOutside,
 							m_CropZoomRect.bottom + nRectSizeYOutside);
 
-		CRect rcCenter(		m_CropZoomRect.left + (m_CropZoomRect.Width()/2) - ((CROP_MARKER_RECT_WIDTH+nRectSizeXInside)/2),
-							m_CropZoomRect.top + (m_CropZoomRect.Height()/2) - ((CROP_MARKER_RECT_HEIGHT+nRectSizeYInside)/2),
-							m_CropZoomRect.left + (m_CropZoomRect.Width()/2) + ((CROP_MARKER_RECT_WIDTH+nRectSizeXInside)/2),
-							m_CropZoomRect.top + (m_CropZoomRect.Height()/2) + ((CROP_MARKER_RECT_HEIGHT+nRectSizeYInside)/2));
+		CRect rcCenter(		m_CropZoomRect.left + (m_CropZoomRect.Width()/2) - ((nCropMarkerRectWidth + nRectSizeXInside)/2),
+							m_CropZoomRect.top + (m_CropZoomRect.Height()/2) - ((nCropMarkerRectHeight + nRectSizeYInside)/2),
+							m_CropZoomRect.left + (m_CropZoomRect.Width()/2) + ((nCropMarkerRectWidth + nRectSizeXInside)/2),
+							m_CropZoomRect.top + (m_CropZoomRect.Height()/2) + ((nCropMarkerRectHeight + nRectSizeYInside)/2));
 
 		/*
 		IDC_SIZENESW Double-pointed arrow pointing northeast and southwest 
