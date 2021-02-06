@@ -434,7 +434,7 @@ FunctionEnd
 ; The stuff to uninstall
 Section "Uninstall"
   
-   ; Stop app
+  ; Stop app
   DetailPrint $(StoppingApplicationMessage)
   call un.KillApp
   
