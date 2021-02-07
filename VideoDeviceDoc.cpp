@@ -5524,25 +5524,16 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	sConfig += _T("</VirtualHost>\r\n");
 
 	// <Directory />
-	// TODO: in future releases remove the .recycled restrictions as now the web
-	//       interface deletes the files instead of renaming them to .recycled
 	sConfig += _T("<Directory />\r\n");
 	sConfig += _T("AllowOverride None\r\n"); // do not allow .htaccess files
 	if (((CUImagerApp*)::AfxGetApp())->m_sMicroApacheUsername != _T("") ||
 		((CUImagerApp*)::AfxGetApp())->m_sMicroApachePassword != _T(""))
 	{
-		// Do not allow direct .mp4, .gif, .jpg and .recycled accesses
+		// Do not allow direct .mp4, .gif and .jpg accesses
 		// Attention: cannot use those file types in css!
 		// Case insensitive regular expression "not match" (Apache 2.4 or higher with mod_authz_core.so)
 		// Note: %{REQUEST_URI} is only the URI path part without the query string!
-		sConfig += _T("Require expr %{REQUEST_URI} !~ m#\\.(mp4|gif|jpg|recycled)$#i\r\n");
-	}
-	else
-	{
-		// Do not allow direct .recycled accesses
-		// Case insensitive regular expression "not match" (Apache 2.4 or higher with mod_authz_core.so)
-		// Note: %{REQUEST_URI} is only the URI path part without the query string!
-		sConfig += _T("Require expr %{REQUEST_URI} !~ m#\\.recycled$#i\r\n");
+		sConfig += _T("Require expr %{REQUEST_URI} !~ m#\\.(mp4|gif|jpg)$#i\r\n");
 	}
 	sConfig += _T("</Directory>\r\n");
 	
