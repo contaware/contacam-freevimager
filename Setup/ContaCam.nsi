@@ -111,6 +111,7 @@ xpstyle on
 !define MUI_PAGE_CUSTOMFUNCTION_LEAVE PageFinLeave
 !insertmacro MUI_PAGE_FINISH
 !insertmacro MUI_UNPAGE_CONFIRM
+UninstPage custom un.KeepSettings
 !insertmacro MUI_UNPAGE_INSTFILES
 
 ;--------------------------------
@@ -431,11 +432,16 @@ FunctionEnd
 
 ;--------------------------------
 
+Var KeepSettingsState
+
 Function un.onInit
 
   Push $R0
   Push $R1
   ClearErrors
+  
+  ; Keep settings initial state, set that to ${BST_CHECKED} or ${BST_UNCHECKED}
+  StrCpy $KeepSettingsState ${BST_CHECKED}
   
   ; UAC
   ${UAC.U.Elevate.AdminOnly} ${UNINSTNAME_EXT}
@@ -455,6 +461,41 @@ lbl_end:
   Pop $R1
   Pop $R0
   
+FunctionEnd
+
+;--------------------------------
+
+Var KeepSettingsDlg
+Var KeepSettingsCheckbox
+
+Function un.KeepSettings
+  ; Create Dialog
+  nsDialogs::Create 1018
+  Pop $KeepSettingsDlg
+  ${If} $KeepSettingsDlg == error
+    ${UAC.Unload} ;Must call unload!
+    Abort
+  ${EndIf}
+  
+  ; Explanation Label
+  ${NSD_CreateLabel} 0 0 100% 28u $(KeepSettingsExplanation)
+  
+  ; Question Checkbox
+  ${NSD_CreateCheckbox} 0 29u 100% 20u $(KeepSettingsQuestion)
+  Pop $KeepSettingsCheckbox
+  GetFunctionAddress $0 un.OnKeepSettingsCheckbox
+  nsDialogs::OnClick $KeepSettingsCheckbox $0
+  ${NSD_SetState} $KeepSettingsCheckbox $KeepSettingsState
+  
+  ; Note Label
+  ${NSD_CreateLabel} 0 -30u 100% 28u $(KeepSettingsNote)
+
+  ; Show Dialog
+  nsDialogs::Show
+FunctionEnd
+
+Function un.OnKeepSettingsCheckbox
+  ${NSD_GetState} $KeepSettingsCheckbox $KeepSettingsState
 FunctionEnd
 
 ;--------------------------------
@@ -602,7 +643,11 @@ Section "Uninstall"
   ; Remove remaining registry keys
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}"
   DeleteRegKey HKLM "Software\Contaware\${APPNAME_NOEXT}"
-  DeleteRegKey HKCU "Software\Contaware\${APPNAME_NOEXT}"
+  ${If} $KeepSettingsState == ${BST_UNCHECKED}
+    DeleteRegKey HKCU "Software\Contaware\${APPNAME_NOEXT}"
+  ${Else}
+	WriteRegDWORD HKCU "Software\Contaware\${APPNAME_NOEXT}\GeneralApp" "FirstRunEver" 1
+  ${EndIf}
   DeleteRegKey HKCU "Software\Contaware\RemoteCamViewer"
   DeleteRegKey HKCR "Applications\${APPNAME_EXT}"
   
@@ -616,7 +661,9 @@ Section "Uninstall"
   
   ; Remove application data directories for Current User
   ; (see the above SetShellVarContext current)
-  RMDir /r "$APPDATA\Contaware\${APPNAME_NOEXT}"
+  ${If} $KeepSettingsState == ${BST_UNCHECKED}
+    RMDir /r "$APPDATA\Contaware\${APPNAME_NOEXT}"
+  ${EndIf}
   RMDir /r "$APPDATA\Contaware\FullscreenBrowser"
   RMDir "$APPDATA\Contaware" ; only remove if completely empty
   
@@ -636,7 +683,9 @@ Section "Uninstall"
   Delete $INSTDIR\ContaCamService.exe
   Delete $INSTDIR\ContaCamService.ini
   Delete $INSTDIR\ContaCamService.log
-  Delete $INSTDIR\MasterConfig.ini
+  ${If} $KeepSettingsState == ${BST_UNCHECKED}
+    Delete $INSTDIR\MasterConfig.ini
+  ${EndIf}
   Delete $INSTDIR\${UNINSTNAME_EXT}
   
   ; Remove directories used

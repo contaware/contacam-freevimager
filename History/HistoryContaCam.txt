@@ -4,6 +4,7 @@ CONTACAM HISTORY
 
 - The web interface trash button is now definitively deleting the 
   recordings instead of renaming them to .recycled
+- Uninstaller has got a "Keep the settings for later use" checkbox
 - Limit the maximum number of encoding threads to 16 as H.264 can have 
   problems above that count
 
