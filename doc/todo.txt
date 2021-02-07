@@ -79,3 +79,7 @@ ContaCam Program
   when clicking the camera name show the videos (n1fbg2@yahoo.com)
   
 - Remove Interlocked... functions replacing volatile int with std::atomic<int>
+
+- Matrix 4 command for showing also 3 cams as 4 and matrix 6 command for showing 5
+  cams as 6 (engineering@theremino.com)
+  
