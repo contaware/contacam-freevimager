@@ -91,6 +91,7 @@ protected:
 	afx_msg void OnCheckShowPassword();
 	afx_msg void OnButtonCertSsl();
 	afx_msg void OnButtonKeySsl();
+	afx_msg void OnSyslinkHttpdConfEditable(NMHDR* pNMHDR, LRESULT* pResult);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

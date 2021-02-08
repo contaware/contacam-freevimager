@@ -78,6 +78,8 @@ BEGIN_MESSAGE_MAP(CSettingsDlgVideoDeviceDoc, CDialog)
 	ON_BN_CLICKED(IDC_CHECK_SHOW_PASSWORD, OnCheckShowPassword)
 	ON_BN_CLICKED(IDC_BUTTON_CERT_SSL, OnButtonCertSsl)
 	ON_BN_CLICKED(IDC_BUTTON_KEY_SSL, OnButtonKeySsl)
+	ON_NOTIFY(NM_CLICK, IDC_SYSLINK_HTTPD_CONF_EDITABLE, OnSyslinkHttpdConfEditable)
+	ON_NOTIFY(NM_RETURN, IDC_SYSLINK_HTTPD_CONF_EDITABLE, OnSyslinkHttpdConfEditable)
 	ON_WM_SETCURSOR()
 	ON_WM_TIMER()
 	ON_WM_DESTROY()
@@ -455,6 +457,12 @@ void CSettingsDlgVideoDeviceDoc::OnButtonKeySsl()
 		m_sMicroApacheKeyFileSSL = fd.GetPathName();
 		UpdateData(FALSE);
 	}
+}
+
+void CSettingsDlgVideoDeviceDoc::OnSyslinkHttpdConfEditable(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	::ShellExecute(NULL, _T("open"), CUImagerApp::GetConfigFilesDir(), NULL, NULL, SW_SHOWNORMAL);
+	*pResult = 0;
 }
 
 BOOL CSettingsDlgVideoDeviceDoc::OnInitDialog() 

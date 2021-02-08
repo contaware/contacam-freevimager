@@ -3003,6 +3003,7 @@
 #define IDC_EDIT_PLATERECOGNIZER_URL    2591
 #define IDC_EDIT_PLATERECOGNIZER_REGIONS 2592
 #define IDC_BUTTON_HELP                 2593
+#define IDC_SYSLINK_HTTPD_CONF_EDITABLE 2594
 #define ID_EDIT_ROTATE_FLIP             32778
 #define ID_FILE_SELECTTWAINSOURCE       32779
 #define ID_FILE_ACQUIRE                 32780
@@ -3242,7 +3243,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1503
 #define _APS_NEXT_COMMAND_VALUE         33555
-#define _APS_NEXT_CONTROL_VALUE         2594
+#define _APS_NEXT_CONTROL_VALUE         2595
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
