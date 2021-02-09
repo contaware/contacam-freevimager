@@ -3176,6 +3176,7 @@
 #define ID_EDIT_PASTE_INTO_BOTTOMRIGHT  33134
 #define ID_EDIT_PASTE_INTO_FILE         33135
 #define ID_VIEW_WEB                     33139
+#define ID_SETTINGS_VIEW_LOGFILE        33142
 #define ID_EDIT_SNAPSHOT                33161
 #define ID_EDIT_PASTE_INTO_FILE_HELP    33164
 #define ID_PLAY_RANDOM                  33165
@@ -3194,7 +3195,6 @@
 #define ID_DIRECTSHOW_VIDEODEV_LAST     33307
 #define ID_FILE_RELOAD                  33500
 #define ID_VIEW_FILES                   33501
-#define ID_SETTINGS_BROWSE_CONFIGLOG_FILES 33503
 #define ID_INDICATOR_REC_SPEED          33504
 #define ID_INDICATOR_BUF_USAGE          33505
 #define ID_INDICATOR_XCOORDINATE        33508
