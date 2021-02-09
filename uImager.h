@@ -608,7 +608,6 @@ public:
 	afx_msg void OnAppCredits();
 	afx_msg void OnUpdateFileCloseall(CCmdUI* pCmdUI);
 	afx_msg void OnFileShrinkDirDocs();
-	afx_msg void OnUpdateFileShrinkDirDocs(CCmdUI* pCmdUI);
 	afx_msg void OnFileSendmailOpenDocs();
 	afx_msg void OnUpdateFileSendmailOpenDocs(CCmdUI* pCmdUI);
 	afx_msg void OnSettingsTrayicon();

@@ -100,7 +100,6 @@ BEGIN_MESSAGE_MAP(CUImagerApp, CWinApp)
 	ON_COMMAND(ID_APP_CREDITS, OnAppCredits)
 	ON_UPDATE_COMMAND_UI(ID_FILE_CLOSEALL, OnUpdateFileCloseall)
 	ON_COMMAND(ID_FILE_SHRINK_DIR_DOCS, OnFileShrinkDirDocs)
-	ON_UPDATE_COMMAND_UI(ID_FILE_SHRINK_DIR_DOCS, OnUpdateFileShrinkDirDocs)
 	ON_COMMAND(ID_FILE_SENDMAIL_OPEN_DOCS, OnFileSendmailOpenDocs)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SENDMAIL_OPEN_DOCS, OnUpdateFileSendmailOpenDocs)
 	ON_COMMAND(ID_SETTINGS_TRAYICON, OnSettingsTrayicon)
@@ -1809,11 +1808,6 @@ void CUImagerApp::OnFileShrinkDirDocs()
 		::AfxGetMainFrame()->m_pBatchProcDlg->SetActiveWindow();
 		::AfxGetMainFrame()->m_pBatchProcDlg->SetFocus();
 	}
-}
-
-void CUImagerApp::OnUpdateFileShrinkDirDocs(CCmdUI* pCmdUI) 
-{
-	pCmdUI->SetCheck(::AfxGetMainFrame()->m_pBatchProcDlg ? 1 : 0);
 }
 
 void CUImagerApp::OnFileSendmailOpenDocs() 
