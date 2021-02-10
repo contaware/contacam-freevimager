@@ -236,7 +236,11 @@ void CCameraBasicSettingsDlg::EnableDisableAllCtrls(BOOL bEnable)
 	{
 		// Note: close X button, Esc and Alt+F4 are working according to the
 		//       IDCANCEL button state which is Enabled/Disabled in this loop
-		pwndChild->EnableWindow(bEnable);
+		TCHAR szClassName[8]; // one extra char to make sure it is exactly "Static"
+		::GetClassName(pwndChild->GetSafeHwnd(), szClassName, 8);
+		szClassName[7] = _T('\0');
+		if (_tcsicmp(szClassName, _T("Static")) != 0)
+			pwndChild->EnableWindow(bEnable);
 		pwndChild = pwndChild->GetNextWindow();
 	}
 }
