@@ -125,7 +125,7 @@ BOOL CCreditsDlg::OnInitDialog()
 						szlib		+ _T("\n\n") +
 						sgiflib		+ _T("\n\n") +
 						sicclib		+ _T("\n\n") +
-						snsis;
+						snsis		+ _T("\n");
 	m_Credits.SetWindowText(sCredits);
 
 	return TRUE;  // return TRUE unless you set the focus to a control

@@ -342,8 +342,8 @@ void CMDIClientWnd::OnLButtonUp(UINT nFlags, CPoint point)
 	CRect rcClient;
 	GetClientRect(&rcClient);
 	const LONGLONG nClickSpeedSec = 3;
-	const int nEdge = 30;
-	const int nMinWndEdge = 120;
+	const int nEdge = ::SystemDPIScale(30);
+	const int nMinWndEdge = ::SystemDPIScale(120);
 	if (rcClient.Width() > nMinWndEdge && rcClient.Height() > nMinWndEdge)
 	{
 		// 1. Top-left corner
