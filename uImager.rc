@@ -118,7 +118,6 @@ BEGIN
         MENUITEM "Normal Logging",              ID_SETTINGS_LOG_NORMAL
         MENUITEM "Verbose Logging",             ID_SETTINGS_LOG_VERBOSE
         MENUITEM "Debug Logging",               ID_SETTINGS_LOG_ALL_MESSAGES
-        MENUITEM SEPARATOR
         MENUITEM "View Log File",               ID_SETTINGS_VIEW_LOGFILE
     END
     POPUP "&Help"
@@ -184,7 +183,6 @@ BEGIN
         MENUITEM "Normal Logging",              ID_SETTINGS_LOG_NORMAL
         MENUITEM "Verbose Logging",             ID_SETTINGS_LOG_VERBOSE
         MENUITEM "Debug Logging",               ID_SETTINGS_LOG_ALL_MESSAGES
-        MENUITEM SEPARATOR
         MENUITEM "View Log File",               ID_SETTINGS_VIEW_LOGFILE
     END
     POPUP "&Window"
@@ -392,7 +390,6 @@ BEGIN
         MENUITEM "Normal Logging",              ID_SETTINGS_LOG_NORMAL
         MENUITEM "Verbose Logging",             ID_SETTINGS_LOG_VERBOSE
         MENUITEM "Debug Logging",               ID_SETTINGS_LOG_ALL_MESSAGES
-        MENUITEM SEPARATOR
         MENUITEM "View Log File",               ID_SETTINGS_VIEW_LOGFILE
     END
     POPUP "&Window"
