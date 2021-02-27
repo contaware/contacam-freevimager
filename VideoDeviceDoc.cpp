@@ -5643,6 +5643,17 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 				sAuthenticate += _T("		sleep(1);\r\n");
 				sAuthenticate += _T("	}\r\n");
 				sAuthenticate += _T("}\r\n");
+				sAuthenticate += _T("else if (isset($_GET['username']) && isset($_GET['password'])) {\r\n");
+				sAuthenticate += _T("	if (hash('sha256', $username_salt . $_GET['username']) == \"$username_hash\" &&\r\n");
+				sAuthenticate += _T("		hash('sha256', $password_salt . $_GET['password']) == \"$password_hash\") {\r\n");
+				sAuthenticate += _T("		$_SESSION['username'] = \"$username_hash\";\r\n");
+				sAuthenticate += _T("		return;\r\n");
+				sAuthenticate += _T("	} else {\r\n");
+				sAuthenticate += _T("		unset($_SESSION['username']);\r\n");
+				sAuthenticate += _T("		$invalid_login = 1;\r\n");
+				sAuthenticate += _T("		sleep(1);\r\n");
+				sAuthenticate += _T("	}\r\n");
+				sAuthenticate += _T("}\r\n");
 				sAuthenticate += _T("else if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW'])) {\r\n");
 				sAuthenticate += _T("	if (hash('sha256', $username_salt . $_SERVER['PHP_AUTH_USER']) == \"$username_hash\" &&\r\n");
 				sAuthenticate += _T("		hash('sha256', $password_salt . $_SERVER['PHP_AUTH_PW']) == \"$password_hash\") {\r\n");
