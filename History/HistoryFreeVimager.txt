@@ -1,5 +1,9 @@
 FREEVIMAGER HISTORY
 
+9.9.16 (Month XX 2021)
+
+- ...
+
 9.9.15 (February 15th 2021)
 
 - In print preview we can now scale the image with the mouse wheel
