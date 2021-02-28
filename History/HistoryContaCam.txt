@@ -2,7 +2,8 @@ CONTACAM HISTORY
 
 9.9.16 (Month XX 2021)
 
-- ...
+- Web interface supports now passing the credentials as parameters like:
+  http://CONTACAM-PC:PORT/CAMERA_NAME/poll.php?username=USER&password=PW
 
 9.9.15 (February 15th 2021)
 
