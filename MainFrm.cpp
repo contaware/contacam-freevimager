@@ -2396,17 +2396,24 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		}
 		else
 			GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_BUF_USAGE), _T(" ") + sBufStats + _T(" "));
-		if ((uiBufRet & GETRECBUF_COMMITSIZE_ALERT) == GETRECBUF_COMMITSIZE_ALERT && !((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames)
+		if ((uiBufRet & GETRECBUF_COMMITSIZE_ALERT) == GETRECBUF_COMMITSIZE_ALERT	&&
+			!((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames						&&
+			CDib::m_llOverallSharedMemoryBytes > 0)
 		{
+			// Set drop flag
 			((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = TRUE;
+			
+			// Log
 			::LogLine(_T("*** %s ***"), ML_STRING(1815, "OUT OF MEMORY / OVERLOAD: dropping frames"));
 		}
-		else if (((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames && CDib::m_llOverallSharedMemoryBytes == 0)
+		else if (((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames	&&
+				CDib::m_llOverallSharedMemoryBytes == 0)
 		{
+			// Clear drop flag
 			((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = FALSE;
 
-			// To avoid overloading / crashing ourself we better pop-up
-			// the notification dialog after the frames have been dropped
+			// To avoid overloading / crashing ourself we better pop-up the 
+			// notification dialog here after the frames have been dropped
 			if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
 				PopupNotificationWnd(APPNAME_NOEXT, ML_STRING(1815, "OUT OF MEMORY / OVERLOAD: dropping frames"), 0);
 		}
