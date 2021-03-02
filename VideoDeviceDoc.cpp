@@ -8759,6 +8759,14 @@ void CVideoDeviceDoc::ConnectRtsp()
 			sPathAndQuery = _T("/live/0/main"); // substream is: /live/0/sub
 			break;
 
+		case EZVIZ_H264_RTSP:
+			sPathAndQuery = _T("/H.264");
+			break;
+
+		case EZVIZ_H264STREAM_RTSP:
+			sPathAndQuery = _T("/h264_stream");
+			break;
+
 		case FLOUREON_RTSP:
 		case JIDETECH_RTSP:
 		case SRIHOME_RTSP:

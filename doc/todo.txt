@@ -83,3 +83,6 @@ ContaCam Program
 - Matrix 4 command for showing also 3 cams as 4 and matrix 6 command for showing 5
   cams as 6 (engineering@theremino.com)
   
+- Possibility to delete from the mp4 viewer, when deleted go to next or back?
+  (gthaavik@outlook.com)
+  

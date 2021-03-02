@@ -4,6 +4,7 @@ CONTACAM HISTORY
 
 - Web interface supports now passing the credentials as parameters like:
   http://CONTACAM-PC:PORT/CAMERA_NAME/poll.php?username=USER&password=PW
+- Added support for Ezviz
 
 9.9.15 (February 15th 2021)
 

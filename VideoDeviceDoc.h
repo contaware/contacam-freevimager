@@ -599,6 +599,8 @@ public:
 		ZMODO_RTSP = 1260,				// Zmodo RTSP
 		// Add more rtsp devices here if there is no space at alphabetical position:
 		WYZE_RTSP = 1270,				// Wyze RTSP
+		EZVIZ_H264_RTSP = 1280,			// Ezviz H.264 RTSP
+		EZVIZ_H264STREAM_RTSP = 1281,	// Ezviz h264_stream RTSP
 		LAST_DEVICE						// Placeholder for range check
 	} NetworkDeviceTypeMode;
 
