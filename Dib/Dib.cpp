@@ -3250,8 +3250,8 @@ HRESULT CDib::LoadWIC(LPCTSTR lpszPathName, BOOL bOnlyHeader/*=FALSE*/)
 	::CoInitialize(NULL);
 	{
 		CComPtr<IWICImagingFactory> pFactory;
-		CComPtr<IWICBitmapDecoder> pDecoder;
 		CComPtr<IWICStream> pStream;
+		CComPtr<IWICBitmapDecoder> pDecoder;
 		CComPtr<IWICBitmapFrameDecode> pFrame;
 
 		// Check file size
@@ -3281,7 +3281,7 @@ HRESULT CDib::LoadWIC(LPCTSTR lpszPathName, BOOL bOnlyHeader/*=FALSE*/)
 				bDoCreateStream = TRUE;
 			else
 			{
-				const GUID GUID_MicrosoftContainerFormatHeif = { 0xe1e62521,0x6787,0x405b,{0xa3,0x39,0x50,0x07,0x15,0xb5,0x76,0x3f} };
+				const GUID GUID_MicrosoftContainerFormatHeif = { 0xe1e62521,0x6787,0x405b,{0xa3,0x39,0x50,0x07,0x15,0xb5,0x76,0x3f} }; // = GUID_ContainerFormatHeif
 				hr = pFactory->CreateDecoder(GUID_MicrosoftContainerFormatHeif, NULL, &pDecoder);
 				if (SUCCEEDED(hr))
 					bDoCreateStream = TRUE;
