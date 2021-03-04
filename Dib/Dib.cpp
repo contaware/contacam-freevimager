@@ -3200,6 +3200,43 @@ BOOL CDib::LoadImage(LPCTSTR lpszPathName,
 		return SUCCEEDED(LoadWIC(lpszPathName, bOnlyHeader));
 }
 
+/*
+
+Necessary decoders
+------------------
+
+.heic
+free (since end of 2020 it's hard to find PCs where it's still possible to install it):
+https://www.microsoft.com/p/hevc-video-extensions-from-device-manufacturer/9n4wgh0z6vhq
+or the payed one:
+https://www.microsoft.com/p/hevc-video-extensions/9nmzlz57r3t7
+
+.avif
+https://www.microsoft.com/p/av1-video-extension/9mvzqvxjbq9v
+
+Note: both .heic and .avif are based on the HEIF container format and both need the usually already installed:
+https://www.microsoft.com/p/heif-image-extensions/9pmmsr1cgpwg
+
+.webp
+https://www.microsoft.com/p/webp-image-extensions/9pg2dk419drg
+
+
+For older Windows versions
+--------------------------
+
+.heic
+https://www.copytrans.net/copytransheic/
+
+Note: on Windows 10 CopyTrans is uninstalling the HEIF container format (HEIF Image Extensions),
+so that .avif stops to work, thus after installing CopyTrans we have to reinstall:
+https://www.microsoft.com/p/heif-image-extensions/9pmmsr1cgpwg
+ 
+.webp
+https://storage.googleapis.com/downloads.webmproject.org/releases/webp/WebpCodecSetup.exe
+or:
+http://downloads.webmproject.org/releases/webp/WebpCodecSetup.exe
+
+*/
 HRESULT CDib::LoadWIC(LPCTSTR lpszPathName, BOOL bOnlyHeader/*=FALSE*/)
 {
 	// Free
@@ -3214,6 +3251,7 @@ HRESULT CDib::LoadWIC(LPCTSTR lpszPathName, BOOL bOnlyHeader/*=FALSE*/)
 	{
 		CComPtr<IWICImagingFactory> pFactory;
 		CComPtr<IWICBitmapDecoder> pDecoder;
+		CComPtr<IWICStream> pStream;
 		CComPtr<IWICBitmapFrameDecode> pFrame;
 
 		// Check file size
@@ -3230,36 +3268,53 @@ HRESULT CDib::LoadWIC(LPCTSTR lpszPathName, BOOL bOnlyHeader/*=FALSE*/)
 		if (FAILED(hr))
 			goto exit;
 
-		// Create the decoder
-		//
-		// *.heic
-		// free:
-		// https://www.microsoft.com/p/hevc-video-extensions-from-device-manufacturer/9n4wgh0z6vhq
-		// or payed (if free is not installing):
-		// https://www.microsoft.com/p/hevc-video-extensions/9nmzlz57r3t7
-		//
-		// *.avif
-		// https://www.microsoft.com/p/av1-video-extension/9mvzqvxjbq9v
-		//
-		// Note: both .heic and .avif are based on the HEIF container format and both need the usually already installed:
-		// https://www.microsoft.com/p/heif-image-extensions/9pmmsr1cgpwg
-		//
-		// *.webp
-		// https://www.microsoft.com/p/webp-image-extensions/9pg2dk419drg
-		//
-		// For older Windows versions
-		//
-		// *.heic
-		// https://www.copytrans.net/copytransheic/
-		// 
-		// *.webp
-		// https://storage.googleapis.com/downloads.webmproject.org/releases/webp/WebpCodecSetup.exe
-		// or:
-		// http://downloads.webmproject.org/releases/webp/WebpCodecSetup.exe
-		//
-		hr = pFactory->CreateDecoderFromFilename(lpszPathName, NULL, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &pDecoder);
-		if (FAILED(hr))
-			goto exit;
+		// Special treatment for .heic
+		BOOL bDoCreateStream = FALSE;
+		CString sExt(::GetFileExt(lpszPathName));
+		if (sExt == _T(".heic"))
+		{
+			// Higher priority for CopyTrans because the Microsoft Heif may not
+			// be able to open the file if "HEVC Video Extensions" is missing
+			const GUID GUID_CopyTransContainerFormatHeif = { 0x502a9ac6,0x64f9,0x43cb,{0x82,0x44,0xba,0x76,0x6b,0x0c,0x1b,0x0b} };
+			hr = pFactory->CreateDecoder(GUID_CopyTransContainerFormatHeif, NULL, &pDecoder);
+			if (SUCCEEDED(hr))
+				bDoCreateStream = TRUE;
+			else
+			{
+				const GUID GUID_MicrosoftContainerFormatHeif = { 0xe1e62521,0x6787,0x405b,{0xa3,0x39,0x50,0x07,0x15,0xb5,0x76,0x3f} };
+				hr = pFactory->CreateDecoder(GUID_MicrosoftContainerFormatHeif, NULL, &pDecoder);
+				if (SUCCEEDED(hr))
+					bDoCreateStream = TRUE;
+			}
+		}
+
+		// Create the stream for the above found decoder
+		if (bDoCreateStream)
+		{
+			hr = pFactory->CreateStream(&pStream);
+			if (FAILED(hr))
+				goto exit;
+			hr = pStream->InitializeFromFilename(lpszPathName, GENERIC_READ);
+			if (FAILED(hr))
+				goto exit;
+			hr = pDecoder->Initialize(pStream, WICDecodeMetadataCacheOnDemand);
+			if (FAILED(hr))
+				goto exit;
+		}
+		// Normally create decoder from file
+		else
+		{
+			// The above special code for .heic is necessary because passing a preferred decoder
+			// vendor here is not working (this probably because the container format GUIDs of
+			// CopyTrans and Microsoft Heif are different). I did try it with these Vendor GUIDs:
+			// GUID_VendorMicrosoft
+			// const GUID GUID_VendorCopyTransUrsaMinorLtd = { 0xe27ae9ae,0xd620,0x4aeb,{0xad,0x02,0xe2,0xae,0x03,0x10,0x42,0x34} };
+			hr = pFactory->CreateDecoderFromFilename(lpszPathName, NULL, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &pDecoder);
+			if (FAILED(hr))
+				goto exit;
+		}
+
+		// Get container GUID
 		GUID containerFormatGUID;
 		hr = pDecoder->GetContainerFormat(&containerFormatGUID);
 		if (FAILED(hr))

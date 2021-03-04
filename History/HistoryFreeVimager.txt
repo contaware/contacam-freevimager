@@ -2,7 +2,8 @@ FREEVIMAGER HISTORY
 
 9.9.16 (Month XX 2021)
 
-- ...
+- Higher priority for CopyTrans .heic decoder because the Microsoft Heif
+  may not be able to open the file if HEVC Video Extensions is missing
 
 9.9.15 (February 15th 2021)
 
