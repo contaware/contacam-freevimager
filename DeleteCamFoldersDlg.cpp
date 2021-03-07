@@ -211,6 +211,11 @@ void CDeleteCamFoldersDlg::OnOK()
 		return;
 	}
 
+	// Prompt
+	if (::AfxMessageBox(ML_STRING(1807, "For the selected cameras:\n\n1. Settings will be permanently deleted.\n2. Recordings are moved to the Recycle Bin.\n\nDo You really want to PROCEED?"),
+						MB_YESNO | MB_DEFBUTTON2) == IDNO)
+		return;
+
 	// Begin wait cursor
 	BeginWaitCursor();
 
