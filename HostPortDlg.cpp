@@ -685,7 +685,7 @@ void CHostPortDlg::OnOK()
 	pApp->WriteProfileInt(sSection, _T("PortHistory0"), m_nPort);
 	pApp->WriteProfileInt(sSection, _T("DeviceTypeModeHistory0"), m_nDeviceTypeMode);
 
-	// Save Username, Password and PreferTcpforRtsp flag
+	// Save Username, Password, PreferTcpforRtsp and UdpMulticastforRtsp flags
 	// for the device given by m_sHost, m_nPort, m_nDeviceTypeMode
 	SaveSettings();
 
@@ -754,15 +754,25 @@ void CHostPortDlg::LoadSettings()
 	// Load
 	if (bSectionExists)
 	{
+		// Username
 		CString	sUsername = ((CUImagerApp*)::AfxGetApp())->GetSecureProfileString(sDevicePathName, _T("HTTPGetFrameUsernameExportable"));
 		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_AUTH_USERNAME);
 		pEdit->SetWindowText(sUsername);
+
+		// Password
 		CString	sPassword = ((CUImagerApp*)::AfxGetApp())->GetSecureProfileString(sDevicePathName, _T("HTTPGetFramePasswordExportable"));
 		pEdit = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
 		pEdit->SetWindowText(sPassword);
+
+		// Prefer Tcp for Rtsp
 		BOOL bPreferTcpforRtsp = (BOOL)((CUImagerApp*)::AfxGetApp())->GetProfileInt(sDevicePathName, _T("PreferTcpforRtsp"), FALSE);
 		CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_PREFER_TCP_FOR_RTSP);
 		pCheck->SetCheck(bPreferTcpforRtsp ? 1 : 0);
+
+		// UDP Multicast for Rtsp
+		BOOL bUdpMulticastforRtsp = (BOOL)((CUImagerApp*)::AfxGetApp())->GetProfileInt(sDevicePathName, _T("UdpMulticastforRtsp"), FALSE);
+		pCheck = (CButton*)GetDlgItem(IDC_CHECK_UDP_MULTICAST_FOR_RTSP);
+		pCheck->SetCheck(bUdpMulticastforRtsp ? 1 : 0);
 	}
 
 	// Update dialog title
@@ -785,17 +795,25 @@ void CHostPortDlg::SaveSettings()
 {
 	// Get device path name
 	CString sDevicePathName = MakeDevicePathName(m_sHost, m_nPort, m_nDeviceTypeMode);
-
-	// Store
 	CString sText;
+
+	// Username
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_AUTH_USERNAME);
 	pEdit->GetWindowText(sText);
 	((CUImagerApp*)::AfxGetApp())->WriteSecureProfileString(sDevicePathName, _T("HTTPGetFrameUsernameExportable"), sText);
+
+	// Password
 	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
 	pEdit->GetWindowText(sText);
 	((CUImagerApp*)::AfxGetApp())->WriteSecureProfileString(sDevicePathName, _T("HTTPGetFramePasswordExportable"), sText);
+
+	// Prefer Tcp for Rtsp
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_PREFER_TCP_FOR_RTSP);
 	((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sDevicePathName, _T("PreferTcpforRtsp"), pCheck->GetCheck());
+
+	// UDP Multicast for Rtsp
+	pCheck = (CButton*)GetDlgItem(IDC_CHECK_UDP_MULTICAST_FOR_RTSP);
+	((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sDevicePathName, _T("UdpMulticastforRtsp"), pCheck->GetCheck());
 }
 
 #endif

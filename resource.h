@@ -2006,6 +2006,7 @@
 #define IDS_STRING1702                  1702
 #define IDC_CHECK_PREFER_TCP_FOR_RTSP   1702
 #define IDS_STRING1703                  1703
+#define IDC_CHECK_UDP_MULTICAST_FOR_RTSP 1703
 #define IDS_STRING1704                  1704
 #define IDC_EDIT_BANDMIN                1705
 #define IDS_STRING1705                  1705
@@ -2733,6 +2734,7 @@
 #define IDC_STATIC2275                  2275
 #define IDC_STATIC_AUTHENTICATION       2275
 #define IDC_STATIC2276                  2276
+#define IDC_STATIC_RTSP_TRANSPORT       2276
 #define IDC_STATIC2277                  2277
 #define IDC_STATIC2278                  2278
 #define IDC_STATIC2279                  2279

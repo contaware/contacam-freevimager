@@ -2593,9 +2593,13 @@ int CVideoDeviceDoc::CRtspThread::Work()
 		// Options var
 		AVDictionary* opts = NULL;
 
-		// If set, and if TCP is available as RTP transport, then TCP will be tried first instead of UDP
+		// If set, and if TCP is available as RTSP transport, then TCP will be tried first instead of UDP
 		if (m_pDoc->m_bPreferTcpforRtsp)
 			av_dict_set(&opts, "rtsp_flags", "prefer_tcp", 0);
+		
+		// Use UDP Multicast as RTSP transport
+		if (m_pDoc->m_bUdpMulticastforRtsp)
+			av_dict_set(&opts, "rtsp_transport", "udp_multicast", 0);
 
 		// Set timeout (in microseconds) of socket I/O operations
 		av_dict_set_int(&opts, "stimeout", RTSP_SOCKET_TIMEOUT, 0);
@@ -3455,6 +3459,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nGetFrameVideoPort = DEFAULT_HTTP_PORT;
 	m_nNetworkDeviceTypeMode = GENERIC_SP;
 	m_bPreferTcpforRtsp = FALSE;
+	m_bUdpMulticastforRtsp = FALSE;
 	m_nHttpVideoQuality = HTTP_DEFAULT_VIDEO_QUALITY;
 	m_nHttpVideoSizeX = HTTP_DEFAULT_VIDEO_SIZE_CX;
 	m_nHttpVideoSizeY = HTTP_DEFAULT_VIDEO_SIZE_CY;
@@ -4314,6 +4319,7 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_sHttpGetFrameUsername = pApp->GetSecureProfileString(sSection, _T("HTTPGetFrameUsernameExportable"));
 	m_sHttpGetFramePassword = pApp->GetSecureProfileString(sSection, _T("HTTPGetFramePasswordExportable"));
 	m_bPreferTcpforRtsp = (BOOL) pApp->GetProfileInt(sSection, _T("PreferTcpforRtsp"), FALSE);
+	m_bUdpMulticastforRtsp = (BOOL)pApp->GetProfileInt(sSection, _T("UdpMulticastforRtsp"), FALSE);
 
 	// All other
 	m_bFlipH = (BOOL)pApp->GetProfileInt(sSection, _T("FlipH"), FALSE);
@@ -4487,6 +4493,7 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteSecureProfileString(sSection, _T("HTTPGetFrameUsernameExportable"), m_sHttpGetFrameUsername);
 	pApp->WriteSecureProfileString(sSection, _T("HTTPGetFramePasswordExportable"), m_sHttpGetFramePassword);
 	pApp->WriteProfileInt(sSection, _T("PreferTcpforRtsp"), m_bPreferTcpforRtsp);
+	pApp->WriteProfileInt(sSection, _T("UdpMulticastforRtsp"), m_bUdpMulticastforRtsp);
 
 	// All other
 	pApp->WriteProfileInt(sSection, _T("FlipH"), (int)m_bFlipH);

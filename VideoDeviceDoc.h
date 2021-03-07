@@ -884,6 +884,7 @@ public:
 	CString m_sHttpGetFrameUsername;					// Username
 	CString m_sHttpGetFramePassword;					// Password
 	volatile BOOL m_bPreferTcpforRtsp;					// As RTSP transport try first TCP then UDP
+	volatile BOOL m_bUdpMulticastforRtsp;				// As RTSP transport use UDP Multicast
 	CHttpParseProcess* volatile m_pHttpVideoParseProcess; // HTTP Video Parse & Process
 	volatile int m_nHttpVideoQuality;					// 0 Best Quality, 100 Worst Quality
 	volatile int m_nHttpVideoSizeX;						// Video width
