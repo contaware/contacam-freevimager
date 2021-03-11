@@ -67,10 +67,20 @@ class CCameraAdvancedSettingsDlg;
 #define FRAMEDATE_COLOR							RGB(0x80,0x80,0xFF)
 #define FRAMEANNOTATION_COLOR					RGB(0xFF,0xFF,0xFF)
 #define FRAMECOUNT_COLOR						RGB(0xFF,0xFF,0xFF)
+#define NODONATION_MESSAGE_COLOR				RGB(255,228,18)
 #define DRAW_BKG_COLOR							RGB(0,0,0)
 #define DRAW_MESSAGE_COLOR						RGB(0xFF,0xFF,0xFF)
-#define REC_MESSAGE_COLOR						RGB(0xFF,0,0)
-#define NODONATION_MESSAGE_COLOR				RGB(255,228,18)
+#define DRAW_PROGRESS_COLOR						RGB(0x06,0xB0,0x25)
+#define REC_DOT_COLOR							RGB(0xFF,0,0)
+#define REC_DOT_OUTLINE_COLOR					RGB(0xAA,0,0)
+#define REC_DOT_DIAMETER						17
+#define REC_DOT_MARGIN_RIGHT					4
+#define REC_DOT_MARGIN_BOTTOM					4
+#define REC_PROGRESS_CONTAINER_COLOR			RGB(0xE6,0xE6,0xE6)
+#define REC_PROGRESS_OUTLINE_COLOR				RGB(0xA0,0xA0,0xA0)
+#define REC_PROGRESS_WIDTH						32
+#define REC_PROGRESS_HEIGHT						14
+#define REC_PROGRESS_MARGIN_BOTTOM				5
 
 // Process Frame Stop Engine
 #define PROCESSFRAME_MAX_RETRY_TIME				3500			// maximum retry time in ms for Process Frame Stop Engine

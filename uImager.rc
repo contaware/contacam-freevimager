@@ -3994,7 +3994,6 @@ STRINGTABLE
 BEGIN
     IDS_STRING1872          "Try again after closing all cameras"
     IDS_STRING1873          "usage of all cameras"
-    IDS_STRING1877          "Save: %d%%"
     IDS_STRING1878          "Annotation"
     IDS_STRING1880          "No attachment"
     IDS_STRING1881          "Saved start picture"

@@ -417,16 +417,13 @@ __forceinline void CVideoDeviceView::DrawZoneSensitivity(int i, HDC hDC, const R
 	}
 }
 
-void CVideoDeviceView::DrawZones(HDC hDC)
+void CVideoDeviceView::DrawZones(HDC hDC, const CRect& rcClient)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
 	if (pDoc->m_lMovDetTotalZones > 0)
 	{
-		CRect rcClient;
-		GetClientRect(&rcClient);
-
 		RECT rcDetZone;
 		double dZoneWidth = (double)rcClient.Width() / (double)pDoc->m_lMovDetXZonesCount;
 		double dZoneHeight = (double)rcClient.Height() / (double)pDoc->m_lMovDetYZonesCount;
@@ -517,66 +514,66 @@ BOOL CVideoDeviceView::OnEraseBkgnd(CDC* pDC)
 	return TRUE;
 }
 
-int CVideoDeviceView::DrawBigText(	HDC hDC,
-									CRect rc,
-									LPCTSTR szText,
-									COLORREF crTextColor,
-									int nMaxFontSize/*=72*/,
-									UINT uAlign/*=DT_CENTER | DT_VCENTER*/,
-									int nBkMode/*=TRANSPARENT*/,
-									COLORREF crBkColor/*=RGB(0,0,0)*/)
+void CVideoDeviceView::DrawRecDot(HDC hDC, const CRect& rcClient)
 {
-	// Check
-	if (!hDC)
-		return 0;
+	int nDiameter = ::SystemDPIScale(REC_DOT_DIAMETER);
+	int nMarginRight = ::SystemDPIScale(REC_DOT_MARGIN_RIGHT);
+	int nMarginBottom = ::SystemDPIScale(REC_DOT_MARGIN_BOTTOM);
+	int nUnit = ::SystemDPIScale(1);
 
-	// Vars
-	HFONT hFont;
-	HFONT hOldFont = NULL;
-	LOGFONT lf;
-	int nUsedHeightPix;
-	nMaxFontSize = MAX(nMaxFontSize, 8); // 8 is min font size
+	// Create pen and brush
+	HPEN hPen = ::CreatePen(PS_SOLID, nUnit, REC_DOT_OUTLINE_COLOR);
+	HBRUSH hBrush = ::CreateSolidBrush(REC_DOT_COLOR);
 
-	// Set colors and mode
-	COLORREF crOldTextColor = ::SetTextColor(hDC, crTextColor);
-	int nOldBkMode = ::SetBkMode(hDC, nBkMode);
-	COLORREF crOldBkColor = ::SetBkColor(hDC, crBkColor);
+	// Draw circle
+	HGDIOBJ hOldPen = ::SelectObject(hDC, hPen);
+	HGDIOBJ hOldBrush = ::SelectObject(hDC, hBrush);
+	::Ellipse(	hDC,
+				rcClient.right - nDiameter - nMarginRight,
+				rcClient.bottom - nDiameter - nMarginBottom,
+				rcClient.right - nMarginRight,
+				rcClient.bottom - nMarginBottom);
 
-	// Calc. Font Size
-	while (TRUE)
-	{
-		memset(&lf, 0, sizeof(lf));
-		_tcscpy(lf.lfFaceName, g_szDefaultFontFace);
-		lf.lfHeight = -MulDiv(nMaxFontSize, 96, 72); // use 96 and not GetDeviceCaps(hDC, LOGPIXELSY) otherwise it scales with DPI changes!
-		lf.lfWeight = FW_NORMAL;
-		hFont = ::CreateFontIndirect(&lf);
-		CRect rcText(0, 0, 0, 0);
-		hOldFont = (HFONT)::SelectObject(hDC, hFont);
-		nUsedHeightPix = ::DrawText(hDC, szText, -1, rcText, DT_CALCRECT | DT_SINGLELINE | DT_NOCLIP);
-		if (rcText.Width() > rc.Width())
-		{
-			if (nMaxFontSize == 8) // 8 is min font size
-				break;
-			nMaxFontSize = MAX(Round((double)nMaxFontSize * (double)rc.Width() /
-							(1.3 * (double)rcText.Width())), 8);
-			::SelectObject(hDC, hOldFont);
-			::DeleteObject(hFont);
-		}
-		else
-			break;
-	}
+	// Clean-up
+	::SelectObject(hDC, hOldBrush);
+	::SelectObject(hDC, hOldPen);
+	::DeleteObject(hPen);
+	::DeleteObject(hBrush);
+}
 
-	// Draw Message
-	::DrawText(hDC, szText, -1, rc, uAlign | DT_NOCLIP | DT_SINGLELINE);
+void CVideoDeviceView::DrawSaveProgress(HDC hDC, const CRect& rcClient, BOOL bRecDotVisible, int nProgress)
+{
+	int nWidth = ::SystemDPIScale(REC_PROGRESS_WIDTH);
+	int nHeight = ::SystemDPIScale(REC_PROGRESS_HEIGHT);
+	int nMarginRight = ::SystemDPIScale(bRecDotVisible ? REC_DOT_DIAMETER + 2*REC_DOT_MARGIN_RIGHT : REC_DOT_MARGIN_RIGHT);
+	int nMarginBottom = ::SystemDPIScale(REC_PROGRESS_MARGIN_BOTTOM);
+	int nUnit = ::SystemDPIScale(1);
 
-	// Restore and clean-up
-	::SetBkColor(hDC, crOldBkColor);
-	::SetBkMode(hDC, nOldBkMode);
-	::SetTextColor(hDC, crOldTextColor);
-	::SelectObject(hDC, hOldFont);
-	::DeleteObject(hFont);
+	// Create brushes
+	HBRUSH hBrushOutline = ::CreateSolidBrush(REC_PROGRESS_OUTLINE_COLOR);
+	HBRUSH hBrushContainer = ::CreateSolidBrush(REC_PROGRESS_CONTAINER_COLOR);
+	HBRUSH hBrushBar = ::CreateSolidBrush(DRAW_PROGRESS_COLOR);
 
-	return nUsedHeightPix;
+	// Draw outline
+	CRect rcDraw(rcClient.right - nWidth - nMarginRight,
+				rcClient.bottom - nHeight - nMarginBottom,
+				rcClient.right - nMarginRight,
+				rcClient.bottom - nMarginBottom);
+	::FillRect(hDC, rcDraw, hBrushOutline);
+
+	// Draw container
+	rcDraw.DeflateRect(nUnit, nUnit);
+	::FillRect(hDC, rcDraw, hBrushContainer);
+
+	// Draw bar
+	int nBarSize = nProgress * rcDraw.Width() / 100;
+	rcDraw.right = rcDraw.left + nBarSize;
+	::FillRect(hDC, rcDraw, hBrushBar);
+
+	// Clean-up
+	::DeleteObject(hBrushOutline);
+	::DeleteObject(hBrushContainer);
+	::DeleteObject(hBrushBar);
 }
 
 void CVideoDeviceView::OnDraw(CDC* pDC)
@@ -606,32 +603,17 @@ void CVideoDeviceView::OnDraw(CDC* pDC)
 
 		// Draw Zones
 		if (pDoc->m_nShowEditDetectionZones)
-			DrawZones(MemDC.GetSafeHdc());
+			DrawZones(MemDC.GetSafeHdc(), rcClient);
 
-		// Draw REC state
-		CString sSaveProgress;
-		if (pDoc->m_SaveFrameListThread.GetSaveProgress() < 100)
-			sSaveProgress.Format(ML_STRING(1877, "Save: %d%%"), pDoc->m_SaveFrameListThread.GetSaveProgress());
-		if (pDoc->m_bDetectingMinLengthMovement)
-		{
-			// Draw save progress (if not empty) + REC dot symbol
-			int nMaxFontSize = CVideoDeviceDoc::ScaleFont(	rcClient.Width(), rcClient.Height(),
-															pDoc->m_nRefFontSize,
-															FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
-			DrawBigText(MemDC.GetSafeHdc(), CRect(0, 0, rcClient.Width(), rcClient.Height()),
-						sSaveProgress + _T("\u25cf"), // note: if using more than 16 bits, use a uppercase U (for example \U0001F3C3)
-						REC_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT);
-		}
-		else if (!sSaveProgress.IsEmpty())
-		{
-			// Draw save progress
-			int nMaxFontSize = CVideoDeviceDoc::ScaleFont(	rcClient.Width(), rcClient.Height(),
-															pDoc->m_nRefFontSize,
-															FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
-			DrawBigText(MemDC.GetSafeHdc(), CRect(0, 0, rcClient.Width(), rcClient.Height()),
-						sSaveProgress,
-						REC_MESSAGE_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT);
-		}
+		// Draw REC Dot Symbol
+		BOOL bDetectingMinLengthMovement = pDoc->m_bDetectingMinLengthMovement;
+		if (bDetectingMinLengthMovement)
+			DrawRecDot(MemDC.GetSafeHdc(), rcClient);
+
+		// Draw Save Progress
+		int nSaveProgress = pDoc->m_SaveFrameListThread.GetSaveProgress();
+		if (nSaveProgress < 100)
+			DrawSaveProgress(MemDC.GetSafeHdc(), rcClient, bDetectingMinLengthMovement, nSaveProgress);
 	}
 	else
 	{
@@ -682,15 +664,15 @@ void CVideoDeviceView::OnDraw(CDC* pDC)
 		CRect rcBoxRightRight(rcBoxRight);
 		rcBoxRightRight.OffsetRect(3*nBoxLength, 0);
 		int nCount = ((::GetTickCount() / 1000U) % 5U);
-		MemDC.FillSolidRect(rcBoxLeftLeft, RGB(0,0xFF,0));
+		MemDC.FillSolidRect(rcBoxLeftLeft, DRAW_PROGRESS_COLOR);
 		if (nCount >= 1)
-			MemDC.FillSolidRect(rcBoxLeft, RGB(0,0xFF,0));
+			MemDC.FillSolidRect(rcBoxLeft, DRAW_PROGRESS_COLOR);
 		if (nCount >= 2)
-			MemDC.FillSolidRect(rcBoxMiddle, RGB(0,0xFF,0));
+			MemDC.FillSolidRect(rcBoxMiddle, DRAW_PROGRESS_COLOR);
 		if (nCount >= 3)
-			MemDC.FillSolidRect(rcBoxRight, RGB(0,0xFF,0));
+			MemDC.FillSolidRect(rcBoxRight, DRAW_PROGRESS_COLOR);
 		if (nCount == 4)
-			MemDC.FillSolidRect(rcBoxRightRight, RGB(0,0xFF,0));
+			MemDC.FillSolidRect(rcBoxRightRight, DRAW_PROGRESS_COLOR);
 
 		// Clean-up
 		MemDC.SetBkMode(nOldBkMode);

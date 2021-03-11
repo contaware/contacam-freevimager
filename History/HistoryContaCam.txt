@@ -4,6 +4,8 @@ CONTACAM HISTORY
 
 - Web interface supports now passing the credentials as parameters like:
   http://CONTACAM-PC:PORT/CAMERA_NAME/poll.php?username=USER&password=PW
+- The rec dot overlay is now displayed with an outline border and the
+  saving progress is shown with a small horizontal bar instead of text
 - Added support for Ezviz
 - UDP Multicast transport possibility for RTSP streams
 - Enabled Address Space Layout Randomization (ASLR) with /DYNAMICBASE
