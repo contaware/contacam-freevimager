@@ -369,7 +369,7 @@ public:
 	void UpdateImageInfo(BOOL bUpdateFileInfoOnly = FALSE);
 
 	// Delete Current Page or Picture and Load Next One
-	void EditDelete(BOOL bPrompt);
+	void EditDelete();
 
 	// Clear the Previous and Next Loaded Pictures
 	// Used in Save As (to avoid the save as file is the next or previous),
@@ -673,9 +673,6 @@ public:
 
 // Protected Functions
 protected:
-	// Delete Current File
-	BOOL DeleteDocFile();
-
 	// Save File
 	BOOL SaveAsPdf();
 	BOOL SaveAsFromAnimGIF(	BOOL bSaveCopyAs,

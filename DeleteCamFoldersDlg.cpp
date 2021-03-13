@@ -154,7 +154,7 @@ LONG CDeleteCamFoldersDlg::OnApplyDeletion(WPARAM wparam, LPARAM lparam)
 
 			// Delete folder
 			if (::IsExistingDir(sDirName))
-				::DeleteToRecycleBin(sDirName);
+				::DeleteToRecycleBin(sDirName, TRUE, NULL);
 			
 			// Clear autorun and delete device configuration
 			if (!::IsExistingDir(sDirName)) // make sure dir has been deleted

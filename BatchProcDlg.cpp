@@ -255,7 +255,7 @@ int CBatchProcDlg::CProcessThread::Work()
 					// Delete Input File
 					if (m_bDeleteInputFile &&
 						(sSrcDirPath.CompareNoCase(sOrigDstDirPath) == 0))
-						::DeleteToRecycleBin(sSrcFileName);
+						::DeleteToRecycleBin(sSrcFileName, TRUE, NULL);
 				}
 
 				// Progress

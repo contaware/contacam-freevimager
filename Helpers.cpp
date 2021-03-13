@@ -1083,17 +1083,24 @@ BOOL DeleteDir(LPCTSTR szDirName)
 }
 
 // Shell deletion
-BOOL DeleteToRecycleBin(LPCTSTR szName)
+BOOL DeleteToRecycleBin(LPCTSTR szName, BOOL bSilent, HWND hWnd)
 {
-	TCHAR pFrom[MAX_PATH+1];			// +1 for double NULL termination
-	_tcsncpy(pFrom, szName, MAX_PATH);	// this pads pFrom with NULLs -> already double NULL terminated
-	pFrom[MAX_PATH - 1] = _T('\0');		// if szName to big make sure pFrom is NULL terminated
-	pFrom[MAX_PATH] = _T('\0');			// if szName to big make sure pFrom is double NULL terminated
+	TCHAR pFrom[MAX_PATH+1];						// +1 for double NULL termination
+	_tcsncpy(pFrom, szName, MAX_PATH);				// this pads pFrom with NULLs -> already double NULL terminated
+	pFrom[MAX_PATH - 1] = _T('\0');					// if szName to big make sure pFrom is NULL terminated
+	pFrom[MAX_PATH] = _T('\0');						// if szName to big make sure pFrom is double NULL terminated
 
 	SHFILEOPSTRUCT FileOp = {};
+	FileOp.hwnd = hWnd;								// the parent window
     FileOp.pFrom = pFrom;
-    FileOp.pTo = NULL; 
-    FileOp.fFlags = FOF_ALLOWUNDO | FOF_SILENT | FOF_NOCONFIRMATION;
+    FileOp.pTo = NULL;
+	FileOp.fFlags = FOF_ALLOWUNDO;					// send to recycle bin if available, otherwise delete permanently 
+	if (bSilent)
+	{
+		FileOp.fFlags |=	FOF_SILENT			|	// don't display progress UI
+							FOF_NOCONFIRMATION	|	// don't display confirmations, assume "yes" for cases that can be bypassed, "no" for those that can not
+							FOF_NOERRORUI;			// don't put up error UI
+	}
     FileOp.hNameMappings = NULL; 
     FileOp.lpszProgressTitle = NULL; 
 	FileOp.fAnyOperationsAborted = FALSE; 

@@ -1988,10 +1988,7 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 				pDoc->m_pMonochromeConversionDlg || pDoc->m_pSharpenDlg || pDoc->m_pSoftenDlg ||
 				pDoc->m_pSoftBordersDlg || pDoc->m_bCrop)
 				break;
-			if (::GetKeyState(VK_CONTROL) < 0)
-				pDoc->EditDelete(FALSE);// Delete without prompting
-			else
-				pDoc->EditDelete(TRUE);	// Delete with prompting
+			pDoc->EditDelete();
 			break;
 
 		case VK_APPS :

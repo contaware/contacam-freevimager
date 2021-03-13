@@ -3806,7 +3806,7 @@ BOOL CPictureDoc::SaveAsPdf()
 
 void CPictureDoc::OnEditDelete() 
 {
-	EditDelete(TRUE);
+	EditDelete();
 }
 
 void CPictureDoc::OnUpdateEditDelete(CCmdUI* pCmdUI) 
@@ -3829,12 +3829,13 @@ void CPictureDoc::OnUpdateEditDelete(CCmdUI* pCmdUI)
 					!m_bPrintPreviewMode);
 }
 
-void CPictureDoc::EditDelete(BOOL bPrompt)
+void CPictureDoc::EditDelete()
 {
+	GetView()->ForceCursor();
+
 	if (IsMultiPageTIFF())
 	{
 		CDeletePageDlg dlg(GetView());
-		GetView()->ForceCursor();
 		int nRes = dlg.DoModal();
 		if (nRes == IDOK)
 		{
@@ -3846,87 +3847,37 @@ void CPictureDoc::EditDelete(BOOL bPrompt)
 				CString str;
 				str.Format(ML_STRING(1265, "Cannot delete page %d"), m_nPageNum + 1);
 				::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
-				GetView()->ForceCursor(FALSE);
-				return;
 			}
 			else
-				GetView()->ForceCursor(FALSE);
-
-			// Load Next Page
-			if (m_nPageNum == m_pDib->m_FileInfo.m_nImageCount - 1) // If last has been delete dec. by one
-				m_nPageNum--;
-			LoadPicture(&m_pDib, m_sFileName);
+			{
+				// Load Next Page
+				if (m_nPageNum == m_pDib->m_FileInfo.m_nImageCount - 1) // If last has been delete dec. by one
+					m_nPageNum--;
+				LoadPicture(&m_pDib, m_sFileName);
+			}
+			GetView()->ForceCursor(FALSE);
+			return;
 		}
 		else if (nRes == IDCANCEL)
-			GetView()->ForceCursor(FALSE);
-		else // IDNO
 		{
 			GetView()->ForceCursor(FALSE);
-			DeleteDocFile();
+			return;
 		}
-	}
-	else
-	{
-		// Prompt for Deleting
-		if (bPrompt)
-		{
-			CString sMsg;
-			sMsg.Format(ML_STRING(1266, "Are you sure you want to move this file to the Recycle Bin:\n\n%s"), ::GetShortFileName(m_sFileName));
-			GetView()->ForceCursor();
-			if (::AfxMessageBox(sMsg, MB_YESNO) == IDYES)
-			{	
-				GetView()->ForceCursor(FALSE);
-				DeleteDocFile();
-			}
-			else
-				GetView()->ForceCursor(FALSE);
-		}
-		else
-			DeleteDocFile();
-	}
-}
-
-BOOL CPictureDoc::DeleteDocFile()
-{
-	BOOL res;
-
-	// Store File Name
-	CString sFileNameToDelete = m_sFileName;
-
-	// Check whether it is Read-Only
-	DWORD dwAttrib = ::GetFileAttributes(sFileNameToDelete);
-	if ((dwAttrib != 0xFFFFFFFF) && (dwAttrib & FILE_ATTRIBUTE_READONLY))
-	{
-		CString str;
-		str.Format(ML_STRING(1250, "The file %s\nis read only"), sFileNameToDelete);
-		GetView()->ForceCursor();
-		::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
-		GetView()->ForceCursor(FALSE);
-		return FALSE;
 	}
 
 	// Be Sure We Are Not Working On This File
 	m_JpegThread.Kill();
 	m_GifAnimationThread.Kill();
 
-	// Delete It
-	if (!::DeleteToRecycleBin(sFileNameToDelete))
+	// Delete File
+	if (::DeleteToRecycleBin(m_sFileName, FALSE, GetView()->GetSafeHwnd()))
 	{
-		CString str;
-		str.Format(ML_STRING(1267, "Cannot delete the %s file"), sFileNameToDelete);
-		GetView()->ForceCursor();
-		::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
-		GetView()->ForceCursor(FALSE);
-		res = FALSE;
-	}
-	else
-	{
+		// Load Next Image
 		ClearPrevNextPictures();
 		m_SlideShowThread.NextPicture();
-		res = TRUE;
 	}
 
-	return res;
+	GetView()->ForceCursor(FALSE);
 }
 
 void CPictureDoc::OnEditRename() 

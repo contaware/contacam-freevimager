@@ -130,7 +130,7 @@ extern BOOL MergeDirContent(LPCTSTR szFromDir,
 							int* pFilesCount = NULL);			// optional files count
 extern BOOL DeleteDir(LPCTSTR szDirName);
 extern BOOL DeleteDirContent(LPCTSTR szDirName);
-extern BOOL DeleteToRecycleBin(LPCTSTR szName); // delete file or directory
+extern BOOL DeleteToRecycleBin(LPCTSTR szName, BOOL bSilent, HWND hWnd); // delete file or directory
 extern CString TailOfTextFile(LPCTSTR lpszFileName, int nLines);
 
 // Format Integer Number
