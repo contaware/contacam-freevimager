@@ -47,7 +47,6 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CDeleteCamFoldersDlg)
 	virtual BOOL OnInitDialog();
-	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 	virtual void OnOK();
 	afx_msg void OnButtonListSelectall();
 	afx_msg void OnButtonListSelectnone();

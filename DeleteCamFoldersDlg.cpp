@@ -95,7 +95,6 @@ void CDeleteCamFoldersDlg::EnableDisableAllCtrls(BOOL bEnable)
 
 BEGIN_MESSAGE_MAP(CDeleteCamFoldersDlg, CDialog)
 	//{{AFX_MSG_MAP(CDeleteCamFoldersDlg)
-	ON_WM_SETCURSOR()
 	ON_BN_CLICKED(IDC_BUTTON_LIST_SELECTALL, OnButtonListSelectall)
 	ON_BN_CLICKED(IDC_BUTTON_LIST_SELECTNONE, OnButtonListSelectnone)
 	//}}AFX_MSG_MAP
@@ -154,7 +153,10 @@ LONG CDeleteCamFoldersDlg::OnApplyDeletion(WPARAM wparam, LPARAM lparam)
 
 			// Delete folder
 			if (::IsExistingDir(sDirName))
-				::DeleteToRecycleBin(sDirName, TRUE, NULL);
+			{
+				if (!::DeleteToRecycleBin(sDirName, FALSE, GetSafeHwnd()))
+					break; // on error or user abort exit dialog
+			}
 			
 			// Clear autorun and delete device configuration
 			if (!::IsExistingDir(sDirName)) // make sure dir has been deleted
@@ -178,21 +180,8 @@ LONG CDeleteCamFoldersDlg::OnApplyDeletion(WPARAM wparam, LPARAM lparam)
 			}
 		}
 	}
-	EndWaitCursor();
 	EndDialog(IDOK);
 	return 0;
-}
-
-BOOL CDeleteCamFoldersDlg::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
-{
-	// If Wait Cursor leave it!
-	if (((CUImagerApp*)::AfxGetApp())->IsWaitCursor())
-	{
-		RestoreWaitCursor();
-		return TRUE;
-	}
-	else
-		return CDialog::OnSetCursor(pWnd, nHitTest, message);
 }
 
 void CDeleteCamFoldersDlg::OnOK() 
@@ -210,14 +199,6 @@ void CDeleteCamFoldersDlg::OnOK()
 		::AlertUser(GetSafeHwnd());
 		return;
 	}
-
-	// Prompt
-	if (::AfxMessageBox(ML_STRING(1807, "For the selected cameras:\n\n1. Settings will be permanently deleted.\n2. Recordings are moved to the Recycle Bin.\n\nDo You really want to PROCEED?"),
-						MB_YESNO | MB_DEFBUTTON2) == IDNO)
-		return;
-
-	// Begin wait cursor
-	BeginWaitCursor();
 
 	// Disable all
 	EnableDisableAllCtrls(FALSE);

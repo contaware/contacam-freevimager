@@ -2143,7 +2143,7 @@ BEGIN
 END
 
 IDD_DELETE_CAM_FOLDERS DIALOGEX 0, 0, 258, 200
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Select the Cameras to Remove"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -3911,7 +3911,6 @@ STRINGTABLE
 BEGIN
     IDS_STRING1801          "REMOVE CAMERAS"
     IDS_STRING1803          "1. Choose Remove Cameras from the Camera menu"
-    IDS_STRING1807          "For the selected cameras:\n\n1. Settings will be permanently deleted.\n2. Recordings are moved to the Recycle Bin.\n\nDo You really want to PROCEED?"
 END
 
 STRINGTABLE
