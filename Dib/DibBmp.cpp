@@ -38,7 +38,10 @@ BOOL CDib::LoadBMP(	LPCTSTR lpszPathName,
 	catch (CFileException* e)
 	{
 		TCHAR szCause[255];
-		CString str(_T("LoadBMP: "));
+		CString str;
+#ifdef _DEBUG
+		str = _T("LoadBMP: ");
+#endif
 		e->GetErrorMessage(szCause, 255);
 		str += szCause;
 		str += _T("\n");
@@ -112,7 +115,10 @@ BOOL CDib::SaveBMP(	LPCTSTR lpszPathName,
 	catch (CFileException* e)
 	{
 		TCHAR szCause[255];
-		CString str(_T("SaveBMP: "));
+		CString str;
+#ifdef _DEBUG
+		str = _T("SaveBMP: ");
+#endif
 		e->GetErrorMessage(szCause, 255);
 		str += szCause;
 		str += _T("\n");

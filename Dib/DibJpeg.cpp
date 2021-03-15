@@ -447,7 +447,10 @@ BOOL CDib::LoadJPEG(LPCTSTR lpszPathName,
 	catch (CFileException* e)
 	{
 		TCHAR szCause[255];
-		CString str(_T("LoadJPEG: "));
+		CString str;
+#ifdef _DEBUG
+		str = _T("LoadJPEG: ");
+#endif
 		e->GetErrorMessage(szCause, 255);
 		str += szCause;
 		str += _T("\n");
@@ -2451,7 +2454,10 @@ BOOL CDib::LossLessJPEGTrans(	LPCTSTR lpszInPathName, LPCTSTR lpszOutPathName,
 	catch (CFileException* e)
 	{
 		TCHAR szCause[255];
-		CString str(_T("LossLessJPEGTrans: "));
+		CString str;
+#ifdef _DEBUG
+		str = _T("LossLessJPEGTrans: ");
+#endif
 		e->GetErrorMessage(szCause, 255);
 		str += szCause;
 		str += _T("\n");
@@ -2666,7 +2672,10 @@ BOOL CDib::LossLessJPEGTrans(	LPBYTE pJpegInData, int nJpegInDataSize,
 	catch (CFileException* e)
 	{
 		TCHAR szCause[255];
-		CString str(_T("LossLessJPEGTrans: "));
+		CString str;
+#ifdef _DEBUG
+		str = _T("LossLessJPEGTrans: ");
+#endif
 		e->GetErrorMessage(szCause, 255);
 		str += szCause;
 		str += _T("\n");
@@ -3126,7 +3135,10 @@ BOOL CDib::JPEGGetPixelAlignment(LPCTSTR lpszPathName,
 	catch (CFileException* e)
 	{
 		TCHAR szCause[255];
-		CString str(_T("GetJPEGPixelAlignment: "));
+		CString str;
+#ifdef _DEBUG
+		str = _T("GetJPEGPixelAlignment: ");
+#endif
 		e->GetErrorMessage(szCause, 255);
 		str += szCause;
 		str += _T("\n");

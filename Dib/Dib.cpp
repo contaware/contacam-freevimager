@@ -4491,7 +4491,10 @@ BOOL CDib::LoadEMF(LPCTSTR lpszPathName)
 	catch (CFileException* e)
 	{
 		TCHAR szCause[255];
-		CString str(_T("LoadEMF: "));
+		CString str;
+#ifdef _DEBUG
+		str = _T("LoadEMF: ");
+#endif
 		e->GetErrorMessage(szCause, 255);
 		str += szCause;
 		str += _T("\n");
@@ -4594,7 +4597,10 @@ BOOL CDib::SaveEMF(LPCTSTR lpszPathName, HDC hRefDC/*=NULL*/)
 	catch (CFileException* e)
 	{
 		TCHAR szCause[255];
-		CString str(_T("SaveEMF: "));
+		CString str;
+#ifdef _DEBUG
+		str = _T("SaveEMF: ");
+#endif
 		e->GetErrorMessage(szCause, 255);
 		str += szCause;
 		str += _T("\n");

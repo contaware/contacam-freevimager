@@ -593,7 +593,10 @@ BOOL CDib::LoadPCX(	LPCTSTR lpszPathName,
 	catch (CFileException* e)
 	{
 		TCHAR szCause[255];
-		CString str(_T("LoadPCX: "));
+		CString str;
+#ifdef _DEBUG
+		str = _T("LoadPCX: ");
+#endif
 		e->GetErrorMessage(szCause, 255);
 		str += szCause;
 		str += _T("\n");
@@ -1397,7 +1400,10 @@ BOOL CDib::SavePCX(	LPCTSTR lpszPathName,
 			delete [] CompressedScanLine;
 
 		TCHAR szCause[255];
-		CString str(_T("SavePCX: "));
+		CString str;
+#ifdef _DEBUG
+		str = _T("SavePCX: ");
+#endif
 		e->GetErrorMessage(szCause, 255);
 		str += szCause;
 		str += _T("\n");

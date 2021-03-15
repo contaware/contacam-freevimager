@@ -31,7 +31,10 @@ CString CDib::GIFGetVersion(LPCTSTR lpszPathName, BOOL bShowMessageBoxOnError)
 	catch (CFileException* e)
 	{
 		TCHAR szCause[255];
-		CString str(_T("GIFGetVersion: "));
+		CString str;
+#ifdef _DEBUG
+		str = _T("GIFGetVersion: ");
+#endif
 		e->GetErrorMessage(szCause, 255);
 		str += szCause;
 		str += _T("\n");
@@ -314,7 +317,10 @@ BOOL CDib::LoadGIFHeader(LPCTSTR lpszPathName)
 	catch (CFileException* e)
 	{
 		TCHAR szCause[255];
-		CString str(_T("LoadFirstGIF: "));
+		CString str;
+#ifdef _DEBUG
+		str = _T("LoadFirstGIF: ");
+#endif
 		e->GetErrorMessage(szCause, 255);
 		str += szCause;
 		str += _T("\n");
@@ -521,7 +527,10 @@ BOOL CDib::LoadFirstGIFRaw(	LPCTSTR lpszPathName,
 	catch (CFileException* e)
 	{
 		TCHAR szCause[255];
-		CString str(_T("LoadFirstGIFRaw: "));
+		CString str;
+#ifdef _DEBUG
+		str = _T("LoadFirstGIFRaw: ");
+#endif
 		e->GetErrorMessage(szCause, 255);
 		str += szCause;
 		str += _T("\n");
@@ -1006,7 +1015,10 @@ BOOL CDib::LoadFirstGIF(LPCTSTR lpszPathName,
 	catch (CFileException* e)
 	{
 		TCHAR szCause[255];
-		CString str(_T("LoadFirstGIF: "));
+		CString str;
+#ifdef _DEBUG
+		str = _T("LoadFirstGIF: ");
+#endif
 		e->GetErrorMessage(szCause, 255);
 		str += szCause;
 		str += _T("\n");
@@ -1543,7 +1555,10 @@ BOOL CDib::LoadFirstGIF32(	LPCTSTR lpszPathName,
 	catch (CFileException* e)
 	{
 		TCHAR szCause[255];
-		CString str(_T("LoadFirstGIF32: "));
+		CString str;
+#ifdef _DEBUG
+		str = _T("LoadFirstGIF32: ");
+#endif
 		e->GetErrorMessage(szCause, 255);
 		str += szCause;
 		str += _T("\n");

@@ -457,7 +457,10 @@ BOOL CDib::LoadPNG(	LPCTSTR lpszPathName,
 	{
 		DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
 		TCHAR szCause[255];
-		CString str(_T("LoadPNG: "));
+		CString str;
+#ifdef _DEBUG
+		str = _T("LoadPNG: ");
+#endif
 		e->GetErrorMessage(szCause, 255);
 		str += szCause;
 		str += _T("\n");

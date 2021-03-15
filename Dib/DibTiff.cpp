@@ -511,7 +511,10 @@ BOOL CDib::LoadTIFF(LPCTSTR lpszPathName,
 	catch (CFileException* e)
 	{
 		TCHAR szCause[255];
-		CString str(_T("LoadTIFF: "));
+		CString str;
+#ifdef _DEBUG
+		str = _T("LoadTIFF: ");
+#endif
 		e->GetErrorMessage(szCause, 255);
 		str += szCause;
 		str += _T("\n");
