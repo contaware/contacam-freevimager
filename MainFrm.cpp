@@ -2319,7 +2319,7 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		}
 
 		// System Usage
-		static ULONGLONG ullCount = 0U;
+		static ULONGLONG ullCount = 0ULL;
 		ullCount++;
 		if (g_nLogLevel > 1)
 		{
@@ -2400,7 +2400,7 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 			!((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames						&&
 			CDib::m_llOverallSharedMemoryBytes > 0)
 		{
-			// Set drop flag
+			// Disable frames storing
 			((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = TRUE;
 			
 			// Log
@@ -2409,13 +2409,8 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		else if (((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames	&&
 				CDib::m_llOverallSharedMemoryBytes == 0)
 		{
-			// Clear drop flag
+			// Re-enable frames storing
 			((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = FALSE;
-
-			// To avoid overloading / crashing ourself we better pop-up the 
-			// notification dialog here after the frames have been dropped
-			if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
-				PopupNotificationWnd(APPNAME_NOEXT, ML_STRING(1815, "OUT OF MEMORY / OVERLOAD: dropping frames"), 0);
 		}
 
 		// Toggle flash state

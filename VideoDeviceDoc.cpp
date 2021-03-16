@@ -580,10 +580,15 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 
 			// Log alert
 			if (nSaveFrameListSpeedPercent < 100)
-				::LogLine(_T("*** %s: %0.2fx ***"), m_pDoc->GetAssignedDeviceName(), (double)nSaveFrameListSpeedPercent / 100.0);
+			{
+				CString sRecSpeed;
+				sRecSpeed.LoadString(ID_INDICATOR_REC_SPEED);
+				::LogLine(_T("*** %s:%s%0.2fx ***"), m_pDoc->GetAssignedDeviceName(), sRecSpeed, (double)nSaveFrameListSpeedPercent / 100.0);
+			}
 		}
 
-		// Log error
+		// Error: disable frames storing, which is re-enabled in 
+		//        CMainFrame::OnTimer() when the memory usage is normalized
 		if (dwLoadDetFrameErrorCode != ERROR_SUCCESS)
 		{
 			((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = TRUE;
@@ -1980,9 +1985,8 @@ end_of_software_detection:
 	else
 		ClearNewestFrameList();
 
-	// Error: disable frames storing and save the frame list!
-	//        Frames storing is re-enabled in CMainFrame::OnTimer()
-	//        when the memory usage is normalized.
+	// Error: disable frames storing, which is re-enabled in 
+	//        CMainFrame::OnTimer() when the memory usage is normalized
 	if (dwError != ERROR_SUCCESS)
 	{
 		((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = bDropFrame = TRUE;
