@@ -2128,7 +2128,7 @@ BOOL DeleteRegistryKey(HKEY hOpenKey, LPCTSTR szKey)
 	return (RegDeleteKey(hOpenKey, sKey) == ERROR_SUCCESS);
 }
 
-CString ShowErrorMsg(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, CString sHeader/*=_T("")*/, CString sFooter/*=_T("")*/)
+CString GetErrorMsg(DWORD dwErrorCode)
 {
 	// Get message
 	LPVOID lpMsgBuf = NULL;
@@ -2191,12 +2191,20 @@ CString ShowErrorMsg(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, CString sHe
 	if (sText == _T(""))
 		sText.Format(ML_STRING(1784, "Error with code %u."), dwErrorCode);
 
+	return sText;
+}
+
+CString ShowErrorMsg(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, CString sHeader/*=_T("")*/, CString sFooter/*=_T("")*/)
+{
+	CString sText(GetErrorMsg(dwErrorCode));
+
 	// Format and show error message
 	sText = sHeader + sText + sFooter;
 	if (g_nLogLevel > 0)
 		LogLine(_T("%s"), sText);
 	if (bShowMessageBoxOnError)
 		AfxMessageBox(sText, MB_ICONSTOP);
+
 	return sText;
 }
 

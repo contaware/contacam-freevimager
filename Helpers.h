@@ -279,8 +279,11 @@ extern CString GetRegistryStringValue(HKEY hOpenKey, LPCTSTR szKey, LPCTSTR szVa
 extern BOOL DeleteRegistryValue(HKEY hOpenKey, LPCTSTR szKey, LPCTSTR szValue);
 extern BOOL DeleteRegistryKey(HKEY hOpenKey, LPCTSTR szKey);
 
-// LogLine + eventually show MessageBox, format:
-// sHeader + GetLastError() in readable format + sFooter
+// Convert error code to error string
+extern CString GetErrorMsg(DWORD dwErrorCode);
+
+// LogLine + eventually show MessageBox like:
+// sHeader + GetErrorMsg(dwErrorCode) + sFooter
 extern CString ShowErrorMsg(DWORD dwErrorCode,
 							BOOL bShowMessageBoxOnError,
 							CString sHeader = _T(""),
