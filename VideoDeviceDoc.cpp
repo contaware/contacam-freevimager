@@ -581,18 +581,17 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			// Log alert
 			if (nSaveFrameListSpeedPercent < 100)
 			{
-				CString sRecSpeed;
-				sRecSpeed.LoadString(ID_INDICATOR_REC_SPEED);
-				::LogLine(_T("*** %s:%s%0.2fx ***"), m_pDoc->GetAssignedDeviceName(), sRecSpeed, (double)nSaveFrameListSpeedPercent / 100.0);
+				CString sRecSpeedPaneText;
+				sRecSpeedPaneText.LoadString(ID_INDICATOR_REC_SPEED); // this string has a leading and a trailing space
+				::LogLine(_T("*** %s:%s%0.2fx ***"), m_pDoc->GetAssignedDeviceName(), sRecSpeedPaneText, (double)nSaveFrameListSpeedPercent / 100.0);
 			}
 		}
 
-		// Error: disable frames storing, which is re-enabled in 
-		//        CMainFrame::OnTimer() when the memory usage is normalized
+		// Disable frames storing, which is re-enabled in CMainFrame::OnTimer() when the memory usage is normalized
 		if (dwLoadDetFrameErrorCode != ERROR_SUCCESS)
 		{
 			((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = TRUE;
-			::LogLine(_T("*** %s *** (0x%08X)"), ML_STRING(1815, "OUT OF MEMORY / OVERLOAD: dropping frames"), dwLoadDetFrameErrorCode);
+			::LogLine(_T("*** %s *** <-- %s"), ML_STRING(1815, "OUT OF MEMORY / OVERLOAD: dropping frames"), ::GetErrorMsg(dwLoadDetFrameErrorCode));
 		}
 	}
 	ASSERT(FALSE); // should never end up here...
@@ -1973,7 +1972,7 @@ end_of_software_detection:
 				ShrinkNewestFrameList(); // shrink to a size of m_nMilliSecondsRecBeforeMovementBegin
 		}
 		// Maximum number of frames reached?
-		else if (GetNewestMovementDetectionsListCount() >= m_nDetectionMaxFrames)
+		else if (GetNewestMovementDetectionsListCount() >= MIN(m_nDetectionMaxFrames, ((CUImagerApp*)::AfxGetApp())->m_nDetectionMaxMaxFrames))
 			SaveFrameList(FALSE);
 	}
 	else if (bStoreFrame)
@@ -1985,17 +1984,17 @@ end_of_software_detection:
 	else
 		ClearNewestFrameList();
 
-	// Error: disable frames storing, which is re-enabled in 
-	//        CMainFrame::OnTimer() when the memory usage is normalized
+	// Disable frames storing, which is re-enabled in CMainFrame::OnTimer() when the memory usage is normalized
 	if (dwError != ERROR_SUCCESS)
-	{
 		((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = bDropFrame = TRUE;
-		::LogLine(_T("*** %s *** (0x%08X)"), ML_STRING(1815, "OUT OF MEMORY / OVERLOAD: dropping frames"), dwError);
-	}
 
 	// Drop frames
 	if (bDropFrame)
 		ClearNewestFrameList();
+
+	// Log the error after dropping the frames
+	if (dwError != ERROR_SUCCESS)
+		::LogLine(_T("*** %s *** <-- %s"), ML_STRING(1815, "OUT OF MEMORY / OVERLOAD: dropping frames"), ::GetErrorMsg(dwError));
 }
 
 void CVideoDeviceDoc::ExecCommand(const CTime& Time,
@@ -3942,6 +3941,17 @@ void CVideoDeviceDoc::SetDocumentTitle()
 				else
 					sDataRate.Format(_T("%dkbps"), kbps);
 				sTitle += _T(" , ") + sDataRate;
+			}
+
+			// Recording speed
+			int nSaveFrameListSpeedPercent = m_nSaveFrameListSpeedPercent;
+			if (nSaveFrameListSpeedPercent >= 0)
+			{
+				CString sRecSpeedPaneText;
+				sRecSpeedPaneText.LoadString(ID_INDICATOR_REC_SPEED); // this string has a leading and a trailing space
+				CString sRecSpeed;
+				sRecSpeed.Format(_T(" ,%s%0.2fx"), sRecSpeedPaneText, (double)nSaveFrameListSpeedPercent / 100.0);
+				sTitle += sRecSpeed;
 			}
 		}
 
@@ -7904,7 +7914,7 @@ __forceinline CDib* CVideoDeviceDoc::AllocDetFrame(CDib* pDib)
 
 __forceinline DWORD CVideoDeviceDoc::AddNewFrameToNewestList(BOOL bMarkStart, CDib* pDib)
 {
-	DWORD dwError = 0x20100000;	// custom error code
+	DWORD dwError = ERROR_INVALID_PARAMETER;
 	if (pDib)
 	{
 		::EnterCriticalSection(&m_csMovementDetectionsList);
@@ -7953,7 +7963,7 @@ __forceinline DWORD CVideoDeviceDoc::AddNewFrameToNewestList(BOOL bMarkStart, CD
 
 __forceinline DWORD CVideoDeviceDoc::AddNewFrameToNewestListAndShrink(CDib* pDib)
 {
-	DWORD dwError = 0x20110000;	// custom error code
+	DWORD dwError = ERROR_INVALID_PARAMETER;
 	if (pDib)
 	{
 		::EnterCriticalSection(&m_csMovementDetectionsList);

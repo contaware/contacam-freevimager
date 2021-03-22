@@ -3006,6 +3006,7 @@
 #define IDC_EDIT_PLATERECOGNIZER_REGIONS 2592
 #define IDC_BUTTON_HELP                 2593
 #define IDC_SYSLINK_HTTPD_CONF_EDITABLE 2594
+#define IDC_STATIC_DETECTION_MAX_MAXFRAMES 2595
 #define ID_EDIT_ROTATE_FLIP             32778
 #define ID_FILE_SELECTTWAINSOURCE       32779
 #define ID_FILE_ACQUIRE                 32780
@@ -3198,7 +3199,6 @@
 #define ID_FILE_RELOAD                  33500
 #define ID_VIEW_FILES                   33501
 #define ID_INDICATOR_REC_SPEED          33504
-#define ID_INDICATOR_BUF_USAGE          33505
 #define ID_INDICATOR_XCOORDINATE        33508
 #define ID_INDICATOR_YCOORDINATE        33509
 #define ID_SETTINGS_LOG_ALL_MESSAGES    33510
@@ -3245,7 +3245,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1503
 #define _APS_NEXT_COMMAND_VALUE         33555
-#define _APS_NEXT_CONTROL_VALUE         2595
+#define _APS_NEXT_CONTROL_VALUE         2596
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

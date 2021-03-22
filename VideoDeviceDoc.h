@@ -124,6 +124,8 @@ class CCameraAdvancedSettingsDlg;
 #define MOVDET_ZONES_BLOCK_FORMAT				_T("MovDetZones%i")
 #define MOVDET_DEFAULT_MAX_FRAMES_IN_LIST		1000			// Default maximum frames per list
 #define MOVDET_MAX_MAX_FRAMES_IN_LIST			14999			// Upper limit for the maximum frames per list
+#define MOVDET_MAX_MAX_FRAMES_RAM_PERCENT		50				// CUImagerApp::m_nDetectionMaxMaxFrames is calculated according this RAM percentage
+#define MOVDET_DROP_FRAMES_RAM_PERCENT			100				// Drop frames when CDib::m_llOverallSharedMemoryBytes is above this RAM percentage
 #define MOVDET_SAVE_MIN_FRAMERATE_RATIO			0.3				// Min ratio between calculated (last - first) and m_dEffectiveFrameRate
 #define MOVDET_TIMEOUT							1000U			// Timeout in ms for detection zones
 #define MOVDET_ANIMGIF_MAX_FRAMES				40				// Maximum number of frames per animated gif

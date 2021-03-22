@@ -565,6 +565,9 @@ public:
 	CString	m_sMicroApacheCertFileSSL;
 	CString	m_sMicroApacheKeyFileSSL;
 
+	// Global upper boundary for CVideoDeviceDoc::m_nDetectionMaxFrames
+	volatile int m_nDetectionMaxMaxFrames;
+
 	// Global flag indicating the necessity to drop
 	// movement detection frames in case of memory problems
 	volatile BOOL m_bMovDetDropFrames;

@@ -147,6 +147,7 @@ CUImagerApp::CUImagerApp()
 	m_bStartMicroApache = FALSE;
 	m_nMicroApachePort = MICROAPACHE_DEFAULT_PORT;
 	m_nMicroApachePortSSL = MICROAPACHE_DEFAULT_PORT_SSL;
+	m_nDetectionMaxMaxFrames = MOVDET_MAX_MAX_FRAMES_IN_LIST;
 	m_bMovDetDropFrames = FALSE;
 	::InitializeCriticalSection(&m_csSaveReservation);
 	m_bSingleInstance = TRUE;

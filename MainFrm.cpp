@@ -75,7 +75,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_WM_INITMENUPOPUP()
 	ON_MESSAGE(WM_AUTORUN_VIDEODEVICES, OnAutorunVideoDevices)
 	ON_COMMAND(ID_INDICATOR_REC_SPEED, OnRecSpeedClick)
-	ON_COMMAND(ID_INDICATOR_BUF_USAGE, OnBufUsageClick)
 #else
 	ON_COMMAND(ID_INDICATOR_XCOORDINATE, OnXCoordinatesDoubleClick)
 	ON_COMMAND(ID_INDICATOR_YCOORDINATE, OnYCoordinatesDoubleClick)
@@ -86,7 +85,6 @@ END_MESSAGE_MAP()
 
 #ifdef VIDEODEVICEDOC
 static TCHAR sba_RECSPEEDHelp[MAX_PATH];
-static TCHAR sba_BUFUSAGEHelp[MAX_PATH];
 #else
 static TCHAR sba_CoordinateHelp[MAX_PATH];
 #endif
@@ -95,7 +93,6 @@ static SBACTPANEINFO sba_indicators[] =
 	{ ID_SEPARATOR, _T(""), SBACTF_NORMAL },		// status line indicator
 #ifdef VIDEODEVICEDOC
 	{ ID_INDICATOR_REC_SPEED, sba_RECSPEEDHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_SINGLECLICK | SBACTF_DOUBLECLICK | SBACTF_HANDCURSOR },
-	{ ID_INDICATOR_BUF_USAGE, sba_BUFUSAGEHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_SINGLECLICK | SBACTF_DOUBLECLICK | SBACTF_HANDCURSOR },
 #else
 	{ ID_INDICATOR_XCOORDINATE, sba_CoordinateHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_SINGLECLICK | SBACTF_DOUBLECLICK | SBACTF_HANDCURSOR },
 	{ ID_INDICATOR_YCOORDINATE, sba_CoordinateHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_SINGLECLICK | SBACTF_DOUBLECLICK | SBACTF_HANDCURSOR },
@@ -162,8 +159,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 #ifdef VIDEODEVICEDOC
 	_tcsncpy(sba_RECSPEEDHelp, ML_STRING(1762, "REC speed\n(click for more information)"), MAX_PATH);
 	sba_RECSPEEDHelp[MAX_PATH - 1] = _T('\0');
-	_tcsncpy(sba_BUFUSAGEHelp, ML_STRING(1763, "REC buffers usage\n(click for more information)"), MAX_PATH);
-	sba_BUFUSAGEHelp[MAX_PATH - 1] = _T('\0');
 #else
 	_tcsncpy(sba_CoordinateHelp, ML_STRING(1768, "Click to change unit"), MAX_PATH);
 	sba_CoordinateHelp[MAX_PATH - 1] = _T('\0');
@@ -1018,11 +1013,6 @@ LONG CMainFrame::OnAutorunVideoDevices(WPARAM wparam, LPARAM lparam)
 }
 
 void CMainFrame::OnRecSpeedClick()
-{
-	::ShellExecute(NULL, _T("open"), LOAD_OPTIMIZATION_ONLINE_PAGE, NULL, NULL, SW_SHOWNORMAL);
-}
-
-void CMainFrame::OnBufUsageClick()
 {
 	::ShellExecute(NULL, _T("open"), LOAD_OPTIMIZATION_ONLINE_PAGE, NULL, NULL, SW_SHOWNORMAL);
 }
@@ -2057,55 +2047,37 @@ void CMainFrame::OnViewAllNextPicture()
 }
 
 #ifdef VIDEODEVICEDOC
-unsigned int CMainFrame::GetRecBufStats(CString& sBufStats)
+void CMainFrame::UpdateDetectionMaxMaxFrames()
 {
-	// Maximum buffers size
-	LONGLONG llMaxOverallQueueSize = 0;
+	// Calculate
+	LONGLONG llNum = g_nOSUsablePhysRamMB;
+	llNum <<= 20; // RAM in bytes
+	llNum *= MOVDET_MAX_MAX_FRAMES_RAM_PERCENT;
+	llNum /= 100;
+	LONGLONG llDen = 0;
 	CUImagerMultiDocTemplate* pVideoDeviceDocTemplate = ((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate();
 	POSITION posVideoDeviceDoc = pVideoDeviceDocTemplate->GetFirstDocPosition();
 	while (posVideoDeviceDoc)
 	{
 		CVideoDeviceDoc* pVideoDeviceDoc = (CVideoDeviceDoc*)(pVideoDeviceDocTemplate->GetNextDoc(posVideoDeviceDoc));
 		if (pVideoDeviceDoc)
-			llMaxOverallQueueSize += (LONGLONG)pVideoDeviceDoc->m_ProcessFrameBMI.bmiHeader.biSizeImage * (LONGLONG)pVideoDeviceDoc->m_nDetectionMaxFrames;
+			llDen += pVideoDeviceDoc->m_ProcessFrameBMI.bmiHeader.biSizeImage;
 	}
-	double dMaxOverallQueueSizeGB = (double)(llMaxOverallQueueSize >> 20) / 1024.0;
+	int nDetectionMaxMaxFrames;
+	if (llDen > 0)
+	{
+		nDetectionMaxMaxFrames = (int)(llNum / llDen);
+		if (nDetectionMaxMaxFrames > MOVDET_MAX_MAX_FRAMES_IN_LIST)
+			nDetectionMaxMaxFrames = MOVDET_MAX_MAX_FRAMES_IN_LIST;
+		else if (nDetectionMaxMaxFrames < 1)
+			nDetectionMaxMaxFrames = 1;
+	}
+	else
+		nDetectionMaxMaxFrames = MOVDET_MAX_MAX_FRAMES_IN_LIST;
 
-	// Maximum Overall Commit size
-	// - MemoryStatusEx.ullTotalPageFile = RAM + allocated page file size
-	// - MemoryStatusEx.ullAvailPageFile = what the OS can give use (always less than MemoryStatusEx.ullTotalPageFile)
-	MEMORYSTATUSEX MemoryStatusEx;
-	MemoryStatusEx.dwLength = sizeof(MemoryStatusEx);
-	::GlobalMemoryStatusEx(&MemoryStatusEx);
-	LONGLONG llOverallSharedMemoryBytes = CDib::m_llOverallSharedMemoryBytes;
-	double dAvailCommitSizeGB = (double)(MemoryStatusEx.ullAvailPageFile >> 20) / 1024.0;
-	double dMaxOverallCommitSizeGB = (double)((llOverallSharedMemoryBytes + MemoryStatusEx.ullAvailPageFile) >> 20) / 1024.0;
-
-	// RAM
-	double dRamGB = (double)g_nOSUsablePhysRamMB / 1024.0;
-
-	// Alert threshold for the available commit size
-	double dAlertCommitSizeGB = max(1.0, dRamGB / 8.0);				// minimum 1 GB
-
-	// Limit
-	double dLimitGB = min(dMaxOverallCommitSizeGB, dRamGB);			// better to avoid storing in page file on HD/SSD
-	dLimitGB -= dAlertCommitSizeGB;
-	if (dLimitGB < 0.0)
-		dLimitGB = 0.0;
-
-	// Format stats
-	sBufStats.Format(_T("BUF: %0.1f(max %0.1f)/%0.1f") + ML_STRING(1826, "GB"),
-					(double)(llOverallSharedMemoryBytes >> 20) / 1024.0,
-					dMaxOverallQueueSizeGB,
-					dLimitGB);
-	
-	// Return
-	unsigned int uiRet = 0U;
-	if (dMaxOverallQueueSizeGB > dLimitGB)
-		uiRet |= GETRECBUF_QUEUESIZE_ALERT;
-	if (dAvailCommitSizeGB < dAlertCommitSizeGB)
-		uiRet |= GETRECBUF_COMMITSIZE_ALERT;
-	return uiRet;
+	// Apply
+	if (((CUImagerApp*)::AfxGetApp())->m_nDetectionMaxMaxFrames != nDetectionMaxMaxFrames)
+		((CUImagerApp*)::AfxGetApp())->m_nDetectionMaxMaxFrames = nDetectionMaxMaxFrames;
 }
 #endif
 
@@ -2261,12 +2233,6 @@ void CMainFrame::LogSysUsage()
 	::GetMemoryStats(&ullRegions, &ullFree, &ullReserved, &ullCommitted,
 					&ullMaxFree, &ullMaxReserved, &ullMaxCommitted, &dFragmentation);
 
-	// Get Recording Buffers Usage
-#ifdef VIDEODEVICEDOC
-	CString sBufStats;
-	GetRecBufStats(sBufStats);
-#endif
-
 	// Get HD Usage
 #ifdef VIDEODEVICEDOC
 	CString sDiskStats(GetDiskStats(((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot));
@@ -2278,17 +2244,11 @@ void CMainFrame::LogSysUsage()
 	::LogLine(
 		_T("%s | ")
 		_T("CPU: %d thread | ")
-#ifdef VIDEODEVICEDOC
-		_T("%s | ")
-#endif
 		_T("RAM: %0.1f%s | ")
 		_T("VMEM: used=%s(max %s) res=%s(max %s) free=%s(max %s) frag=%0.1f%% regions=%I64u | ")
 		_T("HEAP: used=%s (%s big), free(committed)=%s, free(uncommitted)=%s"),
 		sDiskStats,
 		((CUImagerApp*)::AfxGetApp())->m_nThreadCount,
-#ifdef VIDEODEVICEDOC
-		sBufStats,
-#endif
 		(double)g_nOSUsablePhysRamMB / 1024.0, ML_STRING(1826, "GB"),
 		::FormatBytes(ullCommitted), ::FormatBytes(ullMaxCommitted),
 		::FormatBytes(ullReserved), ::FormatBytes(ullMaxReserved),
@@ -2335,10 +2295,8 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 				LogSysUsage();
 		}
 
-		// Text flash state flag
-		static int nFlashState = 0;
-
 		// REC Speed
+		static int nFlashState = 0;
 		int nMinSaveFrameListSpeedPercent = -1;
 		CString sMinSaveFrameListAssignedDeviceName;
 		POSITION posTemplate = ((CUImagerApp*)::AfxGetApp())->GetFirstDocTemplatePosition();
@@ -2363,10 +2321,12 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 				}
 			}
 		}
+		CString sRecSpeedPaneText;
+		sRecSpeedPaneText.LoadString(ID_INDICATOR_REC_SPEED); // this string has a leading and a trailing space
 		if (nMinSaveFrameListSpeedPercent >= 0)
 		{
 			CString sMinSaveFrameListSpeed;
-			sMinSaveFrameListSpeed.Format(_T("%s: %0.2fx"), sMinSaveFrameListAssignedDeviceName, (double)nMinSaveFrameListSpeedPercent / 100.0);
+			sMinSaveFrameListSpeed.Format(_T("%s:%s%0.2fx"), sMinSaveFrameListAssignedDeviceName, sRecSpeedPaneText, (double)nMinSaveFrameListSpeedPercent / 100.0);
 			if (nMinSaveFrameListSpeedPercent < 100)
 			{
 				if (nFlashState == 2)
@@ -2378,43 +2338,36 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 				GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_REC_SPEED), _T(" ") + sMinSaveFrameListSpeed + _T(" "));
 		}
 		else
-		{
-			CString sRecSpeedPaneText;
-			sRecSpeedPaneText.LoadString(ID_INDICATOR_REC_SPEED);
 			GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_REC_SPEED), sRecSpeedPaneText);
-		}
+		nFlashState = (nFlashState + 1) % 3;
 
-		// BUF Usage
-		CString sBufStats;
-		unsigned int uiBufRet = GetRecBufStats(sBufStats);
-		if ((uiBufRet & GETRECBUF_QUEUESIZE_ALERT) == GETRECBUF_QUEUESIZE_ALERT)
-		{
-			if (nFlashState == 2)
-				GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_BUF_USAGE), _T(""));
-			else
-				GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_BUF_USAGE), _T(" *** ") + sBufStats + _T(" *** "));
-		}
-		else
-			GetStatusBar()->SetPaneText(GetStatusBar()->CommandToIndex(ID_INDICATOR_BUF_USAGE), _T(" ") + sBufStats + _T(" "));
-		if ((uiBufRet & GETRECBUF_COMMITSIZE_ALERT) == GETRECBUF_COMMITSIZE_ALERT	&&
-			!((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames						&&
-			CDib::m_llOverallSharedMemoryBytes > 0)
+		// Update m_nDetectionMaxMaxFrames which is the global upper boundary
+		// for CVideoDeviceDoc::m_nDetectionMaxFrames 
+		UpdateDetectionMaxMaxFrames();
+
+		// Frames dropping logic
+		LONGLONG llDropThresholdBytes = g_nOSUsablePhysRamMB;
+		llDropThresholdBytes <<= 20; // RAM in bytes
+		llDropThresholdBytes *= MOVDET_DROP_FRAMES_RAM_PERCENT;
+		llDropThresholdBytes /= 100;
+		if (CDib::m_llOverallSharedMemoryBytes > llDropThresholdBytes &&
+			!((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames)
 		{
 			// Disable frames storing
 			((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = TRUE;
 			
 			// Log
-			::LogLine(_T("*** %s ***"), ML_STRING(1815, "OUT OF MEMORY / OVERLOAD: dropping frames"));
+			::LogLine(	_T("*** %s *** <-- BUF %0.1f%s > %d%% RAM"),
+						ML_STRING(1815, "OUT OF MEMORY / OVERLOAD: dropping frames"),
+						(double)(CDib::m_llOverallSharedMemoryBytes >> 20) / 1024.0, ML_STRING(1826, "GB"),
+						MOVDET_DROP_FRAMES_RAM_PERCENT);
 		}
-		else if (((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames	&&
+		else if (((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames &&
 				CDib::m_llOverallSharedMemoryBytes == 0)
 		{
 			// Re-enable frames storing
 			((CUImagerApp*)::AfxGetApp())->m_bMovDetDropFrames = FALSE;
 		}
-
-		// Toggle flash state
-		nFlashState = (nFlashState+1)%3;
 #endif
 	}
 }
