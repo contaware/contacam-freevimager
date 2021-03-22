@@ -995,7 +995,7 @@ BEGIN
     EDITTEXT        IDC_EDIT_SAVE_FREQ_DIV,107,26,17,12,ES_AUTOHSCROLL | ES_NUMBER
     EDITTEXT        IDC_SECONDS_BEFORE_MOVEMENT_BEGIN,87,41,17,12,ES_AUTOHSCROLL | ES_NUMBER
     EDITTEXT        IDC_SECONDS_AFTER_MOVEMENT_END,107,41,17,12,ES_AUTOHSCROLL | ES_NUMBER
-    EDITTEXT        IDC_EDIT_DETECTION_MIN_LENGTH,87,56,37,12,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_EDIT_DETECTION_MIN_LENGTH,107,56,17,12,ES_AUTOHSCROLL | ES_NUMBER
     EDITTEXT        IDC_EDIT_DETECTION_MAX_FRAMES,87,72,37,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Flip Horizontally",IDC_CHECK_FLIP_H,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,92,66,10
     CONTROL         "Flip Vertically",IDC_CHECK_FLIP_V,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,87,92,57,10
@@ -1038,7 +1038,7 @@ BEGIN
     LTEXT           "sec",IDC_STATIC2283,128,43,11,8
     GROUPBOX        "Video",IDC_STATIC2286,6,3,202,103
     GROUPBOX        "Control",IDC_STATIC2291,218,3,198,71
-    LTEXT           "Drop shorter than",IDC_STATIC,13,58,72,8
+    LTEXT           "Drop motion shorter than",IDC_STATIC,13,58,92,8
     LTEXT           "sec",IDC_STATIC2292,128,58,11,8
     LTEXT           "Split longer than",IDC_STATIC,13,70,72,8
     LTEXT           "frames",IDC_STATIC2293,128,74,23,8
@@ -3882,7 +3882,7 @@ END
 STRINGTABLE
 BEGIN
     IDS_STRING1760          "Application Log File has not yet been created"
-    IDS_STRING1761          "(max: %d frames)"
+    IDS_STRING1761          "(max %d frames)"
     IDS_STRING1762          "REC speed\n(click for more information)"
     IDS_STRING1764          "Starting"
     IDS_STRING1765          "%s already exists.\nDo you want to proceed and merge the files?"

@@ -538,7 +538,7 @@ void CCameraAdvancedSettingsDlg::OnTimer(UINT nIDEvent)
 		{
 			// Display CUImagerApp::m_nDetectionMaxMaxFrames
 			CString sDetectionMaxMaxFrames;
-			sDetectionMaxMaxFrames.Format(ML_STRING(1761, "(max: %d frames)"), ((CUImagerApp*)::AfxGetApp())->m_nDetectionMaxMaxFrames);
+			sDetectionMaxMaxFrames.Format(ML_STRING(1761, "(max %d frames)"), ((CUImagerApp*)::AfxGetApp())->m_nDetectionMaxMaxFrames);
 			GetDlgItem(IDC_STATIC_DETECTION_MAX_MAXFRAMES)->SetWindowText(sDetectionMaxMaxFrames);
 
 			// Enable Frame Rate Edit Control for HTTP jpeg snapshots devices
