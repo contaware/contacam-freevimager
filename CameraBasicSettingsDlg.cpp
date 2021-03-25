@@ -289,25 +289,12 @@ void CCameraBasicSettingsDlg::Rename()
 	// Store current name
 	CString sOldName = m_pDoc->GetAssignedDeviceName();
 
-	// Is ANSI?
-	if (!::IsANSIConvertible(m_sName))
-	{
-		// Error Message
-		EndWaitCursor();
-		::AfxMessageBox(ML_STRING(1766, "Only letters, numbers or spaces are allowed"), MB_OK | MB_ICONERROR);
-		BeginWaitCursor();
-		
-		// Restore old name
-		m_sName = sOldName;
-		return;
-	}
-
 	// Adjust new name
 	m_sName = CVideoDeviceDoc::GetValidName(m_sName);
 	m_sName.TrimLeft();
 	m_sName.TrimRight();
 	if (m_sName == _T(""))
-		m_sName = m_pDoc->GetDeviceName();
+		m_sName = CVideoDeviceDoc::GetValidName(m_pDoc->GetDeviceName());
 	
 	// Adjust old dir name
 	m_pDoc->m_sRecordAutoSaveDir.TrimRight(_T('\\'));

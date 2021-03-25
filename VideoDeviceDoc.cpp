@@ -3964,123 +3964,112 @@ void CVideoDeviceDoc::SetDocumentTitle()
 
 CString CVideoDeviceDoc::GetValidName(CString sName)
 {
-	// Empty String is already ok!
-	if (sName.IsEmpty())
-		return _T("");
-
-	LPSTR c = NULL;
-	if (::ToANSI(sName, &c) <= 0 || !c)
+    CString sValidName;
+	for (int i = 0 ; i < sName.GetLength() ; i++)
 	{
-		if (c)
-			delete [] c;
-		return _T("");
-	}
-    CString sValidName(_T(""));
-	for (int i = 0 ; i < (int)strlen(c) ; i++)
-	{
-		if ( (48 <= c[i] && c[i] <= 57) ||	// 0-9
-			 (65 <= c[i] && c[i] <= 90) ||	// ABC...XYZ
-			 (97 <= c[i] && c[i] <= 122)||	// abc...xyz
-			 (c[i]== ' ' || c[i] == '-' || c[i] == '_' ||
-			 c[i] == '.' || c[i] == '!' ||
-			 c[i] == '(' || c[i]== ')'))
-			sValidName += CString(c[i]);
+		TCHAR c = sName[i];
+		if ( (_T('0') <= c && c <= _T('9')) ||	// 0-9
+			 (_T('A') <= c && c <= _T('Z')) ||	// ABC...XYZ
+			 (_T('a') <= c && c <= _T('z')) ||	// abc...xyz
+			 c == _T(' ') || c == _T('-') || c == _T('_') ||
+			 c == _T('.') || c == _T('!') ||
+			 c == _T('(') || c == _T(')'))
+			sValidName += c;
 		// a family
-		else if (c[i] == 'ä')
+		else if (c == _T('ä'))
 			sValidName += _T("ae");
-		else if (c[i] == 'Ä')
+		else if (c == _T('Ä'))
 			sValidName += _T("AE");
-		else if (c[i] == 'à')
+		else if (c == _T('à'))
 			sValidName += _T("a");
-		else if (c[i] == 'À')
+		else if (c == _T('À'))
 			sValidName += _T("A");
-		else if (c[i] == 'á')
+		else if (c == _T('á'))
 			sValidName += _T("a");
-		else if (c[i] == 'Á')
+		else if (c == _T('Á'))
 			sValidName += _T("A");
-		else if (c[i] == 'â')
+		else if (c == _T('â'))
 			sValidName += _T("a");
-		else if (c[i] == 'Â')
+		else if (c == _T('Â'))
 			sValidName += _T("A");
-		else if (c[i] == 'å')
+		else if (c == _T('å'))
 			sValidName += _T("a");
-		else if (c[i] == 'Å')
+		else if (c == _T('Å'))
 			sValidName += _T("A");
 		// e family
-		else if (c[i] == 'è')
+		else if (c == _T('è'))
 			sValidName += _T("e");
-		else if (c[i] == 'È')
+		else if (c == _T('È'))
 			sValidName += _T("E");
-		else if (c[i] == 'é')
+		else if (c == _T('é'))
 			sValidName += _T("e");
-		else if (c[i] == 'É')
+		else if (c == _T('É'))
 			sValidName += _T("E");
-		else if (c[i] == 'ê')
+		else if (c == _T('ê'))
 			sValidName += _T("e");
-		else if (c[i] == 'Ê')
+		else if (c == _T('Ê'))
 			sValidName += _T("E");
 		// i family
-		else if (c[i] == 'ì')
+		else if (c == _T('ì'))
 			sValidName += _T("i");
-		else if (c[i] == 'Ì')
+		else if (c == _T('Ì'))
 			sValidName += _T("I");
-		else if (c[i] == 'í')
+		else if (c == _T('í'))
 			sValidName += _T("i");
-		else if (c[i] == 'Í')
+		else if (c == _T('Í'))
 			sValidName += _T("I");
-		else if (c[i] == 'î')
+		else if (c == _T('î'))
 			sValidName += _T("i");
-		else if (c[i] == 'Î')
+		else if (c == _T('Î'))
 			sValidName += _T("I");
 		// o family
-		else if (c[i] == 'ö')
+		else if (c == _T('ö'))
 			sValidName += _T("oe");
-		else if (c[i] == 'Ö')
+		else if (c == _T('Ö'))
 			sValidName += _T("OE");
-		else if (c[i] == 'ò')
+		else if (c == _T('ò'))
 			sValidName += _T("o");
-		else if (c[i] == 'Ò')
+		else if (c == _T('Ò'))
 			sValidName += _T("O");
-		else if (c[i] == 'ó')
+		else if (c == _T('ó'))
 			sValidName += _T("o");
-		else if (c[i] == 'Ó')
+		else if (c == _T('Ó'))
 			sValidName += _T("O");
-		else if (c[i] == 'ô')
+		else if (c == _T('ô'))
 			sValidName += _T("o");
-		else if (c[i] == 'Ô')
+		else if (c == _T('Ô'))
 			sValidName += _T("O");
 		// u family
-		else if (c[i] == 'ü')
+		else if (c == _T('ü'))
 			sValidName += _T("ue");
-		else if (c[i] == 'Ü')
+		else if (c == _T('Ü'))
 			sValidName += _T("UE");
-		else if (c[i] == 'ù')
+		else if (c == _T('ù'))
 			sValidName += _T("u");
-		else if (c[i] == 'Ù')
+		else if (c == _T('Ù'))
 			sValidName += _T("U");
-		else if (c[i] == 'ú')
+		else if (c == _T('ú'))
 			sValidName += _T("u");
-		else if (c[i] == 'Ú')
+		else if (c == _T('Ú'))
 			sValidName += _T("U");
-		else if (c[i] == 'û')
+		else if (c == _T('û'))
 			sValidName += _T("u");
-		else if (c[i] == 'Û')
+		else if (c == _T('Û'))
 			sValidName += _T("U");
 		// others
-		else if (c[i] == 'ç')
+		else if (c == _T('ç'))
 			sValidName += _T("c");
-		else if (c[i] == 'Ç')
+		else if (c == _T('Ç'))
 			sValidName += _T("C");
-		else if (c[i] == 'ñ')
+		else if (c == _T('ñ'))
 			sValidName += _T("n");
-		else if (c[i] == 'Ñ')
+		else if (c == _T('Ñ'))
 			sValidName += _T("N");
-		else if (c[i] == '\'' || c[i] == '\"' || c[i] == '^' || c[i] == '´' || c[i] == '`')
+		else if (c == _T('\'') || c == _T('\"') || c == _T('^') || c == _T('´') || c == _T('`'))
 			sValidName += _T("");
 		else
 			sValidName += _T("_");
 	}
-	delete [] c;
 	return sValidName;
 }
 
