@@ -2954,9 +2954,7 @@
 #define IDC_CHECK_SHOW_PASSWORD         2502
 #define IDC_COMBO_KEEPFOR               2523
 #define IDC_EDIT_NAME                   2524
-#define IDC_COMBO_THUMBSPERPAGE         2529
 #define IDC_EDIT_MAX_CAMERA_FOLDER_SIZE 2531
-#define IDC_LABEL_THUMBSPERPAGE         2532
 #define IDC_EDIT_MIN_DISK_FREE_PERCENT  2535
 #define IDC_STATIC2537                  2537
 #define IDC_CONNECTIONTYPE              2538

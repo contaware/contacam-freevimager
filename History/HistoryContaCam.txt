@@ -2,6 +2,8 @@ CONTACAM HISTORY
 
 9.9.16 (Month XX 2021)
 
+- Web interface always displays 12 video thumbs per page as responsive
+  4x3, 3x4, 2x6, 1x12 grids
 - Web interface supports now passing the credentials as parameters like:
   http://CONTACAM-PC:PORT/CAMERA_NAME/poll.php?username=USER&password=PW
 - The rec dot overlay is now displayed with an outline border and the

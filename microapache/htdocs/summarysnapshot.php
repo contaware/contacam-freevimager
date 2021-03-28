@@ -57,7 +57,7 @@ else
 	$selected_day_string = "$selected_day";
 
 // Max files per page, pages count and page offset
-$max_per_page = (int)MAX_PER_PAGE;
+$max_per_page = 12;
 $pages = 1; // initialized later on
 $page_offset = 0;
 if (isset($_GET['pageoffset'])) {
@@ -441,7 +441,17 @@ if ($handle = @opendir($dir)) {
 		// Display
 		$pos = 0;
 		$count = 0;
-		echo "<div style=\"text-align: center\">\n";
+		if ($gif_width <= 0)
+			echo "<div style=\"text-align: center\">\n";
+		else {
+			if ($show_trash_command)
+				$min_grid_width = $gif_width + 65;		// add something more for the checkbox
+			else
+				$min_grid_width = $gif_width + 45;		// should be enough even if styling the thumbs with thicker borders
+			$max_container_width = 4 * $min_grid_width;	// 12 responsive thumbs: 4 x 3, 3 x 4, 2 x 6 and 1 x 12
+			echo "<div style=\"margin: 0 auto; max-width: {$max_container_width}px; display: grid; grid-template-columns: repeat(auto-fill, minmax({$min_grid_width}px, 1fr));\">\n";
+			// Note: the above container works well also for IE which does not support modern grids 
+		}
 		foreach($file_array as $file => $file_time) {
 			$path_parts = pathinfo($file);
 			if (!isset($path_parts['filename']))

@@ -95,17 +95,6 @@ BOOL CCameraBasicSettingsDlg::OnInitDialog()
 		pComboBox->AddString(ML_STRING(1731, "1 Year"));
 		pComboBox->AddString(ML_STRING(1732, "Unlimited"));
 	}
-	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_THUMBSPERPAGE);
-	if (pComboBox)
-	{
-		TCHAR sNum[34];
-		for (int i = PHPCONFIG_MIN_THUMSPERPAGE ; i <= PHPCONFIG_MAX_THUMSPERPAGE ; i++)
-		{
-			_itot(i, sNum, 10);
-			pComboBox->AddString(sNum);
-		}
-		pComboBox->SetMinVisibleItems(PHPCONFIG_MAX_THUMSPERPAGE - PHPCONFIG_MIN_THUMSPERPAGE + 1);
-	}
 	if (sAutoSaveDir != _T(""))
 	{
 		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_LANGUAGE);
@@ -183,13 +172,6 @@ BOOL CCameraBasicSettingsDlg::OnInitDialog()
 		m_nComboKeepFor = 11;	// Infinite
 	m_sMaxCameraFolderSizeGB.Format(_T("%.1f"), (double)m_pDoc->m_nMaxCameraFolderSizeMB / 1024.0);
 	m_sMinDiskFreePercent.Format(_T("%.3f"), (double)m_pDoc->m_nMinDiskFreePermillion / 10000.0);
-	CString sMaxPerPage = m_pDoc->PhpConfigFileGetParam(PHPCONFIG_MAX_PER_PAGE);
-	int nMaxPerPage = PHPCONFIG_DEFAULT_THUMSPERPAGE;
-	if (sMaxPerPage != _T(""))
-		nMaxPerPage = MAX(PHPCONFIG_MIN_THUMSPERPAGE, MIN(PHPCONFIG_MAX_THUMSPERPAGE, _ttoi(sMaxPerPage)));
-	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_THUMBSPERPAGE);
-	if (pComboBox)
-		pComboBox->SetCurSel(nMaxPerPage - PHPCONFIG_MIN_THUMSPERPAGE);
 	CString sLanguageFilePath = m_pDoc->PhpConfigFileGetParam(PHPCONFIG_LANGUAGEFILEPATH);
 	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_LANGUAGE);
 	if (pComboBox)
@@ -438,14 +420,6 @@ void CCameraBasicSettingsDlg::ApplySettings()
 		pComboBox->GetLBText(pComboBox->GetCurSel(), sStyleName);
 	if (sStyleName != _T(""))
 		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_STYLEFILEPATH, CString(CSS_STYLE_DIR) + _T("/") + sStyleName + _T(".css"));
-
-	// Thumbnails per page
-	CString sMaxPerPage;
-	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_THUMBSPERPAGE);
-	if (pComboBox && pComboBox->GetCurSel() >= 0)
-		pComboBox->GetLBText(pComboBox->GetCurSel(), sMaxPerPage);
-	if (sMaxPerPage != _T(""))
-		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_MAX_PER_PAGE, sMaxPerPage);
 	
 	// Full stretch
 	if (m_bCheckFullStretch)
