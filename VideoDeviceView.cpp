@@ -312,12 +312,14 @@ int CVideoDeviceView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 }
 
-__forceinline void CVideoDeviceView::DrawZoneSensitivity(int i, HDC hDC, const RECT& rcDetZone, int n, HBRUSH hBkgndBrush)
+__forceinline void CVideoDeviceView::DrawZoneSensitivity(int i, HDC hDC, const RECT& rcDetZone, int n, int m, int s, HBRUSH hBkgndBrush)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-	// Note: the relative sensitivity text size n can be 0, 2 or 4
+	// Note: digits size n can be 0, 2, 4, 6, 8, 10, ...
+	//       margin m can be 0, 1, 2, 3, ...
+	//       digits spacing s can be 0, 1, 2, 3, ...
 
 	RECT rc;
 	POINT ptCenter;
@@ -328,10 +330,10 @@ __forceinline void CVideoDeviceView::DrawZoneSensitivity(int i, HDC hDC, const R
 	if (pDoc->m_DoMovementDetection[i] >= 20)
 	{
 		// Fill background		
-		rc.left = ptCenter.x - (3+n);
-		rc.top = ptCenter.y - (3+n);
-		rc.right = ptCenter.x + (4+n);
-		rc.bottom = ptCenter.y + (4+n);
+		rc.left = ptCenter.x - (3+n+m+s);
+		rc.top = ptCenter.y - (3+n+m+s);
+		rc.right = ptCenter.x + (4+n+m+s);
+		rc.bottom = ptCenter.y + (4+n+m+s);
 		::FillRect(hDC, &rc, hBkgndBrush);
 
 		// Draw a 5
@@ -346,18 +348,20 @@ __forceinline void CVideoDeviceView::DrawZoneSensitivity(int i, HDC hDC, const R
 	else if (pDoc->m_DoMovementDetection[i] >= 10)
 	{
 		// Fill background		
-		rc.left = ptCenter.x - (3+n);
-		rc.top = ptCenter.y - (3+n);
-		rc.right = ptCenter.x + (4+n);
-		rc.bottom = ptCenter.y + (4+n);
+		rc.left = ptCenter.x - (3+n+m+s);
+		rc.top = ptCenter.y - (3+n+m+s);
+		rc.right = ptCenter.x + (4+n+m+s);
+		rc.bottom = ptCenter.y + (4+n+m+s);
 		::FillRect(hDC, &rc, hBkgndBrush);
 
 		// Draw a 1
+		ptCenter.x -= s; // spacing between digits
 		::MoveToEx(hDC, ptCenter.x - (2+n/2), ptCenter.y - (1+n/2), NULL);
 		::LineTo(hDC, ptCenter.x - 1, ptCenter.y - (2+n));
 		::LineTo(hDC, ptCenter.x - 1, ptCenter.y + (3+n));
 
 		// Draw a 0
+		ptCenter.x += 2 * s; // spacing between digits
 		::MoveToEx(hDC, ptCenter.x + (2+n), ptCenter.y - (2+n), NULL);
 		::LineTo(hDC, ptCenter.x + 1, ptCenter.y - (2+n));
 		::LineTo(hDC, ptCenter.x + 1, ptCenter.y + (2+n));
@@ -368,13 +372,14 @@ __forceinline void CVideoDeviceView::DrawZoneSensitivity(int i, HDC hDC, const R
 	else if (pDoc->m_DoMovementDetection[i] >= 4)
 	{
 		// Fill background		
-		rc.left = ptCenter.x - (3+n);
-		rc.top = ptCenter.y - (3+n);
-		rc.right = ptCenter.x + (4+n);
-		rc.bottom = ptCenter.y + (4+n);
+		rc.left = ptCenter.x - (3+n+m+s);
+		rc.top = ptCenter.y - (3+n+m+s);
+		rc.right = ptCenter.x + (4+n+m+s);
+		rc.bottom = ptCenter.y + (4+n+m+s);
 		::FillRect(hDC, &rc, hBkgndBrush);
 
 		// Draw a 2
+		ptCenter.x -= s; // spacing between digits
 		::MoveToEx(hDC, ptCenter.x - (2+n), ptCenter.y - (2+n), NULL);
 		::LineTo(hDC, ptCenter.x - 1, ptCenter.y - (2+n));
 		::LineTo(hDC, ptCenter.x - 1, ptCenter.y);
@@ -383,6 +388,7 @@ __forceinline void CVideoDeviceView::DrawZoneSensitivity(int i, HDC hDC, const R
 		::LineTo(hDC, ptCenter.x, ptCenter.y + (2+n));
 
 		// Draw a 5
+		ptCenter.x += 2 * s; // spacing between digits
 		::MoveToEx(hDC, ptCenter.x + (2+n), ptCenter.y - (2+n), NULL);
 		::LineTo(hDC, ptCenter.x + 1, ptCenter.y - (2+n));
 		::LineTo(hDC, ptCenter.x + 1, ptCenter.y);
@@ -394,13 +400,14 @@ __forceinline void CVideoDeviceView::DrawZoneSensitivity(int i, HDC hDC, const R
 	else if (pDoc->m_DoMovementDetection[i] >= 2)
 	{
 		// Fill background		
-		rc.left = ptCenter.x - (3+n);
-		rc.top = ptCenter.y - (3+n);
-		rc.right = ptCenter.x + (4+n);
-		rc.bottom = ptCenter.y + (4+n);
+		rc.left = ptCenter.x - (3+n+m+s);
+		rc.top = ptCenter.y - (3+n+m+s);
+		rc.right = ptCenter.x + (4+n+m+s);
+		rc.bottom = ptCenter.y + (4+n+m+s);
 		::FillRect(hDC, &rc, hBkgndBrush);
 
 		// Draw a 5
+		ptCenter.x -= s; // spacing between digits
 		::MoveToEx(hDC, ptCenter.x - 1, ptCenter.y - (2+n), NULL);
 		::LineTo(hDC, ptCenter.x - (2+n), ptCenter.y - (2+n));
 		::LineTo(hDC, ptCenter.x - (2+n), ptCenter.y);
@@ -409,6 +416,7 @@ __forceinline void CVideoDeviceView::DrawZoneSensitivity(int i, HDC hDC, const R
 		::LineTo(hDC, ptCenter.x - (3+n), ptCenter.y + (2+n));
 
 		// Draw a 0
+		ptCenter.x += 2 * s; // spacing between digits
 		::MoveToEx(hDC, ptCenter.x + (2+n), ptCenter.y - (2+n), NULL);
 		::LineTo(hDC, ptCenter.x + 1, ptCenter.y - (2+n));
 		::LineTo(hDC, ptCenter.x + 1, ptCenter.y + (2+n));
@@ -428,12 +436,44 @@ void CVideoDeviceView::DrawZones(HDC hDC, const CRect& rcClient)
 		double dZoneWidth = (double)rcClient.Width() / (double)pDoc->m_lMovDetXZonesCount;
 		double dZoneHeight = (double)rcClient.Height() / (double)pDoc->m_lMovDetYZonesCount;
 		int nSensitivityTextSize;
-		if (dZoneWidth <= 8.0 || dZoneHeight <= 8.0)
+		int nSensitivityTextMargin;
+		int nSensitivityTextSpacing;
+		if (dZoneWidth <= 16.0 || dZoneHeight <= 16.0)
+		{
 			nSensitivityTextSize = 0;
-		else if (dZoneWidth <= 16.0 || dZoneHeight <= 16.0)
+			nSensitivityTextMargin = 0;
+			nSensitivityTextSpacing = 0;
+		}
+		else if (dZoneWidth <= 32.0 || dZoneHeight <= 32.0)
+		{
 			nSensitivityTextSize = 2;
-		else
+			nSensitivityTextMargin = 0;
+			nSensitivityTextSpacing = 0;
+		}
+		else if (dZoneWidth <= 64.0 || dZoneHeight <= 64.0)
+		{
 			nSensitivityTextSize = 4;
+			nSensitivityTextMargin = 1;
+			nSensitivityTextSpacing = 1;
+		}
+		else if (dZoneWidth <= 96.0 || dZoneHeight <= 96.0)
+		{
+			nSensitivityTextSize = 6;
+			nSensitivityTextMargin = 2;
+			nSensitivityTextSpacing = 1;
+		}
+		else if (dZoneWidth <= 128.0 || dZoneHeight <= 128.0)
+		{
+			nSensitivityTextSize = 8;
+			nSensitivityTextMargin = 2;
+			nSensitivityTextSpacing = 2;
+		}
+		else
+		{
+			nSensitivityTextSize = 10;
+			nSensitivityTextMargin = 3;
+			nSensitivityTextSpacing = 2;
+		}
 
 		if (pDoc->m_nShowEditDetectionZones)
 		{
@@ -460,7 +500,7 @@ void CVideoDeviceView::DrawZones(HDC hDC, const CRect& rcClient)
 					int i = x + y * pDoc->m_lMovDetXZonesCount;
 					if (pDoc->m_DoMovementDetection[i])
 					{
-						DrawZoneSensitivity(i, hDC, rcDetZone, nSensitivityTextSize, hSensitivityTextBrush);
+						DrawZoneSensitivity(i, hDC, rcDetZone, nSensitivityTextSize, nSensitivityTextMargin, nSensitivityTextSpacing, hSensitivityTextBrush);
 						::Rectangle(hDC, rcDetZone.left, rcDetZone.top, rcDetZone.right, rcDetZone.bottom);
 						::MoveToEx(hDC, rcDetZone.left + (rcDetZone.right - rcDetZone.left) / 4, rcDetZone.top, NULL);
 						::LineTo(hDC, rcDetZone.left, rcDetZone.top + (rcDetZone.right - rcDetZone.left) / 4);
@@ -490,7 +530,7 @@ void CVideoDeviceView::DrawZones(HDC hDC, const CRect& rcClient)
 					int i = x + y * pDoc->m_lMovDetXZonesCount;
 					if (pDoc->m_MovementDetections[i])
 					{
-						DrawZoneSensitivity(i, hDC, rcDetZone, nSensitivityTextSize, hSensitivityTextBrush);
+						DrawZoneSensitivity(i, hDC, rcDetZone, nSensitivityTextSize, nSensitivityTextMargin, nSensitivityTextSpacing, hSensitivityTextBrush);
 						::Rectangle(hDC, rcDetZone.left, rcDetZone.top, rcDetZone.right, rcDetZone.bottom);
 						::MoveToEx(hDC, rcDetZone.left + (rcDetZone.right - rcDetZone.left) / 4, rcDetZone.top, NULL);
 						::LineTo(hDC, rcDetZone.left, rcDetZone.top + (rcDetZone.right - rcDetZone.left) / 4);

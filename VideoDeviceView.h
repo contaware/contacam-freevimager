@@ -26,7 +26,7 @@ protected:
 	DECLARE_DYNCREATE(CVideoDeviceView)
 	__forceinline void DrawRecDot(HDC hDC, const CRect& rcClient);
 	__forceinline void DrawSaveProgress(HDC hDC, const CRect& rcClient, BOOL bRecDotVisible, int nProgress);
-	__forceinline void DrawZoneSensitivity(int i, HDC hDC, const RECT& rcDetZone, int n, HBRUSH hBkgndBrush);
+	__forceinline void DrawZoneSensitivity(int i, HDC hDC, const RECT& rcDetZone, int n, int m, int s, HBRUSH hBkgndBrush);
 	void DrawZones(HDC hDC, const CRect& rcClient);
 	BOOL ReOpenDxDevice();
 	BYTE m_MovDetSingleZoneSensitivity;
