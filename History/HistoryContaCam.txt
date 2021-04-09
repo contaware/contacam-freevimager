@@ -2,7 +2,7 @@ CONTACAM HISTORY
 
 9.9.17 (Month XX 2021)
 
-- ...
+- Updated to ffmpeg 3.4.8
 
 9.9.16 (April 1st 2021)
 
