@@ -1,3 +1,13 @@
+Locations
+---------
+
+Suppose mingw is in:
+c:\mingw
+
+Suppose source code is in:
+c:\uimager
+
+
 Mingw
 -----
 
@@ -21,10 +31,10 @@ FFMPEG
                c:\mingw\lib\libmingwex.a to /c/uimager/ffmpeg/mingw
    
    To correctly link we have to remove the following object files, in visual studio 2017 command prompt do:
-   $ lib -remove:pow.o -remove:strtoimax.o -remove:strtoumax.o -remove:strtof.o -remove:sinf.o -remove:exp2f.o libmingwex.a
+   $ lib -remove:pow.o -remove:strtoimax.o -remove:strtoumax.o -remove:strtof.o -remove:sinf.o -remove:cosf.o -remove:exp2f.o libmingwex.a
    $ rename libmingwex.lib libmingwex.a
 
-3. Open msys console:
+3. Open msys console (call c:\uimager\ffmpeg\config_mingw_prompt.bat):
 $ cd /c/uimager/ffmpeg
 $ make distclean
 $ ./config_mingw
@@ -35,11 +45,11 @@ m_nUnderlyingTransport with the lower_transport from RTSPState in rtsp.h
 is still correct!!
 
 
-X264 (to disable asm and multi-threading use --disable-asm --disable-thread)
-----------------------------------------------------------------------------
+X264
+----
 
 Put library source to /src and extract it
-(get stable src from: ftp://ftp.videolan.org/pub/videolan/x264/snapshots/)
+(get stable src from https://code.videolan.org/videolan/x264/)
 
 Apparently mingw doesn't support 32-bytes and 64-bytes stack alignment on Windows
 (-mpreferred-stack-boundary=5 and -mpreferred-stack-boundary=6),
@@ -72,36 +82,6 @@ if [ $compiler = GNU -a \( $ARCH = X86 -o $ARCH = X86_64 \) ] ; then
 make
 make install
 -> library: /mingw/lib/libx264.a copy to /c/uimager/ffmpeg/mingw
-
-  
-LAME 3.99.5 (to disable asm remove --enable-nasm)
--------------------------------------------------
-
-Put library source to /src, extract it.
-
-Patch libmp3lame/vector/xmm_quantize_sub.c to be able to compile it with newer gcc:
-#include <xmmintrin.h>
-#pragma GCC target("sse")
-typedef union {
-     int32_t _i_32[4]; /* unions are initialized by its first member */
-... 
-#pragma GCC target("sse2")
-void
-fht_SSE2(FLOAT * fz, int n)
-
-./configure CFLAGS="-mstackrealign" --prefix=/mingw --exec-prefix=/mingw --enable-static --disable-shared --disable-decoder --enable-nasm
-make
-make install
--> library: /mingw/lib/libmp3lame.a copy to /c/uimager/ffmpeg/mingw
-
-
-AAC
----
-
-Compiled with internal aac because of gpl conflicts with other aac libs:
-https://trac.ffmpeg.org/wiki/Encode/AAC
-Native aac usable range >= 192kbps, recommended rate is 240kbps
-(VBR is experimental and likely to get even worse results than the CBR)
 
 
 Is --enable-memalign-hack still necessary?
