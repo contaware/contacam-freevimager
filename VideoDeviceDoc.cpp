@@ -2621,6 +2621,12 @@ int CVideoDeviceDoc::CRtspThread::Work()
 		//       with the setting of the following "buffer_size" which is something different.
 		av_dict_set_int(&opts, "buffer_size", 10485760, 0); // 10 MB should be enough for 4K cams
 
+		// When receiving data over UDP the demuxer tries to reorder received packets which arrive 
+		// out of order. reorder_queue_size sets the number of packets to buffer and max_delay sets 
+		// how long to buffer them.
+		av_dict_set_int(&opts, "reorder_queue_size", 1000, 0); // default jitter buffer size is RTP_REORDER_QUEUE_DEFAULT_SIZE (500)
+		av_dict_set_int(&opts, "max_delay", 200000, 0); // default is DEFAULT_REORDERING_DELAY (100000 microseconds)
+
 		// Open rtsp
 		CStringA sAnsiURL(m_sURL);
 		if ((ret = avformat_open_input(&pFormatCtx, sAnsiURL, NULL, &opts)) < 0)
