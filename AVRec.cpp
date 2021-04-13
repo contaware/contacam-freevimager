@@ -25,19 +25,23 @@ SwsContext *sws_getCachedContextHelper(	struct SwsContext *context,
 // In 2014 I was happy to be able to build ffmpeg 2.2.1 with vs2010,
 // but the result was extremelly slow: video codecs slower by a
 // factor of 1.5 - 2 and swscale by a factor of 3 compared to mingw
-// -> for the moment we still use mingw!!
+#define FFMPEG_TOOLCHAIN_MSVC 0
 #pragma comment(lib, "ffmpeg\\libavcodec\\libavcodec.a")
 #pragma comment(lib, "ffmpeg\\libavformat\\libavformat.a")
 #pragma comment(lib, "ffmpeg\\libavutil\\libavutil.a")
 #pragma comment(lib, "ffmpeg\\libswscale\\libswscale.a")
 #pragma comment(lib, "ffmpeg\\libswresample\\libswresample.a")
+#if FFMPEG_TOOLCHAIN_MSVC == 1
+#pragma comment(lib, "ffmpeg\\msvc\\lib\\libx264.lib")
+#else
 #pragma comment(lib, "ffmpeg\\mingw\\libgcc.a")
 // To correctly link we have to remove the following object files, in visual studio command prompt do:
 // 1. cd uimager\ffmpeg\mingw
-// 2. lib -remove:pow.o -remove:strtoimax.o -remove:strtoumax.o -remove:strtof.o -remove:sinf.o -remove:exp2f.o libmingwex.a
+// 2. lib -remove:pow.o -remove:strtoimax.o -remove:strtoumax.o -remove:strtof.o -remove:sinf.o -remove:cosf.o -remove:exp2f.o libmingwex.a
 // 3. rename libmingwex.lib libmingwex.a
 #pragma comment(lib, "ffmpeg\\mingw\\libmingwex.a")
 #pragma comment(lib, "ffmpeg\\mingw\\libx264.a")
+#endif
 
 CAVRec::CAVRec()
 {

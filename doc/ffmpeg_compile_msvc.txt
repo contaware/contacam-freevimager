@@ -1,0 +1,81 @@
+Locations
+---------
+
+Suppose msys2 is in:
+c:\msys64
+
+Suppose source code is in:
+c:\uimager
+
+
+Default C runtime (CRT)
+-----------------------
+
+If you link your program from the command line without a compiler option 
+that specifies a C runtime library, the linker will use the statically 
+linked CRT libraries, so we can omit /MT 
+https://docs.microsoft.com/en-us/cpp/c-runtime-library/crt-library-features?view=msvc-160
+
+
+MSYS2 setup
+-----------
+
+MSYS2 consists of three subsystems and their corresponding package 
+repositories: msys2, mingw32 and mingw64. The packages in msys2 are 
+named just like on a Linux distribution, the packages in mingw32 are 
+prefixed by mingw-w64-i686- and the packages in ming64 are prefixed by 
+mingw-w64-x86_64- 
+Three shortcuts are created:
+"MinGW 32-bit" for compiling 32-bit apps
+"MinGW 64-bit" for compiling 64-bit apps
+"MSYS" shell for updating MSYS2 itself
+
+See:
+https://www.msys2.org/docs/package-management/
+
+Install msys2-x86_64-DATE.exe from https://www.msys2.org/ and run:
+$ pacman -Syuu (repeat until no new updates are found)
+$ pacman -S --needed base-devel mingw-w64-x86_64-toolchain
+$ pacman -S --needed base-devel mingw-w64-i686-toolchain
+$ pacman -S nasm
+
+Check that the tools point to the Microsoft ones:
+$ which cl
+$ which link (if it points to the msys2 link then rename C:\msys64\usr\bin\link.exe to link_orig.exe)
+$ which lib
+$ which dumpbin
+
+
+Open c:\uimager\ffmpeg\config_msvc_prompt.bat to build libx264
+--------------------------------------------------------------
+
+$ cd /c/uimager/ffmpeg/msvc/src/x264-DATE-stable
+$ make distclean
+$ CC=cl ./configure --prefix=/c/uimager/ffmpeg/msvc --enable-static --disable-cli --disable-avs --disable-gpac --disable-lsmash
+$ make
+$ make install
+
+
+Open c:\uimager\ffmpeg\config_msvc_prompt.bat to build ffmpeg
+-------------------------------------------------------------
+
+For static linking comment these lines in libavcodec\libx264.c:
+/*
+#if defined(_MSC_VER)
+#define X264_API_IMPORTS 1
+#endif
+*/
+
+ATTENTION: when updating the ffmpeg source make sure the offset to init 
+m_nUnderlyingTransport with the lower_transport from RTSPState in rtsp.h 
+is still correct!!
+
+$ cd /c/uimager/ffmpeg
+$ make distclean
+$ PKG_CONFIG_PATH="/c/uimager/ffmpeg/msvc/lib/pkgconfig" ./config_msvc
+$ make
+
+Debug build: --enable-debug --extra-cflags="-Z7 -MTd" --extra-ldflags="-DEBUG"
+Note: if you do not make debug builds of ffmpeg then in Debug Target of 
+your project add libcmt.lib to Linker - Input - Ignore Specific Default 
+Libraries. 

@@ -27,22 +27,23 @@ if exist "%LatestVSInstallDir%\VC\Auxiliary\Build\vcvarsall.bat" (
 )
 
 rem wait 2 seconds to let the user read the output from the above command
-echo Wait that msys starts...
+echo Wait that msys2 starts...
 ping -n 3 127.0.0.1>nul
 
-rem add inttypes.h and lame to environment variables
+rem set path to external include and lib (libx264)
 @set BATCHDIR=%~dp0
-@set INCLUDE=%BATCHDIR%msvc;%INCLUDE%
-@set LIB=%BATCHDIR%msvc;%LIB%
+@set INCLUDE=%BATCHDIR%msvc\include;%INCLUDE%
+@set LIB=%BATCHDIR%msvc\lib;%LIB%
 
-rem call msys.bat trying common places
-if exist "c:\mingw\msys\1.0\msys.bat" (
-	call "c:\mingw\msys\1.0\msys.bat"
-) else if exist "d:\mingw\msys\1.0\msys.bat" (
-	call "d:\mingw\msys\1.0\msys.bat"
-) else if exist "e:\mingw\msys\1.0\msys.bat" (
-	call "e:\mingw\msys\1.0\msys.bat"
+rem call msys2_shell.cmd trying common places
+rem -use-full-path will inherit also the PATH environment variable
+if exist "c:\msys64\msys2_shell.cmd" (
+	call "c:\msys64\msys2_shell.cmd" -mingw32 -use-full-path
+) else if exist "d:\msys64\msys2_shell.cmd" (
+	call "d:\msys64\msys2_shell.cmd" -mingw32 -use-full-path
+) else if exist "e:\msys64\msys2_shell.cmd" (
+	call "e:\msys64\msys2_shell.cmd" -mingw32 -use-full-path
 ) else (
-	echo ERROR: Could not find the msys.bat file
+	echo ERROR: Could not find the msys2_shell.cmd file
 	pause
 )

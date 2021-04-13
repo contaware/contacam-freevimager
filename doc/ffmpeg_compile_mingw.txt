@@ -30,7 +30,7 @@ FFMPEG
 2. Copy latest c:\mingw\lib\gcc\mingw32\6.3.0\libgcc.a to /c/uimager/ffmpeg/mingw
                c:\mingw\lib\libmingwex.a to /c/uimager/ffmpeg/mingw
    
-   To correctly link we have to remove the following object files, in visual studio 2017 command prompt do:
+   To correctly link we have to remove the following object files, in visual studio command prompt do:
    $ lib -remove:pow.o -remove:strtoimax.o -remove:strtoumax.o -remove:strtof.o -remove:sinf.o -remove:cosf.o -remove:exp2f.o libmingwex.a
    $ rename libmingwex.lib libmingwex.a
 
@@ -161,6 +161,8 @@ and the following build options:
 --disable-fma3
 --disable-fma4
 --disable-avx2
+
+http://www.peterstock.co.uk/games/mingw_sse/
 
 
 Possible MinGW Installation Manager Problems
