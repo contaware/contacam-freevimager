@@ -879,10 +879,11 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// ffmpeg register log messages callback
 		av_log_set_callback(my_av_log_trace);
 
-		// ffmpeg is still crashing with the -mstackrealign option, I suppose there
-		// is another alignment problem or just buggy SIMD routines, limit the SIMD
+		// ffmpeg compiled with gcc is still crashing with the -mstackrealign option, probably
+		// there is another alignment problem or just buggy SIMD routines, limit the SIMD
 		// instructions to: AV_CPU_FLAG_MMX, AV_CPU_FLAG_MMXEXT, AV_CPU_FLAG_SSE
 		// (see also ffmpeg_compile_mingw.txt under doc folder)
+#if !defined(FFMPEG_TOOLCHAIN_MSVC) || (FFMPEG_TOOLCHAIN_MSVC != 1)
 		unsigned int uiFlags = av_get_cpu_flags(); // av_get_cpu_flags and av_force_cpu_flags are not thread safe
 		av_force_cpu_flags(uiFlags & ~( AV_CPU_FLAG_3DNOW     |
 										AV_CPU_FLAG_3DNOWEXT  |
@@ -903,6 +904,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 										AV_CPU_FLAG_AVX2      |
 										AV_CPU_FLAG_BMI1      |
 										AV_CPU_FLAG_BMI2));
+#endif
 
 		// AV format register all and init network
 		av_register_all();
