@@ -1,5 +1,30 @@
 @echo off
 
+REM call Visual Studio Command Prompt
+if exist "%PROGRAMFILES(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" (
+	for /f "usebackq tokens=*" %%i in (`"%PROGRAMFILES(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath`) do (
+		set LatestVSInstallDir=%%i
+	)
+) else if exist "%PROGRAMFILES%\Microsoft Visual Studio\Installer\vswhere.exe" (
+	for /f "usebackq tokens=*" %%i in (`"%PROGRAMFILES%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath`) do (
+		set LatestVSInstallDir=%%i
+	)
+)
+if exist "%LatestVSInstallDir%\VC\Auxiliary\Build\vcvarsall.bat" (
+	call "%LatestVSInstallDir%\VC\Auxiliary\Build\vcvarsall.bat" x86
+) else if exist "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" (
+	call "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" x86
+) else if exist "%VS120COMNTOOLS%\..\..\VC\vcvarsall.bat" (
+	call "%VS120COMNTOOLS%\..\..\VC\vcvarsall.bat" x86
+) else if exist "%VS110COMNTOOLS%\..\..\VC\vcvarsall.bat" (
+	call "%VS110COMNTOOLS%\..\..\VC\vcvarsall.bat" x86
+) else if exist "%VS100COMNTOOLS%\..\..\VC\vcvarsall.bat" (
+	call "%VS100COMNTOOLS%\..\..\VC\vcvarsall.bat" x86
+) else (
+	echo ERROR: Could not find environment variables for Visual Studio
+	goto batchpause
+)
+
 REM clear nsis installation directory variable
 set NSISDIR=
 REM divide with _ of REG_SZ because the first column differs for every language, in Italian it is <Senza nome>, English: (Default), ...
@@ -14,8 +39,9 @@ if NOT "%NSISDIR%"=="" (
 )
 REM check
 if "%NSISDIR%"=="" (
-	echo ERROR: NSIS installation not found!
-	goto batchpause    
+	echo:
+	echo ERROR: NSIS installation not found
+	goto batchpause
 )
 
 REM get this script directory
@@ -24,19 +50,30 @@ set BATCHDIR=%~dp0
 REM get current version 
 for /F "tokens=3" %%V in (CurrentVersion.nsh) do set CURRENTVERSION=%%~V
 
-REM Delete possible old output folder
-echo Deleting %CURRENTVERSION% output folder if existing
+REM delete possible old folders
+echo:
+echo **********************************************************************
+echo ** Delete input and %CURRENTVERSION% folders (if existing)
+echo **********************************************************************
+rmdir /S /Q .\input >nul 2>&1
 rmdir /S /Q .\%CURRENTVERSION% >nul 2>&1
 
 REM 7-zip the source code
-echo Starting to compress source code
+echo:
+echo **********************************************************************
+echo ** Compress source code
+echo **********************************************************************
 ping -n 5 127.0.0.1 >nul
 cd ..
 call 7Zip_Full.bat
 cd "%BATCHDIR%"
 
-REM Create output directories
-echo Making %CURRENTVERSION% output folder
+REM create directories
+echo:
+echo **********************************************************************
+echo ** Make input and %CURRENTVERSION% folders
+echo **********************************************************************
+mkdir .\input
 mkdir .\%CURRENTVERSION%
 mkdir .\%CURRENTVERSION%\source-code
 mkdir .\%CURRENTVERSION%\ContaCam
@@ -58,86 +95,155 @@ mkdir .\%CURRENTVERSION%\FreeVimager\french
 mkdir .\%CURRENTVERSION%\FreeVimager\portuguese
 mkdir .\%CURRENTVERSION%\FreeVimager\chinese
 
-REM Move the 7-zipped source code
-echo Move source code
-move ..\uimager_Full.7z .\%CURRENTVERSION%\source-code\contacam-freevimager-src-ver%CURRENTVERSION%.7z
+REM copy executables to input folder
+echo:
+echo **********************************************************************
+echo ** Copy executables to input folder
+echo **********************************************************************
+copy ..\ContaCamService\Release\ContaCamService.exe .\input\
+copy ..\Bin\ContaCam\ContaCam.exe .\input\
+copy ..\Translation\ContaCamDEU.exe .\input\
+copy ..\Translation\ContaCamITA.exe .\input\
+copy ..\Translation\ContaCamRUS.exe .\input\
+copy ..\Translation\ContaCamESN.exe .\input\
+copy ..\Translation\ContaCamFRA.exe .\input\
+copy ..\Translation\ContaCamPTB.exe .\input\
+copy ..\Translation\ContaCamCHS.exe .\input\
+copy ..\Bin\FreeVimager\FreeVimager.exe .\input\
+copy ..\Translation\FreeVimagerDEU.exe .\input\
+copy ..\Translation\FreeVimagerITA.exe .\input\
+copy ..\Translation\FreeVimagerRUS.exe .\input\
+copy ..\Translation\FreeVimagerESN.exe .\input\
+copy ..\Translation\FreeVimagerFRA.exe .\input\
+copy ..\Translation\FreeVimagerPTB.exe .\input\
+copy ..\Translation\FreeVimagerCHS.exe .\input\
 
-REM Copy the .pdb files to the source-code folder
-echo Copy FreeVimager.pdb
-copy ..\bin\FreeVimager\FreeVimager.pdb .\%CURRENTVERSION%\source-code\FreeVimager.pdb
-echo Copy ContaCam.pdb
-copy ..\bin\ContaCam\ContaCam.pdb .\%CURRENTVERSION%\source-code\ContaCam.pdb
+REM sign executables
+echo:
+echo **********************************************************************
+echo ** Sign executables
+echo **********************************************************************
+signtool sign /n "Open Source Developer, Oliver Pfister" /tr http://time.certum.pl/ /fd sha256 /v ^
+.\input\ContaCamService.exe ^
+.\input\ContaCam.exe ^
+.\input\ContaCamDEU.exe ^
+.\input\ContaCamITA.exe ^
+.\input\ContaCamRUS.exe ^
+.\input\ContaCamESN.exe ^
+.\input\ContaCamFRA.exe ^
+.\input\ContaCamPTB.exe ^
+.\input\ContaCamCHS.exe ^
+.\input\FreeVimager.exe ^
+.\input\FreeVimagerDEU.exe ^
+.\input\FreeVimagerITA.exe ^
+.\input\FreeVimagerRUS.exe ^
+.\input\FreeVimagerESN.exe ^
+.\input\FreeVimagerFRA.exe ^
+.\input\FreeVimagerPTB.exe ^
+.\input\FreeVimagerCHS.exe
 
-REM Copy FreeVimager portable versions
-echo Copy FreeVimager.exe
-copy ..\bin\FreeVimager\FreeVimager.exe .\%CURRENTVERSION%\FreeVimager\english\FreeVimager-%CURRENTVERSION%-Portable.exe
-echo Copy FreeVimagerDeu.exe
-copy ..\Translation\FreeVimagerDEU.exe .\%CURRENTVERSION%\FreeVimager\german\FreeVimager-%CURRENTVERSION%-Portable-Deu.exe
-echo Copy FreeVimagerIta.exe
-copy ..\Translation\FreeVimagerITA.exe .\%CURRENTVERSION%\FreeVimager\italian\FreeVimager-%CURRENTVERSION%-Portable-Ita.exe
-echo Copy FreeVimagerRus.exe
-copy ..\Translation\FreeVimagerRUS.exe .\%CURRENTVERSION%\FreeVimager\russian\FreeVimager-%CURRENTVERSION%-Portable-Rus.exe
-echo Copy FreeVimagerEsn.exe
-copy ..\Translation\FreeVimagerESN.exe .\%CURRENTVERSION%\FreeVimager\spanish\FreeVimager-%CURRENTVERSION%-Portable-Esn.exe
-echo Copy FreeVimagerFra.exe
-copy ..\Translation\FreeVimagerFRA.exe .\%CURRENTVERSION%\FreeVimager\french\FreeVimager-%CURRENTVERSION%-Portable-Fra.exe
-echo Copy FreeVimagerPtb.exe
-copy ..\Translation\FreeVimagerPTB.exe .\%CURRENTVERSION%\FreeVimager\portuguese\FreeVimager-%CURRENTVERSION%-Portable-Ptb.exe
-echo Copy FreeVimagerChs.exe
-copy ..\Translation\FreeVimagerCHS.exe .\%CURRENTVERSION%\FreeVimager\chinese\FreeVimager-%CURRENTVERSION%-Portable-Chs.exe
-
-REM Make all the different ContaCam installers
-echo NSIS make ContaCam installer
+REM make installers
+echo:
+echo **********************************************************************
+echo ** Make NSIS installers
+echo **********************************************************************
+echo ContaCam installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=English ContaCam.nsi
-move .\ContaCam-%CURRENTVERSION%-Setup.exe .\%CURRENTVERSION%\ContaCam\english\
-echo NSIS make ContaCamDeu installer
+echo ContaCamDeu installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=German ContaCam.nsi
-move .\ContaCam-%CURRENTVERSION%-Setup-Deu.exe .\%CURRENTVERSION%\ContaCam\german\
-echo NSIS make ContaCamIta installer
+echo ContaCamIta installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Italian ContaCam.nsi
-move .\ContaCam-%CURRENTVERSION%-Setup-Ita.exe .\%CURRENTVERSION%\ContaCam\italian\
-echo NSIS make ContaCamRus installer
+echo ContaCamRus installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Russian ContaCam.nsi
-move .\ContaCam-%CURRENTVERSION%-Setup-Rus.exe .\%CURRENTVERSION%\ContaCam\russian\
-echo NSIS make ContaCamEsn installer
+echo ContaCamEsn installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Spanish ContaCam.nsi
-move .\ContaCam-%CURRENTVERSION%-Setup-Esn.exe .\%CURRENTVERSION%\ContaCam\spanish\
-echo NSIS make ContaCamFra installer
+echo ContaCamFra installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=French ContaCam.nsi
-move .\ContaCam-%CURRENTVERSION%-Setup-Fra.exe .\%CURRENTVERSION%\ContaCam\french\
-echo NSIS make ContaCamPtb installer
+echo ContaCamPtb installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Portuguese ContaCam.nsi
-move .\ContaCam-%CURRENTVERSION%-Setup-Ptb.exe .\%CURRENTVERSION%\ContaCam\portuguese\
-echo NSIS make ContaCamChs installer
+echo ContaCamChs installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=SimpChinese ContaCam.nsi
-move .\ContaCam-%CURRENTVERSION%-Setup-Chs.exe .\%CURRENTVERSION%\ContaCam\chinese\
-
-REM Make all the different FreeVimager installers
-echo NSIS make FreeVimager installer
+echo FreeVimager installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=English FreeVimager.nsi
-move .\FreeVimager-%CURRENTVERSION%-Setup.exe .\%CURRENTVERSION%\FreeVimager\english\
-echo NSIS make FreeVimagerDeu installer
+echo FreeVimagerDeu installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=German FreeVimager.nsi
-move .\FreeVimager-%CURRENTVERSION%-Setup-Deu.exe .\%CURRENTVERSION%\FreeVimager\german\
-echo NSIS make FreeVimagerIta installer
+echo FreeVimagerIta installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Italian FreeVimager.nsi
-move .\FreeVimager-%CURRENTVERSION%-Setup-Ita.exe .\%CURRENTVERSION%\FreeVimager\italian\
-echo NSIS make FreeVimagerRus installer
+echo FreeVimagerRus installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Russian FreeVimager.nsi
-move .\FreeVimager-%CURRENTVERSION%-Setup-Rus.exe .\%CURRENTVERSION%\FreeVimager\russian\
-echo NSIS make FreeVimagerEsn installer
+echo FreeVimagerEsn installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Spanish FreeVimager.nsi
-move .\FreeVimager-%CURRENTVERSION%-Setup-Esn.exe .\%CURRENTVERSION%\FreeVimager\spanish\
-echo NSIS make FreeVimagerFra installer
+echo FreeVimagerFra installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=French FreeVimager.nsi
-move .\FreeVimager-%CURRENTVERSION%-Setup-Fra.exe .\%CURRENTVERSION%\FreeVimager\french\
-echo NSIS make FreeVimagerPtb installer
+echo FreeVimagerPtb installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Portuguese FreeVimager.nsi
-move .\FreeVimager-%CURRENTVERSION%-Setup-Ptb.exe .\%CURRENTVERSION%\FreeVimager\portuguese\
-echo NSIS make FreeVimagerChs installer
+echo FreeVimagerChs installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=SimpChinese FreeVimager.nsi
+
+REM sign installers
+echo:
+echo **********************************************************************
+echo ** Sign installers
+echo **********************************************************************
+signtool sign /n "Open Source Developer, Oliver Pfister" /tr http://time.certum.pl/ /fd sha256 /v ^
+.\ContaCam-%CURRENTVERSION%-Setup.exe ^
+.\ContaCam-%CURRENTVERSION%-Setup-Deu.exe ^
+.\ContaCam-%CURRENTVERSION%-Setup-Ita.exe ^
+.\ContaCam-%CURRENTVERSION%-Setup-Rus.exe ^
+.\ContaCam-%CURRENTVERSION%-Setup-Esn.exe ^
+.\ContaCam-%CURRENTVERSION%-Setup-Fra.exe ^
+.\ContaCam-%CURRENTVERSION%-Setup-Ptb.exe ^
+.\ContaCam-%CURRENTVERSION%-Setup-Chs.exe ^
+.\FreeVimager-%CURRENTVERSION%-Setup.exe ^
+.\FreeVimager-%CURRENTVERSION%-Setup-Deu.exe ^
+.\FreeVimager-%CURRENTVERSION%-Setup-Ita.exe ^
+.\FreeVimager-%CURRENTVERSION%-Setup-Rus.exe ^
+.\FreeVimager-%CURRENTVERSION%-Setup-Esn.exe ^
+.\FreeVimager-%CURRENTVERSION%-Setup-Fra.exe ^
+.\FreeVimager-%CURRENTVERSION%-Setup-Ptb.exe ^
+.\FreeVimager-%CURRENTVERSION%-Setup-Chs.exe
+
+REM place all files into version folder
+echo:
+echo **********************************************************************
+echo ** Place all files into %CURRENTVERSION%
+echo **********************************************************************
+copy ..\Bin\FreeVimager\FreeVimager.pdb .\%CURRENTVERSION%\source-code\FreeVimager.pdb
+copy ..\Bin\ContaCam\ContaCam.pdb .\%CURRENTVERSION%\source-code\ContaCam.pdb
+move ..\uimager_Full.7z .\%CURRENTVERSION%\source-code\contacam-freevimager-src-ver%CURRENTVERSION%.7z
+move .\input\FreeVimager.exe .\%CURRENTVERSION%\FreeVimager\english\FreeVimager-%CURRENTVERSION%-Portable.exe
+move .\input\FreeVimagerDEU.exe .\%CURRENTVERSION%\FreeVimager\german\FreeVimager-%CURRENTVERSION%-Portable-Deu.exe
+move .\input\FreeVimagerITA.exe .\%CURRENTVERSION%\FreeVimager\italian\FreeVimager-%CURRENTVERSION%-Portable-Ita.exe
+move .\input\FreeVimagerRUS.exe .\%CURRENTVERSION%\FreeVimager\russian\FreeVimager-%CURRENTVERSION%-Portable-Rus.exe
+move .\input\FreeVimagerESN.exe .\%CURRENTVERSION%\FreeVimager\spanish\FreeVimager-%CURRENTVERSION%-Portable-Esn.exe
+move .\input\FreeVimagerFRA.exe .\%CURRENTVERSION%\FreeVimager\french\FreeVimager-%CURRENTVERSION%-Portable-Fra.exe
+move .\input\FreeVimagerPTB.exe .\%CURRENTVERSION%\FreeVimager\portuguese\FreeVimager-%CURRENTVERSION%-Portable-Ptb.exe
+move .\input\FreeVimagerCHS.exe .\%CURRENTVERSION%\FreeVimager\chinese\FreeVimager-%CURRENTVERSION%-Portable-Chs.exe
+move .\ContaCam-%CURRENTVERSION%-Setup.exe .\%CURRENTVERSION%\ContaCam\english\
+move .\ContaCam-%CURRENTVERSION%-Setup-Deu.exe .\%CURRENTVERSION%\ContaCam\german\
+move .\ContaCam-%CURRENTVERSION%-Setup-Ita.exe .\%CURRENTVERSION%\ContaCam\italian\
+move .\ContaCam-%CURRENTVERSION%-Setup-Rus.exe .\%CURRENTVERSION%\ContaCam\russian\
+move .\ContaCam-%CURRENTVERSION%-Setup-Esn.exe .\%CURRENTVERSION%\ContaCam\spanish\
+move .\ContaCam-%CURRENTVERSION%-Setup-Fra.exe .\%CURRENTVERSION%\ContaCam\french\
+move .\ContaCam-%CURRENTVERSION%-Setup-Ptb.exe .\%CURRENTVERSION%\ContaCam\portuguese\
+move .\ContaCam-%CURRENTVERSION%-Setup-Chs.exe .\%CURRENTVERSION%\ContaCam\chinese\
+move .\FreeVimager-%CURRENTVERSION%-Setup.exe .\%CURRENTVERSION%\FreeVimager\english\
+move .\FreeVimager-%CURRENTVERSION%-Setup-Deu.exe .\%CURRENTVERSION%\FreeVimager\german\
+move .\FreeVimager-%CURRENTVERSION%-Setup-Ita.exe .\%CURRENTVERSION%\FreeVimager\italian\
+move .\FreeVimager-%CURRENTVERSION%-Setup-Rus.exe .\%CURRENTVERSION%\FreeVimager\russian\
+move .\FreeVimager-%CURRENTVERSION%-Setup-Esn.exe .\%CURRENTVERSION%\FreeVimager\spanish\
+move .\FreeVimager-%CURRENTVERSION%-Setup-Fra.exe .\%CURRENTVERSION%\FreeVimager\french\
+move .\FreeVimager-%CURRENTVERSION%-Setup-Ptb.exe .\%CURRENTVERSION%\FreeVimager\portuguese\
 move .\FreeVimager-%CURRENTVERSION%-Setup-Chs.exe .\%CURRENTVERSION%\FreeVimager\chinese\
+
+REM delete input folder
+echo:
+echo **********************************************************************
+echo ** Delete input folder
+echo **********************************************************************
+rmdir /S /Q .\input >nul 2>&1
 
 REM exit
 :batchpause
+echo:
 pause

@@ -248,9 +248,9 @@ Section "${APPNAME_NOEXT} Program (required)"
   
   ; Source Program File Path
 !if ${INSTALLER_LANGUAGE} == "English"
-  File "..\Bin\${APPNAME_NOEXT}\${APPNAME_EXT}"
+  File "input\${APPNAME_EXT}"
 !else
-  File "/oname=${APPNAME_NOEXT}.exe" "..\Translation\${APPNAME_NOEXT}${INSTALLER_LANGUAGE_SUFFIX}.exe"
+  File "/oname=${APPNAME_NOEXT}.exe" "input\${APPNAME_NOEXT}${INSTALLER_LANGUAGE_SUFFIX}.exe"
 !endif
   File "FreeVimagerDump.bat"
   File "/oname=License.txt" "..\License\License.txt"
