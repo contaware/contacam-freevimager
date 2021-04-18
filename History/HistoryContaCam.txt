@@ -1,7 +1,8 @@
 CONTACAM HISTORY
 
-9.9.17 (Month XX 2021)
+9.9.17 (April 18th 2021)
 
+- We have got a code signing certificate
 - Updated to ffmpeg 3.4.8
 
 9.9.16 (April 1st 2021)
