@@ -285,14 +285,17 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 		// "placebo", "veryslow", "slower", "slow", "medium",
 		// "fast", "faster", "veryfast", "superfast", "ultrafast"
 		//
-		// Notes
 		// - faster presets create bigger files for the same quality
-		//   (ultrafast is ~50% faster but produces 2.5x bigger files than veryfast)
 		// - slower presets use more RAM because of the increasing complexity
-		//   of the used algorithms, for example a Full HD video encoding uses
-		//   ~270 MB with medium, ~130 MB with veryfast and ~65 MB with ultrafast
+		//   of the used algorithms. Do not set presets slower than veryfast on
+		//   32-bit builds, otherwise we risk to run out of memory!
 		// - for each additional thread a Full HD video uses ~4 MB more RAM
-		//   (nThreadCount * 4 MB)
+		//
+		// Full HD video (REC speed and File size normalized to veryfast)
+		// preset    | REC speed | Heap MB | File size | Comments
+		// veryfast  | 1.0x      | 140     | 1.0       | currently using that
+		// superfast | 1.3x      | 80      | 1.4       | could use that instead of veryfast
+		// ultrafast | 1.5x      | 64      | 2.5       | great speed but file size too big
 		av_opt_set(pCodecCtx->priv_data, "preset", "veryfast", 0);
 
 		// It is not necessary to set the level with av_opt_set(pCodecCtx->priv_data, "level", "6", 0)
