@@ -1,5 +1,5 @@
 This program is Donationware, it is requested to donate $10 USD per
-installation to cover the costs of software development.
+installation to cover the costs.
 
 This program is under the terms of the following GNU General Public
 License, or any later version:
