@@ -840,6 +840,7 @@
 #define IDS_MULTILANG_1035              1035
 #define IDC_FRAMERATE                   1035
 #define IDS_MULTILANG_1036              1036
+#define IDC_VIDEO_REC_FAST              1036
 #define IDS_MULTILANG_1037              1037
 #define IDC_CHECK_LOSSLESSTRANS         1037
 #define IDC_VIDEO_TUNER                 1037

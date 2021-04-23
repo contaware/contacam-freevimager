@@ -187,6 +187,7 @@ BEGIN_MESSAGE_MAP(CCameraAdvancedSettingsDlg, CDialog)
 	ON_BN_CLICKED(IDC_AUDIO_MIXER, OnAudioMixer)
 	ON_WM_HSCROLL()
 	ON_BN_CLICKED(IDC_SAVE_VIDEO, OnSaveVideo)
+	ON_BN_CLICKED(IDC_VIDEO_REC_FAST, OnVideoRecFast)
 	ON_BN_CLICKED(IDC_SAVE_ANIMATEDGIF, OnSaveAnimGif)
 	ON_BN_CLICKED(IDC_SAVE_START_PICTURE, OnSaveStartPicture)
 	ON_BN_CLICKED(IDC_ANIMATEDGIF_SIZE, OnAnimatedgifSize)
@@ -460,6 +461,13 @@ BOOL CCameraAdvancedSettingsDlg::OnInitDialog()
 	m_pDoc->m_fVideoRecQuality = CAVRec::ClipVideoQuality(m_pDoc->m_fVideoRecQuality);
 	SetRevertedPos(&m_VideoRecQuality, (int)m_pDoc->m_fVideoRecQuality);
 	UpdateVideoQualityInfo();
+
+	// Video Rec Fast Saving Check Box
+	CButton* pCheckVideoRecFast = (CButton*)GetDlgItem(IDC_VIDEO_REC_FAST);
+	if (m_pDoc->m_bVideoRecFast)
+		pCheckVideoRecFast->SetCheck(1);
+	else
+		pCheckVideoRecFast->SetCheck(0);
 
 	// Save Animated GIF Check Box
 	CButton* pCheckAnimGIFSave = (CButton*)GetDlgItem(IDC_SAVE_ANIMATEDGIF);
@@ -864,6 +872,12 @@ void CCameraAdvancedSettingsDlg::OnSaveVideo()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_SAVE_VIDEO);
 	m_pDoc->m_bSaveVideo = pCheck->GetCheck() > 0;
+}
+
+void CCameraAdvancedSettingsDlg::OnVideoRecFast()
+{
+	CButton* pCheck = (CButton*)GetDlgItem(IDC_VIDEO_REC_FAST);
+	m_pDoc->m_bVideoRecFast = pCheck->GetCheck() > 0;
 }
 
 void CCameraAdvancedSettingsDlg::OnSaveAnimGif()

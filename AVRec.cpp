@@ -195,6 +195,7 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 							DWORD dwDstTimeBaseDenominator,
 							DWORD dwDstTimeBaseNumerator,
 							float qscale,	// 2.0f best quality, 31.0f worst quality, for H.264 clamped to [VIDEO_QUALITY_BEST, VIDEO_QUALITY_LOW]
+							bool bFast,
 							int nThreadCount)
 {
 	int nStreamNum = -1;
@@ -285,18 +286,23 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 		// "placebo", "veryslow", "slower", "slow", "medium",
 		// "fast", "faster", "veryfast", "superfast", "ultrafast"
 		//
-		// - faster presets create bigger files for the same quality
+		// - faster presets usually create bigger files for the same quality,
+		//   but there are exceptions, for example if there is no scene change 
+		//   and quite no motion ultrafast creates smaller files than superfast
 		// - slower presets use more RAM because of the increasing complexity
-		//   of the used algorithms. Do not set presets slower than veryfast on
-		//   32-bit builds, otherwise we risk to run out of memory!
-		// - for each additional thread a Full HD video uses ~4 MB more RAM
+		//   of the employed algorithms. Do not set presets slower than veryfast
+		//   on 32-bit builds, otherwise we risk to run out of memory!
+		// - for each additional thread Full HD uses ~4 MB more RAM
 		//
-		// Full HD video (REC speed and File size normalized to veryfast)
-		// preset    | REC speed | Heap MB | File size | Comments
-		// veryfast  | 1.0x      | 140     | 1.0       | currently using that
-		// superfast | 1.3x      | 80      | 1.4       | could use that instead of veryfast
-		// ultrafast | 1.5x      | 64      | 2.5       | great speed but file size too big
-		av_opt_set(pCodecCtx->priv_data, "preset", "veryfast", 0);
+		// Tests with Full HD movie (REC speed and File size normalized to veryfast)
+		// preset    | REC speed | Heap MB | File size
+		// veryfast  | 1.0x      | 140     | 1.0
+		// superfast | 1.3x      | 80      | 1.4
+		// ultrafast | 1.5x      | 64      | 2.5
+		if (bFast)
+			av_opt_set(pCodecCtx->priv_data, "preset", "ultrafast", 0);
+		else
+			av_opt_set(pCodecCtx->priv_data, "preset", "veryfast", 0);
 
 		// It is not necessary to set the level with av_opt_set(pCodecCtx->priv_data, "level", "6", 0)
 		// because that's done automatically. The lowest possible level is chosen depending from the

@@ -397,6 +397,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 											SaveFrameRate.num,					// Rate
 											SaveFrameRate.den,					// Scale			
 											m_pDoc->m_fVideoRecQuality,			// Video quality
+											m_pDoc->m_bVideoRecFast,			// if TRUE it will use the fastest possible encoding speed 
 											((CUImagerApp*)::AfxGetApp())->m_nThreadCount);
 					if (m_pDoc->m_bCaptureAudio)
 					{	
@@ -1054,6 +1055,7 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 														FrameRate.num,						// Rate
 														FrameRate.den,						// Scale				
 														DEFAULT_VIDEO_QUALITY,				// Use default video quality
+														false,								// No fast encoding speed, but smaller file
 														((CUImagerApp*)::AfxGetApp())->m_nThreadCount);
 							pAVRecVideo->Open(m_pDoc->GetAssignedDeviceName() + _T(" ") + ::MakeDateLocalFormat(m_Time));
 						}
@@ -3497,6 +3499,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	// Recording
 	m_sRecordAutoSaveDir = _T("");
 	m_fVideoRecQuality = DEFAULT_VIDEO_QUALITY;
+	m_bVideoRecFast = FALSE;
 	m_nDeleteRecordingsOlderThanDays = DEFAULT_DEL_RECS_OLDER_THAN_DAYS;
 	m_nMaxCameraFolderSizeMB = 0;
 	m_nMinDiskFreePermillion = MIN_DISK_FREE_PERMILLION;
@@ -4406,6 +4409,7 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_bHideExecCommand = (BOOL) pApp->GetProfileInt(sSection, _T("HideExecCommandMovementDetection"), FALSE);
 	m_bWaitExecCommand = (BOOL) pApp->GetProfileInt(sSection, _T("WaitExecCommandMovementDetection"), FALSE);
 	m_fVideoRecQuality = (float) CAVRec::ClipVideoQuality((float)pApp->GetProfileInt(sSection, _T("VideoRecQuality"), (int)DEFAULT_VIDEO_QUALITY));
+	m_bVideoRecFast = (BOOL)pApp->GetProfileInt(sSection, _T("VideoRecFast"), FALSE);
 	m_bObscureRemovedZones = (BOOL) pApp->GetProfileInt(sSection, _T("ObscureRemovedZones"), FALSE);
 	m_szFrameAnnotation[MAX_PATH - 1] = _T('\0');																	// first make sure it is NULL terminated
 	_tcsncpy(m_szFrameAnnotation, pApp->GetProfileString(sSection, _T("FrameAnnotation"), _T("")), MAX_PATH - 1);	// and then copy a maximum of (MAX_PATH - 1) chars
@@ -4551,6 +4555,7 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("HideExecCommandMovementDetection"), m_bHideExecCommand);
 	pApp->WriteProfileInt(sSection, _T("WaitExecCommandMovementDetection"), m_bWaitExecCommand);
 	pApp->WriteProfileInt(sSection, _T("VideoRecQuality"), (int)m_fVideoRecQuality);
+	pApp->WriteProfileInt(sSection, _T("VideoRecFast"), (int)m_bVideoRecFast);
 	pApp->WriteProfileInt(sSection, _T("ObscureRemovedZones"), (int)m_bObscureRemovedZones);
 	pApp->WriteProfileString(sSection, _T("FrameAnnotation"), m_szFrameAnnotation);
 	pApp->WriteProfileInt(sSection, _T("ShowFrameTime"), (int)m_bShowFrameTime);
