@@ -11,7 +11,12 @@ static char THIS_FILE[] = __FILE__;
 
 #ifdef VIDEODEVICEDOC
 
-// TODO: remove the warnings suppression and use the new ffmpeg API interface
+// TODO: remove the warnings suppression and use the new ffmpeg API interface:
+// Deprecate av_free_packet() use av_packet_unref() instead
+// avcodec_decode_video2 -> replace with avcodec_send_packet() and avcodec_receive_frame()
+// avcodec_decode_audio4 -> replace with avcodec_send_packet() and avcodec_receive_frame() 
+// AVStream::codec -> AVStream::codecpar
+// ...
 #pragma warning(push)
 #pragma warning(disable : 4996)
 
