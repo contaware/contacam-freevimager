@@ -2865,7 +2865,10 @@ int CVideoDeviceDoc::CRtspThread::Work()
 									UserBuf.m_dwSize = 2 * pAudioFrame->nb_samples;
 									UserBuf.m_pBuf = (LPBYTE)av_malloc(UserBuf.m_dwSize);
 									if (!UserBuf.m_pBuf)
+									{
+										av_free_packet(&orig_pkt);
 										goto free;
+									}
 
 									// Convert
 									// (positive peaks can go up to +32767, negative peaks to -32768 and silence is 0)
@@ -2882,7 +2885,10 @@ int CVideoDeviceDoc::CRtspThread::Work()
 									UserBuf.m_dwSize = 4 * pAudioFrame->nb_samples;
 									UserBuf.m_pBuf = (LPBYTE)av_malloc(UserBuf.m_dwSize);
 									if (!UserBuf.m_pBuf)
+									{
+										av_free_packet(&orig_pkt);
 										goto free;
+									}
 
 									// Convert
 									// (positive peaks can go up to +32767, negative peaks to -32768 and silence is 0)
@@ -2908,7 +2914,10 @@ int CVideoDeviceDoc::CRtspThread::Work()
 									UserBuf.m_dwSize = 2 * pAudioFrame->nb_samples;
 									UserBuf.m_pBuf = (LPBYTE)av_malloc(UserBuf.m_dwSize);
 									if (!UserBuf.m_pBuf)
+									{
+										av_free_packet(&orig_pkt);
 										goto free;
+									}
 
 									// Convert
 									// (positive peaks can go up to +32767, negative peaks to -32768 and silence is 0)
@@ -2925,7 +2934,10 @@ int CVideoDeviceDoc::CRtspThread::Work()
 									UserBuf.m_dwSize = 4 * pAudioFrame->nb_samples;
 									UserBuf.m_pBuf = (LPBYTE)av_malloc(UserBuf.m_dwSize);
 									if (!UserBuf.m_pBuf)
+									{
+										av_free_packet(&orig_pkt);
 										goto free;
+									}
 
 									// Convert
 									// (positive peaks can go up to +32767, negative peaks to -32768 and silence is 0)
@@ -2946,7 +2958,10 @@ int CVideoDeviceDoc::CRtspThread::Work()
 								UserBuf.m_dwSize = av_get_bytes_per_sample(pAudioCodecCtx->sample_fmt) * pAudioCodecCtx->channels * pAudioFrame->nb_samples;
 								UserBuf.m_pBuf = (LPBYTE)av_malloc(UserBuf.m_dwSize);
 								if (!UserBuf.m_pBuf)
+								{
+									av_free_packet(&orig_pkt);
 									goto free;
+								}
 								memcpy(UserBuf.m_pBuf, pAudioFrame->data[0], UserBuf.m_dwSize);
 							}
 							::EnterCriticalSection(&m_pDoc->m_csAudioList);
