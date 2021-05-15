@@ -4,6 +4,7 @@ CONTACAM HISTORY
 
 - Fast video saving option (be aware that this new setting will generate
   bigger files)
+- The RTSP stream decoder with UDP transport is now more fault tolerant
 
 9.9.17 (April 18th 2021)
 

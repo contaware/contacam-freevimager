@@ -2747,12 +2747,15 @@ int CVideoDeviceDoc::CRtspThread::Work()
 				if (avpkt.stream_index == nVideoStreamIndex)
 				{
 					// Decode
+					// Note: for the UDP transport the packet data may be invalid,
+					//       we skip the frame without the need to reconnect 
 					int got_picture = 0;
 					ret = avcodec_decode_video2(pVideoCodecCtx, pVideoFrame, &got_picture, &avpkt);
 					if (ret < 0)
 					{
-						av_free_packet(&orig_pkt);
-						goto free;
+						if (g_nLogLevel > 0)
+							::LogLine(_T("%s, avcodec_decode_video2 FAILURE (returned=%d)"), m_pDoc->GetAssignedDeviceName(), ret);	
+						goto packet_free;
 					}
 					decoded = MIN(ret, avpkt.size);
 
@@ -2968,7 +2971,8 @@ int CVideoDeviceDoc::CRtspThread::Work()
 			}
 			while (avpkt.size > 0);
 
-			// Free
+			// Packet Free
+		packet_free:
 			av_free_packet(&orig_pkt);
 
 			// Exit?
