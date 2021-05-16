@@ -36,7 +36,7 @@
 #define APPMUTEXNAME									_T("FreeVimagerAppMutex")
 #define MANUAL_ONLINE_PAGE								_T("https://www.contaware.com/freevimagermanual/")
 #endif
-#define APPVERSION										_T("9.9.18beta3")
+#define APPVERSION										_T("9.9.18beta4")
 
 // Company
 #define MYCOMPANY										_T("Contaware")
