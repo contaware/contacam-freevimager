@@ -1012,7 +1012,7 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 	CString sDir(::GetDriveAndDirName(sVideoFileName));
 	sDir.TrimRight(_T('\\'));
 
-	// Wait enough time to make sure the snapshot thread finished with the last jpg snapshot history file of the day that ended
+	// Wait enough time to make sure the snapshot history thread finished with the last jpg snapshot history file of the day that ended
 	if (::WaitForSingleObject(GetKillEvent(), SNAPSHOT_VIDEO_THREAD_STARTUP_DELAY_MS) == WAIT_OBJECT_0)
 		goto exit;
 
@@ -1112,6 +1112,30 @@ exit:
 	return 0;
 }
 
+int CVideoDeviceDoc::CSaveSnapshotHistoryThread::Work()
+{
+	ASSERT(m_pDoc);
+
+	// Get uptime
+	DWORD dwUpTime = m_Dib.GetUpTime();
+
+	// Init history file name
+	CString sFileName(CVideoDeviceDoc::CreateBaseYearMonthDaySubDir(m_pDoc->m_sRecordAutoSaveDir, m_Time, DEFAULT_SNAPSHOT_HISTORY_FOLDER) +
+					_T("\\") + _T("shot_") + m_Time.Format(_T("%Y_%m_%d_%H_%M_%S")) + _T(".jpg"));
+
+	// Add tags
+	if (m_pDoc->m_bShowFrameTime)
+		AddFrameTime(&m_Dib, m_Time, dwUpTime, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
+	if (g_DonorEmailValidateThread.m_bNoDonation)
+		AddNoDonationTag(&m_Dib, m_pDoc->m_nRefFontSize);
+
+	// Save history jpg
+	// (history jpgs are deleted in snapshot video thread)
+	CVideoDeviceDoc::SaveJpegFast(&m_Dib, &m_MJPEGEncoder, sFileName, GOOD_SNAPSHOT_COMPR_QUALITY);
+
+	return 0;
+}
+
 int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 {
 	ASSERT(m_pDoc);
@@ -1127,17 +1151,8 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	sLiveThumbFileName.TrimRight(_T('\\'));
 	sLiveThumbFileName += CString(_T("\\")) + DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME;
 
-	// Init history file name
-	CString sBaseYearMonthDaySubDir;
-	BOOL bSaveHistoryJpeg = m_pDoc->m_bSnapshotHistoryVideo && !m_pDoc->m_bObscureSource;
-	if (bSaveHistoryJpeg)
-		sBaseYearMonthDaySubDir = CVideoDeviceDoc::CreateBaseYearMonthDaySubDir(m_pDoc->m_sRecordAutoSaveDir, m_Time, DEFAULT_SNAPSHOT_HISTORY_FOLDER);
-	CString sHistoryFileName(_T("shot_") + m_Time.Format(_T("%Y_%m_%d_%H_%M_%S")) + _T(".jpg"));
-	if (!sBaseYearMonthDaySubDir.IsEmpty())
-		sHistoryFileName = sBaseYearMonthDaySubDir + _T("\\") + sHistoryFileName;
-
 	// Temp file names
-	CString sTempFileName(::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), sHistoryFileName));
+	CString sTempFileName(::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), sLiveFileName));
 	CString sTempThumbFileName(::GetFileNameNoExt(sTempFileName) + _T("_thumb.jpg"));
 
 	// Resize thumb
@@ -1175,14 +1190,6 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	//            snapshots get overwritten with the next shot!
 	if (m_pDoc->m_bExecCommand && m_pDoc->m_nExecCommandMode == 2)
 		m_pDoc->ExecCommand(m_Time, sLiveFileName, sLiveThumbFileName);
-
-	// We need the History jpgs to make the video file inside the snapshot video thread
-	// (history jpgs are deleted in snapshot video thread)
-	if (bSaveHistoryJpeg && (m_Time - m_LastSnapshotHistoryTime).GetTotalSeconds() >= (LONGLONG)m_pDoc->m_nSnapshotHistoryRate)
-	{
-		CVideoDeviceDoc::SaveJpegFast(&m_Dib, &m_MJPEGEncoder, sHistoryFileName, GOOD_SNAPSHOT_COMPR_QUALITY);
-		m_LastSnapshotHistoryTime = m_Time;
-	}
 
 	// Clean-up
 	::DeleteFile(sTempFileName);
@@ -3512,8 +3519,9 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_WatchdogThread.SetDoc(this);
 	m_DeleteThread.SetDoc(this);
 	m_SaveFrameListThread.SetDoc(this);
-	m_SaveSnapshotThread.SetDoc(this);
 	m_SaveSnapshotVideoThread.SetDoc(this);
+	m_SaveSnapshotHistoryThread.SetDoc(this);
+	m_SaveSnapshotThread.SetDoc(this);
 
 	// Recording
 	m_sRecordAutoSaveDir = _T("");
@@ -7513,7 +7521,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 
 void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 {
-	// Snapshot Thread
+	// Live snapshot
 	if (!m_SaveSnapshotThread.IsAlive())
 	{
 		// Check the elapsed time to update bDoSnapshot
@@ -7550,7 +7558,7 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 			}
 		}
 
-		// Start Thread?
+		// Snapshot Thread
 		if (bDoSnapshot)
 		{
 			m_SaveSnapshotThread.m_Dib = *pDib;
@@ -7559,21 +7567,35 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 		}
 	}
 
-	// Snapshot Video Thread
-	if (m_bSnapshotHistoryVideo && !m_SaveSnapshotVideoThread.IsAlive())
+	// Daily summary video
+	if (m_bSnapshotHistoryVideo)
 	{
-		// Yesterday time
-		CTime Yesterday = Time - CTimeSpan(1, 0, 0, 0);	// - 1 day
-		Yesterday = CTime(	Yesterday.GetYear(),
-							Yesterday.GetMonth(),
-							Yesterday.GetDay(),
-							0, 0, 0);					// Back to midnight
-
-		// Start Thread if not already executed for Yesterday
-		if (m_SaveSnapshotVideoThread.m_TaskCompletedForTime < Yesterday)
+		// Snapshot History Thread
+		if (!m_SaveSnapshotHistoryThread.IsAlive()	&&
+			!m_bObscureSource						&&
+			(Time - m_SaveSnapshotHistoryThread.m_Time).GetTotalSeconds() >= (LONGLONG)m_nSnapshotHistoryRate)
 		{
-			m_SaveSnapshotVideoThread.m_Time = Yesterday;
-			m_SaveSnapshotVideoThread.Start();
+			m_SaveSnapshotHistoryThread.m_Dib = *pDib;
+			m_SaveSnapshotHistoryThread.m_Time = Time;
+			m_SaveSnapshotHistoryThread.Start();
+		}
+
+		// Snapshot Video Thread
+		if (!m_SaveSnapshotVideoThread.IsAlive())
+		{
+			// Yesterday time
+			CTime Yesterday = Time - CTimeSpan(1, 0, 0, 0);	// - 1 day
+			Yesterday = CTime(	Yesterday.GetYear(),
+								Yesterday.GetMonth(),
+								Yesterday.GetDay(),
+								0, 0, 0);					// Back to midnight
+
+			// Start Thread if not already executed for Yesterday
+			if (m_SaveSnapshotVideoThread.m_TaskCompletedForTime < Yesterday)
+			{
+				m_SaveSnapshotVideoThread.m_Time = Yesterday;
+				m_SaveSnapshotVideoThread.Start();
+			}
 		}
 	}
 }

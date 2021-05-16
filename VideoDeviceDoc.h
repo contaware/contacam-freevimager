@@ -486,7 +486,7 @@ public:
 	class CSaveSnapshotVideoThread : public CWorkerThread
 	{
 		public:
-			CSaveSnapshotVideoThread(){m_pDoc = NULL; m_TaskCompletedForTime = CTime(0);};
+			CSaveSnapshotVideoThread() {m_pDoc = NULL; m_TaskCompletedForTime = CTime(0); m_Time = CTime(0);};
 			virtual ~CSaveSnapshotVideoThread() {Kill();};
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
 			CTime m_TaskCompletedForTime;
@@ -497,15 +497,30 @@ public:
 			CVideoDeviceDoc* m_pDoc;
 	};
 
+	// The Save Snapshot History Thread Class
+	class CSaveSnapshotHistoryThread : public CWorkerThread
+	{
+	public:
+		CSaveSnapshotHistoryThread() {m_pDoc = NULL; m_Time = CTime(0);};
+		virtual ~CSaveSnapshotHistoryThread() {Kill();};
+		void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
+		CDib m_Dib;
+		CTime m_Time;
+
+	protected:
+		int Work();
+		CVideoDeviceDoc* m_pDoc;
+		CMJPEGEncoder m_MJPEGEncoder;
+	};
+
 	// The Save Snapshot Thread Class
 	class CSaveSnapshotThread : public CWorkerThread
 	{
 		public:
-			CSaveSnapshotThread(){m_pDoc = NULL; m_LastSnapshotHistoryTime = CTime(0);};
+			CSaveSnapshotThread() {m_pDoc = NULL; m_Time = CTime(0);};
 			virtual ~CSaveSnapshotThread() {Kill();};
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
 			CDib m_Dib;
-			CTime m_LastSnapshotHistoryTime;
 			CTime m_Time;
 
 		protected:
@@ -844,8 +859,9 @@ public:
 	CDeleteThread m_DeleteThread;						// Delete old files Thread
 	CCaptureAudioThread m_CaptureAudioThread;			// Audio Capture Thread
 	CSaveFrameListThread m_SaveFrameListThread;			// Thread which saves the detection frames
-	CSaveSnapshotThread m_SaveSnapshotThread;			// Thread which saves the snapshots
 	CSaveSnapshotVideoThread m_SaveSnapshotVideoThread;	// Thread which creates the history video file
+	CSaveSnapshotHistoryThread m_SaveSnapshotHistoryThread;// Thread which saves the history snapshots
+	CSaveSnapshotThread m_SaveSnapshotThread;			// Thread which saves the snapshots
 
 	// Drawing
 	CDib* volatile m_pDrawDibRGB32;						// Frame in RGB32 format for drawing

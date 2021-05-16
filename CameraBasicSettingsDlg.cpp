@@ -392,9 +392,10 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	// Make sure snapshot threads are stopped
 	// (at this point the process frame is stopped but
 	// the snapshot threads may still be running)
-	m_pDoc->m_SaveSnapshotThread.Kill();
 	m_pDoc->m_SaveSnapshotVideoThread.Kill();
-
+	m_pDoc->m_SaveSnapshotHistoryThread.Kill();
+	m_pDoc->m_SaveSnapshotThread.Kill();
+	
 	// Rename
 	Rename();
 

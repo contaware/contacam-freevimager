@@ -1200,6 +1200,8 @@ void CVideoDeviceChildFrame::OnClose()
 				t += _T(", save frame list thread still alive");
 			if (pDoc->m_SaveSnapshotVideoThread.IsAlive())
 				t += _T(", save snapshot video thread still alive");
+			if (pDoc->m_SaveSnapshotHistoryThread.IsAlive())
+				t += _T(", save snapshot history thread still alive");
 			if (pDoc->m_SaveSnapshotThread.IsAlive())
 				t += _T(", save snapshot thread still alive");
 			::LogLine(_T("%s"), sMsg + t);
@@ -1257,6 +1259,7 @@ void CVideoDeviceChildFrame::StartShutdown2()
 	pDoc->m_CaptureAudioThread.Kill_NoBlocking();
 	pDoc->m_SaveFrameListThread.Kill_NoBlocking();
 	pDoc->m_SaveSnapshotVideoThread.Kill_NoBlocking();
+	pDoc->m_SaveSnapshotHistoryThread.Kill_NoBlocking();
 	pDoc->m_SaveSnapshotThread.Kill_NoBlocking();
 }
 
@@ -1339,11 +1342,12 @@ BOOL CVideoDeviceChildFrame::IsShutdown2Done()
 	ASSERT_VALID(pDoc);
 
 	// Check whether all Threads are dead
-	if (!pDoc->m_HttpThread.IsAlive()				&&
-		!pDoc->m_DeleteThread.IsAlive()				&&
-		!pDoc->m_CaptureAudioThread.IsAlive()		&&
-		!pDoc->m_SaveFrameListThread.IsAlive()		&&
-		!pDoc->m_SaveSnapshotVideoThread.IsAlive()	&&
+	if (!pDoc->m_HttpThread.IsAlive()					&&
+		!pDoc->m_DeleteThread.IsAlive()					&&
+		!pDoc->m_CaptureAudioThread.IsAlive()			&&
+		!pDoc->m_SaveFrameListThread.IsAlive()			&&
+		!pDoc->m_SaveSnapshotVideoThread.IsAlive()		&&
+		!pDoc->m_SaveSnapshotHistoryThread.IsAlive()	&&
 		!pDoc->m_SaveSnapshotThread.IsAlive())
 		return TRUE;
 	else
