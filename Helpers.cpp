@@ -1415,7 +1415,9 @@ CString MakeTempFileName(CString sTempPath, LPCTSTR lpszFileName)
 			sTempPath += _T('\\');
 	}
 
-	// Create a unique file name using the process id, time and a counter 
+	// Create a unique file name using the process id, time and a counter
+	// Note: when (DWORD)g_lTempFilesCount reaches 0x7FFFFFFF it correctly increments to 0x80000000
+	//       and when it reaches 0xFFFFFFFF it correctly wraps-around starting again from 0
 	CString sSeq;
 	sSeq.Format(_T("%X_%I64X_%X"), GetCurrentProcessId(), (ULONGLONG)time(NULL), (DWORD)InterlockedIncrement(&g_lTempFilesCount));
 	return sTempPath + GetShortFileNameNoExt(lpszFileName) + _T("_") + sSeq + GetFileExt(lpszFileName);
