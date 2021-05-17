@@ -2,7 +2,7 @@ FREEVIMAGER HISTORY
 
 9.9.18 (Month XXth 2021)
 
-- ...
+- Updated the avir library to version 2.9
 
 9.9.17 (April 18th 2021)
 
