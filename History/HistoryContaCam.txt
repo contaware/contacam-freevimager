@@ -7,6 +7,7 @@ CONTACAM HISTORY
 - The RTSP stream decoder with UDP transport is now more fault tolerant
 - Daily summary video frame interval can now have any value, before it
   had to be bigger or equal to the live snapshot rate
+- Changed ffmpeg build toolchain from mingw to msvc
 
 9.9.17 (April 18th 2021)
 

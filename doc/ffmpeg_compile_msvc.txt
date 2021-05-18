@@ -4,7 +4,7 @@ Locations
 Suppose msys2 is in:
 c:\msys64
 
-Suppose source code is in:
+Suppose our source code is in:
 c:\uimager
 
 
@@ -33,13 +33,13 @@ Three shortcuts are created:
 See:
 https://www.msys2.org/docs/package-management/
 
-Install msys2-x86_64-DATE.exe from https://www.msys2.org/ and run:
+Install msys2-x86_64-DATE.exe from https://www.msys2.org/ and in "MSYS" run:
 $ pacman -Syuu (repeat until no new updates are found)
 $ pacman -S --needed base-devel mingw-w64-x86_64-toolchain
 $ pacman -S --needed base-devel mingw-w64-i686-toolchain
 $ pacman -S nasm
 
-Check that the tools point to the Microsoft ones:
+Open c:\uimager\ffmpeg\config_msvc_prompt.bat and check that the following tools point to the Microsoft ones:
 $ which cl
 $ which link (if it points to the msys2 link then rename C:\msys64\usr\bin\link.exe to link_orig.exe)
 $ which lib
@@ -59,7 +59,7 @@ $ make install
 Open c:\uimager\ffmpeg\config_msvc_prompt.bat to build ffmpeg
 -------------------------------------------------------------
 
-For static linking comment these lines in libavcodec\libx264.c:
+For our static linking it's necessary to comment these lines in libavcodec\libx264.c:
 /*
 #if defined(_MSC_VER)
 #define X264_API_IMPORTS 1
