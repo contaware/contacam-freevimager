@@ -2726,12 +2726,41 @@ int CVideoDeviceDoc::CRtspThread::Work()
 			goto free;
 
 		// Get frames
-		AVPacket avpkt;
-		av_init_packet(&avpkt);
-		avpkt.data = NULL; // set data to NULL, let the demuxer fill it
-		avpkt.size = 0;
-		while ((ret = av_read_frame(pFormatCtx, &avpkt)) >= 0)
+		for (;;)
 		{
+			AVPacket avpkt;
+			av_init_packet(&avpkt);
+			avpkt.data = NULL;	// set the packet data to NULL so that it is recognized as being empty
+			avpkt.size = 0;		// set the packet size to 0 so that it is recognized as being empty
+			ret = av_read_frame(pFormatCtx, &avpkt);
+			AVPacket orig_pkt = avpkt;
+			if (ret < 0)
+			{
+				// For the UDP transport sometimes AVERROR_EOF is returned (for example my Axis cams do that)
+				// -> we skip the packet without the need to reconnect
+				if (ret == AVERROR_EOF)
+				{
+					if (g_nLogLevel > 0)
+						::LogLine(_T("%s, av_read_frame returned AVERROR_EOF"), m_pDoc->GetAssignedDeviceName());
+					goto packet_free; // usually not necessary to free because orig_pkt.buf should be NULL, but it doesn't harm
+				}
+				// For the UDP transport probably also AVERROR(EAGAIN) can be returned (until now I have never see that)
+				// -> we skip the packet without the need to reconnect
+				else if (ret == AVERROR(EAGAIN))
+				{
+					if (g_nLogLevel > 0)
+						::LogLine(_T("%s, av_read_frame returned AVERROR(EAGAIN)"), m_pDoc->GetAssignedDeviceName());
+					goto packet_free; // usually not necessary to free because orig_pkt.buf should be NULL, but it doesn't harm
+				}
+				else
+				{
+					if (g_nLogLevel > 0)
+						::LogLine(_T("%s, av_read_frame FAILURE (returned=%d)"), m_pDoc->GetAssignedDeviceName(), ret);
+					av_packet_unref(&orig_pkt); // usually not necessary to free because orig_pkt.buf should be NULL, but it doesn't harm
+					goto free;
+				}
+			}
+
 			// Get underlying transport, that may change while streaming,
 			// so poll it regularly.
 			// The offset of lower_transport from RTSPState in rtsp.h
@@ -2743,8 +2772,6 @@ int CVideoDeviceDoc::CRtspThread::Work()
 			//            is still correct!!
 			//
 			m_nUnderlyingTransport = *((int*)((LPBYTE)(pFormatCtx->priv_data) + 564));
-			
-			AVPacket orig_pkt = avpkt;
 
 			do
 			{
@@ -2754,12 +2781,12 @@ int CVideoDeviceDoc::CRtspThread::Work()
 				if (avpkt.stream_index == nVideoStreamIndex)
 				{
 					// Decode
-					// Note: for the UDP transport the packet data may be invalid,
-					//       we skip the frame without the need to reconnect 
 					int got_picture = 0;
 					ret = avcodec_decode_video2(pVideoCodecCtx, pVideoFrame, &got_picture, &avpkt);
 					if (ret < 0)
 					{
+						// For the UDP transport the packet data may be invalid
+						// -> we skip the frame without the need to reconnect 
 						if (g_nLogLevel > 0)
 							::LogLine(_T("%s, avcodec_decode_video2 FAILURE (returned=%d)"), m_pDoc->GetAssignedDeviceName(), ret);	
 						goto packet_free;
@@ -2815,7 +2842,9 @@ int CVideoDeviceDoc::CRtspThread::Work()
 					{
 						if ((ret = sws_scale(pImgConvertCtx, pVideoFrame->data, pVideoFrame->linesize, 0, pVideoCodecCtx->height, pVideoFrameI420->data, pVideoFrameI420->linesize)) <= 0)
 						{
-							av_free_packet(&orig_pkt);
+							if (g_nLogLevel > 0)
+								::LogLine(_T("%s, sws_scale FAILURE (returned=%d)"), m_pDoc->GetAssignedDeviceName(), ret);
+							av_packet_unref(&orig_pkt);
 							goto free;
 						}
 						m_pDoc->m_lEffectiveDataRateSum += avpkt.size;
@@ -2873,7 +2902,7 @@ int CVideoDeviceDoc::CRtspThread::Work()
 									UserBuf.m_pBuf = (LPBYTE)av_malloc(UserBuf.m_dwSize);
 									if (!UserBuf.m_pBuf)
 									{
-										av_free_packet(&orig_pkt);
+										av_packet_unref(&orig_pkt);
 										goto free;
 									}
 
@@ -2893,7 +2922,7 @@ int CVideoDeviceDoc::CRtspThread::Work()
 									UserBuf.m_pBuf = (LPBYTE)av_malloc(UserBuf.m_dwSize);
 									if (!UserBuf.m_pBuf)
 									{
-										av_free_packet(&orig_pkt);
+										av_packet_unref(&orig_pkt);
 										goto free;
 									}
 
@@ -2922,7 +2951,7 @@ int CVideoDeviceDoc::CRtspThread::Work()
 									UserBuf.m_pBuf = (LPBYTE)av_malloc(UserBuf.m_dwSize);
 									if (!UserBuf.m_pBuf)
 									{
-										av_free_packet(&orig_pkt);
+										av_packet_unref(&orig_pkt);
 										goto free;
 									}
 
@@ -2942,7 +2971,7 @@ int CVideoDeviceDoc::CRtspThread::Work()
 									UserBuf.m_pBuf = (LPBYTE)av_malloc(UserBuf.m_dwSize);
 									if (!UserBuf.m_pBuf)
 									{
-										av_free_packet(&orig_pkt);
+										av_packet_unref(&orig_pkt);
 										goto free;
 									}
 
@@ -2966,7 +2995,7 @@ int CVideoDeviceDoc::CRtspThread::Work()
 								UserBuf.m_pBuf = (LPBYTE)av_malloc(UserBuf.m_dwSize);
 								if (!UserBuf.m_pBuf)
 								{
-									av_free_packet(&orig_pkt);
+									av_packet_unref(&orig_pkt);
 									goto free;
 								}
 								memcpy(UserBuf.m_pBuf, pAudioFrame->data[0], UserBuf.m_dwSize);
@@ -2995,7 +3024,7 @@ int CVideoDeviceDoc::CRtspThread::Work()
 
 			// Packet Free
 		packet_free:
-			av_free_packet(&orig_pkt);
+			av_packet_unref(&orig_pkt);
 
 			// Exit?
 			if (DoExit())
