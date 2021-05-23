@@ -178,7 +178,7 @@ BOOL CAVDecoder::Decode(LPBITMAPINFO pSrcBMI,
 										&avpkt);
 		if (len <= 0 || got_picture == 0)
 		{
-			av_free_packet(&avpkt);
+			av_packet_unref(&avpkt);
 			return FALSE;
 		}
 	}
@@ -213,7 +213,7 @@ BOOL CAVDecoder::Decode(LPBITMAPINFO pSrcBMI,
 	if (m_pCodecCtx->width <= 0 || m_pCodecCtx->height <= 0	||
 		m_pCodecCtx->pix_fmt < 0 || m_pCodecCtx->pix_fmt >= AV_PIX_FMT_NB)
 	{
-		av_free_packet(&avpkt);
+		av_packet_unref(&avpkt);
 		return FALSE;
 	}
 
@@ -226,7 +226,7 @@ BOOL CAVDecoder::Decode(LPBITMAPINFO pSrcBMI,
 										pDstDib->GetWidth() == 0 ? m_pCodecCtx->width : pDstDib->GetWidth(),
 										pDstDib->GetHeight() == 0 ? m_pCodecCtx->height : pDstDib->GetHeight()))
 		{	
-			av_free_packet(&avpkt);
+			av_packet_unref(&avpkt);
 			return FALSE;
 		}
 	}
@@ -235,7 +235,7 @@ BOOL CAVDecoder::Decode(LPBITMAPINFO pSrcBMI,
 	enum AVPixelFormat dst_pix_fmt = CAVRec::AVCodecBMIToPixFormat(pDstDib->GetBMI());
 	if (dst_pix_fmt == AV_PIX_FMT_NONE)
 	{
-		av_free_packet(&avpkt);
+		av_packet_unref(&avpkt);
 		return FALSE;
 	}
 
@@ -254,7 +254,7 @@ BOOL CAVDecoder::Decode(LPBITMAPINFO pSrcBMI,
 													SWS_BICUBIC);			// Interpolation (add SWS_PRINT_INFO to debug)
 	if (!m_pImgConvertCtx)
 	{
-		av_free_packet(&avpkt);
+		av_packet_unref(&avpkt);
 		return FALSE;
 	}
 
@@ -308,12 +308,12 @@ BOOL CAVDecoder::Decode(LPBITMAPINFO pSrcBMI,
 							m_pFrameDst->data,					// Destination Data
 							m_pFrameDst->linesize) > 0;			// Destination Stride
 		}
-		av_free_packet(&avpkt);
+		av_packet_unref(&avpkt);
 		return bOk;
 	}
 	else
 	{
-		av_free_packet(&avpkt);
+		av_packet_unref(&avpkt);
 		return FALSE;
 	}
 }
