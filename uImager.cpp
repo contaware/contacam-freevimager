@@ -258,6 +258,15 @@ CString CUImagerApp::GetConfiguredTempDir()
 
 #ifdef VIDEODEVICEDOC
 
+CString AVErrorToString(int nErrorCode)
+{
+	CStringA sBufAnsi;
+	LPSTR pBufAnsi = sBufAnsi.GetBuffer(AV_ERROR_MAX_STRING_SIZE);
+	av_strerror(nErrorCode, pBufAnsi, AV_ERROR_MAX_STRING_SIZE);
+	sBufAnsi.ReleaseBuffer();
+	return CString(sBufAnsi);
+}
+
 static int handle_jpeg_helper(enum AVPixelFormat *format)
 {
     switch (*format) {

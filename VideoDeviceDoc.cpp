@@ -37,6 +37,7 @@ static char THIS_FILE[] = __FILE__;
 #pragma warning(disable : 4996)
 
 // Defined in uImager.cpp
+CString AVErrorToString(int nErrorCode);
 SwsContext *sws_getContextHelper(	int srcW, int srcH, enum AVPixelFormat srcFormat,
 									int dstW, int dstH, enum AVPixelFormat dstFormat,
 									int flags);
