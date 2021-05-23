@@ -161,12 +161,12 @@ DWORD CMJPEGEncoder::Encode(int qscale, LPBITMAPINFO pSrcBMI, LPBYTE pSrcBits, i
 		// Store current format
 		memcpy(&m_SrcBMI, pSrcBMI, MIN(CDib::GetBMISize(pSrcBMI), sizeof(BITMAPINFOFULL)));
 		DWORD dwSize = avpkt.size;
-		av_free_packet(&avpkt);
+		av_packet_unref(&avpkt);
 		return dwSize;
 	}
 	else
 	{
-		av_free_packet(&avpkt);
+		av_packet_unref(&avpkt);
 		return 0U;
 	}
 }
