@@ -12,7 +12,6 @@ static char THIS_FILE[] = __FILE__;
 #ifdef VIDEODEVICEDOC
 
 // TODO: remove the warnings suppression and use the new ffmpeg API interface:
-// Deprecate av_free_packet() use av_packet_unref() instead
 // avcodec_decode_video2 -> replace with avcodec_send_packet() and avcodec_receive_frame()
 // avcodec_decode_audio4 -> replace with avcodec_send_packet() and avcodec_receive_frame() 
 // AVStream::codec -> AVStream::codecpar
@@ -1112,7 +1111,7 @@ bool CAVRec::EncodeAndWriteFrame(DWORD dwStreamNum,
 		ret = avcodec_encode_audio2(pCodecCtx, &pkt, pFrame, &got_packet);
 	if (ret < 0)
 	{
-		av_free_packet(&pkt);
+		av_packet_unref(&pkt);
 		return false;
 	}
 	else if (pFrame)
@@ -1124,7 +1123,7 @@ bool CAVRec::EncodeAndWriteFrame(DWORD dwStreamNum,
 	}
 	if (!got_packet)
 	{
-		av_free_packet(&pkt);
+		av_packet_unref(&pkt);
 		if (pFrame)
 			return true;
 		else
@@ -1138,13 +1137,13 @@ bool CAVRec::EncodeAndWriteFrame(DWORD dwStreamNum,
 			av_write_frame(m_pFormatCtx, &pkt);
 	if (ret < 0)
 	{
-		av_free_packet(&pkt);
+		av_packet_unref(&pkt);
 		return false;
 	}
 	else
 	{
 		m_llTotalWrittenBytes[dwStreamNum] += pkt.size;
-		av_free_packet(&pkt);
+		av_packet_unref(&pkt);
 		return true;
 	}
 }
