@@ -10716,7 +10716,7 @@ void CVideoDeviceDoc::CHttpParseProcess::Process(unsigned char* pLinBuf, int nSi
 	// Decode Video
 	if (!DecodeVideo(&avpkt))
 	{
-		av_free_packet(&avpkt);
+		av_packet_unref(&avpkt);
 		::LeaveCriticalSection(&m_pDoc->m_csHttpProcess);
 		return;
 	}
@@ -10725,7 +10725,7 @@ void CVideoDeviceDoc::CHttpParseProcess::Process(unsigned char* pLinBuf, int nSi
 	m_bFirstProcessing = FALSE;
 	
 	// Free packet
-	av_free_packet(&avpkt);
+	av_packet_unref(&avpkt);
 
 	// Leave CS
 	::LeaveCriticalSection(&m_pDoc->m_csHttpProcess);
