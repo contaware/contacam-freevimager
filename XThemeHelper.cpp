@@ -165,7 +165,7 @@ int CXThemeHelper::GetComCtl32Version()
 
 	typedef HRESULT (CALLBACK *DLLGETVERSION)(DLLVERSIONINFO*);
 	DLLGETVERSION pDLLGETVERSION = NULL;
-	HMODULE hModComCtl = ::LoadLibraryFromSystem32(_T("comctl32.dll"));
+	HMODULE hModComCtl = ::LoadLibrary(_T("comctl32.dll")); // DO NOT USE ::LoadLibraryFromSystem32() as it returns the old 5.X version
     if (hModComCtl)
     {
         pDLLGETVERSION = (DLLGETVERSION)(::GetProcAddress(hModComCtl, "DllGetVersion"));
