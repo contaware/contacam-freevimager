@@ -2602,6 +2602,7 @@ int CVideoDeviceDoc::CRtspThread::Work()
 		CAudioTools* pAudioTools = NULL;
 		CAudioPlay* pAudioPlay = NULL;
 		BOOL bAudioSupported = FALSE;
+		CTime LastOKTime;
 
 		// Options var
 		AVDictionary* opts = NULL;
@@ -2727,6 +2728,7 @@ int CVideoDeviceDoc::CRtspThread::Work()
 			goto free;
 
 		// Get frames
+		LastOKTime = CTime::GetCurrentTime();
 		for (;;)
 		{
 			AVPacket avpkt;
@@ -2737,21 +2739,38 @@ int CVideoDeviceDoc::CRtspThread::Work()
 			AVPacket orig_pkt = avpkt;
 			if (ret < 0)
 			{
-				// For the UDP transport sometimes AVERROR_EOF is returned (for example my Axis cams do that)
-				// -> we skip the packet without the need to reconnect
+				// For the UDP transport AVERROR_EOF can be returned one time and then it recovers,
+				// while in other occasions AVERROR_EOF would be returned forever
 				if (ret == AVERROR_EOF)
 				{
 					if (g_nLogLevel > 0)
 						::LogLine(_T("%s, av_read_frame returned AVERROR_EOF"), m_pDoc->GetAssignedDeviceName());
-					goto packet_free; // usually not necessary to free because orig_pkt.buf should be NULL, but it doesn't harm
+					if ((CTime::GetCurrentTime() - LastOKTime).GetTotalSeconds() > (LONGLONG)(RTSP_SOCKET_TIMEOUT / 1000000))
+					{
+						av_packet_unref(&orig_pkt); // usually not necessary to free because orig_pkt.buf should be NULL, but it doesn't harm
+						goto free;
+					}
+					else
+					{
+						::Sleep(10);
+						goto packet_free; // usually not necessary to free because orig_pkt.buf should be NULL, but it doesn't harm
+					}
 				}
-				// For the UDP transport probably also AVERROR(EAGAIN) can be returned (until now I have never see that)
-				// -> we skip the packet without the need to reconnect
+				// AVERROR(EAGAIN) is difficult to spot, we guess that the same logic as for AVERROR_EOF must be fine
 				else if (ret == AVERROR(EAGAIN))
 				{
 					if (g_nLogLevel > 0)
 						::LogLine(_T("%s, av_read_frame returned AVERROR(EAGAIN)"), m_pDoc->GetAssignedDeviceName());
-					goto packet_free; // usually not necessary to free because orig_pkt.buf should be NULL, but it doesn't harm
+					if ((CTime::GetCurrentTime() - LastOKTime).GetTotalSeconds() > (LONGLONG)(RTSP_SOCKET_TIMEOUT / 1000000))
+					{
+						av_packet_unref(&orig_pkt); // usually not necessary to free because orig_pkt.buf should be NULL, but it doesn't harm
+						goto free;
+					}
+					else
+					{
+						::Sleep(10);
+						goto packet_free; // usually not necessary to free because orig_pkt.buf should be NULL, but it doesn't harm
+					}
 				}
 				else
 				{
@@ -2761,6 +2780,8 @@ int CVideoDeviceDoc::CRtspThread::Work()
 					goto free;
 				}
 			}
+			else
+				LastOKTime = CTime::GetCurrentTime();
 
 			// Get underlying transport, that may change while streaming,
 			// so poll it regularly.
