@@ -78,6 +78,8 @@
 #define IDB_BITMAP_DRAGDROP_SINGLE      243
 #define IDB_BITMAP_DRAGDROP_MULTI       244
 #define IDB_HEADER_CTRL                 245
+#define IDB_HEADER_CTRL2X               246
+#define IDB_HEADER_CTRL3X               247
 #define IDB_CAMOFF                      249
 #define IDD_SHARPEN                     257
 #define IDD_ADD_BORDERS                 260

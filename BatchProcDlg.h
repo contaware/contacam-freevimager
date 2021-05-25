@@ -23,12 +23,9 @@
 #define SUCCESSIVE_FSCHANGES_TIMEOUT		500
 #define THUMBLOAD_POLL_TIME					50
 
-#ifndef HDF_SORTUP
-#define HDF_SORTUP							0x0400
-#endif
-#ifndef HDF_SORTDOWN
-#define HDF_SORTDOWN						0x0200
-#endif
+#define HEADER_CTRL_ARROW_WIDTH				15
+#define HEADER_CTRL_ARROW_HEIGHT			13
+#define HEADER_CTRL_MASK_COLOR				RGB(255, 0, 255)
 
 #define DEFAULT_OUTFILE_FRAMERATE			0.25		// Default Framerate for Animated GIFs
 
@@ -339,13 +336,6 @@ protected:
 
 	// Update Dst File Size
 	void UpdateDstFileSize();
-
-	// Starting with version 4.71, the Shell and common
-	// controls DLLs, among others, began exporting DllGetVersion
-	int GetComCtl32MajorVersion();
-
-	// ComCtl32.dll Major Version
-	int m_nComCtl32MajorVersion;
 
 	// Process Thread
 	CProcessThread m_ProcessThread;

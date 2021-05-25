@@ -69,6 +69,10 @@ IDB_BITMAP_DRAGDROP_MULTI BITMAP                  "res\\DragDropMulti.bmp"
 
 IDB_HEADER_CTRL         BITMAP                  "res\\HeaderArrows.bmp"
 
+IDB_HEADER_CTRL2X       BITMAP                  "res\\HeaderArrows2x.bmp"
+
+IDB_HEADER_CTRL3X       BITMAP                  "res\\HeaderArrows3x.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

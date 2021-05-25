@@ -1381,9 +1381,6 @@ CBatchProcDlg::CBatchProcDlg(CWnd* pParent)
 	// Critical Section
 	::InitializeCriticalSection(&m_csOutDir);
 
-	// ComCtl32.dll Major Version
-	m_nComCtl32MajorVersion = GetComCtl32MajorVersion();
-
 	// Init Tab
 	m_nInitTab = 0;
 
@@ -1560,7 +1557,14 @@ BOOL CBatchProcDlg::OnInitDialog()
 	if (pHeader)
 	{
 		// Create the image list and attach it to the header control
-		VERIFY(m_HdrImageList.Create(IDB_HEADER_CTRL, 15, 2, RGB(255, 0, 255)));
+		CRect rcHeader;
+		pHeader->GetClientRect(rcHeader);
+		if (rcHeader.Height() > 3 * HEADER_CTRL_ARROW_HEIGHT)
+			VERIFY(m_HdrImageList.Create(IDB_HEADER_CTRL3X, 3 * HEADER_CTRL_ARROW_WIDTH, 0, HEADER_CTRL_MASK_COLOR));
+		else if (rcHeader.Height() > 2 * HEADER_CTRL_ARROW_HEIGHT)
+			VERIFY(m_HdrImageList.Create(IDB_HEADER_CTRL2X, 2 * HEADER_CTRL_ARROW_WIDTH, 0, HEADER_CTRL_MASK_COLOR));
+		else
+			VERIFY(m_HdrImageList.Create(IDB_HEADER_CTRL, HEADER_CTRL_ARROW_WIDTH, 0, HEADER_CTRL_MASK_COLOR));
 		pHeader->SetImageList(&m_HdrImageList);
 
 		// Make the header control track 
@@ -4222,8 +4226,6 @@ void CBatchProcDlg::OnItemclickListInput(NMHDR* pNMHDR, LRESULT* pResult)
 					hdi.fmt &= ~HDF_LEFT;
 					hdi.fmt &= ~HDF_CENTER;
 					hdi.fmt &= ~HDF_RIGHT;
-					hdi.fmt &= ~HDF_SORTUP;
-					hdi.fmt &= ~HDF_SORTDOWN;
 					hdi.iImage = 0;
 					pHeader->SetItem(i, &hdi);
 				}
@@ -4241,10 +4243,7 @@ void CBatchProcDlg::OnItemclickListInput(NMHDR* pNMHDR, LRESULT* pResult)
 						m_nSortType = FILENAME_DES;
 						if (pHeader->GetItem(LIST_FILENAME, &hdi))
 						{
-							if (m_nComCtl32MajorVersion >= 6)
-								hdi.fmt |= HDF_LEFT | HDF_SORTDOWN;
-							else
-								hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
+							hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
 							hdi.iImage = 1;
 							pHeader->SetItem(LIST_FILENAME, &hdi);
 						}
@@ -4254,10 +4253,7 @@ void CBatchProcDlg::OnItemclickListInput(NMHDR* pNMHDR, LRESULT* pResult)
 						m_nSortType = FILENAME_ASC;
 						if (pHeader->GetItem(LIST_FILENAME, &hdi))
 						{
-							if (m_nComCtl32MajorVersion >= 6)
-								hdi.fmt |= HDF_LEFT | HDF_SORTUP;
-							else
-								hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
+							hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
 							hdi.iImage = 0;
 							pHeader->SetItem(LIST_FILENAME, &hdi);
 						}
@@ -4275,10 +4271,7 @@ void CBatchProcDlg::OnItemclickListInput(NMHDR* pNMHDR, LRESULT* pResult)
 						m_nSortType = EXIFDATE_DES;
 						if (pHeader->GetItem(LIST_EXIFDATE, &hdi))
 						{
-							if (m_nComCtl32MajorVersion >= 6)
-								hdi.fmt |= HDF_LEFT | HDF_SORTDOWN;
-							else
-								hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
+							hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
 							hdi.iImage = 1;
 							pHeader->SetItem(LIST_EXIFDATE, &hdi);
 						}
@@ -4288,10 +4281,7 @@ void CBatchProcDlg::OnItemclickListInput(NMHDR* pNMHDR, LRESULT* pResult)
 						m_nSortType = EXIFDATE_ASC;
 						if (pHeader->GetItem(LIST_EXIFDATE, &hdi))
 						{
-							if (m_nComCtl32MajorVersion >= 6)
-								hdi.fmt |= HDF_LEFT | HDF_SORTUP;
-							else
-								hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
+							hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
 							hdi.iImage = 0;
 							pHeader->SetItem(LIST_EXIFDATE, &hdi);
 						}
@@ -4309,10 +4299,7 @@ void CBatchProcDlg::OnItemclickListInput(NMHDR* pNMHDR, LRESULT* pResult)
 						m_nSortType = CREATEDDATE_DES;
 						if (pHeader->GetItem(LIST_CREATEDDATE, &hdi))
 						{
-							if (m_nComCtl32MajorVersion >= 6)
-								hdi.fmt |= HDF_LEFT | HDF_SORTDOWN;
-							else
-								hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
+							hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
 							hdi.iImage = 1;
 							pHeader->SetItem(LIST_CREATEDDATE, &hdi);
 						}
@@ -4322,10 +4309,7 @@ void CBatchProcDlg::OnItemclickListInput(NMHDR* pNMHDR, LRESULT* pResult)
 						m_nSortType = CREATEDDATE_ASC;
 						if (pHeader->GetItem(LIST_CREATEDDATE, &hdi))
 						{
-							if (m_nComCtl32MajorVersion >= 6)
-								hdi.fmt |= HDF_LEFT | HDF_SORTUP;
-							else
-								hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
+							hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
 							hdi.iImage = 0;
 							pHeader->SetItem(LIST_CREATEDDATE, &hdi);
 						}
@@ -4343,10 +4327,7 @@ void CBatchProcDlg::OnItemclickListInput(NMHDR* pNMHDR, LRESULT* pResult)
 						m_nSortType = MODIFIEDDATE_DES;
 						if (pHeader->GetItem(LIST_MODIFIEDDATE, &hdi))
 						{
-							if (m_nComCtl32MajorVersion >= 6)
-								hdi.fmt |= HDF_LEFT | HDF_SORTDOWN;
-							else
-								hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
+							hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
 							hdi.iImage = 1;
 							pHeader->SetItem(LIST_MODIFIEDDATE, &hdi);
 						}
@@ -4356,10 +4337,7 @@ void CBatchProcDlg::OnItemclickListInput(NMHDR* pNMHDR, LRESULT* pResult)
 						m_nSortType = MODIFIEDDATE_ASC;
 						if (pHeader->GetItem(LIST_MODIFIEDDATE, &hdi))
 						{
-							if (m_nComCtl32MajorVersion >= 6)
-								hdi.fmt |= HDF_LEFT | HDF_SORTUP;
-							else
-								hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
+							hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
 							hdi.iImage = 0;
 							pHeader->SetItem(LIST_MODIFIEDDATE, &hdi);
 						}
@@ -4377,10 +4355,7 @@ void CBatchProcDlg::OnItemclickListInput(NMHDR* pNMHDR, LRESULT* pResult)
 						m_nSortType = FILESIZE_DES;
 						if (pHeader->GetItem(LIST_FILESIZE, &hdi))
 						{
-							if (m_nComCtl32MajorVersion >= 6)
-								hdi.fmt |= HDF_LEFT | HDF_SORTDOWN;
-							else
-								hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
+							hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
 							hdi.iImage = 1;
 							pHeader->SetItem(LIST_FILESIZE, &hdi);
 						}
@@ -4390,10 +4365,7 @@ void CBatchProcDlg::OnItemclickListInput(NMHDR* pNMHDR, LRESULT* pResult)
 						m_nSortType = FILESIZE_ASC;
 						if (pHeader->GetItem(LIST_FILESIZE, &hdi))
 						{
-							if (m_nComCtl32MajorVersion >= 6)
-								hdi.fmt |= HDF_LEFT | HDF_SORTUP;
-							else
-								hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
+							hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
 							hdi.iImage = 0;
 							pHeader->SetItem(LIST_FILESIZE, &hdi);
 						}
@@ -4411,10 +4383,7 @@ void CBatchProcDlg::OnItemclickListInput(NMHDR* pNMHDR, LRESULT* pResult)
 						m_nSortType = IMAGESIZE_DES;
 						if (pHeader->GetItem(LIST_IMAGESIZE, &hdi))
 						{
-							if (m_nComCtl32MajorVersion >= 6)
-								hdi.fmt |= HDF_LEFT | HDF_SORTDOWN;
-							else
-								hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
+							hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
 							hdi.iImage = 1;
 							pHeader->SetItem(LIST_IMAGESIZE, &hdi);
 						}
@@ -4424,10 +4393,7 @@ void CBatchProcDlg::OnItemclickListInput(NMHDR* pNMHDR, LRESULT* pResult)
 						m_nSortType = IMAGESIZE_ASC;
 						if (pHeader->GetItem(LIST_IMAGESIZE, &hdi))
 						{
-							if (m_nComCtl32MajorVersion >= 6)
-								hdi.fmt |= HDF_LEFT | HDF_SORTUP;
-							else
-								hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
+							hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
 							hdi.iImage = 0;
 							pHeader->SetItem(LIST_IMAGESIZE, &hdi);
 						}
@@ -4445,10 +4411,7 @@ void CBatchProcDlg::OnItemclickListInput(NMHDR* pNMHDR, LRESULT* pResult)
 						m_nSortType = WIDTH_DES;
 						if (pHeader->GetItem(LIST_WIDTH, &hdi))
 						{
-							if (m_nComCtl32MajorVersion >= 6)
-								hdi.fmt |= HDF_LEFT | HDF_SORTDOWN;
-							else
-								hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
+							hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
 							hdi.iImage = 1;
 							pHeader->SetItem(LIST_WIDTH, &hdi);
 						}
@@ -4458,10 +4421,7 @@ void CBatchProcDlg::OnItemclickListInput(NMHDR* pNMHDR, LRESULT* pResult)
 						m_nSortType = WIDTH_ASC;
 						if (pHeader->GetItem(LIST_WIDTH, &hdi))
 						{
-							if (m_nComCtl32MajorVersion >= 6)
-								hdi.fmt |= HDF_LEFT | HDF_SORTUP;
-							else
-								hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
+							hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
 							hdi.iImage = 0;
 							pHeader->SetItem(LIST_WIDTH, &hdi);
 						}
@@ -4479,10 +4439,7 @@ void CBatchProcDlg::OnItemclickListInput(NMHDR* pNMHDR, LRESULT* pResult)
 						m_nSortType = HEIGHT_DES;
 						if (pHeader->GetItem(LIST_HEIGHT, &hdi))
 						{
-							if (m_nComCtl32MajorVersion >= 6)
-								hdi.fmt |= HDF_LEFT | HDF_SORTDOWN;
-							else
-								hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
+							hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
 							hdi.iImage = 1;
 							pHeader->SetItem(LIST_HEIGHT, &hdi);
 						}
@@ -4492,10 +4449,7 @@ void CBatchProcDlg::OnItemclickListInput(NMHDR* pNMHDR, LRESULT* pResult)
 						m_nSortType = HEIGHT_ASC;
 						if (pHeader->GetItem(LIST_HEIGHT, &hdi))
 						{
-							if (m_nComCtl32MajorVersion >= 6)
-								hdi.fmt |= HDF_LEFT | HDF_SORTUP;
-							else
-								hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
+							hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
 							hdi.iImage = 0;
 							pHeader->SetItem(LIST_HEIGHT, &hdi);
 						}
@@ -4513,10 +4467,7 @@ void CBatchProcDlg::OnItemclickListInput(NMHDR* pNMHDR, LRESULT* pResult)
 						m_nSortType = PATH_DES;
 						if (pHeader->GetItem(LIST_PATH, &hdi))
 						{
-							if (m_nComCtl32MajorVersion >= 6)
-								hdi.fmt |= HDF_LEFT | HDF_SORTDOWN;
-							else
-								hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
+							hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
 							hdi.iImage = 1;
 							pHeader->SetItem(LIST_PATH, &hdi);
 						}
@@ -4526,10 +4477,7 @@ void CBatchProcDlg::OnItemclickListInput(NMHDR* pNMHDR, LRESULT* pResult)
 						m_nSortType = PATH_ASC;
 						if (pHeader->GetItem(LIST_PATH, &hdi))
 						{
-							if (m_nComCtl32MajorVersion >= 6)
-								hdi.fmt |= HDF_LEFT | HDF_SORTUP;
-							else
-								hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
+							hdi.fmt |= HDF_LEFT | HDF_IMAGE | HDF_BITMAP_ON_RIGHT;
 							hdi.iImage = 0;
 							pHeader->SetItem(LIST_PATH, &hdi);
 						}
@@ -4947,34 +4895,6 @@ void CBatchProcDlg::OnDeleteallitemsListInput(NMHDR* pNMHDR, LRESULT* pResult)
 	}
 
 	*pResult = 0;
-}
-
-// Starting with version 4.71, the Shell and common
-// controls DLLs, among others, began exporting DllGetVersion
-int CBatchProcDlg::GetComCtl32MajorVersion()
-{
-	int ret = 4;
-
-	typedef HRESULT (CALLBACK *DLLGETVERSION)(DLLVERSIONINFO*);
-	DLLGETVERSION pDLLGETVERSION = NULL;
-	HMODULE hModComCtl = ::LoadLibrary(_T("comctl32.dll")); // DO NOT USE ::LoadLibraryFromSystem32() as it returns the old 5.X version
-    if (hModComCtl)
-    {
-        pDLLGETVERSION = (DLLGETVERSION)(
-			::GetProcAddress(hModComCtl, "DllGetVersion"));
-        if (pDLLGETVERSION)
-        {
-            DLLVERSIONINFO dvi = {};
-            dvi.cbSize = sizeof dvi;
-            if (pDLLGETVERSION(&dvi) == NOERROR)
-            {
-                ret = dvi.dwMajorVersion;
-            }
-        }
-		::FreeLibrary(hModComCtl);                 
-    }
-
-	return ret;
 }
 
 int CBatchProcDlg::CChangeNotificationThread::Work() 
