@@ -37,7 +37,7 @@ static char THIS_FILE[] = __FILE__;
 #pragma warning(disable : 4996)
 
 // Defined in uImager.cpp
-CString AVErrorToString(int nErrorCode);
+BOOL AVErrorToString(int nErrorCode, CString& sError);
 SwsContext *sws_getContextHelper(	int srcW, int srcH, enum AVPixelFormat srcFormat,
 									int dstW, int dstH, enum AVPixelFormat dstFormat,
 									int flags);
@@ -2689,19 +2689,34 @@ int CVideoDeviceDoc::CRtspThread::Work()
 												AV_PIX_FMT_YUV420P,
 												SWS_BICUBIC);
 		if (!pImgConvertCtx)
+		{
+			ret = AVERROR(ENOMEM);
 			goto free;
+		}
 		pVideoFrame = av_frame_alloc();
 		if (!pVideoFrame)
+		{
+			ret = AVERROR(ENOMEM);
 			goto free;
+		}
 		pVideoFrameI420 = av_frame_alloc();
 		if (!pVideoFrameI420)
+		{
+			ret = AVERROR(ENOMEM);
 			goto free;
+		}
 		int nI420ImageSize = avpicture_get_size(AV_PIX_FMT_YUV420P, pVideoCodecCtx->width, pVideoCodecCtx->height);
 		if (nI420ImageSize <= 0)
+		{
+			ret = nI420ImageSize;
 			goto free;
+		}
 		pI420Buf = (LPBYTE)av_malloc(2 * (nI420ImageSize + FF_INPUT_BUFFER_PADDING_SIZE));
 		if (!pI420Buf)
+		{
+			ret = AVERROR(ENOMEM);
 			goto free;
+		}
 		avpicture_fill((AVPicture *)pVideoFrameI420, pI420Buf, AV_PIX_FMT_YUV420P, pVideoCodecCtx->width, pVideoCodecCtx->height);
 
 		// Init Audio
@@ -2709,7 +2724,10 @@ int CVideoDeviceDoc::CRtspThread::Work()
 		{
 			pAudioFrame = av_frame_alloc();
 			if (!pAudioFrame)
+			{
+				ret = AVERROR(ENOMEM);
 				goto free;
+			}
 			int bits = av_get_bytes_per_sample(pAudioCodecCtx->sample_fmt) << 3;
 			if (bits <= 16)
 				WaveInitFormat(pAudioCodecCtx->channels, pAudioCodecCtx->sample_rate, bits, m_pDoc->m_pSrcWaveFormat);
@@ -2739,28 +2757,11 @@ int CVideoDeviceDoc::CRtspThread::Work()
 			AVPacket orig_pkt = avpkt;
 			if (ret < 0)
 			{
-				// For the UDP transport AVERROR_EOF can be returned one time and then it recovers,
-				// while in other occasions AVERROR_EOF would be returned forever
-				if (ret == AVERROR_EOF)
+				// - For the UDP transport AVERROR_EOF can be returned one time and then it recovers,
+				//   while in other occasions AVERROR_EOF would be returned forever
+				// - AVERROR(EAGAIN) is difficult to spot, we guess that the same logic as for AVERROR_EOF must be fine
+				if (ret == AVERROR_EOF || ret == AVERROR(EAGAIN))
 				{
-					if (g_nLogLevel > 0)
-						::LogLine(_T("%s, av_read_frame returned AVERROR_EOF"), m_pDoc->GetAssignedDeviceName());
-					if ((CTime::GetCurrentTime() - LastOKTime).GetTotalSeconds() > (LONGLONG)(RTSP_SOCKET_TIMEOUT / 1000000))
-					{
-						av_packet_unref(&orig_pkt); // usually not necessary to free because orig_pkt.buf should be NULL, but it doesn't harm
-						goto free;
-					}
-					else
-					{
-						::Sleep(10);
-						goto packet_free; // usually not necessary to free because orig_pkt.buf should be NULL, but it doesn't harm
-					}
-				}
-				// AVERROR(EAGAIN) is difficult to spot, we guess that the same logic as for AVERROR_EOF must be fine
-				else if (ret == AVERROR(EAGAIN))
-				{
-					if (g_nLogLevel > 0)
-						::LogLine(_T("%s, av_read_frame returned AVERROR(EAGAIN)"), m_pDoc->GetAssignedDeviceName());
 					if ((CTime::GetCurrentTime() - LastOKTime).GetTotalSeconds() > (LONGLONG)(RTSP_SOCKET_TIMEOUT / 1000000))
 					{
 						av_packet_unref(&orig_pkt); // usually not necessary to free because orig_pkt.buf should be NULL, but it doesn't harm
@@ -2774,8 +2775,6 @@ int CVideoDeviceDoc::CRtspThread::Work()
 				}
 				else
 				{
-					if (g_nLogLevel > 0)
-						::LogLine(_T("%s, av_read_frame FAILURE (returned=%d)"), m_pDoc->GetAssignedDeviceName(), ret);
 					av_packet_unref(&orig_pkt); // usually not necessary to free because orig_pkt.buf should be NULL, but it doesn't harm
 					goto free;
 				}
@@ -2810,7 +2809,11 @@ int CVideoDeviceDoc::CRtspThread::Work()
 						// For the UDP transport the packet data may be invalid
 						// -> we skip the frame without the need to reconnect 
 						if (g_nLogLevel > 0)
-							::LogLine(_T("%s, avcodec_decode_video2 FAILURE (returned=%d)"), m_pDoc->GetAssignedDeviceName(), ret);	
+						{
+							CString sErrorMsg;
+							::AVErrorToString(ret, sErrorMsg);
+							::LogLine(_T("%s, %s"), m_pDoc->GetAssignedDeviceName(), sErrorMsg);
+						}
 						goto packet_free;
 					}
 					decoded = MIN(ret, avpkt.size);
@@ -2864,8 +2867,6 @@ int CVideoDeviceDoc::CRtspThread::Work()
 					{
 						if ((ret = sws_scale(pImgConvertCtx, pVideoFrame->data, pVideoFrame->linesize, 0, pVideoCodecCtx->height, pVideoFrameI420->data, pVideoFrameI420->linesize)) <= 0)
 						{
-							if (g_nLogLevel > 0)
-								::LogLine(_T("%s, sws_scale FAILURE (returned=%d)"), m_pDoc->GetAssignedDeviceName(), ret);
 							av_packet_unref(&orig_pkt);
 							goto free;
 						}
@@ -2925,6 +2926,7 @@ int CVideoDeviceDoc::CRtspThread::Work()
 									if (!UserBuf.m_pBuf)
 									{
 										av_packet_unref(&orig_pkt);
+										ret = AVERROR(ENOMEM);
 										goto free;
 									}
 
@@ -2945,6 +2947,7 @@ int CVideoDeviceDoc::CRtspThread::Work()
 									if (!UserBuf.m_pBuf)
 									{
 										av_packet_unref(&orig_pkt);
+										ret = AVERROR(ENOMEM);
 										goto free;
 									}
 
@@ -2974,6 +2977,7 @@ int CVideoDeviceDoc::CRtspThread::Work()
 									if (!UserBuf.m_pBuf)
 									{
 										av_packet_unref(&orig_pkt);
+										ret = AVERROR(ENOMEM);
 										goto free;
 									}
 
@@ -2994,6 +2998,7 @@ int CVideoDeviceDoc::CRtspThread::Work()
 									if (!UserBuf.m_pBuf)
 									{
 										av_packet_unref(&orig_pkt);
+										ret = AVERROR(ENOMEM);
 										goto free;
 									}
 
@@ -3018,6 +3023,7 @@ int CVideoDeviceDoc::CRtspThread::Work()
 								if (!UserBuf.m_pBuf)
 								{
 									av_packet_unref(&orig_pkt);
+									ret = AVERROR(ENOMEM);
 									goto free;
 								}
 								memcpy(UserBuf.m_pBuf, pAudioFrame->data[0], UserBuf.m_dwSize);
@@ -3106,7 +3112,14 @@ int CVideoDeviceDoc::CRtspThread::Work()
 				case AVERROR_HTTP_NOT_FOUND:	sErrorMsg = _T("404 Not Found"); break;
 				case AVERROR_HTTP_OTHER_4XX:	sErrorMsg = _T("Error 4XX"); break;
 				case AVERROR_HTTP_SERVER_ERROR:	sErrorMsg = _T("Error 5XX"); break;
-				default:						sErrorMsg = ML_STRING(1465, "Cannot connect to camera"); break;
+				case AVERROR(EIO):
+				case AVERROR(ETIMEDOUT):		
+					sErrorMsg = ML_STRING(1465, "Cannot connect to camera");
+					break;
+				default:
+					if (!::AVErrorToString(ret, sErrorMsg))
+						sErrorMsg = ML_STRING(1465, "Cannot connect to camera");
+					break;
 			}
 			m_pDoc->ConnectErr(sErrorMsg, m_pDoc->GetDeviceName());
 
