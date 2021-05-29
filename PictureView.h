@@ -160,8 +160,7 @@ protected:
 	BOOL m_bCropLeft;
 	BOOL m_bCropRight;
 	BOOL m_bCropCenter;
-	BOOL m_bCropDrag;
-	CPoint m_ptCropClick;
+	CPoint m_ptCropCenter;
 	double m_dCropAspectRatio;
 	BOOL m_bCropMaintainAspectRatio;
 	int m_nAspectRatioPos;

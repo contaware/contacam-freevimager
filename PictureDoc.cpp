@@ -8539,8 +8539,7 @@ void CPictureDoc::EditCrop()
 		GetView()->m_bCropLeft = FALSE;
 		GetView()->m_bCropRight = FALSE;
 		GetView()->m_bCropCenter = FALSE;
-		GetView()->m_bCropDrag = FALSE;
-		GetView()->m_ptCropClick = CPoint(0,0);
+		GetView()->m_ptCropCenter = CPoint(0,0);
 		GetView()->m_dCropAspectRatio = 1.0;
 		GetView()->m_bCropMaintainAspectRatio = FALSE;
 		GetView()->m_nAspectRatioPos = 0;

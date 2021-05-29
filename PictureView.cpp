@@ -104,8 +104,7 @@ CPictureView::CPictureView()
 	m_bCropLeft = FALSE;
 	m_bCropRight = FALSE;
 	m_bCropCenter = FALSE;
-	m_bCropDrag = FALSE;
-	m_ptCropClick = CPoint(0,0);
+	m_ptCropCenter = CPoint(0,0);
 	m_dCropAspectRatio = 1.0;
 	m_bCropMaintainAspectRatio = FALSE;
 	m_nAspectRatioPos = 0;
@@ -3258,6 +3257,8 @@ void CPictureView::OnLButtonDown(UINT nFlags, CPoint point)
 							m_CropZoomRect.left + (m_CropZoomRect.Width()/2) + ((nCropMarkerRectWidth + nRectSizeXInside)/2),
 							m_CropZoomRect.top + (m_CropZoomRect.Height()/2) + ((nCropMarkerRectHeight + nRectSizeYInside)/2));
 		
+		// Determine which crop handle is clicked
+		BOOL bPtInRect = TRUE;
 		if (rcTopLeft.PtInRect(point))
 		{
 			m_bCropTopLeft = TRUE;
@@ -3308,123 +3309,19 @@ void CPictureView::OnLButtonDown(UINT nFlags, CPoint point)
 		}
 		else if (rcCenter.PtInRect(point))
 		{
-			m_ptCropClick = point;
+			m_ptCropCenter = point;
 			pDoc->m_rcCropCenter = pDoc->m_rcCropDelta;
 			m_bCropCenter = TRUE;
 		}
 		else
-		{
-			// Set vars
-			m_bCropDrag = TRUE;
-			m_ptCropClick = point;
-
-			// Reset crop rectangles
-			pDoc->m_rcCropDelta = CRect(0,0,0,0);
-			m_CropZoomRect = m_ZoomRect;
-			pDoc->m_CropDocRect = pDoc->m_DocRect;
-
-			// Middle point
-			CPoint ptMiddle = CPoint((m_CropZoomRect.right + m_CropZoomRect.left) / 2, (m_CropZoomRect.bottom + m_CropZoomRect.top) / 2);
-
-			// Point in Top-Left quadrant
-			if (point.x <= ptMiddle.x && point.y <= ptMiddle.y)
-			{
-				CropTop(point, nRectSizeYInside, FALSE);
-				CropLeft(point, nRectSizeXInside, FALSE);
-				m_CropZoomRect = m_ZoomRect;
-				pDoc->m_CropDocRect = pDoc->m_DocRect;
-				m_CropZoomRect.DeflateRect(	Round(pDoc->m_rcCropDelta.left*pDoc->m_dZoomFactor),
-											Round(pDoc->m_rcCropDelta.top*pDoc->m_dZoomFactor),
-											Round(pDoc->m_rcCropDelta.right*pDoc->m_dZoomFactor),
-											Round(pDoc->m_rcCropDelta.bottom*pDoc->m_dZoomFactor));
-				pDoc->m_CropDocRect.DeflateRect(pDoc->m_rcCropDelta);
-				CropBottom(CPoint(m_CropZoomRect.left + nRectSizeXInside + 1, m_CropZoomRect.top + nRectSizeYInside + 1), nRectSizeYInside, FALSE);
-				CropRight(CPoint(m_CropZoomRect.left + nRectSizeXInside + 1, m_CropZoomRect.top + nRectSizeYInside + 1), nRectSizeXInside, FALSE);
-				m_CropZoomRect = m_ZoomRect;
-				pDoc->m_CropDocRect = pDoc->m_DocRect;
-				m_CropZoomRect.DeflateRect(	Round(pDoc->m_rcCropDelta.left*pDoc->m_dZoomFactor),
-											Round(pDoc->m_rcCropDelta.top*pDoc->m_dZoomFactor),
-											Round(pDoc->m_rcCropDelta.right*pDoc->m_dZoomFactor),
-											Round(pDoc->m_rcCropDelta.bottom*pDoc->m_dZoomFactor));
-				pDoc->m_CropDocRect.DeflateRect(pDoc->m_rcCropDelta);
-			}
-			// Point in Top-Right quadrant
-			else if (point.x > ptMiddle.x && point.y <= ptMiddle.y)
-			{
-				CropTop(point, nRectSizeYInside, FALSE);
-				CropRight(point, nRectSizeXInside, FALSE);
-				m_CropZoomRect = m_ZoomRect;
-				pDoc->m_CropDocRect = pDoc->m_DocRect;
-				m_CropZoomRect.DeflateRect(	Round(pDoc->m_rcCropDelta.left*pDoc->m_dZoomFactor),
-											Round(pDoc->m_rcCropDelta.top*pDoc->m_dZoomFactor),
-											Round(pDoc->m_rcCropDelta.right*pDoc->m_dZoomFactor),
-											Round(pDoc->m_rcCropDelta.bottom*pDoc->m_dZoomFactor));
-				pDoc->m_CropDocRect.DeflateRect(pDoc->m_rcCropDelta);
-				CropBottom(CPoint(m_CropZoomRect.right - nRectSizeXInside - 1, m_CropZoomRect.top + nRectSizeYInside + 1), nRectSizeYInside, FALSE);
-				CropLeft(CPoint(m_CropZoomRect.right - nRectSizeXInside - 1, m_CropZoomRect.top + nRectSizeYInside + 1), nRectSizeXInside, FALSE);
-				m_CropZoomRect = m_ZoomRect;
-				pDoc->m_CropDocRect = pDoc->m_DocRect;
-				m_CropZoomRect.DeflateRect(	Round(pDoc->m_rcCropDelta.left*pDoc->m_dZoomFactor),
-											Round(pDoc->m_rcCropDelta.top*pDoc->m_dZoomFactor),
-											Round(pDoc->m_rcCropDelta.right*pDoc->m_dZoomFactor),
-											Round(pDoc->m_rcCropDelta.bottom*pDoc->m_dZoomFactor));
-				pDoc->m_CropDocRect.DeflateRect(pDoc->m_rcCropDelta);
-			}
-			// Point in Bottom-Right quadrant
-			else if (point.x > ptMiddle.x && point.y > ptMiddle.y)
-			{
-				CropBottom(point, nRectSizeYInside, FALSE);
-				CropRight(point, nRectSizeXInside, FALSE);
-				m_CropZoomRect = m_ZoomRect;
-				pDoc->m_CropDocRect = pDoc->m_DocRect;
-				m_CropZoomRect.DeflateRect(	Round(pDoc->m_rcCropDelta.left*pDoc->m_dZoomFactor),
-											Round(pDoc->m_rcCropDelta.top*pDoc->m_dZoomFactor),
-											Round(pDoc->m_rcCropDelta.right*pDoc->m_dZoomFactor),
-											Round(pDoc->m_rcCropDelta.bottom*pDoc->m_dZoomFactor));
-				pDoc->m_CropDocRect.DeflateRect(pDoc->m_rcCropDelta);
-				CropTop(CPoint(m_CropZoomRect.right - nRectSizeXInside - 1, m_CropZoomRect.bottom - nRectSizeYInside - 1), nRectSizeYInside, FALSE);
-				CropLeft(CPoint(m_CropZoomRect.right - nRectSizeXInside - 1, m_CropZoomRect.bottom - nRectSizeYInside - 1), nRectSizeXInside, FALSE);
-				m_CropZoomRect = m_ZoomRect;
-				pDoc->m_CropDocRect = pDoc->m_DocRect;
-				m_CropZoomRect.DeflateRect(	Round(pDoc->m_rcCropDelta.left*pDoc->m_dZoomFactor),
-											Round(pDoc->m_rcCropDelta.top*pDoc->m_dZoomFactor),
-											Round(pDoc->m_rcCropDelta.right*pDoc->m_dZoomFactor),
-											Round(pDoc->m_rcCropDelta.bottom*pDoc->m_dZoomFactor));
-				pDoc->m_CropDocRect.DeflateRect(pDoc->m_rcCropDelta);
-			}
-			// Point in Bottom-Left quadrant
-			else
-			{
-				CropBottom(point, nRectSizeYInside, FALSE);
-				CropLeft(point, nRectSizeXInside, FALSE);
-				m_CropZoomRect = m_ZoomRect;
-				pDoc->m_CropDocRect = pDoc->m_DocRect;
-				m_CropZoomRect.DeflateRect(	Round(pDoc->m_rcCropDelta.left*pDoc->m_dZoomFactor),
-											Round(pDoc->m_rcCropDelta.top*pDoc->m_dZoomFactor),
-											Round(pDoc->m_rcCropDelta.right*pDoc->m_dZoomFactor),
-											Round(pDoc->m_rcCropDelta.bottom*pDoc->m_dZoomFactor));
-				pDoc->m_CropDocRect.DeflateRect(pDoc->m_rcCropDelta);
-				CropTop(CPoint(m_CropZoomRect.left + nRectSizeXInside + 1, m_CropZoomRect.bottom - nRectSizeYInside - 1), nRectSizeYInside, FALSE);
-				CropRight(CPoint(m_CropZoomRect.left + nRectSizeXInside + 1, m_CropZoomRect.bottom - nRectSizeYInside - 1), nRectSizeXInside, FALSE);
-				m_CropZoomRect = m_ZoomRect;
-				pDoc->m_CropDocRect = pDoc->m_DocRect;
-				m_CropZoomRect.DeflateRect(	Round(pDoc->m_rcCropDelta.left*pDoc->m_dZoomFactor),
-											Round(pDoc->m_rcCropDelta.top*pDoc->m_dZoomFactor),
-											Round(pDoc->m_rcCropDelta.right*pDoc->m_dZoomFactor),
-											Round(pDoc->m_rcCropDelta.bottom*pDoc->m_dZoomFactor));
-				pDoc->m_CropDocRect.DeflateRect(pDoc->m_rcCropDelta);
-			}
-
-			// Invalidate View and Update Status Text
-			CRect rcClient; 
-			GetClientRect(&rcClient);
-			InvalidateRect(rcClient, FALSE);
-			UpdateCropStatusText();
-		}
+			bPtInRect = FALSE;
 
 		// Set Capture
-		m_bCropMouseCaptured = TRUE;
-		SetCapture();
+		if (bPtInRect)
+		{
+			m_bCropMouseCaptured = TRUE;
+			SetCapture();
+		}
 	}
 	else if (pDoc->m_bDoRotationColorPickup)
 	{
@@ -3515,6 +3412,8 @@ void CPictureView::OnLButtonDblClk(UINT nFlags, CPoint point)
 			SetCapture();
 		}
 	}
+	else if (pDoc->m_bCrop)
+		pDoc->DoCropRect();
 	else
 		::AfxGetMainFrame()->EnterExitFullscreen();
 }
@@ -3533,8 +3432,7 @@ void CPictureView::OnLButtonUp(UINT nFlags, CPoint point)
 	m_bCropLeft = FALSE;
 	m_bCropRight = FALSE;
 	m_bCropCenter = FALSE;
-	m_bCropDrag = FALSE;
-	m_ptCropClick = CPoint(0,0);
+	m_ptCropCenter = CPoint(0,0);
 	m_dCropAspectRatio = 1.0;
 	m_bCropMaintainAspectRatio = FALSE;
 	pDoc->m_rcCropCenter = CRect(0,0,0,0);
@@ -3960,30 +3858,7 @@ void CPictureView::OnMouseMove(UINT nFlags, CPoint point)
 		}
 		else if (m_bCropCenter)
 		{
-			CropCenter(point - m_ptCropClick, nRectSizeXInside, nRectSizeYInside);
-		}
-		else if (m_bCropDrag)
-		{
-			if (point.x > m_ptCropClick.x + nRectSizeXInside && point.y > m_ptCropClick.y + nRectSizeYInside)
-			{
-				m_bCropBottomRight = TRUE;
-				m_bCropDrag = FALSE;
-			}
-			else if (point.x < m_ptCropClick.x - nRectSizeXInside && point.y > m_ptCropClick.y + nRectSizeYInside)
-			{
-				m_bCropBottomLeft = TRUE;
-				m_bCropDrag = FALSE;
-			}
-			else if (point.x < m_ptCropClick.x - nRectSizeXInside && point.y < m_ptCropClick.y - nRectSizeYInside)
-			{
-				m_bCropTopLeft = TRUE;
-				m_bCropDrag = FALSE;
-			}
-			else if (point.x > m_ptCropClick.x + nRectSizeXInside && point.y < m_ptCropClick.y - nRectSizeYInside)
-			{
-				m_bCropTopRight = TRUE;
-				m_bCropDrag = FALSE;
-			}
+			CropCenter(point - m_ptCropCenter, nRectSizeXInside, nRectSizeYInside);
 		}
 
 		// Update the crop rectangles if dragging
