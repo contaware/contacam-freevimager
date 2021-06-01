@@ -1368,6 +1368,8 @@
     <None Include="res\grab_normal.cur" />
     <None Include="res\hand.cur" />
     <None Include="res\HeaderArrows.bmp" />
+	<None Include="res\HeaderArrows2x.bmp" />
+	<None Include="res\HeaderArrows3x.bmp" />
     <None Include="res\magnifyminus.ico" />
     <None Include="res\magnifyp.ico" />
     <None Include="res\magnifyplus.ico" />
