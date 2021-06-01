@@ -10565,6 +10565,8 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 					sErrorMsg = _T("403 Forbidden");
 				else if (sCode == _T("404"))
 					sErrorMsg = _T("404 Not Found");
+				else if (sCode == _T("503"))
+					sErrorMsg = _T("503 Service Unavailable");
 				else
 					sErrorMsg.Format(_T("Error %s"), sCode);
 				m_pDoc->ConnectErr(sErrorMsg, m_pDoc->GetDeviceName());
