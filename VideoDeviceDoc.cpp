@@ -3112,6 +3112,8 @@ int CVideoDeviceDoc::CRtspThread::Work()
 				case AVERROR_HTTP_NOT_FOUND:	sErrorMsg = _T("404 Not Found"); break;
 				case AVERROR_HTTP_OTHER_4XX:	sErrorMsg = _T("Error 4XX"); break;
 				case AVERROR_HTTP_SERVER_ERROR:	sErrorMsg = _T("Error 5XX"); break;
+				case AVERROR_EOF:
+				case AVERROR(EAGAIN):
 				case AVERROR(EIO):
 				case AVERROR(ETIMEDOUT):		
 					sErrorMsg = ML_STRING(1465, "Cannot connect to camera");
