@@ -10556,7 +10556,16 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 			else
 			{
 				// Msg
-				m_pDoc->ConnectErr(ML_STRING(1465, "Cannot connect to camera"), m_pDoc->GetDeviceName());
+				CString sErrorMsg;
+				if (sCode == _T("400"))
+					sErrorMsg = _T("400 Bad Request");
+				else if (sCode == _T("403"))
+					sErrorMsg = _T("403 Forbidden");
+				else if (sCode == _T("404"))
+					sErrorMsg = _T("404 Not Found");
+				else
+					sErrorMsg.Format(_T("Error %s"), sCode);
+				m_pDoc->ConnectErr(sErrorMsg, m_pDoc->GetDeviceName());
 
 				// Empty the buffers, so that parser stops calling us!
 				pNetCom->Read();
