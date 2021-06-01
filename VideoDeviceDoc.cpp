@@ -2496,7 +2496,7 @@ int CVideoDeviceDoc::CHttpThread::Work()
 							AF_INET,			// Socket family priority: AF_INET for IPv4, AF_INET6 for IPv6
 							m_hEventArray[2],	// Http Video Connected Event
 							m_hEventArray[3]))	// Http Video Connect Failed Event
-					m_pDoc->ConnectErr(ML_STRING(1465, "Cannot connect to camera"), m_pDoc->GetDeviceName());
+					m_pDoc->ConnectErr(ML_STRING(1465, "Cannot reach the camera"), m_pDoc->GetDeviceName());
 				break;
 			}
 
@@ -2519,7 +2519,7 @@ int CVideoDeviceDoc::CHttpThread::Work()
 			case WAIT_OBJECT_0 + 3 :
 			{
 				::ResetEvent(m_hEventArray[3]);
-				m_pDoc->ConnectErr(ML_STRING(1465, "Cannot connect to camera"), m_pDoc->GetDeviceName());
+				m_pDoc->ConnectErr(ML_STRING(1465, "Cannot reach the camera"), m_pDoc->GetDeviceName());
 				break;
 			}
 
@@ -3116,11 +3116,11 @@ int CVideoDeviceDoc::CRtspThread::Work()
 				case AVERROR(EAGAIN):
 				case AVERROR(EIO):
 				case AVERROR(ETIMEDOUT):		
-					sErrorMsg = ML_STRING(1465, "Cannot connect to camera");
+					sErrorMsg = ML_STRING(1465, "Cannot reach the camera");
 					break;
 				default:
 					if (!::AVErrorToString(ret, sErrorMsg))
-						sErrorMsg = ML_STRING(1465, "Cannot connect to camera");
+						sErrorMsg = ML_STRING(1465, "Cannot reach the camera");
 					break;
 			}
 			m_pDoc->ConnectErr(sErrorMsg, m_pDoc->GetDeviceName());
