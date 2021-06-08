@@ -1,6 +1,6 @@
 FREEVIMAGER HISTORY
 
-9.9.18 (Month XXth 2021)
+9.9.18 (June 8th 2021)
 
 - Updated the avir library to version 2.9
 - Solved an issues introduced in 9.9.7 which displayed the color 
