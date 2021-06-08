@@ -72,8 +72,9 @@ ContaCam Program
 - Take multiple jpg snapshots on motion, not just one
   (randy3xyz@gmail.com)
   
-- Delete button directly on the page where a video is displayed and
-  switch to the next video as with a click on ">" (joerg@joergmahn.de)
+- Delete button directly on the page where a video is displayed and switch to the
+  next video or go back
+  (joerg@joergmahn.de, gthaavik@outlook.com)
 
 - In web interface main view when clicking the camera thumb show it fullscreen,
   when clicking the camera name show the videos (n1fbg2@yahoo.com)
@@ -82,7 +83,7 @@ ContaCam Program
 
 - Matrix 4 command for showing also 3 cams as 4 and matrix 6 command for showing 5
   cams as 6 (engineering@theremino.com)
-  
-- Possibility to delete from the mp4 viewer, when deleted go to next or back?
-  (gthaavik@outlook.com)
-  
+
+- In root index.php scale all thumbs to the same size so that they get arranged 
+  nicely in a grid
+  (wally.malicki@gmail.com)
