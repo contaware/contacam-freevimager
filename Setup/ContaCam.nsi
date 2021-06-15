@@ -308,7 +308,7 @@ Section "${APPNAME_NOEXT} Program (required)"
   File "MasterConfig.ini"
   SetOverwrite on
   
-  ; Microapache files and VC11 redistributables for it
+  ; Microapache files and Visual Studio redistributables for it
   File "https.crt"
   File "https.key"
   SetOutPath $INSTDIR\microapache

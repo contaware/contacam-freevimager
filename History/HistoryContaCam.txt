@@ -1,5 +1,10 @@
 CONTACAM HISTORY
 
+9.9.19 (Month XXth 2021)
+
+- Updated internal web server to Apache 2.4.48 and PHP 8.0.7
+  (Apache and PHP both with OpenSSL 1.1.1k)
+  
 9.9.18 (June 8th 2021)
 
 - Fast video saving option (be aware that this new setting will generate

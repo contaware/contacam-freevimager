@@ -1,4 +1,4 @@
-                                  Apache License
+                                 Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
 
@@ -365,7 +365,7 @@ For the  srclib\apr\include\apr_md5.h component:
  * licence for the modifications made to that material.
  */
 
-/* Copyright (C) 1991-2, RSA Data Security, Inc. Created 1991. All
+/* Copyright (C) 1991-2020, RSA Data Security, Inc. Created 1991. All
    rights reserved.
 
    License to copy and use this software is granted provided that it
@@ -400,7 +400,7 @@ For the  srclib\apr\passwd\apr_md5.c component:
 /* MD5C.C - RSA Data Security, Inc., MD5 message-digest algorithm
  */
 
-/* Copyright (C) 1991-2, RSA Data Security, Inc. Created 1991. All
+/* Copyright (C) 1991-2020, RSA Data Security, Inc. Created 1991. All
    rights reserved.
 
    License to copy and use this software is granted provided that it
@@ -437,7 +437,7 @@ For the srclib\apr-util\crypto\apr_md4.c component:
  * This is derived from material copyright RSA Data Security, Inc.
  * Their notice is reproduced below in its entirety.
  *
- * Copyright (C) 1991-2, RSA Data Security, Inc. Created 1991. All
+ * Copyright (C) 1991-2020, RSA Data Security, Inc. Created 1991. All
  * rights reserved.
  *
  * License to copy and use this software is granted provided that it
@@ -465,7 +465,7 @@ For the srclib\apr-util\include\apr_md4.h component:
  * This is derived from material copyright RSA Data Security, Inc.
  * Their notice is reproduced below in its entirety.
  *
- * Copyright (C) 1991-2, RSA Data Security, Inc. Created 1991. All
+ * Copyright (C) 1991-2020, RSA Data Security, Inc. Created 1991. All
  * rights reserved.
  *
  * License to copy and use this software is granted provided that it
@@ -494,7 +494,7 @@ For the srclib\apr-util\test\testmd4.c component:
  * This is derived from material copyright RSA Data Security, Inc.
  * Their notice is reproduced below in its entirety.
  *
- * Copyright (C) 1990-2, RSA Data Security, Inc. Created 1990. All
+ * Copyright (C) 1990-2020, RSA Data Security, Inc. Created 1990. All
  * rights reserved.
  *
  * RSA Data Security, Inc. makes no representations concerning either
