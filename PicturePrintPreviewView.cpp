@@ -2287,8 +2287,8 @@ LRESULT CPicturePrintPreviewView::OnGesture(WPARAM /*wParam*/, LPARAM lParam)
 	ASSERT_VALID(pDoc);
 
 	// Get gesture function pointers
-	typedef	BOOL (WINAPI *FPGETGESTUREINFO)(HGESTUREINFO_COMPATIBLE, PGESTUREINFO_COMPATIBLE);
-	typedef	BOOL (WINAPI *FPCLOSEGESTUREINFOHANDLE)(HGESTUREINFO_COMPATIBLE);
+	typedef	BOOL (WINAPI *FPGETGESTUREINFO)(HGESTUREINFO, PGESTUREINFO);
+	typedef	BOOL (WINAPI *FPCLOSEGESTUREINFOHANDLE)(HGESTUREINFO);
 	HINSTANCE h = ::LoadLibraryFromSystem32(_T("user32.dll"));
 	if (!h)
 		return Default();
@@ -2301,10 +2301,10 @@ LRESULT CPicturePrintPreviewView::OnGesture(WPARAM /*wParam*/, LPARAM lParam)
 	}
 
 	// Get current gesture info
-	GESTUREINFO_COMPATIBLE CurrentGestureInfo;
-	memset(&CurrentGestureInfo, 0, sizeof(GESTUREINFO_COMPATIBLE));
-	CurrentGestureInfo.cbSize = sizeof(GESTUREINFO_COMPATIBLE);
-	if (!fpGetGestureInfo((HGESTUREINFO_COMPATIBLE)lParam, &CurrentGestureInfo) || CurrentGestureInfo.hwndTarget != GetSafeHwnd())
+	GESTUREINFO CurrentGestureInfo;
+	memset(&CurrentGestureInfo, 0, sizeof(GESTUREINFO));
+	CurrentGestureInfo.cbSize = sizeof(GESTUREINFO);
+	if (!fpGetGestureInfo((HGESTUREINFO)lParam, &CurrentGestureInfo) || CurrentGestureInfo.hwndTarget != GetSafeHwnd())
 	{
 		::FreeLibrary(h);
 		return Default();
@@ -2401,7 +2401,7 @@ LRESULT CPicturePrintPreviewView::OnGesture(WPARAM /*wParam*/, LPARAM lParam)
 
 	// Close info handle if processing stops here
 	if (!bDefaultProcessing)
-		fpCloseGestureInfoHandle((HGESTUREINFO_COMPATIBLE)lParam);
+		fpCloseGestureInfoHandle((HGESTUREINFO)lParam);
 
 	// Free library
 	::FreeLibrary(h);

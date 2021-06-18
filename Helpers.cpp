@@ -15,35 +15,20 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-// PSAPI
-// In Windows 7 and Windows Server 2008 R2 the PSAPI functions (e.g.EnumProcesses) have been renamed
-// and moved from PSAPI.dll to KERNEL32.dll (e.g.K32EnumProcesses).
-// However PSAPI.dll still exports the "old" functions, but now they are just simple wrappers over
-// the "new" ones, located in KERNEL32.dll.	So, if your target system is Windows 7, Windows Server 2008 R2
-// or newer you can directly call K32EnumProcesses or indirectly, via EnumProcesses.
-// But, if your target system may be an older one, then obviously you have to call EnumProcesses.
-// See newer versions of PSAPI.h SDK header:
-// #if (PSAPI_VERSION > 1)
-//     #define EnumProcesses               K32EnumProcesses
-//     #define EnumProcessModules          K32EnumProcessModules
-// #endif
-// Depending on the minimum target system of your application, you have two choices:
-// 1. define PSAPI_VERSION to a value greater than 1 (in preprocessor directives or before including PSAPI.h)
-//    In this case K32EnumProcesses will be directly called, the link to PSAPI.lib is not necessary,
-//    but the target system must obviously be Windows 7, Windows Server 2008 R2, or newer.
-// 2. otherwise, make sure PSAPI_VERSION is 1 and link your project to PSAPI.lib.
-#if (PSAPI_VERSION <= 1)
-#pragma comment(lib, "psapi.lib")	// to support EnumProcesses(), EnumProcessModules(), GetModuleBaseName(), GetProcessMemoryInfo()
-#endif
 #pragma comment(lib, "mpr.lib")		// to support WNetGetConnection()
 #pragma comment(lib, "Rpcrt4.lib")	// to support UuidCreate(), UuidToString(), RpcStringFree(), UuidFromString()
 #pragma comment(lib, "Wininet.lib")	// to support InternetGetLastResponseInfo(), InternetOpen(), InternetConnect(), ...
 
+// Counter to make unique temp filenames
+static LONG g_lTempFilesCount = 0;
+
+// Default UI font supported by Windows 7 and higher
+TCHAR g_szDefaultFontFace[LF_FACESIZE] = _T("Segoe UI Symbol");
+
 // If InitHelpers() is not called vars default to:
-// default DPI, default font, no multimedia instructions,
+// default DPI, no multimedia instructions,
 // 64K allocation granularity and 2GB RAM
 int g_nSystemDPI = 96;
-TCHAR g_szDefaultFontFace[LF_FACESIZE] = _T("Segoe UI");
 BOOL g_bMMX = FALSE;
 BOOL g_bSSE = FALSE;
 BOOL g_bSSE2 = FALSE;
@@ -51,7 +36,6 @@ DWORD g_dwAllocationGranularity = 65536;
 int g_nPCInstalledPhysRamMB = 2048;
 int g_nOSUsablePhysRamMB = 2048;
 int g_nAppUsableAddressSpaceMB = 2047;
-static LONG g_lTempFilesCount = 0;
 void InitHelpers()
 {
 	// Get System DPI
@@ -61,10 +45,6 @@ void InitHelpers()
 		g_nSystemDPI = GetDeviceCaps(hDC, LOGPIXELSY);
 		ReleaseDC(NULL, hDC);
 	}
-
-	// Check whether Segoe UI with Symbols is supported
-	if (IsFontSupported(_T("Segoe UI Symbol")))
-		_tcscpy(g_szDefaultFontFace, _T("Segoe UI Symbol")); // supported by Windows 7 or higher
 
 	// Supported Instruction Sets
 	g_bMMX = IsProcessorFeaturePresent(PF_MMX_INSTRUCTIONS_AVAILABLE);
@@ -91,12 +71,6 @@ void InitHelpers()
 			g_nPCInstalledPhysRamMB = (int)(ullTotalMemoryInKilobytes >> 10);
 		FreeLibrary(h);
 	}
-
-	// TEST
-	// TODO: remove that when it's stable
-#ifdef _DEBUG
-	SplitPathTest();
-#endif
 }
 
 int SystemDPIScale(int n)

@@ -15,8 +15,8 @@
 // Windows thumbnail cache file
 #define THUMBS_DB				_T("Thumbs.db")
 
-extern int g_nSystemDPI;
 extern TCHAR g_szDefaultFontFace[LF_FACESIZE];
+extern int g_nSystemDPI;
 extern BOOL g_bMMX;
 extern BOOL g_bSSE;
 extern BOOL g_bSSE2;
