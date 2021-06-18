@@ -1,0 +1,114 @@
+Up to ContaCam 9.9.18 we used PHP 5.6 because PHP 7.2 build is not running on Vista and thread safety in PHP 7.0 and 7.1 is broken
+----------------------------------------------------------------------------------------------------------------------------------
+
+- apache 2.4.38 VC11 x86 (OpenSSL 1.0.2q)
+  https://www.apachelounge.com/download/VC11/
+  
+- php 5.6.40 VC11 x86 - thread safe version (OpenSSL 1.0.2q)
+  https://windows.php.net/download/#php-5.6-ts-VC11-x86
+or
+- php 5.6.40 own built VC11 x86 - thread safe version (OpenSSL 1.0.2q)
+  with 2x places INVALID_HANDLE_VALUE patch in zend_execute_API.c:
+  if (!DeleteTimerQueueTimer(NULL, tq_timer, INVALID_HANDLE_VALUE))
+  
+- VC11 redistributable (Visual Studio 2012)
+  https://www.microsoft.com/en-us/download/details.aspx?id=30679
+  
+Attention: we use libeay32.dll and ssleay32.dll from the thread safe php build (not from apache build)
+  
+  
+We now use the latest version because Vista support has been dropped
+--------------------------------------------------------------------
+
+- apache 2.4.48 VS16 x86 with OpenSSL 1.1.1k
+  https://www.apachelounge.com/download/
+
+- PHP 8.0.7 VS16 x86 (has OpenSSL 1.1.1k support and we must download the thread safe PHP version)
+  https://windows.php.net/download/
+
+- VS16 redistributable (Visual Studio 2019)
+  https://aka.ms/vs/16/release/VC_redist.x86.exe
+
+Attention: we use libcrypto-1_1.dll and libssl-1_1.dll from the thread safe php build (not from apache build)
+
+
+TS vs. NTS
+----------
+
+TS refers to multithread capable builds. NTS refers to single thread 
+only builds. Use case for TS binaries involves interaction with a 
+multithreaded SAPI and PHP loaded as a module into a web server. For NTS 
+binaries the widespread use case is interaction with a web server 
+through the FastCGI protocol, utilizing no multithreading (but also for 
+example CLI) 
+  
+  
+Some important readings
+-----------------------
+
+https://asawicki.info/news_1597_installing_visual_c_redistributable_package_from_command_line.html
+https://www.apachelounge.com/viewtopic.php?t=6359
+
+
+Compile your own PHP
+--------------------
+
+Prepare
+
+1. Install Visual Studio 2012
+
+2. Download the latest PHP SDK binary tools php-sdk-binary-tools-20110915.zip from
+http://windows.php.net/downloads/php-sdk/
+extract all to C:\php-sdk, it should now contain three sub-directories:
+bin, script and share
+
+3. Run the "VS2012 x86 Native Tools Command Prompt" and cd c:\php-sdk then run
+bin\phpsdk_buildtree.bat phpdev
+
+4. Now copy C:\php-sdk\phpdev\vc9 to C:\php-sdk\phpdev\vc11
+
+5. Extract PHP source to C:\php-sdk\phpdev\vc11\x86\php-5.6.x-src
+
+6. Get lib and include from the used httpd-2.4.x-win32-VC11.zip and put them to
+C:\php-sdk\phpdev\vc11\x86\deps\lib\apache2_4 and C:\php-sdk\phpdev\vc11\x86\deps\include\apache2_4
+
+7. Extract the wanted dependencies from http://windows.php.net/downloads/php-sdk/ to
+C:\php-sdk\phpdev\vc11\x86\deps
+Used:
+- zlib-1.2.7.3-vc11-x86.zip
+- openssl-1.0.2q-vc11-x86.zip
+- libiconv-1.14-vc11-x86.zip
+
+
+Compile
+
+1. cd c:\php-sdk\ and run
+bin\phpsdk_setvars.bat
+
+2. cd C:\php-sdk\phpdev\vc11\x86\php-5.6.x-src and run
+buildconf
+
+3. configure --help
+
+4. configure --disable-all --enable-apache2-4handler --enable-calendar --enable-ctype --enable-filter --enable-hash --with-iconv --enable-mbstring --with-openssl --enable-session --enable-tokenizer --enable-zlib
+
+5. nmake
+
+
+Recompile
+
+1. cd c:\php-sdk\ and run
+bin\phpsdk_setvars.bat
+
+2. cd C:\php-sdk\phpdev\vc11\x86\php-5.6.x-src and run
+nmake clean
+
+3. buildconf --force
+
+4. configure (see above)
+
+5. nmake
+
+
+Reference
+https://wiki.php.net/internals/windows/stepbystepbuild
