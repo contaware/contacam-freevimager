@@ -58,6 +58,8 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_UPDATE_COMMAND_UI(ID_CAPTURE_RECORD, OnUpdateCaptureRecord)
 	ON_COMMAND(ID_SENSITIVITY_0, OnMovDetSensitivity0)
 	ON_UPDATE_COMMAND_UI(ID_SENSITIVITY_0, OnUpdateMovDetSensitivity0)
+	ON_COMMAND(ID_SENSITIVITY_5, OnMovDetSensitivity5)
+	ON_UPDATE_COMMAND_UI(ID_SENSITIVITY_5, OnUpdateMovDetSensitivity5)
 	ON_COMMAND(ID_SENSITIVITY_10, OnMovDetSensitivity10)
 	ON_UPDATE_COMMAND_UI(ID_SENSITIVITY_10, OnUpdateMovDetSensitivity10)
 	ON_COMMAND(ID_SENSITIVITY_20, OnMovDetSensitivity20)
@@ -4293,14 +4295,17 @@ BOOL CVideoDeviceDoc::WriteDetectionLevelToFile(int nDetectionLevel, CString sRe
 	return FALSE;
 }
 
-// Valid values: 0,10,20,30,40,50,60,70,80,90,100
+// Valid values: 0,5,10,20,30,40,50,60,70,80,90,100
 int CVideoDeviceDoc::ValidateDetectionLevel(int nDetectionLevel)
 {
-	if (nDetectionLevel < 0)
-		nDetectionLevel = 0;
-	else if (nDetectionLevel > 100)
-		nDetectionLevel = 100;
-	return (nDetectionLevel / 10) * 10;
+	if (nDetectionLevel <= 0)				// min value is 0
+		return 0;
+	else if (nDetectionLevel < 10)			// round 1..9 to 5
+		return 5;
+	else if (nDetectionLevel >= 100)		// max value is 100
+		return 100;
+	else
+		return (nDetectionLevel / 10) * 10; // round all others to the lower value
 }
 
 int CVideoDeviceDoc::ValidateSnapshotRate(int nSnapshotRate)
@@ -4473,14 +4478,7 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	if ((nDetectionLevel = ReadDetectionLevelFromFile(m_sRecordAutoSaveDir)) >= 0)
 		m_nDetectionLevel = ValidateDetectionLevel(nDetectionLevel);
 	else
-	{
-		// TODO: in future remove the following and just set nDetectionLevel = MOVDET_DEFAULT_LEVEL;
-		
-		// Import old registry value and write it to the file
-		nDetectionLevel = ValidateDetectionLevel(pApp->GetProfileInt(sSection, _T("DetectionLevel"), MOVDET_DEFAULT_LEVEL));
-		if (WriteDetectionLevelToFile(nDetectionLevel, m_sRecordAutoSaveDir))
-			m_nDetectionLevel = nDetectionLevel; // always after the write as in OnTimer() it gets polled!
-	}
+		m_nDetectionLevel = MOVDET_DEFAULT_LEVEL;
 	LoadZonesSettings(sSection);
 	m_nOldDetectionZoneSize = m_nDetectionZoneSize = (int) pApp->GetProfileInt(sSection, _T("DetectionZoneSize"), 0);
 	m_bSaveVideo = (BOOL) pApp->GetProfileInt(sSection, _T("SaveVideoMovementDetection"), TRUE);
@@ -5133,6 +5131,17 @@ void CVideoDeviceDoc::OnMovDetSensitivity0()
 void CVideoDeviceDoc::OnUpdateMovDetSensitivity0(CCmdUI* pCmdUI)
 {
 	pCmdUI->SetCheck(m_nDetectionLevel == 0 ? 1 : 0);
+}
+
+void CVideoDeviceDoc::OnMovDetSensitivity5()
+{
+	if (WriteDetectionLevelToFile(5, m_sRecordAutoSaveDir))
+		m_nDetectionLevel = 5; // always after the write as in OnTimer() it gets polled!
+}
+
+void CVideoDeviceDoc::OnUpdateMovDetSensitivity5(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(m_nDetectionLevel == 5 ? 1 : 0);
 }
 
 void CVideoDeviceDoc::OnMovDetSensitivity10()

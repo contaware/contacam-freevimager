@@ -5,7 +5,7 @@ if "%~1"=="" (
 	echo.Please Provide a Parameter!
 	echo.
 	echo.0: REC OFF
-	echo.10,20,30..90: increasing motion sensitivity
+	echo.5,10,20,30..90: increasing motion sensitivity
 	echo.100: continuous REC
 	timeout /T 10
 	goto :eof

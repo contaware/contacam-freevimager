@@ -664,7 +664,8 @@ BEGIN
     BEGIN
         MENUITEM "REC OFF",                     ID_SENSITIVITY_0
         MENUITEM SEPARATOR
-        MENUITEM "Motion REC with sensitivity 10", ID_SENSITIVITY_10
+        MENUITEM "Motion REC with sensitivity 5", ID_SENSITIVITY_5
+		MENUITEM "Motion REC with sensitivity 10", ID_SENSITIVITY_10
         MENUITEM "Motion REC with sensitivity 20", ID_SENSITIVITY_20
         MENUITEM "Motion REC with sensitivity 30", ID_SENSITIVITY_30
         MENUITEM "Motion REC with sensitivity 40", ID_SENSITIVITY_40
