@@ -53,14 +53,12 @@ public:
 // Implementation
 protected:
 	CString m_sName;
-	TCHAR m_cPasswordChar;
 	void CopyToStruct();
 	static BOOL IsEmail(const CString& sEmail);
 	BOOL ValidateEmailsAndHost();
 	// Generated message map functions
 	//{{AFX_MSG(CSendMailConfigurationDlg)
 	virtual BOOL OnInitDialog();
-	afx_msg void OnCheckShowPassword();
 	afx_msg void OnChangeEditSenderMail();
 	virtual void OnOK();
 	afx_msg void OnButtonTest();

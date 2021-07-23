@@ -75,7 +75,6 @@ void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CSettingsDlgVideoDeviceDoc, CDialog)
 	//{{AFX_MSG_MAP(CSettingsDlgVideoDeviceDoc)
 	ON_BN_CLICKED(IDC_BUTTON_DOCROOT, OnButtonDocRoot)
-	ON_BN_CLICKED(IDC_CHECK_SHOW_PASSWORD, OnCheckShowPassword)
 	ON_BN_CLICKED(IDC_BUTTON_CERT_SSL, OnButtonCertSsl)
 	ON_BN_CLICKED(IDC_BUTTON_KEY_SSL, OnButtonKeySsl)
 	ON_NOTIFY(NM_CLICK, IDC_SYSLINK_HTTPD_CONF_EDITABLE, OnSyslinkHttpdConfEditable)
@@ -416,17 +415,6 @@ void CSettingsDlgVideoDeviceDoc::OnButtonDocRoot()
 	}
 }
 
-void CSettingsDlgVideoDeviceDoc::OnCheckShowPassword()
-{
-	CEdit* pEditPw = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
-	CButton* pCheckPw = (CButton*)GetDlgItem(IDC_CHECK_SHOW_PASSWORD);
-	if (pCheckPw->GetCheck() > 0)
-		pEditPw->SetPasswordChar(0);
-	else
-		pEditPw->SetPasswordChar(m_cPasswordChar);
-	pEditPw->Invalidate();
-}
-
 void CSettingsDlgVideoDeviceDoc::OnButtonCertSsl()
 {
 	// Validate entered data
@@ -476,10 +464,6 @@ BOOL CSettingsDlgVideoDeviceDoc::OnInitDialog()
 	// Shield Icon on OK Button
 	CButton* pOK = (CButton*)GetDlgItem(IDOK);
 	pOK->SendMessage(BCM_SETSHIELD, 0, TRUE);
-
-	// Get default password char
-	CEdit* pEditPw = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
-	m_cPasswordChar = pEditPw->GetPasswordChar();
 
 	// Init timer
 	SetTimer(ID_TIMER_SETTINGSDLG, SETTINGSDLG_TIMER_MS, NULL);

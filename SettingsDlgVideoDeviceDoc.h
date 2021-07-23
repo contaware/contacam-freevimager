@@ -76,7 +76,6 @@ protected:
 	int m_nMicroApacheDocRootOldFilesCount;
 	BOOL m_bDoApplySettings;
 	CMergeDirThread m_MergeDirThread;
-	TCHAR m_cPasswordChar;
 	void ApplySettingsInit();
 	void ApplySettingsEnd();
 	void EnableDisableAllCtrls(BOOL bEnable);
@@ -88,7 +87,6 @@ protected:
 	afx_msg void OnTimer(UINT nIDEvent);
 	afx_msg void OnDestroy();
 	afx_msg void OnButtonDocRoot();
-	afx_msg void OnCheckShowPassword();
 	afx_msg void OnButtonCertSsl();
 	afx_msg void OnButtonKeySsl();
 	afx_msg void OnSyslinkHttpdConfEditable(NMHDR* pNMHDR, LRESULT* pResult);

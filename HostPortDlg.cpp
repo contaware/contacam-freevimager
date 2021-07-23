@@ -45,7 +45,6 @@ BEGIN_MESSAGE_MAP(CHostPortDlg, CDialog)
 	ON_CBN_EDITCHANGE(IDC_COMBO_HOST, OnEditchangeComboHost)
 	ON_EN_CHANGE(IDC_EDIT_PORT, OnChangeEditPort)
 	ON_CBN_SELCHANGE(IDC_COMBO_DEVICETYPEMODE, OnSelchangeComboDeviceTypeMode)
-	ON_BN_CLICKED(IDC_CHECK_SHOW_PASSWORD, OnCheckShowPassword)
 	ON_BN_CLICKED(IDC_BUTTON_HELP, OnButtonHelp)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -273,10 +272,6 @@ BOOL CHostPortDlg::OnInitDialog()
 	// Current Device Type Mode
 	m_nDeviceTypeMode = m_DeviceTypeModes[nLastSel];
 	DeviceTypeModeToSelection(m_nDeviceTypeMode);
-
-	// Get default password char
-	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
-	m_cPasswordChar = pEdit->GetPasswordChar();
 
 	// Update Controls
 	EnableDisableCtrls();
@@ -690,17 +685,6 @@ void CHostPortDlg::OnOK()
 	SaveSettings();
 
 	CDialog::OnOK();
-}
-
-void CHostPortDlg::OnCheckShowPassword()
-{
-	CEdit* pEditPw = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
-	CButton* pCheckPw = (CButton*)GetDlgItem(IDC_CHECK_SHOW_PASSWORD);
-	if (pCheckPw->GetCheck() > 0)
-		pEditPw->SetPasswordChar(0);
-	else
-		pEditPw->SetPasswordChar(m_cPasswordChar);
-	pEditPw->Invalidate();
 }
 
 void CHostPortDlg::OnButtonHelp()

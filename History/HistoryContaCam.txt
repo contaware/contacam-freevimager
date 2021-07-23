@@ -5,6 +5,8 @@ CONTACAM HISTORY
 - Dropped Windows Vista and Windows Server 2008 support
 - Updated internal web server to Apache 2.4.48 and PHP 8.0.7
   (Apache and PHP both with OpenSSL 1.1.1k)
+- Because many users expressed security concerns we removed
+  all "Show password" checkboxes
   
 9.9.18 (June 8th 2021)
 
