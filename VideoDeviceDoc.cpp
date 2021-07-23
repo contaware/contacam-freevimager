@@ -2642,11 +2642,12 @@ int CVideoDeviceDoc::CRtspThread::Work()
 
 		// Open rtsp
 		CStringA sAnsiURL(m_sURL);
+		pFormatCtx->probesize = 10000000; // the default of 5000000 bytes is too low
 		if ((ret = avformat_open_input(&pFormatCtx, sAnsiURL, NULL, &opts)) < 0)
 			goto free;
 
 		// Search video and audio streams for which we have decoders
-		pFormatCtx->max_analyze_duration = 10*AV_TIME_BASE; // the default of 5*AV_TIME_BASE = 5 sec is too low
+		pFormatCtx->max_analyze_duration = 20*AV_TIME_BASE; // the default of 5*AV_TIME_BASE = 5 sec is too low
 		if ((ret = avformat_find_stream_info(pFormatCtx, NULL)) < 0)
 			goto free;
 		int nVideoStreamIndex = av_find_best_stream(pFormatCtx, AVMEDIA_TYPE_VIDEO, -1, -1, &pVideoCodec, 0);
