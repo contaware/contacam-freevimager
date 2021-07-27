@@ -2614,6 +2614,8 @@ int CVideoDeviceDoc::CRtspThread::Work()
 			av_dict_set(&opts, "rtsp_flags", "prefer_tcp", 0);
 		
 		// Use UDP Multicast as RTSP transport
+		// Attention: when both prefer_tcp and udp_multicast are set, ffmpeg chooses UDP multicast and
+		//            not TCP even if TCP is available as RTSP transport
 		if (m_pDoc->m_bUdpMulticastforRtsp)
 			av_dict_set(&opts, "rtsp_transport", "udp_multicast", 0);
 

@@ -77,6 +77,8 @@ protected:
 	afx_msg void OnEditchangeComboHost();
 	afx_msg void OnChangeEditPort();
 	afx_msg void OnSelchangeComboDeviceTypeMode();
+	afx_msg void OnCheckPreferTcpforRtsp();
+	afx_msg void OnCheckUdpMulticastforRtsp();
 	afx_msg void OnButtonHelp();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()

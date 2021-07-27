@@ -45,6 +45,8 @@ BEGIN_MESSAGE_MAP(CHostPortDlg, CDialog)
 	ON_CBN_EDITCHANGE(IDC_COMBO_HOST, OnEditchangeComboHost)
 	ON_EN_CHANGE(IDC_EDIT_PORT, OnChangeEditPort)
 	ON_CBN_SELCHANGE(IDC_COMBO_DEVICETYPEMODE, OnSelchangeComboDeviceTypeMode)
+	ON_BN_CLICKED(IDC_CHECK_PREFER_TCP_FOR_RTSP, OnCheckPreferTcpforRtsp)
+	ON_BN_CLICKED(IDC_CHECK_UDP_MULTICAST_FOR_RTSP, OnCheckUdpMulticastforRtsp)
 	ON_BN_CLICKED(IDC_BUTTON_HELP, OnButtonHelp)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -632,6 +634,30 @@ void CHostPortDlg::OnSelchangeComboDeviceTypeMode()
 {
 	m_nDeviceTypeMode = SelectionToDeviceTypeMode();
 	LoadSettings();
+}
+
+void CHostPortDlg::OnCheckPreferTcpforRtsp()
+{
+	// Disallow the possibility to check both because when both are checked ffmpeg
+	// chooses UDP Multicast and not TCP which is not what's intuitively expected
+	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_PREFER_TCP_FOR_RTSP);
+	if (pCheck->GetCheck())
+	{
+		pCheck = (CButton*)GetDlgItem(IDC_CHECK_UDP_MULTICAST_FOR_RTSP);
+		pCheck->SetCheck(0);
+	}
+}
+
+void CHostPortDlg::OnCheckUdpMulticastforRtsp()
+{
+	// Disallow the possibility to check both because when both are checked ffmpeg
+	// chooses UDP Multicast and not TCP which is not what's intuitively expected
+	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_UDP_MULTICAST_FOR_RTSP);
+	if (pCheck->GetCheck())
+	{
+		pCheck = (CButton*)GetDlgItem(IDC_CHECK_PREFER_TCP_FOR_RTSP);
+		pCheck->SetCheck(0);
+	}
 }
 
 void CHostPortDlg::OnError()
