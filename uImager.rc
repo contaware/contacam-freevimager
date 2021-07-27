@@ -3972,7 +3972,7 @@ BEGIN
     IDS_STRING1866          "HTTP jpeg snapshots"
     IDS_STRING1867          "Enter an IP or a Hostname or an URL starting with rtsp:// or http:// (ATTENTION: User Name and Password must be provided under Camera Login, not in the URL)"
     IDS_STRING1868          "or"
-    IDS_STRING1869          "Choose a directory under the %s drive"
+    IDS_STRING1869          "The chosen folder is not empty"
     IDS_STRING1870          "The new folder cannot be a subfolder of the old one"
     IDS_STRING1871          "Move all camera folders to selected directory"
 END

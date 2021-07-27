@@ -10,26 +10,26 @@
 
 #ifdef VIDEODEVICEDOC
 
-//  Merge Directory Thread
-class CMergeDirThread : public CWorkerThread
+//  Move Directory Thread
+class CMoveDirThread : public CWorkerThread
 {
 	public:
-		CMergeDirThread(){;};
-		virtual ~CMergeDirThread(){Kill();};
-		__forceinline int GetMergeDirFilesCount() const {return m_nMergedFilesCount;};
-		__forceinline DWORD GetMergeDirLastError() const {return m_dwMergeDirLastError;};
+		CMoveDirThread(){;};
+		virtual ~CMoveDirThread(){Kill();};
+		__forceinline int GetMoveDirFilesCount() const {return m_nMovedFilesCount;};
+		__forceinline DWORD GetMoveDirLastError() const {return m_dwMoveDirLastError;};
 		CString m_sFromDir;
 		CString m_sToDir;
 
 	protected:
-		volatile int m_nMergedFilesCount;
-		volatile DWORD m_dwMergeDirLastError;
+		volatile int m_nMovedFilesCount;
+		volatile DWORD m_dwMoveDirLastError;
 		int Work()
 		{
-			m_nMergedFilesCount = 0;
-			m_dwMergeDirLastError = 0;
-			if (!::MergeDirContent(m_sFromDir, m_sToDir, TRUE, TRUE, (int*)&m_nMergedFilesCount)) // overwrite existing
-				m_dwMergeDirLastError = ::GetLastError();
+			m_nMovedFilesCount = 0;
+			m_dwMoveDirLastError = 0;
+			if (!::MergeDirContent(m_sFromDir, m_sToDir, TRUE, TRUE, (int*)&m_nMovedFilesCount)) // overwrite existing
+				m_dwMoveDirLastError = ::GetLastError();
 			else
 				::DeleteDir(m_sFromDir); // no error message on failure
 			return 0;
@@ -75,7 +75,7 @@ protected:
 	CString m_sMicroApacheDocRootOld;
 	int m_nMicroApacheDocRootOldFilesCount;
 	BOOL m_bDoApplySettings;
-	CMergeDirThread m_MergeDirThread;
+	CMoveDirThread m_MoveDirThread;
 	void ApplySettingsInit();
 	void ApplySettingsEnd();
 	void EnableDisableAllCtrls(BOOL bEnable);

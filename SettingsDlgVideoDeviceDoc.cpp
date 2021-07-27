@@ -176,10 +176,10 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsInit()
 				pApp->WriteProfileString(DevicePathNames[i], _T("RecordAutoSaveDir"), m_sMicroApacheDocRoot + _T("\\") + sRecordAutoSaveDir);
 			}
 
-			// Start Merge Thread
-			m_MergeDirThread.m_sFromDir = m_sMicroApacheDocRootOld;
-			m_MergeDirThread.m_sToDir = m_sMicroApacheDocRoot;
-			m_MergeDirThread.Start();
+			// Start Move Thread
+			m_MoveDirThread.m_sFromDir = m_sMicroApacheDocRootOld;
+			m_MoveDirThread.m_sToDir = m_sMicroApacheDocRoot;
+			m_MoveDirThread.Start();
 		}
 	}
 }
@@ -201,11 +201,11 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsEnd()
 		// Document root changed?
 		if (m_sMicroApacheDocRoot.CompareNoCase(m_sMicroApacheDocRootOld) != 0)
 		{
-			// Merge error?
-			if (m_MergeDirThread.GetMergeDirLastError() != 0)
+			// Move error?
+			if (m_MoveDirThread.GetMoveDirLastError() != 0)
 			{
 				EndWaitCursor();
-				::ShowErrorMsg(m_MergeDirThread.GetMergeDirLastError(), TRUE);
+				::ShowErrorMsg(m_MoveDirThread.GetMoveDirLastError(), TRUE);
 				BeginWaitCursor();
 			}
 		}
@@ -272,10 +272,10 @@ void CSettingsDlgVideoDeviceDoc::OnTimer(UINT nIDEvent)
 {
 	if (m_bDoApplySettings)
 	{
-		if (m_MergeDirThread.IsAlive())
+		if (m_MoveDirThread.IsAlive())
 		{
 			CString sProgress;
-			sProgress.Format(_T("%d / %d"), m_MergeDirThread.GetMergeDirFilesCount(), m_nMicroApacheDocRootOldFilesCount);
+			sProgress.Format(_T("%d / %d"), m_MoveDirThread.GetMoveDirFilesCount(), m_nMicroApacheDocRootOldFilesCount);
 			SetWindowText(sProgress);
 		}
 		else
@@ -375,15 +375,19 @@ void CSettingsDlgVideoDeviceDoc::OnButtonDocRoot()
 		// Trim trailing backslash
 		sNewMicroApacheDocRoot.TrimRight(_T('\\'));
 
-		// Fail if sNewMicroApacheDocRoot is the system drive
-		CString sSysDrive;
-		::GetWindowsDirectory(sSysDrive.GetBuffer(MAX_PATH), MAX_PATH);
-		sSysDrive.ReleaseBuffer();
-		sSysDrive = ::GetDriveName(sSysDrive);
-		if (sSysDrive.CompareNoCase(sNewMicroApacheDocRoot) == 0)
+		// Fail if sNewMicroApacheDocRoot is a nested subdir of the old one
+		if (::IsSubDir(m_sMicroApacheDocRootOld, sNewMicroApacheDocRoot))
 		{
-			sMsg.Format(ML_STRING(1869, "Choose a directory under the %s drive"), sSysDrive);
-			::AfxMessageBox(sMsg, MB_OK | MB_ICONERROR);
+			::AfxMessageBox(ML_STRING(1870, "The new folder cannot be a subfolder of the old one"), MB_OK | MB_ICONERROR);
+			return;
+		}
+
+		// Fail if sNewMicroApacheDocRoot is not empty
+		// Note: PathIsDirectoryEmpty fails also if the folder only contains desktop.ini or Thumbs.db
+		if (sNewMicroApacheDocRoot.CompareNoCase(m_sMicroApacheDocRootOld) != 0 &&
+			!::PathIsDirectoryEmpty(sNewMicroApacheDocRoot))
+		{
+			::AfxMessageBox(ML_STRING(1869, "The chosen folder is not empty"), MB_OK | MB_ICONERROR);
 			return;
 		}
 
@@ -399,13 +403,6 @@ void CSettingsDlgVideoDeviceDoc::OnButtonDocRoot()
 		if (!::IsASCIICompatiblePath(sNewMicroApacheDocRoot))
 		{
 			::AfxMessageBox(ML_STRING(1766, "Only letters, numbers or spaces are allowed"), MB_OK | MB_ICONERROR);
-			return;
-		}
-
-		// Fail if sNewMicroApacheDocRoot is a nested subdir of the old one
-		if (::IsSubDir(m_sMicroApacheDocRootOld, sNewMicroApacheDocRoot))
-		{
-			::AfxMessageBox(ML_STRING(1870, "The new folder cannot be a subfolder of the old one"), MB_OK | MB_ICONERROR);
 			return;
 		}
 
