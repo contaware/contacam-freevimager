@@ -2,6 +2,7 @@ FREEVIMAGER HISTORY
 
 9.9.19 (Month XXth 2021)
 
+- Added a clear recent file list command
 - Dropped Windows Vista and Windows Server 2008 support
 
 9.9.18 (June 8th 2021)

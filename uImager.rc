@@ -101,6 +101,7 @@ BEGIN
         MENUITEM "Batch Processing...",         ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM "Clear List",                  ID_FILE_MRU_CLEAR
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_APP_EXIT
     END
@@ -246,6 +247,7 @@ BEGIN
         MENUITEM "&Print...\tCtrl+P",           ID_FILE_PRINT_PREVIEW
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM "Clear List",                  ID_FILE_MRU_CLEAR
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_APP_EXIT
     END
@@ -4029,6 +4031,11 @@ BEGIN
     IDS_STRING1914          "Upgrade to Windows 10 (1803) or get curl from:"
     IDS_STRING1915          "1. Download binary and unzip"
     IDS_STRING1916          "2. From bin copy curl.exe and curl-ca-bundle.crt to %s"
+END
+
+STRINGTABLE
+BEGIN
+    ID_FILE_MRU_CLEAR       "Clear the recent file list\nClear Recent File List"
 END
 
 #endif    // English (United States) resources

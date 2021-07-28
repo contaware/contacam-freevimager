@@ -91,6 +91,9 @@ BEGIN_MESSAGE_MAP(CUImagerApp, CWinApp)
 	ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
 	ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
 	ON_COMMAND(ID_FILE_OPEN_DIR, OnFileOpenDir)
+	ON_COMMAND(ID_FILE_MRU_CLEAR, OnClearRecentFileList)
+	ON_UPDATE_COMMAND_UI(ID_FILE_MRU_CLEAR, OnUpdateClearRecentFileList)
+	ON_UPDATE_COMMAND_UI(ID_FILE_MRU_FILE1, OnUpdateRecentFileMenu)
 	ON_COMMAND(ID_FILE_NEW, OnFileNew)
 	ON_COMMAND(ID_FILE_CLOSEALL, OnFileCloseall)
 	ON_COMMAND(ID_EDIT_PASTE, OnEditPaste)
@@ -3927,6 +3930,38 @@ CUImagerMultiDocTemplate* CUImagerApp::GetTemplateFromFileExtension(CString sFil
 		return GetPictureDocTemplate();
 	else
 		return NULL;
+}
+
+void CUImagerApp::OnClearRecentFileList()
+{
+	int iMRU = m_pRecentFileList->GetSize();
+	while (iMRU > 0)
+		m_pRecentFileList->Remove(--iMRU);
+}
+
+void CUImagerApp::OnUpdateClearRecentFileList(CCmdUI* pCmdUI)
+{
+	pCmdUI->Enable(m_pRecentFileList && !((*m_pRecentFileList)[0].IsEmpty()));
+}
+
+void CUImagerApp::OnUpdateRecentFileMenu(CCmdUI* pCmdUI)
+{
+	// Taken from CWinApp::OnUpdateRecentFileMenu(CCmdUI* pCmdUI)
+	ASSERT_VALID(this);
+	ENSURE_ARG(pCmdUI != NULL);
+	if (m_pRecentFileList == NULL) // no MRU files
+		pCmdUI->Enable(FALSE);
+	else
+	{
+		// When the Recent File List is cleared we must delete all menu items except the
+		// starting ID_FILE_MRU_FILE1 because m_pRecentFileList->UpdateMenu() is not doing it
+		if ((*m_pRecentFileList)[0].IsEmpty())
+		{
+			for (int iMRU = 1; iMRU < m_pRecentFileList->GetSize(); iMRU++)
+				pCmdUI->m_pMenu->DeleteMenu(pCmdUI->m_nID + iMRU, MF_BYCOMMAND);
+		}
+		m_pRecentFileList->UpdateMenu(pCmdUI);
+	}
 }
 
 void CUImagerApp::OnFileNew() 

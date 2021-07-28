@@ -3014,6 +3014,7 @@
 #define ID_ZOOM_COMBOX                  32799
 #define ID_VIEW_FULLSCREEN              32804
 #define ID_FILE_OPEN_DIR                32805
+#define ID_FILE_MRU_CLEAR               32806
 #define ID_FILE_CLOSEALL                32807
 #define ID_SLIDESHOW_DELAY_2            32810
 #define ID_SLIDESHOW_DELAY_3            32811

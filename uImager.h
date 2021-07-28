@@ -602,6 +602,9 @@ public:
 	afx_msg void OnAppAbout();
 	afx_msg void OnFileOpen();
 	afx_msg void OnFileOpenDir();
+	afx_msg void OnClearRecentFileList();
+	afx_msg void OnUpdateClearRecentFileList(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateRecentFileMenu(CCmdUI* pCmdUI);
 	afx_msg void OnFileNew();
 	afx_msg void OnFileCloseall();
 	afx_msg void OnEditPaste();
