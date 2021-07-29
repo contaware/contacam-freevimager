@@ -4,6 +4,7 @@
 #pragma once
 
 #include "WorkerThread.h"
+#include "GetDirContentSize.h"
 
 // SettingsDlgVideoDeviceDoc.h : header file
 //
@@ -31,7 +32,13 @@ class CMoveDirThread : public CWorkerThread
 			if (!::MergeDirContent(m_sFromDir, m_sToDir, TRUE, TRUE, (int*)&m_nMovedFilesCount)) // overwrite existing
 				m_dwMoveDirLastError = ::GetLastError();
 			else
-				::DeleteDir(m_sFromDir); // no error message on failure
+			{
+				// MergeDirContent() leaves empty folders but should not leave files
+				int nFilesCount = 0;
+				::GetDirContentSize(m_sFromDir, &nFilesCount);
+				if (nFilesCount == 0)
+					::DeleteDir(m_sFromDir);
+			}
 			return 0;
 		};
 };

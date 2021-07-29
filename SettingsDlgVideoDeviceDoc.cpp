@@ -8,7 +8,6 @@
 #include "BrowseDlg.h"
 #include "SettingsDlgVideoDeviceDoc.h"
 #include "NoVistaFileDlg.h"
-#include "GetDirContentSize.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
