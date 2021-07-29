@@ -3934,9 +3934,17 @@ CUImagerMultiDocTemplate* CUImagerApp::GetTemplateFromFileExtension(CString sFil
 
 void CUImagerApp::OnClearRecentFileList()
 {
-	int iMRU = m_pRecentFileList->GetSize();
-	while (iMRU > 0)
-		m_pRecentFileList->Remove(--iMRU);
+	if (m_pRecentFileList)
+	{
+		// Clear
+		int iMRU = m_pRecentFileList->GetSize();
+		while (iMRU > 0)
+			m_pRecentFileList->Remove(--iMRU);
+
+		// Write to registry or ini file now
+		// (done also in ExitInstance() by SaveStdProfileSettings())
+		m_pRecentFileList->WriteList();
+	}
 }
 
 void CUImagerApp::OnUpdateClearRecentFileList(CCmdUI* pCmdUI)
