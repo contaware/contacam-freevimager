@@ -30,7 +30,8 @@ protected:
 	void DrawZones(HDC hDC, const CRect& rcClient);
 	BOOL ReOpenDxDevice();
 	BYTE m_MovDetSingleZoneSensitivity;
-	BOOL m_bMovDetUnsupportedVideoOrZonesSize;
+	BOOL m_bMovDetUnsupportedVideoSize;
+	BOOL m_bMovDetUnsupportedZonesSize;
 	CVideoDeviceToolBar m_VideoDeviceToolBar;
 
 // Overrides

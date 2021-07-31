@@ -3257,6 +3257,7 @@ STRINGTABLE
 BEGIN
     ID_VIEW_FULLSCREEN      "Go to full screen mode (exit with ESC or F11)\nFull Screen"
     ID_FILE_OPEN_DIR        "Open a directory\nOpen Directory"
+    ID_FILE_MRU_CLEAR       "Clear the recent file list\nClear Recent File List"
     ID_FILE_CLOSEALL        "Close all open documents\nClose All"
     ID_SLIDESHOW_DELAY_2    "Set slideshow delay to 2 seconds\n2 s"
     ID_SLIDESHOW_DELAY_3    "Set slideshow delay to 3 seconds\n3 s"
@@ -3936,7 +3937,8 @@ BEGIN
     IDS_STRING1833          "Plain Text (Port 25 or 587)"
     IDS_STRING1834          "SSL/TLS (Port 465)"
     IDS_STRING1835          "STARTTLS (Port 25 or 587)"
-    IDS_STRING1836          "Unsupported Video or Zones Size!"
+    IDS_STRING1836          "Cannot record, unsupported video size!"
+    IDS_STRING1837          "Cannot record, choose a bigger zones size!"
 END
 
 STRINGTABLE
@@ -4031,11 +4033,6 @@ BEGIN
     IDS_STRING1914          "Upgrade to Windows 10 (1803) or get curl from:"
     IDS_STRING1915          "1. Download binary and unzip"
     IDS_STRING1916          "2. From bin copy curl.exe and curl-ca-bundle.crt to %s"
-END
-
-STRINGTABLE
-BEGIN
-    ID_FILE_MRU_CLEAR       "Clear the recent file list\nClear Recent File List"
 END
 
 #endif    // English (United States) resources

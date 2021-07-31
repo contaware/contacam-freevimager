@@ -70,7 +70,8 @@ CVideoDeviceView::CVideoDeviceView()
 {
 	// Init vars
 	m_MovDetSingleZoneSensitivity = 1;
-	m_bMovDetUnsupportedVideoOrZonesSize = FALSE;
+	m_bMovDetUnsupportedVideoSize = FALSE;
+	m_bMovDetUnsupportedZonesSize = FALSE;
 }
 
 CVideoDeviceView::~CVideoDeviceView()
@@ -271,23 +272,28 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 	// Check and update doc vars
 	if (lMovDetTotalZones == 0 || lMovDetTotalZones > MOVDET_MAX_ZONES)
 	{
-		if (!m_bMovDetUnsupportedVideoOrZonesSize)
+		if (lMovDetTotalZones == 0)
 		{
-			m_bMovDetUnsupportedVideoOrZonesSize = TRUE;
-			if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
-				::AfxGetMainFrame()->PopupNotificationWnd(APPNAME_NOEXT, ML_STRING(1836, "Unsupported Video or Zones Size!"), 0);
+			if (!m_bMovDetUnsupportedVideoSize && !((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
+				::AfxGetMainFrame()->PopupNotificationWnd(APPNAME_NOEXT, ML_STRING(1836, "Cannot record, unsupported video size!"), 0);
+			m_bMovDetUnsupportedVideoSize = TRUE;
+			m_bMovDetUnsupportedZonesSize = FALSE;
+		}
+		else
+		{
+			if (!m_bMovDetUnsupportedZonesSize && !((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
+				::AfxGetMainFrame()->PopupNotificationWnd(APPNAME_NOEXT, ML_STRING(1837, "Cannot record, choose a bigger zones size!"), 0);
+			m_bMovDetUnsupportedZonesSize = TRUE;
+			m_bMovDetUnsupportedVideoSize = FALSE;
 		}
 		::InterlockedExchange(&pDoc->m_lMovDetTotalZones, 0);
 		return 0;
 	}
 	else
 	{
-		if (m_bMovDetUnsupportedVideoOrZonesSize)
-		{
-			m_bMovDetUnsupportedVideoOrZonesSize = FALSE;
-			if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
-				::AfxGetMainFrame()->CloseNotificationWnd();
-		}
+		if ((m_bMovDetUnsupportedVideoSize || m_bMovDetUnsupportedZonesSize) && !((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
+			::AfxGetMainFrame()->CloseNotificationWnd();
+		m_bMovDetUnsupportedVideoSize = m_bMovDetUnsupportedZonesSize = FALSE;
 		::InterlockedExchange(&pDoc->m_lMovDetXZonesCount, lMovDetXZonesCount);
 		::InterlockedExchange(&pDoc->m_lMovDetYZonesCount, lMovDetYZonesCount);
 		::InterlockedExchange(&pDoc->m_lMovDetTotalZones, lMovDetTotalZones);
