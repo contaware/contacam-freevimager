@@ -4169,6 +4169,17 @@ BOOL CUImagerApp::SettingsPageAppsDefaults(const CString& sTarget/*=_T("")*/)
 									(void**)&pActivator);
 	if (SUCCEEDED(hr))
 	{
+		// TODO:
+		//       The following code works well for Windows 8 and Windows 10, but Windows 11 does not accept the given
+		//       targets which are probably still under development, check that again when the final release is out.
+		// Registry:
+		//       Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\SystemSettings\SettingId\SystemSettings_DefaultApps_*
+		// Note:
+		//       Starting with Windows 10 we can also use the url scheme, but we cannot set a target:
+		//       ::ShellExecute(NULL, NULL, _T("ms-settings:defaultapps"), NULL, NULL, SW_SHOWNORMAL);
+		// References:
+		//       https://docs.microsoft.com/en-us/windows/uwp/launch-resume/launch-settings-app
+		//       https://stackoverflow.com/questions/56689209/how-to-launch-settings-defaultapp-window-programatically-on-windows-8-8-1
 		DWORD pid;
 		hr = pActivator->ActivateApplication(	L"Windows.ImmersiveControlPanel_cw5n1h2txyewy!microsoft.windows.immersivecontrolpanel",
 												L"page=SettingsPageAppsDefaults" + sFullTarget,
