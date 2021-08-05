@@ -2975,9 +2975,9 @@
 #define IDC_LABEL_QUALITY               2563
 #define IDC_STATIC_RTSP                 2563
 #define IDC_EDIT_CREDITS                2564
-#define IDC_STATIC_RTSP_PORTS           2564
+#define IDC_RICHEDIT_RTSP_PORTS         2564
 #define IDC_VIDEO_COMPRESSION_QUALITY_INFO 2565
-#define IDC_STATIC_HTTP_PORTS           2565
+#define IDC_RICHEDIT_HTTP_PORTS         2565
 #define IDC_BUTTON_DOCROOT              2566
 #define IDC_BUTTON_CERT_SSL             2567
 #define IDC_EDIT_SENDMAIL_SEC_BETWEEN_MSG 2568

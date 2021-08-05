@@ -275,6 +275,16 @@ BOOL CHostPortDlg::OnInitDialog()
 	m_nDeviceTypeMode = m_DeviceTypeModes[nLastSel];
 	DeviceTypeModeToSelection(m_nDeviceTypeMode);
 
+	// Rtsp and Http Port Hints
+	CRichEditCtrl* pRichEditRtspPorts = (CRichEditCtrl*)GetDlgItem(IDC_RICHEDIT_RTSP_PORTS);
+	CUImagerApp::RichEditCtrlAppendText(pRichEditRtspPorts, _T("RTSP: "), ::GetSysColor(COLOR_WINDOWTEXT));
+	CUImagerApp::RichEditCtrlAppendText(pRichEditRtspPorts, _T("554"), ::GetSysColor(COLOR_WINDOWTEXT), TRUE);
+	CUImagerApp::RichEditCtrlAppendText(pRichEditRtspPorts, _T(", 10554, 8554, 8080, 88, 80"), ::GetSysColor(COLOR_WINDOWTEXT));
+	CRichEditCtrl* pRichEditHttpPorts = (CRichEditCtrl*)GetDlgItem(IDC_RICHEDIT_HTTP_PORTS);
+	CUImagerApp::RichEditCtrlAppendText(pRichEditHttpPorts, _T("HTTP: "), ::GetSysColor(COLOR_WINDOWTEXT));
+	CUImagerApp::RichEditCtrlAppendText(pRichEditHttpPorts, _T("80"), ::GetSysColor(COLOR_WINDOWTEXT), TRUE);
+	CUImagerApp::RichEditCtrlAppendText(pRichEditHttpPorts, _T(", 88"), ::GetSysColor(COLOR_WINDOWTEXT));
+
 	// Update Controls
 	EnableDisableCtrls();
 	LoadSettings();
@@ -531,12 +541,6 @@ void CHostPortDlg::DeviceTypeModeToSelection(int nDeviceTypeMode)
 	pComboBoxDevTypeMode->SetCurSel(0); // fallback to first entry
 }
 
-/*
-From: http://msdn.microsoft.com/en-us/library/windows/desktop/aa511459.aspx
-Don't disable group boxes. To indicate that a group of controls doesn't currently
-apply, disable all the controls within the group box, but not the group box itself.
-This approach is more accessible and can be supported consistently by all UI frameworks.
-*/
 void CHostPortDlg::EnableDisableCtrls()
 {
 	CString sHostLowerCase(m_sHost);
@@ -545,31 +549,16 @@ void CHostPortDlg::EnableDisableCtrls()
 
 	// Disable / Enable
 	CEdit* pEditPort = (CEdit*)GetDlgItem(IDC_EDIT_PORT);
-	CStatic* pStaticRtspPorts = (CStatic*)GetDlgItem(IDC_STATIC_RTSP_PORTS);
-	CStatic* pStaticHttpPorts = (CStatic*)GetDlgItem(IDC_STATIC_HTTP_PORTS);
 	CComboBox* pComboBoxDevTypeMode = (CComboBox*)GetDlgItem(IDC_COMBO_DEVICETYPEMODE);
-	CStatic* pStaticRtsp = (CStatic*)GetDlgItem(IDC_STATIC_RTSP);
-	CStatic* pStaticServerPush = (CStatic*)GetDlgItem(IDC_STATIC_SERVERPUSH);
-	CStatic* pStaticClientPoll = (CStatic*)GetDlgItem(IDC_STATIC_CLIENTPOLL);
 	if (sHostLowerCase.Find(_T("http://")) >= 0 || sHostLowerCase.Find(_T("rtsp://")) >= 0)
 	{
 		pEditPort->EnableWindow(FALSE);
-		pStaticRtspPorts->EnableWindow(FALSE);
-		pStaticHttpPorts->EnableWindow(FALSE);
 		pComboBoxDevTypeMode->EnableWindow(FALSE);
-		pStaticRtsp->EnableWindow(FALSE);
-		pStaticServerPush->EnableWindow(FALSE);
-		pStaticClientPoll->EnableWindow(FALSE);
 	}
 	else
 	{
 		pEditPort->EnableWindow(TRUE);
-		pStaticRtspPorts->EnableWindow(TRUE);
-		pStaticHttpPorts->EnableWindow(TRUE);
 		pComboBoxDevTypeMode->EnableWindow(TRUE);
-		pStaticRtsp->EnableWindow(TRUE);
-		pStaticServerPush->EnableWindow(TRUE);
-		pStaticClientPoll->EnableWindow(TRUE);
 	}
 }
 

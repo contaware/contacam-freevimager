@@ -451,6 +451,24 @@ public:
 	// Paste clipboard to given file
 	static BOOL PasteToFile(LPCTSTR lpszFileName, COLORREF crBackgroundColor = RGB(255,255,255));
 
+	// Richt Edit Control
+	// 
+	// To have the CStatic appearance set the control properties to:
+	// Border = False
+	// Multiline = True (optional)
+	// Read Only = True
+	// Transparent = True
+	// Disabled = True
+	// 
+	// Remember:
+	// put AfxInitRichEdit2() in InitInstance()
+	static void RichEditCtrlAppendText(	CRichEditCtrl* pRichEditCtrl,
+										CString sText,
+										COLORREF crColor, // for default pass ::GetSysColor(COLOR_WINDOWTEXT)
+										BOOL bBold = FALSE,
+										BOOL bItalic = FALSE,
+										BOOL bUnderline = FALSE);
+
 	// Use Tray Icon
 	volatile BOOL m_bTrayIcon;
 

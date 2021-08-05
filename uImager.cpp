@@ -1684,6 +1684,26 @@ BOOL CUImagerApp::PasteToFile(LPCTSTR lpszFileName, COLORREF crBackgroundColor/*
 	return FALSE;
 }
 
+void CUImagerApp::RichEditCtrlAppendText(	CRichEditCtrl* pRichEditCtrl,
+											CString sText,
+											COLORREF crColor, // for default pass ::GetSysColor(COLOR_WINDOWTEXT)
+											BOOL bBold/*=FALSE*/,
+											BOOL bItalic/*=FALSE*/,
+											BOOL bUnderline/*=FALSE*/)
+{
+	if (pRichEditCtrl)
+	{
+		CHARFORMAT cf = { 0 };
+		cf.cbSize = sizeof(cf);
+		cf.dwMask = CFM_BOLD | CFM_ITALIC | CFM_UNDERLINE | CFM_COLOR;
+		cf.dwEffects = (bBold ? CFE_BOLD : 0) | (bItalic ? CFE_ITALIC : 0) | (bUnderline ? CFM_UNDERLINE : 0);
+		cf.crTextColor = crColor;
+		pRichEditCtrl->SetSel(-1, -1);				// set the caret to the end and deselect everything
+		pRichEditCtrl->SetSelectionCharFormat(cf);	// assign the format to the caret pos
+		pRichEditCtrl->ReplaceSel(sText);			// insert at the caret pos
+	}
+}
+
 void CUImagerApp::FileTypeNotSupportedMessageBox(LPCTSTR lpszFileName)
 {
 	CString sMsg;
