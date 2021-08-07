@@ -748,6 +748,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="MDIClientWnd.cpp" />
+    <ClCompile Include="MDISnapper.cpp" />
     <ClCompile Include="MDITabs.cpp" />
     <ClCompile Include="MJPEGEncoder.cpp" />
     <ClCompile Include="MlString.cpp" />
@@ -1287,6 +1288,7 @@
     <ClInclude Include="ListCtrlEx.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="MDIClientWnd.h" />
+    <ClInclude Include="MDISnapper.h" />
     <ClInclude Include="MDITabs.h" />
     <ClInclude Include="MJPEGEncoder.h" />
     <ClInclude Include="MlString.h" />

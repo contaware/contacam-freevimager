@@ -13,6 +13,7 @@
 #include "Trayicon.h"
 #include "StatusBarACT.h"
 #include "MDIClientWnd.h"
+#include "MDISnapper.h"
 #include "MDITabs.h"
 #include "NotificationWnd.h"
 extern "C"
@@ -181,6 +182,9 @@ public:
 
 	// Main frame background window
 	CMDIClientWnd m_MDIClientWnd;
+
+	// MDI Snapper
+	CMDISnapper m_MDISnap;
 
 protected:
 #ifndef VIDEODEVICEDOC

@@ -742,6 +742,12 @@ BOOL CPictureChildFrame::PreCreateWindow(CREATESTRUCT& cs)
 	return CChildFrame::PreCreateWindow(cs);
 }
 
+LRESULT CPictureChildFrame::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
+{
+	::AfxGetMainFrame()->m_MDISnap.OnMessage(this, message, wParam, lParam);
+	return CToolBarChildFrame::WindowProc(message, wParam, lParam);
+}
+
 void CPictureChildFrame::OnTimer(UINT nIDEvent) 
 {
 	CToolBarChildFrame::OnTimer(nIDEvent);
@@ -1367,6 +1373,12 @@ BOOL CVideoDeviceChildFrame::IsShutdown3Done()
 		return TRUE;
 	else
 		return FALSE;
+}
+
+LRESULT CVideoDeviceChildFrame::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
+{
+	::AfxGetMainFrame()->m_MDISnap.OnMessage(this, message, wParam, lParam);
+	return CToolBarChildFrame::WindowProc(message, wParam, lParam);
 }
 
 #endif

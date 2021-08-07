@@ -194,6 +194,7 @@ protected:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CVideoDeviceChildFrame)
 	//}}AFX_VIRTUAL
+	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 
 	// Generated message map functions
 protected:
@@ -227,6 +228,7 @@ protected:
 	//{{AFX_VIRTUAL(CPictureChildFrame)
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	//}}AFX_VIRTUAL
+	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 
 	// Generated message map functions
 protected:
