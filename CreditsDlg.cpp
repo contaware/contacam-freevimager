@@ -68,9 +68,13 @@ BOOL CCreditsDlg::OnInitDialog()
 	ssmtp += CString(_T('\n')) + _T("https://github.com/muquit/mailsend");
 #endif
 
+	// MDISnap
+	CString smdisnap(_T("MDISnap by peterchen"));
+	smdisnap += CString(_T('\n')) + _T("https://www.codeproject.com/Articles/1446/MDISnap");
+
 	// CMDITabs
 	CString smditabs(_T("CMDITabs by Christian Rodemeyer"));
-	smditabs += CString(_T('\n')) + _T("https://www.codeproject.com/articles/1438/cmditabs");
+	smditabs += CString(_T('\n')) + _T("https://www.codeproject.com/Articles/1438/CMDITabs");
 
 	// AVIR
 	CString savir = _T("AVIR image resizing algorithm designed by\nAleksey Vaneev version ") + CString(AVIR_VERSION);
@@ -117,6 +121,7 @@ BOOL CCreditsDlg::OnInitDialog()
 						sffmpeg		+ _T("\n\n") +
 						ssmtp		+ _T("\n\n") +
 #endif
+						smdisnap	+ _T("\n\n") +
 						smditabs	+ _T("\n\n") +
 						savir		+ _T("\n\n") +
 						slibjpeg	+ _T("\n\n") +

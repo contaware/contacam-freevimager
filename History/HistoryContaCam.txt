@@ -2,12 +2,13 @@ CONTACAM HISTORY
 
 9.9.19 (Month XXth 2021)
 
-- Dropped Windows Vista and Windows Server 2008 support
 - Updated internal web server to Apache 2.4.48 and PHP 8.0.7
   (Apache and PHP both with OpenSSL 1.1.1k)
+- Added magnetic/snapping borders to the camera windows
 - Because many users expressed security concerns we removed
   all "Show password" checkboxes
-  
+- Dropped Windows Vista and Windows Server 2008 support
+
 9.9.18 (June 8th 2021)
 
 - Fast video saving option (be aware that this new setting will generate

@@ -8,8 +8,8 @@ and initializes it with a value:
 __declspec( thread ) int tls_i = 1;
 
 
-CMDISnapper
------------
+MDISnap
+-------
 
 - Removed #include "XMDISnap.h" in MDISnapper.cpp
 
