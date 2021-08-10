@@ -1030,7 +1030,7 @@ void CVideoDeviceChildFrame::OnSizing(UINT fwSide, LPRECT pRect)
 
 LONG CVideoDeviceChildFrame::OnEnterSizeMove(WPARAM wparam, LPARAM lparam)
 {
-	::AfxGetMainFrame()->StatusText(ML_STRING(1236, "*** CTRL Lock Ratio ***"));
+	::AfxGetMainFrame()->StatusText(ML_STRING(1236, "*** CTRL Lock Ratio / Swap two windows ***"));
 	return 0;
 }
 
