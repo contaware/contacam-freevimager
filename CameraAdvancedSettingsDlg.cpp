@@ -155,6 +155,7 @@ void CCameraAdvancedSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_FLIP_V, m_bFlipV);
 	DDX_Check(pDX, IDC_CHECK_AUDIO_LISTEN, m_bAudioListen);
 	DDX_Control(pDX, IDC_VIDEO_COMPRESSION_QUALITY, m_VideoRecQuality);
+	DDX_CBIndex(pDX, IDC_EXEC_COMMAND_PROFILE, m_nExecCommandProfile);
 	DDX_Check(pDX, IDC_EXEC_COMMAND, m_bExecCommand);
 	DDX_CBIndex(pDX, IDC_EXEC_COMMAND_MODE, m_nExecCommandMode);
 	DDX_Text(pDX, IDC_EDIT_EXE, m_sExecCommand);
@@ -195,6 +196,7 @@ BEGIN_MESSAGE_MAP(CCameraAdvancedSettingsDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_THUMB_SIZE, OnButtonThumbSize)
 	ON_NOTIFY(NM_CLICK, IDC_SYSLINK_CONTROL_HELP, OnSyslinkControlHelp)
 	ON_NOTIFY(NM_RETURN, IDC_SYSLINK_CONTROL_HELP, OnSyslinkControlHelp)
+	ON_CBN_SELCHANGE(IDC_EXEC_COMMAND_PROFILE, OnSelchangeExecCommandProfile)
 	ON_BN_CLICKED(IDC_EXEC_COMMAND, OnCheckExecCommand)
 	ON_CBN_SELCHANGE(IDC_EXEC_COMMAND_MODE, OnSelchangeExecCommandMode)
 	ON_EN_CHANGE(IDC_EDIT_EXE, OnChangeEditExe)
@@ -298,12 +300,13 @@ BOOL CCameraAdvancedSettingsDlg::OnInitDialog()
 	m_bFlipH = m_pDoc->m_bFlipH;
 	m_bFlipV = m_pDoc->m_bFlipV;
 	m_bAudioListen = m_pDoc->m_bAudioListen;
-	m_bExecCommand = m_pDoc->m_bExecCommand;
-	m_nExecCommandMode = m_pDoc->m_nExecCommandMode;
-	m_sExecCommand = m_pDoc->m_sExecCommand;
-	m_sExecParams = m_pDoc->m_sExecParams;
-	m_bHideExecCommand = m_pDoc->m_bHideExecCommand;
-	m_bWaitExecCommand = m_pDoc->m_bWaitExecCommand;
+	m_nExecCommandProfile = 0;
+	m_bExecCommand = m_pDoc->m_bExecCommand[m_nExecCommandProfile];
+	m_nExecCommandMode = m_pDoc->m_nExecCommandMode[m_nExecCommandProfile];
+	m_sExecCommand = m_pDoc->m_sExecCommand[m_nExecCommandProfile];
+	m_sExecParams = m_pDoc->m_sExecParams[m_nExecCommandProfile];
+	m_bHideExecCommand = m_pDoc->m_bHideExecCommand[m_nExecCommandProfile];
+	m_bWaitExecCommand = m_pDoc->m_bWaitExecCommand[m_nExecCommandProfile];
 
 	// Init m_sHostPortDlgDeviceTypeMode
 	if (!m_pDoc->m_pDxCapture)
@@ -344,9 +347,16 @@ BOOL CCameraAdvancedSettingsDlg::OnInitDialog()
 	pComboBoxSnapshotRate->SetItemData(pComboBoxSnapshotRate->AddString(ML_STRING(1903, "15 minutes")), 900);
 	pComboBoxSnapshotRate->SetItemData(pComboBoxSnapshotRate->AddString(ML_STRING(1904, "30 minutes")), 1800);
 	pComboBoxSnapshotRate->SetItemData(pComboBoxSnapshotRate->AddString(ML_STRING(1905, "1 hour")), 3600);
+	CComboBox* pComboBoxExecCommandProfile = (CComboBox*)GetDlgItem(IDC_EXEC_COMMAND_PROFILE);
+	for (int n = 0; n < MOVDET_EXECCMD_PROFILES; n++)
+	{
+		CString sProfileNum;
+		sProfileNum.Format(_T("%d"), n + 1);
+		pComboBoxExecCommandProfile->AddString(ML_STRING(1839, "Profile") + sProfileNum);
+	}
 	CComboBox* pComboBoxExecCommandMode = (CComboBox*)GetDlgItem(IDC_EXEC_COMMAND_MODE);
-	pComboBoxExecCommandMode->AddString(ML_STRING(1842, "Recording start"));
-	pComboBoxExecCommandMode->AddString(ML_STRING(1843, "Recording saving done"));
+	pComboBoxExecCommandMode->AddString(ML_STRING(1842, "Rec start"));
+	pComboBoxExecCommandMode->AddString(ML_STRING(1843, "Rec saving done"));
 	pComboBoxExecCommandMode->AddString(ML_STRING(1844, "Live snapshot"));
 	pComboBoxExecCommandMode->AddString(ML_STRING(1845, "Daily summary"));
 
@@ -980,25 +990,42 @@ void CCameraAdvancedSettingsDlg::OnSyslinkControlHelp(NMHDR* pNMHDR, LRESULT* pR
 	*pResult = 0;
 }
 
+void CCameraAdvancedSettingsDlg::OnSelchangeExecCommandProfile()
+{
+	if (UpdateData(TRUE))
+	{
+		// Load profile
+		m_bExecCommand = m_pDoc->m_bExecCommand[m_nExecCommandProfile];
+		m_nExecCommandMode = m_pDoc->m_nExecCommandMode[m_nExecCommandProfile];
+		m_sExecCommand = m_pDoc->m_sExecCommand[m_nExecCommandProfile];
+		m_sExecParams = m_pDoc->m_sExecParams[m_nExecCommandProfile];
+		m_bHideExecCommand = m_pDoc->m_bHideExecCommand[m_nExecCommandProfile];
+		m_bWaitExecCommand = m_pDoc->m_bWaitExecCommand[m_nExecCommandProfile];
+
+		// Update data from vars to view
+		UpdateData(FALSE);
+	}
+}
+
 void CCameraAdvancedSettingsDlg::OnCheckExecCommand()
 {
 	if (UpdateData(TRUE))
-		m_pDoc->m_bExecCommand = m_bExecCommand;
+		m_pDoc->m_bExecCommand[m_nExecCommandProfile] = m_bExecCommand;
 }
 
 void CCameraAdvancedSettingsDlg::OnSelchangeExecCommandMode()
 {
 	if (UpdateData(TRUE))
-		m_pDoc->m_nExecCommandMode = m_nExecCommandMode;
+		m_pDoc->m_nExecCommandMode[m_nExecCommandProfile] = m_nExecCommandMode;
 }
 
 void CCameraAdvancedSettingsDlg::OnChangeEditExe()
 {
 	if (UpdateData(TRUE))
 	{
-		::EnterCriticalSection(&m_pDoc->m_csExecCommand);
-		m_pDoc->m_sExecCommand = m_sExecCommand;
-		::LeaveCriticalSection(&m_pDoc->m_csExecCommand);
+		::EnterCriticalSection(&m_pDoc->m_csExecCommand[m_nExecCommandProfile]);
+		m_pDoc->m_sExecCommand[m_nExecCommandProfile] = m_sExecCommand;
+		::LeaveCriticalSection(&m_pDoc->m_csExecCommand[m_nExecCommandProfile]);
 	}
 }
 
@@ -1012,22 +1039,22 @@ void CCameraAdvancedSettingsDlg::OnChangeEditParams()
 {
 	if (UpdateData(TRUE))
 	{
-		::EnterCriticalSection(&m_pDoc->m_csExecCommand);
-		m_pDoc->m_sExecParams = m_sExecParams;
-		::LeaveCriticalSection(&m_pDoc->m_csExecCommand);
+		::EnterCriticalSection(&m_pDoc->m_csExecCommand[m_nExecCommandProfile]);
+		m_pDoc->m_sExecParams[m_nExecCommandProfile] = m_sExecParams;
+		::LeaveCriticalSection(&m_pDoc->m_csExecCommand[m_nExecCommandProfile]);
 	}
 }
 
 void CCameraAdvancedSettingsDlg::OnCheckHideExecCommand()
 {
 	if (UpdateData(TRUE))
-		m_pDoc->m_bHideExecCommand = m_bHideExecCommand;
+		m_pDoc->m_bHideExecCommand[m_nExecCommandProfile] = m_bHideExecCommand;
 }
 
 void CCameraAdvancedSettingsDlg::OnCheckWaitExecCommand()
 {
 	if (UpdateData(TRUE))
-		m_pDoc->m_bWaitExecCommand = m_bWaitExecCommand;
+		m_pDoc->m_bWaitExecCommand[m_nExecCommandProfile] = m_bWaitExecCommand;
 }
 
 void CCameraAdvancedSettingsDlg::OnButtonPlaySound()
@@ -1079,16 +1106,16 @@ void CCameraAdvancedSettingsDlg::OnButtonPlaySound()
 			sVlcDir.TrimRight(_T('\\'));
 			m_sExecCommand = sVlcDir + _T("\\vlc.exe");
 			m_sExecParams.Format(_T("-I dummy --dummy-quiet --play-and-exit --no-loop --no-repeat \"%s\""), fd.GetPathName());
-			::EnterCriticalSection(&m_pDoc->m_csExecCommand);
-			m_pDoc->m_sExecCommand = m_sExecCommand;
-			m_pDoc->m_sExecParams = m_sExecParams;
-			::LeaveCriticalSection(&m_pDoc->m_csExecCommand);
+			::EnterCriticalSection(&m_pDoc->m_csExecCommand[m_nExecCommandProfile]);
+			m_pDoc->m_sExecCommand[m_nExecCommandProfile] = m_sExecCommand;
+			m_pDoc->m_sExecParams[m_nExecCommandProfile] = m_sExecParams;
+			::LeaveCriticalSection(&m_pDoc->m_csExecCommand[m_nExecCommandProfile]);
 
 			// Fill flags and mode
-			m_pDoc->m_bHideExecCommand = m_bHideExecCommand = TRUE;
-			m_pDoc->m_bWaitExecCommand = m_bWaitExecCommand = TRUE;
-			m_pDoc->m_nExecCommandMode = m_nExecCommandMode = 0;
-			m_pDoc->m_bExecCommand = m_bExecCommand = TRUE;
+			m_pDoc->m_bHideExecCommand[m_nExecCommandProfile] = m_bHideExecCommand = TRUE;
+			m_pDoc->m_bWaitExecCommand[m_nExecCommandProfile] = m_bWaitExecCommand = TRUE;
+			m_pDoc->m_nExecCommandMode[m_nExecCommandProfile] = m_nExecCommandMode = 0;
+			m_pDoc->m_bExecCommand[m_nExecCommandProfile] = m_bExecCommand = TRUE;
 
 			// Update data from vars to view
 			UpdateData(FALSE);
@@ -1204,16 +1231,16 @@ void CCameraAdvancedSettingsDlg::OnButtonFtpUpload()
 			// Fill executable & params
 			m_sExecCommand = sCurlPath;
 			m_sExecParams.Format(_T("--ftp-create-dirs --insecure --ssl --user \"%s:%s\" --upload-file \"%%full%%\" \"ftp://%s/%%year%%/%%month%%/%%day%%/\" --upload-file \"%%small%%\" \"ftp://%s/%%year%%/%%month%%/%%day%%/\""), dlg.m_sUsername, dlg.m_sPassword, dlg.m_sHost, dlg.m_sHost);
-			::EnterCriticalSection(&m_pDoc->m_csExecCommand);
-			m_pDoc->m_sExecCommand = m_sExecCommand;
-			m_pDoc->m_sExecParams = m_sExecParams;
-			::LeaveCriticalSection(&m_pDoc->m_csExecCommand);
+			::EnterCriticalSection(&m_pDoc->m_csExecCommand[m_nExecCommandProfile]);
+			m_pDoc->m_sExecCommand[m_nExecCommandProfile] = m_sExecCommand;
+			m_pDoc->m_sExecParams[m_nExecCommandProfile] = m_sExecParams;
+			::LeaveCriticalSection(&m_pDoc->m_csExecCommand[m_nExecCommandProfile]);
 
 			// Fill flags and mode
-			m_pDoc->m_bHideExecCommand = m_bHideExecCommand = TRUE;
-			m_pDoc->m_bWaitExecCommand = m_bWaitExecCommand = FALSE;
-			m_pDoc->m_nExecCommandMode = m_nExecCommandMode = 1;
-			m_pDoc->m_bExecCommand = m_bExecCommand = TRUE;
+			m_pDoc->m_bHideExecCommand[m_nExecCommandProfile] = m_bHideExecCommand = TRUE;
+			m_pDoc->m_bWaitExecCommand[m_nExecCommandProfile] = m_bWaitExecCommand = FALSE;
+			m_pDoc->m_nExecCommandMode[m_nExecCommandProfile] = m_nExecCommandMode = 1;
+			m_pDoc->m_bExecCommand[m_nExecCommandProfile] = m_bExecCommand = TRUE;
 
 			// Update data from vars to view
 			UpdateData(FALSE);
@@ -1315,16 +1342,16 @@ void CCameraAdvancedSettingsDlg::OnButtonPlateRecognizer()
 			}
 
 			// Update executable & params
-			::EnterCriticalSection(&m_pDoc->m_csExecCommand);
-			m_pDoc->m_sExecCommand = m_sExecCommand;
-			m_pDoc->m_sExecParams = m_sExecParams;
-			::LeaveCriticalSection(&m_pDoc->m_csExecCommand);
+			::EnterCriticalSection(&m_pDoc->m_csExecCommand[m_nExecCommandProfile]);
+			m_pDoc->m_sExecCommand[m_nExecCommandProfile] = m_sExecCommand;
+			m_pDoc->m_sExecParams[m_nExecCommandProfile] = m_sExecParams;
+			::LeaveCriticalSection(&m_pDoc->m_csExecCommand[m_nExecCommandProfile]);
 
 			// Fill flags and mode
-			m_pDoc->m_bHideExecCommand = m_bHideExecCommand = TRUE;
-			m_pDoc->m_bWaitExecCommand = m_bWaitExecCommand = FALSE;
-			m_pDoc->m_nExecCommandMode = m_nExecCommandMode = 0;
-			m_pDoc->m_bExecCommand = m_bExecCommand = TRUE;
+			m_pDoc->m_bHideExecCommand[m_nExecCommandProfile] = m_bHideExecCommand = TRUE;
+			m_pDoc->m_bWaitExecCommand[m_nExecCommandProfile] = m_bWaitExecCommand = FALSE;
+			m_pDoc->m_nExecCommandMode[m_nExecCommandProfile] = m_nExecCommandMode = 0;
+			m_pDoc->m_bExecCommand[m_nExecCommandProfile] = m_bExecCommand = TRUE;
 
 			// Update data from vars to view
 			UpdateData(FALSE);
@@ -1397,16 +1424,16 @@ void CCameraAdvancedSettingsDlg::OnButtonBackupFiles()
 				// Fill executable & params
 				m_sExecCommand = szCmdPath;
 				m_sExecParams.Format(_T("/C mkdir \"%s\\%%year%%\\%%month%%\\%%day%%\" & copy \"%%full%%\" \"%s\\%%year%%\\%%month%%\\%%day%%\" & copy \"%%small%%\" \"%s\\%%year%%\\%%month%%\\%%day%%\""), sDst, sDst, sDst);
-				::EnterCriticalSection(&m_pDoc->m_csExecCommand);
-				m_pDoc->m_sExecCommand = m_sExecCommand;
-				m_pDoc->m_sExecParams = m_sExecParams;
-				::LeaveCriticalSection(&m_pDoc->m_csExecCommand);
+				::EnterCriticalSection(&m_pDoc->m_csExecCommand[m_nExecCommandProfile]);
+				m_pDoc->m_sExecCommand[m_nExecCommandProfile] = m_sExecCommand;
+				m_pDoc->m_sExecParams[m_nExecCommandProfile] = m_sExecParams;
+				::LeaveCriticalSection(&m_pDoc->m_csExecCommand[m_nExecCommandProfile]);
 
 				// Fill flags and mode
-				m_pDoc->m_bHideExecCommand = m_bHideExecCommand = TRUE;
-				m_pDoc->m_bWaitExecCommand = m_bWaitExecCommand = FALSE;
-				m_pDoc->m_nExecCommandMode = m_nExecCommandMode = 1;
-				m_pDoc->m_bExecCommand = m_bExecCommand = TRUE;
+				m_pDoc->m_bHideExecCommand[m_nExecCommandProfile] = m_bHideExecCommand = TRUE;
+				m_pDoc->m_bWaitExecCommand[m_nExecCommandProfile] = m_bWaitExecCommand = FALSE;
+				m_pDoc->m_nExecCommandMode[m_nExecCommandProfile] = m_nExecCommandMode = 1;
+				m_pDoc->m_bExecCommand[m_nExecCommandProfile] = m_bExecCommand = TRUE;
 
 				// Update data from vars to view
 				UpdateData(FALSE);

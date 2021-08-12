@@ -2965,6 +2965,7 @@
 #define IDC_CHECK_FULL_STRETCH          2541
 #define IDC_CHECK_CAMERACOMMANDS        2542
 #define IDC_EXEC_COMMAND_MODE           2542
+#define IDC_EXEC_COMMAND_PROFILE        2543
 #define IDC_STATIC2544                  2544
 #define IDC_CAM_FOLDERS                 2545
 #define IDC_BUTTON_PARENT_DIR           2557

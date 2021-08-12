@@ -37,6 +37,7 @@ public:
 	BOOL m_bFlipV;
 	BOOL m_bAudioListen;
 	CSliderCtrl	m_VideoRecQuality;
+	int m_nExecCommandProfile;
 	BOOL m_bExecCommand;
 	int m_nExecCommandMode;
 	CString m_sExecCommand;
@@ -95,6 +96,7 @@ protected:
 	afx_msg void OnSelchangeSnapshotRate();
 	afx_msg void OnButtonThumbSize();
 	afx_msg void OnSyslinkControlHelp(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnSelchangeExecCommandProfile();
 	afx_msg void OnCheckExecCommand();
 	afx_msg void OnSelchangeExecCommandMode();
 	afx_msg void OnChangeEditExe();

@@ -987,8 +987,8 @@ BEGIN
     LTEXT           "RTSP: preferred choice, especially for WiFi cameras",IDC_STATIC_RTSP,14,110,203,8
     LTEXT           "ON FAILURE: try a password without special characters",IDC_STATIC2464,14,233,203,8
     GROUPBOX        "RTSP Transport",IDC_STATIC_RTSP_TRANSPORT,7,151,216,26
-    CONTROL         "",IDC_RICHEDIT_HTTP_PORTS,"RichEdit20W",ES_AUTOHSCROLL | ES_READONLY | WS_DISABLED | WS_TABSTOP,72,64,145,8,WS_EX_TRANSPARENT
-    CONTROL         "",IDC_RICHEDIT_RTSP_PORTS,"RichEdit20W",ES_AUTOHSCROLL | ES_READONLY | WS_DISABLED | WS_TABSTOP,72,53,145,8,WS_EX_TRANSPARENT
+    CONTROL         "",IDC_RICHEDIT_HTTP_PORTS,"RichEdit20W",WS_DISABLED | WS_TABSTOP | 0x880,72,64,145,8,WS_EX_TRANSPARENT
+    CONTROL         "",IDC_RICHEDIT_RTSP_PORTS,"RichEdit20W",WS_DISABLED | WS_TABSTOP | 0x880,72,53,145,8,WS_EX_TRANSPARENT
 END
 
 IDD_CAMERAADVANCEDSETTINGS DIALOGEX 0, 0, 422, 283
@@ -1027,16 +1027,17 @@ BEGIN
                     "SysLink",WS_TABSTOP,225,13,184,9
     EDITTEXT        IDC_EDIT_BATCH,225,33,184,12,ES_AUTOHSCROLL | ES_READONLY
     EDITTEXT        IDC_EDIT_BATCH_SENSITIVITY,225,58,184,12,ES_AUTOHSCROLL | ES_READONLY
-    CONTROL         "Execute on",IDC_EXEC_COMMAND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,91,58,10
-    COMBOBOX        IDC_EXEC_COMMAND_MODE,286,90,123,72,CBS_DROPDOWNLIST | WS_TABSTOP
-    EDITTEXT        IDC_EDIT_EXE,225,114,184,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_PARAMS,225,139,184,45,ES_MULTILINE | WS_VSCROLL
+    COMBOBOX        IDC_EXEC_COMMAND_PROFILE,225,92,46,72,CBS_DROPDOWNLIST | WS_TABSTOP
+    CONTROL         "Execute on",IDC_EXEC_COMMAND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,276,93,50,10
+    COMBOBOX        IDC_EXEC_COMMAND_MODE,328,92,81,72,CBS_DROPDOWNLIST | WS_TABSTOP
+    EDITTEXT        IDC_EDIT_EXE,225,116,184,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_PARAMS,225,140,184,45,ES_MULTILINE | WS_VSCROLL
     CONTROL         "%sec% %min% %hour% %day% %month% %year% %full% %small% %name% <a>(?)</a>",IDC_SYSLINK_PARAMS_HELP,
-                    "SysLink",WS_TABSTOP,225,185,184,17
+                    "SysLink",WS_TABSTOP,225,186,184,17
     CONTROL         "Hide window of executed command",IDC_CHECK_HIDE_EXEC_COMMAND,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,203,129,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,204,129,10
     CONTROL         "Only one instance of executed command",IDC_CHECK_WAIT_EXEC_COMMAND,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,215,145,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,216,145,10
     PUSHBUTTON      "Play Sound",IDC_BUTTON_PLAY_SOUND,225,239,90,16
     PUSHBUTTON      "Plate Recognizer",IDC_BUTTON_PLATERECOGNIZER,319,239,90,16
     PUSHBUTTON      "Ftp Upload",IDC_BUTTON_FTP_UPLOAD,225,258,90,16
@@ -1058,11 +1059,11 @@ BEGIN
     GROUPBOX        "Command",IDC_STATIC2295,218,81,198,197
     LTEXT           "Take each",IDC_STATIC2476,13,251,81,8
     LTEXT           "Thumbnail",IDC_STATIC2478,107,251,96,8
-    LTEXT           "Arguments",IDC_STATIC,225,129,184,8
-    LTEXT           "Program",IDC_STATIC,225,104,184,8
-    LTEXT           "Examples",IDC_STATIC,225,228,184,8
+    LTEXT           "Arguments",IDC_STATIC,225,131,184,8
+    LTEXT           "Program",IDC_STATIC,225,107,184,8
+    LTEXT           "Examples",IDC_STATIC,225,229,184,8
     LTEXT           "Camera source on/off (argument: on,off)",IDC_STATIC,225,24,184,8
-    LTEXT           "Camera rec sensitivity (argument: 0,10,20..100)",IDC_STATIC,225,49,184,8
+    LTEXT           "Camera rec sensitivity (argument: 0,5,10,20..100)",IDC_STATIC,225,49,184,8
     LTEXT           "Recording framerate divider",IDC_STATIC2156,13,28,92,8
     LTEXT           "(...)",IDC_STATIC_DETECTION_MAX_MAXFRAMES,13,79,72,8
     LTEXT           "Quality",IDC_STATIC,107,182,43,8
@@ -3939,6 +3940,7 @@ BEGIN
     IDS_STRING1835          "STARTTLS (Port 25 or 587)"
     IDS_STRING1836          "Cannot record, unsupported video size!"
     IDS_STRING1837          "Cannot record, choose a bigger zones size!"
+    IDS_STRING1839          "Profile"
 END
 
 STRINGTABLE
@@ -3950,8 +3952,8 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_STRING1842          "Recording start"
-    IDS_STRING1843          "Recording saving done"
+    IDS_STRING1842          "Rec start"
+    IDS_STRING1843          "Rec saving done"
     IDS_STRING1844          "Live snapshot"
     IDS_STRING1845          "Daily summary"
     IDS_STRING1848          "Choose Audio File"

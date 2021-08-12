@@ -118,6 +118,7 @@ class CCameraAdvancedSettingsDlg;
 #define MOVDET_MIN_LENGTH_MSEC					1000			// Default minimum detection length in ms, below this value frames are not saved
 #define MOVDET_MIN_LENGTH_SAVESPEED_MSEC		8000U			// Saving speed calculation is considered reliable for frame sequences longer than this
 #define MOVDET_DEFAULT_LEVEL					50				// Detection level default value (0 = Off .. 99 = Max Sensitivity, 100 = Continuous Recording)
+#define MOVDET_EXECCMD_PROFILES					4				// The number of command execution profiles
 #define MOVDET_MAX_ZONES_BLOCK_SIZE				1024			// Subdivide settings in blocks (MOVDET_MAX_ZONES must be a multiple of this)
 #define MOVDET_MAX_ZONES						8192			// Maximum number of zones
 #define MOVDET_MIN_ZONES_XORY					4				// Minimum number of zones in X or Y direction
@@ -741,7 +742,8 @@ public:
 	void HideDetectionZones();
 
 	// Command execution
-	void ExecCommand(const CTime& Time,
+	void ExecCommand(int n,
+					const CTime& Time,
 					const CString& sFullFileName = _T(""),
 					const CString& sSmallFileName = _T(""));
 
@@ -759,6 +761,7 @@ public:
 	static BOOL WriteDetectionLevelToFile(int nDetectionLevel, CString sRecordAutoSaveDir);
 	static int ValidateSnapshotRate(int nSnapshotRate);
 	static int MakeSizeMultipleOf4(int nSize);
+	static CString ExecCommandProfileSuffix(int n);
 	void LoadSettings(	double dDefaultFrameRate,
 						BOOL bDefaultCaptureAudioFromStream,
 						CString sSection,
@@ -947,14 +950,14 @@ public:
 	volatile BOOL m_bSaveStartPicture;					// Save Start Picture
 	volatile BOOL m_bSendMailMalfunction;				// Send Email on Device Malfunction
 	volatile BOOL m_bSendMailRecording;					// Send Email on Recording
-	volatile BOOL m_bExecCommand;						// Execute Command
-	volatile BOOL m_nExecCommandMode;					// Determines when to execute the command
-	CString m_sExecCommand;								// Command to execute
-	CString m_sExecParams;								// Params for command execution
-	volatile BOOL m_bHideExecCommand;					// Hide command's window
-	volatile BOOL m_bWaitExecCommand;					// Wait that last command has terminated
-	HANDLE volatile m_hExecCommand;						// Exec command handle
-	CRITICAL_SECTION m_csExecCommand;					// Command Exec critical section
+	volatile BOOL m_bExecCommand[MOVDET_EXECCMD_PROFILES];		// Execute Command
+	volatile BOOL m_nExecCommandMode[MOVDET_EXECCMD_PROFILES];	// Determines when to execute the command
+	CString m_sExecCommand[MOVDET_EXECCMD_PROFILES];			// Command to execute
+	CString m_sExecParams[MOVDET_EXECCMD_PROFILES];				// Params for command execution
+	volatile BOOL m_bHideExecCommand[MOVDET_EXECCMD_PROFILES];	// Hide command's window
+	volatile BOOL m_bWaitExecCommand[MOVDET_EXECCMD_PROFILES];	// Wait that last command has terminated
+	HANDLE volatile m_hExecCommand[MOVDET_EXECCMD_PROFILES];	// Exec command handle
+	CRITICAL_SECTION m_csExecCommand[MOVDET_EXECCMD_PROFILES];	// Command Exec critical section
 	CDib* volatile m_pMovementDetectorBackgndDib;		// Moving Background Dib
 	DIBLISTLIST m_MovementDetectionsList;				// The List of Movement Detection Frame Grabbing Lists
 	CRITICAL_SECTION m_csMovementDetectionsList;		// Critical Section of the Movement Detections List

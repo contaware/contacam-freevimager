@@ -563,9 +563,12 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			}
 		}
 
-		// Execute Command
-		if (m_pDoc->m_bExecCommand && m_pDoc->m_nExecCommandMode == 1)
-			m_pDoc->ExecCommand(FirstTime, sVideoFileName, sGIFFileName);
+		// Execute Commands
+		for (int n = 0; n < MOVDET_EXECCMD_PROFILES; n++)
+		{
+			if (m_pDoc->m_bExecCommand[n] && m_pDoc->m_nExecCommandMode[n] == 1)
+				m_pDoc->ExecCommand(n, FirstTime, sVideoFileName, sGIFFileName);
+		}
 
 		// Increment saves count and store settings
 		nMovDetSavesCount++;
@@ -1096,9 +1099,12 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 		// Copy from temp to snapshots folder
 		::CopyFile(sVideoTempFileName, sVideoFileName, FALSE);
 
-		// Execute Command
-		if (m_pDoc->m_bExecCommand && m_pDoc->m_nExecCommandMode == 3)
-			m_pDoc->ExecCommand(m_Time, sVideoFileName);
+		// Execute Commands
+		for (int n = 0; n < MOVDET_EXECCMD_PROFILES; n++)
+		{
+			if (m_pDoc->m_bExecCommand[n] && m_pDoc->m_nExecCommandMode[n] == 3)
+				m_pDoc->ExecCommand(n, m_Time, sVideoFileName);
+		}
 	}
 
 	// Set task completion time
@@ -1187,12 +1193,15 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	::CopyFile(sTempFileName, sLiveFileName, FALSE);
 	::CopyFile(sTempThumbFileName, sLiveThumbFileName, FALSE);
 
-	// Execute Command
+	// Execute Commands
 	// Attention: the user is responsible to make sure that the executed
 	//            program is fast enough to avoid that the passed live
 	//            snapshots get overwritten with the next shot!
-	if (m_pDoc->m_bExecCommand && m_pDoc->m_nExecCommandMode == 2)
-		m_pDoc->ExecCommand(m_Time, sLiveFileName, sLiveThumbFileName);
+	for (int n = 0; n < MOVDET_EXECCMD_PROFILES; n++)
+	{
+		if (m_pDoc->m_bExecCommand[n] && m_pDoc->m_nExecCommandMode[n] == 2)
+			m_pDoc->ExecCommand(n, m_Time, sLiveFileName, sLiveThumbFileName);
+	}
 
 	// Clean-up
 	::DeleteFile(sTempFileName);
@@ -1950,9 +1959,12 @@ end_of_software_detection:
 				}
 			}
 
-			// Execute Command
-			if (m_bExecCommand && m_nExecCommandMode == 0)
-				ExecCommand(Time, sSavedJpegRec);
+			// Execute Commands
+			for (int n = 0; n < MOVDET_EXECCMD_PROFILES; n++)
+			{
+				if (m_bExecCommand[n] && m_nExecCommandMode[n] == 0)
+					ExecCommand(n, Time, sSavedJpegRec);
+			}
 		}
 	}
 
@@ -2009,40 +2021,43 @@ end_of_software_detection:
 		::LogLine(_T("*** %s *** <-- %s"), ML_STRING(1815, "OUT OF MEMORY / OVERLOAD: dropping frames"), ::GetErrorMsg(dwError));
 }
 
-void CVideoDeviceDoc::ExecCommand(const CTime& Time,
+void CVideoDeviceDoc::ExecCommand(int n,
+								const CTime& Time,
 								const CString& sFullFileName/*=_T("")*/,
 								const CString& sSmallFileName/*=_T("")*/)
 {
 	// Critical section is necessary for two distinct reasons:
-	// 1. to serialize the access to the m_sExecCommand and m_sExecParams strings
+	// 1. to serialize the access to the m_sExecCommand[n] and m_sExecParams[n] strings
 	// 2. to avoid getting called by two separate threads at the same time,
-	//    this could happen while switching m_nExecCommandMode
-	::EnterCriticalSection(&m_csExecCommand);
-	if (m_bWaitExecCommand)
+	//    this could happen while switching m_nExecCommandMode[n]
+	::EnterCriticalSection(&m_csExecCommand[n]);
+	if (m_bWaitExecCommand[n])
 	{
-		if (m_hExecCommand)
+		if (m_hExecCommand[n])
 		{
-			if (::WaitForSingleObject(m_hExecCommand, 0) == WAIT_OBJECT_0)
+			// No locking: if the previous command is still running the following wait 
+			// function timesout and ExecCommand() is exited skipping the new command
+			if (::WaitForSingleObject(m_hExecCommand[n], 0) == WAIT_OBJECT_0)
 			{
-				::CloseHandle(m_hExecCommand);
-				m_hExecCommand = NULL;
+				::CloseHandle(m_hExecCommand[n]);
+				m_hExecCommand[n] = NULL;
 			}
 		}
 	}
-	else if (m_hExecCommand)
+	else if (m_hExecCommand[n])
 	{
-		::CloseHandle(m_hExecCommand);
-		m_hExecCommand = NULL;
+		::CloseHandle(m_hExecCommand[n]);
+		m_hExecCommand[n] = NULL;
 	}
-	if (m_sExecCommand != _T("") && m_hExecCommand == NULL)
+	if (m_sExecCommand[n] != _T("") && m_hExecCommand[n] == NULL)
 	{
 		// Executable
-		CString sExecCommand(m_sExecCommand);
+		CString sExecCommand(m_sExecCommand[n]);
 		sExecCommand.Trim();
 		sExecCommand.Trim(_T('"'));
 
 		// Replace variables
-		CString sExecParams(m_sExecParams);
+		CString sExecParams(m_sExecParams[n]);
 		sExecParams.Trim();
 		CString sSecond, sMinute, sHour, sDay, sMonth, sYear, sMovDetSavesCount;
 		sSecond.Format(_T("%02d"), Time.GetSecond());
@@ -2075,7 +2090,7 @@ void CVideoDeviceDoc::ExecCommand(const CTime& Time,
 		si.cb = sizeof(si);
 		si.dwFlags =	STARTF_FORCEOFFFEEDBACK |	// do not display the busy cursor
 						STARTF_USESHOWWINDOW;		// use the following wShowWindow
-		si.wShowWindow = m_bHideExecCommand ? SW_HIDE : SW_SHOWNORMAL;
+		si.wShowWindow = m_bHideExecCommand[n] ? SW_HIDE : SW_SHOWNORMAL;
 		TCHAR lpCommandLine[32768];
 		if (sExecParams.IsEmpty())
 			_tcscpy_s(lpCommandLine, _T("\"") + sExecCommand + _T("\""));
@@ -2084,11 +2099,11 @@ void CVideoDeviceDoc::ExecCommand(const CTime& Time,
 		::CreateProcess(sExecCommand, lpCommandLine,
 						NULL, NULL, FALSE, NORMAL_PRIORITY_CLASS, NULL,
 						::GetDriveAndDirName(sExecCommand), &si, &pi);
-		m_hExecCommand = pi.hProcess;
+		m_hExecCommand[n] = pi.hProcess;
 		if (pi.hThread)
 			::CloseHandle(pi.hThread);
 	}
-	::LeaveCriticalSection(&m_csExecCommand);
+	::LeaveCriticalSection(&m_csExecCommand[n]);
 }
 
 BOOL CVideoDeviceDoc::ResizeFast(CDib* pSrcDib, CDib* pDstDib)
@@ -3619,13 +3634,16 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bSaveStartPicture = TRUE;
 	m_bSendMailMalfunction = TRUE;
 	m_bSendMailRecording = FALSE;
-	m_bExecCommand = FALSE;
-	m_nExecCommandMode = 0;
-	m_sExecCommand = _T("");
-	m_sExecParams = _T("");
-	m_bHideExecCommand = FALSE;
-	m_bWaitExecCommand = FALSE;
-	m_hExecCommand = NULL;
+	for (int n = 0; n < MOVDET_EXECCMD_PROFILES; n++)
+	{
+		m_bExecCommand[n] = FALSE;
+		m_nExecCommandMode[n] = 0;
+		m_sExecCommand[n] = _T("");
+		m_sExecParams[n] = _T("");
+		m_bHideExecCommand[n] = FALSE;
+		m_bWaitExecCommand[n] = FALSE;
+		m_hExecCommand[n] = NULL;
+	}
 	m_nDetectionLevel = MOVDET_DEFAULT_LEVEL;
 	m_nOldDetectionZoneSize = m_nDetectionZoneSize = 0;
 	m_dwAnimatedGifWidth = MOVDET_ANIMGIF_DEFAULT_WIDTH;
@@ -3681,7 +3699,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_SendMailConfiguration.m_ConnectionType = STARTTLS;
 
 	// Init Command Execution on Detection Critical Section
-	::InitializeCriticalSection(&m_csExecCommand);
+	for (int n = 0; n < MOVDET_EXECCMD_PROFILES; n++)
+		::InitializeCriticalSection(&m_csExecCommand[n]);
 
 	// Init Movement Detections List Critical Section
 	::InitializeCriticalSection(&m_csMovementDetectionsList);
@@ -3748,11 +3767,14 @@ CVideoDeviceDoc::~CVideoDeviceDoc()
 	::DeleteCriticalSection(&m_csHttpProcess);
 	::DeleteCriticalSection(&m_csHttpParams);
 	::DeleteCriticalSection(&m_csMovementDetectionsList);
-	::DeleteCriticalSection(&m_csExecCommand);
-	if (m_hExecCommand)
+	for (int n = 0; n < MOVDET_EXECCMD_PROFILES; n++)
 	{
-		::CloseHandle(m_hExecCommand);
-		m_hExecCommand = NULL;
+		::DeleteCriticalSection(&m_csExecCommand[n]);
+		if (m_hExecCommand[n])
+		{
+			::CloseHandle(m_hExecCommand[n]);
+			m_hExecCommand[n] = NULL;
+		}
 	}
 	if (m_pProcessFrameDib)
 	{
@@ -4359,6 +4381,14 @@ int CVideoDeviceDoc::MakeSizeMultipleOf4(int nSize)
 		return nSize & ~0x3;
 }
 
+CString CVideoDeviceDoc::ExecCommandProfileSuffix(int n)
+{
+	CString s;
+	if (n > 0)
+		s.Format(_T("%d"), n + 1);
+	return s;
+}
+
 void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 									BOOL bDefaultCaptureAudioFromStream,
 									CString sSection,
@@ -4489,19 +4519,23 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_bSaveStartPicture = (BOOL)pApp->GetProfileInt(sSection, _T("SaveStartPictureMovementDetection"), TRUE);
 	m_bSendMailMalfunction = (BOOL)pApp->GetProfileInt(sSection, _T("SendMailMalfunction"), TRUE);
 	m_bSendMailRecording = (BOOL) pApp->GetProfileInt(sSection, _T("SendMailMovementDetection"), FALSE);
-	m_bExecCommand = (BOOL) pApp->GetProfileInt(sSection, _T("DoExecCommandMovementDetection"), FALSE);
-	m_nExecCommandMode = pApp->GetProfileInt(sSection, _T("ExecModeMovementDetection"), 0);
-	
-	// Attention: GetPrivateProfileString() used by GetProfileString() for INI files strips quotes!
-	m_sExecCommand = pApp->GetProfileString(sSection, _T("ExecCommandMovementDetection"), _T(""));
-	m_sExecCommand.Replace(_T("%singlequote%"), _T("\'"));
-	m_sExecCommand.Replace(_T("%doublequote%"), _T("\""));
-	m_sExecParams = pApp->GetProfileString(sSection, _T("ExecParamsMovementDetection"), _T(""));
-	m_sExecParams.Replace(_T("%singlequote%"), _T("\'"));
-	m_sExecParams.Replace(_T("%doublequote%"), _T("\""));
+	for (int n = 0; n < MOVDET_EXECCMD_PROFILES; n++)
+	{
+		m_bExecCommand[n] = (BOOL)pApp->GetProfileInt(sSection, _T("DoExecCommandMovementDetection") + ExecCommandProfileSuffix(n), FALSE);
+		m_nExecCommandMode[n] = pApp->GetProfileInt(sSection, _T("ExecModeMovementDetection") + ExecCommandProfileSuffix(n), 0);
 
-	m_bHideExecCommand = (BOOL) pApp->GetProfileInt(sSection, _T("HideExecCommandMovementDetection"), FALSE);
-	m_bWaitExecCommand = (BOOL) pApp->GetProfileInt(sSection, _T("WaitExecCommandMovementDetection"), FALSE);
+		// Attention: GetPrivateProfileString() used by GetProfileString() for INI files
+		// strips quotes -> decode quotes here!
+		m_sExecCommand[n] = pApp->GetProfileString(sSection, _T("ExecCommandMovementDetection") + ExecCommandProfileSuffix(n), _T(""));
+		m_sExecCommand[n].Replace(_T("%singlequote%"), _T("\'"));
+		m_sExecCommand[n].Replace(_T("%doublequote%"), _T("\""));
+		m_sExecParams[n] = pApp->GetProfileString(sSection, _T("ExecParamsMovementDetection") + ExecCommandProfileSuffix(n), _T(""));
+		m_sExecParams[n].Replace(_T("%singlequote%"), _T("\'"));
+		m_sExecParams[n].Replace(_T("%doublequote%"), _T("\""));
+
+		m_bHideExecCommand[n] = (BOOL)pApp->GetProfileInt(sSection, _T("HideExecCommandMovementDetection") + ExecCommandProfileSuffix(n), FALSE);
+		m_bWaitExecCommand[n] = (BOOL)pApp->GetProfileInt(sSection, _T("WaitExecCommandMovementDetection") + ExecCommandProfileSuffix(n), FALSE);
+	}
 	m_fVideoRecQuality = (float) CAVRec::ClipVideoQuality((float)pApp->GetProfileInt(sSection, _T("VideoRecQuality"), (int)DEFAULT_VIDEO_QUALITY));
 	m_bVideoRecFast = (BOOL)pApp->GetProfileInt(sSection, _T("VideoRecFast"), FALSE);
 	m_bObscureRemovedZones = (BOOL) pApp->GetProfileInt(sSection, _T("ObscureRemovedZones"), FALSE);
@@ -4632,22 +4666,25 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("SaveStartPictureMovementDetection"), m_bSaveStartPicture);
 	pApp->WriteProfileInt(sSection, _T("SendMailMalfunction"), m_bSendMailMalfunction);
 	pApp->WriteProfileInt(sSection, _T("SendMailMovementDetection"), m_bSendMailRecording);
-	pApp->WriteProfileInt(sSection, _T("DoExecCommandMovementDetection"), m_bExecCommand);
-	pApp->WriteProfileInt(sSection, _T("ExecModeMovementDetection"), m_nExecCommandMode);
-		
-	// Attention: GetPrivateProfileString() used by GetProfileString() for INI files
-	// strips quotes -> encode quotes here!
-	CString sExecCommand(m_sExecCommand); 
-	sExecCommand.Replace(_T("\'"), _T("%singlequote%"));
-	sExecCommand.Replace(_T("\""), _T("%doublequote%"));
-	pApp->WriteProfileString(sSection, _T("ExecCommandMovementDetection"), sExecCommand);
-	CString sExecParams(m_sExecParams); 
-	sExecParams.Replace(_T("\'"), _T("%singlequote%"));
-	sExecParams.Replace(_T("\""), _T("%doublequote%"));
-	pApp->WriteProfileString(sSection, _T("ExecParamsMovementDetection"), sExecParams);
-		
-	pApp->WriteProfileInt(sSection, _T("HideExecCommandMovementDetection"), m_bHideExecCommand);
-	pApp->WriteProfileInt(sSection, _T("WaitExecCommandMovementDetection"), m_bWaitExecCommand);
+	for (int n = 0; n < MOVDET_EXECCMD_PROFILES; n++)
+	{
+		pApp->WriteProfileInt(sSection, _T("DoExecCommandMovementDetection") + ExecCommandProfileSuffix(n), m_bExecCommand[n]);
+		pApp->WriteProfileInt(sSection, _T("ExecModeMovementDetection" + ExecCommandProfileSuffix(n)), m_nExecCommandMode[n]);
+
+		// Attention: GetPrivateProfileString() used by GetProfileString() for INI files
+		// strips quotes -> encode quotes here!
+		CString sExecCommand(m_sExecCommand[n]);
+		sExecCommand.Replace(_T("\'"), _T("%singlequote%"));
+		sExecCommand.Replace(_T("\""), _T("%doublequote%"));
+		pApp->WriteProfileString(sSection, _T("ExecCommandMovementDetection") + ExecCommandProfileSuffix(n), sExecCommand);
+		CString sExecParams(m_sExecParams[n]);
+		sExecParams.Replace(_T("\'"), _T("%singlequote%"));
+		sExecParams.Replace(_T("\""), _T("%doublequote%"));
+		pApp->WriteProfileString(sSection, _T("ExecParamsMovementDetection") + ExecCommandProfileSuffix(n), sExecParams);
+
+		pApp->WriteProfileInt(sSection, _T("HideExecCommandMovementDetection") + ExecCommandProfileSuffix(n), m_bHideExecCommand[n]);
+		pApp->WriteProfileInt(sSection, _T("WaitExecCommandMovementDetection") + ExecCommandProfileSuffix(n), m_bWaitExecCommand[n]);
+	}
 	pApp->WriteProfileInt(sSection, _T("VideoRecQuality"), (int)m_fVideoRecQuality);
 	pApp->WriteProfileInt(sSection, _T("VideoRecFast"), (int)m_bVideoRecFast);
 	pApp->WriteProfileInt(sSection, _T("ObscureRemovedZones"), (int)m_bObscureRemovedZones);
