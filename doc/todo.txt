@@ -1,49 +1,90 @@
-FreeVimager Program
--------------------
+FreeVimager open tasks
+----------------------
   
 - Add possibility to Print all for multi-page tiff. Currently it's only 
   possible to save to pdf and print all pages from the pdf viewer.
   (stanislav.soyko@gmail.com)
 
 
-ContaCam Program
-----------------
-  
+ContaCam "will not implement" list
+----------------------------------
+
 - Use a Logitech C920 to implement H.264 video capture support
   -> directshow graph building for H.264 support is intentionally
   crap and difficult, not wanting to play their game...
   
 - Rotate by 0,90,180,270 degrees
   (robert.heberlein@gmx.de)
-  
-- Possibility to speed-up or slow-down animated gif preview
-  (mankovv@hotmail.com). Every animated gif stops at the end (before it
-  starts over) with a pause, is it possible to make it just repeat or to
-  show a countdown or just black (nedim.hodzic@gmail.com)
+  -> this would imply a lot of changes to the source code, it's not worth
+  the effort given the fact that most cams can do that in their web interfaces
   
 - Scheduler for emailing of detections: "I like to record all detected 
   events, but I would only like to be notified of certain detections, like 
   when I'm at work" (justinschmitt08@gmail.com) 
+  -> on detection execute a batch file which checks the current time and
+  decides whether to send the email through mailsend.exe or curl.exe
+  
 - Different detection params for "day and "night" and a "stay" and 
   "away" mode that you could easily switch between. Basically two 
   configuration profiles. For example, if I'm at home, I may want to 
   disable motion email alerts but have them on when I'm away. It would be 
   most convenient if you could toggle between stay/away from either the 
   software or the web interface (tyler.barnes@telus.net)
-- Execute cmd and params separate for snapshots, recs start, saving done, summary 
-  (chrislarsen101@gmail.com, dawsonsampson045@gmail.com)
-->ALL THAT COULD BE SOLVED WITH THE POSSIBILITY TO CLONE A CAM 
-  (gthumberger@gmail.com)
-
-- Change the color and position of the date and time on the camera frame
-  (toan.nguyenk@gmail.com)
+  -> detection sensitivity can be regulated through a .bat activated by the Windows Scheduler
+  -> like written above email sending can be enabled at certain times
   
 - Post buffer is good to not split the detection, but should be removed at the
   end of the record (sambul7165@gmail.com)
-
-- Use nmap to get all the MAC addresses and detect if one is present to disable ContaCam
-  -> implement that as a ContaCam API usage example
+  -> a user expects the post buffer recorded to the video file
+  
+- Use nmap to get all the MAC addresses and detect if your phone is present to disable ContaCam
   (stuart.les.bloom@gmail.com)
+  -> can be implemented with a script which calls nmap and uses CAMERA.bat to disable ContaCam
+  
+- Can you implement login log for the online viewing. So if people log 
+  in to see the videos you can check in the logs which ip address and when it 
+  has been logged in or tried to login (info@rwsvk.nl)
+  -> the effort for a few which would use that is not worth
+  
+- It would be helpful to have the image maybe dim, or have a message saying not connected or
+  something like that if the snapshot.jpg and snapshot_thumb.jpg are too old. Implement a param
+  to poll.php which returns the age of the file in seconds, so that from time to time we can
+  call it through ajax and update the style of the image with:
+  outline: 1px solid red; outline-offset: -1px;
+  (djkothbauer@gmail.com) 
+  -> the live view shows the counting time stamp, it's already a good feedback
+  
+- In web interface main view when clicking the camera thumb show it fullscreen,
+  when clicking the camera name show the videos (n1fbg2@yahoo.com)
+  -> that's not intuitive, with the first click you get to the 12 thumbs and
+  with the second one you are already in the fullscreen live view
+  
+- Matrix 4 command for showing also 3 cams as 4 and matrix 6 command for showing 5
+  cams as 6 (engineering@theremino.com)
+  -> that can be achieved manually with the snapping borders functionality
+  
+- In root index.php scale all thumbs to the same size so that they get arranged 
+  nicely in a grid
+  (wally.malicki@gmail.com)
+  -> thumb size is taken from cam's configuration.php, to which size should we scale all thumbs?
+  Usually all thumbs are the same size so it's not worth the effort of doing that for a rare case
+  
+- I would like to be able to click on the trash can and the files are deleted without the extra
+  step of the confirmation dialog. Make that configurable under Camera Basic Settings
+  (brucebeauchamp100@gmail.com)
+  -> it's just a click, not worth to clutter the settings to remove an important alert message
+  
+  
+ContaCam open tasks
+-------------------
+  
+- Possibility to speed-up or slow-down animated gif preview
+  (mankovv@hotmail.com). Every animated gif stops at the end (before it
+  starts over) with a pause, is it possible to make it just repeat or to
+  show a countdown or just black (nedim.hodzic@gmail.com)
+
+- Change the color of the date and time on the camera frame
+  (toan.nguyenk@gmail.com, thomas.hendrik@adick.de)
   
 - Support connecting to a .m3u8 streaming server also known as HLS (HTTP Live Streaming)
   (frak@snakebite.com)
@@ -52,22 +93,11 @@ ContaCam Program
   http://www.streambox.fr/playlists/test_001/stream.m3u8
   -> attention, many HLS streams are loading in bursts, we need to store pts in the frames
   
-- Can you implement login log for the online viewing. So if people log 
-  in to see the videos you can check in the logs which ip address and when it 
-  has been logged in or tried to login (info@rwsvk.nl)
-  
 - Execute command on camera failure, add the option of "camera failure" to the command execute area
   (n1fbg@arrl.net)
   
 - Option to record the red + blue motion grid rectangles + the red dot record symbol
-  (zeroin@ya.ru, gthumberger@gmail.com, nicholas.blake.au@gmail.com)
-  
-- It would be helpful to have the image maybe dim, or have a message saying not connected or
-  something like that if the snapshot.jpg and snapshot_thumb.jpg are too old. Implement a param
-  to poll.php which returns the age of the file in seconds, so that from time to time we can
-  call it through ajax and update the style of the image with:
-  outline: 1px solid red; outline-offset: -1px;
-  (djkothbauer@gmail.com)  
+  (zeroin@ya.ru, gthumberger@gmail.com, nicholas.blake.au@gmail.com) 
   
 - Take multiple jpg snapshots on motion, not just one
   (randy3xyz@gmail.com)
@@ -75,15 +105,8 @@ ContaCam Program
 - Delete button directly on the page where a video is displayed and switch to the
   next video or go back
   (joerg@joergmahn.de, gthaavik@outlook.com)
-
-- In web interface main view when clicking the camera thumb show it fullscreen,
-  when clicking the camera name show the videos (n1fbg2@yahoo.com)
   
-- Remove Interlocked... functions replacing volatile int with std::atomic<int>
-
-- Matrix 4 command for showing also 3 cams as 4 and matrix 6 command for showing 5
-  cams as 6 (engineering@theremino.com)
-
-- In root index.php scale all thumbs to the same size so that they get arranged 
-  nicely in a grid
-  (wally.malicki@gmail.com)
+- GetTickCount() is monotonic as opposed to GetSystemTime/GetLocalTime/GetSystemTimeAsFileTime,
+  so it would make sense to add both of them to each frame so that we have a monotonic relative
+  time and an absolute time to display with milliseconds
+  (thomas.hendrik@adick.de)
