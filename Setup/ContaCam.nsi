@@ -281,6 +281,7 @@ Section "${APPNAME_NOEXT} Program (required)"
   Delete $INSTDIR\ContaCamDump.bat
   Delete $INSTDIR\NeroBurn.exe
   Delete $INSTDIR\vcredist_x86.exe
+  Delete $INSTDIR\VC_redist.x86.exe
   Delete $INSTDIR\https.crt
   Delete $INSTDIR\https.key
   Delete $INSTDIR\ContaCamService.exe
@@ -315,8 +316,8 @@ Section "${APPNAME_NOEXT} Program (required)"
   File /r /x .svn /x configuration*.* "..\microapache\*.*"
   SetOutPath $INSTDIR
   File "/oname=microapache\htdocs\configuration.php" "..\microapache\htdocs\configuration${INSTALLER_LANGUAGE_SUFFIX}.php"
-  File "vcredist_x86.exe"
-  ExecWait '"$INSTDIR\vcredist_x86.exe" /passive /norestart'
+  File "VC_redist.x86.exe"
+  ExecWait '"$INSTDIR\VC_redist.x86.exe" /passive /norestart'
   
   ; Mailer files
   SetOutPath $INSTDIR\mail
@@ -678,6 +679,7 @@ Section "Uninstall"
   Delete $INSTDIR\vmmap.exe
   Delete $INSTDIR\NeroBurn.exe
   Delete $INSTDIR\vcredist_x86.exe
+  Delete $INSTDIR\VC_redist.x86.exe
   Delete $INSTDIR\https.crt
   Delete $INSTDIR\https.key
   Delete $INSTDIR\ContaCamService.exe
