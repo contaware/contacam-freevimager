@@ -1,6 +1,6 @@
 FREEVIMAGER HISTORY
 
-9.9.19 (Month XXth 2021)
+9.9.19 (August 25th 2021)
 
 - Added a clear recent file list command
 - Added magnetic/snapping borders to the picture windows

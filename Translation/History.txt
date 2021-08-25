@@ -1,6 +1,6 @@
 TRANSLATIONS HISTORY
 
-9.9.19 (Month XXth 2021)
+9.9.19 (August 25th 2021)
 
 - Minor changes
 
