@@ -359,7 +359,7 @@ extern BOOL IsANSIConvertible(const CString& s);
 // is allocated)
 extern int ToANSI(const CString& s, LPSTR* ppAnsi);
 
-// Short <-> Long path names convertion
+// Short <-> Long path names conversion
 extern CString GetLongPathName(const CString& sShortPath);
 extern CString GetShortPathName(const CString& sLongPath);
 
