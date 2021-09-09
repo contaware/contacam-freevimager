@@ -3672,6 +3672,7 @@ BEGIN
     IDS_STRING1564          "Custom"
     IDS_STRING1565          "Please wait..."
     IDS_STRING1566          "Closing"
+    IDS_STRING1567          "Connecting..."
 END
 
 STRINGTABLE

@@ -688,7 +688,7 @@ void CVideoDeviceView::OnDraw(CDC* pDC)
 		CFont* pOldFont = MemDC.SelectObject(&m_GDIDrawFont);
 
 		// Display message
-		CString sMsg(ML_STRING(1565, "Please wait..."));
+		CString sMsg(ML_STRING(1567, "Connecting..."));
 		::EnterCriticalSection(&pDoc->m_csConnectionError);
 		if (!pDoc->m_sLastConnectionError.IsEmpty())
 			sMsg = pDoc->m_sLastConnectionError;

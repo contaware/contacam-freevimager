@@ -32,7 +32,7 @@ CHostPortDlg::CHostPortDlg(CWnd* pParent /*=NULL*/)
 	// Port
 	DWORD dwPort = (DWORD)pApp->GetProfileInt(sSection, _T("PortHistory0"), 0xFFFFFFFF);
 	if (dwPort == 0 || dwPort > 65535) // Port 0 is Reserved
-		dwPort = DEFAULT_RTSP_PORT;
+		dwPort = RTSP_DEFAULT_PORT;
 	m_nPort = dwPort;
 
 	// Device Type and Mode
@@ -234,7 +234,7 @@ BOOL CHostPortDlg::OnInitDialog()
 	if (m_Hosts.GetSize() <= 0)
 	{
 		m_Hosts.InsertAt(0, _T(""));
-		m_Ports.InsertAt(0, (DWORD)DEFAULT_RTSP_PORT);
+		m_Ports.InsertAt(0, (DWORD)RTSP_DEFAULT_PORT);
 		m_DeviceTypeModes.InsertAt(0, (DWORD)CVideoDeviceDoc::GENERIC_1_RTSP);
 	}
 
@@ -315,7 +315,7 @@ void CHostPortDlg::ParseUrl(const CString& sInHost,
 	{
 		// Set flag
 		bUrlHttp = TRUE;
-		nUrlPort = DEFAULT_HTTP_PORT;
+		nUrlPort = HTTP_DEFAULT_PORT;
 
 		// Remove leading http://[ from url
 		sOutGetFrameVideoHost = sOutGetFrameVideoHost.Right(sOutGetFrameVideoHost.GetLength() - 8 - nPos);
@@ -366,7 +366,7 @@ void CHostPortDlg::ParseUrl(const CString& sInHost,
 	{
 		// Set flag
 		bUrlHttp = TRUE;
-		nUrlPort = DEFAULT_HTTP_PORT;
+		nUrlPort = HTTP_DEFAULT_PORT;
 
 		// Remove leading http:// from url
 		sOutGetFrameVideoHost = sOutGetFrameVideoHost.Right(sOutGetFrameVideoHost.GetLength() - 7 - nPos);
@@ -411,7 +411,7 @@ void CHostPortDlg::ParseUrl(const CString& sInHost,
 
 		// Set flags
 		bUrlRtsp = TRUE;
-		nUrlPort = DEFAULT_RTSP_PORT;
+		nUrlPort = RTSP_DEFAULT_PORT;
 
 		// Remove leading rtsp:// from url
 		sOutGetFrameVideoHost = sOutGetFrameVideoHost.Right(sOutGetFrameVideoHost.GetLength() - 7 - nPos);
@@ -481,7 +481,7 @@ void CHostPortDlg::MakeUrl(	const CString& sInGetFrameVideoHost,
 		{
 			// TODO: does ffmpeg support numeric IP6? -> If yes add IP6 handling here!
 
-			if (nInGetFrameVideoPort != DEFAULT_RTSP_PORT)
+			if (nInGetFrameVideoPort != RTSP_DEFAULT_PORT)
 				sOutHost.Format(_T("rtsp://%s:%d%s"), sInGetFrameVideoHost, nInGetFrameVideoPort, sInGetFrameLocation);
 			else
 				sOutHost.Format(_T("rtsp://%s%s"), sInGetFrameVideoHost, sInGetFrameLocation);
@@ -494,14 +494,14 @@ void CHostPortDlg::MakeUrl(	const CString& sInGetFrameVideoHost,
 			// IP6
 			if (sInGetFrameVideoHost.Find(_T(':')) >= 0)
 			{
-				if (nInGetFrameVideoPort != DEFAULT_HTTP_PORT)
+				if (nInGetFrameVideoPort != HTTP_DEFAULT_PORT)
 					sOutHost.Format(_T("http://[%s]:%d%s"), sInGetFrameVideoHost, nInGetFrameVideoPort, sInGetFrameLocation);
 				else
 					sOutHost.Format(_T("http://[%s]%s"), sInGetFrameVideoHost, sInGetFrameLocation);
 			}
 			else
 			{
-				if (nInGetFrameVideoPort != DEFAULT_HTTP_PORT)
+				if (nInGetFrameVideoPort != HTTP_DEFAULT_PORT)
 					sOutHost.Format(_T("http://%s:%d%s"), sInGetFrameVideoHost, nInGetFrameVideoPort, sInGetFrameLocation);
 				else
 					sOutHost.Format(_T("http://%s%s"), sInGetFrameVideoHost, sInGetFrameLocation);
@@ -615,7 +615,7 @@ void CHostPortDlg::OnChangeEditPort()
 	if (nPort > 0 && nPort <= 65535) // Port 0 is Reserved
 		m_nPort = nPort;
 	else
-		m_nPort = DEFAULT_RTSP_PORT;
+		m_nPort = RTSP_DEFAULT_PORT;
 	LoadSettings();
 }
 

@@ -2379,10 +2379,10 @@ BOOL CVideoDeviceDoc::CHttpThread::PollAndClean(BOOL bDoNewPoll)
 		{
 			// Remove oldest connection?
 			CTimeSpan ConnectionAge = CTime::GetCurrentTime() - pNetCom->m_InitTime;
-			if (pNetCom->IsShutdown()											||	// done?
-				ConnectionAge.GetTotalSeconds() >= DEFAULT_CONNECTION_TIMEOUT	||	// too old?
-				ConnectionAge.GetTotalSeconds() < 0								||	// "
-				!bDoNewPoll)														// too many open connections?
+			if (pNetCom->IsShutdown()										||	// done?
+				ConnectionAge.GetTotalSeconds() >= HTTP_CONNECTION_TIMEOUT	||	// too old?
+				ConnectionAge.GetTotalSeconds() < 0							||	// "
+				!bDoNewPoll)													// too many open connections?
 			{
 				delete pNetCom; // this calls Close() which blocks till all net threads are done
 				m_HttpVideoNetComList.RemoveHead();
@@ -3146,7 +3146,7 @@ int CVideoDeviceDoc::CRtspThread::Work()
 			m_pDoc->ConnectErr(sErrorMsg, m_pDoc->GetDeviceName());
 
 			// Wait some time before reconnecting
-			if (::WaitForSingleObject(m_hKillEvent, DEFAULT_CONNECTION_TIMEOUT * 1000) == WAIT_OBJECT_0)
+			if (::WaitForSingleObject(m_hKillEvent, RTSP_CONNECTION_TIMEOUT * 1000) == WAIT_OBJECT_0)
 				goto exit;
 
 			// Reconnect
@@ -3205,7 +3205,7 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 					if (m_pDoc->m_pVideoNetCom)
 					{
 						CTimeSpan TimeSpan = CurrentTime - LastHttpReconnectTime;
-						if (TimeSpan.GetTotalSeconds() > DEFAULT_CONNECTION_TIMEOUT)
+						if (TimeSpan.GetTotalSeconds() > HTTP_CONNECTION_TIMEOUT)
 						{
 							m_pDoc->ClearConnectErr();
 							LastHttpReconnectTime = CurrentTime;
@@ -3579,7 +3579,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_pVideoNetCom = NULL;
 	m_pHttpVideoParseProcess = NULL;
 	m_sGetFrameVideoHost = _T("");
-	m_nGetFrameVideoPort = DEFAULT_HTTP_PORT;
+	m_nGetFrameVideoPort = HTTP_DEFAULT_PORT;
 	m_nNetworkDeviceTypeMode = GENERIC_SP;
 	m_bPreferTcpforRtsp = FALSE;
 	m_bUdpMulticastforRtsp = FALSE;
@@ -4433,7 +4433,7 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 		m_bPlacementLoaded = TRUE;
 	}
 
-	// Update m_ZoomRect and show the Please wait... message
+	// Update m_ZoomRect and trigger OnDraw()
 	GetView()->UpdateWindowSizes(TRUE, FALSE, FALSE);
 
 	// Email Settings

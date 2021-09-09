@@ -164,9 +164,11 @@ class CCameraAdvancedSettingsDlg;
 #define PHPCONFIG_STYLEFILEPATH					_T("STYLEFILEPATH")
 
 // Networking
-#define DEFAULT_HTTP_PORT						80
-#define DEFAULT_RTSP_PORT						554
-#define DEFAULT_CONNECTION_TIMEOUT				60				// in sec
+#define HTTP_DEFAULT_PORT						80
+#define RTSP_DEFAULT_PORT						554
+#define HTTP_CONNECTION_TIMEOUT					60				// in sec
+#define RTSP_CONNECTION_TIMEOUT					30				// in sec
+#define RTSP_SOCKET_TIMEOUT						15000000		// timeout in microseconds of socket I/O operations
 #define HTTP_MAX_HEADER_SIZE					1400			// bytes
 #define HTTP_MAX_MULTIPART_BOUNDARY				128				// boundary string buffer size in bytes
 #define HTTP_MAX_MULTIPART_SIZE					16777216		// 16 MB		
@@ -184,7 +186,6 @@ class CCameraAdvancedSettingsDlg;
 #define HTTP_MIN_KEEPALIVE_REQUESTS				50				// Keep-alive support check
 #define HTTP_USERNAME_PLACEHOLDER				_T("[USERNAME]")// only use letters, numbers, uri unreserved or uri reserved chars
 #define HTTP_PASSWORD_PLACEHOLDER				_T("[PASSWORD]")// only use letters, numbers, uri unreserved or uri reserved chars
-#define RTSP_SOCKET_TIMEOUT						15000000		// timeout in microseconds of socket I/O operations
 
 
 // The Document Class
