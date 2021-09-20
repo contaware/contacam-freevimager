@@ -9,7 +9,7 @@ static char THIS_FILE[] = __FILE__;
 
 HANDLE volatile CPostDelayedMessageThread::m_hExitEvent = NULL;
 std::atomic<int> CPostDelayedMessageThread::m_nCount = 0;
-std::atomic<int> CPostDelayedMessageThread::m_nExit = 0;
+std::atomic<BOOL> CPostDelayedMessageThread::m_bExit = FALSE;
 
 void CPostDelayedMessageThread::Init()
 {
@@ -17,7 +17,7 @@ void CPostDelayedMessageThread::Init()
 	{
 		m_hExitEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);
 		m_nCount = 0;
-		m_nExit = 0;
+		m_bExit = FALSE;
 	}
 }
 	
@@ -25,7 +25,7 @@ void CPostDelayedMessageThread::Exit()
 {
 	if (m_hExitEvent)
 	{
-		m_nExit = 1;
+		m_bExit = TRUE;
 		::SetEvent(m_hExitEvent);
 
 		while (m_nCount > 0)
@@ -44,7 +44,7 @@ BOOL CPostDelayedMessageThread::PostDelayedMessage(	HWND hWnd,
 {
 	++m_nCount;
 
-	if (m_nExit || m_hExitEvent == NULL)
+	if (m_bExit || m_hExitEvent == NULL)
 	{
 		--m_nCount;
 		return FALSE;
