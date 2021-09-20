@@ -872,7 +872,7 @@ public:
 	CDib* volatile m_pCamOffDib;						// Dib used to obscure the camera source
 
 	// Watchdog vars
-	volatile LONGLONG m_llCurrentInitUpTime;			// Uptime set in ProcessI420Frame()
+	std::atomic<LONGLONG> m_llCurrentInitUpTime;		// Uptime set in ProcessI420Frame()
 	volatile BOOL m_bWatchDogVideoAlarm;				// WatchDog Video Alarm
 
 	// DirectShow Capture Vars

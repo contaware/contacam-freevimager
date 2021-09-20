@@ -35,6 +35,7 @@
 #include <locale.h>
 #include <afxmt.h>
 #include <math.h>
+#include <atomic>
 #include <afxtempl.h>
 #include <direct.h>
 #include <string>

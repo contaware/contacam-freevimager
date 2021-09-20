@@ -124,7 +124,7 @@ LONG CVideoDeviceView::OnThreadSafeDVChangeVideoFormat(WPARAM wparam, LPARAM lpa
 				// Reset vars
 				pDoc->m_dwFrameCountUp = 0U;
 				pDoc->m_llNextSnapshotUpTime = (LONGLONG)::GetTickCount64();
-				::InterlockedExchange64(&pDoc->m_llCurrentInitUpTime, pDoc->m_llNextSnapshotUpTime);
+				pDoc->m_llCurrentInitUpTime = pDoc->m_llNextSnapshotUpTime;
 
 				// Restart
 				if (pDoc->m_pDxCapture->Run())
@@ -1003,7 +1003,7 @@ BOOL CVideoDeviceView::ReOpenDxDevice()
 		// Reset vars
 		pDoc->m_dwFrameCountUp = 0U;
 		pDoc->m_llNextSnapshotUpTime = (LONGLONG)::GetTickCount64();
-		::InterlockedExchange64(&pDoc->m_llCurrentInitUpTime, pDoc->m_llNextSnapshotUpTime);
+		pDoc->m_llCurrentInitUpTime = pDoc->m_llNextSnapshotUpTime;
 
 		// Re-Open
 		if (pDoc->m_pDxCapture->Open(	GetSafeHwnd(),

@@ -4747,7 +4747,7 @@ void CVideoDeviceDoc::OpenDxVideoDevice(int nId, CString sDevicePathName, CStrin
 	// Reset vars
 	m_dwFrameCountUp = 0U;
 	m_llNextSnapshotUpTime = (LONGLONG)::GetTickCount64();
-	::InterlockedExchange64(&m_llCurrentInitUpTime, m_llNextSnapshotUpTime);
+	m_llCurrentInitUpTime = m_llNextSnapshotUpTime;
 
 	// Open Dx Capture
 	BOOL bOpened = m_pDxCapture->Open(	GetView()->GetSafeHwnd(),
@@ -5059,7 +5059,7 @@ BOOL CVideoDeviceDoc::OpenNetVideoDevice(CString sAddress)
 	// Reset vars
 	m_dwFrameCountUp = 0U;
 	m_llNextSnapshotUpTime = (LONGLONG)::GetTickCount64();
-	::InterlockedExchange64(&m_llCurrentInitUpTime, m_llNextSnapshotUpTime);
+	m_llCurrentInitUpTime = m_llNextSnapshotUpTime;
 
 	// The Title is set here before starting to connect
 	// and also later on when we are connected
@@ -5112,7 +5112,7 @@ void CVideoDeviceDoc::OpenNetVideoDevice(CHostPortDlg* pDlg)
 	// Reset vars
 	m_dwFrameCountUp = 0U;
 	m_llNextSnapshotUpTime = (LONGLONG)::GetTickCount64();
-	::InterlockedExchange64(&m_llCurrentInitUpTime, m_llNextSnapshotUpTime);
+	m_llCurrentInitUpTime = m_llNextSnapshotUpTime;
 
 	// The Title is set here before starting to connect
 	// and also later on when we are connected
@@ -7540,7 +7540,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 	m_dwFrameCountUp++;
 
 	// Calc. Effective Frame Rate
-	::InterlockedExchange64(&m_llCurrentInitUpTime, llCurrentInitUpTime);
+	m_llCurrentInitUpTime = llCurrentInitUpTime;
 	llCurrentFrameTime = llCurrentInitUpTime - llPrevInitUpTime;
 	if (llCurrentFrameTime <= PROCESS_MAX_FRAMETIME)
 	{
