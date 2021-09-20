@@ -352,10 +352,10 @@ public:
 	static RGBQUAD ms_StdColors[];
 
 #ifdef VIDEODEVICEDOC
-	static volatile LONGLONG m_llOverallSharedMemoryBytes;	// Overall stats
-	HANDLE m_hBitsSharedMemory;								// Bits in shared memory
-	volatile DWORD m_dwSharedMemorySize;					// Size of shared memory block
-	USERLIST m_UserList;									// General Purpose User List
+	static std::atomic<LONGLONG> m_llOverallSharedMemoryBytes;	// Overall stats
+	HANDLE m_hBitsSharedMemory;									// Bits in shared memory
+	volatile DWORD m_dwSharedMemorySize;						// Size of shared memory block
+	USERLIST m_UserList;										// General Purpose User List
 #endif
 
 protected:

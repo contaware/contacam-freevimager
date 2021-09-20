@@ -16,6 +16,7 @@
 #include <afxole.h>
 #include <wingdi.h>
 #include <math.h>
+#include <atomic>
 #include <windowsx.h>
 #include <afxtaskdialog.h>
 #include "..\appconst.h"

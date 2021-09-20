@@ -307,7 +307,7 @@ CDib::~CDib()
 	FreeUserList();
 	if (m_hBitsSharedMemory)
 	{
-		::InterlockedAdd64(&m_llOverallSharedMemoryBytes, -((LONGLONG)m_dwSharedMemorySize));
+		m_llOverallSharedMemoryBytes -= (LONGLONG)m_dwSharedMemorySize;
 		::CloseHandle(m_hBitsSharedMemory);
 	}
 #endif
@@ -445,7 +445,7 @@ DWORD CDib::BitsToSharedMemory()
 	}
 
 	// Stats
-	::InterlockedAdd64(&m_llOverallSharedMemoryBytes, dwSharedMemorySize);
+	m_llOverallSharedMemoryBytes += (LONGLONG)dwSharedMemorySize;
 
 	// Store mapping
 	m_hBitsSharedMemory = mapping;
@@ -515,7 +515,7 @@ DWORD CDib::SharedMemoryToBits()
 	::UnmapViewOfFile(region);
 
 	// Stats
-	::InterlockedAdd64(&m_llOverallSharedMemoryBytes, -((LONGLONG)m_dwSharedMemorySize));
+	m_llOverallSharedMemoryBytes -= (LONGLONG)m_dwSharedMemorySize;
 
 	// Free mapping
 	::CloseHandle(m_hBitsSharedMemory);
@@ -8047,7 +8047,7 @@ CString CDib::CFileInfo::GetDepthName()
 }
 
 #ifdef VIDEODEVICEDOC
-volatile LONGLONG CDib::m_llOverallSharedMemoryBytes = 0;
+std::atomic<LONGLONG> CDib::m_llOverallSharedMemoryBytes = 0;
 #endif
 
 // Windows Standard Colors
