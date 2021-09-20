@@ -1748,7 +1748,7 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, const CTime& Time,
 
 	// Init from UI thread because of the CloseNotificationWnd() call and
 	// because of the initialization of variables used by the UI drawing
-	if (m_lMovDetTotalZones == 0 || m_nOldDetectionZoneSize != m_nDetectionZoneSize)
+	if (m_nMovDetTotalZones == 0 || m_nOldDetectionZoneSize != m_nDetectionZoneSize)
 	{
 		if (::SendMessage(	GetView()->GetSafeHwnd(),
 							WM_THREADSAFE_INIT_MOVDET,
@@ -1770,7 +1770,7 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, const CTime& Time,
 			m_pMovementDetectorBackgndDib = NULL;
 		}
 		if (m_MovementDetections)
-			memset(m_MovementDetections, 0, m_lMovDetTotalZones);
+			memset(m_MovementDetections, 0, m_nMovDetTotalZones);
 	}
 	// Continuous REC
 	else if (nDetectionLevel == 100)
@@ -1785,7 +1785,7 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, const CTime& Time,
 			delete m_pMovementDetectorBackgndDib;
 			m_pMovementDetectorBackgndDib = NULL;
 		}
-		for (int i = 0; i < m_lMovDetTotalZones; i++)
+		for (int i = 0; i < m_nMovDetTotalZones; i++)
 		{
 			if (m_DoMovementDetection[i])
 			{
@@ -3654,9 +3654,9 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_DoMovementDetection = new BYTE[MOVDET_MAX_ZONES];
 	if (m_DoMovementDetection)
 		memset(m_DoMovementDetection, 1, MOVDET_MAX_ZONES);
-	m_lMovDetXZonesCount = MOVDET_MIN_ZONES_XORY;
-	m_lMovDetYZonesCount = MOVDET_MIN_ZONES_XORY;
-	m_lMovDetTotalZones = 0;
+	m_nMovDetXZonesCount = MOVDET_MIN_ZONES_XORY;
+	m_nMovDetYZonesCount = MOVDET_MIN_ZONES_XORY;
+	m_nMovDetTotalZones = 0;
 	m_bObscureRemovedZones = FALSE;
 	m_nMovDetFreqDiv = 1;
 	m_dMovDetFrameRateFreqDivCalc = 0.0;
@@ -3841,7 +3841,7 @@ void CVideoDeviceDoc::FreeMovementDetector()
 		delete m_pMovementDetectorBackgndDib;
 		m_pMovementDetectorBackgndDib = NULL;
 	}
-	::InterlockedExchange(&m_lMovDetTotalZones, 0);
+	m_nMovDetTotalZones = 0;
 	m_bDetectingMovement = FALSE;
 	m_bDetectingMinLengthMovement = FALSE;
 	if (m_MovementDetections)
@@ -7375,11 +7375,11 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 							m_pCamOffDib->GetWidth());
 		}
 		// Draw the privacy mask
-		else if (m_bObscureRemovedZones && m_lMovDetTotalZones > 0)
+		else if (m_bObscureRemovedZones && m_nMovDetTotalZones > 0)
 		{
-			// Note: m_lMovDetXZonesCount and m_lMovDetYZonesCount will never be set to 0 and will never
+			// Note: m_nMovDetXZonesCount and m_nMovDetYZonesCount will never be set to 0 and will never
 			//       be updated (updated in OnThreadSafeInitMovDet) while executing the following code.
-			//       When switching resolution and before m_lMovDetXZonesCount and m_lMovDetYZonesCount
+			//       When switching resolution and before m_nMovDetXZonesCount and m_nMovDetYZonesCount
 			//       get updated the new dib width and height may not be exactly divisible, that's not a
 			//       problem because the resulting integer zone width and height are truncated and cannot
 			//       overflow lpYPlaneTopLeftBits, lpUPlaneTopLeftBits and lpVPlaneTopLeftBits.
@@ -7388,15 +7388,15 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 			LPBYTE lpYPlaneTopLeftBits = pDib->GetBits();
 			LPBYTE lpUPlaneTopLeftBits = lpYPlaneTopLeftBits + pDib->GetWidth() * pDib->GetHeight();
 			LPBYTE lpVPlaneTopLeftBits = lpUPlaneTopLeftBits + nWidth2 * nHeight2;
-			int nZoneWidth = pDib->GetWidth() / m_lMovDetXZonesCount;
-			int nZoneHeight = pDib->GetHeight() / m_lMovDetYZonesCount;
+			int nZoneWidth = pDib->GetWidth() / m_nMovDetXZonesCount;
+			int nZoneHeight = pDib->GetHeight() / m_nMovDetYZonesCount;
 			int nZoneWidth2 = nZoneWidth / 2;
 			int nZoneHeight2 = nZoneHeight / 2;
-			for (int y = 0; y < m_lMovDetYZonesCount; y++)
+			for (int y = 0; y < m_nMovDetYZonesCount; y++)
 			{
-				for (int x = 0; x < m_lMovDetXZonesCount; x++)
+				for (int x = 0; x < m_nMovDetXZonesCount; x++)
 				{
-					if (m_DoMovementDetection[x + y * m_lMovDetXZonesCount] == 0)
+					if (m_DoMovementDetection[x + y * m_nMovDetXZonesCount] == 0)
 					{
 						for (int h = 0; h < nZoneHeight; h++)
 							memset(lpYPlaneTopLeftBits + x * nZoneWidth + h * pDib->GetWidth(), 16, nZoneWidth);
@@ -7909,21 +7909,21 @@ BOOL CVideoDeviceDoc::MovementDetector(CDib* pDib, int nDetectionLevel)
 	// Vars
 	double dDetectionLevel = (101 - nDetectionLevel) / 1000.0;
 	int i, x, y;
-	int nZoneWidth = pDib->GetWidth() / m_lMovDetXZonesCount;
-	int nZoneHeight = pDib->GetHeight() / m_lMovDetYZonesCount;
+	int nZoneWidth = pDib->GetWidth() / m_nMovDetXZonesCount;
+	int nZoneHeight = pDib->GetHeight() / m_nMovDetYZonesCount;
 
 	// 235 is the MAX Y value, 16 is the MIN Y value
 	// -> The maximum reachable difference is 235 - 16
 	int nMaxIntensityPerZone = nZoneWidth * nZoneHeight * (235 - 16);
 
 	// Calculate the Intensities of the enabled zones
-	for (y = 0 ; y < m_lMovDetYZonesCount ; y++)
+	for (y = 0 ; y < m_nMovDetYZonesCount ; y++)
 	{
-		for (x = 0 ; x < m_lMovDetXZonesCount ; x++)
+		for (x = 0 ; x < m_nMovDetXZonesCount ; x++)
 		{
-			if (m_DoMovementDetection[y*m_lMovDetXZonesCount+x])
+			if (m_DoMovementDetection[y*m_nMovDetXZonesCount+x])
 			{
-				m_MovementDetectorCurrentIntensity[y*m_lMovDetXZonesCount+x] = SummRectArea(pDib,
+				m_MovementDetectorCurrentIntensity[y*m_nMovDetXZonesCount+x] = SummRectArea(pDib,
 																							pDib->GetWidth(),
 																							x*nZoneWidth,	// start pixel in x direction
 																							y*nZoneHeight,	// start pixel in y direction
@@ -7936,7 +7936,7 @@ BOOL CVideoDeviceDoc::MovementDetector(CDib* pDib, int nDetectionLevel)
 	// Set Detection flag and Current Time
 	BOOL bDetection = FALSE;
 	int nIntensityThreshold = Round(dDetectionLevel * nMaxIntensityPerZone);
-	for (i = 0 ; i < m_lMovDetTotalZones ; i++)
+	for (i = 0 ; i < m_nMovDetTotalZones ; i++)
 	{
 		if (m_DoMovementDetection[i] &&
 			m_MovementDetectorCurrentIntensity[i] > nIntensityThreshold * (int)m_DoMovementDetection[i])
@@ -7948,7 +7948,7 @@ BOOL CVideoDeviceDoc::MovementDetector(CDib* pDib, int nDetectionLevel)
 	}
 
 	// Clear Old Detection Zones
-	for (i = 0 ; i < m_lMovDetTotalZones ; i++)
+	for (i = 0 ; i < m_nMovDetTotalZones ; i++)
 	{
 		if (m_MovementDetections[i]	&&
 			(pDib->GetUpTime() - m_MovementDetectionsUpTime[i]) >= MOVDET_TIMEOUT)

@@ -971,9 +971,9 @@ public:
 	BYTE* volatile m_DoMovementDetection;				// Do Movement Detection in this Zone with given relative sensitivity
 														// 0 -> No Detection, 1 -> Full Sensitivity=100%, 2 -> 50%, 4 -> 25%, 10 -> 10%, 20 -> 5%
 														// (array allocated in constructor)
-	volatile LONG m_lMovDetXZonesCount;					// Number of zones in X direction (never set to 0 to avoid division by 0)
-	volatile LONG m_lMovDetYZonesCount;					// Number of zones in Y direction (never set to 0 to avoid division by 0)
-	volatile LONG m_lMovDetTotalZones;					// Total Number of zones (set to 0 when a (re-)init of the zones is wanted)
+	std::atomic<int> m_nMovDetXZonesCount;				// Number of zones in X direction (never set to 0 to avoid division by 0)
+	std::atomic<int> m_nMovDetYZonesCount;				// Number of zones in Y direction (never set to 0 to avoid division by 0)
+	std::atomic<int> m_nMovDetTotalZones;				// Total Number of zones (set to 0 when a (re-)init of the zones is wanted)
 	volatile BOOL m_bObscureRemovedZones;				// Removed detection zones are obscured
 	volatile int m_nMovDetFreqDiv;						// Current frequency divider
 	volatile double m_dMovDetFrameRateFreqDivCalc;		// Framerate used to calculate the current frequency divider

@@ -195,8 +195,8 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	int i;
-	LONG lMovDetXZonesCount = 0;
-	LONG lMovDetYZonesCount = 0;
+	int nMovDetXZonesCount = 0;
+	int nMovDetYZonesCount = 0;
 
 	// Video size check
 	if (pDoc->m_DocRect.Width() <= 0 || pDoc->m_DocRect.Height() <= 0)
@@ -250,7 +250,7 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 		if ((pDoc->m_DocRect.Width() % i) == 0 &&
 			(pDoc->m_DocRect.Width() / i) >= nMovDetMinXZonesCount)
 		{
-			lMovDetXZonesCount = pDoc->m_DocRect.Width() / i;
+			nMovDetXZonesCount = pDoc->m_DocRect.Width() / i;
 			break;
 		}
 	}
@@ -261,18 +261,18 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 		if ((pDoc->m_DocRect.Height() % i) == 0 &&
 			(pDoc->m_DocRect.Height() / i) >= nMovDetMinYZonesCount)
 		{
-			lMovDetYZonesCount = pDoc->m_DocRect.Height() / i;
+			nMovDetYZonesCount = pDoc->m_DocRect.Height() / i;
 			break;
 		}
 	}
 
 	// Total number of zones
-	LONG lMovDetTotalZones = lMovDetXZonesCount * lMovDetYZonesCount;
+	int nMovDetTotalZones = nMovDetXZonesCount * nMovDetYZonesCount;
 
 	// Check and update doc vars
-	if (lMovDetTotalZones == 0 || lMovDetTotalZones > MOVDET_MAX_ZONES)
+	if (nMovDetTotalZones == 0 || nMovDetTotalZones > MOVDET_MAX_ZONES)
 	{
-		if (lMovDetTotalZones == 0)
+		if (nMovDetTotalZones == 0)
 		{
 			if (!m_bMovDetUnsupportedVideoSize && !((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
 				::AfxGetMainFrame()->PopupNotificationWnd(APPNAME_NOEXT, ML_STRING(1836, "Cannot record, unsupported video size!"), 0);
@@ -286,7 +286,7 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 			m_bMovDetUnsupportedZonesSize = TRUE;
 			m_bMovDetUnsupportedVideoSize = FALSE;
 		}
-		::InterlockedExchange(&pDoc->m_lMovDetTotalZones, 0);
+		pDoc->m_nMovDetTotalZones = 0;
 		return 0;
 	}
 	else
@@ -294,9 +294,9 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 		if ((m_bMovDetUnsupportedVideoSize || m_bMovDetUnsupportedZonesSize) && !((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
 			::AfxGetMainFrame()->CloseNotificationWnd();
 		m_bMovDetUnsupportedVideoSize = m_bMovDetUnsupportedZonesSize = FALSE;
-		::InterlockedExchange(&pDoc->m_lMovDetXZonesCount, lMovDetXZonesCount);
-		::InterlockedExchange(&pDoc->m_lMovDetYZonesCount, lMovDetYZonesCount);
-		::InterlockedExchange(&pDoc->m_lMovDetTotalZones, lMovDetTotalZones);
+		pDoc->m_nMovDetXZonesCount = nMovDetXZonesCount;
+		pDoc->m_nMovDetYZonesCount = nMovDetYZonesCount;
+		pDoc->m_nMovDetTotalZones = nMovDetTotalZones;
 	}
 
 	// Update the old detection zone size so that this function is not called again
@@ -436,11 +436,11 @@ void CVideoDeviceView::DrawZones(HDC hDC, const CRect& rcClient)
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-	if (pDoc->m_lMovDetTotalZones > 0)
+	if (pDoc->m_nMovDetTotalZones > 0)
 	{
 		RECT rcDetZone;
-		double dZoneWidth = (double)rcClient.Width() / (double)pDoc->m_lMovDetXZonesCount;
-		double dZoneHeight = (double)rcClient.Height() / (double)pDoc->m_lMovDetYZonesCount;
+		double dZoneWidth = (double)rcClient.Width() / (double)pDoc->m_nMovDetXZonesCount;
+		double dZoneHeight = (double)rcClient.Height() / (double)pDoc->m_nMovDetYZonesCount;
 		int nSensitivityTextSize;
 		int nSensitivityTextMargin;
 		int nSensitivityTextSpacing;
@@ -492,18 +492,18 @@ void CVideoDeviceView::DrawZones(HDC hDC, const CRect& rcClient)
 			HPEN hPenSelectedZones = ::CreatePen(PS_SOLID, 1, MOVDET_SELECTED_ZONES_COLOR);
 			HGDIOBJ hOldPenSelectedZones = ::SelectObject(hDC, hPenSelectedZones);
 			nLastBottomEdge = 1;
-			for (int y = 0; y < pDoc->m_lMovDetYZonesCount; y++)
+			for (int y = 0; y < pDoc->m_nMovDetYZonesCount; y++)
 			{
 				int nLastRightEdge = 1;
-				for (int x = 0; x < pDoc->m_lMovDetXZonesCount; x++)
+				for (int x = 0; x < pDoc->m_nMovDetXZonesCount; x++)
 				{
 					int nZoneOffsetX = (int)(x * dZoneWidth);
 					int nZoneOffsetY = (int)(y * dZoneHeight);
 					rcDetZone.left = nLastRightEdge - 1;
 					rcDetZone.top = nLastBottomEdge - 1;
-					rcDetZone.right = (x == (pDoc->m_lMovDetXZonesCount - 1) ? rcClient.right : (int)(nZoneOffsetX + dZoneWidth));
-					rcDetZone.bottom = (y == (pDoc->m_lMovDetYZonesCount - 1) ? rcClient.bottom : (int)(nZoneOffsetY + dZoneHeight));
-					int i = x + y * pDoc->m_lMovDetXZonesCount;
+					rcDetZone.right = (x == (pDoc->m_nMovDetXZonesCount - 1) ? rcClient.right : (int)(nZoneOffsetX + dZoneWidth));
+					rcDetZone.bottom = (y == (pDoc->m_nMovDetYZonesCount - 1) ? rcClient.bottom : (int)(nZoneOffsetY + dZoneHeight));
+					int i = x + y * pDoc->m_nMovDetXZonesCount;
 					if (pDoc->m_DoMovementDetection[i])
 					{
 						DrawZoneSensitivity(i, hDC, rcDetZone, nSensitivityTextSize, nSensitivityTextMargin, nSensitivityTextSpacing, hSensitivityTextBrush);
@@ -522,18 +522,18 @@ void CVideoDeviceView::DrawZones(HDC hDC, const CRect& rcClient)
 			HPEN hPenDetectingZones = ::CreatePen(PS_SOLID, 1, MOVDET_DETECTING_ZONES_COLOR);
 			HGDIOBJ hOldPenDetectingZones = ::SelectObject(hDC, hPenDetectingZones);
 			nLastBottomEdge = 1;
-			for (int y = 0; y < pDoc->m_lMovDetYZonesCount; y++)
+			for (int y = 0; y < pDoc->m_nMovDetYZonesCount; y++)
 			{
 				int nLastRightEdge = 1;
-				for (int x = 0; x < pDoc->m_lMovDetXZonesCount; x++)
+				for (int x = 0; x < pDoc->m_nMovDetXZonesCount; x++)
 				{
 					int nZoneOffsetX = (int)(x * dZoneWidth);
 					int nZoneOffsetY = (int)(y * dZoneHeight);
 					rcDetZone.left = nLastRightEdge - 1;
 					rcDetZone.top = nLastBottomEdge - 1;
-					rcDetZone.right = (x == (pDoc->m_lMovDetXZonesCount - 1) ? rcClient.right : (int)(nZoneOffsetX + dZoneWidth));
-					rcDetZone.bottom = (y == (pDoc->m_lMovDetYZonesCount - 1) ? rcClient.bottom : (int)(nZoneOffsetY + dZoneHeight));
-					int i = x + y * pDoc->m_lMovDetXZonesCount;
+					rcDetZone.right = (x == (pDoc->m_nMovDetXZonesCount - 1) ? rcClient.right : (int)(nZoneOffsetX + dZoneWidth));
+					rcDetZone.bottom = (y == (pDoc->m_nMovDetYZonesCount - 1) ? rcClient.bottom : (int)(nZoneOffsetY + dZoneHeight));
+					int i = x + y * pDoc->m_nMovDetXZonesCount;
 					if (pDoc->m_MovementDetections[i])
 					{
 						DrawZoneSensitivity(i, hDC, rcDetZone, nSensitivityTextSize, nSensitivityTextMargin, nSensitivityTextSpacing, hSensitivityTextBrush);
@@ -794,7 +794,7 @@ void CVideoDeviceView::OnLButtonDown(UINT nFlags, CPoint point)
 
 	CUImagerView::OnLButtonDown(nFlags, point);
 
-	if (pDoc->m_nShowEditDetectionZones && pDoc->m_lMovDetTotalZones > 0)
+	if (pDoc->m_nShowEditDetectionZones && pDoc->m_nMovDetTotalZones > 0)
 	{
 		// Get client rectangle
 		CRect rcClient;
@@ -810,13 +810,13 @@ void CVideoDeviceView::OnLButtonDown(UINT nFlags, CPoint point)
 		// Calc. x and y offsets
 		int x = 0;
 		if (rcClient.Width() > 0)
-			x = pDoc->m_lMovDetXZonesCount * point.x / rcClient.Width(); // note: point.x < rcClient.Width()  -> x < pDoc->m_lMovDetXZonesCount
+			x = pDoc->m_nMovDetXZonesCount * point.x / rcClient.Width(); // note: point.x < rcClient.Width()  -> x < pDoc->m_nMovDetXZonesCount
 		int y = 0;
 		if (rcClient.Height() > 0)
-			y = pDoc->m_lMovDetYZonesCount * point.y / rcClient.Height();// note: point.y < rcClient.Height() -> y < pDoc->m_lMovDetYZonesCount
+			y = pDoc->m_nMovDetYZonesCount * point.y / rcClient.Height();// note: point.y < rcClient.Height() -> y < pDoc->m_nMovDetYZonesCount
 
 		// The Selected Zone Index
-		int nZone = x + y * pDoc->m_lMovDetXZonesCount;
+		int nZone = x + y * pDoc->m_nMovDetXZonesCount;
 
 		// Add / Remove Zone Value
 		if (nZone >= 0 && nZone < MOVDET_MAX_ZONES)
@@ -1093,7 +1093,7 @@ void CVideoDeviceView::OnMouseMove(UINT nFlags, CPoint point)
 
 	if (pDoc->m_nShowEditDetectionZones	&&
 		(nFlags & MK_LBUTTON)			&&
-		pDoc->m_lMovDetTotalZones > 0)
+		pDoc->m_nMovDetTotalZones > 0)
 	{
 		// Get client rectangle
 		CRect rcClient;
@@ -1109,13 +1109,13 @@ void CVideoDeviceView::OnMouseMove(UINT nFlags, CPoint point)
 		// Calc. x and y offsets
 		int x = 0;
 		if (rcClient.Width() > 0)
-			x = pDoc->m_lMovDetXZonesCount * point.x / rcClient.Width(); // note: point.x < rcClient.Width()  -> x < pDoc->m_lMovDetXZonesCount
+			x = pDoc->m_nMovDetXZonesCount * point.x / rcClient.Width(); // note: point.x < rcClient.Width()  -> x < pDoc->m_nMovDetXZonesCount
 		int y = 0;
 		if (rcClient.Height() > 0)
-			y = pDoc->m_lMovDetYZonesCount * point.y / rcClient.Height();// note: point.y < rcClient.Height() -> y < pDoc->m_lMovDetYZonesCount
+			y = pDoc->m_nMovDetYZonesCount * point.y / rcClient.Height();// note: point.y < rcClient.Height() -> y < pDoc->m_nMovDetYZonesCount
 
 		// The Selected Zone Index
-		int nZone = x + y * pDoc->m_lMovDetXZonesCount;
+		int nZone = x + y * pDoc->m_nMovDetXZonesCount;
 
 		// Add / Remove Zone Value
 		if (nZone >= 0 && nZone < MOVDET_MAX_ZONES)
