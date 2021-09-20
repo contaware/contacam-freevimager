@@ -38,8 +38,8 @@ class CPostDelayedMessageThread : CWorkerThread
 		int Work();
 
 		static HANDLE volatile m_hExitEvent;
-		static volatile LONG m_lCount;
-		static volatile LONG m_lExit;
+		static std::atomic<int> m_nCount;
+		static std::atomic<int> m_nExit;
 
 		HWND m_hWnd;
 		UINT m_uiMsg;

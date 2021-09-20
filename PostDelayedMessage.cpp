@@ -8,16 +8,16 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 HANDLE volatile CPostDelayedMessageThread::m_hExitEvent = NULL;
-volatile LONG CPostDelayedMessageThread::m_lCount = 0;
-volatile LONG CPostDelayedMessageThread::m_lExit = 0;
+std::atomic<int> CPostDelayedMessageThread::m_nCount = 0;
+std::atomic<int> CPostDelayedMessageThread::m_nExit = 0;
 
 void CPostDelayedMessageThread::Init()
 {
 	if (m_hExitEvent == NULL)
 	{
 		m_hExitEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);
-		m_lCount = 0;
-		m_lExit = 0;
+		m_nCount = 0;
+		m_nExit = 0;
 	}
 }
 	
@@ -25,10 +25,10 @@ void CPostDelayedMessageThread::Exit()
 {
 	if (m_hExitEvent)
 	{
-		::InterlockedExchange(&m_lExit, 1);
+		m_nExit = 1;
 		::SetEvent(m_hExitEvent);
 
-		while (m_lCount > 0)
+		while (m_nCount > 0)
 			::Sleep(EXIT_CHECK_INTERVAL);
 
 		::CloseHandle(m_hExitEvent);
@@ -42,11 +42,11 @@ BOOL CPostDelayedMessageThread::PostDelayedMessage(	HWND hWnd,
 													WPARAM wParam,
 													LPARAM lParam)
 {
-	::InterlockedIncrement(&m_lCount);
+	++m_nCount;
 
-	if (m_lExit || m_hExitEvent == NULL)
+	if (m_nExit || m_hExitEvent == NULL)
 	{
-		::InterlockedDecrement(&m_lCount);
+		--m_nCount;
 		return FALSE;
 	}
 
@@ -58,13 +58,13 @@ BOOL CPostDelayedMessageThread::PostDelayedMessage(	HWND hWnd,
 										lParam);
 	if (!p)
 	{
-		::InterlockedDecrement(&m_lCount);
+		--m_nCount;
 		return FALSE;
 	}
 	else if (!p->Start())
 	{
 		delete p;
-		::InterlockedDecrement(&m_lCount);
+		--m_nCount;
 		return FALSE;
 	}
 	else
@@ -93,7 +93,7 @@ int CPostDelayedMessageThread::Work()
 									
 	};
 
-	::InterlockedDecrement(&m_lCount);
+	--m_nCount;
 
 	return 0;
 }
