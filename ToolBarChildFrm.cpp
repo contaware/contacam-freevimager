@@ -775,7 +775,7 @@ void CPictureChildFrame::OnClose()
 		if (pDoc->CanCloseFrame(this)) // This Calls CPictureDoc::SaveModified()
 		{
 			// Set Closing Flag
-			::InterlockedExchange(&pDoc->m_bClosing, 1);
+			pDoc->m_bClosing = TRUE;
 
 			// Clear Modified Flag
 			pDoc->SetModifiedFlag(FALSE);
@@ -1148,7 +1148,7 @@ void CVideoDeviceChildFrame::OnClose()
 			}
 
 			// Set Closing Flag
-			::InterlockedExchange(&pDoc->m_bClosing, 1);
+			pDoc->m_bClosing = TRUE;
 			pDoc->SetDocumentTitle();
 
 			// Clear Modified Flag
