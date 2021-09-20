@@ -1268,7 +1268,7 @@ int CPictureDoc::CJpegThread::Work()
 	}
 
 	// Set Compression Quality
-	::InterlockedExchange(&m_lJpegCompressionQuality, nJpegCompressionQuality);
+	m_nJpegCompressionQuality = nJpegCompressionQuality;
 
 	// Update Image Info Dlg
 	::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),

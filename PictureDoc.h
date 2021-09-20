@@ -229,7 +229,7 @@ public:
 	{
 		public:
 			CJpegThread(){	m_pDoc = NULL;
-							m_lJpegCompressionQuality = -1;
+							m_nJpegCompressionQuality = -1;
 							m_bDoFullLoad = FALSE;
 							m_sFileName = _T("");
 							m_hTimerEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);};
@@ -237,9 +237,9 @@ public:
 			void SetDoc(CPictureDoc* pDoc) {m_pDoc = pDoc;};
 			__forceinline void SetDoFullLoad(BOOL bDoFullLoad) { m_bDoFullLoad = bDoFullLoad; };
 			__forceinline void SetFileName(CString sFileName) {m_sFileName = sFileName;};
-			__forceinline void ResetJpegCompressionQuality() {::InterlockedExchange(&m_lJpegCompressionQuality, -1);};
-			__forceinline int GetJpegCompressionQuality() const {return (int)m_lJpegCompressionQuality;};
-			__forceinline int GetJpegCompressionQualityBlocking() {WaitDone_Blocking(); return (int)m_lJpegCompressionQuality;};
+			__forceinline void ResetJpegCompressionQuality() {m_nJpegCompressionQuality = -1;};
+			__forceinline int GetJpegCompressionQuality() const {return m_nJpegCompressionQuality;};
+			__forceinline int GetJpegCompressionQualityBlocking() {WaitDone_Blocking(); return m_nJpegCompressionQuality;};
 
 		protected:
 			int Work();
@@ -248,7 +248,7 @@ public:
 			CPictureDoc* m_pDoc;
 			HANDLE m_hEventArray[2];
 			HANDLE m_hTimerEvent;
-			volatile LONG m_lJpegCompressionQuality;
+			std::atomic<int> m_nJpegCompressionQuality;
 			volatile BOOL m_bDoFullLoad;
 			CString m_sFileName;
 	};
