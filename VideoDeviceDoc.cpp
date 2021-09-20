@@ -240,31 +240,31 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		while (bPolling);
 
 		// First & Last Up-Times
-		DWORD dwFirstUpTime;
-		DWORD dwLastUpTime;
+		LONGLONG llFirstUpTime;
+		LONGLONG llLastUpTime;
 		if (m_pFrameList->GetHead() && m_pFrameList->GetTail())
 		{
-			dwFirstUpTime = m_pFrameList->GetHead()->GetUpTime();
-			dwLastUpTime = m_pFrameList->GetTail()->GetUpTime();
+			llFirstUpTime = m_pFrameList->GetHead()->GetUpTime();
+			llLastUpTime = m_pFrameList->GetTail()->GetUpTime();
 		}
 		else if (m_pFrameList->GetHead() && !m_pFrameList->GetTail())
-			dwLastUpTime = dwFirstUpTime = m_pFrameList->GetHead()->GetUpTime();
+			llLastUpTime = llFirstUpTime = m_pFrameList->GetHead()->GetUpTime();
 		else if (!m_pFrameList->GetHead() && m_pFrameList->GetTail())
-			dwFirstUpTime = dwLastUpTime = m_pFrameList->GetTail()->GetUpTime();
+			llFirstUpTime = llLastUpTime = m_pFrameList->GetTail()->GetUpTime();
 		else
-			dwFirstUpTime = dwLastUpTime = ::timeGetTime();
+			llFirstUpTime = llLastUpTime = (LONGLONG)::GetTickCount64();
 
 		// Find a good Reference Time and make the First Time string
 		// (if new first frame is older than last frame from previous detection
 		// then we have rounding errors -> search better ref. time + ref. up-time)
-		DWORD dwStartUpTime = ::timeGetTime();
+		LONGLONG llStartUpTime = (LONGLONG)::GetTickCount64();
 		CTime RefTime;
-		DWORD dwRefUpTime;
+		LONGLONG llRefUpTime;
 		do
 		{
 			RefTime = CTime::GetCurrentTime();
-			dwRefUpTime = ::timeGetTime();
-			FirstTime = CalcTime(dwFirstUpTime, RefTime, dwRefUpTime);
+			llRefUpTime = (LONGLONG)::GetTickCount64();
+			FirstTime = CalcTime(llFirstUpTime, RefTime, llRefUpTime);
 			if (FirstTime < LastTime)
 			{
 				if (::WaitForSingleObject(GetKillEvent(), 10U) == WAIT_OBJECT_0)
@@ -277,9 +277,9 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			else
 				break;
 		}
-		while ((dwRefUpTime - dwStartUpTime) <= 1100U); // be safe in case computer time has been changed
+		while ((llRefUpTime - llStartUpTime) <= 1100); // be safe in case computer time has been changed
 		ASSERT(FirstTime >= LastTime);
-		LastTime = CalcTime(dwLastUpTime, RefTime, dwRefUpTime);
+		LastTime = CalcTime(llLastUpTime, RefTime, llRefUpTime);
 		CString sFirstTime(FirstTime.Format(_T("%Y_%m_%d_%H_%M_%S")));
 
 		// Load the saves counter and reset it if entering a new day.
@@ -346,9 +346,9 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		BOOL bFirstGIFSave;
 		RGBQUAD* pGIFColors = NULL;
 		double dCalcFrameRate = 1.0;
-		DWORD dwFramesTimeMs = dwLastUpTime - dwFirstUpTime;
-		if (nFrames > 1 && dwFramesTimeMs > 0U)
-			dCalcFrameRate = (1000.0 * (nFrames - 1)) / (double)dwFramesTimeMs;
+		LONGLONG llFramesTimeMs = llLastUpTime - llFirstUpTime;
+		if (nFrames > 1 && llFramesTimeMs > 0)
+			dCalcFrameRate = (1000.0 * (nFrames - 1)) / (double)llFramesTimeMs;
 		if (m_pDoc->m_dEffectiveFrameRate > 0.0)
 		{
 			// When there are multiple frame drops one after the other or in case of reconnection
@@ -420,7 +420,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 						// Add Frame Tags
 						if (m_pDoc->m_bShowFrameTime)
 						{
-							AddFrameTime(pDib, RefTime, dwRefUpTime, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
+							AddFrameTime(pDib, RefTime, llRefUpTime, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
 							AddFrameCount(pDib, sMovDetSavesCount, m_pDoc->m_nRefFontSize);
 						}
 
@@ -467,7 +467,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 									dwLoadDetFrameErrorCode,// sets this
 									dCalcFrameRate,
 									RefTime,
-									dwRefUpTime,
+									llRefUpTime,
 									sMovDetSavesCount);
 					if (nSaveFreqDiv > 1)
 						dDelayMul *= 2; // to save faster only store half of the frames calculated in AnimatedGifInit()
@@ -486,7 +486,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 									pGIFColors,
 									MOVDET_ANIMGIF_DIFF_MINLEVEL,
 									RefTime,
-									dwRefUpTime,
+									llRefUpTime,
 									sMovDetSavesCount);
 				}
 
@@ -521,7 +521,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 							sGIFTempFileName,
 							pGIFColors,
 							RefTime,
-							dwRefUpTime,
+							llRefUpTime,
 							sMovDetSavesCount);
 		}
 
@@ -578,11 +578,11 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCountYear"), nMovDetSavesCountYear);
 
 		// Saving speed
-		DWORD dwSaveTimeMs = ::timeGetTime() - dwStartUpTime;
-		if (dwSaveTimeMs > 0U && dwFramesTimeMs > MOVDET_MIN_LENGTH_SAVESPEED_MSEC)
+		LONGLONG llSaveTimeMs = (LONGLONG)::GetTickCount64() - llStartUpTime;
+		if (llSaveTimeMs > 0 && llFramesTimeMs > MOVDET_MIN_LENGTH_SAVESPEED_MSEC)
 		{
 			// Update the doc variable used to alert
-			int nSaveFrameListSpeedPercent = 100 * dwFramesTimeMs / dwSaveTimeMs;
+			int nSaveFrameListSpeedPercent = (int)(100 * llFramesTimeMs / llSaveTimeMs);
 			m_pDoc->m_nSaveFrameListSpeedPercent = nSaveFrameListSpeedPercent;
 
 			// Log alert
@@ -611,7 +611,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors
 																DWORD& dwLoadDetFrameUpdatedIfErrorNoSuccess,
 																double dCalcFrameRate,
 																const CTime& RefTime,
-																DWORD dwRefUpTime,
+																LONGLONG llRefUpTime,
 																const CString& sMovDetSavesCount)
 {
 	// Check
@@ -750,7 +750,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors
 		// Add frame tags to include its colors
 		if (m_pDoc->m_bShowFrameTime)
 		{
-			AddFrameTime(&DibForPalette, RefTime, dwRefUpTime, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
+			AddFrameTime(&DibForPalette, RefTime, llRefUpTime, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
 			AddFrameCount(&DibForPalette, sMovDetSavesCount, m_pDoc->m_nRefFontSize);
 		}
 
@@ -803,7 +803,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveSingleGif(	CDib* pDib,
 															const CString& sGIFFileName,
 															RGBQUAD* pGIFColors,
 															const CTime& RefTime,
-															DWORD dwRefUpTime,
+															LONGLONG llRefUpTime,
 															const CString& sMovDetSavesCount)
 {
 	if (pDib && pGIFColors && pDib->GetCompression() == FCC('I420'))
@@ -814,7 +814,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveSingleGif(	CDib* pDib,
 		// Add Frame Tags
 		if (m_pDoc->m_bShowFrameTime)
 		{
-			AddFrameTime(pDib, RefTime, dwRefUpTime, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
+			AddFrameTime(pDib, RefTime, llRefUpTime, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
 			AddFrameCount(pDib, sMovDetSavesCount, m_pDoc->m_nRefFontSize);
 		}
 
@@ -858,7 +858,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::StretchAnimatedGif(CDib* pDib)
 void CVideoDeviceDoc::CSaveFrameListThread::To255Colors(CDib* pDib,
 														RGBQUAD* pGIFColors,
 														const CTime& RefTime,
-														DWORD dwRefUpTime,
+														LONGLONG llRefUpTime,
 														const CString& sMovDetSavesCount)
 {
 	if (pDib && pGIFColors && pDib->GetCompression() == FCC('I420'))
@@ -869,7 +869,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::To255Colors(CDib* pDib,
 		// Add Frame Tags
 		if (m_pDoc->m_bShowFrameTime)
 		{
-			AddFrameTime(pDib, RefTime, dwRefUpTime, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
+			AddFrameTime(pDib, RefTime, llRefUpTime, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
 			AddFrameCount(pDib, sMovDetSavesCount, m_pDoc->m_nRefFontSize);
 		}
 
@@ -894,7 +894,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 															RGBQUAD* pGIFColors,
 															int nDiffMinLevel,
 															const CTime& RefTime,
-															DWORD dwRefUpTime,
+															LONGLONG llRefUpTime,
 															const CString& sMovDetSavesCount)
 {
 	BOOL res = FALSE;
@@ -907,7 +907,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 	if (*pbFirstGIFSave)
 	{
 		// Convert to 255 colors
-		To255Colors(*ppGIFDibPrev, pGIFColors, RefTime, dwRefUpTime, sMovDetSavesCount);
+		To255Colors(*ppGIFDibPrev, pGIFColors, RefTime, llRefUpTime, sMovDetSavesCount);
 		
 		// Copy First Frame
 		*pGIFSaveDib = **ppGIFDibPrev;
@@ -944,7 +944,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 		if (bLastGIFSave)
 		{
 			// Convert to 255 colors and save
-			To255Colors(pGIFDib, pGIFColors, RefTime, dwRefUpTime, sMovDetSavesCount);
+			To255Colors(pGIFDib, pGIFColors, RefTime, llRefUpTime, sMovDetSavesCount);
 			pGIFSaveDib->GetGif()->SetDispose(GIF_DISPOSE_RESTORE);
 			pGIFSaveDib->GetGif()->SetDelay(MOVDET_ANIMGIF_LAST_FRAME_DELAY);
 			pGIFDib->DiffTransp8(pGIFSaveDib, nDiffMinLevel, 255);
@@ -958,7 +958,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 	else if (bLastGIFSave)
 	{
 		// Convert to 255 colors and save
-		To255Colors(*ppGIFDibPrev, pGIFColors, RefTime, dwRefUpTime, sMovDetSavesCount);
+		To255Colors(*ppGIFDibPrev, pGIFColors, RefTime, llRefUpTime, sMovDetSavesCount);
 		pGIFSaveDib->GetGif()->SetDispose(GIF_DISPOSE_RESTORE);
 		pGIFSaveDib->GetGif()->SetDelay(MAX(100, Round((double)(pGIFDib->GetUpTime() - (*ppGIFDibPrev)->GetUpTime()) / dSpeedMul)));
 		(*ppGIFDibPrev)->DiffTransp8(pGIFSaveDib, nDiffMinLevel, 255);
@@ -968,7 +968,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 										this);
 		
 		// Convert to 255 colors and save
-		To255Colors(pGIFDib, pGIFColors, RefTime, dwRefUpTime, sMovDetSavesCount);
+		To255Colors(pGIFDib, pGIFColors, RefTime, llRefUpTime, sMovDetSavesCount);
 		pGIFSaveDib->GetGif()->SetDispose(GIF_DISPOSE_RESTORE);
 		pGIFSaveDib->GetGif()->SetDelay(MOVDET_ANIMGIF_LAST_FRAME_DELAY);
 		pGIFDib->DiffTransp8(pGIFSaveDib, nDiffMinLevel, 255);
@@ -981,7 +981,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 	else if ((int)(pGIFDib->GetUpTime() - (*ppGIFDibPrev)->GetUpTime()) >= Round(dDelayMul * MOVDET_ANIMGIF_DELAY))
 	{
 		// Convert to 255 colors and save
-		To255Colors(*ppGIFDibPrev, pGIFColors, RefTime, dwRefUpTime, sMovDetSavesCount);
+		To255Colors(*ppGIFDibPrev, pGIFColors, RefTime, llRefUpTime, sMovDetSavesCount);
 		pGIFSaveDib->GetGif()->SetDispose(GIF_DISPOSE_RESTORE);
 		pGIFSaveDib->GetGif()->SetDelay(MAX(100, Round((double)(pGIFDib->GetUpTime() - (*ppGIFDibPrev)->GetUpTime()) / dSpeedMul)));
 		(*ppGIFDibPrev)->DiffTransp8(pGIFSaveDib, nDiffMinLevel, 255);
@@ -1126,7 +1126,7 @@ int CVideoDeviceDoc::CSaveSnapshotHistoryThread::Work()
 	ASSERT(m_pDoc);
 
 	// Get uptime
-	DWORD dwUpTime = m_Dib.GetUpTime();
+	LONGLONG llUpTime = m_Dib.GetUpTime();
 
 	// Init history file name
 	CString sFileName(CVideoDeviceDoc::CreateBaseYearMonthDaySubDir(m_pDoc->m_sRecordAutoSaveDir, m_Time, DEFAULT_SNAPSHOT_HISTORY_FOLDER) +
@@ -1134,7 +1134,7 @@ int CVideoDeviceDoc::CSaveSnapshotHistoryThread::Work()
 
 	// Add tags
 	if (m_pDoc->m_bShowFrameTime)
-		AddFrameTime(&m_Dib, m_Time, dwUpTime, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
+		AddFrameTime(&m_Dib, m_Time, llUpTime, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
 	if (g_DonorEmailValidateThread.m_bNoDonation)
 		AddNoDonationTag(&m_Dib, m_pDoc->m_nRefFontSize);
 
@@ -1150,7 +1150,7 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	ASSERT(m_pDoc);
 
 	// Get uptime
-	DWORD dwUpTime = m_Dib.GetUpTime();
+	LONGLONG llUpTime = m_Dib.GetUpTime();
 
 	// Live file names
 	CString sLiveFileName(m_pDoc->m_sRecordAutoSaveDir);
@@ -1176,8 +1176,8 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	// Add tags
 	if (m_pDoc->m_bShowFrameTime)
 	{
-		AddFrameTime(&m_Dib, m_Time, dwUpTime, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
-		AddFrameTime(&DibThumb, m_Time, dwUpTime, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
+		AddFrameTime(&m_Dib, m_Time, llUpTime, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
+		AddFrameTime(&DibThumb, m_Time, llUpTime, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
 	}
 	if (g_DonorEmailValidateThread.m_bNoDonation)
 	{
@@ -1910,21 +1910,21 @@ end_of_software_detection:
 		pDib->SetUserFlag(pDib->GetUserFlag() | FRAME_USER_FLAG_MOTION);
 
 		// Update the Up-Time
-		m_dwLastDetFrameUpTime = pDib->GetUpTime();
+		m_llLastDetFrameUpTime = pDib->GetUpTime();
 
 		// First detected frame?
 		if (!m_bDetectingMovement)
 		{
 			m_bDetectingMovement = TRUE;
 			bMarkStart = TRUE;
-			m_dwFirstDetFrameUpTime = pDib->GetUpTime();
+			m_llFirstDetFrameUpTime = pDib->GetUpTime();
 		}
 
 		// Do we have a movement of at least m_nDetectionMinLengthMilliSeconds?
 		// (if m_nDetectionMinLengthMilliSeconds is 0 then m_bDetectingMinLengthMovement
 		// is the same as m_bDetectingMovement)
 		if (!m_bDetectingMinLengthMovement &&
-			(m_dwLastDetFrameUpTime - m_dwFirstDetFrameUpTime) >= (DWORD)m_nDetectionMinLengthMilliSeconds)
+			(m_llLastDetFrameUpTime - m_llFirstDetFrameUpTime) >= (LONGLONG)m_nDetectionMinLengthMilliSeconds)
 		{
 			// Set flag
 			m_bDetectingMinLengthMovement = TRUE;
@@ -1983,14 +1983,14 @@ end_of_software_detection:
 
 		// Check if end of detection period
 		// Attention: m_nMilliSecondsRecAfterMovementEnd must be at least 1 sec!
-		if ((pDib->GetUpTime() - m_dwLastDetFrameUpTime) > (DWORD)m_nMilliSecondsRecAfterMovementEnd)
+		if ((pDib->GetUpTime() - m_llLastDetFrameUpTime) > (LONGLONG)m_nMilliSecondsRecAfterMovementEnd)
 		{
 			// Reset vars
 			m_bDetectingMovement = FALSE;
 			m_bDetectingMinLengthMovement = FALSE;
 
 			// Save frames if minimum length reached (if m_nDetectionMinLengthMilliSeconds is 0 always save frames)
-			if ((m_dwLastDetFrameUpTime - m_dwFirstDetFrameUpTime) >= (DWORD)m_nDetectionMinLengthMilliSeconds)
+			if ((m_llLastDetFrameUpTime - m_llFirstDetFrameUpTime) >= (LONGLONG)m_nDetectionMinLengthMilliSeconds)
 				SaveFrameList(TRUE);
 			else
 				ShrinkNewestFrameList(); // shrink to a size of m_nMilliSecondsRecBeforeMovementBegin
@@ -3181,12 +3181,12 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 			case WAIT_TIMEOUT :		
 			{
 				// Current times
-				DWORD dwCurrentUpTime = ::timeGetTime();
+				LONGLONG llCurrentUpTime = (LONGLONG)::GetTickCount64();
 				CTime CurrentTime = CTime::GetCurrentTime();
 
 				// Video watchdog
-				DWORD dwMsSinceLastProcessFrame = dwCurrentUpTime - (DWORD)m_pDoc->m_lCurrentInitUpTime;
-				m_pDoc->m_bWatchDogVideoAlarm = (dwMsSinceLastProcessFrame > WATCHDOG_THRESHOLD);
+				LONGLONG llMsSinceLastProcessFrame = llCurrentUpTime - m_pDoc->m_llCurrentInitUpTime;
+				m_pDoc->m_bWatchDogVideoAlarm = (llMsSinceLastProcessFrame > WATCHDOG_THRESHOLD);
 
 				// SaveFrameList() may be called many times till
 				// CSaveFrameListThread::Work() reacts:
@@ -3214,7 +3214,7 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 					}
 
 					// Device Alert
-					if (dwMsSinceLastProcessFrame > WATCHDOG_MALFUNCTION_THRESHOLD && !bDeviceAlert)
+					if (llMsSinceLastProcessFrame > WATCHDOG_MALFUNCTION_THRESHOLD && !bDeviceAlert)
 					{
 						if (m_pDoc->m_bSendMailMalfunction)
 							CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), CurrentTime, _T("OFF!"), _T(""), _T(""), MAILPROG_TIMEOUT_SEC, FALSE);
@@ -3572,7 +3572,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bStopAndChangeDVFormat = FALSE;
 	m_nDeviceFormatWidth = 0;
 	m_nDeviceFormatHeight = 0;
-	m_lCurrentInitUpTime = 0;
+	m_llCurrentInitUpTime = 0;
 	m_bWatchDogVideoAlarm = FALSE;
 
 	// Networking
@@ -3596,7 +3596,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nSnapshotHistoryFrameRate = DEFAULT_SNAPSHOT_HISTORY_FRAMERATE;
 	m_nSnapshotThumbWidth = DEFAULT_SNAPSHOT_THUMB_WIDTH;
 	m_nSnapshotThumbHeight = DEFAULT_SNAPSHOT_THUMB_HEIGHT;
-	m_dwNextSnapshotUpTime = 0U;
+	m_llNextSnapshotUpTime = 0;
 
 	// Threads Init
 	m_CaptureAudioThread.SetDoc(this);
@@ -3649,7 +3649,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_dwAnimatedGifWidth = MOVDET_ANIMGIF_DEFAULT_WIDTH;
 	m_dwAnimatedGifHeight = MOVDET_ANIMGIF_DEFAULT_HEIGHT;
 	m_MovementDetectorCurrentIntensity = new int[MOVDET_MAX_ZONES];
-	m_MovementDetectionsUpTime = new DWORD[MOVDET_MAX_ZONES];
+	m_MovementDetectionsUpTime = new LONGLONG[MOVDET_MAX_ZONES];
 	m_MovementDetections = new BYTE[MOVDET_MAX_ZONES];
 	m_DoMovementDetection = new BYTE[MOVDET_MAX_ZONES];
 	if (m_DoMovementDetection)
@@ -4746,8 +4746,8 @@ void CVideoDeviceDoc::OpenDxVideoDevice(int nId, CString sDevicePathName, CStrin
 
 	// Reset vars
 	m_dwFrameCountUp = 0U;
-	m_dwNextSnapshotUpTime = ::timeGetTime();
-	::InterlockedExchange(&m_lCurrentInitUpTime, (LONG)m_dwNextSnapshotUpTime);
+	m_llNextSnapshotUpTime = (LONGLONG)::GetTickCount64();
+	::InterlockedExchange64(&m_llCurrentInitUpTime, m_llNextSnapshotUpTime);
 
 	// Open Dx Capture
 	BOOL bOpened = m_pDxCapture->Open(	GetView()->GetSafeHwnd(),
@@ -5058,8 +5058,8 @@ BOOL CVideoDeviceDoc::OpenNetVideoDevice(CString sAddress)
 
 	// Reset vars
 	m_dwFrameCountUp = 0U;
-	m_dwNextSnapshotUpTime = ::timeGetTime();
-	::InterlockedExchange(&m_lCurrentInitUpTime, (LONG)m_dwNextSnapshotUpTime);
+	m_llNextSnapshotUpTime = (LONGLONG)::GetTickCount64();
+	::InterlockedExchange64(&m_llCurrentInitUpTime, m_llNextSnapshotUpTime);
 
 	// The Title is set here before starting to connect
 	// and also later on when we are connected
@@ -5111,8 +5111,8 @@ void CVideoDeviceDoc::OpenNetVideoDevice(CHostPortDlg* pDlg)
 
 	// Reset vars
 	m_dwFrameCountUp = 0U;
-	m_dwNextSnapshotUpTime = ::timeGetTime();
-	::InterlockedExchange(&m_lCurrentInitUpTime, (LONG)m_dwNextSnapshotUpTime);
+	m_llNextSnapshotUpTime = (LONGLONG)::GetTickCount64();
+	::InterlockedExchange64(&m_llCurrentInitUpTime, m_llNextSnapshotUpTime);
 
 	// The Title is set here before starting to connect
 	// and also later on when we are connected
@@ -6574,19 +6574,26 @@ CString CVideoDeviceDoc::PhpConfigFileGetParam(const CString& sParam)
 	return _T("");
 }
 
-CTime CVideoDeviceDoc::CalcTime(DWORD dwUpTime, const CTime& RefTime, DWORD dwRefUpTime)
+CTime CVideoDeviceDoc::CalcTime(LONGLONG llUpTime, const CTime& RefTime, LONGLONG llRefUpTime)
 {
-	// Ref. time older
-	DWORD dwTimeDifference = dwRefUpTime - dwUpTime;
-	if (dwTimeDifference >= 0x80000000U)
+	LONGLONG llDiffMs = llUpTime - llRefUpTime;
+	if (llDiffMs >= 0)
 	{
-		CTimeSpan TimeSpan((time_t)Round((double)(dwUpTime - dwRefUpTime) / 1000.0));
+		LONGLONG llDiff = llDiffMs / 1000;
+		LONGLONG llDiffMod = llDiffMs % 1000;
+		CTimeSpan TimeSpan(llDiff);
+		if (llDiffMod >= 500)  // round half away from zero
+			TimeSpan += 1;
 		return RefTime + TimeSpan;
 	}
-	// Ref. time younger
 	else
 	{
-		CTimeSpan TimeSpan((time_t)Round((double)dwTimeDifference / 1000.0));
+		llDiffMs = -llDiffMs;
+		LONGLONG llDiff = llDiffMs / 1000;
+		LONGLONG llDiffMod = llDiffMs % 1000;
+		CTimeSpan TimeSpan(llDiff);
+		if (llDiffMod >= 500)  // round half away from zero
+			TimeSpan += 1;
 		return RefTime - TimeSpan;
 	}
 }
@@ -6613,14 +6620,14 @@ int CVideoDeviceDoc::ScaleFont(	int nWidth, int nHeight,
 		return Round(nMinRefFontSize * dFactorY);
 }
 
-void CVideoDeviceDoc::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime, const CString& sFrameAnnotation, int nRefFontSize, BOOL bShowFrameUptime)
+void CVideoDeviceDoc::AddFrameTime(CDib* pDib, CTime RefTime, LONGLONG llRefUpTime, const CString& sFrameAnnotation, int nRefFontSize, BOOL bShowFrameUptime)
 {
 	// Check
 	if (!pDib)
 		return;
 
 	// Calc. date and time
-	RefTime = CalcTime(pDib->GetUpTime(), RefTime, dwRefUpTime);
+	RefTime = CalcTime(pDib->GetUpTime(), RefTime, llRefUpTime);
 
 	// Calc. rectangle
 	CRect rcRect;
@@ -6642,20 +6649,20 @@ void CVideoDeviceDoc::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime,
 	CString sTime;
 	if (bShowFrameUptime)
 	{
-		DWORD dwTickCount = pDib->GetUpTime();
-		const DWORD dwMillisecondsPerDay = 24U * 60U * 60U * 1000U;
-		DWORD dwDays = dwTickCount / dwMillisecondsPerDay;
-		dwTickCount = dwTickCount % dwMillisecondsPerDay;
-		const DWORD dwMillisecondsPerHour = 60U * 60U * 1000U;
-		DWORD dwHours = dwTickCount / dwMillisecondsPerHour;
-		dwTickCount = dwTickCount % dwMillisecondsPerHour;
-		const DWORD dwMillisecondsPerMin = 60U * 1000U;
-		DWORD dwMin = dwTickCount / dwMillisecondsPerMin;
-		dwTickCount = dwTickCount % dwMillisecondsPerMin;
-		const DWORD dwMillisecondsPerSec = 1000U;
-		DWORD dwSec = dwTickCount / dwMillisecondsPerSec;
-		dwTickCount = dwTickCount % dwMillisecondsPerSec;
-		sTime.Format(_T(" (%u:%02u:%02u:%02u.%03u)"), dwDays, dwHours, dwMin, dwSec, dwTickCount);
+		LONGLONG llTickCount = pDib->GetUpTime();
+		const LONGLONG llMillisecondsPerDay = 24 * 60 * 60 * 1000;
+		LONGLONG llDays = llTickCount / llMillisecondsPerDay;
+		llTickCount = llTickCount % llMillisecondsPerDay;
+		const LONGLONG llMillisecondsPerHour = 60 * 60 * 1000;
+		LONGLONG llHours = llTickCount / llMillisecondsPerHour;
+		llTickCount = llTickCount % llMillisecondsPerHour;
+		const LONGLONG llMillisecondsPerMin = 60 * 1000;
+		LONGLONG llMin = llTickCount / llMillisecondsPerMin;
+		llTickCount = llTickCount % llMillisecondsPerMin;
+		const LONGLONG llMillisecondsPerSec = 1000;
+		LONGLONG llSec = llTickCount / llMillisecondsPerSec;
+		llTickCount = llTickCount % llMillisecondsPerSec;
+		sTime.Format(_T(" (%lld:%02lld:%02lld:%02lld.%03lld)"), llDays, llHours, llMin, llSec, llTickCount);
 		sTime = ::MakeTimeLocalFormat(RefTime, TRUE) + sTime;
 	}
 	else
@@ -7288,10 +7295,10 @@ void CVideoDeviceDoc::ProcessM420Frame(LPBYTE pData, DWORD dwSize)
 void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 {
 	// Timing
-	DWORD dwCurrentFrameTime;
-	DWORD dwPrevInitUpTime = (DWORD)m_lCurrentInitUpTime;
+	LONGLONG llCurrentFrameTime;
+	LONGLONG llPrevInitUpTime = m_llCurrentInitUpTime;
 	CTime CurrentTime = CTime::GetCurrentTime();
-	DWORD dwCurrentInitUpTime = ::timeGetTime();
+	LONGLONG llCurrentInitUpTime = (LONGLONG)::GetTickCount64();
 	CTimeSpan TimeDiff1(CurrentTime - m_1SecTime);
 	BOOL b1SecTick = FALSE;
 	if (TimeDiff1.GetTotalSeconds() >= 1 || TimeDiff1.GetTotalSeconds() < 0)
@@ -7407,7 +7414,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 		}
 
 		// Set the UpTime Var
-		pDib->SetUpTime(dwCurrentInitUpTime);
+		pDib->SetUpTime(llCurrentInitUpTime);
 
 		// Capture audio?
 		if (m_bCaptureAudio)
@@ -7453,7 +7460,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 
 		// Add Frame Time if User Wants it
 		if (m_bShowFrameTime)
-			AddFrameTime(pDib, CurrentTime, dwCurrentInitUpTime, m_szFrameAnnotation, m_nRefFontSize, m_bShowFrameUptime);
+			AddFrameTime(pDib, CurrentTime, llCurrentInitUpTime, m_szFrameAnnotation, m_nRefFontSize, m_bShowFrameUptime);
 
 		// Add "NO DONATION" tag
 		if (g_DonorEmailValidateThread.m_bNoDonation)
@@ -7533,15 +7540,15 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 	m_dwFrameCountUp++;
 
 	// Calc. Effective Frame Rate
-	::InterlockedExchange(&m_lCurrentInitUpTime, (LONG)dwCurrentInitUpTime);
-	dwCurrentFrameTime = dwCurrentInitUpTime - dwPrevInitUpTime;
-	if (dwCurrentFrameTime <= PROCESS_MAX_FRAMETIME)
+	::InterlockedExchange64(&m_llCurrentInitUpTime, llCurrentInitUpTime);
+	llCurrentFrameTime = llCurrentInitUpTime - llPrevInitUpTime;
+	if (llCurrentFrameTime <= PROCESS_MAX_FRAMETIME)
 	{
 		// It takes 2 sec (or more for frame rates < 1fps)
 		// to calc. the effective framerate and datarate
-		m_dEffectiveFrameTimeSum += (double)dwCurrentFrameTime;
+		m_dEffectiveFrameTimeSum += (double)llCurrentFrameTime;
 		++m_dwEffectiveFrameTimeCountUp;
-		if (dwCurrentFrameTime >= 1000U)
+		if (llCurrentFrameTime >= 1000)
 		{
 			if (m_dwEffectiveFrameTimeCountUp >= 2U && m_dEffectiveFrameTimeSum > 0.0)
 			{
@@ -7555,7 +7562,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 				m_dEffectiveFrameTimeSum = 0.0;
 			}
 		}
-		else if (dwCurrentFrameTime >= 500U)
+		else if (llCurrentFrameTime >= 500)
 		{
 			if (m_dwEffectiveFrameTimeCountUp >= 4U && m_dEffectiveFrameTimeSum > 0.0)
 			{
@@ -7569,7 +7576,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 				m_dEffectiveFrameTimeSum = 0.0;
 			}
 		}
-		else if (dwCurrentFrameTime >= 250U)
+		else if (llCurrentFrameTime >= 250)
 		{
 			if (m_dwEffectiveFrameTimeCountUp >= 8U && m_dEffectiveFrameTimeSum > 0.0)
 			{
@@ -7583,7 +7590,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 				m_dEffectiveFrameTimeSum = 0.0;
 			}
 		}
-		else if (dwCurrentFrameTime >= 125U)
+		else if (llCurrentFrameTime >= 125)
 		{
 			if (m_dwEffectiveFrameTimeCountUp >= 16U && m_dEffectiveFrameTimeSum > 0.0)
 			{
@@ -7597,7 +7604,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 				m_dEffectiveFrameTimeSum = 0.0;
 			}
 		}
-		else if (dwCurrentFrameTime >= 63U)
+		else if (llCurrentFrameTime >= 63)
 		{
 			if (m_dwEffectiveFrameTimeCountUp >= 32U && m_dEffectiveFrameTimeSum > 0.0)
 			{
@@ -7641,33 +7648,32 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 	{
 		// Check the elapsed time to update bDoSnapshot
 		BOOL bDoSnapshot = FALSE;
-		DWORD dwUpTime = pDib->GetUpTime();
-		int nFrameTime = Round(1000.0 / m_dFrameRate);
+		LONGLONG llUpTime = pDib->GetUpTime();
+		LONGLONG llFrameTime = Round(1000.0 / m_dFrameRate);
 		if (m_dEffectiveFrameRate > 0.0)
-			nFrameTime = Round(1000.0 / m_dEffectiveFrameRate);
-		int nSnapshotRateMs = MAX(DEFAULT_SERVERPUSH_POLLRATE_MS, 1000 * m_nSnapshotRate); // Minimum rate is DEFAULT_SERVERPUSH_POLLRATE_MS
-		if (nFrameTime >= nSnapshotRateMs)
+			llFrameTime = Round(1000.0 / m_dEffectiveFrameRate);
+		LONGLONG llSnapshotRateMs = MAX(DEFAULT_SERVERPUSH_POLLRATE_MS, 1000 * m_nSnapshotRate); // Minimum rate is DEFAULT_SERVERPUSH_POLLRATE_MS
+		if (llFrameTime >= llSnapshotRateMs)
 		{
-			m_dwNextSnapshotUpTime = dwUpTime;
+			m_llNextSnapshotUpTime = llUpTime;
 			bDoSnapshot = TRUE;
 		}
 		else
 		{
-			DWORD dwMaxUpTimeDiff = (DWORD)(3 * nSnapshotRateMs);
-			DWORD dwCurrentUpTimeDiff = dwUpTime - m_dwNextSnapshotUpTime;
-			DWORD dwCurrentUpTimeDiffInv = m_dwNextSnapshotUpTime - dwUpTime;
-			if (dwCurrentUpTimeDiff >= 0x80000000U)
+			LONGLONG llMaxUpTimeDiff = 3 * llSnapshotRateMs;
+			LONGLONG llCurrentUpTimeDiff = llUpTime - m_llNextSnapshotUpTime;
+			if (llCurrentUpTimeDiff < 0)
 			{
-				if (dwCurrentUpTimeDiffInv >= dwMaxUpTimeDiff)	// m_dwNextSnapshotUpTime is too much in the future
-					m_dwNextSnapshotUpTime = dwUpTime;			// reset it!
+				if (-llCurrentUpTimeDiff >= llMaxUpTimeDiff)	// m_llNextSnapshotUpTime is too much in the future
+					m_llNextSnapshotUpTime = llUpTime;			// reset it!
 			}
 			else
 			{
-				if (dwCurrentUpTimeDiff >= dwMaxUpTimeDiff)		// m_dwNextSnapshotUpTime is too old
-					m_dwNextSnapshotUpTime = dwUpTime;			// reset it!
+				if (llCurrentUpTimeDiff >= llMaxUpTimeDiff)		// m_llNextSnapshotUpTime is too old
+					m_llNextSnapshotUpTime = llUpTime;			// reset it!
 				else
 				{
-					m_dwNextSnapshotUpTime += (DWORD)nSnapshotRateMs;
+					m_llNextSnapshotUpTime += llSnapshotRateMs;
 					bDoSnapshot = TRUE;
 				}
 			}
@@ -7718,7 +7724,7 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 BOOL CVideoDeviceDoc::EditCopy(CDib* pDib, const CTime& Time)
 {
 	// Get uptime
-	DWORD dwUpTime = pDib->GetUpTime();
+	LONGLONG llUpTime = pDib->GetUpTime();
 
 	// Decode if compressed
 	CDib Dib;
@@ -7729,7 +7735,7 @@ BOOL CVideoDeviceDoc::EditCopy(CDib* pDib, const CTime& Time)
 
 	// Add frame time
 	if (m_bShowFrameTime)
-		AddFrameTime(&Dib, Time, dwUpTime, m_szFrameAnnotation, m_nRefFontSize, m_bShowFrameUptime);
+		AddFrameTime(&Dib, Time, llUpTime, m_szFrameAnnotation, m_nRefFontSize, m_bShowFrameUptime);
 
 	// Add "NO DONATION" tag
 	if (g_DonorEmailValidateThread.m_bNoDonation)
@@ -7757,14 +7763,14 @@ void CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 	}
 
 	// Get uptime
-	DWORD dwUpTime = pDib->GetUpTime();
+	LONGLONG llUpTime = pDib->GetUpTime();
 
 	// Dib
 	CDib Dib(*pDib);
 
 	// Add frame time
 	if (m_bShowFrameTime)
-		AddFrameTime(&Dib, Time, dwUpTime, m_szFrameAnnotation, m_nRefFontSize, m_bShowFrameUptime);
+		AddFrameTime(&Dib, Time, llUpTime, m_szFrameAnnotation, m_nRefFontSize, m_bShowFrameUptime);
 
 	// Add "NO DONATION" tag
 	if (g_DonorEmailValidateThread.m_bNoDonation)
@@ -7796,14 +7802,14 @@ CString CVideoDeviceDoc::SaveJpegRec(CDib* pDib, const CTime& Time)
 		return sFileName;
 
 	// Get uptime
-	DWORD dwUpTime = pDib->GetUpTime();
+	LONGLONG llUpTime = pDib->GetUpTime();
 
 	// Dib
 	CDib Dib(*pDib);
 
 	// Add frame time
 	if (m_bShowFrameTime)
-		AddFrameTime(&Dib, Time, dwUpTime, m_szFrameAnnotation, m_nRefFontSize, m_bShowFrameUptime);
+		AddFrameTime(&Dib, Time, llUpTime, m_szFrameAnnotation, m_nRefFontSize, m_bShowFrameUptime);
 
 	// Add "NO DONATION" tag
 	if (g_DonorEmailValidateThread.m_bNoDonation)

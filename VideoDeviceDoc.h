@@ -36,7 +36,7 @@ class CCameraAdvancedSettingsDlg;
 // General Settings
 #define MIN_FRAMERATE							0.1				// fps
 #define MAX_FRAMERATE							95.0			// fps
-#define PROCESS_MAX_FRAMETIME					15000U			// ms, make sure that: 1000 / MIN_FRAMERATE < PROCESS_MAX_FRAMETIME
+#define PROCESS_MAX_FRAMETIME					15000			// ms, make sure that: 1000 / MIN_FRAMERATE < PROCESS_MAX_FRAMETIME
 #define DEFAULT_FRAMERATE						10.0			// fps
 #define HTTPSERVERPUSH_DEFAULT_FRAMERATE		4.0				// fps
 #define HTTPSERVERPUSH_EDIMAX_DEFAULT_FRAMERATE	3.0				// fps
@@ -94,8 +94,8 @@ class CCameraAdvancedSettingsDlg;
 
 // Watch Dog
 #define WATCHDOG_CHECK_TIME						1000U			// ms
-#define WATCHDOG_THRESHOLD						30000U			// ms, make sure that: 1000 / MIN_FRAMERATE < WATCHDOG_THRESHOLD
-#define WATCHDOG_MALFUNCTION_THRESHOLD			135000U			// ms, make sure that: WATCHDOG_THRESHOLD < WATCHDOG_MALFUNCTION_THRESHOLD
+#define WATCHDOG_THRESHOLD						30000			// ms, make sure that: 1000 / MIN_FRAMERATE < WATCHDOG_THRESHOLD
+#define WATCHDOG_MALFUNCTION_THRESHOLD			135000			// ms, make sure that: WATCHDOG_THRESHOLD < WATCHDOG_MALFUNCTION_THRESHOLD
 
 // Snapshot
 #define MIN_SNAPSHOT_RATE						1				// one snapshot per second
@@ -116,7 +116,7 @@ class CCameraAdvancedSettingsDlg;
 #define MOVDET_DEFAULT_PRE_BUFFER_MSEC			3000			// ms
 #define MOVDET_DEFAULT_POST_BUFFER_MSEC			5000			// ms
 #define MOVDET_MIN_LENGTH_MSEC					1000			// Default minimum detection length in ms, below this value frames are not saved
-#define MOVDET_MIN_LENGTH_SAVESPEED_MSEC		8000U			// Saving speed calculation is considered reliable for frame sequences longer than this
+#define MOVDET_MIN_LENGTH_SAVESPEED_MSEC		8000			// Saving speed calculation is considered reliable for frame sequences longer than this
 #define MOVDET_DEFAULT_LEVEL					50				// Detection level default value (0 = Off .. 99 = Max Sensitivity, 100 = Continuous Recording)
 #define MOVDET_EXECCMD_PROFILES					4				// The number of command execution profiles
 #define MOVDET_MAX_ZONES_BLOCK_SIZE				1024			// Subdivide settings in blocks (MOVDET_MAX_ZONES must be a multiple of this)
@@ -128,7 +128,7 @@ class CCameraAdvancedSettingsDlg;
 #define MOVDET_MAX_MAX_FRAMES_RAM_PERCENT		50				// CUImagerApp::m_nDetectionMaxMaxFrames is calculated according this RAM percentage
 #define MOVDET_DROP_FRAMES_RAM_PERCENT			100				// Drop frames when CDib::m_llOverallSharedMemoryBytes is above this RAM percentage
 #define MOVDET_SAVE_MIN_FRAMERATE_RATIO			0.3				// Min ratio between calculated (last - first) and m_dEffectiveFrameRate
-#define MOVDET_TIMEOUT							1000U			// Timeout in ms for detection zones
+#define MOVDET_TIMEOUT							1000			// Timeout in ms for detection zones
 #define MOVDET_ANIMGIF_MAX_FRAMES				40				// Maximum number of frames per animated gif
 #define MOVDET_ANIMGIF_MAX_LENGTH				4000.0			// ms, MOVDET_ANIMGIF_MAX_LENGTH / MOVDET_ANIMGIF_MAX_FRAMES must be >= 100
 #define MOVDET_ANIMGIF_DELAY					500.0			// ms (frame time)
@@ -447,7 +447,7 @@ public:
 									const CString& sGIFFileName,
 									RGBQUAD* pGIFColors,
 									const CTime& RefTime,
-									DWORD dwRefUpTime,
+									LONGLONG llRefUpTime,
 									const CString& sMovDetSavesCount);
 			void AnimatedGifInit(	RGBQUAD* pGIFColors,
 									double& dDelayMul,
@@ -455,13 +455,13 @@ public:
 									DWORD& dwLoadDetFrameUpdatedIfErrorNoSuccess,
 									double dCalcFrameRate,
 									const CTime& RefTime,
-									DWORD dwRefUpTime,
+									LONGLONG llRefUpTime,
 									const CString& sMovDetSavesCount);
 			void StretchAnimatedGif(CDib* pDib);
 			void To255Colors(		CDib* pDib,
 									RGBQUAD* pGIFColors,
 									const CTime& RefTime,
-									DWORD dwRefUpTime,
+									LONGLONG llRefUpTime,
 									const CString& sMovDetSavesCount);
 			BOOL SaveAnimatedGif(	CDib* pGIFSaveDib,
 									CDib* pGIFDib,
@@ -474,7 +474,7 @@ public:
 									RGBQUAD* pGIFColors,
 									int nDiffMinLevel,
 									const CTime& RefTime,
-									DWORD dwRefUpTime,
+									LONGLONG llRefUpTime,
 									const CString& sMovDetSavesCount);
 
 			CVideoDeviceDoc* m_pDoc;
@@ -668,9 +668,9 @@ public:
 	void VideoFormatDialog();
 
 	// Frame Tags
-	static CTime CalcTime(DWORD dwUpTime, const CTime& RefTime, DWORD dwRefUpTime);
+	static CTime CalcTime(LONGLONG llUpTime, const CTime& RefTime, LONGLONG llRefUpTime);
 	static int ScaleFont(int nWidth, int nHeight, int nMinRefFontSize, int nMinRefWidth, int nMinRefHeight);
-	static void AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime, const CString& sFrameAnnotation, int nRefFontSize, BOOL bShowFrameUptime);
+	static void AddFrameTime(CDib* pDib, CTime RefTime, LONGLONG llRefUpTime, const CString& sFrameAnnotation, int nRefFontSize, BOOL bShowFrameUptime);
 	static void AddFrameCount(CDib* pDib, const CString& sCount, int nRefFontSize);
 	static void AddNoDonationTag(CDib* pDib, int nRefFontSize);
 
@@ -872,7 +872,7 @@ public:
 	CDib* volatile m_pCamOffDib;						// Dib used to obscure the camera source
 
 	// Watchdog vars
-	volatile LONG m_lCurrentInitUpTime;					// Uptime set in ProcessI420Frame()
+	volatile LONGLONG m_llCurrentInitUpTime;			// Uptime set in ProcessI420Frame()
 	volatile BOOL m_bWatchDogVideoAlarm;				// WatchDog Video Alarm
 
 	// DirectShow Capture Vars
@@ -930,7 +930,7 @@ public:
 	volatile int m_nSnapshotHistoryFrameRate;			// Snapshot history video framerate
 	volatile int m_nSnapshotThumbWidth;					// Snapshot thumbnail width
 	volatile int m_nSnapshotThumbHeight;				// Snapshot thumbnail height
-	volatile DWORD m_dwNextSnapshotUpTime;				// The up-time of the next snapshot
+	volatile LONGLONG m_llNextSnapshotUpTime;			// The up-time of the next snapshot
 
 	// Movement Detector Vars
 	int m_nShowEditDetectionZones;						// Edit Detection zones, 0: disabled, 1: add, 2: remove
@@ -939,8 +939,8 @@ public:
 	volatile int m_nDetectionLevel;						// 0 = Off, 5 = Min Sensitivity, 10, 20, 30, 40, 50, 60, 70, 80, 90 = Max Sensitivity, 100 = Continuous Recording
 	volatile int m_nDetectionZoneSize;					// Detection zone size: 0->Big, 1->Medium, 2->Small
 	volatile int m_nOldDetectionZoneSize;				// To check for a detection zone size change
-	volatile DWORD m_dwFirstDetFrameUpTime;				// Uptime of first movement detection frame
-	volatile DWORD m_dwLastDetFrameUpTime;				// Uptime of last movement detection frame
+	volatile LONGLONG m_llFirstDetFrameUpTime;			// Uptime of first movement detection frame
+	volatile LONGLONG m_llLastDetFrameUpTime;			// Uptime of last movement detection frame
 	volatile int m_nSaveFreqDiv;						// Saving frequency divider 
 	volatile int m_nMilliSecondsRecBeforeMovementBegin;	// Do record in the circular buffer list this amount of milliseconds before start
 	volatile int m_nMilliSecondsRecAfterMovementEnd;	// Keep recording this amount of milliseconds after end
@@ -966,7 +966,7 @@ public:
 	volatile DWORD m_dwAnimatedGifHeight;				// Height of Detection Animated Gif
 	CDib* volatile m_pDifferencingDib;					// Differencing Dib
 	int* volatile m_MovementDetectorCurrentIntensity;	// Current Intensity by zones (array allocated in constructor)
-	DWORD* volatile m_MovementDetectionsUpTime;			// Detection Up-Time For each Zone (array allocated in constructor)
+	LONGLONG* volatile m_MovementDetectionsUpTime;		// Detection Up-Time For each Zone (array allocated in constructor)
 	BYTE* volatile m_MovementDetections;				// Detecting in Zone (array allocated in constructor)
 	BYTE* volatile m_DoMovementDetection;				// Do Movement Detection in this Zone with given relative sensitivity
 														// 0 -> No Detection, 1 -> Full Sensitivity=100%, 2 -> 50%, 4 -> 25%, 10 -> 10%, 20 -> 5%

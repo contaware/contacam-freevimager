@@ -234,8 +234,8 @@ __forceinline void CDib::SetImageSize(DWORD dwImageSize) {m_dwImageSize = dwImag
 __forceinline void CDib::SetFileSize(DWORD dwFileSize) {m_FileInfo.m_dwFileSize = dwFileSize;};
 __forceinline BOOL CDib::IsValid()			const { return ((m_pBMI != NULL && m_pBits != NULL) ||
 															(m_pBMI != NULL && m_hDibSection != NULL)); };
-__forceinline DWORD CDib::GetUpTime()		const {return m_dwUpTime;};
-__forceinline void CDib::SetUpTime(DWORD dwUpTime) {m_dwUpTime = dwUpTime;};
+__forceinline LONGLONG CDib::GetUpTime()	const {return m_llUpTime;};
+__forceinline void CDib::SetUpTime(LONGLONG llUpTime) {m_llUpTime = llUpTime;};
 __forceinline DWORD CDib::GetUserFlag()		const {return m_dwUserFlag;};
 __forceinline void CDib::SetUserFlag(DWORD dwUserFlag) {m_dwUserFlag = dwUserFlag;};
 __forceinline DWORD CDib::GetCompression()		const {return (m_pBMI ? m_pBMI->bmiHeader.biCompression : 0);};

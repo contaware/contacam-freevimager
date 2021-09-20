@@ -393,7 +393,7 @@ protected:
 	CPalette* m_pPalette;		// The Palette, for BitCount > 8 a halftone palette is created
 
 	// Special Vars
-	DWORD m_dwUpTime;			// Up-time (in milliseconds) when the frame was taken
+	LONGLONG m_llUpTime;		// Up-time (in milliseconds) when the frame was taken
 	DWORD m_dwUserFlag;			// General Purpose User Flag
 
 	// 16 bits Masks
@@ -455,8 +455,8 @@ public:
 	__forceinline void SetImageSize(DWORD dwImageSize);
 	__forceinline void SetFileSize(DWORD dwFileSize);
 	__forceinline BOOL IsValid() const;
-	__forceinline DWORD GetUpTime() const;
-	__forceinline void SetUpTime(DWORD dwUpTime);
+	__forceinline LONGLONG GetUpTime() const;
+	__forceinline void SetUpTime(LONGLONG llUpTime);
 	__forceinline DWORD GetUserFlag() const;
 	__forceinline void SetUserFlag(DWORD dwUserFlag);
 	__forceinline DWORD GetCompression() const;
