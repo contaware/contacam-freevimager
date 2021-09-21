@@ -709,7 +709,7 @@ void CVideoDeviceView::OnDraw(CDC* pDC)
 		rcBoxRight.OffsetRect(3*nBoxLength, 0);
 		CRect rcBoxRightRight(rcBoxRight);
 		rcBoxRightRight.OffsetRect(3*nBoxLength, 0);
-		int nCount = ((::GetTickCount() / 1000U) % 5U);
+		int nCount = (int)((::GetTickCount() / 1000U) % 5U);
 		MemDC.FillSolidRect(rcBoxLeftLeft, DRAW_PROGRESS_COLOR);
 		if (nCount >= 1)
 			MemDC.FillSolidRect(rcBoxLeft, DRAW_PROGRESS_COLOR);
