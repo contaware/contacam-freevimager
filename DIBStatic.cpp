@@ -194,7 +194,7 @@ int CDibStatic::CThumbLoadThread::WorkFull()
 			m_pDibStatic->m_pDibHdr->SetShowMessageBoxOnError(bOldDibHdrShowMessageBoxOnError);
 
 			// Post Paint Busy Text Message
-			m_pDibStatic->m_dwBusyTextUpTime = ::timeGetTime();
+			m_pDibStatic->m_dwBusyTextUpTime = ::GetTickCount();
 			CPostDelayedMessageThread::PostDelayedMessage(	m_pDibStatic->GetSafeHwnd(),
 															WM_PAINT_BUSYTEXT,
 															PAINT_BUSYTEXT_DELAY,
@@ -315,7 +315,7 @@ int CDibStatic::CThumbLoadThread::WorkFull()
 			if (m_pDibStatic->m_GifAnimationThread.Load(FALSE) > 1)
 			{
 				// Clear Paint Busy Text
-				m_pDibStatic->m_dwBusyTextUpTime = ::timeGetTime();
+				m_pDibStatic->m_dwBusyTextUpTime = ::GetTickCount();
 
 				// Loaded Flag
 				m_pDibStatic->m_bLoadFullTerminated = TRUE;
@@ -338,7 +338,7 @@ int CDibStatic::CThumbLoadThread::WorkFull()
 		}
 
 		// Clear Paint Busy Text
-		m_pDibStatic->m_dwBusyTextUpTime = ::timeGetTime();
+		m_pDibStatic->m_dwBusyTextUpTime = ::GetTickCount();
 
 		// Loaded Flag
 		m_pDibStatic->m_bLoadFullTerminated = TRUE;
@@ -362,7 +362,7 @@ int CDibStatic::CThumbLoadThread::WorkFull()
 	}
 	catch (int nCause)
 	{
-		m_pDibStatic->m_dwBusyTextUpTime = ::timeGetTime();
+		m_pDibStatic->m_dwBusyTextUpTime = ::GetTickCount();
 		m_pDibStatic->m_bLoadFullTerminated = TRUE;
 		m_pDibStatic->m_pDibFull->SetShowMessageBoxOnError(bOldDibFullShowMessageBoxOnError);
 		m_pDibStatic->m_pDibHdr->SetShowMessageBoxOnError(bOldDibHdrShowMessageBoxOnError);
