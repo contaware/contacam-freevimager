@@ -59,14 +59,14 @@ class CPerformance
 		__forceinline void Init()
 		{
 			// Query the counters
-			m_dwInitTick = ::GetTickCount(); // GetTickCount() is faster than timeGetTime() but a bit less accurate
+			m_dwInitTick = ::GetTickCount();
 			::QueryPerformanceCounter(&m_InitCount);
 		}
 		__forceinline void End()
 		{
 			// Query the counters
 			::QueryPerformanceCounter(&m_EndCount);
-			DWORD dwEndTick = ::GetTickCount(); // GetTickCount() is faster than timeGetTime() but a bit less accurate
+			DWORD dwEndTick = ::GetTickCount();
 
 			// Get differences
 			if (m_Frequency.QuadPart > 0)
