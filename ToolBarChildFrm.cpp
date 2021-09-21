@@ -800,7 +800,7 @@ void CPictureChildFrame::OnClose()
 	else
 	{
 		if (IsShutdownDone() ||
-			(::timeGetTime() - m_dwShutdownStartUpTime) >= MAX_PICTUREDOC_CLOSE_WAITTIME)
+			(::GetTickCount() - m_dwShutdownStartUpTime) >= (DWORD)MAX_PICTUREDOC_CLOSE_WAITTIME)
 		{
 			// Now that the layered thread exited we can close the dialog
 			if (pDoc->m_pLayeredDlg)
@@ -826,7 +826,7 @@ void CPictureChildFrame::StartShutdown()
 	ASSERT_VALID(pDoc);
 	
 	// Init timeout
-	m_dwShutdownStartUpTime = ::timeGetTime();
+	m_dwShutdownStartUpTime = ::GetTickCount();
 
 	// Cancel Crop Tool
 	pDoc->CancelCrop();
@@ -1173,19 +1173,19 @@ void CVideoDeviceChildFrame::OnClose()
 		// that we called StopProcessFrame() we are not anymore inside ProcessI420Frame() and
 		// because of the StopProcessFrame() call we cannot enter ProcessI420Frame() again!
 		if (IsShutdown1Done() ||
-			(::timeGetTime() - m_dwShutdownStartUpTime) >= PROCESSFRAME_MAX_RETRY_TIME)
+			(::GetTickCount() - m_dwShutdownStartUpTime) >= (DWORD)PROCESSFRAME_MAX_RETRY_TIME)
 			StartShutdown2();
 	}
 	// StartShutdown3()?
 	else if (!m_bShutdown3Started)
 	{
 		if (IsShutdown2Done() ||
-			(::timeGetTime() - m_dwShutdownStartUpTime) >= NETCOM_BLOCKING_TIMEOUT)
+			(::GetTickCount() - m_dwShutdownStartUpTime) >= (DWORD)NETCOM_BLOCKING_TIMEOUT)
 			StartShutdown3();
 	}
 	// Done?
 	else if (IsShutdown3Done() ||
-			(::timeGetTime() - m_dwShutdownStartUpTime) >= NETCOM_BLOCKING_TIMEOUT)
+			(::GetTickCount() - m_dwShutdownStartUpTime) >= (DWORD)NETCOM_BLOCKING_TIMEOUT)
 	{
 		// Log the failure to close
 		if (!IsShutdown2Done() || !IsShutdown3Done())
@@ -1233,7 +1233,7 @@ void CVideoDeviceChildFrame::StartShutdown1()
 	ASSERT_VALID(pDoc);
 
 	// Init timeout
-	m_dwShutdownStartUpTime = ::timeGetTime();
+	m_dwShutdownStartUpTime = ::GetTickCount();
 
 	// Kill it right now because of Save Frame List and HTTP Reconnect
 	pDoc->m_WatchdogThread.Kill_NoBlocking();
@@ -1254,7 +1254,7 @@ void CVideoDeviceChildFrame::StartShutdown2()
 	ASSERT_VALID(pDoc);
 
 	// Init timeout
-	m_dwShutdownStartUpTime = ::timeGetTime();
+	m_dwShutdownStartUpTime = ::GetTickCount();
 
 	// Set flag
 	m_bShutdown2Started = TRUE;
@@ -1277,7 +1277,7 @@ void CVideoDeviceChildFrame::StartShutdown3()
 	ASSERT_VALID(pDoc);
 
 	// Init timeout
-	m_dwShutdownStartUpTime = ::timeGetTime();
+	m_dwShutdownStartUpTime = ::GetTickCount();
 
 	// Set flag
 	m_bShutdown3Started = TRUE;
