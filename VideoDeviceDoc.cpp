@@ -1746,8 +1746,9 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, const CTime& Time,
 	int nDetectionLevel = m_nDetectionLevel; // use local var
 	int nMovementDetectorIntensityLimit = 50 - nDetectionLevel / 2;	// noise floor
 
-	// Init from UI thread because of the CloseNotificationWnd() call and
-	// because of the initialization of variables used by the UI drawing
+	// Run OnThreadSafeInitMovDet() from the UI thread with a blocking SendMessage() because of 
+	// the CloseNotificationWnd() call and because of the initialization of m_nMovDetXZonesCount
+	// and m_nMovDetYZonesCount employed by the UI drawing thread and employed also by this thread
 	if (m_nMovDetTotalZones == 0 || m_nOldDetectionZoneSize != m_nDetectionZoneSize)
 	{
 		if (::SendMessage(	GetView()->GetSafeHwnd(),
