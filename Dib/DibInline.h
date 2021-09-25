@@ -234,6 +234,8 @@ __forceinline void CDib::SetImageSize(DWORD dwImageSize) {m_dwImageSize = dwImag
 __forceinline void CDib::SetFileSize(DWORD dwFileSize) {m_FileInfo.m_dwFileSize = dwFileSize;};
 __forceinline BOOL CDib::IsValid()			const { return ((m_pBMI != NULL && m_pBits != NULL) ||
 															(m_pBMI != NULL && m_hDibSection != NULL)); };
+__forceinline LONGLONG CDib::GetPts()		const {return m_llPts;};
+__forceinline void CDib::SetPts(LONGLONG llPts) {m_llPts = llPts;};
 __forceinline LONGLONG CDib::GetUpTime()	const {return m_llUpTime;};
 __forceinline void CDib::SetUpTime(LONGLONG llUpTime) {m_llUpTime = llUpTime;};
 __forceinline DWORD CDib::GetUserFlag()		const {return m_dwUserFlag;};
@@ -258,6 +260,19 @@ __forceinline void CDib::SetXDpi(int dpi) {if (m_pBMI) m_pBMI->bmiHeader.biXPels
 __forceinline void CDib::SetYDpi(int dpi) {if (m_pBMI) m_pBMI->bmiHeader.biYPelsPerMeter = PIXPERMETER(dpi);};
 __forceinline LPBITMAPINFO CDib::GetBMI() const {return m_pBMI;};
 __forceinline LPBITMAPINFOHEADER CDib::GetBMIH() const {return (LPBITMAPINFOHEADER)m_pBMI;};
+
+__forceinline LONGLONG CDib::TimeElapsed(CDib* pDib1, CDib* pDib2)
+{
+	LONGLONG llDiff = 0;
+	if (pDib1 && pDib2)
+	{
+		if (pDib1->m_llPts != AV_NOPTS_VALUE && pDib2->m_llPts != AV_NOPTS_VALUE)
+			llDiff = pDib1->m_llPts - pDib2->m_llPts;
+		if (llDiff <= 0)
+			llDiff = pDib1->m_llUpTime - pDib2->m_llUpTime;
+	}
+	return MAX(llDiff, 0); // always positive or 0
+}
 
 __forceinline BOOL CDib::IsRgb16_565()
 {

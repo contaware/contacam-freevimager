@@ -19,6 +19,10 @@ extern "C"
 #endif
 }
 
+#ifndef AV_NOPTS_VALUE
+#define AV_NOPTS_VALUE          ((int64_t)UINT64_C(0x8000000000000000))
+#endif
+
 #include <afxtempl.h>	// For CArray
 #include <afxole.h>		// For COleDateTime
 #include "vfw.h"		// For DrawDib Functions
@@ -393,6 +397,7 @@ protected:
 	CPalette* m_pPalette;		// The Palette, for BitCount > 8 a halftone palette is created
 
 	// Special Vars
+	LONGLONG m_llPts;			// Presentation time stamp (in milliseconds), AV_NOPTS_VALUE if not set
 	LONGLONG m_llUpTime;		// Up-time (in milliseconds) when the frame was taken
 	DWORD m_dwUserFlag;			// General Purpose User Flag
 
@@ -455,6 +460,8 @@ public:
 	__forceinline void SetImageSize(DWORD dwImageSize);
 	__forceinline void SetFileSize(DWORD dwFileSize);
 	__forceinline BOOL IsValid() const;
+	__forceinline LONGLONG GetPts()	const;
+	__forceinline void SetPts(LONGLONG llPts);
 	__forceinline LONGLONG GetUpTime() const;
 	__forceinline void SetUpTime(LONGLONG llUpTime);
 	__forceinline DWORD GetUserFlag() const;
@@ -481,6 +488,9 @@ public:
 	__forceinline void SetYDpi(int dpi);
 	__forceinline LPBITMAPINFO GetBMI() const;
 	__forceinline LPBITMAPINFOHEADER GetBMIH() const;
+
+	// Returns the elapsed time in ms (Dib1 - Dib2), always positive or 0
+	static __forceinline LONGLONG TimeElapsed(CDib* pDib1, CDib* pDib2);
 
 	// RGB16 Types
 	__forceinline BOOL IsRgb16_565();

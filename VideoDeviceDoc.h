@@ -127,7 +127,6 @@ class CCameraAdvancedSettingsDlg;
 #define MOVDET_MAX_MAX_FRAMES_IN_LIST			14999			// Upper limit for the maximum frames per list
 #define MOVDET_MAX_MAX_FRAMES_RAM_PERCENT		50				// CUImagerApp::m_nDetectionMaxMaxFrames is calculated according this RAM percentage
 #define MOVDET_DROP_FRAMES_RAM_PERCENT			100				// Drop frames when CDib::m_llOverallSharedMemoryBytes is above this RAM percentage
-#define MOVDET_SAVE_MIN_FRAMERATE_RATIO			0.3				// Min ratio between calculated (last - first) and m_dEffectiveFrameRate
 #define MOVDET_TIMEOUT							1000			// Timeout in ms for detection zones
 #define MOVDET_ANIMGIF_MAX_FRAMES				40				// Maximum number of frames per animated gif
 #define MOVDET_ANIMGIF_MAX_LENGTH				4000.0			// ms, MOVDET_ANIMGIF_MAX_LENGTH / MOVDET_ANIMGIF_MAX_FRAMES must be >= 100
@@ -453,7 +452,7 @@ public:
 									double& dDelayMul,
 									double& dSpeedMul,
 									DWORD& dwLoadDetFrameUpdatedIfErrorNoSuccess,
-									double dCalcFrameRate,
+									double dSaveFrameRate,
 									const CTime& RefTime,
 									LONGLONG llRefUpTime,
 									const CString& sMovDetSavesCount);
@@ -704,7 +703,7 @@ public:
 	void ProcessOtherFrame(LPBYTE pData, DWORD dwSize);
 	void ProcessNV12Frame(LPBYTE pData, DWORD dwSize, BOOL bFlipUV);
 	void ProcessM420Frame(LPBYTE pData, DWORD dwSize);
-	void ProcessI420Frame(LPBYTE pData, DWORD dwSize);
+	void ProcessI420Frame(LPBYTE pData, DWORD dwSize, LONGLONG llPtsMs = AV_NOPTS_VALUE);
 	static BOOL FlipH(CDib* pDib);
 	static BOOL FlipV(CDib* pDib);
 

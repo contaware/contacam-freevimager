@@ -239,13 +239,15 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		}
 		while (bPolling);
 
-		// First & Last Up-Times
+		// First & Last Up-Times and frames time length
 		LONGLONG llFirstUpTime;
 		LONGLONG llLastUpTime;
+		LONGLONG llFramesTimeMs = 0;
 		if (m_pFrameList->GetHead() && m_pFrameList->GetTail())
 		{
 			llFirstUpTime = m_pFrameList->GetHead()->GetUpTime();
 			llLastUpTime = m_pFrameList->GetTail()->GetUpTime();
+			llFramesTimeMs = CDib::TimeElapsed(m_pFrameList->GetTail(), m_pFrameList->GetHead());
 		}
 		else if (m_pFrameList->GetHead() && !m_pFrameList->GetTail())
 			llLastUpTime = llFirstUpTime = m_pFrameList->GetHead()->GetUpTime();
@@ -345,18 +347,9 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		CDib* pDib = NULL;
 		BOOL bFirstGIFSave;
 		RGBQUAD* pGIFColors = NULL;
-		double dCalcFrameRate = 1.0;
-		LONGLONG llFramesTimeMs = llLastUpTime - llFirstUpTime;
+		double dSaveFrameRate = 1.0;
 		if (nFrames > 1 && llFramesTimeMs > 0)
-			dCalcFrameRate = (1000.0 * (nFrames - 1)) / (double)llFramesTimeMs;
-		if (m_pDoc->m_dEffectiveFrameRate > 0.0)
-		{
-			// When there are multiple frame drops one after the other or in case of reconnection
-			// the framerate calculated through time difference is a lot smaller than the
-			// effective framerate. If that happens we choose the effective framerate!
-			if (dCalcFrameRate / m_pDoc->m_dEffectiveFrameRate < MOVDET_SAVE_MIN_FRAMERATE_RATIO)
-				dCalcFrameRate = m_pDoc->m_dEffectiveFrameRate;
-		}
+			dSaveFrameRate = (1000.0 * (nFrames - 1)) / (double)llFramesTimeMs;
 		int nSaveFreqDiv = MAX(1, m_pDoc->m_nSaveFreqDiv);
 		while (!m_pFrameList->IsEmpty() && nextpos && nFrames)
 		{
@@ -394,11 +387,11 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 					DstBmi.biHeight = pDib ? pDib->GetHeight() : 0;
 					DstBmi.biPlanes = 1;
 					DstBmi.biCompression = DEFAULT_VIDEO_FOURCC;
-					AVRational SaveFrameRate = av_d2q(dCalcFrameRate / (double)nSaveFreqDiv, MAX_SIZE_FOR_RATIONAL);
+					AVRational FrameRate = av_d2q(dSaveFrameRate / (double)nSaveFreqDiv, MAX_SIZE_FOR_RATIONAL);
 					AVRecVideo.AddVideoStream(pDib ? pDib->GetBMI() : NULL,		// Source Video Format
 											(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
-											SaveFrameRate.num,					// Rate
-											SaveFrameRate.den,					// Scale			
+											FrameRate.num,						// Rate
+											FrameRate.den,						// Scale			
 											m_pDoc->m_fVideoRecQuality,			// Video quality
 											m_pDoc->m_bVideoRecFast,			// if TRUE it will use the fastest possible encoding speed 
 											((CUImagerApp*)::AfxGetApp())->m_nThreadCount);
@@ -465,7 +458,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 									dDelayMul,				// sets this
 									dSpeedMul,				// sets this
 									dwLoadDetFrameErrorCode,// sets this
-									dCalcFrameRate,
+									dSaveFrameRate,
 									RefTime,
 									llRefUpTime,
 									sMovDetSavesCount);
@@ -609,7 +602,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors
 																double& dDelayMul,
 																double& dSpeedMul,
 																DWORD& dwLoadDetFrameUpdatedIfErrorNoSuccess,
-																double dCalcFrameRate,
+																double dSaveFrameRate,
 																const CTime& RefTime,
 																LONGLONG llRefUpTime,
 																const CString& sMovDetSavesCount)
@@ -636,7 +629,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors
 	int nMiddleElementCount = m_nNumFramesToSave / 2;
 	POSITION posPalette = m_pFrameList->GetHeadPosition();
 	int nFrameCountDown = m_nNumFramesToSave;
-	int nFirstCountDown = Round(dCalcFrameRate);
+	int nFirstCountDown = Round(dSaveFrameRate);
 	while (nFrameCountDown > 0)
 	{
 		CDib* p = m_pFrameList->GetNext(posPalette);
@@ -790,7 +783,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors
 	// the play length to around MOVDET_ANIMGIF_MAX_LENGTH ms.
 	// Note: IE has problems with too many anim. gifs frames and also
 	// with too many anim. gifs images per displayed page!
-	double dLengthMs = (double)m_nNumFramesToSave / dCalcFrameRate * 1000.0;
+	double dLengthMs = (double)m_nNumFramesToSave / dSaveFrameRate * 1000.0;
 	dSpeedMul = max(1.0, dLengthMs / MOVDET_ANIMGIF_MAX_LENGTH);
 	if (m_nNumFramesToSave >= MOVDET_ANIMGIF_MAX_FRAMES)
 	{
@@ -847,7 +840,8 @@ void CVideoDeviceDoc::CSaveFrameListThread::StretchAnimatedGif(CDib* pDib)
 		if (DibAnimatedGif.AllocateBitsFast(12, FCC('I420'), m_pDoc->m_dwAnimatedGifWidth, m_pDoc->m_dwAnimatedGifHeight))
 		{
 			CVideoDeviceDoc::ResizeFast(pDib, &DibAnimatedGif);
-			DibAnimatedGif.SetUpTime(pDib->GetUpTime());		// copy frame uptime	
+			DibAnimatedGif.SetPts(pDib->GetPts());				// copy frame pts
+			DibAnimatedGif.SetUpTime(pDib->GetUpTime());		// copy frame uptime
 			DibAnimatedGif.SetUserFlag(pDib->GetUserFlag());	// copy motion, detection sequence start and stop flags
 			*pDib = DibAnimatedGif;
 			pDib->Decompress(32);
@@ -960,7 +954,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 		// Convert to 255 colors and save
 		To255Colors(*ppGIFDibPrev, pGIFColors, RefTime, llRefUpTime, sMovDetSavesCount);
 		pGIFSaveDib->GetGif()->SetDispose(GIF_DISPOSE_RESTORE);
-		pGIFSaveDib->GetGif()->SetDelay(MAX(100, Round((double)(pGIFDib->GetUpTime() - (*ppGIFDibPrev)->GetUpTime()) / dSpeedMul)));
+		pGIFSaveDib->GetGif()->SetDelay(MAX(100, Round((double)CDib::TimeElapsed(pGIFDib, *ppGIFDibPrev) / dSpeedMul)));
 		(*ppGIFDibPrev)->DiffTransp8(pGIFSaveDib, nDiffMinLevel, 255);
 		res = pGIFSaveDib->SaveNextGIF(	*ppGIFDibPrev,
 										NULL,
@@ -978,12 +972,12 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 										this);
 	}
 	// Middle Frame?
-	else if ((int)(pGIFDib->GetUpTime() - (*ppGIFDibPrev)->GetUpTime()) >= Round(dDelayMul * MOVDET_ANIMGIF_DELAY))
+	else if (CDib::TimeElapsed(pGIFDib, *ppGIFDibPrev) >= (LONGLONG)Round(dDelayMul * MOVDET_ANIMGIF_DELAY))
 	{
 		// Convert to 255 colors and save
 		To255Colors(*ppGIFDibPrev, pGIFColors, RefTime, llRefUpTime, sMovDetSavesCount);
 		pGIFSaveDib->GetGif()->SetDispose(GIF_DISPOSE_RESTORE);
-		pGIFSaveDib->GetGif()->SetDelay(MAX(100, Round((double)(pGIFDib->GetUpTime() - (*ppGIFDibPrev)->GetUpTime()) / dSpeedMul)));
+		pGIFSaveDib->GetGif()->SetDelay(MAX(100, Round((double)CDib::TimeElapsed(pGIFDib, *ppGIFDibPrev) / dSpeedMul)));
 		(*ppGIFDibPrev)->DiffTransp8(pGIFSaveDib, nDiffMinLevel, 255);
 		res = pGIFSaveDib->SaveNextGIF(	*ppGIFDibPrev,
 										NULL,
@@ -2769,6 +2763,7 @@ int CVideoDeviceDoc::CRtspThread::Work()
 
 		// Get frames
 		LastOKTime = CTime::GetCurrentTime();
+		int64_t llPrevPts = AV_NOPTS_VALUE;
 		for (;;)
 		{
 			AVPacket avpkt;
@@ -2887,13 +2882,28 @@ int CVideoDeviceDoc::CRtspThread::Work()
 					// Convert and Process
 					if (got_picture)
 					{
+						// Convert
 						if ((ret = sws_scale(pImgConvertCtx, pVideoFrame->data, pVideoFrame->linesize, 0, pVideoCodecCtx->height, pVideoFrameI420->data, pVideoFrameI420->linesize)) <= 0)
 						{
 							av_packet_unref(&orig_pkt);
 							goto free;
 						}
+
+						// Pts
+						int64_t llCurrentPts = pVideoFrame->best_effort_timestamp; // usually the same as pVideoFrame->pts
+						int64_t llCurrentPtsMs = AV_NOPTS_VALUE;
+						if (llCurrentPts == AV_NOPTS_VALUE && llPrevPts != AV_NOPTS_VALUE) // best_effort_timestamp sometimes is AV_NOPTS_VALUE
+							llCurrentPts = llPrevPts + 1; // fix adding 1 so that it is strictly monotonically increasing
+						if (llCurrentPts != AV_NOPTS_VALUE)
+						{
+							AVRational time_base_ms = {1, 1000};
+							llCurrentPtsMs = av_rescale_q(llCurrentPts, pFormatCtx->streams[nVideoStreamIndex]->time_base, time_base_ms);
+						}
+						llPrevPts = llCurrentPts;
+
+						// Process
 						m_pDoc->m_lEffectiveDataRateSum += avpkt.size;
-						m_pDoc->ProcessI420Frame(pI420Buf, nI420ImageSize);
+						m_pDoc->ProcessI420Frame(pI420Buf, nI420ImageSize, llCurrentPtsMs);
 					}
 				}
 				// Audio Packet
@@ -7294,7 +7304,7 @@ void CVideoDeviceDoc::ProcessM420Frame(LPBYTE pData, DWORD dwSize)
 	ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize());
 }
 
-void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
+void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize, LONGLONG llPtsMs/*=AV_NOPTS_VALUE*/)
 {
 	// Timing
 	LONGLONG llCurrentFrameTime;
@@ -7415,7 +7425,8 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 			}
 		}
 
-		// Set the UpTime Var
+		// Set Pts and UpTime to Dib
+		pDib->SetPts(llPtsMs);
 		pDib->SetUpTime(llCurrentInitUpTime);
 
 		// Capture audio?
@@ -8069,6 +8080,7 @@ __forceinline CDib* CVideoDeviceDoc::AllocDetFrame(CDib* pDib)
 			pNewDib->SetShowMessageBoxOnError(FALSE);
 			pNewDib->SetBMI(pDib->GetBMI());			// set BMI	
 			pNewDib->SetBits((LPBYTE)pDib->GetBits());	// copy bits
+			pNewDib->SetPts(pDib->GetPts());			// copy frame pts
 			pNewDib->SetUpTime(pDib->GetUpTime());		// copy frame uptime
 			pNewDib->SetUserFlag(pDib->GetUserFlag());	// copy motion, detection sequence start and stop flags
 			pNewDib->CopyUserList(pDib->m_UserList);	// copy audio bufs if any
