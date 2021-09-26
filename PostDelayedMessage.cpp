@@ -8,8 +8,8 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 HANDLE volatile CPostDelayedMessageThread::m_hExitEvent = NULL;
-std::atomic<int> CPostDelayedMessageThread::m_nCount = 0;
-std::atomic<BOOL> CPostDelayedMessageThread::m_bExit = FALSE;
+std::atomic<int> CPostDelayedMessageThread::m_nCount(0);
+std::atomic<BOOL> CPostDelayedMessageThread::m_bExit(FALSE);
 
 void CPostDelayedMessageThread::Init()
 {

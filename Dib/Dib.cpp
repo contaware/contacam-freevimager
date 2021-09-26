@@ -8049,7 +8049,7 @@ CString CDib::CFileInfo::GetDepthName()
 }
 
 #ifdef VIDEODEVICEDOC
-std::atomic<LONGLONG> CDib::m_llOverallSharedMemoryBytes = 0;
+std::atomic<LONGLONG> CDib::m_llOverallSharedMemoryBytes(0);
 #endif
 
 // Windows Standard Colors
