@@ -1668,7 +1668,7 @@ BOOL CUImagerApp::PasteToFile(LPCTSTR lpszFileName, COLORREF crBackgroundColor/*
 	else if (sExt == _T(".bmp") || sExt == _T(".dib"))
 	{
 		if (Dib.HasAlpha() && Dib.GetBitCount() == 32)
-			Dib.BMIToBITMAPV4HEADER();
+			Dib.ToBITMAPV5HEADER();
 		return Dib.SaveBMP(lpszFileName);
 	}
 	else if (sExt == _T(".pcx"))
@@ -3163,10 +3163,10 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 			pSaveDib->Compress((SrcDib.GetBitCount() == 4)
 								? BI_RLE4 : BI_RLE8);
 		}
-		// Store Alpha using the V4 Header
+		// Store Alpha using the V5 Header
 		else if (SrcDib.HasAlpha() && SrcDib.GetBitCount() == 32)
 		{
-			pSaveDib->BMIToBITMAPV4HEADER();
+			pSaveDib->ToBITMAPV5HEADER();
 		}
 
 		if (!pSaveDib->SaveBMP(	szDstFileName,

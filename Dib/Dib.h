@@ -639,8 +639,8 @@ public:
 	// Set Image Size
 	void ComputeImageSize();
 
-	// BITMAPINFOHEADER to BITMAPV4HEADER
-	BOOL BMIToBITMAPV4HEADER();
+	// To BITMAPV5HEADER
+	BOOL ToBITMAPV5HEADER();
 
 	// Creates the Thumbnail Dib from pSrcDib,
 	// if pSrcDib is NULL this is used.
@@ -1753,6 +1753,9 @@ public:
 																// between DibSection and bits!
 
 	// Clipboard support function
+#ifdef _DEBUG
+	void EnumCF();
+#endif
 	void EditCopy(); 
 	void EditPaste(int XDpi = 0, int YDpi = 0);
 	HGLOBAL CopyToHandle();

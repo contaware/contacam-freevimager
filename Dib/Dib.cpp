@@ -5053,12 +5053,77 @@ BOOL CDib::DibSectionToBits(BOOL bForceNewBits/*=FALSE*/, BOOL bDeleteDibSection
 }
 
 // Clipboard support
+#ifdef _DEBUG
+void CDib::EnumCF()
+{
+	if (::OpenClipboard(NULL))
+	{
+		int count = 0;
+		int format = 0;
+		do
+		{
+			format = ::EnumClipboardFormats(format);
+			if (format)
+			{
+				++count;
+				
+				LPCTSTR cfNames[] = {
+					_T("CF_TEXT"),
+					_T("CF_BITMAP"),
+					_T("CF_METAFILEPICT"),
+					_T("CF_SYLK"),
+					_T("CF_DIF"),
+					_T("CF_TIFF"),
+					_T("CF_OEMTEXT"),
+					_T("CF_DIB"),
+					_T("CF_PALETTE"),
+					_T("CF_PENDATA"),
+					_T("CF_RIFF"),
+					_T("CF_WAVE"),
+					_T("CF_UNICODETEXT"),
+					_T("CF_ENHMETAFILE"),
+					_T("CF_HDROP"),
+					_T("CF_LOCALE"),
+					_T("CF_DIBV5")
+				};
+
+				if ((format > 0) && (format <= _countof(cfNames)))
+					TRACE(_T("Clipboard offered type %s\n"), cfNames[format - 1]);
+				else
+				{
+					TCHAR buffer[100];
+					if (::GetClipboardFormatName(format, buffer, _countof(buffer)))
+						TRACE(_T("Clipboard offered type %s\n"), buffer);
+					else
+						TRACE(_T("Clipboard offered type #%i\n"), format);
+				}
+			}
+		}
+		while (format != 0);
+
+		if (!count)
+			TRACE(_T("Clipboard is empty!\n"));
+
+		::CloseClipboard();
+	}
+}
+#endif
+
 void CDib::EditCopy() 
 {
 	if (::OpenClipboard(NULL))
 	{
 		::EmptyClipboard();
-		::SetClipboardData(CF_DIB, CopyToHandle());
+		if (m_pBMI->bmiHeader.biSize == sizeof(BITMAPV5HEADER))
+			::SetClipboardData(CF_DIBV5, CopyToHandle());
+		else if (m_pBMI->bmiHeader.biSize == sizeof(BITMAPV4HEADER))
+		{
+			CDib DibTemp(*this);
+			DibTemp.ToBITMAPV5HEADER();
+			::SetClipboardData(CF_DIBV5, DibTemp.CopyToHandle());
+		}
+		else
+			::SetClipboardData(CF_DIB, CopyToHandle());
 		::CloseClipboard();
 	}
 }
@@ -5068,7 +5133,13 @@ void CDib::EditPaste(int XDpi/*=0*/, int YDpi/*=0*/)
 	BOOL bOk = FALSE;
 	if (::OpenClipboard(NULL))
 	{
-		if (::IsClipboardFormatAvailable(CF_DIB))
+		if (::IsClipboardFormatAvailable(CF_DIBV5))
+		{
+			HGLOBAL hDib = ::GetClipboardData(CF_DIBV5);
+			if (hDib)
+				bOk = ((CopyFromHandle(hDib) != NULL) && IsValid());
+		}
+		if (!bOk && ::IsClipboardFormatAvailable(CF_DIB))
 		{
 			HGLOBAL hDib = ::GetClipboardData(CF_DIB);
 			if (hDib)
@@ -7230,74 +7301,74 @@ BOOL CDib::CreatePaletteFromDibSection()
 		return FALSE;
 }
 
-BOOL CDib::BMIToBITMAPV4HEADER()
+BOOL CDib::ToBITMAPV5HEADER()
 {
 	if (!m_pBMI)
 		return FALSE;
 
-	if (m_pBMI->bmiHeader.biSize != sizeof(BITMAPINFOHEADER))
+	if (m_pBMI->bmiHeader.biSize == sizeof(BITMAPV5HEADER))
 		return FALSE;
 
-	LPBITMAPV4HEADER pBV4;
+	LPBITMAPV5HEADER pBV5;
 	if (GetCompression() == BI_BITFIELDS)
 	{
-		pBV4 = (LPBITMAPV4HEADER)new BYTE[sizeof(BITMAPV4HEADER) + sizeof(DWORD) * 3];
-		if (!pBV4)
+		pBV5 = (LPBITMAPV5HEADER)new BYTE[sizeof(BITMAPV5HEADER) + sizeof(DWORD) * 3];
+		if (!pBV5)
 			return FALSE;
 
 		// Init & Copy Header
-		memset(pBV4, 0, sizeof(BITMAPV4HEADER));
-		memcpy(pBV4, m_pBMI, m_pBMI->bmiHeader.biSize);
-		pBV4->bV4Size = sizeof(BITMAPV4HEADER);
+		memset(pBV5, 0, sizeof(BITMAPV5HEADER));
+		memcpy(pBV5, m_pBMI, m_pBMI->bmiHeader.biSize);
+		pBV5->bV5Size = sizeof(BITMAPV5HEADER);
 
 		// Copy Masks
-		memcpy((LPBYTE)pBV4 + pBV4->bV4Size, (LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize, sizeof(DWORD) * 3);
+		memcpy((LPBYTE)pBV5 + pBV5->bV5Size, (LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize, sizeof(DWORD) * 3);
 		
 	}
 	else if (GetBitCount() <= 8)
 	{
-		pBV4 = (LPBITMAPV4HEADER)new BYTE[sizeof(BITMAPV4HEADER) + sizeof(RGBQUAD) * GetNumColors()];
-		if (!pBV4)
+		pBV5 = (LPBITMAPV5HEADER)new BYTE[sizeof(BITMAPV5HEADER) + sizeof(RGBQUAD) * GetNumColors()];
+		if (!pBV5)
 			return FALSE;
 
 		// Init & Copy Header
-		memset(pBV4, 0, sizeof(BITMAPV4HEADER));
-		memcpy(pBV4, m_pBMI, m_pBMI->bmiHeader.biSize);
-		pBV4->bV4Size = sizeof(BITMAPV4HEADER);
+		memset(pBV5, 0, sizeof(BITMAPV5HEADER));
+		memcpy(pBV5, m_pBMI, m_pBMI->bmiHeader.biSize);
+		pBV5->bV5Size = sizeof(BITMAPV5HEADER);
 
 		// Copy Colors
-		memcpy((LPBYTE)pBV4 + pBV4->bV4Size, (LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize, sizeof(RGBQUAD) * GetNumColors());
+		memcpy((LPBYTE)pBV5 + pBV5->bV5Size, (LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize, sizeof(RGBQUAD) * GetNumColors());
 	}
 	else
 	{
-		pBV4 = (LPBITMAPV4HEADER)new BYTE[sizeof(BITMAPV4HEADER)];
-		if (!pBV4)
+		pBV5 = (LPBITMAPV5HEADER)new BYTE[sizeof(BITMAPV5HEADER)];
+		if (!pBV5)
 			return FALSE;
 
 		// Init & Copy Header
-		memset(pBV4, 0, sizeof(BITMAPV4HEADER));
-		memcpy(pBV4, m_pBMI, m_pBMI->bmiHeader.biSize);
-		pBV4->bV4Size = sizeof(BITMAPV4HEADER);
+		memset(pBV5, 0, sizeof(BITMAPV5HEADER));
+		memcpy(pBV5, m_pBMI, m_pBMI->bmiHeader.biSize);
+		pBV5->bV5Size = sizeof(BITMAPV5HEADER);
 	}
 
 	// BITFIELDS
 	if (GetCompression() == BI_BITFIELDS)
 	{
 		LPBITMAPINFOBITFIELDS pBmiBf = (LPBITMAPINFOBITFIELDS)m_pBMI;
-		pBV4->bV4RedMask = pBmiBf->biRedMask;
-		pBV4->bV4GreenMask = pBmiBf->biGreenMask;
-		pBV4->bV4BlueMask = pBmiBf->biBlueMask;
+		pBV5->bV5RedMask = pBmiBf->biRedMask;
+		pBV5->bV5GreenMask = pBmiBf->biGreenMask;
+		pBV5->bV5BlueMask = pBmiBf->biBlueMask;
 	}
 
 	// Alpha
 	if (m_bAlpha && GetBitCount() == 32)
-		pBV4->bV4AlphaMask = 0xFF000000;
+		pBV5->bV5AlphaMask = 0xFF000000;
 
 	// Free
 	delete [] m_pBMI;
 
 	// Change Pointer
-	m_pBMI = (LPBITMAPINFO)pBV4;
+	m_pBMI = (LPBITMAPINFO)pBV5;
 
 	// Set Colors Pointer
 	if (GetBitCount() <= 8)

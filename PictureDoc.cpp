@@ -2333,11 +2333,11 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 											TRUE);
 				}
 			}
-			// Store Alpha using the V4 Header
+			// Store Alpha using the V5 Header
 			else if (m_pDib->HasAlpha() && m_pDib->GetBitCount() == 32)
 			{
 				Dib = *m_pDib;
-				Dib.BMIToBITMAPV4HEADER();
+				Dib.ToBITMAPV5HEADER();
 				res = Dib.SaveBMP(	FileName,
 									GetView(),
 									TRUE);
@@ -3085,7 +3085,7 @@ CString CPictureDoc::ExtractFromAnimGIFToBMP(const CString& sFileName)
 			{
 				CDib Dib = *pDib;
 				Dib.SetShowMessageBoxOnError(FALSE);
-				Dib.BMIToBITMAPV4HEADER();
+				Dib.ToBITMAPV5HEADER();
 				if (!Dib.SaveBMP(sCurrentFileName))
 				{
 					DIB_END_PROGRESS(GetView()->GetSafeHwnd());
@@ -3180,11 +3180,11 @@ BOOL CPictureDoc::Save()
 											TRUE);
 				}
 			}
-			// Store Alpha using the V4 Header
+			// Store Alpha using the V5 Header
 			else if (m_pDib->HasAlpha() && m_pDib->GetBitCount() == 32)
 			{
 				Dib = *m_pDib;
-				Dib.BMIToBITMAPV4HEADER();
+				Dib.ToBITMAPV5HEADER();
 				res = Dib.SaveBMP(	m_sFileName,
 									GetView(),
 									TRUE);
@@ -8891,7 +8891,7 @@ BOOL CPictureDoc::CopyDelCrop(BOOL bShowMessageBoxOnError, BOOL bCopy, BOOL bDel
 			{
 				// Has Alpha?
 				if (Dib.HasAlpha() && Dib.GetBitCount() == 32)
-					Dib.BMIToBITMAPV4HEADER();
+					Dib.ToBITMAPV5HEADER();
 				Dib.EditCopy();
 			}
 		}
@@ -9039,7 +9039,7 @@ void CPictureDoc::OnEditCopy()
 			::EnterCriticalSection(&m_csDib);
 			Dib = *m_pDib;
 			::LeaveCriticalSection(&m_csDib);
-			Dib.BMIToBITMAPV4HEADER();
+			Dib.ToBITMAPV5HEADER();
 			Dib.EditCopy();
 		}
 		else
