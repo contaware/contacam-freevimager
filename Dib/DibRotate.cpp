@@ -52,7 +52,7 @@ BOOL CDib::FlipTopDown(CDib* pSrcDib/*=NULL*/)
 				return FALSE;
 			memcpy((void*)m_pBMI, (void*)pSrcDib->m_pBMI, pSrcDib->GetBMISize());
 		}
-		// Need to ReAllocate BMI because they are of differente size
+		// Need to ReAllocate BMI because they are of different size
 		else if (pSrcDib->GetBMISize() != GetBMISize())
 		{
 			delete [] m_pBMI;
@@ -173,7 +173,7 @@ BOOL CDib::FlipLeftRight(CDib* pSrcDib/*=NULL*/)
 				return FALSE;
 			memcpy((void*)m_pBMI, (void*)pSrcDib->m_pBMI, pSrcDib->GetBMISize());
 		}
-		// Need to ReAllocate BMI because they are of differente size
+		// Need to ReAllocate BMI because they are of different size
 		else if (pSrcDib->GetBMISize() != GetBMISize())
 		{
 			delete [] m_pBMI;
@@ -412,7 +412,7 @@ BOOL CDib::Rotate180(CDib* pSrcDib/*=NULL*/)
 				return FALSE;
 			memcpy((void*)m_pBMI, (void*)pSrcDib->m_pBMI, pSrcDib->GetBMISize());
 		}
-		// Need to ReAllocate BMI because they are of differente size
+		// Need to ReAllocate BMI because they are of different size
 		else if (pSrcDib->GetBMISize() != GetBMISize())
 		{
 			delete [] m_pBMI;
@@ -675,7 +675,7 @@ BOOL CDib::Rotate90CW(CDib* pSrcDib/*=NULL*/)
 				return FALSE;
 			memcpy((void*)m_pBMI, (void*)pSrcDib->m_pBMI, pSrcDib->GetBMISize());
 		}
-		// Need to ReAllocate BMI because they are of differente size
+		// Need to ReAllocate BMI because they are of different size
 		else if (pSrcDib->GetBMISize() != GetBMISize())
 		{
 			delete [] m_pBMI;
@@ -930,7 +930,7 @@ BOOL CDib::Rotate90CCW(CDib* pSrcDib/*=NULL*/)
 				return FALSE;
 			memcpy((void*)m_pBMI, (void*)pSrcDib->m_pBMI, pSrcDib->GetBMISize());
 		}
-		// Need to ReAllocate BMI because they are of differente size
+		// Need to ReAllocate BMI because they are of different size
 		else if (pSrcDib->GetBMISize() != GetBMISize())
 		{
 			delete [] m_pBMI;
@@ -1285,7 +1285,7 @@ BOOL CDib::RotateCCW(	double angle,
 				return FALSE;
 			memcpy((void*)m_pBMI, (void*)pSrcDib->m_pBMI, pSrcDib->GetBMISize());
 		}
-		// Need to ReAllocate BMI because they are of differente size
+		// Need to ReAllocate BMI because they are of different size
 		else if (pSrcDib->GetBMISize() != GetBMISize())
 		{
 			delete [] m_pBMI;

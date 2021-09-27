@@ -208,7 +208,7 @@ BOOL CDib::LoadBMPNoFileHeader(CFile& file, BOOL bDecompress/*=TRUE*/)
 			if (m_pBMI == NULL)
 				throw (int)BMP_E_NOMEM;
 		}
-		// Need to ReAllocate BMI because they are of differente size
+		// Need to ReAllocate BMI because they are of different size
 		else if (OffBits != (int)GetBMISize())
 		{
 			delete [] m_pBMI;

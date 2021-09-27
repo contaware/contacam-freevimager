@@ -1726,7 +1726,7 @@ BOOL CDib::CropBits(DWORD dwOrigX,
 				return FALSE;
 			memcpy((void*)m_pBMI, (void*)pSrcDib->m_pBMI, pSrcDib->GetBMISize());
 		}
-		// Need to ReAllocate BMI because they are of differente size
+		// Need to ReAllocate BMI because they are of different size
 		else if (pSrcDib->GetBMISize() != GetBMISize())
 		{
 			delete [] m_pBMI;
@@ -1980,7 +1980,7 @@ BOOL CDib::AddBorders(	DWORD dwLeft,
 				return FALSE;
 			memcpy((void*)m_pBMI, (void*)pSrcDib->m_pBMI, pSrcDib->GetBMISize());
 		}
-		// Need to ReAllocate BMI because they are of differente size
+		// Need to ReAllocate BMI because they are of different size
 		else if (pSrcDib->GetBMISize() != GetBMISize())
 		{
 			delete [] m_pBMI;

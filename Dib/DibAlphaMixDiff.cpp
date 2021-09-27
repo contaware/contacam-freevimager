@@ -61,7 +61,7 @@ BOOL CDib::RenderAlphaWithSrcBackground(CDib* pSrcDib/*=NULL*/)
 			if (m_pBMI == NULL)
 				return FALSE;
 		}
-		// Need to ReAllocate BMI because they are of differente size
+		// Need to ReAllocate BMI because they are of different size
 		else if (pSrcDib->GetBMISize() != GetBMISize())
 		{
 			delete [] m_pBMI;
@@ -199,7 +199,7 @@ BOOL CDib::GrayToAlphaChannel(COLORREF crColor, CDib* pSrcDib/*=NULL*/, CWnd* pP
 			if (m_pBMI == NULL)
 				return FALSE;
 		}
-		// Need to ReAllocate BMI because they are of differente size
+		// Need to ReAllocate BMI because they are of different size
 		else if (pSrcDib->GetBMISize() != GetBMISize())
 		{
 			delete [] m_pBMI;
@@ -343,7 +343,7 @@ BOOL CDib::ColorToTransparent(COLORREF crColor, CDib* pSrcDib/*=NULL*/, CWnd* pP
 			if (m_pBMI == NULL)
 				return FALSE;
 		}
-		// Need to ReAllocate BMI because they are of differente size
+		// Need to ReAllocate BMI because they are of different size
 		else if (pSrcDib->GetBMISize() != GetBMISize())
 		{
 			delete[] m_pBMI;
@@ -488,7 +488,7 @@ BOOL CDib::StraightToPremultipliedAlpha(CDib* pSrcDib/*=NULL*/, CWnd* pProgressW
 			if (m_pBMI == NULL)
 				return FALSE;
 		}
-		// Need to ReAllocate BMI because they are of differente size
+		// Need to ReAllocate BMI because they are of different size
 		else if (pSrcDib->GetBMISize() != GetBMISize())
 		{
 			delete[] m_pBMI;
@@ -628,7 +628,7 @@ BOOL CDib::AlphaOffset(int nAlphaOffset, CDib* pSrcDib/*=NULL*/, CWnd* pProgress
 			if (m_pBMI == NULL)
 				return FALSE;
 		}
-		// Need to ReAllocate BMI because they are of differente size
+		// Need to ReAllocate BMI because they are of different size
 		else if (pSrcDib->GetBMISize() != GetBMISize())
 		{
 			delete [] m_pBMI;

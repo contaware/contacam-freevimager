@@ -261,7 +261,7 @@ BOOL CDib::AvirResizeBits(	DWORD dwNewWidth,
 				return FALSE;
 			memcpy((void*)m_pBMI, (void*)pSrcDib->m_pBMI, pSrcDib->GetBMISize());
 		}
-		// Need to ReAllocate BMI because they are of differente size
+		// Need to ReAllocate BMI because they are of different size
 		else if (pSrcDib->GetBMISize() != GetBMISize())
 		{
 			delete[] m_pBMI;
@@ -449,7 +449,7 @@ BOOL CDib::NearestNeighborResizeBits(	DWORD dwNewWidth,
 				return FALSE;
 			memcpy((void*)m_pBMI, (void*)pSrcDib->m_pBMI, pSrcDib->GetBMISize());
 		}
-		// Need to ReAllocate BMI because they are of differente size
+		// Need to ReAllocate BMI because they are of different size
 		else if (pSrcDib->GetBMISize() != GetBMISize())
 		{
 			delete [] m_pBMI;
@@ -730,7 +730,7 @@ BOOL CDib::BilinearResampleBits(DWORD dwNewWidth,
 				return FALSE;
 			memcpy((void*)m_pBMI, (void*)pSrcDib->m_pBMI, pSrcDib->GetBMISize());
 		}
-		// Need to ReAllocate BMI because they are of differente size
+		// Need to ReAllocate BMI because they are of different size
 		else if (pSrcDib->GetBMISize() != GetBMISize())
 		{
 			delete [] m_pBMI;
@@ -1355,7 +1355,7 @@ BOOL CDib::BicubicResampleBits(	DWORD dwNewWidth,
 				return FALSE;
 			memcpy((void*)m_pBMI, (void*)pSrcDib->m_pBMI, pSrcDib->GetBMISize());
 		}
-		// Need to ReAllocate BMI because they are of differente size
+		// Need to ReAllocate BMI because they are of different size
 		else if (pSrcDib->GetBMISize() != GetBMISize())
 		{
 			delete [] m_pBMI;

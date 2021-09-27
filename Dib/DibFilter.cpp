@@ -63,7 +63,7 @@ BOOL CDib::Filter(	int* pKernel,
 				return FALSE;
 			memcpy((void*)m_pBMI, (void*)pSrcDib->m_pBMI, pSrcDib->GetBMISize());
 		}
-		// Need to ReAllocate BMI because they are of differente size
+		// Need to ReAllocate BMI because they are of different size
 		else if (pSrcDib->GetBMISize() != GetBMISize())
 		{
 			delete [] m_pBMI;
@@ -454,7 +454,7 @@ BOOL CDib::FilterFast(	int* pKernel,
 				return FALSE;
 			memcpy((void*)m_pBMI, (void*)pSrcDib->m_pBMI, pSrcDib->GetBMISize());
 		}
-		// Need to ReAllocate BMI because they are of differente size
+		// Need to ReAllocate BMI because they are of different size
 		else if (pSrcDib->GetBMISize() != GetBMISize())
 		{
 			delete [] m_pBMI;
@@ -1105,7 +1105,7 @@ BOOL CDib::FilterAlpha(	CRect rc,
 				return FALSE;
 			memcpy((void*)m_pBMI, (void*)pSrcDib->m_pBMI, pSrcDib->GetBMISize());
 		}
-		// Need to ReAllocate BMI because they are of differente size
+		// Need to ReAllocate BMI because they are of different size
 		else if (pSrcDib->GetBMISize() != GetBMISize())
 		{
 			delete [] m_pBMI;
@@ -1375,7 +1375,7 @@ BOOL CDib::FilterFastAlpha(	int* pKernel,
 				return FALSE;
 			memcpy((void*)m_pBMI, (void*)pSrcDib->m_pBMI, pSrcDib->GetBMISize());
 		}
-		// Need to ReAllocate BMI because they are of differente size
+		// Need to ReAllocate BMI because they are of different size
 		else if (pSrcDib->GetBMISize() != GetBMISize())
 		{
 			delete [] m_pBMI;
