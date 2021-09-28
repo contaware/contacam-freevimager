@@ -4003,7 +4003,7 @@ BOOL CDib::ConvertTo16bitsMasks(WORD wRedMask/*=0xF800*/,
 	DWORD uiDIBTargetScanLineSize = DWALIGNEDWIDTHBYTES(GetWidth() * 16);
 
 	// Allocate memory
-	LPBITMAPINFO lpNewBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER) + 3 * sizeof(RGBQUAD)];
+	LPBITMAPINFO lpNewBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER) + 3 * sizeof(DWORD)];
 	if (!lpNewBMI)
 		return FALSE;
 	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight());

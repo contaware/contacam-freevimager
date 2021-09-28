@@ -191,8 +191,10 @@ BOOL CDib::LoadBMPNoFileHeader(CFile& file, BOOL bDecompress/*=TRUE*/)
 		{
 			if (bmiheader.biBitCount >= 16)
 			{
-				if ((bmiheader.biCompression == BI_BITFIELDS) && ((bmiheader.biBitCount == 16) || (bmiheader.biBitCount == 32)))
-					OffBits = bmiheader.biSize + 3 * sizeof(RGBQUAD); // Bitfield Masks
+				if (bmiheader.biCompression == BI_BITFIELDS			&&
+					bmiheader.biSize == sizeof(BITMAPINFOHEADER)	&&
+					(bmiheader.biBitCount == 16 || bmiheader.biBitCount == 32))
+					OffBits = bmiheader.biSize + 3 * sizeof(DWORD); // Bitfield Masks
 				else
 					OffBits = bmiheader.biSize;
 			}
@@ -612,8 +614,6 @@ BOOL CDib::LoadBMP(	CFile& file,
 
 BOOL CDib::SaveBMPNoFileHeader(CFile& file)
 {
-	DWORD dwDIBSize;
-
 	try
 	{
 		if (!m_pBits)
@@ -626,23 +626,16 @@ BOOL CDib::SaveBMPNoFileHeader(CFile& file)
 			throw (int)BMP_E_BADBMP;
 
 		int nSizePaletteOrMasks;
-		if (m_pBMI->bmiHeader.biCompression == BI_BITFIELDS)
-			nSizePaletteOrMasks = sizeof(DWORD) * 3;
+		if (m_pBMI->bmiHeader.biCompression == BI_BITFIELDS &&
+			m_pBMI->bmiHeader.biSize == sizeof(BITMAPINFOHEADER))
+			nSizePaletteOrMasks = 3 * sizeof(DWORD);
 		else
 			nSizePaletteOrMasks = GetPaletteSize();
 
-		// First, find size of header plus size of color table or masks.
-		dwDIBSize = m_pBMI->bmiHeader.biSize + nSizePaletteOrMasks;
-
-		// Now add the size of the image
-		dwDIBSize += m_dwImageSize;
-
 		// Write the DIB header
-		UINT nCount = m_pBMI->bmiHeader.biSize + nSizePaletteOrMasks;
-		file.Write(m_pBMI, nCount);
-		
+		file.Write(m_pBMI, m_pBMI->bmiHeader.biSize + nSizePaletteOrMasks);
+
 		// Write the DIB bits
-		nCount += m_dwImageSize; 
 		file.Write(m_pBits, m_dwImageSize);
  
 		return TRUE;
@@ -690,8 +683,9 @@ BOOL CDib::SaveBMP(	CFile& file,
 			throw (int)BMP_E_BADBMP;
 
 		int nSizePaletteOrMasks;
-		if (m_pBMI->bmiHeader.biCompression == BI_BITFIELDS)
-			nSizePaletteOrMasks = sizeof(DWORD) * 3;
+		if (m_pBMI->bmiHeader.biCompression == BI_BITFIELDS &&
+			m_pBMI->bmiHeader.biSize == sizeof(BITMAPINFOHEADER))
+			nSizePaletteOrMasks = 3 * sizeof(DWORD);
 		else
 			nSizePaletteOrMasks = GetPaletteSize();
 

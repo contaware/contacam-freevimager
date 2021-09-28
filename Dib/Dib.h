@@ -292,6 +292,25 @@ typedef struct {
 // 
 // All Scan Lines are DWORD aligned with 0 paddings! 
 //
+//
+// BITMAPV4HEADER, BITMAPV5HEADER and BI_BITFIELDS:
+//
+// The new BITMAPV4HEADER and BITMAPV5HEADER headers have bV4RedMask, bV4GreenMask, bV4BlueMask 
+// and bV5RedMask, bV5GreenMask, bV5BlueMask mask members, thus when biCompression is BI_BITFIELDS
+// it makes no sense to append duplicated 3 * sizeof(DWORD) masks. Note also that the new mask 
+// members are at the same offset as the old ones, that is convenient because our above defined
+// BITMAPINFOBITFIELDS structure continues to work also for the new headers.
+// I made some tests by opening v4/v5 .bmps and executing the copy to clipboard command. If in the 
+// SaveBMPNoFileHeader() code I also write the 3 * sizeof(DWORD) masks after the end of the new 
+// headers, then pasting into Paint, Paint 3D and Irfanview always displays additional wrong pixels!
+// My conclusion is that the Microsoft documentation is:
+// 1. Not clear for the two new headers:
+// https://docs.microsoft.com/windows/win32/api/wingdi/ns-wingdi-bitmapv4header
+// https://docs.microsoft.com/windows/win32/api/wingdi/ns-wingdi-bitmapv5header
+// 2. Seems wrong here:
+// https://docs.microsoft.com/windows/win32/gdi/bitmap-header-types
+//
+
 
 // User Buffer
 #ifdef VIDEODEVICEDOC
@@ -1719,8 +1738,8 @@ public:
 	// Dib Section Functions
 	BOOL LoadDibSection(HBITMAP hDibSection);		// Duplicates a DibSection
 	BOOL LoadDibSection(LPCTSTR lpszPathName);		// Loads a Bmp file
-	BOOL LoadDibSectionRes(HINSTANCE hInst, LPCTSTR lpResourceName); // Loads a resource
-	BOOL LoadDibSectionRes(HINSTANCE hInst, UINT uID); // Loads a resource
+	BOOL LoadDibSectionRes(HINSTANCE hInst, LPCTSTR lpResourceName); // Loads a bitmap resource
+	BOOL LoadDibSectionRes(HINSTANCE hInst, UINT uID); // Loads a bitmap resource
 	BOOL AttachDibSection(HBITMAP hDibSection); // Attaches a Dib Section to the class
 	HBITMAP GetSafeHandle(); // Returns a handle to the DIB Section
 

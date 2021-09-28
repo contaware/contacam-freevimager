@@ -1272,7 +1272,7 @@ BOOL CDib::AllocateBitsFast(WORD wBpp,
 		{
 			if (wCompression == BI_BITFIELDS)
 			{
-				DWORD dwBMISize = sizeof(BITMAPINFOHEADER) + 3 * sizeof(RGBQUAD);
+				DWORD dwBMISize = sizeof(BITMAPINFOHEADER) + 3 * sizeof(DWORD);
 				m_pBMI = (LPBITMAPINFO)new BYTE[dwBMISize];
 				if (pColorsOrMasks == NULL)
 				{
@@ -1287,7 +1287,7 @@ BOOL CDib::AllocateBitsFast(WORD wBpp,
 				{
 					memcpy((LPBYTE)m_pBMI + sizeof(BITMAPINFOHEADER),
 							pColorsOrMasks,
-							3 * sizeof(RGBQUAD));
+							3 * sizeof(DWORD));
 				}
 			}
 			else
@@ -1297,7 +1297,7 @@ BOOL CDib::AllocateBitsFast(WORD wBpp,
 		{
 			if (wCompression == BI_BITFIELDS)
 			{
-				DWORD dwBMISize = sizeof(BITMAPINFOHEADER) + 3 * sizeof(RGBQUAD);
+				DWORD dwBMISize = sizeof(BITMAPINFOHEADER) + 3 * sizeof(DWORD);
 				m_pBMI = (LPBITMAPINFO)new BYTE[dwBMISize];
 
 				if (pColorsOrMasks == NULL)
@@ -1313,7 +1313,7 @@ BOOL CDib::AllocateBitsFast(WORD wBpp,
 				{
 					memcpy((LPBYTE)m_pBMI + sizeof(BITMAPINFOHEADER),
 							pColorsOrMasks,
-							3 * sizeof(RGBQUAD));
+							3 * sizeof(DWORD));
 				}
 			}
 			else if (wCompression == BI_RGB16	||
@@ -1321,7 +1321,7 @@ BOOL CDib::AllocateBitsFast(WORD wBpp,
 			{
 				wCompression = BI_BITFIELDS;
 
-				DWORD dwBMISize = sizeof(BITMAPINFOHEADER) + 3 * sizeof(RGBQUAD);
+				DWORD dwBMISize = sizeof(BITMAPINFOHEADER) + 3 * sizeof(DWORD);
 				m_pBMI = (LPBITMAPINFO)new BYTE[dwBMISize];
 
 				LPBYTE pDstMask = (LPBYTE)m_pBMI + sizeof(BITMAPINFOHEADER);
@@ -2890,9 +2890,10 @@ DWORD CDib::GetBMISize(LPBITMAPINFO pBMI)
 		{
 			if (pBMI->bmiHeader.biBitCount >= 16)
 			{
-				if ((pBMI->bmiHeader.biCompression == BI_BITFIELDS) &&
-					((pBMI->bmiHeader.biBitCount == 16) || (pBMI->bmiHeader.biBitCount == 32)))
-					return (pBMI->bmiHeader.biSize + 3 * sizeof(RGBQUAD)); // Bitfield Masks
+				if (pBMI->bmiHeader.biCompression == BI_BITFIELDS		&&
+					pBMI->bmiHeader.biSize == sizeof(BITMAPINFOHEADER)	&&
+					(pBMI->bmiHeader.biBitCount == 16 || pBMI->bmiHeader.biBitCount == 32))
+					return (pBMI->bmiHeader.biSize + 3 * sizeof(DWORD)); // Bitfield Masks
 				else
 					return pBMI->bmiHeader.biSize;
 			}
@@ -2920,9 +2921,10 @@ DWORD CDib::GetBMISize() const
 		{
 			if (m_pBMI->bmiHeader.biBitCount >= 16)
 			{
-				if ((m_pBMI->bmiHeader.biCompression == BI_BITFIELDS) &&
-					((m_pBMI->bmiHeader.biBitCount == 16) || (m_pBMI->bmiHeader.biBitCount == 32)))
-					return (m_pBMI->bmiHeader.biSize + 3 * sizeof(RGBQUAD)); // Bitfield Masks
+				if (m_pBMI->bmiHeader.biCompression == BI_BITFIELDS			&&
+					m_pBMI->bmiHeader.biSize == sizeof(BITMAPINFOHEADER)	&&
+					(m_pBMI->bmiHeader.biBitCount == 16 || m_pBMI->bmiHeader.biBitCount == 32))
+					return (m_pBMI->bmiHeader.biSize + 3 * sizeof(DWORD)); // Bitfield Masks
 				else
 					return m_pBMI->bmiHeader.biSize;
 			}
@@ -4279,7 +4281,7 @@ BOOL CDib::LoadDibSectionRes(HINSTANCE hInst, LPCTSTR lpResourceName)
 	m_bAlpha = FALSE;
 	m_bGrayscale = FALSE;
 
-	HBITMAP hBitmap = (HBITMAP) ::LoadImage(hInst, lpResourceName, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_DEFAULTCOLOR);
+	HBITMAP hBitmap = (HBITMAP)::LoadImage(hInst, lpResourceName, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_DEFAULTCOLOR);
 	if (hBitmap == NULL)
 		return FALSE;
 
@@ -7310,22 +7312,7 @@ BOOL CDib::ToBITMAPV5HEADER()
 		return FALSE;
 
 	LPBITMAPV5HEADER pBV5;
-	if (GetCompression() == BI_BITFIELDS)
-	{
-		pBV5 = (LPBITMAPV5HEADER)new BYTE[sizeof(BITMAPV5HEADER) + sizeof(DWORD) * 3];
-		if (!pBV5)
-			return FALSE;
-
-		// Init & Copy Header
-		memset(pBV5, 0, sizeof(BITMAPV5HEADER));
-		memcpy(pBV5, m_pBMI, m_pBMI->bmiHeader.biSize);
-		pBV5->bV5Size = sizeof(BITMAPV5HEADER);
-
-		// Copy Masks
-		memcpy((LPBYTE)pBV5 + pBV5->bV5Size, (LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize, sizeof(DWORD) * 3);
-		
-	}
-	else if (GetBitCount() <= 8)
+	if (GetBitCount() <= 8)
 	{
 		pBV5 = (LPBITMAPV5HEADER)new BYTE[sizeof(BITMAPV5HEADER) + sizeof(RGBQUAD) * GetNumColors()];
 		if (!pBV5)
@@ -7349,15 +7336,15 @@ BOOL CDib::ToBITMAPV5HEADER()
 		memset(pBV5, 0, sizeof(BITMAPV5HEADER));
 		memcpy(pBV5, m_pBMI, m_pBMI->bmiHeader.biSize);
 		pBV5->bV5Size = sizeof(BITMAPV5HEADER);
-	}
 
-	// BITFIELDS
-	if (GetCompression() == BI_BITFIELDS)
-	{
-		LPBITMAPINFOBITFIELDS pBmiBf = (LPBITMAPINFOBITFIELDS)m_pBMI;
-		pBV5->bV5RedMask = pBmiBf->biRedMask;
-		pBV5->bV5GreenMask = pBmiBf->biGreenMask;
-		pBV5->bV5BlueMask = pBmiBf->biBlueMask;
+		// Copy Masks
+		if (GetCompression() == BI_BITFIELDS)
+		{
+			LPBITMAPINFOBITFIELDS pBmiBf = (LPBITMAPINFOBITFIELDS)m_pBMI;
+			pBV5->bV5RedMask = pBmiBf->biRedMask;
+			pBV5->bV5GreenMask = pBmiBf->biGreenMask;
+			pBV5->bV5BlueMask = pBmiBf->biBlueMask;
+		}
 	}
 
 	// Alpha
@@ -7389,8 +7376,7 @@ BOOL CDib::DibSectionInitBMI()
 
 BOOL CDib::DibSectionInitBMI(HBITMAP hDibSection)
 {
-	// Check to see if it is a DibSection
-	// If it is already a DibSection return FALSE!
+	// Make sure it is a DibSection
 	if (!IsDibSection(hDibSection))
 		return FALSE;
 
@@ -7436,9 +7422,10 @@ BOOL CDib::DibSectionInitBMI(HBITMAP hDibSection)
 		}
 
 		int nSize;
-		if (dibsection.dsBmih.biCompression == BI_BITFIELDS)
+		if (dibsection.dsBmih.biCompression == BI_BITFIELDS &&
+			dibsection.dsBmih.biSize == sizeof(BITMAPINFOHEADER))
 		{
-			nSize = dibsection.dsBmih.biSize + sizeof(DWORD) * 3;
+			nSize = dibsection.dsBmih.biSize + 3 * sizeof(DWORD);
 			m_pBMI = (LPBITMAPINFO)new BYTE[nSize];
 			if (!m_pBMI)
 				return FALSE;
@@ -7452,7 +7439,10 @@ BOOL CDib::DibSectionInitBMI(HBITMAP hDibSection)
 			if (!m_pBMI)
 				return FALSE;
 			memcpy((void*)m_pBMI, (void*)(&(dibsection.dsBmih)), dibsection.dsBmih.biSize);
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			if (dwNumColors != 0)
+				m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			else
+				m_pColors = NULL;
 		}
 
 		ComputeImageSize();
