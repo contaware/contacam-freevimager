@@ -7337,8 +7337,10 @@ BOOL CDib::ToBITMAPV5HEADER()
 		memcpy(pBV5, m_pBMI, m_pBMI->bmiHeader.biSize);
 		pBV5->bV5Size = sizeof(BITMAPV5HEADER);
 
-		// Copy Masks
-		if (GetCompression() == BI_BITFIELDS)
+		// Copy Masks if source header is BITMAPINFOHEADER
+		// (if source header is BITMAPV4HEADER they have already been copied)
+		if (GetCompression() == BI_BITFIELDS &&
+			m_pBMI->bmiHeader.biSize == sizeof(BITMAPINFOHEADER))
 		{
 			LPBITMAPINFOBITFIELDS pBmiBf = (LPBITMAPINFOBITFIELDS)m_pBMI;
 			pBV5->bV5RedMask = pBmiBf->biRedMask;
@@ -7347,9 +7349,17 @@ BOOL CDib::ToBITMAPV5HEADER()
 		}
 	}
 
-	// Alpha
-	if (m_bAlpha && GetBitCount() == 32)
+	// Init alpha if not already set while copying the BITMAPV4HEADER source header
+	if (m_bAlpha && GetBitCount() == 32 && pBV5->bV5AlphaMask == 0)
 		pBV5->bV5AlphaMask = 0xFF000000;
+	
+	// Init CS Type if source header is BITMAPINFOHEADER
+	// (if source header is BITMAPV4HEADER it has already been copied)
+	if (m_pBMI->bmiHeader.biSize == sizeof(BITMAPINFOHEADER))
+		pBV5->bV5CSType = LCS_WINDOWS_COLOR_SPACE;
+
+	// Always set Intent as it is a BITMAPV5HEADER only member
+	pBV5->bV5Intent = LCS_GM_IMAGES;
 
 	// Free
 	delete [] m_pBMI;
