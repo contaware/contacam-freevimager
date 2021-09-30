@@ -7326,9 +7326,9 @@ BOOL CDib::ToBITMAPV5HEADER()
 		// Copy Colors
 		memcpy((LPBYTE)pBV5 + pBV5->bV5Size, (LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize, sizeof(RGBQUAD) * GetNumColors());
 	}
-	else
+	else if (GetCompression() == BI_BITFIELDS)
 	{
-		pBV5 = (LPBITMAPV5HEADER)new BYTE[sizeof(BITMAPV5HEADER)];
+		pBV5 = (LPBITMAPV5HEADER)new BYTE[sizeof(BITMAPV5HEADER) + 3 * sizeof(DWORD)];
 		if (!pBV5)
 			return FALSE;
 
@@ -7339,14 +7339,29 @@ BOOL CDib::ToBITMAPV5HEADER()
 
 		// Copy Masks if source header is BITMAPINFOHEADER
 		// (if source header is BITMAPV4HEADER they have already been copied)
-		if (GetCompression() == BI_BITFIELDS &&
-			m_pBMI->bmiHeader.biSize == sizeof(BITMAPINFOHEADER))
+		if (m_pBMI->bmiHeader.biSize == sizeof(BITMAPINFOHEADER))
 		{
 			LPBITMAPINFOBITFIELDS pBmiBf = (LPBITMAPINFOBITFIELDS)m_pBMI;
 			pBV5->bV5RedMask = pBmiBf->biRedMask;
 			pBV5->bV5GreenMask = pBmiBf->biGreenMask;
 			pBV5->bV5BlueMask = pBmiBf->biBlueMask;
 		}
+
+		// Init also the 3 * sizeof(DWORD) duplicated ending masks
+		*((DWORD*)((LPBYTE)pBV5 + pBV5->bV5Size)) = pBV5->bV5RedMask;
+		*((DWORD*)((LPBYTE)pBV5 + pBV5->bV5Size + sizeof(DWORD))) = pBV5->bV5GreenMask;
+		*((DWORD*)((LPBYTE)pBV5 + pBV5->bV5Size + 2 * sizeof(DWORD))) = pBV5->bV5BlueMask;
+	}
+	else
+	{
+		pBV5 = (LPBITMAPV5HEADER)new BYTE[sizeof(BITMAPV5HEADER)];
+		if (!pBV5)
+			return FALSE;
+
+		// Init & Copy Header
+		memset(pBV5, 0, sizeof(BITMAPV5HEADER));
+		memcpy(pBV5, m_pBMI, m_pBMI->bmiHeader.biSize);
+		pBV5->bV5Size = sizeof(BITMAPV5HEADER);
 	}
 
 	// Init alpha if not already set while copying the BITMAPV4HEADER source header
@@ -7432,8 +7447,7 @@ BOOL CDib::DibSectionInitBMI(HBITMAP hDibSection)
 		}
 
 		int nSize;
-		if (dibsection.dsBmih.biCompression == BI_BITFIELDS &&
-			dibsection.dsBmih.biSize == sizeof(BITMAPINFOHEADER))
+		if (dibsection.dsBmih.biCompression == BI_BITFIELDS)
 		{
 			nSize = dibsection.dsBmih.biSize + 3 * sizeof(DWORD);
 			m_pBMI = (LPBITMAPINFO)new BYTE[nSize];

@@ -191,8 +191,7 @@ BOOL CDib::LoadBMPNoFileHeader(CFile& file, BOOL bDecompress/*=TRUE*/)
 		{
 			if (bmiheader.biBitCount >= 16)
 			{
-				if (bmiheader.biCompression == BI_BITFIELDS			&&
-					bmiheader.biSize == sizeof(BITMAPINFOHEADER)	&&
+				if (bmiheader.biCompression == BI_BITFIELDS &&
 					(bmiheader.biBitCount == 16 || bmiheader.biBitCount == 32))
 					OffBits = bmiheader.biSize + 3 * sizeof(DWORD); // Bitfield Masks
 				else
@@ -627,8 +626,8 @@ BOOL CDib::SaveBMPNoFileHeader(CFile& file)
 
 		int nSizePaletteOrMasks;
 		if (m_pBMI->bmiHeader.biCompression == BI_BITFIELDS &&
-			m_pBMI->bmiHeader.biSize == sizeof(BITMAPINFOHEADER))
-			nSizePaletteOrMasks = 3 * sizeof(DWORD);
+			m_pBMI->bmiHeader.biSize == sizeof(BITMAPINFOHEADER))	// for BITMAPV4HEADER and BITMAPV5HEADER it's not known whether m_pBMI includes
+			nSizePaletteOrMasks = 3 * sizeof(DWORD);				// the 3 * sizeof(DWORD) duplicated ending masks -> do not save them!
 		else
 			nSizePaletteOrMasks = GetPaletteSize();
 
@@ -684,8 +683,8 @@ BOOL CDib::SaveBMP(	CFile& file,
 
 		int nSizePaletteOrMasks;
 		if (m_pBMI->bmiHeader.biCompression == BI_BITFIELDS &&
-			m_pBMI->bmiHeader.biSize == sizeof(BITMAPINFOHEADER))
-			nSizePaletteOrMasks = 3 * sizeof(DWORD);
+			m_pBMI->bmiHeader.biSize == sizeof(BITMAPINFOHEADER))	// for BITMAPV4HEADER and BITMAPV5HEADER it's not known whether m_pBMI includes
+			nSizePaletteOrMasks = 3 * sizeof(DWORD);				// the 3 * sizeof(DWORD) duplicated ending masks -> do not save them!
 		else
 			nSizePaletteOrMasks = GetPaletteSize();
 

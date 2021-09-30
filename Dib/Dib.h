@@ -279,6 +279,7 @@ typedef struct {
 //
 // pix0                                  pix1                                  .. pixn
 // B(byte0) G(byte1) R(byte2) A(byte3)   B(byte4) G(byte5) R(byte6) A(byte7)
+// A=0: the pixel is transparent, A=255: the pixel is opaque
 // 0xAARRGGBB (little endian)
 //
 // NOTE: this is the order of the RGBQUAD structure, the COLORREF type has B and R swapped:
@@ -296,21 +297,46 @@ typedef struct {
 // BITMAPV4HEADER, BITMAPV5HEADER and BI_BITFIELDS:
 //
 // The new BITMAPV4HEADER and BITMAPV5HEADER headers have bV4RedMask, bV4GreenMask, bV4BlueMask 
-// and bV5RedMask, bV5GreenMask, bV5BlueMask mask members, thus when biCompression is BI_BITFIELDS
-// it makes no sense to append duplicated 3 * sizeof(DWORD) masks. Note also that the new mask 
-// members are at the same offset as the old ones, that is convenient because our above defined
-// BITMAPINFOBITFIELDS structure continues to work also for the new headers.
-// I made some tests by opening v4/v5 .bmps and executing the copy to clipboard command. If in the 
-// SaveBMPNoFileHeader() code I also write the 3 * sizeof(DWORD) masks after the end of the new 
-// headers, then pasting into Paint, Paint 3D and Irfanview always displays additional wrong pixels!
-// My conclusion is that the Microsoft documentation is:
-// 1. Not clear for the two new headers:
+// and bV5RedMask, bV5GreenMask, bV5BlueMask mask members; those new masks are at the same 
+// offset as the old ones (that is convenient because our above defined BITMAPINFOBITFIELDS 
+// structure continues to work also for the new headers).
+// When biCompression is BI_BITFIELDS, are duplicated 3 * sizeof(DWORD) masks past the end of
+// the new headers still required? 
+// It's possible to perform two simple tests to see what Windows tells us about the question:
+//
+// 1. - SetClipboardData(CF_DIB, dib with BI_BITFIELDS / BITMAPINFOHEADER)
+//    - Windows automatically synthesizes a CF_DIBV5 with BI_BITFIELDS / BITMAPV5HEADER
+//      (https://docs.microsoft.com/windows/win32/dataxchg/clipboard-formats)
+//      GetClipboardData(CF_DIBV5) returns a dib with 3 * sizeof(DWORD) duplicated ending masks
+//
+// 2. - SetClipboardData(CF_DIBV5, dib with BI_BITFIELDS / BITMAPV5HEADER)
+//    - Windows automatically synthesizes a CF_DIB with BI_BITFIELDS / BITMAPINFOHEADER
+//      (https://docs.microsoft.com/windows/win32/dataxchg/clipboard-formats)
+//      GetClipboardData(CF_DIB) returns a dib which displays additional wrong pixels if the 
+//      source is supplied with 3 * sizeof(DWORD) duplicated ending masks
+//
+// From the two tests we see that Microsoft implementation is incoherent and the documentation
+// is not clear:
 // https://docs.microsoft.com/windows/win32/api/wingdi/ns-wingdi-bitmapv4header
 // https://docs.microsoft.com/windows/win32/api/wingdi/ns-wingdi-bitmapv5header
-// 2. Seems wrong here:
 // https://docs.microsoft.com/windows/win32/gdi/bitmap-header-types
 //
-
+// How do we deal with that in CDib:
+// 1. To avoid problems, BI_BITFIELDS images are never copied to the clipboard (see EditCopy()).
+// 2. To remain compatible with clipboard copy operation from legacy applications (for which 
+//    Windows synthesizes CF_DIBV5 with 3 * sizeof(DWORD) duplicated ending masks), we must 
+//    call GetClipboardData(CF_DIBV5) and get the dib pixels past the ending masks (see 
+//    LoadBMPNoFileHeader()).
+// 3. Fortunately .bmp files have a BITMAPFILEHEADER with the bfOffBits member, so that it does
+//    not matter whether new header BI_BITFIELDS dibs have the 3 * sizeof(DWORD) duplicated 
+//    ending masks or not (see LoadBMP() and SaveBMP()).
+// 4. For safety GetBMISize() always returns the size without the 3 * sizeof(DWORD) duplicated
+//    ending masks. LoadBMP() will allocate the needed amount of header bytes according to what it
+//    reads in the file, that can be GetBMISize() or more. Because of the above point 2. 
+//    LoadBMPNoFileHeader() will allocate more header bytes than what is returned by GetBMISize().
+//    As it's not known whether m_pBMI includes 3 * sizeof(DWORD) duplicated ending masks,
+//    SaveBMPNoFileHeader() and SaveBMP() are not writing them.
+//
 
 // User Buffer
 #ifdef VIDEODEVICEDOC
