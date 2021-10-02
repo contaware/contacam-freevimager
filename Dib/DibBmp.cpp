@@ -624,15 +624,25 @@ BOOL CDib::SaveBMPNoFileHeader(CFile& file)
 		if (!m_pBits || !m_pBMI)
 			throw (int)BMP_E_BADBMP;
 
-		int nSizePaletteOrMasks;
-		if (m_pBMI->bmiHeader.biCompression == BI_BITFIELDS &&
-			m_pBMI->bmiHeader.biSize == sizeof(BITMAPINFOHEADER))	// for BITMAPV4HEADER and BITMAPV5HEADER it's not known whether m_pBMI includes
-			nSizePaletteOrMasks = 3 * sizeof(DWORD);				// the 3 * sizeof(DWORD) duplicated ending masks -> do not save them!
-		else
-			nSizePaletteOrMasks = GetPaletteSize();
-
 		// Write the DIB header
-		file.Write(m_pBMI, m_pBMI->bmiHeader.biSize + nSizePaletteOrMasks);
+		file.Write(m_pBMI, m_pBMI->bmiHeader.biSize);
+
+		// Write the Masks
+		// for BITMAPV4HEADER and BITMAPV5HEADER it's not known whether m_pBMI includes
+		// the 3 * sizeof(DWORD) duplicated ending masks -> take the masks from the members
+		if (m_pBMI->bmiHeader.biCompression == BI_BITFIELDS)
+		{
+			file.Write(&((LPBITMAPINFOBITFIELDS)m_pBMI)->biRedMask, sizeof(DWORD));
+			file.Write(&((LPBITMAPINFOBITFIELDS)m_pBMI)->biGreenMask, sizeof(DWORD));
+			file.Write(&((LPBITMAPINFOBITFIELDS)m_pBMI)->biBlueMask, sizeof(DWORD));
+		}
+		else
+		{
+			// Write the Palette
+			int nSizePalette = GetPaletteSize();
+			if (nSizePalette > 0)
+				file.Write((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize, nSizePalette);
+		}
 
 		// Write the DIB bits
 		file.Write(m_pBits, m_dwImageSize);
@@ -682,16 +692,15 @@ BOOL CDib::SaveBMP(	CFile& file,
 			throw (int)BMP_E_BADBMP;
 
 		int nSizePaletteOrMasks;
-		if (m_pBMI->bmiHeader.biCompression == BI_BITFIELDS &&
-			m_pBMI->bmiHeader.biSize == sizeof(BITMAPINFOHEADER))	// for BITMAPV4HEADER and BITMAPV5HEADER it's not known whether m_pBMI includes
-			nSizePaletteOrMasks = 3 * sizeof(DWORD);				// the 3 * sizeof(DWORD) duplicated ending masks -> do not save them!
+		if (m_pBMI->bmiHeader.biCompression == BI_BITFIELDS)
+			nSizePaletteOrMasks = 3 * sizeof(DWORD); // Bitfield Masks
 		else
 			nSizePaletteOrMasks = GetPaletteSize();
 
 		// Fill in file type (first 2 bytes must be "BM" for a bitmap)
 		bmfHdr.bfType = DIB_HEADER_MARKER;
 
-		// First, find size of header plus size of color table or masks.
+		// First, find size of header plus size of color table or masks
 		dwDIBSize = m_pBMI->bmiHeader.biSize + nSizePaletteOrMasks;
 
 		// Now add the size of the image
@@ -704,18 +713,31 @@ BOOL CDib::SaveBMP(	CFile& file,
 
 		// Now, calculate the offset the actual bitmap bits will be in
 		// the file -- It's the Bitmap file header plus the DIB header,
-		// plus the size of the color table.
+		// plus the size of the color table or masks
 		bmfHdr.bfOffBits = (DWORD)sizeof(BITMAPFILEHEADER) + m_pBMI->bmiHeader.biSize + nSizePaletteOrMasks;
 
 		// Write the file header
 		file.Write((LPBYTE)&bmfHdr, sizeof(BITMAPFILEHEADER));
-		DWORD dwBytesSaved = sizeof(BITMAPFILEHEADER); 
 
 		// Write the DIB header
-		UINT nCount = m_pBMI->bmiHeader.biSize + nSizePaletteOrMasks;
-		dwBytesSaved += nCount;
-		file.Write(m_pBMI, nCount);
+		file.Write(m_pBMI, m_pBMI->bmiHeader.biSize);
 		
+		// Write the Masks
+		// for BITMAPV4HEADER and BITMAPV5HEADER it's not known whether m_pBMI includes
+		// the 3 * sizeof(DWORD) duplicated ending masks -> take the masks from the members
+		if (m_pBMI->bmiHeader.biCompression == BI_BITFIELDS)
+		{
+			file.Write(&((LPBITMAPINFOBITFIELDS)m_pBMI)->biRedMask, sizeof(DWORD));
+			file.Write(&((LPBITMAPINFOBITFIELDS)m_pBMI)->biGreenMask, sizeof(DWORD));
+			file.Write(&((LPBITMAPINFOBITFIELDS)m_pBMI)->biBlueMask, sizeof(DWORD));
+		}
+		else
+		{
+			// Write the Palette
+			if (nSizePaletteOrMasks > 0)
+				file.Write((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize, nSizePaletteOrMasks);
+		}
+
 		// Write the DIB bits
 		DWORD dwToWrite = m_dwImageSize;
 		DWORD dwChunkSize = dwToWrite / 10;
@@ -735,7 +757,6 @@ BOOL CDib::SaveBMP(	CFile& file,
 		dwWriteCount += dwLeftToWrite;
 		DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
 		ASSERT(dwWriteCount == dwToWrite);
-		dwBytesSaved += m_dwImageSize;
 
 		return TRUE;
 	}

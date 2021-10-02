@@ -301,8 +301,8 @@ typedef struct {
 // offset as the old ones (that is convenient because our above defined BITMAPINFOBITFIELDS 
 // structure continues to work also for the new headers).
 // When biCompression is BI_BITFIELDS, are duplicated 3 * sizeof(DWORD) masks past the end of
-// the new headers still required? 
-// It's possible to perform two simple tests to see what Windows tells us about the question:
+// the new headers still required? Two simple tests can be performed to see what Windows tells
+// us about that question:
 //
 // 1. - SetClipboardData(CF_DIB, dib with BI_BITFIELDS / BITMAPINFOHEADER)
 //    - Windows automatically synthesizes a CF_DIBV5 with BI_BITFIELDS / BITMAPV5HEADER
@@ -322,20 +322,15 @@ typedef struct {
 // https://docs.microsoft.com/windows/win32/gdi/bitmap-header-types
 //
 // How do we deal with that in CDib:
-// 1. To avoid problems, BI_BITFIELDS images are never copied to the clipboard (see EditCopy()).
-// 2. To remain compatible with clipboard copy operation from legacy applications (for which 
-//    Windows synthesizes CF_DIBV5 with 3 * sizeof(DWORD) duplicated ending masks), we must 
-//    call GetClipboardData(CF_DIBV5) and get the dib pixels past the ending masks (see 
-//    LoadBMPNoFileHeader()).
-// 3. Fortunately .bmp files have a BITMAPFILEHEADER with the bfOffBits member, so that it does
-//    not matter whether new header BI_BITFIELDS dibs have the 3 * sizeof(DWORD) duplicated 
-//    ending masks or not (see LoadBMP() and SaveBMP()).
-// 4. For safety GetBMISize() always returns the size without the 3 * sizeof(DWORD) duplicated
-//    ending masks. LoadBMP() will allocate the needed amount of header bytes according to what it
-//    reads in the file, that can be GetBMISize() or more. Because of the above point 2. 
-//    LoadBMPNoFileHeader() will allocate more header bytes than what is returned by GetBMISize().
-//    As it's not known whether m_pBMI includes 3 * sizeof(DWORD) duplicated ending masks,
-//    SaveBMPNoFileHeader() and SaveBMP() are not writing them.
+// 1. To correctly EditPaste() dibs created by legacy applications (for which Windows synthesizes 
+//    CF_DIBV5 with 3 * sizeof(DWORD) duplicated ending masks), we have LoadBMPNoFileHeader(). 
+// 2. EditCopy() calls SaveBMPNoFileHeader() which stores 3 * sizeof(DWORD) duplicated ending 
+//    masks. To avoid that Windows synthesizes wrong CF_DIB and CF_BITMAP from the copied CF_DIBV5,
+//    we also add CF_DIB and CF_BITMAP to the clipboard.
+// 3. For safety GetBMISize() always returns the size without the 3 * sizeof(DWORD) duplicated
+//    ending masks. LoadBMP() will allocate the needed amount of header bytes according to what
+//    it reads in the file, that can be GetBMISize() or more. For coherence SaveBMP() is storing 
+//    3 * sizeof(DWORD) duplicated ending masks.
 //
 
 // User Buffer
@@ -684,8 +679,9 @@ public:
 	// Set Image Size
 	void ComputeImageSize();
 
-	// To BITMAPV5HEADER
+	// Conversion between BITMAPINFOHEADER, BITMAPV4HEADER, BITMAPV5HEADER
 	BOOL ToBITMAPV5HEADER();
+	BOOL ToBITMAPINFOHEADER();
 
 	// Creates the Thumbnail Dib from pSrcDib,
 	// if pSrcDib is NULL this is used.

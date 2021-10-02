@@ -5115,17 +5115,65 @@ void CDib::EditCopy()
 {
 	if (::OpenClipboard(NULL))
 	{
+		// Clear clipboard
 		::EmptyClipboard();
-		if (m_pBMI->bmiHeader.biSize == sizeof(BITMAPV5HEADER))
-			::SetClipboardData(CF_DIBV5, CopyToHandle());
-		else if (m_pBMI->bmiHeader.biSize == sizeof(BITMAPV4HEADER))
+
+		// Temp Dib
+		CDib DibTemp(*this);
+
+		// CF_DIBV5
+		DibTemp.ToBITMAPV5HEADER();
+		if (m_pBMI->bmiHeader.biBitCount == 32 && m_bAlpha && m_bFast32bpp)
 		{
-			CDib DibTemp(*this);
-			DibTemp.ToBITMAPV5HEADER();
+			// Convert to BI_BITFIELDS (that's needed by some programs like paint.net)
+			if (m_pBMI->bmiHeader.biCompression == BI_RGB)
+			{
+				((LPBITMAPV5HEADER)DibTemp.GetBMI())->bV5Compression = BI_BITFIELDS;
+				((LPBITMAPV5HEADER)DibTemp.GetBMI())->bV5RedMask = 0x00FF0000;
+				((LPBITMAPV5HEADER)DibTemp.GetBMI())->bV5GreenMask = 0x0000FF00;
+				((LPBITMAPV5HEADER)DibTemp.GetBMI())->bV5BlueMask = 0x000000FF;
+			}
+
+			// Save to clipboard
 			::SetClipboardData(CF_DIBV5, DibTemp.CopyToHandle());
+
+			// Flatten with background, to be used below for CF_DIB and CF_BITMAP
+			DibTemp.RenderAlphaWithSrcBackground();
+			DibTemp.SetAlpha(FALSE);
+			((LPBITMAPV5HEADER)DibTemp.GetBMI())->bV5Compression = BI_RGB;
+			((LPBITMAPV5HEADER)DibTemp.GetBMI())->bV5RedMask = 0;
+			((LPBITMAPV5HEADER)DibTemp.GetBMI())->bV5GreenMask = 0;
+			((LPBITMAPV5HEADER)DibTemp.GetBMI())->bV5BlueMask = 0;
+			((LPBITMAPV5HEADER)DibTemp.GetBMI())->bV5AlphaMask = 0;
 		}
 		else
-			::SetClipboardData(CF_DIB, CopyToHandle());
+			::SetClipboardData(CF_DIBV5, DibTemp.CopyToHandle());
+
+		// CF_DIB
+		DibTemp.ToBITMAPINFOHEADER();
+		::SetClipboardData(CF_DIB, DibTemp.CopyToHandle());
+
+		// CF_BITMAP
+		HBITMAP hBitmap = DibTemp.GetDDB();
+		if (hBitmap && ::SetClipboardData(CF_BITMAP, hBitmap) == NULL)
+		{
+			// Only when SetClipboardData() fails it's necessary to delete hBitmap.
+			// That fact is discussed here:
+			// https://stackoverflow.com/questions/32086618/who-releases-handle-in-setclipboarddatacf-bitmap-hbitmap
+			// https://www.codeguru.com/multimedia/copying-a-bitmap-to-clipboard/
+			// I made tests with Nirsoft's GDIView and found no leaks. Then I also tried to re-use hBitmap by
+			// placing the following code after the below ::CloseClipboard():
+			//		if (::OpenClipboard(NULL))
+			//		{
+			//			::EmptyClipboard();
+			//			SetBitsFromDDB(hBitmap, NULL);
+			//			::CloseClipboard();
+			//		}
+			// as expected hBitmap is not loading anymore.
+			::DeleteObject(hBitmap);
+		}
+
+		// Close clipboard
 		::CloseClipboard();
 	}
 }
@@ -7309,7 +7357,7 @@ BOOL CDib::ToBITMAPV5HEADER()
 		return FALSE;
 
 	if (m_pBMI->bmiHeader.biSize == sizeof(BITMAPV5HEADER))
-		return FALSE;
+		return TRUE;
 
 	LPBITMAPV5HEADER pBV5;
 	if (GetBitCount() <= 8)
@@ -7381,6 +7429,66 @@ BOOL CDib::ToBITMAPV5HEADER()
 
 	// Change Pointer
 	m_pBMI = (LPBITMAPINFO)pBV5;
+
+	// Set Colors Pointer
+	if (GetBitCount() <= 8)
+		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+	else
+		m_pColors = NULL;
+
+	return TRUE;
+}
+
+BOOL CDib::ToBITMAPINFOHEADER()
+{
+	if (!m_pBMI)
+		return FALSE;
+
+	if (m_pBMI->bmiHeader.biSize == sizeof(BITMAPINFOHEADER))
+		return TRUE;
+
+	LPBITMAPINFOHEADER pNewBMI;
+	if (GetBitCount() <= 8)
+	{
+		pNewBMI = (LPBITMAPINFOHEADER)new BYTE[sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD) * GetNumColors()];
+		if (!pNewBMI)
+			return FALSE;
+
+		// Init & Copy Header
+		memcpy(pNewBMI, m_pBMI, sizeof(BITMAPINFOHEADER));
+		pNewBMI->biSize = sizeof(BITMAPINFOHEADER);
+
+		// Copy Colors
+		memcpy((LPBYTE)pNewBMI + pNewBMI->biSize, (LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize, sizeof(RGBQUAD) * GetNumColors());
+	}
+	else if (GetCompression() == BI_BITFIELDS)
+	{
+		pNewBMI = (LPBITMAPINFOHEADER)new BYTE[sizeof(BITMAPINFOHEADER) + 3 * sizeof(DWORD)];
+		if (!pNewBMI)
+			return FALSE;
+
+		// Init & Copy Header + Masks
+		// for BITMAPV4HEADER and BITMAPV5HEADER it's not known whether m_pBMI includes
+		// the 3 * sizeof(DWORD) duplicated ending masks -> take the masks from the members
+		memcpy(pNewBMI, m_pBMI, sizeof(BITMAPINFOHEADER) + 3 * sizeof(DWORD));
+		pNewBMI->biSize = sizeof(BITMAPINFOHEADER);
+	}
+	else
+	{
+		pNewBMI = (LPBITMAPINFOHEADER)new BYTE[sizeof(BITMAPINFOHEADER)];
+		if (!pNewBMI)
+			return FALSE;
+
+		// Init & Copy Header
+		memcpy(pNewBMI, m_pBMI, sizeof(BITMAPINFOHEADER));
+		pNewBMI->biSize = sizeof(BITMAPINFOHEADER);
+	}
+
+	// Free
+	delete[] m_pBMI;
+
+	// Change Pointer
+	m_pBMI = (LPBITMAPINFO)pNewBMI;
 
 	// Set Colors Pointer
 	if (GetBitCount() <= 8)
