@@ -5139,6 +5139,7 @@ void CDib::EditCopy()
 
 			// Flatten with background, to be used below for CF_DIB and CF_BITMAP
 			DibTemp.RenderAlphaWithSrcBackground();
+			DibTemp.AlphaOffset(255); // remove alpha information by making it fully opaque
 			DibTemp.SetAlpha(FALSE);
 			((LPBITMAPV5HEADER)DibTemp.GetBMI())->bV5Compression = BI_RGB;
 			((LPBITMAPV5HEADER)DibTemp.GetBMI())->bV5RedMask = 0;
