@@ -353,7 +353,7 @@ CWnd * CMDISnapper::PickSwapWindow(CWnd * current, POINT mouse)
 
 void CMDISnapper::OnMoving(CWnd * wnd, WPARAM edge, LPRECT r)
 {
-    TRACE("Moving...\n");
+    //TRACE("Moving...\n");
   DWORD dw = GetMessagePos();
   POINT mouse = { GET_X_LPARAM(dw), GET_Y_LPARAM(dw)   };
 
