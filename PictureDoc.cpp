@@ -2056,6 +2056,14 @@ void CPictureDoc::SetDocumentTitle()
 	}
 
 #ifdef _DEBUG
+	if (m_pDib && m_pDib->GetBMI())
+	{
+		if (m_pDib->GetBMIH()->biSize == sizeof(BITMAPV5HEADER))
+			strInfo += _T(" , v5");
+		else if (m_pDib->GetBMIH()->biSize == sizeof(BITMAPV4HEADER))
+			strInfo += _T(" , v4");
+	}
+
 	if (m_pDib && m_pDib->IsValid())
 	{
 		if (m_pDib->HasDibSection() && m_pDib->HasBits())
