@@ -239,15 +239,13 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		}
 		while (bPolling);
 
-		// First & Last Up-Times and frames time length
+		// Get first & last uptimes
 		LONGLONG llFirstUpTime;
 		LONGLONG llLastUpTime;
-		LONGLONG llFramesTimeMs = 0;
 		if (m_pFrameList->GetHead() && m_pFrameList->GetTail())
 		{
 			llFirstUpTime = m_pFrameList->GetHead()->GetUpTime();
 			llLastUpTime = m_pFrameList->GetTail()->GetUpTime();
-			llFramesTimeMs = CDib::TimeElapsed(m_pFrameList->GetTail(), m_pFrameList->GetHead());
 		}
 		else if (m_pFrameList->GetHead() && !m_pFrameList->GetTail())
 			llLastUpTime = llFirstUpTime = m_pFrameList->GetHead()->GetUpTime();
@@ -255,6 +253,34 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			llFirstUpTime = llLastUpTime = m_pFrameList->GetTail()->GetUpTime();
 		else
 			llFirstUpTime = llLastUpTime = (LONGLONG)::GetTickCount64();
+
+		// Calculate the total length
+		LONGLONG llFramesTimeMs = 0;
+		LONGLONG llPrevPts = AV_NOPTS_VALUE;
+		POSITION pos = m_pFrameList->GetHeadPosition();
+		while (pos)
+		{
+			LONGLONG llCurrentPts = AV_NOPTS_VALUE;
+			CDib* pDib = m_pFrameList->GetNext(pos);
+			if (pDib)
+			{
+				llCurrentPts = pDib->GetPts();
+				if (llCurrentPts != AV_NOPTS_VALUE && llPrevPts != AV_NOPTS_VALUE)
+				{
+					// When the camera clock is adjusted some cameras (not all) will
+					// perform pts jumps forwards or backwards and can even assign 
+					// negative values to the pts. For this reason we calculate the 
+					// total length by summing the pts differences excluding negative
+					// jumps and jumps longer than PROCESS_MAX_FRAMETIME
+					LONGLONG llDiffMs = llCurrentPts - llPrevPts;
+					if (llDiffMs > 0 && llDiffMs < PROCESS_MAX_FRAMETIME)
+						llFramesTimeMs += llDiffMs;
+				}
+			}
+			llPrevPts = llCurrentPts;
+		}
+		if (llFramesTimeMs == 0)
+			llFramesTimeMs = llLastUpTime - llFirstUpTime;
 
 		// Find a good Reference Time and make the First Time string
 		// (if new first frame is older than last frame from previous detection
@@ -954,7 +980,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 		// Convert to 255 colors and save
 		To255Colors(*ppGIFDibPrev, pGIFColors, RefTime, llRefUpTime, sMovDetSavesCount);
 		pGIFSaveDib->GetGif()->SetDispose(GIF_DISPOSE_RESTORE);
-		pGIFSaveDib->GetGif()->SetDelay(MAX(100, Round((double)CDib::TimeElapsed(pGIFDib, *ppGIFDibPrev) / dSpeedMul)));
+		pGIFSaveDib->GetGif()->SetDelay(MIN(1000,MAX(100, Round((double)CDib::TimeElapsed(pGIFDib, *ppGIFDibPrev) / dSpeedMul))));
 		(*ppGIFDibPrev)->DiffTransp8(pGIFSaveDib, nDiffMinLevel, 255);
 		res = pGIFSaveDib->SaveNextGIF(	*ppGIFDibPrev,
 										NULL,
@@ -977,7 +1003,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 		// Convert to 255 colors and save
 		To255Colors(*ppGIFDibPrev, pGIFColors, RefTime, llRefUpTime, sMovDetSavesCount);
 		pGIFSaveDib->GetGif()->SetDispose(GIF_DISPOSE_RESTORE);
-		pGIFSaveDib->GetGif()->SetDelay(MAX(100, Round((double)CDib::TimeElapsed(pGIFDib, *ppGIFDibPrev) / dSpeedMul)));
+		pGIFSaveDib->GetGif()->SetDelay(MIN(1000,MAX(100, Round((double)CDib::TimeElapsed(pGIFDib, *ppGIFDibPrev) / dSpeedMul))));
 		(*ppGIFDibPrev)->DiffTransp8(pGIFSaveDib, nDiffMinLevel, 255);
 		res = pGIFSaveDib->SaveNextGIF(	*ppGIFDibPrev,
 										NULL,
@@ -2509,7 +2535,7 @@ int CVideoDeviceDoc::CHttpThread::Work()
 							AF_INET,			// Socket family priority: AF_INET for IPv4, AF_INET6 for IPv6
 							m_hEventArray[2],	// Http Video Connected Event
 							m_hEventArray[3]))	// Http Video Connect Failed Event
-					m_pDoc->ConnectErr(ML_STRING(1465, "Cannot reach the camera"), m_pDoc->GetDeviceName());
+					m_pDoc->ConnectErr(ML_STRING(1465, "Cannot reach camera"), m_pDoc->GetDeviceName());
 				break;
 			}
 
@@ -2532,7 +2558,7 @@ int CVideoDeviceDoc::CHttpThread::Work()
 			case WAIT_OBJECT_0 + 3 :
 			{
 				::ResetEvent(m_hEventArray[3]);
-				m_pDoc->ConnectErr(ML_STRING(1465, "Cannot reach the camera"), m_pDoc->GetDeviceName());
+				m_pDoc->ConnectErr(ML_STRING(1465, "Cannot reach camera"), m_pDoc->GetDeviceName());
 				break;
 			}
 
@@ -2890,10 +2916,15 @@ int CVideoDeviceDoc::CRtspThread::Work()
 						}
 
 						// Pts
+						// 1. best_effort_timestamp can sometimes be AV_NOPTS_VALUE, we fix that here, 
+						//    but only if it's not the first frame
+						// 2. When the camera clock is adjusted some cameras (not all) will perform pts
+						//    jumps forwards or backwards and can even assign negative values to the pts 
+						//    -> it's not guaranteed that the pts are always monotonically increasing
 						int64_t llCurrentPts = pVideoFrame->best_effort_timestamp; // usually the same as pVideoFrame->pts
 						int64_t llCurrentPtsMs = AV_NOPTS_VALUE;
-						if (llCurrentPts == AV_NOPTS_VALUE && llPrevPts != AV_NOPTS_VALUE) // best_effort_timestamp sometimes is AV_NOPTS_VALUE
-							llCurrentPts = llPrevPts + 1; // fix adding 1 so that it is strictly monotonically increasing
+						if (llCurrentPts == AV_NOPTS_VALUE && llPrevPts != AV_NOPTS_VALUE)
+							llCurrentPts = llPrevPts + 1;
 						if (llCurrentPts != AV_NOPTS_VALUE)
 						{
 							AVRational time_base_ms = {1, 1000};
@@ -3148,11 +3179,11 @@ int CVideoDeviceDoc::CRtspThread::Work()
 				case AVERROR(EAGAIN):
 				case AVERROR(EIO):
 				case AVERROR(ETIMEDOUT):		
-					sErrorMsg = ML_STRING(1465, "Cannot reach the camera");
+					sErrorMsg = ML_STRING(1465, "Cannot reach camera");
 					break;
 				default:
 					if (!::AVErrorToString(ret, sErrorMsg))
-						sErrorMsg = ML_STRING(1465, "Cannot reach the camera");
+						sErrorMsg = ML_STRING(1465, "Cannot reach camera");
 					break;
 			}
 			m_pDoc->ConnectErr(sErrorMsg, m_pDoc->GetDeviceName());
@@ -3161,7 +3192,7 @@ int CVideoDeviceDoc::CRtspThread::Work()
 			if (::WaitForSingleObject(m_hKillEvent, RTSP_CONNECTION_TIMEOUT * 1000) == WAIT_OBJECT_0)
 				goto exit;
 
-			// Reconnect
+			// Clear error and then loop to reconnect
 			m_pDoc->ClearConnectErr();
 		}
 	}
