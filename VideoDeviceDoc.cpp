@@ -3231,15 +3231,18 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 				LONGLONG llMsSinceLastProcessFrame = llCurrentUpTime - m_pDoc->m_llCurrentInitUpTime;
 				m_pDoc->m_bWatchDogVideoAlarm = (llMsSinceLastProcessFrame > WATCHDOG_THRESHOLD);
 
-				// SaveFrameList() may be called many times till
-				// CSaveFrameListThread::Work() reacts:
-				// it's not a problem because CSaveFrameListThread::Work()
-				// removes empty lists
-				if (m_pDoc->m_bWatchDogVideoAlarm						&&
-					m_pDoc->m_bDetectingMovement						&&
-					m_pDoc->GetNewestMovementDetectionsListCount() > 0	&&
-					(m_pDoc->m_bSaveVideo || m_pDoc->m_bSaveAnimGIF))
-					m_pDoc->SaveFrameList(FALSE);
+				// Save or drop frames
+				// Note: as CSaveFrameListThread::Work() always removes empty lists, a 
+				//       ClearNewestFrameList()/SaveFrameList() call from another thread 
+				//       happening between the below GetNewestMovementDetectionsListCount()
+				//       and SaveFrameList() is not a problem
+				if (m_pDoc->m_bWatchDogVideoAlarm && m_pDoc->GetNewestMovementDetectionsListCount() > 0)
+				{
+					if (m_pDoc->m_bDetectingMovement && (m_pDoc->m_bSaveVideo || m_pDoc->m_bSaveAnimGIF))
+						m_pDoc->SaveFrameList(FALSE);
+					else
+						m_pDoc->ClearNewestFrameList();
+				}
 
 				// Watchdog actions
 				if (m_pDoc->m_bWatchDogVideoAlarm)
