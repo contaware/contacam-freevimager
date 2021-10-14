@@ -248,7 +248,7 @@ public:
 			CPictureDoc* m_pDoc;
 			HANDLE m_hEventArray[2];
 			HANDLE m_hTimerEvent;
-			std::atomic<int> m_nJpegCompressionQuality;
+			volatile int m_nJpegCompressionQuality;
 			volatile BOOL m_bDoFullLoad;
 			CString m_sFileName;
 	};
