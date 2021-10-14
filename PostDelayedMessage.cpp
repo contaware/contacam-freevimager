@@ -9,7 +9,7 @@ static char THIS_FILE[] = __FILE__;
 
 HANDLE volatile CPostDelayedMessageThread::m_hExitEvent = NULL;
 std::atomic<int> CPostDelayedMessageThread::m_nCount(0);
-std::atomic<BOOL> CPostDelayedMessageThread::m_bExit(FALSE);
+volatile BOOL CPostDelayedMessageThread::m_bExit = FALSE;
 
 void CPostDelayedMessageThread::Init()
 {
