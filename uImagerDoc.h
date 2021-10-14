@@ -23,7 +23,7 @@ public:
 	int m_nSettingsMenuPos;
 	int m_nWindowsPos;
 	int m_nHelpMenuPos;
-	std::atomic<BOOL> m_bClosing;	// Set in OnClose() of Frame Window
+	volatile BOOL m_bClosing;		// Set in OnClose() of Frame Window
 	CDib* volatile m_pDib;			// The Picture or the Current Frame
 	CRITICAL_SECTION m_csDib;		// Critical Section for the Dib Object
 	CRect m_DocRect;				// The Document Size
