@@ -972,7 +972,7 @@ public:
 														// (array allocated in constructor)
 	volatile int m_nMovDetXZonesCount;					// Number of zones in X direction (it is never set to 0 to avoid division by 0)
 	volatile int m_nMovDetYZonesCount;					// Number of zones in Y direction (it is never set to 0 to avoid division by 0)
-	std::atomic<int> m_nMovDetTotalZones;				// Total Number of zones (set to 0 when a (re-)init of the zones is wanted)
+	volatile int m_nMovDetTotalZones;					// Total Number of zones (set to 0 when a (re-)init of the zones is wanted)
 	volatile BOOL m_bObscureRemovedZones;				// Removed detection zones are obscured
 	volatile int m_nMovDetFreqDiv;						// Current frequency divider
 	volatile double m_dMovDetFrameRateFreqDivCalc;		// Framerate used to calculate the current frequency divider

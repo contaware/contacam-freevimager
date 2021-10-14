@@ -1776,7 +1776,6 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, const CTime& Time,
 							0, 0) == 0)
 			goto end_of_software_detection; // Cannot init, unsupported resolution
 	}
-	int nMovDetTotalZones = m_nMovDetTotalZones; // m_nMovDetTotalZones is std::atomic -> for efficiency employ a local copy
 
 	// REC OFF
 	if (nDetectionLevel == 0)
@@ -1792,7 +1791,7 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, const CTime& Time,
 			m_pMovementDetectorBackgndDib = NULL;
 		}
 		if (m_MovementDetections)
-			memset(m_MovementDetections, 0, nMovDetTotalZones);
+			memset(m_MovementDetections, 0, m_nMovDetTotalZones);
 	}
 	// Continuous REC
 	else if (nDetectionLevel == 100)
@@ -1807,7 +1806,7 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, const CTime& Time,
 			delete m_pMovementDetectorBackgndDib;
 			m_pMovementDetectorBackgndDib = NULL;
 		}
-		for (int i = 0; i < nMovDetTotalZones; i++)
+		for (int i = 0; i < m_nMovDetTotalZones; i++)
 		{
 			if (m_DoMovementDetection[i])
 			{
@@ -7983,8 +7982,7 @@ BOOL CVideoDeviceDoc::MovementDetector(CDib* pDib, int nDetectionLevel)
 	// Set Detection flag and Current Time
 	BOOL bDetection = FALSE;
 	int nIntensityThreshold = Round(dDetectionLevel * nMaxIntensityPerZone);
-	int nMovDetTotalZones = m_nMovDetTotalZones; // m_nMovDetTotalZones is std::atomic -> for efficiency employ a local copy
-	for (i = 0 ; i < nMovDetTotalZones; i++)
+	for (i = 0 ; i < m_nMovDetTotalZones; i++)
 	{
 		if (m_DoMovementDetection[i] &&
 			m_MovementDetectorCurrentIntensity[i] > nIntensityThreshold * (int)m_DoMovementDetection[i])
@@ -7996,7 +7994,7 @@ BOOL CVideoDeviceDoc::MovementDetector(CDib* pDib, int nDetectionLevel)
 	}
 
 	// Clear Old Detection Zones
-	for (i = 0 ; i < nMovDetTotalZones; i++)
+	for (i = 0 ; i < m_nMovDetTotalZones; i++)
 	{
 		if (m_MovementDetections[i]	&&
 			(pDib->GetUpTime() - m_MovementDetectionsUpTime[i]) >= MOVDET_TIMEOUT)
