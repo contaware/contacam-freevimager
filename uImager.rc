@@ -432,8 +432,7 @@ IDR_CONTEXT_ZONES MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
-        MENUITEM "Activate all zones",          ID_EDIT_ADDALL
-        MENUITEM "Deactivate all zones",        ID_EDIT_REMOVEALL
+        MENUITEM "All zones",                   ID_EDIT_ALLZONES
         MENUITEM SEPARATOR
         MENUITEM "Fit",                         ID_VIEW_FIT
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
@@ -3302,7 +3301,7 @@ END
 STRINGTABLE
 BEGIN
     ID_EDIT_FRAMESTAMP      "Frame stamps\nFrame Stamps"
-    ID_EDIT_ZONE            "Add / remove / show zones (mask)\nZones (Mask)"
+    ID_EDIT_ZONE            "Edit zones (mask)\nEdit Zones (Mask)"
 END
 
 STRINGTABLE
@@ -3335,6 +3334,7 @@ END
 
 STRINGTABLE
 BEGIN
+    ID_EDIT_ALLZONES        "Activate / Deactivate all zones\nAll Zones"
     ID_CAPTURE_NETWORK      "Network / IP camera\nNetwork / IP Camera"
     ID_CAPTURE_RECORD       "Recording\nRecording"
     ID_VIEW_ALL_NEXT_PICTURE 

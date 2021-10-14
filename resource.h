@@ -3064,8 +3064,7 @@
 #define ID_EDIT_FRAMESTAMP              32909
 #define ID_EDIT_ZONE                    32910
 #define ID_EDIT_ZONE_REMOVE             32912
-#define ID_EDIT_ADDALL                  32913
-#define ID_EDIT_REMOVEALL               32914
+#define ID_EDIT_ALLZONES                32913
 #define ID_CAPTURE_NETWORK              32915
 #define ID_CAPTURE_RECORD               32918
 #define ID_VIEW_ALL_NEXT_PICTURE        32919
