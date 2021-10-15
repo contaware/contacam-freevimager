@@ -3,6 +3,7 @@ FREEVIMAGER HISTORY
 9.9.20 (Month XXth 2021)
 
 - Better clipboard support for images with transparency
+- Updated the avir library to version 3.0
 
 9.9.19 (August 25th 2021)
 
