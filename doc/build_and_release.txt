@@ -11,6 +11,7 @@ Necessary x86-unicode Plugins:
   http://wiz0u.free.fr/prog/nsisFirewall
 - UAC
   https://nsis.sourceforge.io/mediawiki/index.php?title=UAC_plug-in&oldid=19055
+  Note: using modified UAC.nsh to make the MessageBox silent compatible
 - KillProcDLL
   https://github.com/mazinsw/KillProcDLL
 - SysCompImg
