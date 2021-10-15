@@ -44,8 +44,9 @@ if "%NSISDIR%"=="" (
 	goto batchpause
 )
 
-REM get this script directory
+REM get this script directory and change to it
 set BATCHDIR=%~dp0
+cd /D "%BATCHDIR%"
 
 REM get current version 
 for /F "tokens=3" %%V in (CurrentVersion.nsh) do set CURRENTVERSION=%%~V
