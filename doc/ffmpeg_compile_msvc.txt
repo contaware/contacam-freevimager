@@ -49,7 +49,7 @@ $ which dumpbin
 Open c:\uimager\ffmpeg\config_msvc_prompt.bat to build libx264
 --------------------------------------------------------------
 
-$ cd /c/uimager/ffmpeg/msvc/src/x264-DATE-stable
+$ cd /c/uimager/ffmpeg/msvc/src/x264-master
 $ make distclean
 $ CC=cl ./configure --prefix=/c/uimager/ffmpeg/msvc --enable-static --disable-cli --disable-avs --disable-gpac --disable-lsmash
 $ make
