@@ -3,6 +3,7 @@ CONTACAM HISTORY
 9.9.20 (Month XXth 2021)
 
 - Improved saving of animated gif / mp4 in case of unstable rtsp streams
+- Updated to ffmpeg 3.4.9
 
 9.9.19 (August 25th 2021)
 
