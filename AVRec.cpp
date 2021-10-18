@@ -302,7 +302,7 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 		// because that's done automatically. The lowest possible level is chosen depending from the
 		// video resolution and frame-rate.
 
-		// For H.264 gop_size defaults to - 1 which means there is no upper limit,
+		// For H.264 gop_size defaults to -1 which means there is no upper limit,
 		// codec will still insert a keyframe with each scene change
 		// Note: gop_size is NOT influencing the heap usage
 	}
