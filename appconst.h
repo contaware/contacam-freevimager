@@ -27,7 +27,6 @@
 #define IPCAM_HELP_ONLINE_PAGE							_T("https://www.contaware.com/contacamipcamhelp/")
 #define PLATERECOGNIZER_ONLINE_PAGE						_T("https://platerecognizer.com/")
 #define PLATERECOGNIZER_REGIONS_ONLINE_PAGE				_T("http://docs.platerecognizer.com/#regions-supported")
-#define FFMPEG_TOOLCHAIN_MSVC							1	/* ffmpeg and libx264 have been compiled with 1=msvc or 0=gcc */
 #else
 #define APPNAME_EXT										_T("FreeVimager.exe")
 #define APPNAME_NOEXT									_T("FreeVimager")

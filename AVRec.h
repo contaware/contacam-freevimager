@@ -20,7 +20,6 @@ extern "C"
 #include "libavformat/movenc.h"
 #include "libswscale/swscale.h"
 #include "libswresample/swresample.h"
-uint32_t x264_cpu_detect();
 }
 
 // Used to Convert From Double to Fractional Frame-Rate.

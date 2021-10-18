@@ -79,3 +79,19 @@ Debug build: --enable-debug --extra-cflags="-Z7 -MTd" --extra-ldflags="-DEBUG"
 Note: if you do not make debug builds of ffmpeg then in Debug Target of 
 your project add libcmt.lib to Linker - Input - Ignore Specific Default 
 Libraries. 
+
+
+Notes
+-----
+
+- Usually ffmpeg.exe is "stripped" of its debug symbols, while 
+  ffmpeg_g.exe is with debug symbols (but when building like instructed 
+  here they are generated identical). 
+
+- We do not need the Raw HEVC and H264 demuxers if we already have the 
+  RTSP demuxer (with HEVC and H264 parsers and decoders). The demuxer is 
+  the thing which takes a container (a single 1-D vector of bytes) and 
+  splits (demuxes) these into several streams (1 or more audio streams, 1 
+  or more video streams, ...). The parser is the thing which takes a 
+  single stream as output by a demuxer and splits it into proper frames 
+  (some demuxers already produce proper frames so no parser is needed). 
