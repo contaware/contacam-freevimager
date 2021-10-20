@@ -106,6 +106,8 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_REMOVE, OnUpdateEditZoneRemove)
 	ON_COMMAND(ID_EDIT_ZONE_OBSCURE_REMOVED, OnEditZoneObscureRemoved)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_OBSCURE_REMOVED, OnUpdateEditZoneObscureRemoved)
+	ON_COMMAND(ID_EDIT_ZONE_REC_MOTION, OnEditZoneRecMotion)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_REC_MOTION, OnUpdateEditZoneRecMotion)
 	ON_COMMAND(ID_EDIT_ZONE_BIG, OnEditZoneBig)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_BIG, OnUpdateEditZoneBig)
 	ON_COMMAND(ID_EDIT_ZONE_MEDIUM, OnEditZoneMedium)
@@ -1923,6 +1925,10 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, const CTime& Time,
 	// End of software detection
 end_of_software_detection:
 
+	// Record zones where motion is detected
+	if (m_bRecMotionZones)
+		RecMotionZones(pDib);
+
 	// If Movement
 	BOOL bMarkStart = FALSE;
 	if (bSoftwareDetectionMovement)
@@ -3703,6 +3709,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nMovDetYZonesCount = MOVDET_MIN_ZONES_XORY;
 	m_nMovDetTotalZones = 0;
 	m_bObscureRemovedZones = FALSE;
+	m_bRecMotionZones = FALSE;
 	m_nMovDetFreqDiv = 1;
 	m_dMovDetFrameRateFreqDivCalc = 0.0;
 
@@ -4584,6 +4591,7 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	m_fVideoRecQuality = (float) CAVRec::ClipVideoQuality((float)pApp->GetProfileInt(sSection, _T("VideoRecQuality"), (int)DEFAULT_VIDEO_QUALITY));
 	m_bVideoRecFast = (BOOL)pApp->GetProfileInt(sSection, _T("VideoRecFast"), FALSE);
 	m_bObscureRemovedZones = (BOOL) pApp->GetProfileInt(sSection, _T("ObscureRemovedZones"), FALSE);
+	m_bRecMotionZones = (BOOL) pApp->GetProfileInt(sSection, _T("RecMotionZones"), FALSE);
 	m_szFrameAnnotation[MAX_PATH - 1] = _T('\0');																	// first make sure it is NULL terminated
 	_tcsncpy(m_szFrameAnnotation, pApp->GetProfileString(sSection, _T("FrameAnnotation"), _T("")), MAX_PATH - 1);	// and then copy a maximum of (MAX_PATH - 1) chars
 	m_bShowFrameTime = (BOOL) pApp->GetProfileInt(sSection, _T("ShowFrameTime"), TRUE);
@@ -4733,6 +4741,7 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("VideoRecQuality"), (int)m_fVideoRecQuality);
 	pApp->WriteProfileInt(sSection, _T("VideoRecFast"), (int)m_bVideoRecFast);
 	pApp->WriteProfileInt(sSection, _T("ObscureRemovedZones"), (int)m_bObscureRemovedZones);
+	pApp->WriteProfileInt(sSection, _T("RecMotionZones"), (int)m_bRecMotionZones);
 	pApp->WriteProfileString(sSection, _T("FrameAnnotation"), m_szFrameAnnotation);
 	pApp->WriteProfileInt(sSection, _T("ShowFrameTime"), (int)m_bShowFrameTime);
 	pApp->WriteProfileInt(sSection, _T("ShowFrameUptime"), (int)m_bShowFrameUptime);
@@ -7687,6 +7696,115 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize, LONGLONG llPt
 	}
 }
 
+BOOL CVideoDeviceDoc::RecMotionZones(CDib* pDib)
+{
+	// Check
+	if (m_nMovDetTotalZones <= 0)
+		return FALSE;
+
+	// Note: m_nMovDetXZonesCount and m_nMovDetYZonesCount will never be set to 0 and will never
+	//       be updated (updated in OnThreadSafeInitMovDet) while executing the following code.
+	//       When switching resolution and before m_nMovDetXZonesCount and m_nMovDetYZonesCount
+	//       get updated the new dib width and height may not be exactly divisible, that's not a
+	//       problem because the resulting integer zone width and height are truncated and cannot
+	//       overflow lpYPlaneTopLeftBits, lpUPlaneTopLeftBits and lpVPlaneTopLeftBits.
+	int nWidth = pDib->GetWidth();
+	int nHeight = pDib->GetHeight();
+	int nWidth2 = nWidth / 2;
+	int nHeight2 = nHeight / 2;
+	LPBYTE lpYPlaneTopLeftBits = pDib->GetBits();
+	LPBYTE lpUPlaneTopLeftBits = lpYPlaneTopLeftBits + nWidth * nHeight;
+	LPBYTE lpVPlaneTopLeftBits = lpUPlaneTopLeftBits + nWidth2 * nHeight2;
+	int nZoneWidth = nWidth / m_nMovDetXZonesCount;
+	int nZoneHeight = nHeight / m_nMovDetYZonesCount;
+	int nZoneWidth2 = nZoneWidth / 2;
+	int nZoneHeight2 = nZoneHeight / 2;
+	if (nZoneWidth2 <= 0 || nZoneHeight2 <= 0) // check the zone sizes
+		return FALSE;
+
+	// Loop
+	for (int y = 0; y < m_nMovDetYZonesCount; y++)
+	{
+		int nYOffset = (y == 0 ? 0 : -1);
+		for (int x = 0; x < m_nMovDetXZonesCount; x++)
+		{
+			int nXOffset = (x == 0 ? 0 : -1);
+			if (m_MovementDetections[x + y * m_nMovDetXZonesCount])
+			{
+				// Draw top edge
+				memset(	lpYPlaneTopLeftBits + x * nZoneWidth	// current zone
+						+ nYOffset * nWidth,					// if y != 0 shift up by one to avoid double borders
+						82,										// Y for red
+						nZoneWidth);							// zone width
+				memset(	lpUPlaneTopLeftBits + x * nZoneWidth2	// current zone
+						+ nYOffset * nWidth2,					// if y != 0 shift up by one to avoid double borders
+						90,										// U for red
+						nZoneWidth2);							// zone width
+				memset(	lpVPlaneTopLeftBits + x * nZoneWidth2	// current zone
+						+ nYOffset * nWidth2,					// if y != 0 shift up by one to avoid double borders
+						240,									// V for red
+						nZoneWidth2);							// zone width
+
+				// Draw left & right edges
+				for (int h = nYOffset; h < nZoneHeight; h++)
+				{
+					lpYPlaneTopLeftBits[x * nZoneWidth			// current zone
+										+ h * nWidth			// line
+										+ nXOffset				// if x != 0 shift left by one to avoid double borders
+										] = 82;					// Y for red
+					lpYPlaneTopLeftBits[x * nZoneWidth			// current zone
+										+ h * nWidth			// line
+										+ nZoneWidth - 1		// right
+										] = 82;					// Y for red
+				}
+				for (int h = nYOffset; h < nZoneHeight2; h++)
+				{
+					lpUPlaneTopLeftBits[x * nZoneWidth2			// current zone
+										+ h * nWidth2			// line
+										+ nXOffset				// if x != 0 shift left by one to avoid double borders
+										] = 90;					// U for red
+					lpUPlaneTopLeftBits[x * nZoneWidth2			// current zone
+										+ h * nWidth2			// line
+										+ nZoneWidth2 - 1		// right
+										] = 90;					// U for red
+				}
+				for (int h = nYOffset; h < nZoneHeight2; h++)
+				{
+					lpVPlaneTopLeftBits[x * nZoneWidth2			// current zone
+										+ h * nWidth2			// line
+										+ nXOffset				// if x != 0 shift left by one to avoid double borders
+										] = 240;				// V for red
+					lpVPlaneTopLeftBits[x * nZoneWidth2			// current zone
+										+ h * nWidth2			// line
+										+ nZoneWidth2 - 1		// right
+										] = 240;				// V for red
+				}
+
+				// Draw bottom edge
+				memset(	lpYPlaneTopLeftBits + x * nZoneWidth	// current zone
+						+ (nZoneHeight - 1) * nWidth,			// last line
+						82,										// Y for red
+						nZoneWidth);							// zone width
+				memset(	lpUPlaneTopLeftBits + x * nZoneWidth2	// current zone
+						+ (nZoneHeight2 - 1) * nWidth2,			// last line
+						90,										// U for red
+						nZoneWidth2);							// zone width
+				memset(	lpVPlaneTopLeftBits + x * nZoneWidth2	// current zone
+						+ (nZoneHeight2 - 1) * nWidth2,			// last line
+						240,									// V for red
+						nZoneWidth2);							// zone width
+			}
+		}
+
+		// Next zones row
+		lpYPlaneTopLeftBits += nZoneHeight * nWidth;
+		lpUPlaneTopLeftBits += nZoneHeight2 * nWidth2;
+		lpVPlaneTopLeftBits += nZoneHeight2 * nWidth2;
+	}
+
+	return TRUE;
+}
+
 void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 {
 	// Live snapshot
@@ -8452,12 +8570,23 @@ void CVideoDeviceDoc::OnUpdateEditZoneRemove(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnEditZoneObscureRemoved()
 {
 	m_bObscureRemovedZones = !m_bObscureRemovedZones;
-	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("ObscureRemovedZones"), m_bObscureRemovedZones);
+	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("ObscureRemovedZones"), (int)m_bObscureRemovedZones);
 }
 
 void CVideoDeviceDoc::OnUpdateEditZoneObscureRemoved(CCmdUI* pCmdUI)
 {
 	pCmdUI->SetCheck(m_bObscureRemovedZones ? 1 : 0);
+}
+
+void CVideoDeviceDoc::OnEditZoneRecMotion()
+{
+	m_bRecMotionZones = !m_bRecMotionZones;
+	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("RecMotionZones"), (int)m_bRecMotionZones);
+}
+
+void CVideoDeviceDoc::OnUpdateEditZoneRecMotion(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(m_bRecMotionZones ? 1 : 0);
 }
 
 void CVideoDeviceDoc::OnEditZoneBig()

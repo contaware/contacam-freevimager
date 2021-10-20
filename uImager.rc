@@ -718,6 +718,7 @@ BEGIN
         MENUITEM "Erase active zones",          ID_EDIT_ZONE_REMOVE
         MENUITEM SEPARATOR
         MENUITEM "Obscure inactive zones (privacy mask)", ID_EDIT_ZONE_OBSCURE_REMOVED
+		MENUITEM "REC motion zones (for testing)", ID_EDIT_ZONE_REC_MOTION
         MENUITEM SEPARATOR
         MENUITEM "Big zones size",              ID_EDIT_ZONE_BIG
         MENUITEM "Medium zones size",           ID_EDIT_ZONE_MEDIUM

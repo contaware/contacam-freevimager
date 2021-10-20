@@ -811,6 +811,7 @@ public:
 
 // Protected Functions
 protected:
+	BOOL RecMotionZones(CDib* pDib);
 	void Snapshot(CDib* pDib, const CTime& Time);
 	BOOL EditCopy(CDib* pDib, const CTime& Time);
 	void EditSnapshot(CDib* pDib, const CTime& Time);
@@ -974,6 +975,7 @@ public:
 	volatile int m_nMovDetYZonesCount;					// Number of zones in Y direction (it is never set to 0 to avoid division by 0)
 	volatile int m_nMovDetTotalZones;					// Total Number of zones (set to 0 when a (re-)init of the zones is wanted)
 	volatile BOOL m_bObscureRemovedZones;				// Removed detection zones are obscured
+	volatile BOOL m_bRecMotionZones;					// Record zones where motion is detected
 	volatile int m_nMovDetFreqDiv;						// Current frequency divider
 	volatile double m_dMovDetFrameRateFreqDivCalc;		// Framerate used to calculate the current frequency divider
 	volatile AttachmentType m_AttachmentType;			// The email attachment type
@@ -1074,6 +1076,8 @@ protected:
 	afx_msg void OnUpdateEditZoneRemove(CCmdUI* pCmdUI);
 	afx_msg void OnEditZoneObscureRemoved();
 	afx_msg void OnUpdateEditZoneObscureRemoved(CCmdUI* pCmdUI);
+	afx_msg void OnEditZoneRecMotion();
+	afx_msg void OnUpdateEditZoneRecMotion(CCmdUI* pCmdUI);
 	afx_msg void OnEditZoneBig();
 	afx_msg void OnUpdateEditZoneBig(CCmdUI* pCmdUI);
 	afx_msg void OnEditZoneMedium();
