@@ -62,6 +62,7 @@ void CDib::CopyVars(const CDib& SrcDib)
 	m_wContrast = SrcDib.m_wContrast;
 	m_wSaturation = SrcDib.m_wSaturation;
 	m_llPts = SrcDib.m_llPts;
+	m_llTime = SrcDib.m_llTime;
 	m_llUpTime = SrcDib.m_llUpTime;
 	m_dwUserFlag = SrcDib.m_dwUserFlag;
 	m_bShowMessageBoxOnError = SrcDib.m_bShowMessageBoxOnError;
@@ -6749,6 +6750,7 @@ void CDib::Init()
 	m_pPalette = NULL;
 	m_dwImageSize = 0;
 	m_llPts = AV_NOPTS_VALUE;
+	m_llTime = 0;
 	m_llUpTime = 0;
 	m_dwUserFlag = 0;
 	m_pPreviewDib = NULL;

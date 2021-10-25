@@ -438,7 +438,8 @@ protected:
 
 	// Special Vars
 	LONGLONG m_llPts;			// Presentation time stamp (in milliseconds), AV_NOPTS_VALUE if not set
-	LONGLONG m_llUpTime;		// Up-time (in milliseconds) when the frame was taken
+	time_t m_llTime;			// Non-monotonic time when the frame was taken (it can be adjusted backwards or forwards)
+	LONGLONG m_llUpTime;		// Monotonically increasing up-time (in milliseconds) when the frame was taken
 	DWORD m_dwUserFlag;			// General Purpose User Flag
 
 	// 16 bits Masks
@@ -502,6 +503,8 @@ public:
 	__forceinline BOOL IsValid() const;
 	__forceinline LONGLONG GetPts()	const;
 	__forceinline void SetPts(LONGLONG llPts);
+	__forceinline time_t GetTime() const;
+	__forceinline void SetTime(time_t llTime);
 	__forceinline LONGLONG GetUpTime() const;
 	__forceinline void SetUpTime(LONGLONG llUpTime);
 	__forceinline DWORD GetUserFlag() const;

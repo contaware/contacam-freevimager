@@ -445,22 +445,16 @@ public:
 			BOOL SaveSingleGif(		CDib* pDib,
 									const CString& sGIFFileName,
 									RGBQUAD* pGIFColors,
-									const CTime& RefTime,
-									LONGLONG llRefUpTime,
 									const CString& sMovDetSavesCount);
 			void AnimatedGifInit(	RGBQUAD* pGIFColors,
 									double& dDelayMul,
 									double& dSpeedMul,
 									DWORD& dwLoadDetFrameUpdatedIfErrorNoSuccess,
 									double dSaveFrameRate,
-									const CTime& RefTime,
-									LONGLONG llRefUpTime,
 									const CString& sMovDetSavesCount);
 			void StretchAnimatedGif(CDib* pDib);
 			void To255Colors(		CDib* pDib,
 									RGBQUAD* pGIFColors,
-									const CTime& RefTime,
-									LONGLONG llRefUpTime,
 									const CString& sMovDetSavesCount);
 			BOOL SaveAnimatedGif(	CDib* pGIFSaveDib,
 									CDib* pGIFDib,
@@ -472,8 +466,6 @@ public:
 									double dSpeedMul,
 									RGBQUAD* pGIFColors,
 									int nDiffMinLevel,
-									const CTime& RefTime,
-									LONGLONG llRefUpTime,
 									const CString& sMovDetSavesCount);
 
 			CVideoDeviceDoc* m_pDoc;
@@ -502,11 +494,10 @@ public:
 	class CSaveSnapshotHistoryThread : public CWorkerThread
 	{
 	public:
-		CSaveSnapshotHistoryThread() {m_pDoc = NULL; m_Time = CTime(0);};
+		CSaveSnapshotHistoryThread() {m_pDoc = NULL;};
 		virtual ~CSaveSnapshotHistoryThread() {Kill();};
 		void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
 		CDib m_Dib;
-		CTime m_Time;
 
 	protected:
 		int Work();
@@ -518,11 +509,10 @@ public:
 	class CSaveSnapshotThread : public CWorkerThread
 	{
 		public:
-			CSaveSnapshotThread() {m_pDoc = NULL; m_Time = CTime(0);};
+			CSaveSnapshotThread() {m_pDoc = NULL;};
 			virtual ~CSaveSnapshotThread() {Kill();};
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
 			CDib m_Dib;
-			CTime m_Time;
 
 		protected:
 			int Work();
@@ -667,9 +657,8 @@ public:
 	void VideoFormatDialog();
 
 	// Frame Tags
-	static CTime CalcTime(LONGLONG llUpTime, const CTime& RefTime, LONGLONG llRefUpTime);
 	static int ScaleFont(int nWidth, int nHeight, int nMinRefFontSize, int nMinRefWidth, int nMinRefHeight);
-	static void AddFrameTime(CDib* pDib, CTime RefTime, LONGLONG llRefUpTime, const CString& sFrameAnnotation, int nRefFontSize, BOOL bShowFrameUptime);
+	static void AddFrameTime(CDib* pDib, const CString& sFrameAnnotation, int nRefFontSize, BOOL bShowFrameUptime);
 	static void AddFrameCount(CDib* pDib, const CString& sCount, int nRefFontSize);
 	static void AddNoDonationTag(CDib* pDib, int nRefFontSize);
 
@@ -736,7 +725,7 @@ public:
 	static BOOL SaveJpegFast(CDib* pDib, CMJPEGEncoder* pMJPEGEncoder, const CString& sFileName, int quality);
 
 	// Recording
-	void MovementDetectionProcessing(CDib* pDib, const CTime& Time, BOOL b1SecTick);
+	void MovementDetectionProcessing(CDib* pDib, BOOL b1SecTick);
 	BOOL MovementDetector(CDib* pDib, int nDetectionLevel);
 	void FreeMovementDetector();
 	void HideDetectionZones();
@@ -812,10 +801,10 @@ public:
 // Protected Functions
 protected:
 	BOOL RecMotionZones(CDib* pDib);
-	void Snapshot(CDib* pDib, const CTime& Time);
-	BOOL EditCopy(CDib* pDib, const CTime& Time);
-	void EditSnapshot(CDib* pDib, const CTime& Time);
-	CString SaveJpegRec(CDib* pDib, const CTime& Time);
+	void Snapshot(CDib* pDib);
+	BOOL EditCopy(CDib* pDib);
+	void EditSnapshot(CDib* pDib);
+	CString SaveJpegRec(CDib* pDib);
 	__forceinline int SummRectArea(	CDib* pDib,
 									int width,
 									int posX,
@@ -854,7 +843,7 @@ public:
 	volatile DWORD m_dwFrameCountUp;					// Captured Frames Count-Up, it can wrap around!
 	volatile BOOL m_bSizeToDoc;							// If no placement settings in registry size client window to frame size
 	volatile BOOL m_bDeviceFirstRun;					// First Time that this device runs
-	CTime m_1SecTime;									// For the 1 sec tick in ProcessI420Frame()
+	LONGLONG m_llNext1SecUpTime;						// For the 1 sec tick in ProcessI420Frame()
 
 	// Threads
 	CHttpThread m_HttpThread;							// Http Networking Helper Thread
