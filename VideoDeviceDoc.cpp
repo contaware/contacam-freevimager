@@ -2623,7 +2623,7 @@ int CVideoDeviceDoc::CRtspThread::Work()
 		CAudioTools* pAudioTools = NULL;
 		CAudioPlay* pAudioPlay = NULL;
 		BOOL bAudioSupported = FALSE;
-		CTime LastOKTime;
+		LONGLONG llLastOKUpTime;
 
 		// Options var
 		AVDictionary* opts = NULL;
@@ -2770,7 +2770,7 @@ int CVideoDeviceDoc::CRtspThread::Work()
 			goto free;
 
 		// Get frames
-		LastOKTime = CTime::GetCurrentTime();
+		llLastOKUpTime = (LONGLONG)::GetTickCount64();
 		int64_t llPrevPts = AV_NOPTS_VALUE;
 		for (;;)
 		{
@@ -2787,7 +2787,7 @@ int CVideoDeviceDoc::CRtspThread::Work()
 				// - AVERROR(EAGAIN) is difficult to spot, we guess that the same logic as for AVERROR_EOF must be fine
 				if (ret == AVERROR_EOF || ret == AVERROR(EAGAIN))
 				{
-					if ((CTime::GetCurrentTime() - LastOKTime).GetTotalSeconds() > (LONGLONG)(RTSP_SOCKET_TIMEOUT / 1000000))
+					if (((LONGLONG)::GetTickCount64() - llLastOKUpTime) >= RTSP_SOCKET_TIMEOUT / 1000)
 					{
 						av_packet_unref(&orig_pkt); // usually not necessary to free because orig_pkt.buf should be NULL, but it doesn't harm
 						goto free;
@@ -2805,7 +2805,7 @@ int CVideoDeviceDoc::CRtspThread::Work()
 				}
 			}
 			else
-				LastOKTime = CTime::GetCurrentTime();
+				llLastOKUpTime = (LONGLONG)::GetTickCount64();
 
 			// Get underlying transport, that may change while streaming,
 			// so poll it regularly.
