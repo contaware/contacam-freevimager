@@ -969,10 +969,10 @@ public:
 	volatile double m_dMovDetFrameRateFreqDivCalc;		// Framerate used to calculate the current frequency divider
 	volatile AttachmentType m_AttachmentType;			// The email attachment type
 	volatile int m_nMovDetSendMailSecBetweenMsg;		// Minimum seconds between detection emails
-	CTime m_MovDetLastMailTime;							// Time of last sent detection email with no attachment
-	CTime m_MovDetLastJPGMailTime;						// Time of last sent detection email with JPG attachment
-	CTime m_MovDetLastVideoMailTime;					// Time of last sent detection email with video attachment
-	CTime m_MovDetLastGIFMailTime;						// Time of last sent detection email with GIF attachment
+	LONGLONG m_llMovDetLastMailUpTime;					// Up-time of last sent detection email with no attachment
+	LONGLONG m_llMovDetLastJPGMailUpTime;				// Up-time of last sent detection email with JPG attachment
+	LONGLONG m_llMovDetLastVideoMailUpTime;				// Up-time of last sent detection email with video attachment
+	LONGLONG m_llMovDetLastGIFMailUpTime;				// Up-time of last sent detection email with GIF attachment
 
 	// Send Mail
 	SendMailConfigurationStruct m_SendMailConfiguration;

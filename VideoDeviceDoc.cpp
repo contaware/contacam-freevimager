@@ -540,26 +540,24 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		// Free
 		m_pDoc->RemoveOldestMovementDetectionList();
 
-		// Send By E-Mail
+		// Send E-Mail
 		if (m_pDoc->m_bSendMailRecording)
 		{
 			if (::GetFileSize64(sVideoFileName).QuadPart > 0						&&
 				(m_pDoc->m_AttachmentType == CVideoDeviceDoc::ATTACHMENT_VIDEO		||
 				m_pDoc->m_AttachmentType == CVideoDeviceDoc::ATTACHMENT_JPG_VIDEO))
 			{
-				CTimeSpan TimeDiff = FirstTime - m_pDoc->m_MovDetLastVideoMailTime;
-				if (TimeDiff.GetTotalSeconds() >= (LONGLONG)m_pDoc->m_nMovDetSendMailSecBetweenMsg &&
+				if ((llStartUpTime - m_pDoc->m_llMovDetLastVideoMailUpTime) >= (LONGLONG)m_pDoc->m_nMovDetSendMailSecBetweenMsg * 1000 &&
 					CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), FirstTime, _T("REC"), _T(""), sVideoFileName, MAILPROG_TIMEOUT_SEC, FALSE))
-					m_pDoc->m_MovDetLastVideoMailTime = FirstTime;
+					m_pDoc->m_llMovDetLastVideoMailUpTime = llStartUpTime;
 			}
 			else if (::GetFileSize64(sGIFFileName).QuadPart > 0						&&
 					(m_pDoc->m_AttachmentType == CVideoDeviceDoc::ATTACHMENT_GIF	||
 					m_pDoc->m_AttachmentType == CVideoDeviceDoc::ATTACHMENT_JPG_GIF))
 			{
-				CTimeSpan TimeDiff = FirstTime - m_pDoc->m_MovDetLastGIFMailTime;
-				if (TimeDiff.GetTotalSeconds() >= (LONGLONG)m_pDoc->m_nMovDetSendMailSecBetweenMsg &&
+				if ((llStartUpTime - m_pDoc->m_llMovDetLastGIFMailUpTime) >= (LONGLONG)m_pDoc->m_nMovDetSendMailSecBetweenMsg * 1000 &&
 					CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), FirstTime, _T("REC"), _T(""), sGIFFileName, MAILPROG_TIMEOUT_SEC, FALSE))
-					m_pDoc->m_MovDetLastGIFMailTime = FirstTime;
+					m_pDoc->m_llMovDetLastGIFMailUpTime = llStartUpTime;
 			}
 		}
 
@@ -1936,31 +1934,26 @@ end_of_software_detection:
 			if (m_bSaveStartPicture)
 				sSavedJpegRec = SaveJpegRec(pDib);
 
-			// Get time
+			// Get times
 			CTime Time(pDib->GetTime());
+			LONGLONG llUpTime = (LONGLONG)::GetTickCount64();
 
 			// Send E-Mail
 			if (m_bSendMailRecording)
 			{
 				if (m_AttachmentType == ATTACHMENT_NONE)
 				{
-					CTimeSpan TimeDiff = Time - m_MovDetLastMailTime;
-					if (TimeDiff.GetTotalSeconds() >= (LONGLONG)m_nMovDetSendMailSecBetweenMsg)
-					{
-						if (CVideoDeviceDoc::SendMail(m_SendMailConfiguration, GetAssignedDeviceName(), Time, _T("REC"), _T(""), _T(""), MAILPROG_TIMEOUT_SEC, FALSE))
-							m_MovDetLastMailTime = Time;
-					}
+					if ((llUpTime - m_llMovDetLastMailUpTime) >= (LONGLONG)m_nMovDetSendMailSecBetweenMsg * 1000 &&
+						CVideoDeviceDoc::SendMail(m_SendMailConfiguration, GetAssignedDeviceName(), Time, _T("REC"), _T(""), _T(""), MAILPROG_TIMEOUT_SEC, FALSE))
+						m_llMovDetLastMailUpTime = llUpTime;
 				}
 				else if (	m_AttachmentType == ATTACHMENT_JPG			||
 							m_AttachmentType == ATTACHMENT_JPG_VIDEO	||
 							m_AttachmentType == ATTACHMENT_JPG_GIF)
 				{
-					CTimeSpan TimeDiff = Time - m_MovDetLastJPGMailTime;
-					if (TimeDiff.GetTotalSeconds() >= (LONGLONG)m_nMovDetSendMailSecBetweenMsg)
-					{
-						if (CVideoDeviceDoc::SendMail(m_SendMailConfiguration, GetAssignedDeviceName(), Time, _T("REC"), _T(""), sSavedJpegRec, MAILPROG_TIMEOUT_SEC, FALSE))
-							m_MovDetLastJPGMailTime = Time;
-					}
+					if ((llUpTime - m_llMovDetLastJPGMailUpTime) >= (LONGLONG)m_nMovDetSendMailSecBetweenMsg * 1000 &&
+						CVideoDeviceDoc::SendMail(m_SendMailConfiguration, GetAssignedDeviceName(), Time, _T("REC"), _T(""), sSavedJpegRec, MAILPROG_TIMEOUT_SEC, FALSE))
+						m_llMovDetLastJPGMailUpTime = llUpTime;
 				}
 			}
 
@@ -3706,10 +3699,10 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_pCameraAdvancedSettingsDlg = NULL;
 
 	// Email Settings
-	m_MovDetLastMailTime = 0;
-	m_MovDetLastJPGMailTime = 0;
-	m_MovDetLastVideoMailTime = 0;
-	m_MovDetLastGIFMailTime = 0;
+	m_llMovDetLastMailUpTime = 0;
+	m_llMovDetLastJPGMailUpTime = 0;
+	m_llMovDetLastVideoMailUpTime = 0;
+	m_llMovDetLastGIFMailUpTime = 0;
 	m_AttachmentType = ATTACHMENT_NONE;
 	m_nMovDetSendMailSecBetweenMsg = 0;
 	m_SendMailConfiguration.m_sSubject = DEFAULT_EMAIL_SUBJECT;
