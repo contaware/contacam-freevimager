@@ -426,7 +426,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 						// Add Frame Tags
 						if (m_pDoc->m_bShowFrameTime)
 						{
-							AddFrameTime(pDib, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
+							AddFrameTimeAndAnnotation(pDib, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
 							AddFrameCount(pDib, sMovDetSavesCount, m_pDoc->m_nRefFontSize);
 						}
 
@@ -750,7 +750,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors
 		// Add frame tags to include its colors
 		if (m_pDoc->m_bShowFrameTime)
 		{
-			AddFrameTime(&DibForPalette, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
+			AddFrameTimeAndAnnotation(&DibForPalette, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
 			AddFrameCount(&DibForPalette, sMovDetSavesCount, m_pDoc->m_nRefFontSize);
 		}
 
@@ -812,7 +812,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveSingleGif(	CDib* pDib,
 		// Add Frame Tags
 		if (m_pDoc->m_bShowFrameTime)
 		{
-			AddFrameTime(pDib, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
+			AddFrameTimeAndAnnotation(pDib, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
 			AddFrameCount(pDib, sMovDetSavesCount, m_pDoc->m_nRefFontSize);
 		}
 
@@ -867,7 +867,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::To255Colors(CDib* pDib,
 		// Add Frame Tags
 		if (m_pDoc->m_bShowFrameTime)
 		{
-			AddFrameTime(pDib, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
+			AddFrameTimeAndAnnotation(pDib, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
 			AddFrameCount(pDib, sMovDetSavesCount, m_pDoc->m_nRefFontSize);
 		}
 
@@ -1130,7 +1130,7 @@ int CVideoDeviceDoc::CSaveSnapshotHistoryThread::Work()
 
 	// Add tags
 	if (m_pDoc->m_bShowFrameTime)
-		AddFrameTime(&m_Dib, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
+		AddFrameTimeAndAnnotation(&m_Dib, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
 	if (g_DonorEmailValidateThread.m_bNoDonation)
 		AddNoDonationTag(&m_Dib, m_pDoc->m_nRefFontSize);
 
@@ -1173,8 +1173,8 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	// Add tags
 	if (m_pDoc->m_bShowFrameTime)
 	{
-		AddFrameTime(&m_Dib, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
-		AddFrameTime(&DibThumb, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
+		AddFrameTimeAndAnnotation(&m_Dib, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
+		AddFrameTimeAndAnnotation(&DibThumb, m_pDoc->m_szFrameAnnotation, m_pDoc->m_nRefFontSize, m_pDoc->m_bShowFrameUptime);
 	}
 	if (g_DonorEmailValidateThread.m_bNoDonation)
 	{
@@ -6624,7 +6624,7 @@ int CVideoDeviceDoc::ScaleFont(	int nWidth, int nHeight,
 		return Round(nMinRefFontSize * dFactorY);
 }
 
-void CVideoDeviceDoc::AddFrameTime(CDib* pDib, const CString& sFrameAnnotation, int nRefFontSize, BOOL bShowFrameUptime)
+void CVideoDeviceDoc::AddFrameTimeAndAnnotation(CDib* pDib, const CString& sFrameAnnotation, int nRefFontSize, BOOL bShowFrameUptime)
 {
 	// Check
 	if (!pDib)
@@ -7465,7 +7465,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize, LONGLONG llPt
 
 		// Add Frame Time if User Wants it
 		if (m_bShowFrameTime)
-			AddFrameTime(pDib, m_szFrameAnnotation, m_nRefFontSize, m_bShowFrameUptime);
+			AddFrameTimeAndAnnotation(pDib, m_szFrameAnnotation, m_nRefFontSize, m_bShowFrameUptime);
 
 		// Add "NO DONATION" tag
 		if (g_DonorEmailValidateThread.m_bNoDonation)
@@ -7845,7 +7845,7 @@ BOOL CVideoDeviceDoc::EditCopy(CDib* pDib)
 
 	// Add frame time
 	if (m_bShowFrameTime)
-		AddFrameTime(&Dib, m_szFrameAnnotation, m_nRefFontSize, m_bShowFrameUptime);
+		AddFrameTimeAndAnnotation(&Dib, m_szFrameAnnotation, m_nRefFontSize, m_bShowFrameUptime);
 
 	// Add "NO DONATION" tag
 	if (g_DonorEmailValidateThread.m_bNoDonation)
@@ -7880,7 +7880,7 @@ void CVideoDeviceDoc::EditSnapshot(CDib* pDib)
 
 	// Add frame time
 	if (m_bShowFrameTime)
-		AddFrameTime(&Dib, m_szFrameAnnotation, m_nRefFontSize, m_bShowFrameUptime);
+		AddFrameTimeAndAnnotation(&Dib, m_szFrameAnnotation, m_nRefFontSize, m_bShowFrameUptime);
 
 	// Add "NO DONATION" tag
 	if (g_DonorEmailValidateThread.m_bNoDonation)
@@ -7919,7 +7919,7 @@ CString CVideoDeviceDoc::SaveJpegRec(CDib* pDib)
 
 	// Add frame time
 	if (m_bShowFrameTime)
-		AddFrameTime(&Dib, m_szFrameAnnotation, m_nRefFontSize, m_bShowFrameUptime);
+		AddFrameTimeAndAnnotation(&Dib, m_szFrameAnnotation, m_nRefFontSize, m_bShowFrameUptime);
 
 	// Add "NO DONATION" tag
 	if (g_DonorEmailValidateThread.m_bNoDonation)

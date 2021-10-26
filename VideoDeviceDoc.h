@@ -658,7 +658,7 @@ public:
 
 	// Frame Tags
 	static int ScaleFont(int nWidth, int nHeight, int nMinRefFontSize, int nMinRefWidth, int nMinRefHeight);
-	static void AddFrameTime(CDib* pDib, const CString& sFrameAnnotation, int nRefFontSize, BOOL bShowFrameUptime);
+	static void AddFrameTimeAndAnnotation(CDib* pDib, const CString& sFrameAnnotation, int nRefFontSize, BOOL bShowFrameUptime);
 	static void AddFrameCount(CDib* pDib, const CString& sCount, int nRefFontSize);
 	static void AddNoDonationTag(CDib* pDib, int nRefFontSize);
 
