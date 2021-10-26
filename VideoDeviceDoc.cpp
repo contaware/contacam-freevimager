@@ -2383,11 +2383,10 @@ BOOL CVideoDeviceDoc::CHttpThread::PollAndClean(BOOL bDoNewPoll)
 		if (pNetCom)
 		{
 			// Remove oldest connection?
-			CTimeSpan ConnectionAge = CTime::GetCurrentTime() - pNetCom->m_InitTime;
-			if (pNetCom->IsShutdown()										||	// done?
-				ConnectionAge.GetTotalSeconds() >= HTTP_CONNECTION_TIMEOUT	||	// too old?
-				ConnectionAge.GetTotalSeconds() < 0							||	// "
-				!bDoNewPoll)													// too many open connections?
+			LONGLONG llConnectionAgeMs = (LONGLONG)::GetTickCount64() - pNetCom->m_llInitUpTime;
+			if (pNetCom->IsShutdown()								||	// done?
+				llConnectionAgeMs >= 1000 * HTTP_CONNECTION_TIMEOUT	||	// too old?
+				!bDoNewPoll)											// too many open connections?
 			{
 				delete pNetCom; // this calls Close() which blocks till all net threads are done
 				m_HttpVideoNetComList.RemoveHead();

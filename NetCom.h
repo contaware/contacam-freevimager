@@ -225,8 +225,8 @@ public:
 	// Socket Family
 	__forceinline int GetSocketFamily() {return m_nSocketFamily;};
 
-	// Init() was called last time on
-	CTime m_InitTime;
+	// Init() was called last time at given up-time
+	LONGLONG m_llInitUpTime;
 
 protected:
 	// Init paddr from sAddress and uiPort (this function updates nSocketFamily)

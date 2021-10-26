@@ -595,8 +595,8 @@ CNetCom::CNetCom()
 	// Socket Family
 	m_nSocketFamily = AF_UNSPEC;
 
-	// Reset init time
-	m_InitTime = CTime(0);
+	// Reset init up-time
+	m_llInitUpTime = 0;
 }
 
 CNetCom::~CNetCom()
@@ -707,8 +707,8 @@ BOOL CNetCom::Init(	CParseProcess* pParseProcess,		// Parser & Processor
 	// First close
 	Close();
 
-	// Set init time
-	m_InitTime = CTime::GetCurrentTime();
+	// Set init up-time
+	m_llInitUpTime = (LONGLONG)::GetTickCount64();
 
 	// Init Address
 	sockaddr_in6 peer_addr6;
@@ -819,8 +819,8 @@ void CNetCom::Close()
 	}
 	::LeaveCriticalSection(&m_csTxFifoSync);
 
-	// Reset init time
-	m_InitTime = CTime(0);
+	// Reset init up-time
+	m_llInitUpTime = 0;
 }
 
 CString CNetCom::GetPeerSockIP()
