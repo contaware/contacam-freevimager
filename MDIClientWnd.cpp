@@ -33,9 +33,6 @@ CMDIClientWnd::CMDIClientWnd()
 	m_nTopMargin = 0;
 	m_rcLinkComputer = CRect(0,0,0,0);
 	m_rcLinkLocalhost = CRect(0,0,0,0);
-	m_TopLeftCornerClickTime = 0;
-	m_TopRightCornerClickTime = 0;
-	m_BottomRightCornerClickTime = 0;
 }
 
 CMDIClientWnd::~CMDIClientWnd()
@@ -314,19 +311,6 @@ void CMDIClientWnd::ViewWeb(CString sHost)
 }
 #endif
 
-// Disable warning C4723: potential divide by 0
-#pragma warning(disable:4723)
-void CMDIClientWnd::Crashme()
-{
-	// Division by zero to test procdump.exe
-	int a = 0;
-	int b = 5 / a;
-	CString s;
-	s.Format(_T("Divide by 0 is %d"), b);
-	::AfxMessageBox(s);
-	#pragma warning(default:4723)
-}
-
 void CMDIClientWnd::OnLButtonUp(UINT nFlags, CPoint point) 
 {
 	// Links click
@@ -336,46 +320,5 @@ void CMDIClientWnd::OnLButtonUp(UINT nFlags, CPoint point)
 	else if (m_rcLinkLocalhost.PtInRect(point))
 		ViewWeb(_T("localhost"));
 #endif
-
-	// Crash test
-	// (click the four corners in sequence)
-	CRect rcClient;
-	GetClientRect(&rcClient);
-	const LONGLONG nClickSpeedSec = 3;
-	const int nEdge = ::SystemDPIScale(30);
-	const int nMinWndEdge = ::SystemDPIScale(120);
-	if (rcClient.Width() > nMinWndEdge && rcClient.Height() > nMinWndEdge)
-	{
-		// 1. Top-left corner
-		if (CRect(0, 0, nEdge, nEdge).PtInRect(point))
-		{
-			m_TopLeftCornerClickTime = CTime::GetCurrentTime();
-		}
-		// 2. Top-right corner
-		else if (CRect(rcClient.Width()-nEdge, 0, rcClient.Width(), nEdge).PtInRect(point))
-		{
-			CTime CurrentTime = CTime::GetCurrentTime();
-			LONGLONG nDiffSec = (CurrentTime - m_TopLeftCornerClickTime).GetTotalSeconds();
-			if (nDiffSec >= 0 && nDiffSec <= nClickSpeedSec)
-				m_TopRightCornerClickTime = CurrentTime;
-		}
-		// 3. Bottom-right corner
-		else if (CRect(rcClient.Width()-nEdge, rcClient.Height()-nEdge, rcClient.Width(), rcClient.Height()).PtInRect(point))
-		{
-			CTime CurrentTime = CTime::GetCurrentTime();
-			LONGLONG nDiffSec = (CurrentTime - m_TopRightCornerClickTime).GetTotalSeconds();
-			if (nDiffSec >= 0 && nDiffSec <= nClickSpeedSec)
-				m_BottomRightCornerClickTime = CurrentTime;
-		}
-		// 4. Bottom-left corner
-		else if (CRect(0, rcClient.Height()-nEdge, nEdge, rcClient.Height()).PtInRect(point))
-		{
-			CTime CurrentTime = CTime::GetCurrentTime();
-			LONGLONG nDiffSec = (CurrentTime - m_BottomRightCornerClickTime).GetTotalSeconds();
-			if (nDiffSec >= 0 && nDiffSec <= nClickSpeedSec)
-				Crashme();
-		}
-	}
-
 	CWnd::OnLButtonUp(nFlags, point);
 }
