@@ -2384,9 +2384,9 @@ BOOL CVideoDeviceDoc::CHttpThread::PollAndClean(BOOL bDoNewPoll)
 		{
 			// Remove oldest connection?
 			LONGLONG llConnectionAgeMs = (LONGLONG)::GetTickCount64() - pNetCom->m_llInitUpTime;
-			if (pNetCom->IsShutdown()								||	// done?
-				llConnectionAgeMs >= 1000 * HTTP_CONNECTION_TIMEOUT	||	// too old?
-				!bDoNewPoll)											// too many open connections?
+			if (pNetCom->IsShutdown()									||	// done?
+				llConnectionAgeMs >= HTTP_CONNECTION_TIMEOUT_SEC * 1000	||	// too old?
+				!bDoNewPoll)												// too many open connections?
 			{
 				delete pNetCom; // this calls Close() which blocks till all net threads are done
 				m_HttpVideoNetComList.RemoveHead();
@@ -3171,7 +3171,7 @@ int CVideoDeviceDoc::CRtspThread::Work()
 			m_pDoc->ConnectErr(sErrorMsg, m_pDoc->GetDeviceName());
 
 			// Wait some time before reconnecting
-			if (::WaitForSingleObject(m_hKillEvent, RTSP_CONNECTION_TIMEOUT * 1000) == WAIT_OBJECT_0)
+			if (::WaitForSingleObject(m_hKillEvent, RTSP_CONNECTION_TIMEOUT_SEC * 1000) == WAIT_OBJECT_0)
 				goto exit;
 
 			// Clear error and then loop to reconnect
@@ -3189,7 +3189,7 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 	ASSERT(m_pDoc);
 
 	// Init vars
-	CTime LastHttpReconnectTime = 0; // set time far in the past, 0 is the same as CTime(0)
+	LONGLONG llLastHttpReconnectUpTime = 0;
 	BOOL bDeviceAlert = FALSE;
 
 	// Watch
@@ -3232,11 +3232,10 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 					// Http reconnect
 					if (m_pDoc->m_pVideoNetCom)
 					{
-						CTimeSpan TimeSpan = CurrentTime - LastHttpReconnectTime;
-						if (TimeSpan.GetTotalSeconds() > HTTP_CONNECTION_TIMEOUT)
+						if ((llCurrentUpTime - llLastHttpReconnectUpTime) >= HTTP_CONNECTION_TIMEOUT_SEC * 1000)
 						{
 							m_pDoc->ClearConnectErr();
-							LastHttpReconnectTime = CurrentTime;
+							llLastHttpReconnectUpTime = llCurrentUpTime;
 							m_pDoc->m_HttpThread.SetEventVideoConnect(_T(""), TRUE);
 						}
 					}

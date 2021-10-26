@@ -165,8 +165,8 @@ class CCameraAdvancedSettingsDlg;
 // Networking
 #define HTTP_DEFAULT_PORT						80
 #define RTSP_DEFAULT_PORT						554
-#define HTTP_CONNECTION_TIMEOUT					60				// in sec
-#define RTSP_CONNECTION_TIMEOUT					45				// in sec (set greater than WATCHDOG_THRESHOLD so that the watchdog can call SaveFrameList())
+#define HTTP_CONNECTION_TIMEOUT_SEC				60				// in sec
+#define RTSP_CONNECTION_TIMEOUT_SEC				45				// in sec (set greater than WATCHDOG_THRESHOLD so that the watchdog can call SaveFrameList())
 #define RTSP_SOCKET_TIMEOUT						15000000		// timeout in microseconds of socket I/O operations
 #define HTTP_MAX_HEADER_SIZE					1400			// bytes
 #define HTTP_MAX_MULTIPART_BOUNDARY				128				// boundary string buffer size in bytes
