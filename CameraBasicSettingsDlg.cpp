@@ -40,7 +40,7 @@ void CCameraBasicSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_NAME, m_sName);
 	DDX_Check(pDX, IDC_CHECK_SNAPSHOT_HISTORY_VIDEO, m_bSnapshotHistoryVideo);
 	DDX_Text(pDX, IDC_EDIT_SNAPSHOT_HISTORY_RATE, m_nSnapshotHistoryRate);
-	DDV_MinMaxInt(pDX, m_nSnapshotHistoryRate, 0, INT_MAX);
+	DDV_MinMaxInt(pDX, m_nSnapshotHistoryRate, 1, INT_MAX);
 	DDX_Check(pDX, IDC_CHECK_AUTORUN, m_bAutorun);
 	DDX_Check(pDX, IDC_CHECK_FULL_STRETCH, m_bCheckFullStretch);
 	DDX_Check(pDX, IDC_CHECK_TRASHCOMMAND, m_bCheckTrashCommand);
@@ -255,15 +255,19 @@ BOOL CCameraBasicSettingsDlg::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT messag
 
 void CCameraBasicSettingsDlg::OnOK() 
 {
-	// Begin wait cursor
-	BeginWaitCursor();
+	// Update data -> view to vars
+	if (UpdateData(TRUE))
+	{
+		// Begin wait cursor
+		BeginWaitCursor();
 
-	// Set vars
-	m_bDoApplySettings = TRUE;
-	m_nRetryTimeMs = 0;
+		// Set vars
+		m_bDoApplySettings = TRUE;
+		m_nRetryTimeMs = 0;
 
-	// Disable all
-	EnableDisableAllCtrls(FALSE);
+		// Disable all
+		EnableDisableAllCtrls(FALSE);
+	}
 }
 
 void CCameraBasicSettingsDlg::Rename()
@@ -362,9 +366,6 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	// Reset vars
 	m_bDoApplySettings = FALSE;
 	m_nRetryTimeMs = 0;
-
-	// Update data -> view to vars
-	UpdateData(TRUE);
 
 	// Disable saving
 	m_pDoc->m_SaveFrameListThread.Kill();
@@ -513,7 +514,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	// End wait cursor
 	EndWaitCursor();
 
-	// Update data from vars to view because m_sName may have been changed
+	// Update data from vars to view because m_sName may have been changed by the above Rename()
 	UpdateData(FALSE);
 
 	// Save Settings (BeginWaitCursor() / EndWaitCursor() called inside this function)
