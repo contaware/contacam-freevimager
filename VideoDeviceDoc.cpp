@@ -3698,11 +3698,16 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	// Camera Advanced Settings
 	m_pCameraAdvancedSettingsDlg = NULL;
 
+	// Email Sending Frequency
+	// Note: init the following 64-bit signed variables so that the first email is always sent 
+	//       (m_nMovDetSendMailSecBetweenMsg is a 32-bit signed integer and remains as such on
+	//       x64 builds; also INT_MAX remains 2147483647 on x64 builds)
+	m_llMovDetLastMailUpTime = -(LONGLONG)INT_MAX * 1000;
+	m_llMovDetLastJPGMailUpTime = -(LONGLONG)INT_MAX * 1000;
+	m_llMovDetLastVideoMailUpTime = -(LONGLONG)INT_MAX * 1000;
+	m_llMovDetLastGIFMailUpTime = -(LONGLONG)INT_MAX * 1000;
+	
 	// Email Settings
-	m_llMovDetLastMailUpTime = 0;
-	m_llMovDetLastJPGMailUpTime = 0;
-	m_llMovDetLastVideoMailUpTime = 0;
-	m_llMovDetLastGIFMailUpTime = 0;
 	m_AttachmentType = ATTACHMENT_NONE;
 	m_nMovDetSendMailSecBetweenMsg = 0;
 	m_SendMailConfiguration.m_sSubject = DEFAULT_EMAIL_SUBJECT;
