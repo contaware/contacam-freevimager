@@ -3182,7 +3182,7 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 	ASSERT(m_pDoc);
 
 	// Init vars
-	LONGLONG llLastHttpReconnectUpTime = 0;
+	LONGLONG llLastHttpReconnectUpTime = -HTTP_CONNECTION_TIMEOUT_SEC * 1000; // set it so that the first reconnect is triggered without waiting
 	BOOL bDeviceAlert = FALSE;
 
 	// Watch
