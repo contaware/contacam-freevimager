@@ -236,8 +236,9 @@ __forceinline BOOL CDib::IsValid()			const { return ((m_pBMI != NULL && m_pBits 
 															(m_pBMI != NULL && m_hDibSection != NULL)); };
 __forceinline LONGLONG CDib::GetPts()		const {return m_llPts;};
 __forceinline void CDib::SetPts(LONGLONG llPts) {m_llPts = llPts;};
-__forceinline time_t CDib::GetTime()		const {return m_llTime;};
-__forceinline void CDib::SetTime(time_t llTime) {m_llTime = llTime;};
+__forceinline FILETIME CDib::GetTime()		const {return m_UtcFileTime;};
+__forceinline void CDib::SetTime(const FILETIME& UtcFileTime) {	m_UtcFileTime.dwLowDateTime = UtcFileTime.dwLowDateTime;
+																m_UtcFileTime.dwHighDateTime = UtcFileTime.dwHighDateTime;};
 __forceinline LONGLONG CDib::GetUpTime()	const {return m_llUpTime;};
 __forceinline void CDib::SetUpTime(LONGLONG llUpTime) {m_llUpTime = llUpTime;};
 __forceinline DWORD CDib::GetUserFlag()		const {return m_dwUserFlag;};

@@ -7297,7 +7297,8 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize, LONGLONG llPt
 	// Timing
 	LONGLONG llCurrentFrameTime;
 	LONGLONG llPrevInitUpTime = m_llCurrentInitUpTime;
-	CTime CurrentTime = CTime::GetCurrentTime();
+	FILETIME CurrentUtcFileTime;
+	::GetSystemTimeAsFileTime(&CurrentUtcFileTime);
 	LONGLONG llCurrentInitUpTime = (LONGLONG)::GetTickCount64();
 	BOOL b1SecTick = FALSE;
 	if ((llCurrentInitUpTime - m_llNext1SecUpTime) >= 0)
@@ -7414,7 +7415,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize, LONGLONG llPt
 
 		// Set Pts, Time and UpTime to Dib
 		pDib->SetPts(llPtsMs);
-		pDib->SetTime(CurrentTime.GetTime());
+		pDib->SetTime(CurrentUtcFileTime);
 		pDib->SetUpTime(llCurrentInitUpTime);
 
 		// Capture audio?
@@ -7524,7 +7525,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize, LONGLONG llPt
 		if (!m_bCaptureStarted)
 		{
 			// Do not invert the order of the following two assignments!
-			m_CaptureStartTime = CurrentTime;
+			m_CaptureStartTime = CTime(CurrentUtcFileTime);
 			m_bCaptureStarted = TRUE;
 			if (m_bDeviceFirstRun)
 			{
