@@ -237,6 +237,7 @@ __forceinline BOOL CDib::IsValid()			const { return ((m_pBMI != NULL && m_pBits 
 __forceinline LONGLONG CDib::GetPts()		const {return m_llPts;};
 __forceinline void CDib::SetPts(LONGLONG llPts) {m_llPts = llPts;};
 __forceinline FILETIME CDib::GetTime()		const {return m_UtcFileTime;};
+__forceinline LPFILETIME CDib::GetTimePtr()	{return &m_UtcFileTime;};
 __forceinline void CDib::SetTime(const FILETIME& UtcFileTime) {	m_UtcFileTime.dwLowDateTime = UtcFileTime.dwLowDateTime;
 																m_UtcFileTime.dwHighDateTime = UtcFileTime.dwHighDateTime;};
 __forceinline LONGLONG CDib::GetUpTime()	const {return m_llUpTime;};

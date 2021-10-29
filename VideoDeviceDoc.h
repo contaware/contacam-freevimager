@@ -658,7 +658,7 @@ public:
 
 	// Frame Tags
 	static int ScaleFont(int nWidth, int nHeight, int nMinRefFontSize, int nMinRefWidth, int nMinRefHeight);
-	static void AddFrameTimeAndAnnotation(CDib* pDib, const CString& sFrameAnnotation, int nRefFontSize, BOOL bShowFrameUptime);
+	static void AddFrameTimeAndAnnotation(CDib* pDib, const CString& sFrameAnnotation, int nRefFontSize, BOOL bShowMilliseconds);
 	static void AddFrameCount(CDib* pDib, const CString& sCount, int nRefFontSize);
 	static void AddNoDonationTag(CDib* pDib, int nRefFontSize);
 
@@ -836,8 +836,8 @@ public:
 	volatile BOOL m_bObscureSource;						// Flag indicating whether the source has to be obscured
 	TCHAR m_szFrameAnnotation[MAX_PATH];				// Frame annotation text (also recorded in the file)
 	volatile BOOL m_bShowFrameTime;						// Show stamps inside the frame (also recorded in the file)
-	volatile BOOL m_bShowFrameUptime;					// Together with timestamp show also uptime (also recorded in the file)
-	volatile int m_nRefFontSize;						// Minimum font size for frame stamps, rec indicator and save progress
+	volatile BOOL m_bShowFrameMilliseconds;				// Include milliseconds in timestamp (also recorded in the file)
+	volatile int m_nRefFontSize;						// Minimum font size for frame stamps
 	volatile BOOL m_bDoEditCopy;						// Copy Frame to Clipboard in ProcessI420Frame()
 	volatile BOOL m_bDoEditSnapshot;					// Manual Snapshot Frame to file
 	volatile DWORD m_dwFrameCountUp;					// Captured Frames Count-Up, it can wrap around!
@@ -1046,8 +1046,8 @@ protected:
 	afx_msg void OnUpdateViewFrameAnnotation(CCmdUI* pCmdUI);
 	afx_msg void OnViewFrametime();
 	afx_msg void OnUpdateViewFrametime(CCmdUI* pCmdUI);
-	afx_msg void OnViewFrameUptime();
-	afx_msg void OnUpdateViewFrameUptime(CCmdUI* pCmdUI);
+	afx_msg void OnViewFrameMilliseconds();
+	afx_msg void OnUpdateViewFrameMilliseconds(CCmdUI* pCmdUI);
 	afx_msg void OnFileClose();
 	afx_msg void OnUpdateCaptureCameraAdvancedSettings(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateEditZone(CCmdUI* pCmdUI);

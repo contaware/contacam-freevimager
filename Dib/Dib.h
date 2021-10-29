@@ -504,6 +504,7 @@ public:
 	__forceinline LONGLONG GetPts()	const;
 	__forceinline void SetPts(LONGLONG llPts);
 	__forceinline FILETIME GetTime() const;
+	__forceinline LPFILETIME GetTimePtr();
 	__forceinline void SetTime(const FILETIME& UtcFileTime);
 	__forceinline LONGLONG GetUpTime() const;
 	__forceinline void SetUpTime(LONGLONG llUpTime);

@@ -689,7 +689,7 @@ BEGIN
     BEGIN
         MENUITEM "Enable frame stamps",         ID_VIEW_FRAMETIME
         MENUITEM SEPARATOR
-        MENUITEM "Include uptime with time",    ID_VIEW_FRAMEUPTIME
+        MENUITEM "Include milliseconds",        ID_VIEW_FRAMEMILLISECONDS
         MENUITEM "Annotation",                  ID_VIEW_FRAMEANNOTATION
         MENUITEM SEPARATOR
         MENUITEM "Text size 4",                 ID_FONTSIZE_4
