@@ -5,6 +5,7 @@ CONTACAM HISTORY
 - Improved saving of animated gif / mp4 in case of unstable rtsp streams
 - To fine-tune the motion sensitivity there is now the possibility to 
   record the zones where motion is detected 
+- It's now possible to include milliseconds in the frame timestamp
 - Updated to ffmpeg 3.4.9
 
 9.9.19 (August 25th 2021)

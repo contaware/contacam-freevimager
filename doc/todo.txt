@@ -94,10 +94,7 @@ ContaCam open tasks
   -> attention, many HLS streams are loading in bursts, we need to store pts in the frames
   
 - Execute command on camera failure, add the option of "camera failure" to the command execute area
-  (n1fbg@arrl.net)
-  
-- Option to record the red + blue motion grid rectangles + the red dot record symbol
-  (zeroin@ya.ru, gthumberger@gmail.com, nicholas.blake.au@gmail.com) 
+  (n1fbg@arrl.net) 
   
 - Take multiple jpg snapshots on motion, not just one
   (randy3xyz@gmail.com)
@@ -106,7 +103,6 @@ ContaCam open tasks
   next video or go back
   (joerg@joergmahn.de, gthaavik@outlook.com)
   
-- GetTickCount() is monotonic as opposed to GetSystemTime/GetLocalTime/GetSystemTimeAsFileTime,
-  so it would make sense to add both of them to each frame so that we have a monotonic relative
-  time and an absolute time to display with milliseconds
-  (thomas.hendrik@adick.de)
+- More fine tunable relative sensitivity, maybe instead of fixed relative sensitivity,
+  make them configurable in absolute value or relative. 
+  Important to remain backwards compatible!
