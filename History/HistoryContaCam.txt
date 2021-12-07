@@ -1,6 +1,6 @@
 CONTACAM HISTORY
 
-9.9.20 (Month XXth 2021)
+9.9.20 (December 7th 2021)
 
 - Improved saving of animated gif / mp4 in case of unstable rtsp streams
 - To fine-tune the motion sensitivity there is now the possibility to 
