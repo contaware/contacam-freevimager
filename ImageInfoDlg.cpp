@@ -2534,8 +2534,11 @@ void CImageInfoDlg::DisplayMetadata()
 					{
 						ecount++;
 					
-						if (g_nLogLevel > 0 && (rv = icco->read(icco, fp, offset)) != 0)
-							::LogLine(_T("%d, %s"), rv, CString(icco->err));
+						if ((rv = icco->read(icco, fp, offset)) != 0)
+						{
+							if (g_nLogLevel > 0)
+								::LogLine(_T("%d, %s"), rv, CString(icco->err));
+						}
 						
 						icco->dump(icco, op, 1); // Verbose Level 1 .. 3
 
