@@ -1,5 +1,9 @@
 FREEVIMAGER HISTORY
 
+9.9.21 (Month XXth 2021)
+
+- More robust ICC profiles parser to avoid crashes with some buggy files
+
 9.9.20 (December 7th 2021)
 
 - Better clipboard support for images with transparency
