@@ -9095,7 +9095,11 @@ void CVideoDeviceDoc::ConnectRtsp()
 			sPathAndQuery = _T("/stream1");
 			break;
 
-		case REOLINK_RTSP:			
+		case REOLINK_H265_RTSP:
+			sPathAndQuery = _T("/h265Preview_01_main");
+			break;
+
+		case REOLINK_H264_RTSP:			
 			sPathAndQuery = _T("/h264Preview_01_main"); // substream is: /h264Preview_01_sub
 			break;
 
