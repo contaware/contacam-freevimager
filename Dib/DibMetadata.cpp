@@ -2110,7 +2110,6 @@ int CMetadata::MakeExifSection(LPBYTE Section,
 bool CMetadata::ParseProcessJPEG(unsigned char* pData, int nLength, bool bDoWrite/*=false*/)
 {
 	bool res;
-    int a, i;
 	m_bDoWrite = bDoWrite;
 	ICCARRAY IccArray;
 
@@ -2160,7 +2159,7 @@ bool CMetadata::ParseProcessJPEG(unsigned char* pData, int nLength, bool bDoWrit
         }
 
 		// Padding
-        for (a = 0 ; a < 7 ; a++)
+        for (int a = 0 ; a < 7 ; a++)
 		{
 			if ((int)dwPos >= nLength)
 				goto error;
@@ -2353,9 +2352,13 @@ bool CMetadata::ParseProcessJPEG(unsigned char* pData, int nLength, bool bDoWrit
 					BYTE chunkid = *(m_Sections[m_nSectionsRead-1].Data + 2 + ICC_HEADER_SIZE);		// 1..255
 					BYTE chunks = *(m_Sections[m_nSectionsRead-1].Data + 2 + ICC_HEADER_SIZE + 1);	// 1..255
 					
-					// Set array size
+					// Set array size and init to NULL
 					if (IccArray.GetSize() == 0)
+					{
 						IccArray.SetSize(chunks);
+						for (int i = 0 ; i < IccArray.GetSize() ; i++)
+							IccArray[i] = NULL;
+					}
 
 					// New entry
 					CIccSectionEntry* pIccSectionEntry = new CIccSectionEntry;
@@ -2432,7 +2435,7 @@ iccjoin:
 	if (IccArray.GetSize() > 0)
 	{
 		int nTotalSize = 0;
-		for (i = 0 ; i < IccArray.GetSize() ; i++)
+		for (int i = 0 ; i < IccArray.GetSize() ; i++)
 		{
 			if (IccArray[i])
 				nTotalSize += IccArray[i]->size;
@@ -2447,14 +2450,20 @@ iccjoin:
 		{
 			m_dwIccSize = nTotalSize;
 			int iccpos = 0;
-			for (i = 0 ; i < IccArray.GetSize() ; i++)
+			for (int i = 0 ; i < IccArray.GetSize() ; i++)
 			{
-				memcpy(m_pIccData + iccpos, IccArray[i]->data, IccArray[i]->size);
-				iccpos += IccArray[i]->size;
+				if (IccArray[i])
+				{
+					memcpy(m_pIccData + iccpos, IccArray[i]->data, IccArray[i]->size);
+					iccpos += IccArray[i]->size;
+				}
 			}
 		}
-		for (i = 0 ; i < IccArray.GetSize() ; i++)
-			delete IccArray[i];
+		for (int i = 0 ; i < IccArray.GetSize() ; i++)
+		{
+			if (IccArray[i])
+				delete IccArray[i];
+		}
 	}
 
 	return res;
