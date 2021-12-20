@@ -32,7 +32,8 @@ BEGIN_MESSAGE_MAP(CVideoDeviceView, CUImagerView)
 	ON_WM_MOUSEMOVE()
 	ON_COMMAND(ID_VIEW_FULLSCREEN, OnViewFullscreen)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FULLSCREEN, OnUpdateViewFullscreen)
-	ON_COMMAND(ID_EDIT_ALLZONES, OnEditAllZones)
+	ON_COMMAND(ID_EDIT_ACTIVATE_ALLZONES, OnEditActivateAllZones)
+	ON_COMMAND(ID_EDIT_DEACTIVATE_ALLZONES, OnEditDeactivateAllZones)
 	ON_WM_MOUSEWHEEL()
 	ON_COMMAND(ID_FONTSIZE_4, OnFrameTimeFontSize4)
 	ON_UPDATE_COMMAND_UI(ID_FONTSIZE_4, OnUpdateFrameTimeFontSize4)
@@ -737,7 +738,10 @@ void CVideoDeviceView::OnRButtonDown(UINT nFlags, CPoint point)
 	if (pDoc->m_nShowEditDetectionZones)
 	{
 		CMenu menu;
-		VERIFY(menu.LoadMenu(IDR_CONTEXT_ZONES));
+		if (pDoc->m_nShowEditDetectionZones == 1)
+			VERIFY(menu.LoadMenu(IDR_CONTEXT_ACTIVATE_ZONES));
+		else if (pDoc->m_nShowEditDetectionZones == 2)
+			VERIFY(menu.LoadMenu(IDR_CONTEXT_DEACTIVATE_ZONES));
 		CMenu* pPopup = menu.GetSubMenu(0);
 		ASSERT(pPopup != NULL);
 		SetForegroundWindow();
@@ -936,7 +940,10 @@ void CVideoDeviceView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			ForceCursor();
 			if (pDoc->m_nShowEditDetectionZones)
 			{
-				VERIFY(menu.LoadMenu(IDR_CONTEXT_ZONES));
+				if (pDoc->m_nShowEditDetectionZones == 1)
+					VERIFY(menu.LoadMenu(IDR_CONTEXT_ACTIVATE_ZONES));
+				else if (pDoc->m_nShowEditDetectionZones == 2)
+					VERIFY(menu.LoadMenu(IDR_CONTEXT_DEACTIVATE_ZONES));
 				pPopup = menu.GetSubMenu(0);
 				ASSERT(pPopup != NULL);
 				SetForegroundWindow();
@@ -1142,14 +1149,20 @@ void CVideoDeviceView::OnUpdateViewFullscreen(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(m_bFullScreenMode ? 1 : 0);	
 }
 
-void CVideoDeviceView::OnEditAllZones()
+void CVideoDeviceView::OnEditActivateAllZones()
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
-	if (pDoc->m_nShowEditDetectionZones == 1)
-		memset(pDoc->m_DoMovementDetection, m_MovDetSingleZoneSensitivity, MOVDET_MAX_ZONES);
-	else if (pDoc->m_nShowEditDetectionZones == 2)
-		memset(pDoc->m_DoMovementDetection, 0, MOVDET_MAX_ZONES);
+	memset(pDoc->m_DoMovementDetection, m_MovDetSingleZoneSensitivity, MOVDET_MAX_ZONES);
+	pDoc->SaveZonesSettings(pDoc->GetDevicePathName());
+	Invalidate(FALSE);
+}
+
+void CVideoDeviceView::OnEditDeactivateAllZones()
+{
+	CVideoDeviceDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	memset(pDoc->m_DoMovementDetection, 0, MOVDET_MAX_ZONES);
 	pDoc->SaveZonesSettings(pDoc->GetDevicePathName());
 	Invalidate(FALSE);
 }

@@ -65,7 +65,8 @@ protected:
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
-	afx_msg void OnEditAllZones();
+	afx_msg void OnEditActivateAllZones();
+	afx_msg void OnEditDeactivateAllZones();
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 	afx_msg void OnFrameTimeFontSize4();
 	afx_msg void OnUpdateFrameTimeFontSize4(CCmdUI* pCmdUI);

@@ -27,7 +27,8 @@
 #define IDR_CONTEXT_CROP                150
 #define IDD_HLS                         150
 #define IDD_AUDIOIN_SOURCE              151
-#define IDR_CONTEXT_ZONES               151
+#define IDR_CONTEXT_ACTIVATE_ZONES      151
+#define IDR_CONTEXT_DEACTIVATE_ZONES    152
 #define IDR_EMPTY_TOOLBAR               154
 #define IDC_HAND_CURSOR                 157
 #define IDR_MAINFRAME2X                 158
@@ -3064,7 +3065,8 @@
 #define ID_EDIT_FRAMESTAMP              32909
 #define ID_EDIT_ZONE                    32910
 #define ID_EDIT_ZONE_REMOVE             32912
-#define ID_EDIT_ALLZONES                32913
+#define ID_EDIT_ACTIVATE_ALLZONES       32913
+#define ID_EDIT_DEACTIVATE_ALLZONES     32914
 #define ID_CAPTURE_NETWORK              32915
 #define ID_CAPTURE_RECORD               32918
 #define ID_VIEW_ALL_NEXT_PICTURE        32919

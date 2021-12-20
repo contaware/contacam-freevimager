@@ -428,11 +428,22 @@ BEGIN
     END
 END
 
-IDR_CONTEXT_ZONES MENU
+IDR_CONTEXT_ACTIVATE_ZONES MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
-        MENUITEM "All zones",                   ID_EDIT_ALLZONES
+        MENUITEM "Activate all zones",          ID_EDIT_ACTIVATE_ALLZONES
+        MENUITEM SEPARATOR
+        MENUITEM "Fit",                         ID_VIEW_FIT
+        MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
+    END
+END
+
+IDR_CONTEXT_DEACTIVATE_ZONES MENU
+BEGIN
+    POPUP "_Context Menu_"
+    BEGIN
+        MENUITEM "Deactivate all zones",        ID_EDIT_DEACTIVATE_ALLZONES
         MENUITEM SEPARATOR
         MENUITEM "Fit",                         ID_VIEW_FIT
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
@@ -3335,7 +3346,10 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_EDIT_ALLZONES        "Activate / Deactivate all zones\nAll Zones"
+    ID_EDIT_ACTIVATE_ALLZONES        
+                            "Activate all zones\nActivate All Zones"
+	ID_EDIT_DEACTIVATE_ALLZONES
+                            "Deactivate all zones\nDeactivate All Zones"
     ID_CAPTURE_NETWORK      "Network / IP camera\nNetwork / IP Camera"
     ID_CAPTURE_RECORD       "Recording\nRecording"
     ID_VIEW_ALL_NEXT_PICTURE 
