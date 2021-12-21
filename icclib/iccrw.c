@@ -5,7 +5,7 @@
  *
  * Author:  Graeme W. Gill
  * Date:    1999/11/29
- * Version: 2.14
+ * Version: 2.15
  *
  * Copyright 1997 - 2012 Graeme W. Gill
  *

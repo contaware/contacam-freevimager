@@ -29,18 +29,20 @@ CColourPopup
   m_nBoxSize          = ::SystemDPIScale(18);
 
 
-icclib 2.14
+icclib 2.16
 -----------
 
 - Thread Safe
 
-- Changed file icc.c:
-  * icmFileMem_printf changed to advance pointer
-  * Adapted icc_dump & icmHeader_dump to use tabs
+- Changed file icc.c to use tabs in these functions:
+  * icc_dump
+  * icmHeader_dump
   
-- Added missing extern to the following two arrays in icc.h:
-  extern double icmD50_ary3[3];				/* As an array */
-  extern double icmD65_ary3[3];				/* As an array */
+- Added missing extern to the following arrays in icc.h:
+  extern double icmD50_ary3[3];			/* As an array */
+  extern double icmD50_100_ary3[3];		/* Scaled to 100 as an array */
+  extern double icmD65_ary3[3];			/* As an array */
+  extern double icmD65_100_ary3[3];		/* Scaled to 100 as an array */
 
 
 ziparchive-2.4.4

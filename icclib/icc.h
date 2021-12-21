@@ -6,9 +6,9 @@
  *
  * Author:  Graeme W. Gill
  * Date:    1999/11/29
- * Version: 2.14
+ * Version: 2.15
  *
- * Copyright 1997 - 2012 Graeme W. Gill
+ * Copyright 1997 - 2013 Graeme W. Gill
  *
  * This material is licensed with an "MIT" free use license:-
  * see the License.txt file in this directory for licensing details.
@@ -30,8 +30,8 @@
 
 /* Version of icclib release */
 
-#define ICCLIB_VERSION 0x020014
-#define ICCLIB_VERSION_STR "2.14"
+#define ICCLIB_VERSION 0x020016
+#define ICCLIB_VERSION_STR "2.16"
 
 #undef ENABLE_V4		/* V4 is not fully implemented */
 
@@ -216,7 +216,7 @@ icmAlloc *new_icmAllocStd(void);
 #define ICM_FILE_BASE																		\
 	/* Public: */																			\
 																							\
-	/* Get the size of the file (Only valid for memory file). */							\
+	/* Get the size of the file (Typically valid after read only) */						\
 	size_t (*get_size) (struct _icmFile *p);												\
 																							\
 	/* Set current position to offset. Return 0 on success, nz on failure. */				\
@@ -234,11 +234,11 @@ icmAlloc *new_icmAllocStd(void);
 	/* flush all write data out to secondary storage. Return nz on failure. */				\
 	int (*flush)(struct _icmFile *p);														\
 																							\
+	/* Return the memory buffer. Error if not icmFileMem */									\
+	int (*get_buf)(struct _icmFile *p, unsigned char **buf, size_t *len);					\
+																							\
 	/* we're done with the file object, return nz on failure */								\
 	int (*del)(struct _icmFile *p);															\
-																							\
-	/* Private: */																			\
-	size_t size;	/* Size of the file */													\
 
 /* Common file interface class */
 struct _icmFile {
@@ -259,6 +259,10 @@ struct _icmFileStd {
 	int      del_al;	/* NZ if heap allocator should be deleted */
 	FILE     *fp;
 	int   doclose;		/* nz if free should close */
+
+	/* Private: */
+	size_t size;    /* Size of the file (For read) */
+
 }; typedef struct _icmFileStd icmFileStd;
 
 /* Create given a file name */
@@ -276,6 +280,9 @@ icmFile *new_icmFileStd_fp_a(FILE *fp, icmAlloc *al);
 
 /* - - - - - - - - - - - - - - - - - - - - -  */
 /* Implementation of file access class based on a memory image */
+/* The buffer is assumed to be allocated with the given heap allocator */
+/* Pass base = NULL, length = 0 for no initial buffer */
+
 struct _icmFileMem {
 	ICM_FILE_BASE
 
@@ -283,15 +290,16 @@ struct _icmFileMem {
 	icmAlloc *al;		/* Heap allocator */
 	int      del_al;	/* NZ if heap allocator should be deleted */
 	int      del_buf;	/* NZ if memory file buffer should be deleted */
-	unsigned char *start, *cur, *end;
+	unsigned char *start, *cur, *end, *aend;
 
 }; typedef struct _icmFileMem icmFileMem;
 
 /* Create a memory image file access class with given allocator */
+/* The buffer is not delete with the object. */
 icmFile *new_icmFileMem_a(void *base, size_t length, icmAlloc *al);
 
 /* Create a memory image file access class with given allocator */
-/* and delete base when icmFile is deleted. */
+/* and delete buffer when icmFile is deleted. */
 icmFile *new_icmFileMem_ad(void *base, size_t length, icmAlloc *al);
 
 /* This is avalailable if SEPARATE_STD is not defined: */
@@ -299,6 +307,9 @@ icmFile *new_icmFileMem_ad(void *base, size_t length, icmAlloc *al);
 /* Create a memory image file access class */
 icmFile *new_icmFileMem(void *base, size_t length);
 
+/* Create a memory image file access class */
+/* and delete buffer when icmFile is deleted. */
+icmFile *new_icmFileMem_d(void *base, size_t length);
 
 /* --------------------------------- */
 /* Assumed constants                 */
@@ -345,6 +356,9 @@ typedef int icmSig;	/* Otherwise un-enumerated 4 byte signature */
 /* Non-standard Platform Signature */
 #define icmSig_nix ((icPlatformSignature) icmMakeTag('*','n','i','x'))
 
+
+/* Alias for icSigColorantTableType found in LOGO profiles (Byte swapped clrt !) */ 
+#define icmSigAltColorantTableType ((icTagTypeSignature)icmMakeTag('t','r','l','c'))
 
 /* Tag Type signature, used to handle any tag that */
 /* isn't handled with a specific type object. */
@@ -691,6 +705,9 @@ typedef struct {
 #define ICM_CLUT_SET_EXACT 0x0000	/* Set clut node values exactly from callback */
 #define ICM_CLUT_SET_APXLS 0x0001	/* Set clut node values to aproximate least squares fit */
 
+#define ICM_CLUT_SET_FILTER 0x0002	/* Post filter values (icmSetMultiLutTables() only) */
+
+
 /* lut */
 struct _icmLut {
 	ICM_BASE_MEMBERS
@@ -761,8 +778,11 @@ struct _icmLut {
 								/* inspace' -> outspace' transfer function */
 		double *clutmin, double *clutmax,		/* Maximum range of outspace' values */
 												/* (NULL = default) */
-		void (*outfunc)(void *cbntx, double *out, double *in));
+		void (*outfunc)(void *cbntx, double *out, double *in),
 								/* Output transfer function, outspace'->outspace (NULL = deflt) */
+		int *apxls_gmin, int *apxls_gmax	/* If not NULL, the grid indexes not to be affected */
+										/* by ICM_CLUT_SET_APXLS, defaulting to 0..>clutPoints-1 */
+);
 		
 }; typedef struct _icmLut icmLut;
 
@@ -771,28 +791,33 @@ struct _icmLut {
 /* having the same configuration and resolutions, and the */
 /* same per channel input and output curves. */
 /* Set errc and return error number in underlying icc */
+/* Note that clutfunc in[] value has "index under". */
+/* If ICM_CLUT_SET_FILTER is set, the per grid node filtering radius */
+/* is returned in clutfunc out[-1], out[-2] etc for each table */
 int icmSetMultiLutTables(
-	int ntables,							/* Number of tables to be set, 1..n */
-	struct _icmLut **p,						/* Pointer to Lut object */
-	int     flags,							/* Setting flags */
-	void   *cbctx,							/* Opaque callback context pointer value */
-	icColorSpaceSignature insig, 			/* Input color space */
-	icColorSpaceSignature outsig, 			/* Output color space */
+	int ntables,						/* Number of tables to be set, 1..n */
+	struct _icmLut **p,					/* Pointer to Lut object */
+	int     flags,						/* Setting flags */
+	void   *cbctx,						/* Opaque callback context pointer value */
+	icColorSpaceSignature insig, 		/* Input color space */
+	icColorSpaceSignature outsig, 		/* Output color space */
 	void (*infunc)(void *cbctx, double *out, double *in),
 							/* Input transfer function, inspace->inspace' (NULL = default) */
 							/* Will be called ntables times each input grid value */
-	double *inmin, double *inmax,			/* Maximum range of inspace' values */
-											/* (NULL = default) */
+	double *inmin, double *inmax,		/* Maximum range of inspace' values */
+										/* (NULL = default) */
 	void (*clutfunc)(void *cbntx, double *out, double *in),
 							/* inspace' -> outspace[ntables]' transfer function */
 							/* will be called once for each input' grid value, and */
 							/* ntables output values should be written consecutively */
 							/* to out[]. */
-	double *clutmin, double *clutmax,		/* Maximum range of outspace' values */
-											/* (NULL = default) */
-	void (*outfunc)(void *cbntx, double *out, double *in)
+	double *clutmin, double *clutmax,	/* Maximum range of outspace' values */
+										/* (NULL = default) */
+	void (*outfunc)(void *cbntx, double *out, double *in),
 								/* Output transfer function, outspace'->outspace (NULL = deflt) */
 								/* Will be called ntables times on each output value */
+	int *apxls_gmin, int *apxls_gmax	/* If not NULL, the grid indexes not to be affected */
+										/* by ICM_CLUT_SET_APXLS, defaulting to 0..>clutPoints-1 */
 );
 		
 /* - - - - - - - - - - - - - - - - - - - - -  */
@@ -1421,6 +1446,8 @@ struct _icc {
 							/* Returns 0 if found, 1 if found but not readable, 2 of not found */
 	icmBase *    (*read_tag)(struct _icc *p, icTagSignature sig);
 															/* Returns pointer to object */
+	icmBase *    (*read_tag_any)(struct _icc *p, icTagSignature sig);
+								/* Returns pointer to object, but may be icmSigUnknownType! */
 	icmBase *    (*add_tag)(struct _icc *p, icTagSignature sig, icTagTypeSignature ttype);
 															/* Returns pointer to object */
 	int          (*rename_tag)(struct _icc *p, icTagSignature sig, icTagSignature sigNew);
@@ -1464,6 +1491,8 @@ struct _icc {
 	char             err[512];			/* Error message */
 	int              errc;				/* Error code */
 	int              warnc;				/* Warning code */
+
+	int              allowclutPoints256; /* Non standard - allow 256 res cLUT */
 
   /* Private: ? */
 	icmAlloc        *al;				/* Heap allocator */
@@ -1570,6 +1599,9 @@ struct _icmFileMD5 {
 	unsigned int of;	/* Current offset */
 	int errc;			/* Error code, 0 for OK */
 
+	/* Private: */
+	size_t size;    /* Size of the file (For read) */
+
 }; typedef struct _icmFileMD5 icmFileMD5;
 
 /* Create a dumy file access class with allocator */
@@ -1627,132 +1659,9 @@ extern ICCLIB_API unsigned int icmCSSig2nchan(icColorSpaceSignature sig);
 /* 1 if it is a colorant based colorspace, and 2 if it is not a colorant based space */
 extern ICCLIB_API unsigned int icmCSSig2chanNames( icColorSpaceSignature sig, char *cvals[]);
 
-
-/* Simple macro to transfer an array to an XYZ number */
-#define icmAry2XYZ(xyz, ary) ((xyz).X = (ary)[0], (xyz).Y = (ary)[1], (xyz).Z = (ary)[2])
-
-/* And the reverse */
-#define icmXYZ2Ary(ary, xyz) ((ary)[0] = (xyz).X, (ary)[1] = (xyz).Y, (ary)[2] = (xyz).Z)
-
-/* Simple macro to transfer an XYZ number to an XYZ number */
-#define icmXYZ2XYZ(d_xyz, s_xyz) ((d_xyz).X = (s_xyz).X, (d_xyz).Y = (s_xyz).Y, \
-                                  (d_xyz).Z = (s_xyz).Z)
-
-/* Simple macro to transfer an 3array to 3array */
-#define icmAry2Ary(d_ary, s_ary) ((d_ary)[0] = (s_ary)[0], (d_ary)[1] = (s_ary)[1], \
-                                  (d_ary)[2] = (s_ary)[2])
-
-/* CIE Y (range 0 .. 1) to perceptual CIE 1976 L* (range 0 .. 100) */
-double icmY2L(double val);
-
-/* Perceptual CIE 1976 L* (range 0 .. 100) to CIE Y (range 0 .. 1) */
-double icmL2Y(double val);
-
-/* CIE XYZ to perceptual Lab */
-extern ICCLIB_API void icmXYZ2Lab(icmXYZNumber *w, double *out, double *in);
-
-/* Perceptual Lab to CIE XYZ */
-extern ICCLIB_API void icmLab2XYZ(icmXYZNumber *w, double *out, double *in);
-
-/* LCh to Lab */
-extern ICCLIB_API void icmLCh2Lab(double *out, double *in);
-
-/* Lab to LCh */
-extern ICCLIB_API void icmLab2LCh(double *out, double *in);
-
-/* XYZ to Yxy */
-extern ICCLIB_API void icmXYZ2Yxy(double *out, double *in);
-
-/* Yxy to XYZ */
-extern ICCLIB_API void icmYxy2XYZ(double *out, double *in);
-
-/* CIE XYZ to perceptual Luv */
-extern ICCLIB_API void icmXYZ2Luv(icmXYZNumber *w, double *out, double *in);
-
-/* Perceptual Luv to CIE XYZ */
-extern ICCLIB_API void icmLuv2XYZ(icmXYZNumber *w, double *out, double *in);
-
-
-/* NOTE :- none of the following seven have been protected */
-/* against arithmmetic issues (ie. for black) */
-
-/* CIE XYZ to perceptual CIE 1976 UCS diagram Yu'v'*/
-/* (Yu'v' is a better chromaticity space than Yxy) */
-extern ICCLIB_API void icmXYZ21976UCS(double *out, double *in);
-
-/* Perceptual CIE 1976 UCS diagram Yu'v' to CIE XYZ */
-extern ICCLIB_API void icm1976UCS2XYZ(double *out, double *in);
-
-/* CIE XYZ to perceptual CIE 1960 UCS */
-/* (This was obsoleted by the 1976UCS, but is still used */
-/*  in computing color temperatures.) */
-extern ICCLIB_API void icmXYZ21960UCS(double *out, double *in);
-
-/* Perceptual CIE 1960 UCS to CIE XYZ */
-extern ICCLIB_API void icm1960UCS2XYZ(double *out, double *in);
-
-/* CIE XYZ to perceptual CIE 1964 WUV (U*V*W*) */
-/* (This is obsolete but still used in computing CRI) */
-extern ICCLIB_API void icmXYZ21964WUV(icmXYZNumber *w, double *out, double *in);
-
-/* Perceptual CIE 1964 WUV (U*V*W*) to CIE XYZ */
-extern ICCLIB_API void icm1964WUV2XYZ(icmXYZNumber *w, double *out, double *in);
-
-/* CIE CIE1960 UCS to perceptual CIE 1964 WUV (U*V*W*) */
-extern ICCLIB_API void icm1960UCS21964WUV(icmXYZNumber *w, double *out, double *in);
-
-
-/* The standard D50 illuminant value */
-extern icmXYZNumber icmD50;
-extern icmXYZNumber icmD50_100;		/* Scaled to 100 */
-extern double icmD50_ary3[3];		/* As an array, Oli added extern */
-
-/* The standard D65 illuminant value */
-extern icmXYZNumber icmD65;
-extern icmXYZNumber icmD65_100;		/* Scaled to 100 */
-extern double icmD65_ary3[3];		/* As an array, Oli added extern */
-
-/* The default black value */
-extern icmXYZNumber icmBlack;
-
-
-/* Initialise a pseudo-hilbert grid counter, return total usable count. */
-extern ICCLIB_API unsigned psh_init(psh *p, int di, unsigned int res, int co[]);
-
-/* Reset the counter */
-extern ICCLIB_API void psh_reset(psh *p);
-
-/* Increment pseudo-hilbert coordinates */
-/* Return non-zero if count rolls over to 0 */
-extern ICCLIB_API int psh_inc(psh *p, int co[]);
-
-
-/* RGB primaries to device to RGB->XYZ transform matrix */
-/* Return non-zero if matrix would be singular */
-int icmRGBprim2matrix(
-	icmXYZNumber white,		/* White point */
-	icmXYZNumber red,		/* Red colorant */
-	icmXYZNumber green,		/* Green colorant */
-	icmXYZNumber blue,		/* Blue colorant */
-	double mat[3][3]		/* Destination matrix */
-);
-
-/* Chromatic Adaption transform utility */
-/* Return a 3x3 chromatic adaption matrix */
-/* Use icmMulBy3x3(dst, mat, src) */
-
-#define ICM_CAM_BRADFORD	0x0001	/* Use Bradford sharpened response space */
-#define ICM_CAM_MULMATRIX	0x0002	/* Transform the given matrix */
-
-void icmChromAdaptMatrix(
-	int flags,				/* Flags as defined below */
-	icmXYZNumber d_wp,		/* Destination white point */
-	icmXYZNumber s_wp,		/* Source white point */
-	double mat[3][3]		/* Destination matrix */
-);
-
 /* - - - - - - - - - - - - - - */
-/* Set a 3 vector */
+
+/* Set a 3 vector to the same value */
 #define icmSet3(d_ary, s_val) ((d_ary)[0] = (s_val), (d_ary)[1] = (s_val), \
                               (d_ary)[2] = (s_val))
 
@@ -1772,6 +1681,16 @@ void icmAdd3(double out[3], double in1[3], double in2[3]);
 void icmSub3(double out[3], double in1[3], double in2[3]);
 
 #define ICMSUB3(o, i, j) ((o)[0] = (i)[0] - (j)[0], (o)[1] = (i)[1] - (j)[1], (o)[2] = (i)[2] - (j)[2])
+
+/* Divide two 3 vectors, out = in1/in2 */
+void icmDiv3(double out[3], double in1[3], double in2[3]);
+
+#define ICMDIV3(o, i, j) ((o)[0] = (i)[0]/(j)[0], (o)[1] = (i)[1]/(j)[1], (o)[2] = (i)[2]/(j)[2])
+
+/* Multiply two 3 vectors, out = in1 * in2 */
+void icmMul3(double out[3], double in1[3], double in2[3]);
+
+#define ICMMUL3(o, i, j) ((o)[0] = (i)[0] * (j)[0], (o)[1] = (i)[1] * (j)[1], (o)[2] = (i)[2] * (j)[2])
 
 /* Compute the dot product of two 3 vectors */
 double icmDot3(double in1[3], double in2[3]);
@@ -1794,10 +1713,13 @@ double icmNorm3(double in[3]);
 /* Scale a 3 vector by the given ratio */
 void icmScale3(double out[3], double in[3], double rat);
 
+#define ICMSCALE3(o, i, j) ((o)[0] = (i)[0] * (j), (o)[1] = (i)[1] * (j), (o)[2] = (i)[2] * (j))
+
 /* Compute a blend between in0 and in1 */
 void icmBlend3(double out[3], double in0[3], double in1[3], double bf);
 
-#define ICMSCALE3(o, i, j) ((o)[0] = (i)[0] * (j), (o)[1] = (i)[1] * (j), (o)[2] = (i)[2] * (j))
+/* Clip a vector to the range 0.0 .. 1.0 */
+void icmClip3(double out[3], double in[3]);
 
 /* Normalise a 3 vector to the given length. Return nz if not normalisable */
 int icmNormalize3(double out[3], double in[3], double len);
@@ -1897,6 +1819,109 @@ double icmPlaneDist3(double eq[4], double p[3]);
 /* Multiply 2 array by 2x2 transform matrix */
 void icmMulBy2x2(double out[2], double mat[2][2], double in[2]);
 
+/* - - - - - - - - - - - - - - */
+
+/* Simple macro to transfer an array to an XYZ number */
+#define icmAry2XYZ(xyz, ary) ((xyz).X = (ary)[0], (xyz).Y = (ary)[1], (xyz).Z = (ary)[2])
+
+/* And the reverse */
+#define icmXYZ2Ary(ary, xyz) ((ary)[0] = (xyz).X, (ary)[1] = (xyz).Y, (ary)[2] = (xyz).Z)
+
+/* Simple macro to transfer an XYZ number to an XYZ number */
+#define icmXYZ2XYZ(d_xyz, s_xyz) ((d_xyz).X = (s_xyz).X, (d_xyz).Y = (s_xyz).Y, \
+                                  (d_xyz).Z = (s_xyz).Z)
+
+/* Simple macro to transfer an 3array to 3array */
+/* Hmm. Same as icmCpy3 */
+#define icmAry2Ary(d_ary, s_ary) ((d_ary)[0] = (s_ary)[0], (d_ary)[1] = (s_ary)[1], \
+                                  (d_ary)[2] = (s_ary)[2])
+
+/* CIE Y (range 0 .. 1) to perceptual CIE 1976 L* (range 0 .. 100) */
+double icmY2L(double val);
+
+/* Perceptual CIE 1976 L* (range 0 .. 100) to CIE Y (range 0 .. 1) */
+double icmL2Y(double val);
+
+/* CIE XYZ to perceptual Lab */
+extern ICCLIB_API void icmXYZ2Lab(icmXYZNumber *w, double *out, double *in);
+
+/* Perceptual Lab to CIE XYZ */
+extern ICCLIB_API void icmLab2XYZ(icmXYZNumber *w, double *out, double *in);
+
+/* LCh to Lab */
+extern ICCLIB_API void icmLCh2Lab(double *out, double *in);
+
+/* Lab to LCh */
+extern ICCLIB_API void icmLab2LCh(double *out, double *in);
+
+/* XYZ to Yxy */
+extern ICCLIB_API void icmXYZ2Yxy(double *out, double *in);
+
+/* Yxy to XYZ */
+extern ICCLIB_API void icmYxy2XYZ(double *out, double *in);
+
+/* CIE XYZ to perceptual Luv */
+extern ICCLIB_API void icmXYZ2Luv(icmXYZNumber *w, double *out, double *in);
+
+/* Perceptual Luv to CIE XYZ */
+extern ICCLIB_API void icmLuv2XYZ(icmXYZNumber *w, double *out, double *in);
+
+
+/* NOTE :- none of the following seven have been protected */
+/* against arithmmetic issues (ie. for black) */
+
+/* CIE XYZ to perceptual CIE 1976 UCS diagram Yu'v'*/
+/* (Yu'v' is a better chromaticity space than Yxy) */
+extern ICCLIB_API void icmXYZ21976UCS(double *out, double *in);
+
+/* Perceptual CIE 1976 UCS diagram Yu'v' to CIE XYZ */
+extern ICCLIB_API void icm1976UCS2XYZ(double *out, double *in);
+
+/* CIE XYZ to perceptual CIE 1960 UCS */
+/* (This was obsoleted by the 1976UCS, but is still used */
+/*  in computing color temperatures.) */
+extern ICCLIB_API void icmXYZ21960UCS(double *out, double *in);
+
+/* Perceptual CIE 1960 UCS to CIE XYZ */
+extern ICCLIB_API void icm1960UCS2XYZ(double *out, double *in);
+
+/* CIE XYZ to perceptual CIE 1964 WUV (U*V*W*) */
+/* (This is obsolete but still used in computing CRI) */
+extern ICCLIB_API void icmXYZ21964WUV(icmXYZNumber *w, double *out, double *in);
+
+/* Perceptual CIE 1964 WUV (U*V*W*) to CIE XYZ */
+extern ICCLIB_API void icm1964WUV2XYZ(icmXYZNumber *w, double *out, double *in);
+
+/* CIE CIE1960 UCS to perceptual CIE 1964 WUV (U*V*W*) */
+extern ICCLIB_API void icm1960UCS21964WUV(icmXYZNumber *w, double *out, double *in);
+
+
+/* The standard D50 illuminant value */
+extern icmXYZNumber icmD50;
+extern icmXYZNumber icmD50_100;		/* Scaled to 100 */
+extern double icmD50_ary3[3];		/* As an array, Oli added extern */
+extern double icmD50_100_ary3[3];	/* Scaled to 100 as an array, Oli added extern */
+
+/* The standard D65 illuminant value */
+extern icmXYZNumber icmD65;
+extern icmXYZNumber icmD65_100;		/* Scaled to 100 */
+extern double icmD65_ary3[3];		/* As an array, Oli added extern */
+extern double icmD65_100_ary3[3];	/* Scaled to 100 as an array, Oli added extern */
+
+/* The default black value */
+extern icmXYZNumber icmBlack;
+
+
+/* Initialise a pseudo-hilbert grid counter, return total usable count. */
+extern ICCLIB_API unsigned psh_init(psh *p, int di, unsigned int res, int co[]);
+
+/* Reset the counter */
+extern ICCLIB_API void psh_reset(psh *p);
+
+/* Increment pseudo-hilbert coordinates */
+/* Return non-zero if count rolls over to 0 */
+extern ICCLIB_API int psh_inc(psh *p, int co[]);
+
 /* - - - - - - - - - - - - - - - - - - - - - - - */
 
 /* Return the normal Delta E given two Lab values */
@@ -1938,6 +1963,113 @@ int icmClipLab(double out[3], double in[3]);
 int icmClipXYZ(double out[3], double in[3]);
 
 /* - - - - - - - - - - - - - - - - - - - - - - - */
+
+/* RGB primaries to device to RGB->XYZ transform matrix */
+/* Return non-zero if matrix would be singular */
+int icmRGBprim2matrix(
+	icmXYZNumber white,		/* White point */
+	icmXYZNumber red,		/* Red colorant */
+	icmXYZNumber green,		/* Green colorant */
+	icmXYZNumber blue,		/* Blue colorant */
+	double mat[3][3]		/* Destination matrix */
+);
+
+/* Chromatic Adaption transform utility */
+/* Return a 3x3 chromatic adaption matrix */
+/* Use icmMulBy3x3(dst, mat, src) */
+
+#define ICM_CAM_BRADFORD	0x0001	/* Use Bradford sharpened response space */
+#define ICM_CAM_MULMATRIX	0x0002	/* Transform the given matrix */
+
+void icmChromAdaptMatrix(
+	int flags,				/* Flags as defined below */
+	icmXYZNumber d_wp,		/* Destination white point */
+	icmXYZNumber s_wp,		/* Source white point */
+	double mat[3][3]		/* Destination matrix */
+);
+
+/* - - - - - - - - - - - - - - */
+/* Video functions */
+
+/* Convert Lut table index/value to YCbCr */
+void icmLut2YCbCr(double *out, double *in);
+
+/* Convert YCbCr to Lut table index/value */
+void icmYCbCr2Lut(double *out, double *in);
+
+
+/* Convert Rec601 RGB' into YPbPr, (== "full range YCbCr") */
+/* where input 0..1, output 0..1, -0.5 .. 0.5, -0.5 .. 0.5 */
+void icmRec601_RGBd_2_YPbPr(double out[3], double in[3]);
+
+/* Convert Rec601 YPbPr to RGB' (== "full range YCbCr") */
+/* where input 0..1, -0.5 .. 0.5, -0.5 .. 0.5, output 0.0 .. 1 */
+void icmRec601_YPbPr_2_RGBd(double out[3], double in[3]);
+
+
+/* Convert Rec709 1150/60/2:1 RGB' into YPbPr, or "full range YCbCr" */
+/* where input 0..1, output 0..1, -0.5 .. 0.5, -0.5 .. 0.5 */
+void icmRec709_RGBd_2_YPbPr(double out[3], double in[3]);
+
+/* Convert Rec709 1150/60/2:1 YPbPr to RGB' (== "full range YCbCr") */
+/* where input 0..1, -0.5 .. 0.5, -0.5 .. 0.5, output 0.0 .. 1 */
+void icmRec709_YPbPr_2_RGBd(double out[3], double in[3]);
+
+/* Convert Rec709 1250/50/2:1 RGB' into YPbPr, or "full range YCbCr" */
+/* where input 0..1, output 0..1, -0.5 .. 0.5, -0.5 .. 0.5 */
+void icmRec709_50_RGBd_2_YPbPr(double out[3], double in[3]);
+
+/* Convert Rec709 1250/50/2:1 YPbPr to RGB' (== "full range YCbCr") */
+/* where input 0..1, -0.5 .. 0.5, -0.5 .. 0.5, output 0.0 .. 1 */
+void icmRec709_50_YPbPr_2_RGBd(double out[3], double in[3]);
+
+
+/* Convert Rec2020 RGB' into Non-constant liminance YPbPr, or "full range YCbCr" */
+/* where input 0..1, output 0..1, -0.5 .. 0.5, -0.5 .. 0.5 */
+void icmRec2020_NCL_RGBd_2_YPbPr(double out[3], double in[3]);
+
+/* Convert Rec2020 Non-constant liminance YPbPr into RGB' (== "full range YCbCr") */
+/* where input 0..1, -0.5 .. 0.5, -0.5 .. 0.5, output 0.0 .. 1 */
+void icmRec2020_NCL_YPbPr_2_RGBd(double out[3], double in[3]);
+
+/* Convert Rec2020 RGB' into Constant liminance YPbPr, or "full range YCbCr" */
+/* where input 0..1, output 0..1, -0.5 .. 0.5, -0.5 .. 0.5 */
+void icmRec2020_CL_RGBd_2_YPbPr(double out[3], double in[3]);
+
+/* Convert Rec2020 Constant liminance YPbPr into RGB' (== "full range YCbCr") */
+/* where input 0..1, -0.5 .. 0.5, -0.5 .. 0.5, output 0.0 .. 1 */
+void icmRec2020_CL_YPbPr_2_RGBd(double out[3], double in[3]);
+
+
+/* Convert Rec601/709/2020 YPbPr to YCbCr range. */
+/* input 0..1, -0.5 .. 0.5, -0.5 .. 0.5, */
+/* output 16/255 .. 235/255, 16/255 .. 240/255, 16/255 .. 240/255 */ 
+void icmRecXXX_YPbPr_2_YCbCr(double out[3], double in[3]);
+
+/* Convert Rec601/709/2020 YCbCr to YPbPr range. */
+/* input 16/255 .. 235/255, 16/255 .. 240/255, 16/255 .. 240/255 */ 
+/* output 0..1, -0.5 .. 0.5, -0.5 .. 0.5, */
+void icmRecXXX_YCbCr_2_YPbPr(double out[3], double in[3]);
+
+
+/* Convert full range RGB to Video range 16..235 RGB */
+void icmRGB_2_VidRGB(double out[3], double in[3]);
+
+/* Convert Video range 16..235 RGB to full range RGB */
+void icmVidRGB_2_RGB(double out[3], double in[3]);
+
+/* ---------------------------------------------------------- */
+/* PS 3.14-2009, Digital Imaging and Communications in Medicine */
+/* (DICOM) Part 14: Grayscale Standard Display Function */
+
+/* JND index value 1..1023 to L 0.05 .. 3993.404 cd/m^2 */
+double icmDICOM_fwd(double jnd);
+
+/* L 0.05 .. 3993.404 cd/m^2 to JND index value 1..1023 */
+double icmDICOM_bwd(double L);
+
+
+/* ---------------------------------------------------------- */
 /* Print an int vector to a string. */
 /* Returned static buffer is re-used every 5 calls. */
 char *icmPiv(int di, int *p);
@@ -1953,8 +2085,8 @@ char *icmPfv(int di, float *p);
 /* Print an 0..1 range XYZ as a D50 Lab string */
 /* Returned static buffer is re-used every 5 calls. */
 char *icmPLab(double *p);
+/* - - - - - - - - - - - - - - - - - - - - - - - */
 
-/* ---------------------------------------------------------- */
 
 #ifdef __cplusplus
 	}

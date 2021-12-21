@@ -5,7 +5,7 @@
  *
  * Author:  Graeme W. Gill
  * Date:    1999/11/29
- * Version: 2.14
+ * Version: 2.15
  *
  * Copyright 1997 - 2012 Graeme W. Gill
  *
@@ -182,6 +182,9 @@ main(int argc, char *argv[]) {
 			if ((rv = icco->read(icco,fp,offset)) != 0)
 				error ("%d, %s",rv,icco->err);
 		
+			if (icco->header->cmmId = str2tag("argl"))
+				icco->allowclutPoints256 = 1;
+
 			if (ntag_names > 0) {
 				int i;
 				for (i = 0; i < ntag_names; i++) {
@@ -189,15 +192,14 @@ main(int argc, char *argv[]) {
 					icTagSignature sig = str2tag(tag_names[i]);
 			
 					/* Try and locate that particular tag */
-					if ((rv = icco->find_tag(icco,sig)) != 0) {
-						if (rv == 1)
-							warning ("icc->find_tag() tag '%s' found but unknown", tag_names[i]);
-						else
-							warning ("icc->find_tag() can't find tag '%s' in file", tag2str(sig));
+					if ((rv = icco->find_tag(icco,sig)) != 0 && rv != 1) {
+						warning ("icc->find_tag() can't find tag '%s' in file", tag2str(sig));
 					} else {
 						icmBase *ob;
 			
-						if ((ob = icco->read_tag(icco, sig)) == NULL) {
+						if (rv == 1)
+							warning ("icc->find_tag() tag '%s' found but unknown type", tag_names[i]);
+						if ((ob = icco->read_tag_any(icco, sig)) == NULL) {
 							warning("Failed to read tag '%s': %d, %s",tag_names[i], icco->errc,icco->err);
 						} else {
 							ob->dump(ob, op, verb-1);
