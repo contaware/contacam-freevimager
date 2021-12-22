@@ -2571,8 +2571,8 @@ void CImageInfoDlg::DisplayMetadata()
 		}
 	}
 
-	// Remove Last CRLF
-	s.Delete(s.GetLength() - 2, 2);
+	// Remove terminating CR and LF
+	s.TrimRight(_T("\r\n"));
 
 	// Set Metadata Text
 	CEdit* pMetadataBox = (CEdit*)GetDlgItem(IDC_METADATA);
