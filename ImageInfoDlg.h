@@ -10,8 +10,6 @@
 #include "Dib.h"
 #include "cdxCDynamicDialog.h"
 
-#define	ICC_TEXT_MAX_SIZE		65536
-
 // Forward Declaration
 class CPictureDoc;
 

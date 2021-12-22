@@ -2463,17 +2463,16 @@ void CImageInfoDlg::DisplayMetadata()
 			int ecount = 1;		// Embedded count
 			int offset = 0;		// Offset to read profile from
 			int found;
-			icmFile *fp, *op;
-			icc *icco;
+			icmFile* fp = NULL;
+			icmFile* op = NULL;
+			icc* icco = NULL;
 			int rv = 0;
-			LPSTR pOut = (LPSTR)calloc(ICC_TEXT_MAX_SIZE, 1);
 
 			// Open for reading
-			if (pOut																	&&
-				(fp = new_icmFileMem(	m_pDoc->m_pDib->GetMetadata()->m_pIccData,
+			if ((fp = new_icmFileMem(	m_pDoc->m_pDib->GetMetadata()->m_pIccData,
 										m_pDoc->m_pDib->GetMetadata()->m_dwIccSize))	&&
 				(icco = new_icc())														&&
-				(op = new_icmFileMem((void*)pOut, ICC_TEXT_MAX_SIZE)))
+				(op = new_icmFileMem_d(NULL, 0))) // _d means that the library frees the allocated buffer when op is deleted
 			{
 				do
 				{
@@ -2547,19 +2546,28 @@ void CImageInfoDlg::DisplayMetadata()
 				}
 				while (found != 0);
 
-				icco->del(icco);
-				op->del(op);
-				fp->del(fp);
+				// Read from buffer
+				unsigned char* buf = NULL;
+				size_t len = 0;
+				op->get_buf(op, &buf, &len); // not NULL terminated
+				if (buf && len > 0)
+				{
+					CStringA sAnsi;
+					LPSTR pAnsi = sAnsi.GetBuffer(len);
+					memcpy(pAnsi, buf, len);
+					sAnsi.ReleaseBuffer(len);
+					s = CString(sAnsi);
+					::MakeLineBreakCRLF(s);
+				}
 			}
 
-			if (pOut)
-			{
-				// Make sure it is NULL terminated
-				pOut[ICC_TEXT_MAX_SIZE - 1] = '\0';
-				s = CString(pOut);
-				free((void*)pOut);
-				::MakeLineBreakCRLF(s);
-			}
+			// Free
+			if (icco)
+				icco->del(icco);
+			if (op)
+				op->del(op);
+			if (fp)
+				fp->del(fp);
 		}
 	}
 
