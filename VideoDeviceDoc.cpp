@@ -3576,7 +3576,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bShowFrameMilliseconds = FALSE;
 	m_nRefFontSize = 9;
 	m_bObscureSource = FALSE;
-	m_dwFrameCountUp = 0U;
 	m_bSizeToDoc = TRUE;
 	m_bDeviceFirstRun = FALSE;
 	m_llNext1SecUpTime = 0;
@@ -3588,7 +3587,9 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bStopAndChangeDVFormat = FALSE;
 	m_nDeviceFormatWidth = 0;
 	m_nDeviceFormatHeight = 0;
-	m_llCurrentInitUpTime = 0;
+	m_dwFrameCountUp = 0U;
+	m_llNextSnapshotUpTime = (LONGLONG)::GetTickCount64();
+	m_llCurrentInitUpTime = m_llNextSnapshotUpTime;
 	m_bWatchDogVideoAlarm = FALSE;
 
 	// Networking
@@ -3612,7 +3613,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nSnapshotHistoryFrameRate = DEFAULT_SNAPSHOT_HISTORY_FRAMERATE;
 	m_nSnapshotThumbWidth = DEFAULT_SNAPSHOT_THUMB_WIDTH;
 	m_nSnapshotThumbHeight = DEFAULT_SNAPSHOT_THUMB_HEIGHT;
-	m_llNextSnapshotUpTime = 0;
 
 	// Threads Init
 	m_CaptureAudioThread.SetDoc(this);
