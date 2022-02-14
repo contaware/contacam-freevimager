@@ -5,6 +5,7 @@ CONTACAM HISTORY
 - Fixed a bug where a Camera failure email could be sent on camera 
   startup (thanks to Herb Berg for reporting and researching that)
 - Added support for Reolink with H.265 streams
+- Added support for Yudor
 
 9.9.20 (December 7th 2021)
 

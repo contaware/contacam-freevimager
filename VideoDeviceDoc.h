@@ -608,6 +608,7 @@ public:
 		WANSVIEW_RTSP = 1244,			// Wansview RTSP
 		XIAOMI_RTSP = 1245,				// Xiaomi RTSP
 		YCAM_RTSP = 1250,				// Y-cam RTSP
+		YUDOR_RTSP = 1252,				// Yudor RTSP
 		ZAVIO_RTSP = 1255,				// Zavio RTSP (profile1)
 		ZAVIO_H264_RTSP = 1256,			// Zavio H.264 RTSP (older cams)
 		ZAVIO_MPEG4_RTSP = 1257,		// Zavio MPEG4 RTSP (older cams)

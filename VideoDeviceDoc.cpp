@@ -9147,6 +9147,10 @@ void CVideoDeviceDoc::ConnectRtsp()
 			sPathAndQuery = _T("/live_mpeg4.sdp");
 			break;
 
+		case YUDOR_RTSP:
+			sPathAndQuery = _T("/");	// advanced stream is: /v2
+			break;						// 3GPP stream is: /v3
+
 		case ZAVIO_RTSP:			
 			sPathAndQuery = _T("/video.pro1");
 			break;

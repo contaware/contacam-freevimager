@@ -134,6 +134,7 @@ void CHostPortDlg::InitDeviceTypeModeArrayForCB(CArray<CDeviceTypeModePair>& a)
 	a.Add(CDeviceTypeModePair(_T("Wyze (RTSP)"), (DWORD)CVideoDeviceDoc::WYZE_RTSP));
 	a.Add(CDeviceTypeModePair(_T("Xiaomi (RTSP)"), (DWORD)CVideoDeviceDoc::XIAOMI_RTSP));
 	a.Add(CDeviceTypeModePair(_T("Y-cam (RTSP)"), (DWORD)CVideoDeviceDoc::YCAM_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Yudor (RTSP)"), (DWORD)CVideoDeviceDoc::YUDOR_RTSP));
 	a.Add(CDeviceTypeModePair(_T("Zavio (RTSP)"), (DWORD)CVideoDeviceDoc::ZAVIO_RTSP));
 	a.Add(CDeviceTypeModePair(_T("Zavio H.264 (RTSP)"), (DWORD)CVideoDeviceDoc::ZAVIO_H264_RTSP));
 	a.Add(CDeviceTypeModePair(_T("Zavio MPEG4 (RTSP)"), (DWORD)CVideoDeviceDoc::ZAVIO_MPEG4_RTSP));
