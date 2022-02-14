@@ -14,7 +14,8 @@ ContaCam "will not implement" list
   crap and difficult, not wanting to play their game...
   
 - Rotate by 0,90,180,270 degrees
-  (robert.heberlein@gmx.de)
+  (robert.heberlein@gmx.de, GVLLakefront+contacam@gmail.com, 
+  javier.sevilla@dlongwood.com, khz-it@yandex.ru)
   -> this would imply a lot of changes to the source code, it's not worth
   the effort given the fact that most cams can do that in their web interfaces
   
@@ -74,7 +75,12 @@ ContaCam "will not implement" list
   (brucebeauchamp100@gmail.com)
   -> it's just a click, not worth to clutter the settings to remove an important alert message
   
-  
+- If there is no animated gif then display the start picture resized to the size of the thumbs.
+  The problem is that currently the start picture has a different timestamp in the filename,
+  first we would need to change that to the timestamp of the detection sequence begin
+  (wally.malicki@gmail.com)
+ 
+ 
 ContaCam open tasks
 -------------------
   
@@ -95,6 +101,10 @@ ContaCam open tasks
   
 - Execute command on camera failure, add the option of "camera failure" to the command execute area
   (n1fbg@arrl.net) 
+  
+- When entering the email send configuration details perhaps have buttons
+  to copy and paste; when copying the password remember to leave it encrypted! 
+  (n1fbg@arrl.net)
   
 - Take multiple jpg snapshots on motion, not just one
   (randy3xyz@gmail.com)
