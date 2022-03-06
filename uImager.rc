@@ -729,7 +729,7 @@ BEGIN
         MENUITEM "Erase active zones",          ID_EDIT_ZONE_REMOVE
         MENUITEM SEPARATOR
         MENUITEM "Obscure inactive zones (privacy mask)", ID_EDIT_ZONE_OBSCURE_REMOVED
-		MENUITEM "REC motion zones (for testing)", ID_EDIT_ZONE_REC_MOTION
+        MENUITEM "REC motion zones (for testing)", ID_EDIT_ZONE_REC_MOTION
         MENUITEM SEPARATOR
         MENUITEM "Big zones size",              ID_EDIT_ZONE_BIG
         MENUITEM "Medium zones size",           ID_EDIT_ZONE_MEDIUM
@@ -2135,7 +2135,7 @@ BEGIN
     LTEXT           "Maximum camera folder size\n(0.0: unlimited)",IDC_STATIC,16,168,135,16
     EDITTEXT        IDC_EDIT_MAX_CAMERA_FOLDER_SIZE,152,170,35,13,ES_AUTOHSCROLL
     LTEXT           "GB",IDC_STATIC,190,172,10,8
-    LTEXT           "NOTE: if the free disk space becomes low or the maximum camera folder size is reached the oldest files are deleted",IDC_STATIC,211,159,195,20
+    LTEXT           "NOTE: if the free disk space becomes low or the maximum camera folder size is reached the oldest files are deleted",IDC_STATIC,211,159,195,27
     GROUPBOX        "4. Email",IDC_STATIC,5,198,407,59
     CONTROL         "Camera failure",IDC_CHECK_SENDMAIL_MALFUNCTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,211,73,10
     CONTROL         "Recording event with",IDC_CHECK_SENDMAIL_RECORDING,
@@ -3346,10 +3346,8 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_EDIT_ACTIVATE_ALLZONES        
-                            "Activate all zones\nActivate All Zones"
-	ID_EDIT_DEACTIVATE_ALLZONES
-                            "Deactivate all zones\nDeactivate All Zones"
+    ID_EDIT_ACTIVATE_ALLZONES "Activate all zones\nActivate All Zones"
+    ID_EDIT_DEACTIVATE_ALLZONES "Deactivate all zones\nDeactivate All Zones"
     ID_CAPTURE_NETWORK      "Network / IP camera\nNetwork / IP Camera"
     ID_CAPTURE_RECORD       "Recording\nRecording"
     ID_VIEW_ALL_NEXT_PICTURE 
