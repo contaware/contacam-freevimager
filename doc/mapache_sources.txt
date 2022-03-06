@@ -29,6 +29,7 @@ We now use the latest version because Vista support has been dropped
 - VS16 redistributable (Visual Studio 2019)
   https://aka.ms/vs/16/release/VC_redist.x86.exe
   https://www.apachelounge.com/viewtopic.php?p=38205
+  https://docs.microsoft.com/cpp/windows/latest-supported-vc-redist
 
 Attention: we use libcrypto-1_1.dll and libssl-1_1.dll from the thread safe php build (not from apache build)
 
