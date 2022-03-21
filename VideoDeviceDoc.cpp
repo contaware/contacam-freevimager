@@ -4421,7 +4421,24 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 	// Current Time
 	CTime CurrentTime = CTime::GetCurrentTime();
 
-	// Default auto-save directory
+	/* Default auto-save directory
+	ATTENTION:
+	When connecting multiple times to a device which has multiple views/sources by
+	for example entering the following URLs in CHostPortDlg:
+	rtsp://IP:PORT/axis-media/media.amp?camera=1
+	and
+	rtsp://IP:PORT/axis-media/media.amp?camera=2
+	then it's important to make sure that the previously connected instance does not 
+	use the default name returned by GetDeviceName() which is the string composed by
+	m_sGetFrameVideoHost and m_nGetFrameVideoPort because otherwise we end up with a
+	single folder for two cameras. Moreover if we rename the new instance then the 
+	default folder used by the other instance gets renamed to our new name. The same 
+	can happen when connecting multiple times to localhost.
+	NOTE:
+	I do not want to change this behaviour because it's handy to have the same default
+	folder when connecting to the same IP and PORT, especially when trying to find a
+	working mode for a new camera.
+	*/
 	sDeviceName = GetValidName(sDeviceName);
 	CString sDefaultAutoSaveDir(pApp->m_sMicroApacheDocRoot);
 	sDefaultAutoSaveDir.TrimRight(_T('\\'));
