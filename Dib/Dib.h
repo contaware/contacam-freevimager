@@ -130,7 +130,7 @@ typedef struct {
 // File Load Checks
 #define SECURITY_MAX_ALLOWED_WIDTH		30000
 #define SECURITY_MAX_ALLOWED_HEIGHT		30000
-#define SECURITY_MAX_PIX_AREA			(20000 * 20000)
+#define SECURITY_MAX_PIX_AREA			(20000ULL * 20000ULL)
 #define SECURITY_MAX_RATIO				10000
 
 // Contrast Calculation

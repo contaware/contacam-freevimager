@@ -2998,16 +2998,46 @@ BOOL CDib::FileCheck(LPCTSTR lpszPathName)
 
 BOOL CDib::FileCheckInternal(LPCTSTR lpszPathName)
 {
-	// Check various sizes
-	if (LoadImage(lpszPathName, 0, 0, 0, TRUE, TRUE))
+	// Verify entries in the BMI header
+	if (LoadImage(lpszPathName, 0, 0, 0, TRUE, TRUE) && m_pBMI)
 	{
 		CString s, t;
-		if (GetWidth() == 0 || GetHeight() == 0)
+		int nW = m_pBMI->bmiHeader.biWidth;			// biWidth must always be positive
+		int nH = ABS(m_pBMI->bmiHeader.biHeight);	// biHeight is negative for top-down bitmaps
+		if (nW <= 0 || nW > SECURITY_MAX_ALLOWED_WIDTH)
 		{
 #ifdef _DEBUG
 			s.Format(_T("FileCheck(%s):\n"), lpszPathName);
 #endif
-			t = _T("Zero Width and/or Height!");
+			t.Format(_T("A Width of %i is not Supported!"), nW);
+			s += t;
+
+			TRACE(s);
+			if (m_bShowMessageBoxOnError)
+				::AfxMessageBox(s, MB_ICONSTOP);
+
+			return FALSE;
+		}
+		else if (nH == 0 || nH > SECURITY_MAX_ALLOWED_HEIGHT)
+		{
+#ifdef _DEBUG
+			s.Format(_T("FileCheck(%s):\n"), lpszPathName);
+#endif
+			t.Format(_T("A Height of %i is not Supported!"), nH);
+			s += t;
+
+			TRACE(s);
+			if (m_bShowMessageBoxOnError)
+				::AfxMessageBox(s, MB_ICONSTOP);
+
+			return FALSE;
+		}
+		else if ((nW / nH > SECURITY_MAX_RATIO) || (nH / nW > SECURITY_MAX_RATIO))
+		{
+#ifdef _DEBUG
+			s.Format(_T("FileCheck(%s):\n"), lpszPathName);
+#endif
+			t.Format(_T("A Width of %i with a Height of %i are not Supported!"), nW, nH);
 			s += t;
 		
 			TRACE(s);
@@ -3016,24 +3046,7 @@ BOOL CDib::FileCheckInternal(LPCTSTR lpszPathName)
 
 			return FALSE;
 		}
-		else if ((GetWidth() / GetHeight() > SECURITY_MAX_RATIO) ||
-				(GetHeight() / GetWidth() > SECURITY_MAX_RATIO))
-		{
-#ifdef _DEBUG
-			s.Format(_T("FileCheck(%s):\n"), lpszPathName);
-#endif
-			t.Format(_T("A Width of %i with a Height of %i are not Supported!"),
-																	GetWidth(),
-																	GetHeight());
-			s += t;
-		
-			TRACE(s);
-			if (m_bShowMessageBoxOnError)
-				::AfxMessageBox(s, MB_ICONSTOP);
-
-			return FALSE;
-		}
-		else if ((GetWidth() * GetHeight()) > SECURITY_MAX_PIX_AREA)
+		else if ((ULONGLONG)nW * (ULONGLONG)nH > SECURITY_MAX_PIX_AREA)
 		{
 #ifdef _DEBUG
 			s.Format(_T("FileCheck(%s):\n"), lpszPathName);
@@ -3047,28 +3060,18 @@ BOOL CDib::FileCheckInternal(LPCTSTR lpszPathName)
 
 			return FALSE;
 		}
-		else if (GetWidth() > SECURITY_MAX_ALLOWED_WIDTH)
+		else if ((m_pBMI->bmiHeader.biBitCount == 1 && m_pBMI->bmiHeader.biClrUsed > 2)	||
+				(m_pBMI->bmiHeader.biBitCount == 4 && m_pBMI->bmiHeader.biClrUsed > 16)	||
+				(m_pBMI->bmiHeader.biBitCount == 8 && m_pBMI->bmiHeader.biClrUsed > 256))
 		{
 #ifdef _DEBUG
 			s.Format(_T("FileCheck(%s):\n"), lpszPathName);
 #endif
-			t.Format(_T("A Width of %i is not Supported!"), GetWidth());
+			t.Format(_T("A Colors Count of %u is too big for this %i bpp image!"),
+					m_pBMI->bmiHeader.biClrUsed,
+					m_pBMI->bmiHeader.biBitCount);
 			s += t;
-		
-			TRACE(s);
-			if (m_bShowMessageBoxOnError)
-				::AfxMessageBox(s, MB_ICONSTOP);
 
-			return FALSE;
-		}
-		else if (GetHeight() > SECURITY_MAX_ALLOWED_HEIGHT)
-		{
-#ifdef _DEBUG
-			s.Format(_T("FileCheck(%s):\n"), lpszPathName);
-#endif
-			t.Format(_T("A Height of %i is not Supported!"), GetHeight());
-			s += t;
-		
 			TRACE(s);
 			if (m_bShowMessageBoxOnError)
 				::AfxMessageBox(s, MB_ICONSTOP);
