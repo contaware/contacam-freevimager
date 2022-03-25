@@ -2921,12 +2921,13 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 		// Shrink
 		if (bDoShrink)
 		{
-			// Use Memory Mapped Load if Not Compressed and Not Old OS/2 Bmp File
+			// Use Memory Mapped Load if Not Compressed and Not Old OS/2 Bmp and Not top-down Bmp
 			if (::GetFileExt(szSrcFileName) == _T(".bmp") ||
 				::GetFileExt(szSrcFileName) == _T(".dib"))
 			{
-				if (!SrcDib.IsCompressed() &&
-					!SrcDib.m_FileInfo.m_bBmpOS2Hdr)
+				if (!SrcDib.IsCompressed()			&&
+					!SrcDib.m_FileInfo.m_bBmpOS2Hdr	&&
+					SrcDib.m_FileInfo.m_nHeight > 0)
 					res = SrcDib.MapBMP(szSrcFileName, TRUE);
 			}
 			
@@ -3004,12 +3005,13 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 	// Not Yet Loaded?
 	if (!res)
 	{
-		// Use Memory Mapped Load if Not Compressed and Not Old OS/2 Bmp File
+		// Use Memory Mapped Load if Not Compressed and Not Old OS/2 Bmp and Not top-down Bmp
 		if (::GetFileExt(szSrcFileName) == _T(".bmp") ||
 			::GetFileExt(szSrcFileName) == _T(".dib"))
 		{
-			if (!SrcDib.IsCompressed() &&
-				!SrcDib.m_FileInfo.m_bBmpOS2Hdr)
+			if (!SrcDib.IsCompressed()			&&
+				!SrcDib.m_FileInfo.m_bBmpOS2Hdr	&&
+				SrcDib.m_FileInfo.m_nHeight > 0)
 				res = SrcDib.MapBMP(szSrcFileName, TRUE);
 		}
 		

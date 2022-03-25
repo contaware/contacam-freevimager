@@ -316,7 +316,7 @@ BOOL CDib::LoadBMPNoFileHeader(CFile& file, BOOL bDecompress/*=TRUE*/)
 		// Decompress
 		if (IsCompressed() && bDecompress)
 		{
-			if (!Decompress(GetBitCount())) // Decompress
+			if (!Decompress(GetBitCount()))
 				return FALSE;
 		}
 
@@ -546,7 +546,7 @@ BOOL CDib::LoadBMP(	CFile& file,
 		// Decompress
 		if (IsCompressed() && bDecompress)
 		{
-			if (!Decompress(GetBitCount())) // Decompress
+			if (!Decompress(GetBitCount()))
 				return FALSE;
 		}
 

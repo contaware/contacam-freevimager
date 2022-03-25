@@ -384,12 +384,13 @@ void CDibStatic::CThumbLoadThread::CreateThumbnail()
 {
 	BOOL res = FALSE;
 
-	// If Bmp -> Use Memory Mapped Load if Not Compressed and Not Old OS/2 Bmp File
+	// Use Memory Mapped Load if Not Compressed and Not Old OS/2 Bmp and Not top-down Bmp
 	if (::GetFileExt(m_sFileName) == _T(".bmp") ||
 		::GetFileExt(m_sFileName) == _T(".dib"))
 	{
-		if (!m_pDibStatic->m_pDibFull->IsCompressed() &&
-			!m_pDibStatic->m_pDibFull->m_FileInfo.m_bBmpOS2Hdr)
+		if (!m_pDibStatic->m_pDibFull->IsCompressed()			&&
+			!m_pDibStatic->m_pDibFull->m_FileInfo.m_bBmpOS2Hdr	&&
+			m_pDibStatic->m_pDibFull->m_FileInfo.m_nHeight > 0)
 			res = m_pDibStatic->m_pDibFull->MapBMP(m_sFileName, TRUE);
 	}
 	
