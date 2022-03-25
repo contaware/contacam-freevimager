@@ -1,5 +1,9 @@
 TRANSLATIONS HISTORY
 
+9.9.22 (Month XXth 2022)
+
+- Minor changes
+
 9.9.21 (March 22nd 2022)
 
 - Minor changes

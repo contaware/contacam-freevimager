@@ -1,5 +1,10 @@
 FREEVIMAGER HISTORY
 
+9.9.22 (Month XXth 2022)
+
+- Improved file header safety checks
+- Correctly handle top-down .bmp files
+
 9.9.21 (March 22nd 2022)
 
 - More robust ICC profiles parser to avoid crashes with some buggy files
