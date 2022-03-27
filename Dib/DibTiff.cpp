@@ -254,8 +254,8 @@ BOOL CDib::LoadTIFF(LPCTSTR lpszPathName,
 
 		// Initialize BITMAPINFOHEADER
 		m_pBMI->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-		m_pBMI->bmiHeader.biWidth = (DWORD)uiImageWidth; // fill in width from parameter
-		m_pBMI->bmiHeader.biHeight = (DWORD)uiImageHeight; // fill in height from parameter
+		m_pBMI->bmiHeader.biWidth = (LONG)uiImageWidth; // fill in width from parameter
+		m_pBMI->bmiHeader.biHeight = (LONG)uiImageHeight; // fill in height from parameter
 		m_pBMI->bmiHeader.biPlanes = 1; // must be 1
 		m_pBMI->bmiHeader.biCompression = BI_RGB;    
 		m_pBMI->bmiHeader.biSizeImage = m_dwImageSize;

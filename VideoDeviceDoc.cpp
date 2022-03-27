@@ -2841,8 +2841,8 @@ int CVideoDeviceDoc::CRtspThread::Work()
 						m_pDoc->m_DocRect.bottom != pVideoCodecCtx->height)
 					{
 						m_pDoc->m_ProcessFrameBMI.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-						m_pDoc->m_ProcessFrameBMI.bmiHeader.biWidth = (DWORD)pVideoCodecCtx->width;
-						m_pDoc->m_ProcessFrameBMI.bmiHeader.biHeight = (DWORD)pVideoCodecCtx->height;
+						m_pDoc->m_ProcessFrameBMI.bmiHeader.biWidth = (LONG)pVideoCodecCtx->width;
+						m_pDoc->m_ProcessFrameBMI.bmiHeader.biHeight = (LONG)pVideoCodecCtx->height;
 						m_pDoc->m_ProcessFrameBMI.bmiHeader.biPlanes = 1; // must be 1
 						m_pDoc->m_ProcessFrameBMI.bmiHeader.biBitCount = 12;
 						m_pDoc->m_ProcessFrameBMI.bmiHeader.biCompression = FCC('I420');
@@ -10798,8 +10798,8 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::DecodeVideo(AVPacket* avpkt)
 			m_pDoc->m_DocRect.bottom != m_pCodecCtx->height)
 		{
 			m_pDoc->m_ProcessFrameBMI.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-			m_pDoc->m_ProcessFrameBMI.bmiHeader.biWidth = (DWORD)m_pCodecCtx->width;
-			m_pDoc->m_ProcessFrameBMI.bmiHeader.biHeight = (DWORD)m_pCodecCtx->height;
+			m_pDoc->m_ProcessFrameBMI.bmiHeader.biWidth = (LONG)m_pCodecCtx->width;
+			m_pDoc->m_ProcessFrameBMI.bmiHeader.biHeight = (LONG)m_pCodecCtx->height;
 			m_pDoc->m_ProcessFrameBMI.bmiHeader.biPlanes = 1; // must be 1
 			m_pDoc->m_ProcessFrameBMI.bmiHeader.biBitCount = 12;
 			m_pDoc->m_ProcessFrameBMI.bmiHeader.biCompression = FCC('I420');    

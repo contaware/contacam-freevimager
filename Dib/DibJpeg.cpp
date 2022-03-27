@@ -196,8 +196,8 @@ BOOL CDib::LoadJPEG(LPCTSTR lpszPathName,
 				m_pBMI->bmiHeader.biYPelsPerMeter = 0;
 			}
 			m_pBMI->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-			m_pBMI->bmiHeader.biWidth = (DWORD)cinfo.output_width;
-			m_pBMI->bmiHeader.biHeight = (DWORD)cinfo.output_height;
+			m_pBMI->bmiHeader.biWidth = (LONG)cinfo.output_width;
+			m_pBMI->bmiHeader.biHeight = (LONG)cinfo.output_height;
 			m_pBMI->bmiHeader.biPlanes = 1; // must be 1
 			m_pBMI->bmiHeader.biBitCount = 8;
 			m_pBMI->bmiHeader.biCompression = BI_RGB;    
@@ -322,8 +322,8 @@ BOOL CDib::LoadJPEG(LPCTSTR lpszPathName,
 				m_pBMI->bmiHeader.biYPelsPerMeter = 0;
 			}
 			m_pBMI->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-			m_pBMI->bmiHeader.biWidth = (DWORD)cinfo.output_width;
-			m_pBMI->bmiHeader.biHeight = (DWORD)cinfo.output_height;
+			m_pBMI->bmiHeader.biWidth = (LONG)cinfo.output_width;
+			m_pBMI->bmiHeader.biHeight = (LONG)cinfo.output_height;
 			m_pBMI->bmiHeader.biPlanes = 1; // must be 1
 			m_pBMI->bmiHeader.biBitCount = 24;
 			m_pBMI->bmiHeader.biCompression = BI_RGB;    
@@ -655,8 +655,8 @@ BOOL CDib::LoadJPEG(LPBYTE pInput,
 				m_pBMI->bmiHeader.biYPelsPerMeter = 0;
 			}
 			m_pBMI->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-			m_pBMI->bmiHeader.biWidth = (DWORD)cinfo.output_width;
-			m_pBMI->bmiHeader.biHeight = (DWORD)cinfo.output_height;
+			m_pBMI->bmiHeader.biWidth = (LONG)cinfo.output_width;
+			m_pBMI->bmiHeader.biHeight = (LONG)cinfo.output_height;
 			m_pBMI->bmiHeader.biPlanes = 1; // must be 1
 			m_pBMI->bmiHeader.biBitCount = 8;
 			m_pBMI->bmiHeader.biCompression = BI_RGB;    
@@ -780,8 +780,8 @@ BOOL CDib::LoadJPEG(LPBYTE pInput,
 				m_pBMI->bmiHeader.biYPelsPerMeter = 0;
 			}
 			m_pBMI->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-			m_pBMI->bmiHeader.biWidth = (DWORD)cinfo.output_width ;
-			m_pBMI->bmiHeader.biHeight = (DWORD)cinfo.output_height;
+			m_pBMI->bmiHeader.biWidth = (LONG)cinfo.output_width;
+			m_pBMI->bmiHeader.biHeight = (LONG)cinfo.output_height;
 			m_pBMI->bmiHeader.biPlanes = 1; // must be 1
 			m_pBMI->bmiHeader.biBitCount = 24;
 			m_pBMI->bmiHeader.biCompression = BI_RGB;    
@@ -3295,8 +3295,8 @@ BOOL CDib::LoadEXIFThumbnail()
 				memset(&Bmi, 0, sizeof(BITMAPINFO));
 				DWORD uiDIBScanLineSize = DWALIGNEDWIDTHBYTES(GetMetadata()->m_ExifInfo.ThumbnailWidth * 24);
 				Bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-				Bmi.bmiHeader.biWidth = (DWORD)GetMetadata()->m_ExifInfo.ThumbnailWidth;
-				Bmi.bmiHeader.biHeight = (DWORD)GetMetadata()->m_ExifInfo.ThumbnailHeight;
+				Bmi.bmiHeader.biWidth = (LONG)GetMetadata()->m_ExifInfo.ThumbnailWidth;
+				Bmi.bmiHeader.biHeight = (LONG)GetMetadata()->m_ExifInfo.ThumbnailHeight;
 				Bmi.bmiHeader.biPlanes = 1;
 				Bmi.bmiHeader.biBitCount = 24;
 				Bmi.bmiHeader.biCompression = BI_RGB;    
@@ -3379,8 +3379,8 @@ BOOL CDib::LoadEXIFThumbnail()
 				memset(&Bmi, 0, sizeof(BITMAPINFO));
 				DWORD uiDIBScanLineSize = DWALIGNEDWIDTHBYTES(GetMetadata()->m_ExifInfo.ThumbnailWidth * 24);
 				Bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-				Bmi.bmiHeader.biWidth = (DWORD)GetMetadata()->m_ExifInfo.ThumbnailWidth;
-				Bmi.bmiHeader.biHeight = (DWORD)GetMetadata()->m_ExifInfo.ThumbnailHeight;
+				Bmi.bmiHeader.biWidth = (LONG)GetMetadata()->m_ExifInfo.ThumbnailWidth;
+				Bmi.bmiHeader.biHeight = (LONG)GetMetadata()->m_ExifInfo.ThumbnailHeight;
 				Bmi.bmiHeader.biPlanes = 1;
 				Bmi.bmiHeader.biBitCount = 24;
 				Bmi.bmiHeader.biCompression = BI_RGB;    
