@@ -158,7 +158,7 @@ public:
 			virtual ~CParseProcess(){;};
 			virtual BOOL Parse(CNetCom* pNetCom, BOOL bLastCall) = 0;
 			virtual void Process(unsigned char* pLinBuf, int nSize);	// pLinBuf is a correctly aligned buffer ending
-																		// with FF_INPUT_BUFFER_PADDING_SIZE zero bytes
+																		// with AV_INPUT_BUFFER_PADDING_SIZE zero bytes
 		protected:
 			void Init(CNetCom* pNetCom) {m_pNetCom = pNetCom;};
 			void NewData(BOOL bLastCall);

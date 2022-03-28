@@ -786,7 +786,7 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 		{
 			if (*m_ppSrcBuf[dwStreamNum])
 				av_free(*m_ppSrcBuf[dwStreamNum]);
-			*m_ppSrcBuf[dwStreamNum] = (uint8_t*)av_malloc(nNewSrcBufSize + FF_INPUT_BUFFER_PADDING_SIZE);
+			*m_ppSrcBuf[dwStreamNum] = (uint8_t*)av_malloc(nNewSrcBufSize + AV_INPUT_BUFFER_PADDING_SIZE);
 			if (*m_ppSrcBuf[dwStreamNum] == NULL)
 			{
 				m_nSrcBufSize[dwStreamNum] = 0;
@@ -885,7 +885,7 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 			{
 				if (*m_ppDstBuf[dwStreamNum])
 					av_free(*m_ppDstBuf[dwStreamNum]);
-				*m_ppDstBuf[dwStreamNum] = (uint8_t*)av_malloc(nNewDstBufSize + FF_INPUT_BUFFER_PADDING_SIZE);
+				*m_ppDstBuf[dwStreamNum] = (uint8_t*)av_malloc(nNewDstBufSize + AV_INPUT_BUFFER_PADDING_SIZE);
 				if (*m_ppDstBuf[dwStreamNum] == NULL)
 				{
 					m_nDstBufSize[dwStreamNum] = 0;

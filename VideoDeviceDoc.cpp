@@ -2216,7 +2216,7 @@ BOOL CVideoDeviceDoc::SaveJpegFast(CDib* pDib, CMJPEGEncoder* pMJPEGEncoder, con
 										pDib->GetWidth(),
 										pDib->GetHeight());
 	if (nJ420ImageSize > 0)
-		pJ420Buf = (LPBYTE)av_malloc(nJ420ImageSize + FF_INPUT_BUFFER_PADDING_SIZE);
+		pJ420Buf = (LPBYTE)av_malloc(nJ420ImageSize + AV_INPUT_BUFFER_PADDING_SIZE);
 	if (!pJ420Buf)
 		goto exit;
 	avpicture_fill(	(AVPicture*)pDstFrame,
@@ -2844,7 +2844,7 @@ int CVideoDeviceDoc::CRtspThread::Work()
 								ret = nI420ImageSize;
 								goto free;
 							}
-							pI420Buf = (LPBYTE)av_malloc(2 * (nI420ImageSize + FF_INPUT_BUFFER_PADDING_SIZE));
+							pI420Buf = (LPBYTE)av_malloc(2 * (nI420ImageSize + AV_INPUT_BUFFER_PADDING_SIZE));
 							if (!pI420Buf)
 							{
 								av_packet_unref(&orig_pkt);
@@ -10913,7 +10913,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::DecodeVideo(AVPacket* avpkt)
 }
 
 // pLinBuf is a correctly aligned buffer ending
-// with FF_INPUT_BUFFER_PADDING_SIZE zero bytes
+// with AV_INPUT_BUFFER_PADDING_SIZE zero bytes
 void CVideoDeviceDoc::CHttpParseProcess::Process(unsigned char* pLinBuf, int nSize)
 {
 	// Enter CS
@@ -11071,7 +11071,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::InitImgConvert()
 	{
 		if (m_pI420Buf)
 			av_free(m_pI420Buf);
-		m_pI420Buf = (LPBYTE)av_malloc(m_dwI420ImageSize + FF_INPUT_BUFFER_PADDING_SIZE);
+		m_pI420Buf = (LPBYTE)av_malloc(m_dwI420ImageSize + AV_INPUT_BUFFER_PADDING_SIZE);
 		if (!m_pI420Buf)
 			return FALSE;
 		m_dwI420BufSize = m_dwI420ImageSize;

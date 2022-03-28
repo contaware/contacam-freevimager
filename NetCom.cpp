@@ -109,10 +109,10 @@ void CNetCom::CParseProcess::NewData(BOOL bLastCall)
 
 		// Read the data
 		int nReadSize = 0;
-		unsigned char* pBuf = (unsigned char*)av_malloc(m_nProcessSize + FF_INPUT_BUFFER_PADDING_SIZE);
+		unsigned char* pBuf = (unsigned char*)av_malloc(m_nProcessSize + AV_INPUT_BUFFER_PADDING_SIZE);
 		if (pBuf)
 		{
-			memset(pBuf + m_nProcessSize, 0, FF_INPUT_BUFFER_PADDING_SIZE); // zero the padding!
+			memset(pBuf + m_nProcessSize, 0, AV_INPUT_BUFFER_PADDING_SIZE); // zero the padding!
 			if (m_nProcessOffset == 0)
 			{	
 				// Copy data from queue to linear buffer

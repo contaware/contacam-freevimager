@@ -436,7 +436,7 @@ static BOOL ITU601JPEGConvertTest(int width, int height)
 
 	// Init frames
 	// Note: av_frame_get_buffer correctly aligns the planes buffers
-	// (no need for FF_INPUT_BUFFER_PADDING_SIZE)
+	// (no need for AV_INPUT_BUFFER_PADDING_SIZE)
 
 	AVFrame* SrcFrame_420P = av_frame_alloc();
 	if (!SrcFrame_420P)

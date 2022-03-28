@@ -67,7 +67,7 @@ BOOL CMJPEGEncoder::Open(LPBITMAPINFO pSrcBMI, int nThreadCount)
 	m_nOutbufSize = 4 * m_pCodecCtx->width * m_pCodecCtx->height;
 	if (m_nOutbufSize < FF_MIN_BUFFER_SIZE)
 		m_nOutbufSize = FF_MIN_BUFFER_SIZE;
-	m_pOutbuf = (uint8_t*)av_malloc(m_nOutbufSize + FF_INPUT_BUFFER_PADDING_SIZE);
+	m_pOutbuf = (uint8_t*)av_malloc(m_nOutbufSize + AV_INPUT_BUFFER_PADDING_SIZE);
 	if (!m_pOutbuf)
 		goto error;
 

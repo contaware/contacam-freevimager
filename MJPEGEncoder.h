@@ -42,7 +42,7 @@ class CMJPEGEncoder
 		virtual ~CMJPEGEncoder(){Close();}
 		DWORD Encode(	int qscale,						// 2: best quality, 31: worst quality
 						LPBITMAPINFO pSrcBMI,			// source format containing fourcc, width and height
-						LPBYTE pSrcBits,				// pSrcBits must be correctly aligned and have FF_INPUT_BUFFER_PADDING_SIZE bytes padding 
+						LPBYTE pSrcBits,				// pSrcBits must be correctly aligned and have AV_INPUT_BUFFER_PADDING_SIZE bytes padding 
 						int nThreadCount);				// set the wanted thread count
 		uint8_t* GetEncodedBuf() {return m_pOutbuf;};	// returns the encoded data buffer pointer valid till next Encode() call
 	protected:

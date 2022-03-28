@@ -20,7 +20,7 @@
 //   to allocate in chunks of 64K to avoid fragmenting the standard heap
 // - From ffmpeg's mem.c: av_malloc(size) calls _aligned_malloc(size, ALIGN)
 //   with ALIGN equal to 32 if HAVE_AVX is defined, otherwise it is 16
-#define BIGALLOC_SAFETY		64U	// must be at least FF_INPUT_BUFFER_PADDING_SIZE
+#define BIGALLOC_SAFETY		64U	// must be at least AV_INPUT_BUFFER_PADDING_SIZE
 #define BIGALLOC_ALIGN		64U	// 64 to support AVX-512
 #define ALLOC_GRANULARITY(Size) (((Size) + (g_dwAllocationGranularity - 1U)) & ~(g_dwAllocationGranularity - 1U))
 #define BIGALLOC(Size) _aligned_malloc((size_t)ALLOC_GRANULARITY((Size)+BIGALLOC_SAFETY),BIGALLOC_ALIGN)
