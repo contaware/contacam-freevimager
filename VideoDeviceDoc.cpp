@@ -2611,6 +2611,7 @@ int CVideoDeviceDoc::CRtspThread::Work()
 		AVFrame* pVideoFrame = NULL;
 		AVFrame* pAudioFrame = NULL;
 		AVFrame* pVideoFrameI420 = NULL;
+		int nI420ImageSize = 0;
 		LPBYTE pI420Buf = NULL;
 		AVFormatContext* pFormatCtx = avformat_alloc_context();
 		CAudioTools* pAudioTools = NULL;
@@ -2700,41 +2701,12 @@ int CVideoDeviceDoc::CRtspThread::Work()
 			m_nAudioCodecID = AV_CODEC_ID_NONE;
 
 		// Init Video
-		pImgConvertCtx = sws_getContextHelper(	pVideoCodecCtx->width, pVideoCodecCtx->height,
-												pVideoCodecCtx->pix_fmt,
-												pVideoCodecCtx->width, pVideoCodecCtx->height,
-												AV_PIX_FMT_YUV420P,
-												SWS_BICUBIC);
-		if (!pImgConvertCtx)
-		{
-			ret = AVERROR(ENOMEM);
-			goto free;
-		}
 		pVideoFrame = av_frame_alloc();
 		if (!pVideoFrame)
 		{
 			ret = AVERROR(ENOMEM);
 			goto free;
 		}
-		pVideoFrameI420 = av_frame_alloc();
-		if (!pVideoFrameI420)
-		{
-			ret = AVERROR(ENOMEM);
-			goto free;
-		}
-		int nI420ImageSize = avpicture_get_size(AV_PIX_FMT_YUV420P, pVideoCodecCtx->width, pVideoCodecCtx->height);
-		if (nI420ImageSize <= 0)
-		{
-			ret = nI420ImageSize;
-			goto free;
-		}
-		pI420Buf = (LPBYTE)av_malloc(2 * (nI420ImageSize + FF_INPUT_BUFFER_PADDING_SIZE));
-		if (!pI420Buf)
-		{
-			ret = AVERROR(ENOMEM);
-			goto free;
-		}
-		avpicture_fill((AVPicture *)pVideoFrameI420, pI420Buf, AV_PIX_FMT_YUV420P, pVideoCodecCtx->width, pVideoCodecCtx->height);
 
 		// Init Audio
 		if (bAudioSupported)
@@ -2836,53 +2808,96 @@ int CVideoDeviceDoc::CRtspThread::Work()
 					}
 					decoded = MIN(ret, avpkt.size);
 
-					// Init if size changed
-					if (m_pDoc->m_DocRect.right != pVideoCodecCtx->width ||
-						m_pDoc->m_DocRect.bottom != pVideoCodecCtx->height)
-					{
-						m_pDoc->m_ProcessFrameBMI.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-						m_pDoc->m_ProcessFrameBMI.bmiHeader.biWidth = (LONG)pVideoCodecCtx->width;
-						m_pDoc->m_ProcessFrameBMI.bmiHeader.biHeight = (LONG)pVideoCodecCtx->height;
-						m_pDoc->m_ProcessFrameBMI.bmiHeader.biPlanes = 1; // must be 1
-						m_pDoc->m_ProcessFrameBMI.bmiHeader.biBitCount = 12;
-						m_pDoc->m_ProcessFrameBMI.bmiHeader.biCompression = FCC('I420');
-						m_pDoc->m_ProcessFrameBMI.bmiHeader.biSizeImage = nI420ImageSize;
-						m_pDoc->m_DocRect.right = m_pDoc->m_ProcessFrameBMI.bmiHeader.biWidth;
-						m_pDoc->m_DocRect.bottom = m_pDoc->m_ProcessFrameBMI.bmiHeader.biHeight;
-
-						// Free Movement Detector because we changed size and/or format!
-						m_pDoc->FreeMovementDetector();
-
-						// Update
-						if (m_pDoc->m_bSizeToDoc)
-						{
-							// This sizes the view to m_DocRect in normal screen mode,
-							// in full-screen mode it updates m_ZoomRect from m_DocRect
-							::PostMessage(m_pDoc->GetView()->GetSafeHwnd(),
-								WM_THREADSAFE_UPDATEWINDOWSIZES,
-								(WPARAM)UPDATEWINDOWSIZES_SIZETODOC,
-								(LPARAM)0);
-							m_pDoc->m_bSizeToDoc = FALSE;
-						}
-						else
-						{
-							// In full-screen mode it updates m_ZoomRect from m_DocRect
-							::PostMessage(m_pDoc->GetView()->GetSafeHwnd(),
-								WM_THREADSAFE_UPDATEWINDOWSIZES,
-								(WPARAM)0,
-								(LPARAM)0);
-						}
-						::PostMessage(m_pDoc->GetView()->GetSafeHwnd(),
-							WM_THREADSAFE_SETDOCUMENTTITLE,
-							0, 0);
-						::PostMessage(m_pDoc->GetView()->GetSafeHwnd(),
-							WM_THREADSAFE_UPDATE_PHPPARAMS,
-							0, 0);
-					}
-
 					// Convert and Process
 					if (got_picture)
 					{
+						// Init conversion vars?
+						// Note: do the init only here because certain video codecs support cropping, 
+						// meaning that only a sub-rectangle of the sent frame is intended for display.
+						// While decoding the first frame the codec may update pVideoCodecCtx->width and 
+						// pVideoCodecCtx->height according to the cropping (pVideoCodecCtx->coded_width 
+						// and pVideoCodecCtx->coded_height retain the original sizes)
+						if (!pImgConvertCtx)
+						{
+							pImgConvertCtx = sws_getContextHelper(	pVideoCodecCtx->width, pVideoCodecCtx->height,
+																	pVideoCodecCtx->pix_fmt,
+																	pVideoCodecCtx->width, pVideoCodecCtx->height,
+																	AV_PIX_FMT_YUV420P,
+																	SWS_BICUBIC);
+							if (!pImgConvertCtx)
+							{
+								av_packet_unref(&orig_pkt);
+								ret = AVERROR(ENOMEM);
+								goto free;
+							}
+							pVideoFrameI420 = av_frame_alloc();
+							if (!pVideoFrameI420)
+							{
+								av_packet_unref(&orig_pkt);
+								ret = AVERROR(ENOMEM);
+								goto free;
+							}
+							nI420ImageSize = avpicture_get_size(AV_PIX_FMT_YUV420P, pVideoCodecCtx->width, pVideoCodecCtx->height);
+							if (nI420ImageSize <= 0)
+							{
+								av_packet_unref(&orig_pkt);
+								ret = nI420ImageSize;
+								goto free;
+							}
+							pI420Buf = (LPBYTE)av_malloc(2 * (nI420ImageSize + FF_INPUT_BUFFER_PADDING_SIZE));
+							if (!pI420Buf)
+							{
+								av_packet_unref(&orig_pkt);
+								ret = AVERROR(ENOMEM);
+								goto free;
+							}
+							avpicture_fill((AVPicture*)pVideoFrameI420, pI420Buf, AV_PIX_FMT_YUV420P, pVideoCodecCtx->width, pVideoCodecCtx->height);
+						}
+
+						// Init doc vars?
+						if (m_pDoc->m_DocRect.right != pVideoCodecCtx->width ||
+							m_pDoc->m_DocRect.bottom != pVideoCodecCtx->height)
+						{
+							m_pDoc->m_ProcessFrameBMI.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+							m_pDoc->m_ProcessFrameBMI.bmiHeader.biWidth = (LONG)pVideoCodecCtx->width;
+							m_pDoc->m_ProcessFrameBMI.bmiHeader.biHeight = (LONG)pVideoCodecCtx->height;
+							m_pDoc->m_ProcessFrameBMI.bmiHeader.biPlanes = 1; // must be 1
+							m_pDoc->m_ProcessFrameBMI.bmiHeader.biBitCount = 12;
+							m_pDoc->m_ProcessFrameBMI.bmiHeader.biCompression = FCC('I420');
+							m_pDoc->m_ProcessFrameBMI.bmiHeader.biSizeImage = nI420ImageSize;
+							m_pDoc->m_DocRect.right = m_pDoc->m_ProcessFrameBMI.bmiHeader.biWidth;
+							m_pDoc->m_DocRect.bottom = m_pDoc->m_ProcessFrameBMI.bmiHeader.biHeight;
+
+							// Free Movement Detector because we changed size and/or format!
+							m_pDoc->FreeMovementDetector();
+
+							// Update
+							if (m_pDoc->m_bSizeToDoc)
+							{
+								// This sizes the view to m_DocRect in normal screen mode,
+								// in full-screen mode it updates m_ZoomRect from m_DocRect
+								::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
+												WM_THREADSAFE_UPDATEWINDOWSIZES,
+												(WPARAM)UPDATEWINDOWSIZES_SIZETODOC,
+												(LPARAM)0);
+								m_pDoc->m_bSizeToDoc = FALSE;
+							}
+							else
+							{
+								// In full-screen mode it updates m_ZoomRect from m_DocRect
+								::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
+												WM_THREADSAFE_UPDATEWINDOWSIZES,
+												(WPARAM)0,
+												(LPARAM)0);
+							}
+							::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
+											WM_THREADSAFE_SETDOCUMENTTITLE,
+											0, 0);
+							::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
+											WM_THREADSAFE_UPDATE_PHPPARAMS,
+											0, 0);
+						}
+
 						// Convert
 						if ((ret = sws_scale(pImgConvertCtx, pVideoFrame->data, pVideoFrame->linesize, 0, pVideoCodecCtx->height, pVideoFrameI420->data, pVideoFrameI420->linesize)) <= 0)
 						{
@@ -3125,15 +3140,9 @@ int CVideoDeviceDoc::CRtspThread::Work()
 			avformat_close_input(&pFormatCtx);
 		av_dict_free(&opts);
 		if (pAudioPlay)
-		{
 			delete pAudioPlay;
-			pAudioPlay = NULL;
-		}
 		if (pAudioTools)
-		{
 			delete pAudioTools;
-			pAudioTools = NULL;
-		}
 
 		// Exit?
 		if (DoExit())
