@@ -3,6 +3,7 @@ FREEVIMAGER HISTORY
 9.9.22 (Month XXth 2022)
 
 - Improved file header safety checks
+- Fixed the .png saving which sometimes could fail
 - Correctly handle top-down .bmp files
 
 9.9.21 (March 22nd 2022)

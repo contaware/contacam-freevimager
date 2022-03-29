@@ -2,7 +2,8 @@ CONTACAM HISTORY
 
 9.9.22 (Month XXth 2022)
 
-- ...
+- Fixed a color shift problem happening with some cameras (thanks to
+  Ján Kovác for notifying the issue)
 
 9.9.21 (March 22nd 2022)
 
