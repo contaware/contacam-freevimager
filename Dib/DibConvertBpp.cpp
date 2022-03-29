@@ -487,7 +487,7 @@ BOOL CDib::ConvertTo1bit(	int nThreshold/*=128*/,
 
 			delete [] m_pBMI;
 			m_pBMI = lpNewBMI;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			m_pColors[0].rgbRed = GetRValue(crDarkColor);
 			m_pColors[0].rgbGreen = GetGValue(crDarkColor);
 			m_pColors[0].rgbBlue = GetBValue(crDarkColor);
@@ -517,7 +517,7 @@ BOOL CDib::ConvertTo1bit(	int nThreshold/*=128*/,
 
 			delete [] m_pBMI;
 			m_pBMI = lpNewBMI;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			m_pColors[0].rgbRed = GetRValue(crDarkColor);
 			m_pColors[0].rgbGreen = GetGValue(crDarkColor);
 			m_pColors[0].rgbBlue = GetBValue(crDarkColor);
@@ -548,7 +548,7 @@ BOOL CDib::ConvertTo1bit(	int nThreshold/*=128*/,
 
 			delete [] m_pBMI;
 			m_pBMI = lpNewBMI;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			m_pColors[0].rgbRed = GetRValue(crDarkColor);
 			m_pColors[0].rgbGreen = GetGValue(crDarkColor);
 			m_pColors[0].rgbBlue = GetBValue(crDarkColor);
@@ -578,7 +578,7 @@ BOOL CDib::ConvertTo1bit(	int nThreshold/*=128*/,
 
 			delete [] m_pBMI;
 			m_pBMI = lpNewBMI;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			m_pColors[0].rgbRed = GetRValue(crDarkColor);
 			m_pColors[0].rgbGreen = GetGValue(crDarkColor);
 			m_pColors[0].rgbBlue = GetBValue(crDarkColor);
@@ -609,7 +609,7 @@ BOOL CDib::ConvertTo1bit(	int nThreshold/*=128*/,
 
 			delete [] m_pBMI;
 			m_pBMI = lpNewBMI;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			m_pColors[0].rgbRed = GetRValue(crDarkColor);
 			m_pColors[0].rgbGreen = GetGValue(crDarkColor);
 			m_pColors[0].rgbBlue = GetBValue(crDarkColor);
@@ -718,7 +718,7 @@ BOOL CDib::ConvertTo1bitDitherErrDiff(	int nMethod,
 	m_dwImageSize = DWALIGNEDWIDTHBYTES(GetWidth() * 1) * GetHeight();
 	delete [] m_pBMI;
 	m_pBMI = lpNewBMI;
-	m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+	m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 	m_pColors[0].rgbRed = 0;
 	m_pColors[0].rgbGreen = 0;
 	m_pColors[0].rgbBlue = 0;
@@ -1673,7 +1673,7 @@ BOOL CDib::ConvertTo4bits(	CPalette* pPalette/*=NULL*/,
 			LPBITMAPINFO pOldBMI = m_pBMI;
 			RGBQUAD* pOldColors = m_pColors;
 			m_pBMI = lpNewBMI;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			FillColorsFromPalette(pPal); // Needed by GetClosestColorIndex()!
 			CreatePaletteFromBMI();
 
@@ -1707,7 +1707,7 @@ BOOL CDib::ConvertTo4bits(	CPalette* pPalette/*=NULL*/,
 			LPBITMAPINFO pOldBMI = m_pBMI;
 			RGBQUAD* pOldColors = m_pColors;
 			m_pBMI = lpNewBMI;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			FillColorsFromPalette(pPal); // Needed by GetClosestColorIndex()!
 			CreatePaletteFromBMI();
 
@@ -1749,7 +1749,7 @@ BOOL CDib::ConvertTo4bits(	CPalette* pPalette/*=NULL*/,
 			LPBITMAPINFO pOldBMI = m_pBMI;
 			RGBQUAD* pOldColors = m_pColors;
 			m_pBMI = lpNewBMI;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			FillColorsFromPalette(pPal); // Needed by GetClosestColorIndex()!
 			CreatePaletteFromBMI();
 
@@ -1782,7 +1782,7 @@ BOOL CDib::ConvertTo4bits(	CPalette* pPalette/*=NULL*/,
 
 			delete [] m_pBMI;
 			m_pBMI = lpNewBMI;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			FillColorsFromPalette(pPal); // Needed by GetClosestColorIndex()!
 			CreatePaletteFromBMI();
 
@@ -1813,7 +1813,7 @@ BOOL CDib::ConvertTo4bits(	CPalette* pPalette/*=NULL*/,
 
 			delete [] m_pBMI;
 			m_pBMI = lpNewBMI;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			FillColorsFromPalette(pPal); // Needed by GetClosestColorIndex()!
 			CreatePaletteFromBMI();
 
@@ -1844,7 +1844,7 @@ BOOL CDib::ConvertTo4bits(	CPalette* pPalette/*=NULL*/,
 
 			delete [] m_pBMI;
 			m_pBMI = lpNewBMI;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			FillColorsFromPalette(pPal); // Needed by GetClosestColorIndex()!
 			CreatePaletteFromBMI();
 
@@ -2019,7 +2019,7 @@ BOOL CDib::ConvertTo4bitsPrecise(	CPalette* pPalette/*=NULL*/,
 			LPBITMAPINFO pOldBMI = m_pBMI;
 			RGBQUAD* pOldColors = m_pColors;
 			m_pBMI = lpNewBMI;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			FillColorsFromPalette(pPal);
 			CreatePaletteFromBMI();
 
@@ -2050,7 +2050,7 @@ BOOL CDib::ConvertTo4bitsPrecise(	CPalette* pPalette/*=NULL*/,
 			LPBITMAPINFO pOldBMI = m_pBMI;
 			RGBQUAD* pOldColors = m_pColors;
 			m_pBMI = lpNewBMI;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			FillColorsFromPalette(pPal);
 			CreatePaletteFromBMI();
 
@@ -2089,7 +2089,7 @@ BOOL CDib::ConvertTo4bitsPrecise(	CPalette* pPalette/*=NULL*/,
 			LPBITMAPINFO pOldBMI = m_pBMI;
 			RGBQUAD* pOldColors = m_pColors;
 			m_pBMI = lpNewBMI;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			FillColorsFromPalette(pPal);
 			CreatePaletteFromBMI();
 
@@ -2119,7 +2119,7 @@ BOOL CDib::ConvertTo4bitsPrecise(	CPalette* pPalette/*=NULL*/,
 		{
 			delete [] m_pBMI;
 			m_pBMI = lpNewBMI;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			FillColorsFromPalette(pPal);
 			CreatePaletteFromBMI();
 
@@ -2147,7 +2147,7 @@ BOOL CDib::ConvertTo4bitsPrecise(	CPalette* pPalette/*=NULL*/,
 		{
 			delete [] m_pBMI;
 			m_pBMI = lpNewBMI;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			FillColorsFromPalette(pPal);
 			CreatePaletteFromBMI();
 
@@ -2175,7 +2175,7 @@ BOOL CDib::ConvertTo4bitsPrecise(	CPalette* pPalette/*=NULL*/,
 		{
 			delete [] m_pBMI;
 			m_pBMI = lpNewBMI;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			FillColorsFromPalette(pPal);
 			CreatePaletteFromBMI();
 
@@ -2345,7 +2345,7 @@ BOOL CDib::ConvertTo4bitsErrDiff(	CPalette* pPalette/*=NULL*/,
 	m_dwImageSize = DWALIGNEDWIDTHBYTES(GetWidth() * 4) * GetHeight();
 	delete [] m_pBMI;
 	m_pBMI = lpNewBMI;
-	m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+	m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 	FillColorsFromPalette(pPal);
 	CreatePaletteFromBMI();
 
@@ -2783,7 +2783,7 @@ BOOL CDib::ConvertTo8bits(	CPalette* pPalette/*=NULL*/,
 			LPBITMAPINFO pOldBMI = m_pBMI;
 			RGBQUAD* pOldColors = m_pColors;
 			m_pBMI = lpNewBMI;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			FillColorsFromPalette(pPal); // Needed by GetClosestColorIndex()!
 			CreatePaletteFromBMI();
 
@@ -2813,7 +2813,7 @@ BOOL CDib::ConvertTo8bits(	CPalette* pPalette/*=NULL*/,
 			LPBITMAPINFO pOldBMI = m_pBMI;
 			RGBQUAD* pOldColors = m_pColors;
 			m_pBMI = lpNewBMI;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			FillColorsFromPalette(pPal); // Needed by GetClosestColorIndex()!
 			CreatePaletteFromBMI();
 
@@ -2853,7 +2853,7 @@ BOOL CDib::ConvertTo8bits(	CPalette* pPalette/*=NULL*/,
 			LPBITMAPINFO pOldBMI = m_pBMI;
 			RGBQUAD* pOldColors = m_pColors;
 			m_pBMI = lpNewBMI;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			FillColorsFromPalette(pPal); // Needed by GetClosestColorIndex()!
 			CreatePaletteFromBMI();
 
@@ -2882,7 +2882,7 @@ BOOL CDib::ConvertTo8bits(	CPalette* pPalette/*=NULL*/,
 
 			delete [] m_pBMI;
 			m_pBMI = lpNewBMI;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			FillColorsFromPalette(pPal); // Needed by GetClosestColorIndex()!
 			CreatePaletteFromBMI();
 
@@ -2909,7 +2909,7 @@ BOOL CDib::ConvertTo8bits(	CPalette* pPalette/*=NULL*/,
 
 			delete [] m_pBMI;
 			m_pBMI = lpNewBMI;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			FillColorsFromPalette(pPal); // Needed by GetClosestColorIndex()!
 			CreatePaletteFromBMI();
 
@@ -2936,7 +2936,7 @@ BOOL CDib::ConvertTo8bits(	CPalette* pPalette/*=NULL*/,
 
 			delete [] m_pBMI;
 			m_pBMI = lpNewBMI;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			FillColorsFromPalette(pPal); // Needed by GetClosestColorIndex()!
 			CreatePaletteFromBMI();
 
@@ -3107,7 +3107,7 @@ BOOL CDib::ConvertTo8bitsPrecise(	CPalette* pPalette/*=NULL*/,
 			LPBITMAPINFO pOldBMI = m_pBMI;
 			RGBQUAD* pOldColors = m_pColors;
 			m_pBMI = lpNewBMI;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			FillColorsFromPalette(pPal);
 			CreatePaletteFromBMI();
 
@@ -3134,7 +3134,7 @@ BOOL CDib::ConvertTo8bitsPrecise(	CPalette* pPalette/*=NULL*/,
 			LPBITMAPINFO pOldBMI = m_pBMI;
 			RGBQUAD* pOldColors = m_pColors;
 			m_pBMI = lpNewBMI;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			FillColorsFromPalette(pPal);
 			CreatePaletteFromBMI();
 
@@ -3171,7 +3171,7 @@ BOOL CDib::ConvertTo8bitsPrecise(	CPalette* pPalette/*=NULL*/,
 			LPBITMAPINFO pOldBMI = m_pBMI;
 			RGBQUAD* pOldColors = m_pColors;
 			m_pBMI = lpNewBMI;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			FillColorsFromPalette(pPal);
 			CreatePaletteFromBMI();
 
@@ -3197,7 +3197,7 @@ BOOL CDib::ConvertTo8bitsPrecise(	CPalette* pPalette/*=NULL*/,
 		{
 			delete [] m_pBMI;
 			m_pBMI = lpNewBMI;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			FillColorsFromPalette(pPal);
 			CreatePaletteFromBMI();
 
@@ -3221,7 +3221,7 @@ BOOL CDib::ConvertTo8bitsPrecise(	CPalette* pPalette/*=NULL*/,
 		{
 			delete [] m_pBMI;
 			m_pBMI = lpNewBMI;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			FillColorsFromPalette(pPal);
 			CreatePaletteFromBMI();
 
@@ -3245,7 +3245,7 @@ BOOL CDib::ConvertTo8bitsPrecise(	CPalette* pPalette/*=NULL*/,
 		{
 			delete [] m_pBMI;
 			m_pBMI = lpNewBMI;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			FillColorsFromPalette(pPal);
 			CreatePaletteFromBMI();
 
@@ -3411,7 +3411,7 @@ BOOL CDib::ConvertTo8bitsErrDiff(	CPalette* pPalette/*=NULL*/,
 	m_dwImageSize = DWALIGNEDWIDTHBYTES(GetWidth() * 8) * GetHeight();
 	delete [] m_pBMI;
 	m_pBMI = lpNewBMI;
-	m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+	m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 	FillColorsFromPalette(pPal);
 	CreatePaletteFromBMI();
 

@@ -279,7 +279,7 @@ BOOL CDib::LoadPCX(	LPCTSTR lpszPathName,
 		m_pBMI->bmiHeader.biYPelsPerMeter  = PIXPERMETER(sHeader.VRes);
 		m_pBMI->bmiHeader.biClrUsed        = 0; // All colors are used
 		m_pBMI->bmiHeader.biClrImportant   = 0; // All colors are important
-		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 		m_dwImageSize = m_pBMI->bmiHeader.biSizeImage;
 
 		// Init File Info

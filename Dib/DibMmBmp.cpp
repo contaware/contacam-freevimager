@@ -81,7 +81,7 @@ BOOL CDib::MapBMP(LPCTSTR lpszPathName, BOOL bReadOnly)
 		// Calculate the BMI, the Colors and the Bits Pointers
 		m_pBMI = (LPBITMAPINFO)((LPBYTE)m_pMMFile + sizeof(BITMAPFILEHEADER)); 
 		if (m_pBMI->bmiHeader.biBitCount <= 8)
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 		else
 			m_pColors = NULL;
 		m_pBits = (LPBYTE)m_pMMFile + lpBmfHeader->bfOffBits;
@@ -310,7 +310,7 @@ BOOL CDib::MMCreateBMP(LPCTSTR lpszPathName)
 		// Set Pointers
 		m_pBMI = (LPBITMAPINFO)((LPBYTE)m_pMMFile + sizeof(BITMAPFILEHEADER)); 
 		if (m_pBMI->bmiHeader.biBitCount <= 8)
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 		else
 			m_pColors = NULL;
 		m_pBits = (LPBYTE)m_pMMFile + BmfHdr.bfOffBits;
@@ -378,7 +378,7 @@ BOOL CDib::MMBMPToBits()
 	m_pBMI = pBMI;
 	m_pBits = pBits;
 	if (m_pBMI->bmiHeader.biBitCount <= 8)
-		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 	else
 		m_pColors = NULL;
 
@@ -407,7 +407,7 @@ BOOL CDib::MMBMPToBMI()
 	// Update the pointer
 	m_pBMI = pBMI;
 	if (m_pBMI->bmiHeader.biBitCount <= 8)
-		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 	else
 		m_pColors = NULL;
 

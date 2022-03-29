@@ -77,7 +77,7 @@ BOOL CDib::Filter(	int* pKernel,
 
 		// Make Sure m_pColors Points to the Right Place
 		if (m_pBMI->bmiHeader.biBitCount <= 8)
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 		else
 			m_pColors = NULL;
 
@@ -468,7 +468,7 @@ BOOL CDib::FilterFast(	int* pKernel,
 
 		// Make Sure m_pColors Points to the Right Place
 		if (m_pBMI->bmiHeader.biBitCount <= 8)
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 		else
 			m_pColors = NULL;
 
@@ -1119,7 +1119,7 @@ BOOL CDib::FilterAlpha(	CRect rc,
 
 		// Make Sure m_pColors Points to the Right Place
 		if (m_pBMI->bmiHeader.biBitCount <= 8)
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 		else
 			m_pColors = NULL;
 
@@ -1389,7 +1389,7 @@ BOOL CDib::FilterFastAlpha(	int* pKernel,
 
 		// Make Sure m_pColors Points to the Right Place
 		if (m_pBMI->bmiHeader.biBitCount <= 8)
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 		else
 			m_pColors = NULL;
 

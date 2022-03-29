@@ -128,7 +128,7 @@ BOOL CDib::LoadGIFHeader(LPCTSTR lpszPathName)
 		m_pBMI->bmiHeader.biXPelsPerMeter = 0;
 		m_pBMI->bmiHeader.biYPelsPerMeter = 0;
 		m_dwImageSize = m_pBMI->bmiHeader.biSizeImage;
-		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 		memcpy(m_Gif.m_pScreenBMI, m_pBMI, m_pBMI->bmiHeader.biSize);
 
 		// Set Background Color
@@ -473,7 +473,7 @@ BOOL CDib::LoadFirstGIFRaw(	LPCTSTR lpszPathName,
 		m_pBMI->bmiHeader.biXPelsPerMeter = 0;
 		m_pBMI->bmiHeader.biYPelsPerMeter = 0;
 		m_dwImageSize = m_pBMI->bmiHeader.biSizeImage;
-		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 		memcpy(m_Gif.m_pScreenBMI, m_pBMI, m_pBMI->bmiHeader.biSize);
 
 		// Set Background Color
@@ -699,7 +699,7 @@ int CDib::LoadNextGIFRaw(	CWnd* pProgressWnd/*=NULL*/,
 																	m_pBMI->bmiHeader.biBitCount);
 					m_pBMI->bmiHeader.biSizeImage = m_pBMI->bmiHeader.biHeight*uiDIBScanLineSize;
 					m_dwImageSize = m_pBMI->bmiHeader.biSizeImage;
-					m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+					m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 					memcpy(m_Gif.m_pCurrentImageBMI, m_pBMI,
 								sizeof(BITMAPINFOHEADER) + 256*sizeof(RGBQUAD));
 
@@ -950,7 +950,7 @@ BOOL CDib::LoadFirstGIF(LPCTSTR lpszPathName,
 		m_pBMI->bmiHeader.biXPelsPerMeter = 0;
 		m_pBMI->bmiHeader.biYPelsPerMeter = 0;
 		m_dwImageSize = m_pBMI->bmiHeader.biSizeImage;
-		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 		memcpy(m_Gif.m_pScreenBMI, m_pBMI, m_pBMI->bmiHeader.biSize);
 
 		// Set Background Color
@@ -1192,7 +1192,7 @@ int CDib::LoadNextGIF(	CWnd* pProgressWnd/*=NULL*/,
 																	m_pBMI->bmiHeader.biBitCount);
 					m_pBMI->bmiHeader.biSizeImage = m_pBMI->bmiHeader.biHeight*uiDIBScanLineSize;
 					m_dwImageSize = m_pBMI->bmiHeader.biSizeImage;
-					m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+					m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 					memcpy(m_Gif.m_pCurrentImageBMI, m_pBMI,
 								sizeof(BITMAPINFOHEADER) + 256*sizeof(RGBQUAD));
 
@@ -1490,7 +1490,7 @@ BOOL CDib::LoadFirstGIF32(	LPCTSTR lpszPathName,
 		m_Gif.m_pScreenBMI->bmiHeader.biSizeImage =     m_Gif.m_pLoadFile->SHeight*uiDIBScanLineSize;   
 		m_Gif.m_pScreenBMI->bmiHeader.biXPelsPerMeter = 0;
 		m_Gif.m_pScreenBMI->bmiHeader.biYPelsPerMeter = 0;
-		RGBQUAD* pScreenColors = (RGBQUAD*)((LPBYTE)m_Gif.m_pScreenBMI + (WORD)(m_Gif.m_pScreenBMI->bmiHeader.biSize));
+		RGBQUAD* pScreenColors = (RGBQUAD*)((LPBYTE)m_Gif.m_pScreenBMI + m_Gif.m_pScreenBMI->bmiHeader.biSize);
 
 		// Set Background Color
 		if (m_FileInfo.m_bHasBackgroundColor)
@@ -1731,7 +1731,7 @@ int CDib::LoadNextGIF32(CWnd* pProgressWnd/*=NULL*/,
 					DWORD uiDIBScanLineSize = DWALIGNEDWIDTHBYTES(	m_Gif.m_pCurrentImageBMI->bmiHeader.biWidth *
 																	m_Gif.m_pCurrentImageBMI->bmiHeader.biBitCount);
 					m_Gif.m_pCurrentImageBMI->bmiHeader.biSizeImage = m_Gif.m_pCurrentImageBMI->bmiHeader.biHeight*uiDIBScanLineSize;
-					RGBQUAD* pImageColors = (RGBQUAD*)((LPBYTE)m_Gif.m_pCurrentImageBMI + (WORD)(m_Gif.m_pCurrentImageBMI->bmiHeader.biSize));
+					RGBQUAD* pImageColors = (RGBQUAD*)((LPBYTE)m_Gif.m_pCurrentImageBMI + m_Gif.m_pCurrentImageBMI->bmiHeader.biSize);
 
 					// Always copy next -> current image
 					memcpy(pBits1, pBits2, m_dwImageSize);

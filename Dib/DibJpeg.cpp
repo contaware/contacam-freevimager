@@ -204,7 +204,7 @@ BOOL CDib::LoadJPEG(LPCTSTR lpszPathName,
 			m_pBMI->bmiHeader.biSizeImage = uiDIBImageSize;
 			m_pBMI->bmiHeader.biClrUsed = 0;
 			m_pBMI->bmiHeader.biClrImportant = 0;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			m_dwImageSize = m_pBMI->bmiHeader.biSizeImage;
 
 			// Init File Info
@@ -663,7 +663,7 @@ BOOL CDib::LoadJPEG(LPBYTE pInput,
 			m_pBMI->bmiHeader.biSizeImage = uiDIBImageSize;
 			m_pBMI->bmiHeader.biClrUsed = 0;
 			m_pBMI->bmiHeader.biClrImportant = 0;
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			m_dwImageSize = m_pBMI->bmiHeader.biSizeImage;
 
 			// Set Colors

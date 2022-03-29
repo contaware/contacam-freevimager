@@ -148,7 +148,7 @@ CDib::CDib(const CDib& dib) // Copy Constructor (CDib dib1 = dib2 or CDib dib1(d
 		return;
 	memcpy((void*)m_pBMI, (void*)dib.m_pBMI, dib.GetBMISize());
 	if (m_pBMI->bmiHeader.biBitCount <= 8)
-		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 	else
 		m_pColors = NULL;
 
@@ -244,7 +244,7 @@ CDib& CDib::operator=(const CDib& dib) // Copy Assignment (CDib dib3; dib3 = dib
 			return *this;
 		memcpy((void*)m_pBMI, (void*)dib.m_pBMI, dib.GetBMISize());
 		if (m_pBMI->bmiHeader.biBitCount <= 8)
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 		else
 			m_pColors = NULL;
 
@@ -1400,7 +1400,7 @@ BOOL CDib::AllocateBitsFast(WORD wBpp,
 	if ((wBpp <= 8) &&
 		((wCompression == BI_RGB) || (wCompression == BI_RLE4) || (wCompression == BI_RLE8)))
 	{
-		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 		if (m_pBMI->bmiHeader.biBitCount == 8)
 		{
 			if (dwNumOfColors == 0)
@@ -1525,7 +1525,7 @@ BOOL CDib::AllocateDibSection(	WORD wBpp,
 	m_dwImageSize = uiDIBScanLineSize * dwHeight;
 	if (m_pBMI->bmiHeader.biBitCount <= 8)
 	{
-		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 		if (m_pBMI->bmiHeader.biBitCount == 8)
 		{
 			if (dwNumOfColors == 0)
@@ -1742,7 +1742,7 @@ BOOL CDib::CropBits(DWORD dwOrigX,
 
 		// Make Sure m_pColors Points to the Right Place
 		if (m_pBMI->bmiHeader.biBitCount <= 8)
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 		else
 			m_pColors = NULL;
 
@@ -1996,7 +1996,7 @@ BOOL CDib::AddBorders(	DWORD dwLeft,
 
 		// Make Sure m_pColors Points to the Right Place
 		if (m_pBMI->bmiHeader.biBitCount <= 8)
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 		else
 			m_pColors = NULL;
 
@@ -2765,7 +2765,7 @@ void CDib::SetDibPointers(LPBITMAPINFO pBMI, LPBYTE pBits)
 	if (m_pBMI)
 	{
 		if (m_pBMI->bmiHeader.biBitCount <= 8)
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 		else
 			m_pColors = NULL;
 		if (m_pBMI->bmiHeader.biSize == sizeof(BITMAPV4HEADER) ||
@@ -2857,7 +2857,7 @@ BOOL CDib::SetBMI(LPBITMAPINFO lpBMI)
 	memcpy(m_pBMI, lpBMI, dwBMISize); 
 
 	if (m_pBMI->bmiHeader.biBitCount <= 8)
-		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 	else
 		m_pColors = NULL;
 
@@ -4813,7 +4813,7 @@ BOOL CDib::SetBitsFromDDB(HBITMAP hBitmap, HPALETTE hPal)
 	}
 
 	if (m_pBMI->bmiHeader.biBitCount <= 8)
-		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 	else
 		m_pColors = NULL;
 	CreatePaletteFromBMI();
@@ -4937,7 +4937,7 @@ BOOL CDib::SetDibSectionFromDDB(HBITMAP hBitmap, HPALETTE hPal)
 	// Get Colors from the DibSection
 	if (m_pBMI->bmiHeader.biBitCount <= 8)
 	{
-		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 		::GetDIBColorTable(hMemDC, 0, nColors, m_pColors);
 	}
 	else
@@ -5729,7 +5729,7 @@ BOOL CDib::Decompress(int nToBitsPerPixel)
 		Free();
 		m_pBMI = pBMI;
 		if (m_pBMI->bmiHeader.biBitCount <= 8)
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 		else
 			m_pColors = NULL;
 		CreatePaletteFromBMI();
@@ -6300,7 +6300,7 @@ BOOL CDib::CompressRLE(int nCompression)
 	// Set Pointers
 	m_pBMI = lpBMI;
 	m_pBits = lpBits;
-	m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+	m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 
 	// Create Palette
 	CreatePaletteFromBMI();
@@ -6472,7 +6472,7 @@ BOOL CDib::DecompressRLE8(CDib* pBackgroundDib/*=NULL*/)
 	// Set Pointers
 	m_pBMI = lpBMI;
 	m_pBits = lpUnencBitsStart;
-	m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+	m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 
 	// Set Size
 	m_dwImageSize = lpBMI->bmiHeader.biSizeImage;
@@ -6695,7 +6695,7 @@ BOOL CDib::DecompressRLE4(CDib* pBackgroundDib/*=NULL*/)
 	// Set Pointers
 	m_pBMI = lpBMI;
 	m_pBits = lpUnencBitsStart;
-	m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+	m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 
 	// Set Size
 	m_dwImageSize = lpBMI->bmiHeader.biSizeImage;
@@ -7440,7 +7440,7 @@ BOOL CDib::ToBITMAPV5HEADER()
 
 	// Set Colors Pointer
 	if (GetBitCount() <= 8)
-		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 	else
 		m_pColors = NULL;
 
@@ -7500,7 +7500,7 @@ BOOL CDib::ToBITMAPINFOHEADER()
 
 	// Set Colors Pointer
 	if (GetBitCount() <= 8)
-		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 	else
 		m_pColors = NULL;
 
@@ -7580,7 +7580,7 @@ BOOL CDib::DibSectionInitBMI(HBITMAP hDibSection)
 				return FALSE;
 			memcpy((void*)m_pBMI, (void*)(&(dibsection.dsBmih)), dibsection.dsBmih.biSize);
 			if (dwNumColors != 0)
-				m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+				m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 			else
 				m_pColors = NULL;
 		}

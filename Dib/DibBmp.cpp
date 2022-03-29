@@ -232,7 +232,7 @@ BOOL CDib::LoadBMPNoFileHeader(CFile& file, BOOL bDecompress/*=TRUE*/)
 
 		// Set Color Pointer
 		if (m_pBMI->bmiHeader.biBitCount <= 8)
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 		else
 			m_pColors = NULL;
 
@@ -432,8 +432,8 @@ BOOL CDib::LoadBMP(	CFile& file,
 			pBMI->bmiHeader.biClrUsed = 0; 
 			pBMI->bmiHeader.biClrImportant = 0;
 
-			RGBTRIPLE* pTripleColors = (RGBTRIPLE*)((LPBYTE)m_pBMI + (WORD)(((LPBITMAPCOREHEADER)m_pBMI)->bcSize));
-			RGBQUAD* pQuadColors = (RGBQUAD*)((LPBYTE)pBMI + (WORD)(pBMI->bmiHeader.biSize));
+			RGBTRIPLE* pTripleColors = (RGBTRIPLE*)((LPBYTE)m_pBMI + ((LPBITMAPCOREHEADER)m_pBMI)->bcSize);
+			RGBQUAD* pQuadColors = (RGBQUAD*)((LPBYTE)pBMI + pBMI->bmiHeader.biSize);
 			for (int i = 0 ; i < nNumOfColors ; i++)
 			{
 				pQuadColors[i].rgbBlue = pTripleColors[i].rgbtBlue;
@@ -446,7 +446,7 @@ BOOL CDib::LoadBMP(	CFile& file,
 			m_pBMI = pBMI;
 		}
 		if (m_pBMI->bmiHeader.biBitCount <= 8)
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 		else
 			m_pColors = NULL;
 

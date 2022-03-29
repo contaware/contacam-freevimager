@@ -320,7 +320,7 @@ BOOL CDib::LoadPNG(	LPCTSTR lpszPathName,
 		m_pBMI->bmiHeader.biClrUsed =       palette_entries;
 		m_pBMI->bmiHeader.biClrImportant =  0;
 		if (m_pBMI->bmiHeader.biBitCount <= 8)
-			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 		else
 			m_pColors = NULL;
 		m_dwImageSize = m_pBMI->bmiHeader.biSizeImage;		
@@ -649,7 +649,7 @@ BOOL CDib::SavePNG(	LPCTSTR lpszPathName,
 		}
 
 		// Bitfields Handling
-		bitfields = (DWORD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+		bitfields = (DWORD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
 		bf_format = 0;
 		if (compression == BI_BITFIELDS) 
 		{
