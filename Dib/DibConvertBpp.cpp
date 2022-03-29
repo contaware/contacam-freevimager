@@ -213,7 +213,7 @@ DWORD CDib::CountUniqueColors(	CWnd* pProgressWnd/*=NULL*/,
 			memset(ppColorsCountTable, 0, dwColorsCountTableSize * sizeof(LPDWORD));
 
 			// Set flags bit if color available
-			for (line = 0 ; line < GetHeight(); line++)
+			for (line = 0 ; line < GetHeight() ; line++)
 			{
 				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, GetHeight());
 
@@ -246,7 +246,7 @@ DWORD CDib::CountUniqueColors(	CWnd* pProgressWnd/*=NULL*/,
 			if (!HasAlpha() && IsFast32bpp())
 			{	
 				// Set flags bit if color available
-				for (line = 0 ; line < GetHeight(); line++)
+				for (line = 0 ; line < GetHeight() ; line++)
 				{
 					DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, GetHeight());
 
@@ -268,7 +268,7 @@ DWORD CDib::CountUniqueColors(	CWnd* pProgressWnd/*=NULL*/,
 			else if (HasAlpha())
 			{
 				// Set flags bit if color available
-				for (line = 0 ; line < GetHeight(); line++)
+				for (line = 0 ; line < GetHeight() ; line++)
 				{
 					DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, GetHeight());
 
@@ -561,7 +561,7 @@ BOOL CDib::ConvertTo1bit(	int nThreshold/*=128*/,
 		}
 		case 24 :
 		{
-			for (line = 0 ; line < GetHeight(); line++)
+			for (line = 0 ; line < GetHeight() ; line++)
 			{
 				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, GetHeight());
 
@@ -1817,7 +1817,7 @@ BOOL CDib::ConvertTo4bits(	CPalette* pPalette/*=NULL*/,
 			FillColorsFromPalette(pPal); // Needed by GetClosestColorIndex()!
 			CreatePaletteFromBMI();
 
-			for (line = 0 ; line < GetHeight(); line++)
+			for (line = 0 ; line < GetHeight() ; line++)
 			{
 				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, GetHeight());
 
@@ -2151,7 +2151,7 @@ BOOL CDib::ConvertTo4bitsPrecise(	CPalette* pPalette/*=NULL*/,
 			FillColorsFromPalette(pPal);
 			CreatePaletteFromBMI();
 
-			for (line = 0 ; line < GetHeight(); line++)
+			for (line = 0 ; line < GetHeight() ; line++)
 			{
 				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, GetHeight());
 
@@ -2913,7 +2913,7 @@ BOOL CDib::ConvertTo8bits(	CPalette* pPalette/*=NULL*/,
 			FillColorsFromPalette(pPal); // Needed by GetClosestColorIndex()!
 			CreatePaletteFromBMI();
 
-			for (line = 0 ; line < GetHeight(); line++)
+			for (line = 0 ; line < GetHeight() ; line++)
 			{
 				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, GetHeight());
 
@@ -3225,7 +3225,7 @@ BOOL CDib::ConvertTo8bitsPrecise(	CPalette* pPalette/*=NULL*/,
 			FillColorsFromPalette(pPal);
 			CreatePaletteFromBMI();
 
-			for (line = 0 ; line < GetHeight(); line++)
+			for (line = 0 ; line < GetHeight() ; line++)
 			{
 				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, GetHeight());
 

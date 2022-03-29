@@ -551,7 +551,7 @@ BOOL CDib::Grayscale(CWnd* pProgressWnd/*=NULL*/, BOOL bProgressSend/*=TRUE*/)
 		{
 			nWidthDWAligned = DWALIGNEDWIDTHBYTES(GetWidth() * 24); // DWORD aligned (in bytes)
 		
-			for (line = 0 ; line < GetHeight(); line++)
+			for (line = 0 ; line < GetHeight() ; line++)
 			{
 				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, GetHeight());
 
