@@ -2844,7 +2844,7 @@ int CVideoDeviceDoc::CRtspThread::Work()
 								ret = nI420ImageSize;
 								goto free;
 							}
-							pI420Buf = (LPBYTE)av_malloc(2 * (nI420ImageSize + AV_INPUT_BUFFER_PADDING_SIZE));
+							pI420Buf = (LPBYTE)av_malloc(nI420ImageSize + AV_INPUT_BUFFER_PADDING_SIZE);
 							if (!pI420Buf)
 							{
 								av_packet_unref(&orig_pkt);
