@@ -649,7 +649,9 @@ BOOL CDib::SavePNG(	LPCTSTR lpszPathName,
 		}
 
 		// Bitfields Handling
-		bitfields = (DWORD*)((LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize);
+		bitfields = (DWORD*)((LPBYTE)m_pBMI + sizeof(BITMAPINFOHEADER));	// that's also correct for BITMAPV4HEADER and BITMAPV5HEADER
+																			// because they have bV4RedMask, bV4GreenMask, bV4BlueMask and
+																			// bV5RedMask, bV5GreenMask, bV5BlueMask members at this offset
 		bf_format = 0;
 		if (compression == BI_BITFIELDS) 
 		{
