@@ -296,8 +296,6 @@ BEGIN
         END
         POPUP "JPEG Advanced"
         BEGIN
-            MENUITEM "Lossless Crop",               ID_EDIT_CROP_LOSSLESS
-            MENUITEM SEPARATOR
             MENUITEM "Update EXIF Thumbnail",       ID_EDIT_UPDATE_EXIFTHUMB
             MENUITEM "Add EXIF Thumbnail",          ID_EDIT_ADD_EXIFTHUMB
             MENUITEM "Remove EXIF Thumbnail",       ID_EDIT_REMOVE_EXIFTHUMB
@@ -3172,7 +3170,7 @@ BEGIN
     IDS_MULTILANG_1324      "Dim: %dx%d\r\nCurrent Depth: %s, %s\r\nFile Depth: %s\r\nPage %d of %d\r\nUnc. Image Size: %d %s , File Size: %d %s"
     IDS_MULTILANG_1325      "Dim: %dx%d , Dpi: %dx%d\r\nCurrent Depth: %s, %s\r\nFile Depth: %s\r\nUnc. Image Size: %d %s\r\nFile Size: %d %s"
     IDS_MULTILANG_1326      "Dim: %dx%d\r\nCurrent Depth: %s, %s\r\nFile Depth: %s\r\nUnc. Image Size: %d %s\r\nFile Size: %d %s"
-    IDS_MULTILANG_1327      "Do You Want To Save The Cropped Image To A New File?"
+    IDS_MULTILANG_1327      "Save Lossless cropped image to a New file?\nWARNING: by choosing 'No' crop cannot be undone."
 END
 
 STRINGTABLE
@@ -3389,7 +3387,6 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_EDIT_CROP_LOSSLESS   "Perform a lossless crop\nLossless Crop"
     ID_RESTORE              "Restores the window to normal size\nRestore"
     ID_MINIMIZE             "Reduces the window to an icon\nMinimize"
     ID_MAXIMIZE             "Enlarges the window to full size\nMaximize"

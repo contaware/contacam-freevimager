@@ -3083,7 +3083,6 @@
 #define ID_EDIT_REMOVE_OTHERAPP         32938
 #define ID_EDIT_CLEAR_EXIF_ORIENTATE    32941
 #define ID_BACKGROUND_COLOR             32942
-#define ID_EDIT_CROP_LOSSLESS           32946
 #define ID_RESTORE                      32947
 #define ID_MINIMIZE                     32948
 #define ID_MAXIMIZE                     32949

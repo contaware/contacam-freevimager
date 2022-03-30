@@ -152,8 +152,6 @@ BEGIN_MESSAGE_MAP(CPictureDoc, CUImagerDoc)
 	ON_COMMAND(ID_BACKGROUND_COLOR, OnBackgroundColor)
 	ON_UPDATE_COMMAND_UI(ID_BACKGROUND_COLOR, OnUpdateBackgroundColor)
 	ON_COMMAND(ID_FILE_CLOSE, OnFileClose)
-	ON_COMMAND(ID_EDIT_CROP_LOSSLESS, OnEditCropLossless)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_CROP_LOSSLESS, OnUpdateEditCropLossless)
 	ON_COMMAND(ID_VIEW_STRETCH_HALFTONE, OnViewStretchHalftone)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_STRETCH_HALFTONE, OnUpdateViewStretchHalftone)
 	ON_COMMAND(ID_EDIT_FILTER_SHARPEN, OnEditFilterSharpen)
@@ -8587,49 +8585,6 @@ void CPictureDoc::EditCrop()
 	}
 }
 
-void CPictureDoc::OnEditCropLossless() 
-{
-	if (CDib::IsJPEG(m_sFileName))
-	{
-		if (m_bCrop)
-			DoCropRect();
-		else
-		{
-			// Wait and schedule command if dib not fully loaded!
-			if (!IsDibReadyForCommand(ID_EDIT_CROP_LOSSLESS))
-				return;
-
-			// Lossless Crop if not modified
-			m_bLosslessCrop = !IsModified();
-			EditCrop();
-		}
-	}
-}
-
-void CPictureDoc::OnUpdateEditCropLossless(CCmdUI* pCmdUI) 
-{
-	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0			||
-					m_dwIDAfterFullLoadCommand == ID_EDIT_CROP_LOSSLESS)&&
-					m_pDib												&&
-					!(m_SlideShowThread.IsSlideshowRunning()	||
-					m_bDoRestartSlideshow)								&&
-					!m_GifAnimationThread.IsAlive()						&&
-					!m_bMetadataModified								&&
-					!m_pRotationFlippingDlg								&&
-					!m_pWndPalette										&&
-					!m_pRedEyeDlg										&&
-					!m_bDoRedEyeColorPickup								&&
-					!m_pMonochromeConversionDlg							&&
-					!m_pSharpenDlg										&&
-					!m_pSoftenDlg										&&
-					!m_pSoftBordersDlg									&&
-					!m_pHLSDlg											&&
-					CDib::IsJPEG(m_sFileName)							&&
-					m_DocRect.Width() >= m_nPixelAlignX					&&
-					m_DocRect.Height() >= m_nPixelAlignY				&&
-					!m_bPrintPreviewMode);
-}
-
 void CPictureDoc::OnEditCrop() 
 {
 	if (m_bCrop)
@@ -8640,8 +8595,13 @@ void CPictureDoc::OnEditCrop()
 		if (!IsDibReadyForCommand(ID_EDIT_CROP))
 			return;
 
-		// No Lossless Crop
-		m_bLosslessCrop = FALSE;
+		// Do a lossless crop if the following conditions are met
+		m_bLosslessCrop =	CDib::IsJPEG(m_sFileName)			&&
+							!IsModified()						&&
+							m_DocRect.Width() >= m_nPixelAlignX	&&
+							m_DocRect.Height() >= m_nPixelAlignY;
+
+		// Start crop mode
 		EditCrop();
 	}
 }
@@ -8748,7 +8708,7 @@ BOOL CPictureDoc::CopyDelCrop(BOOL bShowMessageBoxOnError, BOOL bCopy, BOOL bDel
 			if (!::HasWriteAccess(m_sFileName))
 				nID = IDYES;
 			else
-				nID = ::AfxMessageBox(ML_STRING(1327, "Do You Want To Save The Cropped Image To A New File?"), MB_YESNOCANCEL);
+				nID = ::AfxMessageBox(ML_STRING(1327, "Save Lossless cropped image to a New file?\nWARNING: by choosing 'No' crop cannot be undone."), MB_YESNOCANCEL);
 			if (nID == IDYES)
 			{
 				// Display the Save As Dialog

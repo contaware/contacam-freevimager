@@ -852,8 +852,6 @@ protected:
 	afx_msg void OnBackgroundColor();
 	afx_msg void OnUpdateBackgroundColor(CCmdUI* pCmdUI);
 	afx_msg void OnFileClose();
-	afx_msg void OnEditCropLossless();
-	afx_msg void OnUpdateEditCropLossless(CCmdUI* pCmdUI);
 	afx_msg void OnViewStretchHalftone();
 	afx_msg void OnUpdateViewStretchHalftone(CCmdUI* pCmdUI);
 	afx_msg void OnEditFilterSharpen();
