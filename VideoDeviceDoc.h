@@ -546,6 +546,7 @@ public:
 		TPLINK_CP,						// TP-Link HTTP jpeg snapshots
 		FOSCAM_SP,						// Foscam HTTP motion jpeg
 		FOSCAM_CP,						// Foscam HTTP jpeg snapshots
+		DROIDCAM_SP,					// DroidCam HTTP motion jpeg
 		// Add more http devices here...
 		URL_RTSP = 1000,				// URL RTSP
 		GENERIC_1_RTSP = 1010,			// Generic 1 RTSP device

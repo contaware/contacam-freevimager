@@ -79,6 +79,7 @@ void CHostPortDlg::InitDeviceTypeModeArrayForCB(CArray<CDeviceTypeModePair>& a)
 	a.Add(CDeviceTypeModePair(_T("D-Link /play1.sdp (RTSP)"), (DWORD)CVideoDeviceDoc::DLINK_PLAY1_RTSP));
 	a.Add(CDeviceTypeModePair(_T("Dahua (RTSP)"), (DWORD)CVideoDeviceDoc::DAHUA_RTSP));
 	a.Add(CDeviceTypeModePair(_T("Digoo (RTSP)"), (DWORD)CVideoDeviceDoc::DIGOO_RTSP));
+	a.Add(CDeviceTypeModePair(_T("DroidCam(X) (") + ML_STRING(1865, "HTTP motion jpeg") + _T(")"), (DWORD)CVideoDeviceDoc::DROIDCAM_SP));
 	a.Add(CDeviceTypeModePair(_T("Edimax H.264 (RTSP)"), (DWORD)CVideoDeviceDoc::EDIMAX_H264_RTSP));
 	a.Add(CDeviceTypeModePair(_T("Edimax MPEG4 (RTSP)"), (DWORD)CVideoDeviceDoc::EDIMAX_MPEG4_RTSP));
 	a.Add(CDeviceTypeModePair(_T("Edimax (") + ML_STRING(1865, "HTTP motion jpeg") + _T(")"), (DWORD)CVideoDeviceDoc::EDIMAX_SP));

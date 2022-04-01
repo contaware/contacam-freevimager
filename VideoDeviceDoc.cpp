@@ -2500,6 +2500,8 @@ int CVideoDeviceDoc::CHttpThread::Work()
 				::LeaveCriticalSection(&m_csVideoConnectRequestParams);
 				CleanUpAllPollConnections();
 				m_pDoc->m_pVideoNetCom->Close(); // this also empties the rx & tx fifos
+				if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::DROIDCAM_SP)
+					::Sleep(1500U); // DroidCam(X) needs some time after closing
 				if (bResetHttpGetFrameLocationPos)
 					m_pDoc->m_nHttpGetFrameLocationPos = 0;
 				m_pDoc->m_pHttpVideoParseProcess->m_bPollNextJpeg = FALSE;
@@ -5062,6 +5064,7 @@ double CVideoDeviceDoc::GetDefaultNetworkFrameRate(NetworkDeviceTypeMode nNetwor
 		case TPLINK_CP :	return HTTPCLIENTPOLL_DEFAULT_FRAMERATE;
 		case FOSCAM_SP :	return HTTPSERVERPUSH_DEFAULT_FRAMERATE;
 		case FOSCAM_CP :	return HTTPCLIENTPOLL_DEFAULT_FRAMERATE;
+		case DROIDCAM_SP :	return HTTPSERVERPUSH_DEFAULT_FRAMERATE;
 		default :			return DEFAULT_FRAMERATE;
 	}
 }
@@ -8825,11 +8828,11 @@ _T("GET /snapshot.cgi?user=<user>&pwd=<password>&resolution=<resolution> HTTP/1.
 MJPEG
 _T("GET /videostream.cgi?user=<user>&pwd=<password>&resolution=<resolution>&rate=<rate> HTTP/1.1\r\n")
 
-resolutions:
+Resolutions:
 8  -> 320*240
 32 -> 640*480
 
-rates (value range 0-23):
+Rates (value range 0-23):
 0  -> full speed
 1  -> 20 fps
 3  -> 15 fps
@@ -8843,6 +8846,20 @@ rates (value range 0-23):
 19 -> 0.333333 fps
 21 -> 0.25 fps
 23 -> 0.2 fps
+
+
+DROIDCAM
+--------
+
+MJPEG
+_T("GET /video/force[/<resolution>] HTTP/1.1\r\n")
+_T("GET /video/force/1280x720 HTTP/1.1\r\n")
+
+Resolutions:
+320x240
+640x480
+1280x720	<- only pro version = DroidCamX
+1920x1080	<- only pro version = DroidCamX
 */
 void CVideoDeviceDoc::ConnectHttp()
 {
@@ -8940,6 +8957,15 @@ void CVideoDeviceDoc::ConnectHttp()
 			m_pHttpVideoParseProcess->m_Sizes.RemoveAll();			
 			m_pHttpVideoParseProcess->m_Sizes.Add(CSize(320, 240));
 			m_pHttpVideoParseProcess->m_Sizes.Add(CSize(640, 480));
+			break;
+
+		case DROIDCAM_SP:	// DroidCam HTTP motion jpeg
+			m_pHttpVideoParseProcess->m_FormatType = CHttpParseProcess::FORMATVIDEO_MJPEG;
+			m_pHttpVideoParseProcess->m_Sizes.RemoveAll();
+			m_pHttpVideoParseProcess->m_Sizes.Add(CSize(320, 240));		// 240p
+			m_pHttpVideoParseProcess->m_Sizes.Add(CSize(640, 480));		// 480p
+			m_pHttpVideoParseProcess->m_Sizes.Add(CSize(1280, 720));	// 720p	(only pro version = DroidCamX)
+			m_pHttpVideoParseProcess->m_Sizes.Add(CSize(1920, 1080));	// 1080p (only pro version = DroidCamX)
 			break;
 
 		default :
@@ -9887,6 +9913,35 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 				sRequest.Format(_T("GET %s&resolution=%d HTTP/%s\r\n"),
 								sLocation,
 								m_Sizes[0].cx == 640 ? 32 : 8,
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+				m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
+				m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
+			}
+			else
+			{
+				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
+								sLocation,
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+			}
+			break;
+		}
+		case DROIDCAM_SP:	// DroidCam HTTP motion jpeg
+		{
+			sLocation = _T("/video/force"); // the optional force option is to override an existing connection
+			if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
+			{
+				sRequest.Format(_T("GET %s/%dx%d HTTP/%s\r\n"),
+								sLocation,
+								m_pDoc->m_nHttpVideoSizeX,
+								m_pDoc->m_nHttpVideoSizeY,
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+			}
+			else if (m_Sizes.GetSize() > 0)
+			{
+				sRequest.Format(_T("GET %s/%dx%d HTTP/%s\r\n"),
+								sLocation,
+								m_Sizes[0].cx,
+								m_Sizes[0].cy,
 								m_bOldVersion ? _T("1.0") : _T("1.1"));
 				m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
 				m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
