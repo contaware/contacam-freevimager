@@ -20,18 +20,19 @@ Attention: we use libeay32.dll and ssleay32.dll from the thread safe php build (
 We now use the latest version because Vista support has been dropped
 --------------------------------------------------------------------
 
-- apache 2.4.48 VS16 x86 with OpenSSL 1.1.1k
+- apache 2.4.53 VS16 x86 with OpenSSL 1.1.1n
   https://www.apachelounge.com/download/
 
-- PHP 8.0.7 VS16 x86 (has OpenSSL 1.1.1k support and we must download the thread safe PHP version)
+- PHP 8.0.17 VS16 x86 (has OpenSSL 1.1.1m support and we must download the thread safe PHP version)
   https://windows.php.net/download/
 
-- VS16 redistributable (Visual Studio 2019)
+- Visual C++ Redistributable working for Visual Studio 2015-2022
   https://aka.ms/vs/16/release/VC_redist.x86.exe
   https://www.apachelounge.com/viewtopic.php?p=38205
   https://docs.microsoft.com/cpp/windows/latest-supported-vc-redist
 
-Attention: we use libcrypto-1_1.dll and libssl-1_1.dll from the thread safe php build (not from apache build)
+Note: libcrypto-1_1.dll and libssl-1_1.dll from the thread safe and from the non thread safe php
+      builds are identical, so it's ok to take the newer ones between the apache and the php builds
 
 
 TS vs. NTS

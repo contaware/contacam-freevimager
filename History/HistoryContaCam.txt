@@ -6,6 +6,8 @@ CONTACAM HISTORY
   Ján Kovác for notifying the issue)
 - Added support for DroidCam and DroidCamX which are Android mjpeg 
   camera streaming Apps
+- Updated internal web server to Apache 2.4.53 and PHP 8.0.17
+  (Apache and PHP both with OpenSSL 1.1.1n)
 
 9.9.21 (March 22nd 2022)
 
