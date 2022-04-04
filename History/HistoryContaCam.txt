@@ -4,6 +4,7 @@ CONTACAM HISTORY
 
 - Fixed a color shift problem happening with some cameras (thanks to
   Ján Kovác for notifying the issue)
+- Added support for HeimVision
 - Added support for DroidCam and DroidCamX which are Android mjpeg 
   camera streaming Apps
 - Updated internal web server to Apache 2.4.53 and PHP 8.0.17

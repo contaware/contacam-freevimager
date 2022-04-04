@@ -94,6 +94,7 @@ void CHostPortDlg::InitDeviceTypeModeArrayForCB(CArray<CDeviceTypeModePair>& a)
 	a.Add(CDeviceTypeModePair(_T("Foscam (") + ML_STRING(1866, "HTTP jpeg snapshots") + _T(")"), (DWORD)CVideoDeviceDoc::FOSCAM_CP));
 	a.Add(CDeviceTypeModePair(_T("Gembird (RTSP)"), (DWORD)CVideoDeviceDoc::GEMBIRD_RTSP));
 	a.Add(CDeviceTypeModePair(_T("GeoVision (RTSP)"), (DWORD)CVideoDeviceDoc::GEOVISION_RTSP));
+	a.Add(CDeviceTypeModePair(_T("HeimVision (RTSP)"), (DWORD)CVideoDeviceDoc::HEIMVISION_RTSP));
 	a.Add(CDeviceTypeModePair(_T("HiKam (RTSP)"), (DWORD)CVideoDeviceDoc::HIKAM_RTSP));
 	a.Add(CDeviceTypeModePair(_T("Hikvision (RTSP)"), (DWORD)CVideoDeviceDoc::HIKVISION_RTSP));
 	a.Add(CDeviceTypeModePair(_T("IP Webcam (Pro) for Android (RTSP)"), (DWORD)CVideoDeviceDoc::IPWEBCAM_ANDROID_RTSP));

@@ -575,6 +575,7 @@ public:
 		FOSCAM_RTSP = 1120,				// Foscam RTSP
 		GEMBIRD_RTSP = 1123,			// Gembird RTSP
 		GEOVISION_RTSP = 1125,			// GeoVision RTSP
+		HEIMVISION_RTSP = 1127,			// HeimVision RTSP
 		HIKAM_RTSP = 1128,				// HiKam RTSP
 		HIKVISION_RTSP = 1130,			// Hikvision RTSP
 		IPWEBCAM_ANDROID_RTSP = 1132,	// IP Webcam (Pro) for Android RTSP

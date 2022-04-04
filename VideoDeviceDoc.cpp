@@ -9106,6 +9106,10 @@ void CVideoDeviceDoc::ConnectRtsp()
 			sPathAndQuery = _T("/CH001.sdp");
 			break;
 
+		case HEIMVISION_RTSP:
+			sPathAndQuery = _T("/0/av0"); // substream is: /0/av1
+			break;
+
 		case HIKVISION_RTSP:
 		case TRENDNET_RTSP:			
 			sPathAndQuery = _T("/Streaming/Channels/1");
