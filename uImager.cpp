@@ -1370,7 +1370,12 @@ void CUImagerApp::OnFileSettings()
 	{
 		// Confirm the association in the OS dialog
 		if (!SettingsPageAppsDefaults(_T("SystemSettings_DefaultApps_Photos")))
-			::ShellExecute(NULL, NULL, _T("control.exe"), _T("/name Microsoft.DefaultPrograms /page pageFileAssoc"), NULL, SW_SHOWNORMAL);
+		{
+			// Fallback for older Windows
+			::ShellExecute(	NULL, NULL, _T("control.exe"),
+							_T("/name Microsoft.DefaultPrograms /page pageFileAssoc"),
+							NULL, SW_SHOWNORMAL);
+		}
 	}
 #endif
 }
@@ -4151,11 +4156,6 @@ void CUImagerApp::OnUpdateEditScreenshot(CCmdUI* pCmdUI)
 // "SettingsPageAppsDefaultsProtocolView"
 BOOL CUImagerApp::SettingsPageAppsDefaults(const CString& sTarget/*=_T("")*/)
 {
-	// Format target string
-	CString sFullTarget;
-	if (!sTarget.IsEmpty())
-		sFullTarget.Format(_T("&target=%s"), sTarget);
-
 	// Open chosen Settings Page
 	IApplicationActivationManager* pActivator;
 	HRESULT hr = ::CoCreateInstance(CLSID_ApplicationActivationManager,
@@ -4165,22 +4165,31 @@ BOOL CUImagerApp::SettingsPageAppsDefaults(const CString& sTarget/*=_T("")*/)
 									(void**)&pActivator);
 	if (SUCCEEDED(hr))
 	{
-		// TODO:
-		//       The following code works well for Windows 8 and Windows 10, but Windows 11 does not accept the given
-		//       targets which are probably still under development, check that again when the final release is out.
-		// Registry:
-		//       Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\SystemSettings\SettingId\SystemSettings_DefaultApps_*
-		// Note:
-		//       Starting with Windows 10 we can also use the url scheme, but we cannot set a target:
-		//       ::ShellExecute(NULL, NULL, _T("ms-settings:defaultapps"), NULL, NULL, SW_SHOWNORMAL);
-		// References:
-		//       https://docs.microsoft.com/en-us/windows/uwp/launch-resume/launch-settings-app
-		//       https://stackoverflow.com/questions/56689209/how-to-launch-settings-defaultapp-window-programatically-on-windows-8-8-1
+		// Launch the Immersive Control Panel in two steps: first at the "Default apps" page
+		// and then try to open it again at the target. This allows us to at least show the
+		// "Default apps" page in case that targets are not supported like for Windows 11.
+		//
+		// Note: 
+		// Starting with Windows 10 we can use the url scheme, but a target cannot be specified:
+		// ::ShellExecute(NULL, NULL, _T("ms-settings:defaultapps"), NULL, NULL, SW_SHOWNORMAL);
 		DWORD pid;
 		hr = pActivator->ActivateApplication(	L"Windows.ImmersiveControlPanel_cw5n1h2txyewy!microsoft.windows.immersivecontrolpanel",
-												L"page=SettingsPageAppsDefaults" + sFullTarget,
+												L"page=SettingsPageAppsDefaults",
 												AO_NONE,
 												&pid);
+		if (SUCCEEDED(hr) && !sTarget.IsEmpty())
+		{
+			// Target string
+			CString sFullTarget;
+			sFullTarget.Format(_T("&target=%s"), sTarget);
+
+			// Activate target, note that we do not need to check for errors here because 
+			// with the above command we could at least open the "Default apps" page
+			pActivator->ActivateApplication(L"Windows.ImmersiveControlPanel_cw5n1h2txyewy!microsoft.windows.immersivecontrolpanel",
+											L"page=SettingsPageAppsDefaults" + sFullTarget,
+											AO_NONE,
+											&pid);
+		}
 		pActivator->Release();
 		return SUCCEEDED(hr);
 	}
