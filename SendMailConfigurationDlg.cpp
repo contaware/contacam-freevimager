@@ -317,8 +317,12 @@ void CSendMailConfigurationDlg::OnButtonTest()
 		}
 		else
 		{
-			CTaskDialog dlg(ML_STRING(1832, "Please re-install") + _T(" ") + APPNAME_NOEXT + _T("."),
-							CString(MAILPROG_FILENAME) + _T(" ") + ML_STRING(1831, "missing"),
+			CString sMainInstruction;
+			CString sContent;
+			sMainInstruction.Format(ML_STRING(1831, "%s missing"), MAILPROG_FILENAME);
+			sContent.Format(ML_STRING(1832, "Please re-install %s."), APPNAME_NOEXT);
+			CTaskDialog dlg(sContent,
+							sMainInstruction,
 							APPNAME_NOEXT,
 							TDCBF_OK_BUTTON,
 							TDF_ENABLE_HYPERLINKS | TDF_USE_COMMAND_LINKS | TDF_SIZE_TO_CONTENT);
