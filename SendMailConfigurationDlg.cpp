@@ -292,14 +292,39 @@ void CSendMailConfigurationDlg::OnButtonTest()
 	CopyToStruct();
 	if (ValidateEmailsAndHost())
 	{
-		CVideoDeviceDoc::SendMail(	m_SendMailConfiguration,
-									m_sName,
-									CTime::GetCurrentTime(),
-									_T("TEST"),
-									_T(""),
-									_T(""),
-									MAILPROG_TEST_TIMEOUT_SEC,
-									TRUE);
+		TCHAR szDrive[_MAX_DRIVE];
+		TCHAR szDir[_MAX_DIR];
+		TCHAR szProgramName[MAX_PATH];
+		BOOL bMailSendExisting = FALSE;
+		if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
+		{
+			_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+			CString sMailerStartFile = CString(szDrive) + CString(szDir);
+			sMailerStartFile += MAILPROG_RELPATH;
+			bMailSendExisting = ::IsExistingFile(sMailerStartFile);
+		}
+
+		if (bMailSendExisting)
+		{
+			CVideoDeviceDoc::SendMail(	m_SendMailConfiguration,
+										m_sName,
+										CTime::GetCurrentTime(),
+										_T("TEST"),
+										_T(""),
+										_T(""),
+										MAILPROG_TEST_TIMEOUT_SEC,
+										TRUE);
+		}
+		else
+		{
+			CTaskDialog dlg(ML_STRING(1832, "Please re-install") + _T(" ") + APPNAME_NOEXT + _T("."),
+							CString(MAILPROG_FILENAME) + _T(" ") + ML_STRING(1831, "missing"),
+							APPNAME_NOEXT,
+							TDCBF_OK_BUTTON,
+							TDF_ENABLE_HYPERLINKS | TDF_USE_COMMAND_LINKS | TDF_SIZE_TO_CONTENT);
+			dlg.SetMainIcon(TD_ERROR_ICON);
+			dlg.DoModal();
+		}
 	}
 }
 

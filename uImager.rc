@@ -3946,6 +3946,8 @@ STRINGTABLE
 BEGIN
     IDS_STRING1825          "MB"
     IDS_STRING1826          "GB"
+    IDS_STRING1831          "missing"
+    IDS_STRING1832          "Please re-install"
     IDS_STRING1833          "Plain Text (Port 25 or 587)"
     IDS_STRING1834          "SSL/TLS (Port 465)"
     IDS_STRING1835          "STARTTLS (Port 25 or 587)"
