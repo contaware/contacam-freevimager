@@ -95,6 +95,9 @@ public:
 	// Crop Status Text
 	void UpdateCropStatusText();
 
+	// Set crop rectangle to visible area
+	void CropToVisibleArea();
+
 protected:
 	DECLARE_DYNCREATE(CPictureView)
 	virtual ~CPictureView();

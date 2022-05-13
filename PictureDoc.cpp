@@ -8581,7 +8581,13 @@ void CPictureDoc::EditCrop()
 
 		EndWaitCursor();
 
+		// Make sure crop rectangle is visible
+		if (GetView()->IsXOrYScroll())
+			GetView()->CropToVisibleArea();
+
+		// Update
 		GetView()->UpdateWindowSizes(TRUE, FALSE, FALSE);
+		GetView()->UpdateCropStatusText();
 	}
 }
 

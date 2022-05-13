@@ -3992,6 +3992,40 @@ void CPictureView::UpdateCropStatusText()
 	}
 }
 
+void CPictureView::CropToVisibleArea()
+{
+	CPictureDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+
+	if (pDoc->m_bCrop)
+	{
+		int nRectSizeXInside = ::SystemDPIScale(CROP_RECT_X_INSIDE);
+		int nRectSizeYInside = ::SystemDPIScale(CROP_RECT_Y_INSIDE);
+
+		// Reset crop rectangles
+		pDoc->m_rcCropDelta = CRect(0, 0, 0, 0);
+		m_CropZoomRect = m_ZoomRect;
+		pDoc->m_CropDocRect = pDoc->m_DocRect;
+
+		// Get visible area
+		CRect rcClient;
+		GetClientRect(&rcClient);
+		rcClient.DeflateRect(rcClient.Width() / 4, rcClient.Height() / 4);
+		if (IsXOrYScroll())
+			rcClient.OffsetRect(GetScrollPosition());
+
+		// Crop top-left
+		CropTop(rcClient.TopLeft(), nRectSizeYInside, FALSE);
+		CropLeft(rcClient.TopLeft(), nRectSizeXInside, FALSE);
+		UpdateCropRectangles();
+
+		// Crop bottom-right
+		CropBottom(rcClient.BottomRight(), nRectSizeYInside, FALSE);
+		CropRight(rcClient.BottomRight(), nRectSizeXInside, FALSE);
+		UpdateCropRectangles();
+	}
+}
+
 void CPictureView::CalcZoomedPixelAlign()
 {
 	CPictureDoc* pDoc = GetDocument();

@@ -5,6 +5,8 @@ FREEVIMAGER HISTORY
 - Improved file header safety checks
 - Fixed the .png saving which sometimes could fail
 - Correctly handle top-down .bmp files
+- For zoomed-in images the crop rectangle starts within the view
+- Lossless crop is now the default for unmodified jpeg files
 - In Windows 11 our "Global Settings" - "Associate" button opens now the
   "Default apps" page where file extensions can be associated to us
 
