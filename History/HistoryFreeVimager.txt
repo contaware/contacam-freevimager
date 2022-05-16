@@ -1,6 +1,6 @@
 FREEVIMAGER HISTORY
 
-9.9.22 (Month XXth 2022)
+9.9.22 (May 16th 2022)
 
 - Improved file header safety checks
 - Fixed the .png saving which sometimes could fail
