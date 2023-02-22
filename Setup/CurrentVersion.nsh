@@ -1,1 +1,1 @@
-!define APPVERSION "9.9.22"
+!define APPVERSION "9.9.23"

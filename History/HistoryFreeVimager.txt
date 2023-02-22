@@ -1,5 +1,9 @@
 FREEVIMAGER HISTORY
 
+9.9.23 (Month XXth 2023)
+
+- ...
+
 9.9.22 (May 16th 2022)
 
 - Improved file header safety checks
