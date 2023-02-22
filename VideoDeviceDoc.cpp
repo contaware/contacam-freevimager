@@ -1458,7 +1458,7 @@ int CVideoDeviceDoc::CCaptureAudioThread::Loop()
 	// Samples loop
 	while (nLoopState == 1)
 	{
-		DWORD Event = ::WaitForMultipleObjects(2, m_hEventArray, FALSE, INFINITE);
+		DWORD Event = ::WaitForMultipleObjects(2, m_hEventArray, FALSE, AUDIO_DATAWAIT_TIMEOUT_MS);
 		switch (Event)
 		{
 			// Shutdown Event
@@ -1501,7 +1501,8 @@ int CVideoDeviceDoc::CCaptureAudioThread::Loop()
 										}
 										break;
 
-			// Default
+			// Error
+			case WAIT_TIMEOUT:			::LogLine(_T("%s"), m_pDoc->GetAssignedDeviceName() + _T(", sound input no data reaching!"));
 			default :					nLoopState = -1; // error
 										break;
 		}
@@ -1616,19 +1617,34 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::OpenInAudio()
 	}
 
 	// Open Input
+	UINT uiEffectiveCaptureAudioDeviceID = m_pDoc->EffectiveCaptureAudioDeviceID();
 	if (::waveInOpen(	&m_hWaveIn,
-						m_pDoc->EffectiveCaptureAudioDeviceID(),
+						uiEffectiveCaptureAudioDeviceID,
 						m_pDoc->m_pSrcWaveFormat,
 						(DWORD)m_hWaveInEvent,
 						NULL,
 						CALLBACK_EVENT) != MMSYSERR_NOERROR)
 	{
 		::ResetEvent(m_hWaveInEvent); // Reset The Open Event
-		::LogLine(_T("%s, sound input cannot open device"), m_pDoc->GetAssignedDeviceName());
+		::LogLine(	_T("%s, sound input cannot open '%s', ID %u"),
+					m_pDoc->GetAssignedDeviceName(),
+					CaptureAudioDeviceIDToName(uiEffectiveCaptureAudioDeviceID),
+					uiEffectiveCaptureAudioDeviceID);
 	    return FALSE;
 	}
 	else
 	{
+		if (g_nLogLevel > 0)
+		{
+			::LogLine(	_T("%s, sound input from '%s', ID %u, HWAVEIN 0x%08X, %dHz, %dbit, %dch"),
+						m_pDoc->GetAssignedDeviceName(),
+						CaptureAudioDeviceIDToName(uiEffectiveCaptureAudioDeviceID),
+						uiEffectiveCaptureAudioDeviceID,
+						m_hWaveIn,
+						nSamplesPerSec,
+						m_pDoc->m_pSrcWaveFormat->wBitsPerSample,
+						m_pDoc->m_pSrcWaveFormat->nChannels);
+		}
 		::ResetEvent(m_hWaveInEvent); // Reset The Open Event
 		return TRUE;
 	}

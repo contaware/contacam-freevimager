@@ -46,6 +46,7 @@ class CCameraAdvancedSettingsDlg;
 #define ACTIVE_AUDIO_STREAM						0				// Audio stream 0 for recording and detection
 #define	FILES_DELETE_INTERVAL_MIN				600000	 		// in ms -> 10min
 #define	FILES_DELETE_INTERVAL_MAX				900000			// in ms -> 15min
+#define AUDIO_DATAWAIT_TIMEOUT_MS				30000U			// in ms -> 30s
 #define AUDIO_IN_MIN_BUF_SIZE					256				// bytes
 #define AUDIO_MAX_LIST_SIZE						1024			// make sure that: 1 / MIN_FRAMERATE < AUDIO_IN_MIN_BUF_SIZE * AUDIO_MAX_LIST_SIZE / 11025
 																// (see CCaptureAudioThread::OpenInAudio())
