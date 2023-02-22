@@ -5,6 +5,9 @@ FreeVimager open tasks
   possible to save to pdf and print all pages from the pdf viewer.
   (stanislav.soyko@gmail.com)
 
+- Possibility to re-order the tabs, that's obviously also for ContaCam.
+  (kryden@gmail.com)
+  
 
 ContaCam "will not implement" list
 ----------------------------------
@@ -15,7 +18,7 @@ ContaCam "will not implement" list
   
 - Rotate by 0,90,180,270 degrees
   (robert.heberlein@gmx.de, GVLLakefront+contacam@gmail.com, 
-  javier.sevilla@dlongwood.com, khz-it@yandex.ru)
+  javier.sevilla@dlongwood.com, khz-it@yandex.ru, thex.rob@gmail.com)
   -> this would imply a lot of changes to the source code, it's not worth
   the effort given the fact that most cams can do that in their web interfaces
   
@@ -104,10 +107,10 @@ ContaCam open tasks
   
 - When entering the email send configuration details perhaps have buttons
   to copy and paste; when copying the password remember to leave it encrypted! 
-  (n1fbg@arrl.net)
+  (n1fbg@arrl.net, stochmal@gmail.com)
   
 - Take multiple jpg snapshots on motion, not just one
-  (randy3xyz@gmail.com)
+  (randy3xyz@gmail.com, jackcable2002@yahoo.com)
   
 - Delete button directly on the page where a video is displayed and switch to the
   next video or go back
@@ -116,3 +119,15 @@ ContaCam open tasks
 - More fine tunable relative sensitivity, maybe instead of fixed relative sensitivity,
   make them configurable in absolute value or relative. 
   Important to remain backwards compatible!
+  
+- Directional motion detection: only trigger if rectangles are detected
+  sequentially like G1 -> G5 -> G8. It could be used to distinguish between entering or
+  existing a gate/property.
+  (dhykle@yahoo.com)
+  
+- Inverted motion detection: sometimes I want to see when a motion cell starts working AND
+  when it stops triggering the threshold (2 notifications or the option to select only 
+  start_of_motion or only end_of_motion). Example, if I am recording a blinking LED,
+  I want to know when it stops blinking or recording a lawn sprinkler, I want to know 
+  when it turns off and send me a notification.
+  (jgalegz@gmail.com)
