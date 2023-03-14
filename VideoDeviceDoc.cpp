@@ -1636,11 +1636,10 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::OpenInAudio()
 	{
 		if (g_nLogLevel > 0)
 		{
-			::LogLine(	_T("%s, sound input from '%s', ID %u, HWAVEIN 0x%08X, %dHz, %dbit, %dch"),
+			::LogLine(	_T("%s, sound input from '%s', ID %u, %dHz, %dbit, %dch"),
 						m_pDoc->GetAssignedDeviceName(),
 						CaptureAudioDeviceIDToName(uiEffectiveCaptureAudioDeviceID),
 						uiEffectiveCaptureAudioDeviceID,
-						m_hWaveIn,
 						nSamplesPerSec,
 						m_pDoc->m_pSrcWaveFormat->wBitsPerSample,
 						m_pDoc->m_pSrcWaveFormat->nChannels);
