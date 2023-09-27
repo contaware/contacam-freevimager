@@ -536,6 +536,7 @@ bool CAVRec::Open(const CString& sMetadataTitle)
 		return false;
 
 	// Open the output file, if needed
+	// (file gets truncated to zero length)
 	if (!(m_pOutputFormat->flags & AVFMT_NOFILE))
 	{
 		if ((ret = avio_open(&m_pFormatCtx->pb, m_pFormatCtx->filename, AVIO_FLAG_WRITE)) < 0)
