@@ -5680,8 +5680,8 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 																						// broken driver support, as well as some virtual network providers!
 	sConfig += _T("EnableMMAP off\r\n");												// do not use memory mapping to read files during delivery because deleting or truncating
 																						// a file while httpd has it memory-mapped can cause httpd to crash!
-	sConfig += _T("LoadFile php/libcrypto-1_1.dll\r\n");								// for PHP but also for mod_ssl.so
-	sConfig += _T("LoadFile php/libssl-1_1.dll\r\n");									// for PHP but also for mod_ssl.so
+	sConfig += _T("LoadFile php/libcrypto-3.dll\r\n");									// for PHP but also for mod_ssl.so
+	sConfig += _T("LoadFile php/libssl-3.dll\r\n");										// for PHP but also for mod_ssl.so
 	sConfig += _T("LoadModule auth_basic_module modules/mod_auth_basic.so\r\n");		// for basic auth support
 	sConfig += _T("LoadModule authn_core_module modules/mod_authn_core.so\r\n");		// for AuthType and AuthName Directives support
 	sConfig += _T("LoadModule authn_file_module modules/mod_authn_file.so\r\n");		// for AuthUserFile Directive support

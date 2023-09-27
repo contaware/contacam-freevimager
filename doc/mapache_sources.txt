@@ -1,40 +1,25 @@
-Up to ContaCam 9.9.18 we used PHP 5.6 because PHP 7.2 build is not running on Vista and thread safety in PHP 7.0 and 7.1 is broken
-----------------------------------------------------------------------------------------------------------------------------------
+apachelounge.com officially dropped x86 support, but they have a separate download
+----------------------------------------------------------------------------------
 
-- apache 2.4.38 VC11 x86 (OpenSSL 1.0.2q)
-  https://www.apachelounge.com/download/VC11/
-  
-- php 5.6.40 VC11 x86 - thread safe version (OpenSSL 1.0.2q)
-  https://windows.php.net/download/#php-5.6-ts-VC11-x86
-or
-- php 5.6.40 own built VC11 x86 - thread safe version (OpenSSL 1.0.2q)
-  with 2x places INVALID_HANDLE_VALUE patch in zend_execute_API.c:
-  if (!DeleteTimerQueueTimer(NULL, tq_timer, INVALID_HANDLE_VALUE))
-  
-- VC11 redistributable (Visual Studio 2012)
-  https://www.microsoft.com/en-us/download/details.aspx?id=30679
-  
-Attention: we use libeay32.dll and ssleay32.dll from the thread safe php build (not from apache build)
-  
-  
-We now use the latest version because Vista support has been dropped
---------------------------------------------------------------------
+See:
+https://www.apachelounge.com/viewtopic.php?t=9087
+https://www.apachelounge.com/viewtopic.php?p=42093
+ 
+- apache 2.4.57 VS17 x86 with OpenSSL 3.1.2
+  https://www.apachelounge.com/viewtopic.php?t=9087
 
-- apache 2.4.53 VS16 x86 with OpenSSL 1.1.1n
-  https://www.apachelounge.com/download/
-
-- PHP 8.0.17 VS16 x86 (has OpenSSL 1.1.1m support and we must download the thread safe PHP version)
+- PHP 8.2.10 VS16 x86 (has OpenSSL 3.0.8 support and we must download the thread safe PHP version)
   https://windows.php.net/download/
 
 - Visual C++ Redistributable working for Visual Studio 2015-2022
-  https://aka.ms/vs/16/release/VC_redist.x86.exe
+  https://aka.ms/vs/17/release/VC_redist.x86.exe
   https://www.apachelounge.com/viewtopic.php?p=38205
   https://docs.microsoft.com/cpp/windows/latest-supported-vc-redist
 
-Note: libcrypto-1_1.dll and libssl-1_1.dll from the thread safe and from the non thread safe php
+Note: libcrypto-3.dll and libssl-3.dll from the thread safe and from the non thread safe php
       builds are identical, so it's ok to take the newer ones between the apache and the php builds
-
-
+	  
+	  
 TS vs. NTS
 ----------
 
@@ -53,8 +38,16 @@ https://asawicki.info/news_1597_installing_visual_c_redistributable_package_from
 https://www.apachelounge.com/viewtopic.php?t=6359
 
 
-Compile your own PHP
---------------------
+Compile your own (not necessary right now)
+------------------------------------------
+
+*** APACHE ***
+
+In case apachelounge.com drops x86 support, there is a how to build your own:
+https://www.apachelounge.com/viewtopic.php?t=8609
+
+
+*** PHP *** (OLD guide which uses Visual Studio 2012)
 
 Prepare
 
