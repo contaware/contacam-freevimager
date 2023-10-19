@@ -5699,6 +5699,8 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	sConfig += _T("KeepAliveTimeout 15\r\n");
 	sConfig += _T("MaxKeepAliveRequests 0\r\n");
 	sConfig += _T("TimeOut 300\r\n");
+	sConfig += _T("TraceEnable off\r\n");												// Harden security by disabling the TRACE method
+																						// (the TRACK method works in the same way but is specific to Microsoft's IIS web server)
 
 	// Indexes
 	sConfig += _T("DirectoryIndex index.html index.htm index.php\r\n");
