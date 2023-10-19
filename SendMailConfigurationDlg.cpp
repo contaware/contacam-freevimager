@@ -125,7 +125,7 @@ void CSendMailConfigurationDlg::OnChangeEditSenderMail()
 			sKnownSmtpServer = _T("mail.gmx.net");
 		else if (sDomain == _T("gmx.com") || sDomain == _T("gmx.co.uk") || sDomain == _T("gmx.us") || sDomain == _T("gmx.fr") || sDomain == _T("gmx.es"))
 			sKnownSmtpServer = _T("mail.gmx.com");
-		else if (sDomain == _T("hotmail.com") || sDomain == _T("live.com") || sDomain == _T("outlook.com"))
+		else if (sDomain == _T("hotmail.com") || sDomain == _T("live.com") || sDomain == _T("outlook.com") || sDomain == _T("msn.com"))
 			sKnownSmtpServer = _T("smtp-mail.outlook.com");
 		else if (sDomain == _T("icloud.com") || sDomain == _T("me.com") || sDomain == _T("mac.com"))
 			sKnownSmtpServer = _T("smtp.mail.me.com");
