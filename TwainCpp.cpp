@@ -601,16 +601,19 @@ BOOL CTwain::TwainGetImage(TW_IMAGEINFO& info)
 		case TWRC_XFERDONE :
 			TwainCopyImage(hBitmap,info);
 			res = TwainEndTransfer();
-			GlobalFree(hBitmap);
+			if (hBitmap)
+				GlobalFree(hBitmap);
 			return res;
 		case TWRC_CANCEL :
 			TwainEndTransfer();
-			GlobalFree(hBitmap);
+			if (hBitmap)
+				GlobalFree(hBitmap);
 			return FALSE;
 		case TWRC_FAILURE :
 		default :
 			TwainCancelTransfer();
-			GlobalFree(hBitmap);
+			if (hBitmap)
+				GlobalFree(hBitmap);
 			return FALSE;
 	}
 }
