@@ -8504,12 +8504,23 @@ void CPictureDoc::OnUpdatePlayTransitionBlend(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(m_nTransitionType == 6 ? 1 : 0);
 }
 
-void CPictureDoc::EditCrop() 
+void CPictureDoc::OnEditCrop() 
 {
 	if (m_bCrop)
-		CancelCrop();
+		DoCropRect();
 	else
 	{
+		// Wait and schedule command if dib not fully loaded!
+		if (!IsDibReadyForCommand(ID_EDIT_CROP))
+			return;
+
+		// Do a lossless crop if the following conditions are met
+		m_bLosslessCrop =	CDib::IsJPEG(m_sFileName)			&&
+							!IsModified()						&&
+							!GetView()->m_bFullScreenMode		&&
+							m_DocRect.Width() >= m_nPixelAlignX	&&
+							m_DocRect.Height() >= m_nPixelAlignY;
+
 		// Cancel Zoom
 		CancelZoomTool();
 
@@ -8627,27 +8638,6 @@ void CPictureDoc::EditCrop()
 	}
 }
 
-void CPictureDoc::OnEditCrop() 
-{
-	if (m_bCrop)
-		DoCropRect();
-	else
-	{
-		// Wait and schedule command if dib not fully loaded!
-		if (!IsDibReadyForCommand(ID_EDIT_CROP))
-			return;
-
-		// Do a lossless crop if the following conditions are met
-		m_bLosslessCrop =	CDib::IsJPEG(m_sFileName)			&&
-							!IsModified()						&&
-							m_DocRect.Width() >= m_nPixelAlignX	&&
-							m_DocRect.Height() >= m_nPixelAlignY;
-
-		// Start crop mode
-		EditCrop();
-	}
-}
-
 void CPictureDoc::OnUpdateEditCrop(CCmdUI* pCmdUI) 
 {
 	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0			||
@@ -8672,37 +8662,20 @@ void CPictureDoc::OnUpdateEditCrop(CCmdUI* pCmdUI)
 void CPictureDoc::DoCropRect()
 {
 	CopyDelCrop(TRUE, FALSE, FALSE, TRUE);
-	m_bCrop = FALSE;
-	GetView()->FreeCropMemDCDrawing();
-	if (GetView()->m_nAutoScroll)
-		GetView()->StopAutoScroll();
-	GetView()->UpdateWindowSizes(TRUE, FALSE, FALSE);
-	::AfxGetMainFrame()->StatusText();
-	GetView()->ForceCursor(FALSE);
+	CancelCrop();	// Note: CancelCrop() may have been called by LoadPicture() in CopyDelCrop(),
+					//       that's not a problem because it is guarded by the m_bCrop flag.
 }
 
 void CPictureDoc::DoCopyRect()
 {
 	CopyDelCrop(TRUE, TRUE, FALSE, FALSE);
-	m_bCrop = FALSE;
-	GetView()->FreeCropMemDCDrawing();
-	if (GetView()->m_nAutoScroll)
-		GetView()->StopAutoScroll();
-	GetView()->UpdateWindowSizes(TRUE, FALSE, FALSE);
-	::AfxGetMainFrame()->StatusText();
-	GetView()->ForceCursor(FALSE);
+	CancelCrop();
 }
 
 void CPictureDoc::DoCutRect()
 {
 	CopyDelCrop(TRUE, TRUE, TRUE, FALSE);
-	m_bCrop = FALSE;
-	GetView()->FreeCropMemDCDrawing();
-	if (GetView()->m_nAutoScroll)
-		GetView()->StopAutoScroll();
-	GetView()->UpdateWindowSizes(TRUE, FALSE, FALSE);
-	::AfxGetMainFrame()->StatusText();
-	GetView()->ForceCursor(FALSE);
+	CancelCrop();
 }
 
 void CPictureDoc::CancelCrop()
@@ -8711,11 +8684,6 @@ void CPictureDoc::CancelCrop()
 	{
 		m_bCrop = FALSE;
 		GetView()->FreeCropMemDCDrawing();
-		GetView()->m_CropZoomRect = GetView()->m_ZoomRect;
-		m_CropDocRect = m_DocRect;
-		m_rcCropDelta = CRect(0,0,0,0);
-		GetView()->UpdateWindowSizes(TRUE, FALSE, FALSE);
-	
 		if (m_pCropBkgDib)
 		{
 			delete m_pCropBkgDib;
@@ -8723,6 +8691,7 @@ void CPictureDoc::CancelCrop()
 		}
 		if (GetView()->m_nAutoScroll)
 			GetView()->StopAutoScroll();
+		GetView()->UpdateWindowSizes(TRUE, FALSE, FALSE);
 		::AfxGetMainFrame()->StatusText();
 		GetView()->ForceCursor(FALSE);
 	}

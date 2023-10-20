@@ -683,7 +683,6 @@ protected:
 	CString ExtractFromAnimGIFToBMP(const CString& sFileName);
 
 	// Crop/Copy/Cut
-	void EditCrop();
 	void DoCopyRect();
 	void DoCutRect();
 	BOOL CopyDelCrop(BOOL bShowMessageBoxOnError, BOOL bCopy, BOOL bDel, BOOL bCrop);
