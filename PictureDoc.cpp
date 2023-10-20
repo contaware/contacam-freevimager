@@ -6455,17 +6455,18 @@ void CPictureDoc::OnEditClearExifOrientate()
 									GetView(),
 									TRUE))
 		{
+			LoadPicture(&m_pDib, m_sFileName);	// Reload Picture because CDib::JPEGAutoOrientate() has the 
+												// trim flag set and thus it can reduce the width and/or height.
+												// Note: JPEGGet() gets called by this function.
 			EndWaitCursor();
-			m_pDib->JPEGLoadMetadata(m_sFileName);
-			SetDocumentTitle();
-			UpdateImageInfo();
 			::AfxMessageBox(ML_STRING(1290, "EXIF Orientation Has Been Successfully Cleared"), MB_OK | MB_ICONINFORMATION);
 		}
 		else
+		{
+			if (bWasRunning && m_bDoJPEGGet)
+				JPEGGet();
 			EndWaitCursor();
-
-		if (bWasRunning && m_bDoJPEGGet)
-			JPEGGet();
+		}
 	}
 }
 
@@ -8512,6 +8513,44 @@ void CPictureDoc::EditCrop()
 		// Cancel Zoom
 		CancelZoomTool();
 
+		// Show Cursor & Begin Wait Cursor
+		GetView()->ForceCursor();
+		BeginWaitCursor();
+
+		// In case of lossless crop we must call CDib::JPEGAutoOrientate()
+		// right now because that function can reduce the width and/or height.
+		// The correct image sizes are needed to setup the crop view!
+		if (m_bLosslessCrop)
+		{
+			// Be Sure We Are Not Working On This File
+			BOOL bWasRunning = FALSE;
+			if (m_JpegThread.IsRunning())
+			{
+				bWasRunning = TRUE;
+				m_JpegThread.Kill();
+			}
+
+			// Make Sure The File has the right Orientation
+			if (CDib::JPEGAutoOrientate(m_sFileName,
+										((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
+										FALSE,
+										GetView(),
+										TRUE))
+			{
+				LoadPicture(&m_pDib, m_sFileName);	// Reload Picture because CDib::JPEGAutoOrientate() has the 
+													// trim flag set and thus it can reduce the width and/or height.
+													// Note: JPEGGet() gets called by this function.
+			}
+			else
+			{
+				// Do the normal crop
+				// (for example CDib::JPEGAutoOrientate() fails if the file is read-only)
+				m_bLosslessCrop = FALSE;
+				if (bWasRunning && m_bDoJPEGGet)
+					JPEGGet();
+			}
+		}
+
 		// Lossless crop needs integer zoom factors!
 		// -> Set the closest integer zoom factor
 		if (m_bLosslessCrop)
@@ -8556,10 +8595,7 @@ void CPictureDoc::EditCrop()
 		GetView()->m_nAspectRatioPos = 0;
 		m_rcCropDelta = CRect(0,0,0,0);
 		m_rcCropCenter = CRect(0,0,0,0);
-		GetView()->ForceCursor();
 		m_bCrop = TRUE;
-
-		BeginWaitCursor();
 
 		// Alpha
 		CDib* pDib =	(m_pDib->HasAlpha() && m_pDib->GetBitCount() == 32) ?
@@ -8773,18 +8809,6 @@ BOOL CPictureDoc::CopyDelCrop(BOOL bShowMessageBoxOnError, BOOL bCopy, BOOL bDel
 
 			// Kill Jpeg Thread
 			m_JpegThread.Kill();
-
-			// Make Sure The File has the right Orientation
-			if (!CDib::JPEGAutoOrientate(m_sFileName,
-										((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
-										bShowMessageBoxOnError,
-										GetView(),
-										TRUE))
-			{
-				EndWaitCursor();
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
-			}
 
 			// Do Transformation
 			BOOL res = m_pDib->LossLessJPEGTrans(m_sFileName,		// Src File
