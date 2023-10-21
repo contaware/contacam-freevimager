@@ -8537,7 +8537,7 @@ void CPictureDoc::OnEditCrop()
 		// In case of lossless crop we must call CDib::JPEGAutoOrientate()
 		// right now because that function can reduce the width and/or height.
 		// The correct image sizes are needed to setup the crop view!
-		if (m_bLosslessCrop)
+		if (m_bLosslessCrop && CDib::DoAutoOrientate(m_pDib))
 		{
 			// Be Sure We Are Not Working On This File
 			BOOL bWasRunning = FALSE;
