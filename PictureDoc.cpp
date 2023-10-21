@@ -4191,9 +4191,15 @@ BOOL CPictureDoc::LoadPicture(CDib *volatile *ppDib,
 							  CString sFileName,
 							  BOOL bLoadOnly/*=FALSE*/,
 							  BOOL bDoPrevNextPreload/*=TRUE*/,
-							  BOOL bOnlyHeader/*=FALSE*/)
+							  BOOL bOnlyHeader/*=FALSE*/,
+							  BOOL bUseLoadPreviewDib/*=TRUE*/)
 {
 	BOOL res;
+
+	// Globally we can force to always load full-size jpegs
+	// (that's used when printing by command line)
+	if (((CUImagerApp*)::AfxGetApp())->m_bUseLoadPreviewDibGlobal == FALSE)
+		bUseLoadPreviewDib = FALSE;
 
 	// Is Exiting?
 	if (!::IsExistingFile(sFileName))
@@ -4220,8 +4226,8 @@ BOOL CPictureDoc::LoadPicture(CDib *volatile *ppDib,
 	if (bLoadOnly)
 	{
 		res = (*ppDib)->LoadImage(	sFileName,
-									((CUImagerApp*)::AfxGetApp())->m_bUseLoadPreviewDib ? nMaxSizeX : 0,
-									((CUImagerApp*)::AfxGetApp())->m_bUseLoadPreviewDib ? nMaxSizeY : 0,
+									bUseLoadPreviewDib ? nMaxSizeX : 0,
+									bUseLoadPreviewDib ? nMaxSizeY : 0,
 									0,				// Page Num 0
 									TRUE,			// Decompress Bmp
 									bOnlyHeader); 
@@ -4269,8 +4275,8 @@ BOOL CPictureDoc::LoadPicture(CDib *volatile *ppDib,
 	{
 		// Load Picture
 		res = (*ppDib)->LoadImage(	sFileName,
-									((CUImagerApp*)::AfxGetApp())->m_bUseLoadPreviewDib ? nMaxSizeX : 0,
-									((CUImagerApp*)::AfxGetApp())->m_bUseLoadPreviewDib ? nMaxSizeY : 0,
+									bUseLoadPreviewDib ? nMaxSizeX : 0,
+									bUseLoadPreviewDib ? nMaxSizeY : 0,
 									m_nPageNum,	// Page Num
 									TRUE,		// Decompress Bmp
 									bOnlyHeader,
@@ -4362,13 +4368,13 @@ BOOL CPictureDoc::LoadPicture(CDib *volatile *ppDib,
 	else // First Time Load
 	{
 		CSize szMonitor;
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseLoadPreviewDib)
+		if (bUseLoadPreviewDib)
 			szMonitor = ::AfxGetMainFrame()->GetMonitorSize();
 
 		// Load Picture
 		res = (*ppDib)->LoadImage(	sFileName,
-									((CUImagerApp*)::AfxGetApp())->m_bUseLoadPreviewDib ? szMonitor.cx : 0,
-									((CUImagerApp*)::AfxGetApp())->m_bUseLoadPreviewDib ? szMonitor.cy : 0,
+									bUseLoadPreviewDib ? szMonitor.cx : 0,
+									bUseLoadPreviewDib ? szMonitor.cy : 0,
 									m_nPageNum = 0,	// Page Num
 									TRUE,			// Decompress Bmp
 									bOnlyHeader,
@@ -8548,9 +8554,15 @@ void CPictureDoc::OnEditCrop()
 										GetView(),
 										TRUE))
 			{
-				LoadPicture(&m_pDib, m_sFileName);	// Reload Picture because CDib::JPEGAutoOrientate() has the 
-													// trim flag set and thus it can reduce the width and/or height.
-													// Note: JPEGGet() gets called by this function.
+				// Reload the picture because CDib::JPEGAutoOrientate() has the
+				// trim flag set and thus it can reduce the width and/or height.
+				// Note: JPEGGet() gets called by this function.
+				LoadPicture(&m_pDib,
+							m_sFileName,
+							FALSE,	// normal load
+							TRUE,	// do prev && next preload
+							FALSE,	// load image, not only headers
+							FALSE);	// load full-size jpeg, not the preview, that's important!!
 			}
 			else
 			{

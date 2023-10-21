@@ -161,7 +161,7 @@ CUImagerApp::CUImagerApp()
 #endif
 	m_bTopMost = FALSE;
 	m_pPictureDocTemplate = NULL;
-	m_bUseLoadPreviewDib = TRUE;
+	m_bUseLoadPreviewDibGlobal = TRUE;
 	m_bFileDlgPreview = TRUE;
 	m_bPlacementLoaded = FALSE;
 	m_hAppMutex = NULL;
@@ -2605,7 +2605,7 @@ BOOL CUImagerApp::ProcessShellCommand(CUImagerCommandLineInfo& rCmdInfo)
 		// (Printer parameters are optional)
 		case CCommandLineInfo::FilePrintTo:
 			ASSERT(m_pCmdInfo == NULL);
-			m_bUseLoadPreviewDib = FALSE; // Load Full-Size Jpegs!
+			m_bUseLoadPreviewDibGlobal = FALSE; // force full-size jpeg loads!
 			m_pCmdInfo = &rCmdInfo;
 			if (rCmdInfo.m_strFileNames.GetSize() <= 1)
 			{

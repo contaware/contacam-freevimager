@@ -385,7 +385,8 @@ public:
 						CString sFileName,
 						BOOL bLoadOnly = FALSE,
 						BOOL bDoPrevNextPreload = TRUE,
-						BOOL bOnlyHeader = FALSE);
+						BOOL bOnlyHeader = FALSE,
+						BOOL bUseLoadPreviewDib = TRUE);
 	
 	// Picture Slideshow
 	void SlideShow();

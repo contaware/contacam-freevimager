@@ -502,12 +502,10 @@ public:
 	// Closing All
 	BOOL m_bClosingAll;
 
-	// Should the CPictureDoc Load Jpeg Faster by
-	// loading a smaller version to the preview dib?
-	// Usually enabled. After a while
-	// the CJpegThread will automatically
-	// load the full-sized dib.
-	BOOL m_bUseLoadPreviewDib;
+	// Should CPictureDoc load jpegs faster by first loading a smaller
+	// version to the preview dib? Usually enabled. Note that after a 
+	// while, the CJpegThread will automatically load the full-sized dib.
+	BOOL m_bUseLoadPreviewDibGlobal;
 
 	// Placement Settings have been loaded
 	BOOL m_bPlacementLoaded;
