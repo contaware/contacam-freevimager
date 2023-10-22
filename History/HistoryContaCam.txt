@@ -5,6 +5,7 @@ CONTACAM HISTORY
 - Restart audio input device in case no audio data reaches us for 30s
 - Updated internal web server to Apache 2.4.57 and PHP 8.2.10
   (Apache and PHP both with OpenSSL 3.1.2)
+- Hardened apache security by disabling the HTTP TRACE method 
   
 9.9.22 (May 16th 2022)
 
