@@ -56,14 +56,16 @@ echo:
 echo **********************************************************************
 echo ** Make NSIS ContaCam installer
 echo **********************************************************************
-"%NSISDIR%\makensis.exe" /V3 /DINSTALLER_LANGUAGE=English ContaCam.nsi
+echo Please verify messages in opened window and then close it to continue.
+"%NSISDIR%\makensisw.exe" ContaCam.nsi
 
 REM make FreeVimager installer
 echo:
 echo **********************************************************************
 echo ** Make NSIS FreeVimager installer
 echo **********************************************************************
-"%NSISDIR%\makensis.exe" /V3 /DINSTALLER_LANGUAGE=English FreeVimager.nsi
+echo Please verify messages in opened window and then close it to continue.
+"%NSISDIR%\makensisw.exe" FreeVimager.nsi
 
 REM place all files into version folder
 echo:
