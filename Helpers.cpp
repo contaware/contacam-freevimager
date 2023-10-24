@@ -1088,9 +1088,11 @@ CString TailOfTextFile(LPCTSTR lpszFileName, int nLines)
 	CString sTail;
 	CStringList StringList;
 	FILE* stream = NULL;
-	// ccs=UNICODE translates to _open's _O_WTEXT mode which signifies that in
-	// read mode if there is a BOM, the file is treated as UTF-8 or UTF-16LE,
-	// depending on the BOM. If no BOM is present, the file is treated as ANSI
+	// In read mode:
+	// 1. The byte order mark (BOM) always takes precedence over
+	//    the encoding specified by the ccs flag.
+	// 2. If there is no BOM, then ccs=UNICODE reads as ANSI, 
+	//    ccs=UTF-8 as UTF-8 and ccs=UTF-16LE as UTF-16LE.
 	if (_tfopen_s(&stream, lpszFileName, _T("rt, ccs=UNICODE")) == 0)
 	{
 		try
