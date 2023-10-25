@@ -304,31 +304,49 @@ void CSendMailConfigurationDlg::OnButtonTest()
 			bMailSendExisting = ::IsExistingFile(sMailerStartFile);
 		}
 
+		CString sMainInstruction;
+		LPWSTR DlgMainIcon;
+		CString sContent;
 		if (bMailSendExisting)
 		{
-			CVideoDeviceDoc::SendMail(	m_SendMailConfiguration,
-										m_sName,
-										CTime::GetCurrentTime(),
-										_T("TEST"),
-										_T(""),
-										_T(""),
-										MAILPROG_TEST_TIMEOUT_SEC,
-										TRUE);
+			BeginWaitCursor();
+			if (CVideoDeviceDoc::SendMail(	m_SendMailConfiguration,
+											m_sName,
+											CTime::GetCurrentTime(),
+											_T("TEST \u263a"), // add smile to verify that unicode works
+											_T(""),
+											_T(""),
+											TRUE))
+			{	
+				sMainInstruction = ML_STRING(1828, "Email sent");
+				DlgMainIcon = TD_INFORMATION_ICON;
+			}
+			else
+			{
+				sMainInstruction = ML_STRING(1829, "Email send failed!");
+				DlgMainIcon = TD_ERROR_ICON;
+			}
+			// A href without file:/// works because CTaskDialog calls OnHyperlinkClick() 
+			// which invokes ShellExecute(). Note that a correct url would start with
+			// file:/// and have a path with forward slashes only.
+			CString sMailerLogFile = CUImagerApp::GetConfigFilesDir();
+			sMailerLogFile += CString(_T("\\")) + MAILPROG_LOGNAME_EXT;
+			sContent.Format(_T("<a href=\"%s\">%s</a>"), sMailerLogFile, ML_STRING(1830, "check email log file"));
+			EndWaitCursor();
 		}
 		else
 		{
-			CString sMainInstruction;
-			CString sContent;
 			sMainInstruction.Format(ML_STRING(1831, "%s missing"), MAILPROG_FILENAME);
+			DlgMainIcon = TD_ERROR_ICON;
 			sContent.Format(ML_STRING(1832, "Please re-install %s."), APPNAME_NOEXT);
-			CTaskDialog dlg(sContent,
-							sMainInstruction,
-							APPNAME_NOEXT,
-							TDCBF_OK_BUTTON,
-							TDF_ENABLE_HYPERLINKS | TDF_USE_COMMAND_LINKS | TDF_SIZE_TO_CONTENT);
-			dlg.SetMainIcon(TD_ERROR_ICON);
-			dlg.DoModal();
 		}
+		CTaskDialog dlg(sContent,
+						sMainInstruction,
+						APPNAME_NOEXT,
+						TDCBF_OK_BUTTON,
+						TDF_ENABLE_HYPERLINKS | TDF_USE_COMMAND_LINKS | TDF_SIZE_TO_CONTENT);
+		dlg.SetMainIcon(DlgMainIcon);
+		dlg.DoModal();
 	}
 }
 

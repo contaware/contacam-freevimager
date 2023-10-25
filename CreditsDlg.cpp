@@ -65,7 +65,7 @@ BOOL CCreditsDlg::OnInitDialog()
 
 	// Smtp
 	CString ssmtp(_T("mailsend"));
-	ssmtp += CString(_T('\n')) + _T("https://github.com/muquit/mailsend");
+	ssmtp += CString(_T('\n')) + _T("https://github.com/muquit/mailsend-go");
 #endif
 
 	// MDISnap

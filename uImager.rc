@@ -3946,6 +3946,9 @@ STRINGTABLE
 BEGIN
     IDS_STRING1825          "MB"
     IDS_STRING1826          "GB"
+    IDS_STRING1828          "Email sent"
+    IDS_STRING1829          "Email send failed!"
+    IDS_STRING1830          "check email log file"
     IDS_STRING1831          "%s missing"
     IDS_STRING1832          "Please re-install %s."
     IDS_STRING1833          "Plain Text (Port 25 or 587)"

@@ -548,7 +548,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				m_pDoc->m_AttachmentType == CVideoDeviceDoc::ATTACHMENT_JPG_VIDEO))
 			{
 				if ((llStartUpTime - m_pDoc->m_llMovDetLastVideoMailUpTime) >= (LONGLONG)m_pDoc->m_nMovDetSendMailSecBetweenMsg * 1000 &&
-					CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), FirstTime, _T("REC"), _T(""), sVideoFileName, MAILPROG_TIMEOUT_SEC, FALSE))
+					CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), FirstTime, _T("REC"), _T(""), sVideoFileName, FALSE))
 					m_pDoc->m_llMovDetLastVideoMailUpTime = llStartUpTime;
 			}
 			else if (::GetFileSize64(sGIFFileName).QuadPart > 0						&&
@@ -556,7 +556,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 					m_pDoc->m_AttachmentType == CVideoDeviceDoc::ATTACHMENT_JPG_GIF))
 			{
 				if ((llStartUpTime - m_pDoc->m_llMovDetLastGIFMailUpTime) >= (LONGLONG)m_pDoc->m_nMovDetSendMailSecBetweenMsg * 1000 &&
-					CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), FirstTime, _T("REC"), _T(""), sGIFFileName, MAILPROG_TIMEOUT_SEC, FALSE))
+					CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), FirstTime, _T("REC"), _T(""), sGIFFileName, FALSE))
 					m_pDoc->m_llMovDetLastGIFMailUpTime = llStartUpTime;
 			}
 		}
@@ -1211,8 +1211,7 @@ BOOL CVideoDeviceDoc::SendMail(	const SendMailConfigurationStruct& Config,
 								const CString& sNote,
 								CString sBody,
 								const CString& sFileName,
-								int nTimeoutSec,
-								BOOL bShow)
+								BOOL bWaitDone)
 {
 	if (!Config.m_sHost.IsEmpty() &&
 		!Config.m_sFrom.IsEmpty() &&
@@ -1230,26 +1229,23 @@ BOOL CVideoDeviceDoc::SendMail(	const SendMailConfigurationStruct& Config,
 			sBody = sName + _T(": ") + ::MakeDateLocalFormat(Time) + _T(" ") + ::MakeTimeLocalFormat(Time, TRUE) + _T(" ") + sNote;
 		switch (Config.m_ConnectionType)
 		{
-			case 0 : sConnectionTypeOption = _T(""); break;				// Plain Text
-			case 1 : sConnectionTypeOption = _T("-ssl"); break;			// SSL and TLS (for that to work user and pw must be provided)
-			default: sConnectionTypeOption = _T("-starttls"); break;	// STARTTLS (for that to work user and pw must be provided)
+			case 0 : sConnectionTypeOption = _T(""); break;				// there is no "Plain Text" mode, the mail program uses STARTTLS if available
+			case 1 : sConnectionTypeOption = _T("-ssl"); break;			// SSL/TLS
+			default: sConnectionTypeOption = _T(""); break;				// there is no STARTTLS mode, the mail program uses STARTTLS if available
 		}
-		sOptions.Format(_T("-t \"%s\" -f %s %s %s -port %d %s -smtp %s -ct %d -read-timeout %d -sub \"%s\" +cc +bc -user \"%s\" -pass \"%s\" -cs \"utf-8\" -mime-type \"text/plain\" -enc-type \"base64\" -M \"%s\""),
-						Config.m_sTo,
-						Config.m_sFrom,
-						Config.m_sFromName.IsEmpty() ? _T("") : _T("-name \"") + Config.m_sFromName + _T("\""),
+		sOptions.Format(_T("-t \"%s\" -f %s %s %s -port %d -smtp %s -sub \"%s\" body -msg \"%s\""),
+						Config.m_sTo,	// can be multiple addresses separated by a comma
+						Config.m_sFrom, // a single address
+						Config.m_sFromName.IsEmpty() ? _T("") : _T("-fname \"") + Config.m_sFromName + _T("\""),
 						sConnectionTypeOption,
 						Config.m_nPort,
-						(Config.m_sUsername.IsEmpty() && Config.m_sPassword.IsEmpty()) ? _T("") : _T("-auth -ehlo"), // some server don't say ESMTP in the greetings even if they support it, so if using -auth we force -ehlo
 						Config.m_sHost,
-						nTimeoutSec, // connect timeout
-						nTimeoutSec, // read timeout
 						sSubject,
-						Config.m_sUsername,
-						Config.m_sPassword,
 						sBody);
 		if (::GetFileSize64(sFileName).QuadPart > 0)
-			sOptions += _T(" -attach \"") + ::GetASCIICompatiblePath(sFileName) + _T("\"");
+			sOptions += _T(" attach -file \"") + sFileName + _T("\"");
+		if (!Config.m_sUsername.IsEmpty() || !Config.m_sPassword.IsEmpty())
+			sOptions += _T(" auth -user \"") + Config.m_sUsername + _T("\" -pass \"") + Config.m_sPassword + _T("\"");
 
 		// Send
 		TCHAR szDrive[_MAX_DRIVE];
@@ -1262,10 +1258,16 @@ BOOL CVideoDeviceDoc::SendMail(	const SendMailConfigurationStruct& Config,
 			sMailerStartFile += MAILPROG_RELPATH;
 			if (::IsExistingFile(sMailerStartFile))
 			{
-				if (bShow)
-					sOptions = _T("-w ") + sOptions; // wait for a CR after sending the mail
+				// Log to file to have more informations about the mail sending
+				if (bWaitDone)
+				{
+					CString sMailerLogFile = CUImagerApp::GetConfigFilesDir();
+					sMailerLogFile += CString(_T("\\")) + MAILPROG_LOGNAME_EXT;
+					::DeleteFile(sMailerLogFile);
+					sOptions += _T(" -log \"") + sMailerLogFile + _T("\"");
+				}
 
-				// Start mailsend.exe
+				// Start mailer
 				//
 				// Note: do not use ShellExecuteEx because it creates a separate thread
 				//       and does not return until that thread completes. During this time
@@ -1273,34 +1275,37 @@ BOOL CVideoDeviceDoc::SendMail(	const SendMailConfigurationStruct& Config,
 				//       owned by the calling thread from appearing hung. 
 				//       We also need the STARTF_FORCEOFFFEEDBACK flag which is not available
 				//       with ShellExecuteEx, this flag avoids showing the busy cursor while
-				//       starting the mailsend.exe process.
-				//       The CreateProcessA() ANSI version is called so that the passed utf8
-				//       command line remains untouched!
-				STARTUPINFOA si = {};
+				//       starting the mailer process.
+				STARTUPINFO si = {};
 				PROCESS_INFORMATION pi = {};
 				si.cb = sizeof(si);
 				si.dwFlags =	STARTF_FORCEOFFFEEDBACK |	// do not display the busy cursor
 								STARTF_USESHOWWINDOW;		// use the following wShowWindow
-				si.wShowWindow = bShow ? SW_SHOW : SW_HIDE;
-				CStringA sAsciiMailerStartFile(::GetASCIICompatiblePath(sMailerStartFile));
-				CStringA sAsciiDir(::GetASCIICompatiblePath(::GetDriveAndDirName(sMailerStartFile)));
-				LPBYTE pUTF8Options = NULL;
-				::ToUTF8(sOptions, &pUTF8Options); // utf8 allows any character in subject and body
-				char lpCommandLine[32768];
-				strcpy_s(lpCommandLine, "\"");
-				strcat_s(lpCommandLine, sAsciiMailerStartFile);
-				strcat_s(lpCommandLine, "\" ");
-				strcat_s(lpCommandLine, (LPCSTR)pUTF8Options);
-				BOOL bStarted = ::CreateProcessA(sAsciiMailerStartFile, lpCommandLine,
-												NULL, NULL, FALSE, NORMAL_PRIORITY_CLASS, NULL,
-												sAsciiDir, &si, &pi);
-				if (pUTF8Options)
-					delete[] pUTF8Options;
+				si.wShowWindow = SW_HIDE;
+				TCHAR lpCommandLine[32768];
+				_tcscpy_s(lpCommandLine, _T("\""));
+				_tcscat_s(lpCommandLine, sMailerStartFile);
+				_tcscat_s(lpCommandLine, _T("\" "));
+				_tcscat_s(lpCommandLine, sOptions);
+				BOOL bOK = ::CreateProcess(	sMailerStartFile, lpCommandLine,
+											NULL, NULL, FALSE, NORMAL_PRIORITY_CLASS, NULL,
+											::GetDriveAndDirName(sMailerStartFile), &si, &pi) && pi.hProcess;
+				if (bWaitDone && bOK)
+				{
+					if (::WaitForSingleObject(pi.hProcess, MAILPROG_TEST_TIMEOUT_MS) == WAIT_OBJECT_0)
+					{
+						DWORD dwExitCode;
+						if (!::GetExitCodeProcess(pi.hProcess, &dwExitCode) || dwExitCode > 0)
+							bOK = FALSE;
+					}
+					else
+						bOK = FALSE; // takes too long
+				}
 				if (pi.hProcess)
 					::CloseHandle(pi.hProcess);
 				if (pi.hThread)
 					::CloseHandle(pi.hThread);
-				return bStarted;
+				return bOK;
 			}
 		}
 	}
@@ -1959,7 +1964,7 @@ end_of_software_detection:
 				if (m_AttachmentType == ATTACHMENT_NONE)
 				{
 					if ((llUpTime - m_llMovDetLastMailUpTime) >= (LONGLONG)m_nMovDetSendMailSecBetweenMsg * 1000 &&
-						CVideoDeviceDoc::SendMail(m_SendMailConfiguration, GetAssignedDeviceName(), Time, _T("REC"), _T(""), _T(""), MAILPROG_TIMEOUT_SEC, FALSE))
+						CVideoDeviceDoc::SendMail(m_SendMailConfiguration, GetAssignedDeviceName(), Time, _T("REC"), _T(""), _T(""), FALSE))
 						m_llMovDetLastMailUpTime = llUpTime;
 				}
 				else if (	m_AttachmentType == ATTACHMENT_JPG			||
@@ -1967,7 +1972,7 @@ end_of_software_detection:
 							m_AttachmentType == ATTACHMENT_JPG_GIF)
 				{
 					if ((llUpTime - m_llMovDetLastJPGMailUpTime) >= (LONGLONG)m_nMovDetSendMailSecBetweenMsg * 1000 &&
-						CVideoDeviceDoc::SendMail(m_SendMailConfiguration, GetAssignedDeviceName(), Time, _T("REC"), _T(""), sSavedJpegRec, MAILPROG_TIMEOUT_SEC, FALSE))
+						CVideoDeviceDoc::SendMail(m_SendMailConfiguration, GetAssignedDeviceName(), Time, _T("REC"), _T(""), sSavedJpegRec, FALSE))
 						m_llMovDetLastJPGMailUpTime = llUpTime;
 				}
 			}
@@ -3263,7 +3268,7 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 					if (llMsSinceLastProcessFrame > WATCHDOG_MALFUNCTION_THRESHOLD && !bDeviceAlert)
 					{
 						if (m_pDoc->m_bSendMailMalfunction)
-							CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), CurrentTime, _T("OFF!"), _T(""), _T(""), MAILPROG_TIMEOUT_SEC, FALSE);
+							CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), CurrentTime, _T("OFF!"), _T(""), _T(""), FALSE);
 						bDeviceAlert = TRUE;
 					}
 				}
@@ -3273,7 +3278,7 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 					if (bDeviceAlert)
 					{
 						if (m_pDoc->m_bSendMailMalfunction)
-							CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), CurrentTime, _T("ON"), _T(""), _T(""), MAILPROG_TIMEOUT_SEC, FALSE);
+							CVideoDeviceDoc::SendMail(m_pDoc->m_SendMailConfiguration, m_pDoc->GetAssignedDeviceName(), CurrentTime, _T("ON"), _T(""), _T(""), FALSE);
 						bDeviceAlert = FALSE;
 					}
 				}

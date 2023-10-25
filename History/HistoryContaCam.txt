@@ -6,7 +6,8 @@ CONTACAM HISTORY
 - Updated internal web server to Apache 2.4.57 and PHP 8.2.10
   (Apache and PHP both with OpenSSL 3.1.2)
 - Hardened apache security by disabling the HTTP TRACE method 
-  
+- Updated mailer program to mailsend-go v1.0.10
+
 9.9.22 (May 16th 2022)
 
 - Fixed a color shift problem happening with some cameras (thanks to

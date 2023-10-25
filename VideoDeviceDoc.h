@@ -793,8 +793,7 @@ public:
 						const CString& sNote,				// sNote is replaced in subject if %note% present
 						CString sBody,						// if no body given use the format "name: date time note"
 						const CString& sFileName,			// attachment
-						int nTimeoutSec,					// mailsend.exe defaults to 5 sec which is really too low!
-						BOOL bShow);						// show / hide the console window
+						BOOL bWaitDone);					// wait until the email is sent -> the return value is more precise
 
 	// Php config file manipulation
 	CString PhpGetConfigFileName();
