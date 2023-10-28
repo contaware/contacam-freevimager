@@ -1805,22 +1805,20 @@ void CUImagerApp::OnFileDxVideoDevice(UINT nID)
 	int nDxDeviceId = nID - ID_DIRECTSHOW_VIDEODEV_FIRST;
 
 	// If device already running, set the focus to it and return
-	CString sNewDevicePath(CDxCapture::GetDevicePath(nDxDeviceId));
+	CString sDevicePath(CDxCapture::GetDevicePath(nDxDeviceId));
 	CUImagerMultiDocTemplate* pVideoDeviceDocTemplate = GetVideoDeviceDocTemplate();
 	POSITION posVideoDeviceDoc = pVideoDeviceDocTemplate->GetFirstDocPosition();
 	while (posVideoDeviceDoc)
 	{
 		CVideoDeviceDoc* pVideoDeviceDoc = (CVideoDeviceDoc*)pVideoDeviceDocTemplate->GetNextDoc(posVideoDeviceDoc);
-		if (pVideoDeviceDoc && pVideoDeviceDoc->m_pDxCapture)
+		if (pVideoDeviceDoc && pVideoDeviceDoc->m_pDxCapture &&
+			pVideoDeviceDoc->m_pDxCapture->GetDevicePath() == sDevicePath)
 		{
-			if (pVideoDeviceDoc->m_pDxCapture->GetDevicePath() == sNewDevicePath)
-			{
-				if (pVideoDeviceDoc->GetFrame()->IsIconic())
-					pVideoDeviceDoc->GetFrame()->MDIRestore();
-				else if (!pVideoDeviceDoc->GetFrame()->IsZoomed())
-					pVideoDeviceDoc->GetFrame()->MDIActivate();
-				return;
-			}
+			if (pVideoDeviceDoc->GetFrame()->IsIconic())
+				pVideoDeviceDoc->GetFrame()->MDIRestore();
+			else if (!pVideoDeviceDoc->GetFrame()->IsZoomed())
+				pVideoDeviceDoc->GetFrame()->MDIActivate();
+			return;
 		}
 	}
 
