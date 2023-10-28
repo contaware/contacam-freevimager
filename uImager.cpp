@@ -1805,7 +1805,7 @@ void CUImagerApp::OnFileDxVideoDevice(UINT nID)
 	int nDxDeviceId = nID - ID_DIRECTSHOW_VIDEODEV_FIRST;
 
 	// If device already running, set the focus to it and return
-	CString sNewDevicePathName = CDxCapture::GetDevicePath(nDxDeviceId);
+	CString sNewDevicePath(CDxCapture::GetDevicePath(nDxDeviceId));
 	CUImagerMultiDocTemplate* pVideoDeviceDocTemplate = GetVideoDeviceDocTemplate();
 	POSITION posVideoDeviceDoc = pVideoDeviceDocTemplate->GetFirstDocPosition();
 	while (posVideoDeviceDoc)
@@ -1813,8 +1813,7 @@ void CUImagerApp::OnFileDxVideoDevice(UINT nID)
 		CVideoDeviceDoc* pVideoDeviceDoc = (CVideoDeviceDoc*)pVideoDeviceDocTemplate->GetNextDoc(posVideoDeviceDoc);
 		if (pVideoDeviceDoc && pVideoDeviceDoc->m_pDxCapture)
 		{
-			CString sRunningDevicePathName = pVideoDeviceDoc->m_pDxCapture->GetDevicePath();
-			if (sRunningDevicePathName == sNewDevicePathName)
+			if (pVideoDeviceDoc->m_pDxCapture->GetDevicePath() == sNewDevicePath)
 			{
 				if (pVideoDeviceDoc->GetFrame()->IsIconic())
 					pVideoDeviceDoc->GetFrame()->MDIRestore();
