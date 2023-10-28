@@ -59,6 +59,7 @@ protected:
 	void EnableDisableCtrls();
 	static CString MakeDevicePathName(const CString& sInHost, int nInPort, int nInDeviceTypeMode);
 	static CString GetAssignedDeviceName(const CString& sInHost, int nInPort, int nInDeviceTypeMode);
+	BOOL IsRunning();		// check whether for given m_sHost, m_nPort, m_nDeviceTypeMode there is already a running device
 	void LoadSettings();	// load settings for given m_sHost, m_nPort, m_nDeviceTypeMode
 	void SaveSettings();	// save settings for given m_sHost, m_nPort, m_nDeviceTypeMode
 	void OnError();

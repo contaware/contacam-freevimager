@@ -5,6 +5,7 @@
 #include "uimager.h"
 #include "HostPortDlg.h"
 #include "VideoDeviceDoc.h"
+#include "ToolBarChildFrm.h"
 #include "SortableStringArray.h" // for the CompareNatural() function
 
 #ifdef _DEBUG
@@ -688,6 +689,15 @@ void CHostPortDlg::OnOK()
 			return OnError(); // missing protocol!
 	}
 
+	// Do not continue if the device corresponding to the selected 
+	// m_sHost, m_nPort, m_nDeviceTypeMode is already running
+	if (IsRunning())
+		return;
+
+	// Close notification window in case it has been shown
+	// by the above OnError() or IsRunning()
+	::AfxGetMainFrame()->CloseNotificationWnd();
+
 	// Save selected m_sHost, m_nPort and m_nDeviceTypeMode
 	// New ContaCam versions only use the first history
 	// entry to store the last selected item
@@ -743,6 +753,33 @@ CString CHostPortDlg::GetAssignedDeviceName(const CString& sInHost, int nInPort,
 			sName = sName.Mid(index + 1);
 	}
 	return sName;
+}
+
+BOOL CHostPortDlg::IsRunning()
+{
+	// Get device path name
+	CString sDevicePathName = MakeDevicePathName(m_sHost, m_nPort, m_nDeviceTypeMode);
+
+	// Loop through the open documents to check whether a device with the given
+	// combination of m_sHost, m_nPort, m_nDeviceTypeMode is already running
+	CUImagerMultiDocTemplate* pVideoDeviceDocTemplate = ((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate();
+	POSITION posVideoDeviceDoc = pVideoDeviceDocTemplate->GetFirstDocPosition();
+	while (posVideoDeviceDoc)
+	{
+		CVideoDeviceDoc* pVideoDeviceDoc = (CVideoDeviceDoc*)pVideoDeviceDocTemplate->GetNextDoc(posVideoDeviceDoc);
+		if (pVideoDeviceDoc && !pVideoDeviceDoc->m_pDxCapture &&
+			pVideoDeviceDoc->GetDevicePathName() == sDevicePathName)
+		{
+			if (pVideoDeviceDoc->GetFrame()->IsIconic())
+				pVideoDeviceDoc->GetFrame()->MDIRestore();
+			else if (!pVideoDeviceDoc->GetFrame()->IsZoomed())
+				pVideoDeviceDoc->GetFrame()->MDIActivate();
+			::AfxGetMainFrame()->PopupNotificationWnd(APPNAME_NOEXT, ML_STRING(1464, "The camera is already running!"), 0);
+			return TRUE;
+		}
+	}
+
+	return FALSE;
 }
 
 void CHostPortDlg::LoadSettings()
