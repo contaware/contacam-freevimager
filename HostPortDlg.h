@@ -74,6 +74,7 @@ protected:
 	//{{AFX_MSG(CHostPortDlg)
 	virtual BOOL OnInitDialog();
 	virtual void OnOK();
+	virtual void OnCancel();
 	afx_msg void OnSelchangeComboHost();
 	afx_msg void OnEditchangeComboHost();
 	afx_msg void OnChangeEditPort();

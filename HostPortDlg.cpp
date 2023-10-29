@@ -695,7 +695,7 @@ void CHostPortDlg::OnOK()
 		return;
 
 	// Close notification window in case it has been shown
-	// by the above OnError() or IsRunning()
+	// by OnError() or by IsRunning()
 	::AfxGetMainFrame()->CloseNotificationWnd();
 
 	// Save selected m_sHost, m_nPort and m_nDeviceTypeMode
@@ -714,6 +714,15 @@ void CHostPortDlg::OnOK()
 	SaveSettings();
 
 	CDialog::OnOK();
+}
+
+void CHostPortDlg::OnCancel()
+{
+	// Close notification window in case it has been shown
+	// by OnError() or by IsRunning()
+	::AfxGetMainFrame()->CloseNotificationWnd();
+
+	CDialog::OnCancel();
 }
 
 void CHostPortDlg::OnButtonHelp()
