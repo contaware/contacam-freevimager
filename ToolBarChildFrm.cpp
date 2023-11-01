@@ -1042,13 +1042,18 @@ LONG CVideoDeviceChildFrame::OnExitSizeMove(WPARAM wparam, LPARAM lparam)
 
 void CVideoDeviceChildFrame::OnToolbarDropDown(NMHDR* pNMHDR, LRESULT* pResult)
 {
+	CVideoDeviceView* pView = (CVideoDeviceView*)GetActiveView();
+	ASSERT_VALID(pView);
+	CVideoDeviceDoc* pDoc = pView->GetDocument();
+	ASSERT_VALID(pDoc);
+
 	LPNMTOOLBAR pNMToolBar = reinterpret_cast<LPNMTOOLBAR>(pNMHDR);
 	switch (pNMToolBar->iItem)
 	{
 		case ID_CAPTURE_CAMERASETTINGS:
 		{
 			CMenu menu;
-			VERIFY(menu.LoadMenu(IDR_CONTEXT_CAMERASETTINGS));
+			VERIFY(menu.LoadMenu(pDoc->m_pDxCapture ? IDR_CONTEXT_DX_CAMERASETTINGS : IDR_CONTEXT_NET_CAMERASETTINGS));
 			CMenu* pPopup = menu.GetSubMenu(0);
 			ASSERT(pPopup != NULL);
 			GetToolBar()->ClientToScreen(&(pNMToolBar->rcButton));
@@ -1299,6 +1304,46 @@ void CVideoDeviceChildFrame::EndShutdown()
 	ASSERT_VALID(pView);
 	CVideoDeviceDoc* pDoc = pView->GetDocument();
 	ASSERT_VALID(pDoc);
+
+	// Update settings to use a new host?
+	if (!pDoc->m_pDxCapture							&&
+		!pDoc->m_sNewGetFrameVideoHost.IsEmpty()	&&
+		pDoc->m_sNewGetFrameVideoHost != pDoc->m_sGetFrameVideoHost)
+	{
+		// Log
+		::LogLine(_T("%s, %s \u2192 %s"),	pDoc->GetAssignedDeviceName(),
+											pDoc->m_sGetFrameVideoHost,
+											pDoc->m_sNewGetFrameVideoHost);
+
+		// Get old device path name
+		CString sOldDevicePathName(pDoc->GetDevicePathName());
+
+		// Update host (pDoc->GetDevicePathName() returns now the new device path name)
+		pDoc->m_sGetFrameVideoHost = pDoc->m_sNewGetFrameVideoHost;
+
+		// Get the autorun state of old host and remove autorun
+		BOOL bAutorun = CVideoDeviceDoc::AutorunGetDeviceKey(sOldDevicePathName) != _T("");
+		CVideoDeviceDoc::AutorunRemoveDevice(sOldDevicePathName);
+
+		// Save settings with new host
+		// Note: existing settings for the given new host get overwritten!
+		pDoc->SaveSettings();
+
+		// Set autorun with new host
+		if (bAutorun)
+			CVideoDeviceDoc::AutorunAddDevice(pDoc->GetDevicePathName());
+		else
+			CVideoDeviceDoc::AutorunRemoveDevice(pDoc->GetDevicePathName());
+
+		// Delete settings with old host
+		if (::AfxGetApp()->m_pszRegistryKey)
+			::DeleteRegistryKey(HKEY_CURRENT_USER,	_T("Software\\") +
+													CString(MYCOMPANY) + CString(_T("\\")) +
+													CString(APPNAME_NOEXT) + _T("\\") +
+													sOldDevicePathName);
+		else
+			::WritePrivateProfileString(sOldDevicePathName, NULL, NULL, ::AfxGetApp()->m_pszProfileName);
+	}
 
 	// Network Clients Clean-Up
 	if (pDoc->m_pVideoNetCom)

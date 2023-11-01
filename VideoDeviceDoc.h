@@ -902,6 +902,7 @@ public:
 	CNetCom* volatile m_pVideoNetCom;					// HTTP Video Instance
 	volatile NetworkDeviceTypeMode m_nNetworkDeviceTypeMode;// Video Network Device Type and Mode
 	CString m_sGetFrameVideoHost;						// Host
+	CString m_sNewGetFrameVideoHost;					// When closing cam, update settings to use this new Host
 	volatile int m_nGetFrameVideoPort;					// Port
 	CString m_sHttpGetFrameUsername;					// Username
 	CString m_sHttpGetFramePassword;					// Password
@@ -1046,6 +1047,9 @@ protected:
 	afx_msg void OnCaptureObscureSource();
 	afx_msg void OnUpdateCaptureObscureSource(CCmdUI* pCmdUI);
 	afx_msg void OnCaptureCameraAdvancedSettings();
+	afx_msg void OnUpdateCaptureCameraAdvancedSettings(CCmdUI* pCmdUI);
+	afx_msg void OnCaptureChangeHost();
+	afx_msg void OnUpdateCaptureChangeHost(CCmdUI* pCmdUI);
 	afx_msg void OnViewFrameAnnotation();
 	afx_msg void OnUpdateViewFrameAnnotation(CCmdUI* pCmdUI);
 	afx_msg void OnViewFrametime();
@@ -1053,7 +1057,6 @@ protected:
 	afx_msg void OnViewFrameMilliseconds();
 	afx_msg void OnUpdateViewFrameMilliseconds(CCmdUI* pCmdUI);
 	afx_msg void OnFileClose();
-	afx_msg void OnUpdateCaptureCameraAdvancedSettings(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateEditZone(CCmdUI* pCmdUI);
 	afx_msg void OnEditZoneSensitivity100();
 	afx_msg void OnUpdateEditZoneSensitivity100(CCmdUI* pCmdUI);

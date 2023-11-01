@@ -71,7 +71,8 @@
 #define IDD_YESNOALLCANCEL              226
 #define IDD_SHRINK_CURRENT_PICTUREDOC   228
 #define IDD_BATCH_PROC                  229
-#define IDR_CONTEXT_CAMERASETTINGS      237
+#define IDR_CONTEXT_DX_CAMERASETTINGS   236
+#define IDR_CONTEXT_NET_CAMERASETTINGS  237
 #define IDR_CONTEXT_SENSITIVITY         238
 #define IDR_CONTEXT_FRAMESTAMP          239
 #define IDR_CONTEXT_PICTURE_FULLSCREEN  240
@@ -3240,6 +3241,7 @@
 #define ID_EDIT_ZONE_SMALL              33553
 #define ID_EDIT_ZONE_OBSCURE_REMOVED    33554
 #define ID_EDIT_ZONE_REC_MOTION         33555
+#define ID_CAPTURE_CHANGE_HOST          33556
 #define ID_BUTTON_PRINT_SETUP           58120
 
 // Next default values for new objects
@@ -3248,7 +3250,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1503
-#define _APS_NEXT_COMMAND_VALUE         33556
+#define _APS_NEXT_COMMAND_VALUE         33557
 #define _APS_NEXT_CONTROL_VALUE         2596
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

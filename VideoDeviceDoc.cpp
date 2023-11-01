@@ -83,6 +83,9 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_COMMAND(ID_CAPTURE_OBSCURESOURCE, OnCaptureObscureSource)
 	ON_UPDATE_COMMAND_UI(ID_CAPTURE_OBSCURESOURCE, OnUpdateCaptureObscureSource)
 	ON_COMMAND(ID_CAPTURE_CAMERAADVANCEDSETTINGS, OnCaptureCameraAdvancedSettings)
+	ON_UPDATE_COMMAND_UI(ID_CAPTURE_CAMERAADVANCEDSETTINGS, OnUpdateCaptureCameraAdvancedSettings)
+	ON_COMMAND(ID_CAPTURE_CHANGE_HOST, OnCaptureChangeHost)
+	ON_UPDATE_COMMAND_UI(ID_CAPTURE_CHANGE_HOST, OnUpdateCaptureChangeHost)
 	ON_COMMAND(ID_VIEW_FRAMEANNOTATION, OnViewFrameAnnotation)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FRAMEANNOTATION, OnUpdateViewFrameAnnotation)
 	ON_COMMAND(ID_VIEW_FRAMETIME, OnViewFrametime)
@@ -90,7 +93,6 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_COMMAND(ID_VIEW_FRAMEMILLISECONDS, OnViewFrameMilliseconds)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FRAMEMILLISECONDS, OnUpdateViewFrameMilliseconds)
 	ON_COMMAND(ID_FILE_CLOSE, OnFileClose)
-	ON_UPDATE_COMMAND_UI(ID_CAPTURE_CAMERAADVANCEDSETTINGS, OnUpdateCaptureCameraAdvancedSettings)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE, OnUpdateEditZone)
 	ON_COMMAND(ID_EDIT_ZONE_SENSITIVITY_100, OnEditZoneSensitivity100)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_SENSITIVITY_100, OnUpdateEditZoneSensitivity100)
@@ -3626,7 +3628,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	// Networking
 	m_pVideoNetCom = NULL;
 	m_pHttpVideoParseProcess = NULL;
-	m_sGetFrameVideoHost = _T("");
+	m_sNewGetFrameVideoHost = m_sGetFrameVideoHost = _T("");
 	m_nGetFrameVideoPort = HTTP_DEFAULT_PORT;
 	m_nNetworkDeviceTypeMode = GENERIC_SP;
 	m_bPreferTcpforRtsp = FALSE;
@@ -5558,6 +5560,29 @@ void CVideoDeviceDoc::OnUpdateCaptureCameraAdvancedSettings(CCmdUI* pCmdUI)
 		pCmdUI->SetCheck(m_pCameraAdvancedSettingsDlg->IsWindowVisible() ? 1 : 0);
 	else
 		pCmdUI->SetCheck(0);
+}
+
+void CVideoDeviceDoc::OnCaptureChangeHost()
+{
+	CTextEntryDlg dlg;
+	if (!m_sNewGetFrameVideoHost.IsEmpty())
+		dlg.m_sText = m_sNewGetFrameVideoHost;
+	else
+		dlg.m_sText = m_sGetFrameVideoHost;
+	if (dlg.Show(::AfxGetMainFrame(), GetView(), ML_STRING(1879, "New Camera IP/Host")) == IDOK)
+	{
+		dlg.m_sText.Trim();
+		int n;
+		if ((n = dlg.m_sText.Find(_T(":"))) >= 0) // remove port in case somebody provides it
+			m_sNewGetFrameVideoHost = dlg.m_sText.Left(n);
+		else
+			m_sNewGetFrameVideoHost = dlg.m_sText;
+	}
+}
+
+void CVideoDeviceDoc::OnUpdateCaptureChangeHost(CCmdUI* pCmdUI)
+{
+	pCmdUI->Enable(!m_bClosing);
 }
 
 void CVideoDeviceDoc::VideoFormatDialog() 

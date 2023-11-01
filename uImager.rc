@@ -659,12 +659,23 @@ BEGIN
     END
 END
 
-IDR_CONTEXT_CAMERASETTINGS MENU
+IDR_CONTEXT_DX_CAMERASETTINGS MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
         MENUITEM "Camera Basic Settings",       ID_CAPTURE_CAMERABASICSETTINGS
         MENUITEM "Camera Advanced Settings",    ID_CAPTURE_CAMERAADVANCEDSETTINGS
+    END
+END
+
+IDR_CONTEXT_NET_CAMERASETTINGS MENU
+BEGIN
+    POPUP "_Context Menu_"
+    BEGIN
+        MENUITEM "Camera Basic Settings",       ID_CAPTURE_CAMERABASICSETTINGS
+        MENUITEM "Camera Advanced Settings",    ID_CAPTURE_CAMERAADVANCEDSETTINGS
+        MENUITEM SEPARATOR
+        MENUITEM "Change Camera IP/Host on Close", ID_CAPTURE_CHANGE_HOST
     END
 END
 
@@ -996,8 +1007,8 @@ BEGIN
     LTEXT           "RTSP: preferred choice, especially for WiFi cameras",IDC_STATIC_RTSP,14,110,203,8
     LTEXT           "ON FAILURE: try a password without special characters",IDC_STATIC2464,14,233,203,8
     GROUPBOX        "RTSP Transport",IDC_STATIC_RTSP_TRANSPORT,7,151,216,26
-    CONTROL         "",IDC_RICHEDIT_HTTP_PORTS,"RichEdit20W",ES_AUTOHSCROLL | ES_READONLY | WS_DISABLED | WS_TABSTOP,72,64,145,8,WS_EX_TRANSPARENT
-    CONTROL         "",IDC_RICHEDIT_RTSP_PORTS,"RichEdit20W",ES_AUTOHSCROLL | ES_READONLY | WS_DISABLED | WS_TABSTOP,72,53,145,8,WS_EX_TRANSPARENT
+    CONTROL         "",IDC_RICHEDIT_HTTP_PORTS,"RichEdit20W",WS_DISABLED | WS_TABSTOP | 0x880,72,64,145,8,WS_EX_TRANSPARENT
+    CONTROL         "",IDC_RICHEDIT_RTSP_PORTS,"RichEdit20W",WS_DISABLED | WS_TABSTOP | 0x880,72,53,145,8,WS_EX_TRANSPARENT
 END
 
 IDD_CAMERAADVANCEDSETTINGS DIALOGEX 0, 0, 422, 283
@@ -4016,6 +4027,7 @@ BEGIN
     IDS_STRING1872          "Try again after closing all cameras"
     IDS_STRING1873          "usage of all cameras"
     IDS_STRING1878          "Annotation"
+    IDS_STRING1879          "New Camera IP/Host"
     IDS_STRING1880          "No attachment"
     IDS_STRING1881          "Saved start picture"
     IDS_STRING1882          "Saved animated thumbnail"
