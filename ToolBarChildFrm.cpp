@@ -1139,9 +1139,6 @@ void CVideoDeviceChildFrame::OnClose()
 			// Hide detection zones
 			if (pDoc->m_nShowEditDetectionZones)
 				pDoc->HideDetectionZones();
-	
-			// Save Settings
-			pDoc->SaveSettings();
 
 			// Log Closing
 			if (pDoc->m_bCaptureStarted)
@@ -1344,6 +1341,8 @@ void CVideoDeviceChildFrame::EndShutdown()
 		else
 			::WritePrivateProfileString(sOldDevicePathName, NULL, NULL, ::AfxGetApp()->m_pszProfileName);
 	}
+	else
+		pDoc->SaveSettings(); // save settings normally
 
 	// Network Clients Clean-Up
 	if (pDoc->m_pVideoNetCom)

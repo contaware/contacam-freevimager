@@ -60,6 +60,7 @@ BEGIN_MESSAGE_MAP(CVideoDeviceView, CUImagerView)
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_THREADSAFE_CAPTURECAMERABASICSETTINGS, OnThreadSafeCaptureCameraBasicSettings)
 	ON_MESSAGE(WM_THREADSAFE_UPDATE_PHPPARAMS, OnThreadSafeUpdatePhpParams)
+	ON_MESSAGE(WM_THREADSAFE_SAVE_SAVESCOUNT, OnThreadSafeSaveSavesCount)
 	ON_MESSAGE(WM_THREADSAFE_DVCHANGEVIDEOFORMAT, OnThreadSafeDVChangeVideoFormat)
 	ON_MESSAGE(WM_THREADSAFE_INIT_MOVDET, OnThreadSafeInitMovDet)
 	ON_MESSAGE(WM_DIRECTSHOW_GRAPHNOTIFY, OnDirectShowGraphNotify)
@@ -184,6 +185,20 @@ LONG CVideoDeviceView::OnThreadSafeUpdatePhpParams(WPARAM wparam, LPARAM lparam)
 		sHeight.Format(_T("%d"), pDoc->m_DocRect.bottom);
 		pDoc->PhpConfigFileSetParam(PHPCONFIG_WIDTH, sWidth);
 		pDoc->PhpConfigFileSetParam(PHPCONFIG_HEIGHT, sHeight);
+		return 1;
+	}
+	else
+		return 0;
+}
+
+LONG CVideoDeviceView::OnThreadSafeSaveSavesCount(WPARAM wparam, LPARAM lparam)
+{
+	CVideoDeviceDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+
+	if (pDoc && !pDoc->m_bClosing)
+	{
+		pDoc->SaveSavesCount();
 		return 1;
 	}
 	else

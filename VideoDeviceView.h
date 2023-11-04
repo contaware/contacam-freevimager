@@ -14,6 +14,7 @@
 #define WM_THREADSAFE_INIT_MOVDET					WM_USER + 601
 #define WM_THREADSAFE_DVCHANGEVIDEOFORMAT			WM_USER + 602
 #define WM_THREADSAFE_UPDATE_PHPPARAMS				WM_USER + 603
+#define WM_THREADSAFE_SAVE_SAVESCOUNT				WM_USER + 604
 		
 class CVideoDeviceView : public CUImagerView
 {
@@ -95,6 +96,7 @@ protected:
 	//}}AFX_MSG
 	afx_msg LONG OnThreadSafeCaptureCameraBasicSettings(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeUpdatePhpParams(WPARAM wparam, LPARAM lparam);
+	afx_msg LONG OnThreadSafeSaveSavesCount(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeDVChangeVideoFormat(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnDirectShowGraphNotify(WPARAM wparam, LPARAM lparam);

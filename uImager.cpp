@@ -1981,6 +1981,15 @@ BOOL CUImagerApp::AreVideoDeviceDocsOpen()
 
 void CUImagerApp::SaveOnEndSession()
 {
+	/*
+	This is not a normal termination, we will not get a WM_CLOSE. 
+	But fortunately all threads are still running, this is really 
+	necessary to avoid locking us (the UI thread). For example
+	SaveSavesCount() called by SaveSettings() uses a critical
+	section to serialize the access to the saves counter variables
+	updated by the m_SaveFrameListThread thread.
+	*/
+
 	SavePlacement();
 	m_PrinterControl.SavePrinterSelection(m_hDevMode, m_hDevNames);
 #ifdef VIDEODEVICEDOC

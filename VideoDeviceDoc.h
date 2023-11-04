@@ -744,7 +744,11 @@ public:
 	// Validate Name
 	static CString GetValidName(CString sName);
 
-	// Settings
+	/* Settings
+	-  The access to the registry is atomic and thus thread-safe.
+	-  The access to ini files is not thread-safe (there is only a
+	   file lock mechanism to synchronize the access between processes).
+	-> ONLY CALL the Get/Write Profile functions from the UI thread! */
 	BOOL LoadZonesBlockSettings(int nBlock, CString sSection);
 	BOOL LoadZonesSettings(CString sSection);
 	void SaveZonesBlockSettings(int nBlock, CString sSection);
@@ -762,6 +766,7 @@ public:
 						CString sDeviceName);
 	void SavePlacement();
 	void SaveSettings();
+	void SaveSavesCount();
 
 	// Autorun
 	static CString AutorunGetDeviceKey(const CString& sDevicePathName);
@@ -897,6 +902,13 @@ public:
 														// 0 means no limit
 	volatile int m_nMinDiskFreePermillion;				// Minimum disk free size in permillion, if the free space is lower than that the oldest files are removed
 	volatile int m_nSaveFrameListSpeedPercent;			// Frames saving speed
+
+	// Saves counter
+	volatile int m_nMovDetSavesCount;					// saves counter
+	volatile int m_nMovDetSavesCountDay;				// the saves counter is valid for this day
+	volatile int m_nMovDetSavesCountMonth;				// the saves counter is valid for this month
+	volatile int m_nMovDetSavesCountYear;				// the saves counter is valid for this year
+	CRITICAL_SECTION m_csMovDetSavesCount;				// Critical section for the saves counter variables
 
 	// Networking
 	CNetCom* volatile m_pVideoNetCom;					// HTTP Video Instance

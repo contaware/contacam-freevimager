@@ -299,23 +299,24 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		if (llFramesTimeMs == 0)
 			llFramesTimeMs = llLastUpTime - llFirstUpTime;
 
-		// Load the saves counter and reset it if entering a new day.
-		// A sequence is composed of 1 or more movies, where the first
-		// one starts with a '[' and the last one ends with a ']'.
-		CString sSection(m_pDoc->GetDevicePathName());
-		int nMovDetSavesCount = ::AfxGetApp()->GetProfileInt(sSection, _T("MovDetSavesCount"), 1);
-		int nMovDetSavesCountDay = ::AfxGetApp()->GetProfileInt(sSection, _T("MovDetSavesCountDay"), FirstTime.GetDay());
-		int nMovDetSavesCountMonth = ::AfxGetApp()->GetProfileInt(sSection, _T("MovDetSavesCountMonth"), FirstTime.GetMonth());
-		int nMovDetSavesCountYear = ::AfxGetApp()->GetProfileInt(sSection, _T("MovDetSavesCountYear"), FirstTime.GetYear());
-		if (nMovDetSavesCountDay != FirstTime.GetDay()		||
-			nMovDetSavesCountMonth != FirstTime.GetMonth()	||
-			nMovDetSavesCountYear != FirstTime.GetYear())
+		// - Inc. saves counter (if entering a new day reset it to 1)
+		//   and post a message to let the UI thread store the new count.
+		// - A sequence is composed of 1 or more movies, where the first
+		//   one starts with a '[' and the last one ends with a ']'.
+		::EnterCriticalSection(&m_pDoc->m_csMovDetSavesCount);
+		if (m_pDoc->m_nMovDetSavesCountDay != FirstTime.GetDay()		||
+			m_pDoc->m_nMovDetSavesCountMonth != FirstTime.GetMonth()	||
+			m_pDoc->m_nMovDetSavesCountYear != FirstTime.GetYear())
 		{
-			nMovDetSavesCount = 1;
-			nMovDetSavesCountDay = FirstTime.GetDay();
-			nMovDetSavesCountMonth = FirstTime.GetMonth();
-			nMovDetSavesCountYear = FirstTime.GetYear();
+			m_pDoc->m_nMovDetSavesCount = 1;
+			m_pDoc->m_nMovDetSavesCountDay = FirstTime.GetDay();
+			m_pDoc->m_nMovDetSavesCountMonth = FirstTime.GetMonth();
+			m_pDoc->m_nMovDetSavesCountYear = FirstTime.GetYear();
 		}
+		int nMovDetSavesCount = m_pDoc->m_nMovDetSavesCount;
+		m_pDoc->m_nMovDetSavesCount = nMovDetSavesCount + 1;
+		::LeaveCriticalSection(&m_pDoc->m_csMovDetSavesCount);
+		::PostMessage(m_pDoc->GetView()->GetSafeHwnd(), WM_THREADSAFE_SAVE_SAVESCOUNT, 0, 0);
 		CString sMovDetSavesCount;
 		sMovDetSavesCount.Format(_T("%d"), nMovDetSavesCount);
 		if (m_pFrameList->GetHead())
@@ -569,13 +570,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			if (m_pDoc->m_bExecCommand[n] && m_pDoc->m_nExecCommandMode[n] == 1)
 				m_pDoc->ExecCommand(n, FirstTime, sVideoFileName, sGIFFileName);
 		}
-
-		// Increment saves count and store settings
-		nMovDetSavesCount++;
-		::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCount"), nMovDetSavesCount);
-		::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCountDay"), nMovDetSavesCountDay);
-		::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCountMonth"), nMovDetSavesCountMonth);
-		::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCountYear"), nMovDetSavesCountYear);
 
 		// Saving speed
 		LONGLONG llSaveTimeMs = (LONGLONG)::GetTickCount64() - llStartUpTime;
@@ -3667,6 +3661,12 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nMinDiskFreePermillion = MIN_DISK_FREE_PERMILLION;
 	m_nSaveFrameListSpeedPercent = -1;
 
+	// Saves counter
+	m_nMovDetSavesCount = 1;
+	m_nMovDetSavesCountDay = 1;
+	m_nMovDetSavesCountMonth = 1;
+	m_nMovDetSavesCountYear = 2000;
+
 	// Movement Detection
 	m_pDifferencingDib = NULL;
 	m_pMovementDetectorBackgndDib = NULL;
@@ -3775,6 +3775,9 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	// Init Connection Error Critical Section
 	::InitializeCriticalSection(&m_csConnectionError);
 
+	// Init Saves Counter Critical Section
+	::InitializeCriticalSection(&m_csMovDetSavesCount);
+
 	// Init Movement Detector
 	OneEmptyFrameList();
 	FreeMovementDetector();
@@ -3816,6 +3819,7 @@ CVideoDeviceDoc::~CVideoDeviceDoc()
 		m_DoMovementDetection = NULL;
 	}
 	ClearMovementDetectionsList();
+	::DeleteCriticalSection(&m_csMovDetSavesCount);
 	::DeleteCriticalSection(&m_csConnectionError);
 	::DeleteCriticalSection(&m_csAudioList);
 	::DeleteCriticalSection(&m_csProcessFrameStop);
@@ -4639,6 +4643,18 @@ void CVideoDeviceDoc::LoadSettings(	double dDefaultFrameRate,
 		m_dFrameRate = dDefaultFrameRate;
 	}
 
+	// Saves counter
+	int nMovDetSavesCount = (int)pApp->GetProfileInt(sSection, _T("MovDetSavesCount"), 1);
+	int nMovDetSavesCountDay = (int)pApp->GetProfileInt(sSection, _T("MovDetSavesCountDay"), 1);
+	int nMovDetSavesCountMonth = (int)pApp->GetProfileInt(sSection, _T("MovDetSavesCountMonth"), 1);
+	int nMovDetSavesCountYear = (int)pApp->GetProfileInt(sSection, _T("MovDetSavesCountYear"), 2000);
+	::EnterCriticalSection(&m_csMovDetSavesCount);
+	m_nMovDetSavesCount = nMovDetSavesCount;
+	m_nMovDetSavesCountDay = nMovDetSavesCountDay;
+	m_nMovDetSavesCountMonth = nMovDetSavesCountMonth;
+	m_nMovDetSavesCountYear = nMovDetSavesCountYear;
+	::LeaveCriticalSection(&m_csMovDetSavesCount);
+
 	// Create dir
 	::CreateDir(m_sRecordAutoSaveDir);
 
@@ -4775,6 +4791,26 @@ void CVideoDeviceDoc::SaveSettings()
 	// Frame-rate
 	unsigned int nSize = sizeof(m_dFrameRate);
 	pApp->WriteProfileBinary(sSection, _T("FrameRate"), (LPBYTE)&m_dFrameRate, nSize);
+
+	// Saves counter
+	SaveSavesCount();
+}
+
+void CVideoDeviceDoc::SaveSavesCount()
+{
+	CUImagerApp* pApp = (CUImagerApp*)::AfxGetApp();
+	CString sSection(GetDevicePathName());
+
+	::EnterCriticalSection(&m_csMovDetSavesCount);
+	int nMovDetSavesCount = m_nMovDetSavesCount;
+	int nMovDetSavesCountDay = m_nMovDetSavesCountDay;
+	int nMovDetSavesCountMonth = m_nMovDetSavesCountMonth;
+	int nMovDetSavesCountYear = m_nMovDetSavesCountYear;
+	::LeaveCriticalSection(&m_csMovDetSavesCount);
+	pApp->WriteProfileInt(sSection, _T("MovDetSavesCount"), nMovDetSavesCount);
+	pApp->WriteProfileInt(sSection, _T("MovDetSavesCountDay"), nMovDetSavesCountDay);
+	pApp->WriteProfileInt(sSection, _T("MovDetSavesCountMonth"), nMovDetSavesCountMonth);
+	pApp->WriteProfileInt(sSection, _T("MovDetSavesCountYear"), nMovDetSavesCountYear);
 }
 
 void CVideoDeviceDoc::OpenDxVideoDevice(int nId, CString sDevicePathName, CString sDeviceName)
