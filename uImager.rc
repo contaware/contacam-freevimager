@@ -675,7 +675,7 @@ BEGIN
         MENUITEM "Camera Basic Settings",       ID_CAPTURE_CAMERABASICSETTINGS
         MENUITEM "Camera Advanced Settings",    ID_CAPTURE_CAMERAADVANCEDSETTINGS
         MENUITEM SEPARATOR
-        MENUITEM "Change Camera IP/Host on Close", ID_CAPTURE_CHANGE_HOST
+        MENUITEM "Change Camera IP/Host and Close", ID_CAPTURE_CHANGE_HOST
     END
 END
 

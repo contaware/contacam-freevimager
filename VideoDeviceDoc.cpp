@@ -5607,18 +5607,23 @@ void CVideoDeviceDoc::OnUpdateCaptureCameraAdvancedSettings(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnCaptureChangeHost()
 {
 	CTextEntryDlg dlg;
-	if (!m_sNewGetFrameVideoHost.IsEmpty())
-		dlg.m_sText = m_sNewGetFrameVideoHost;
-	else
-		dlg.m_sText = m_sGetFrameVideoHost;
+	dlg.m_sText = m_sGetFrameVideoHost;
 	if (dlg.Show(::AfxGetMainFrame(), GetView(), ML_STRING(1879, "New Camera IP/Host")) == IDOK)
 	{
+		// Trim leading and trailing white spaces
 		dlg.m_sText.Trim();
+
+		// Remove the port in case it is provided
 		int n;
-		if ((n = dlg.m_sText.Find(_T(":"))) >= 0) // remove port in case somebody provides it
+		if ((n = dlg.m_sText.Find(_T(":"))) >= 0)
 			m_sNewGetFrameVideoHost = dlg.m_sText.Left(n);
 		else
 			m_sNewGetFrameVideoHost = dlg.m_sText;
+
+		// Close us because the Host can only be changed when all
+		// the threads are shutdown and the settings are not updated
+		// anymore (see CVideoDeviceChildFrame::EndShutdown())
+		GetFrame()->PostMessage(WM_CLOSE, 0, 0);
 	}
 }
 
