@@ -3781,12 +3781,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	// Init Movement Detector
 	OneEmptyFrameList();
 	FreeMovementDetector();
-
-	// Start Save Frame List Thread
-	m_SaveFrameListThread.Start();
-
-	// Start Watchdog Thread
-	m_WatchdogThread.Start();
 }
 
 CVideoDeviceDoc::~CVideoDeviceDoc()
@@ -4850,7 +4844,11 @@ void CVideoDeviceDoc::OpenDxVideoDevice(int nId, CString sDevicePathName, CStrin
 	LoadSettings(DEFAULT_FRAMERATE, FALSE, sDevicePathName, sDeviceName);
 	::SetTimer(GetView()->GetSafeHwnd(), ID_TIMER_RELOAD, RELOAD_TIMER_MS, NULL);
 
-	// Start Delete Thread
+	// Start Threads
+	if (!m_SaveFrameListThread.IsAlive())
+		m_SaveFrameListThread.Start();
+	if (!m_WatchdogThread.IsAlive())
+		m_WatchdogThread.Start();
 	if (!m_DeleteThread.IsAlive())
 		m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
 
@@ -5163,7 +5161,11 @@ BOOL CVideoDeviceDoc::OpenNetVideoDevice(CString sAddress)
 					GetDeviceName());
 	::SetTimer(GetView()->GetSafeHwnd(), ID_TIMER_RELOAD, RELOAD_TIMER_MS, NULL);
 
-	// Start Delete Thread
+	// Start Threads
+	if (!m_SaveFrameListThread.IsAlive())
+		m_SaveFrameListThread.Start();
+	if (!m_WatchdogThread.IsAlive())
+		m_WatchdogThread.Start();
 	if (!m_DeleteThread.IsAlive())
 		m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
 
@@ -5216,7 +5218,11 @@ void CVideoDeviceDoc::OpenNetVideoDevice(CHostPortDlg* pDlg)
 					GetDeviceName());
 	::SetTimer(GetView()->GetSafeHwnd(), ID_TIMER_RELOAD, RELOAD_TIMER_MS, NULL);
 
-	// Start Delete Thread
+	// Start Threads
+	if (!m_SaveFrameListThread.IsAlive())
+		m_SaveFrameListThread.Start();
+	if (!m_WatchdogThread.IsAlive())
+		m_WatchdogThread.Start();
 	if (!m_DeleteThread.IsAlive())
 		m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
 
