@@ -3,6 +3,7 @@ FREEVIMAGER HISTORY
 9.9.23 (Month XXth 2023)
 
 - Fixed "Invalid crop request" error happening for some odd sized jpegs
+- Horizontal scroll support for Logitech MX Anywhere
 
 9.9.22 (May 16th 2022)
 
