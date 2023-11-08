@@ -21,6 +21,7 @@ BEGIN_MESSAGE_MAP(CPictureView, CUImagerView)
 	//{{AFX_MSG_MAP(CPictureView)
 	ON_WM_CREATE()
 	ON_WM_MOUSEWHEEL()
+	ON_MESSAGE(WM_MOUSEHWHEEL, OnMouseHWheelManual)
 	ON_WM_KEYDOWN()
 	ON_WM_RBUTTONDOWN()
 	ON_WM_MBUTTONDOWN()
@@ -1150,6 +1151,63 @@ BOOL CPictureView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 #endif
 
 	return TRUE;
+}
+
+// We do not use the built-in OnMouseHWheel() because that function does not 
+// return a value. To make it work with logitech mouses having a horizontal 
+// scroll possibility (I did not test other ones), we must return a non-zero
+// value. Note that if we return 0, then after the first WM_MOUSEHWHEEL, only
+// WM_HSCROLL messages reach us (if we switch to another app and horizontally
+// scroll there, coming back to our app will again give a first WM_MOUSEHWHEEL
+// and then only WM_HSCROLL).
+// Read: https://www.pretentiousname.com/setpoint_hwheel/index.html
+LRESULT CPictureView::OnMouseHWheelManual(WPARAM wparam, LPARAM lparam)
+{
+	short zDelta = HIWORD(wparam);
+
+	// Do Nothing if Already Mouse Click Scrolling!
+	if (m_bDoScrollMove)
+		return 1;
+
+	BOOL bDoMouseMove = FALSE;
+
+	CPictureDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+
+	// Scroll?
+	if (!m_bFullScreenMode && IsXScroll())
+	{
+		CPoint pos = GetScrollPosition();
+		CSize size = GetTotalSize();
+		int nXStep = size.cx / SCROLLWHEEL_STEPS;
+		int nYStep = size.cy / SCROLLWHEEL_STEPS;
+		if (zDelta > 0)
+			ScrollToPosition(CPoint(MIN(pos.x + nXStep, size.cx), pos.y));
+		else
+			ScrollToPosition(CPoint(MAX(pos.x - nXStep, 0), pos.y));
+
+		// Scrolling is like moving, update Crop Rect!
+		if (pDoc->m_bCrop && m_bCropMouseCaptured)
+			bDoMouseMove = TRUE;
+	}
+
+	// This function sends a WM_PAINT message directly,
+	// bypassing the application queue. If the update
+	// region is empty, WM_PAINT is not sent
+	UpdateWindow();
+
+	// Call this after UpdateWindow(),
+	// because before the view has not been updated
+	// with the new coordinates!
+	if (bDoMouseMove)
+		OnMouseMove(m_uiOnMouseMoveLastFlag, m_OnMouseMoveLastPoint);
+
+	// Update Pane Text
+#ifndef VIDEODEVICEDOC
+	UpdatePaneText();
+#endif
+
+	return 1;
 }
 
 LRESULT CPictureView::OnColorPicked(WPARAM wParam, LPARAM lParam)
