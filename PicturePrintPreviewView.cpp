@@ -59,6 +59,7 @@ BEGIN_MESSAGE_MAP(CPicturePrintPreviewView, CPreviewView)
 	ON_WM_LBUTTONDOWN()
 	ON_WM_SETCURSOR()
 	ON_WM_MOUSEWHEEL()
+	ON_MESSAGE(WM_MOUSEHWHEEL, OnMouseHWheelManual)
 	ON_WM_LBUTTONDBLCLK()
 	ON_WM_MOUSEMOVE()
 	ON_WM_LBUTTONUP()
@@ -1075,6 +1076,51 @@ BOOL CPicturePrintPreviewView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt
 		UpdateWindow();
 
 	return bResult;
+}
+
+// We do not use the built-in OnMouseHWheel() because that function does not 
+// return a value. To make it work with logitech mouses having a horizontal 
+// scroll possibility (I did not test other ones), we must return a non-zero
+// value. Note that if we return 0, then after the first WM_MOUSEHWHEEL, only
+// WM_HSCROLL messages reach us (if we switch to another app and horizontally
+// scroll there, coming back to our app will again give a first WM_MOUSEHWHEEL
+// and then only WM_HSCROLL).
+// Read: https://www.pretentiousname.com/setpoint_hwheel/index.html
+LRESULT CPicturePrintPreviewView::OnMouseHWheelManual(WPARAM wparam, LPARAM lparam)
+{
+	short zDelta = HIWORD(wparam);
+	zDelta = -zDelta;
+
+	DWORD dwStyle = GetStyle();
+	CScrollBar* pBar = GetScrollBarCtrl(SB_HORZ);
+	BOOL bHasHorzBar = ((pBar != NULL) && pBar->IsWindowEnabled()) || (dwStyle & WS_HSCROLL);
+
+	BOOL bResult = FALSE;
+	UINT uWheelScrollLines = GetMouseScrollLines();
+	int nToScroll;
+	int nDisplacement;
+
+	if (bHasHorzBar)
+	{
+		nToScroll = ::MulDiv(-zDelta, uWheelScrollLines, WHEEL_DELTA);
+		if (nToScroll == -1 || uWheelScrollLines == WHEEL_PAGESCROLL)
+		{
+			nDisplacement = m_pageDev.cx;
+			if (zDelta > 0)
+				nDisplacement = -nDisplacement;
+		}
+		else
+		{
+			nDisplacement = nToScroll * m_lineDev.cx;
+			nDisplacement = min(nDisplacement, m_pageDev.cx);
+		}
+		bResult = OnScrollBy(CSize(nDisplacement, 0), TRUE);
+	}
+
+	if (bResult)
+		UpdateWindow();
+
+	return 1;
 }
 
 void CPicturePrintPreviewView::OnMouseMove(UINT nFlags, CPoint point) 
