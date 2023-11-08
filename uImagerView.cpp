@@ -742,8 +742,8 @@ ULONG CUImagerView::GetGestureStatus(CPoint /*ptTouch*/)
 BOOL CUImagerView::OnScroll(UINT nScrollCode, UINT nPos, BOOL bDoScroll)
 {
 	/*
-		Normally when dragging the scroll thumb, info.nTrackPos=nPos is ahead
-		with respect to the following other two values:
+		When dragging the scroll thumb, info.nTrackPos=nPos (they are the same up to 
+		the int16 limit) is ahead of info.nPos=GetScrollPos():
 		- if scrolling in one direction:
 		  info.nTrackPos=nPos > info.nPos=GetScrollPos()
 		- if scrolling in the other direction:
@@ -762,31 +762,9 @@ BOOL CUImagerView::OnScroll(UINT nScrollCode, UINT nPos, BOOL bDoScroll)
 	// WM_HSCROLL
 	if (LOBYTE(nScrollCode) == SB_THUMBTRACK)
 	{
-		/*
-			A. When scrolling with a mouse that has a horizontal scroll possibility,
-			GetScrollPos()=nPos do change, but info.nTrackPos and info.nPos remain 
-			fixed. Calling SetScrollPos() with the position returned by GetScrollPos(), 
-			will for some unknown reasons correct info.nTrackPos and info.nPos.
-		*/
-		int nGetScrollPos = GetScrollPos(SB_HORZ);
-		SetScrollPos(SB_HORZ, nGetScrollPos);
 		SCROLLINFO info = {};
 		if (GetScrollInfo(SB_HORZ, &info, SIF_TRACKPOS)) // that sets cbSize, fMask and calls ::GetScrollInfo()
-		{
 			nPos = info.nTrackPos; // int16 limitation fix
-
-			/*
-				B. When scrolling with a mouse that has a horizontal scroll possibility,
-				the above correction A. will make all values the same, thus the 
-				below CScrollView::OnScroll() call does nothing, we have to trigger
-				the drawing here.
-			*/
-			if (nPos == nGetScrollPos)
-			{
-				Invalidate();
-				UpdateWindow();
-			}
-		}
 	}
 	// WM_VSCROLL
 	else if (HIBYTE(nScrollCode) == SB_THUMBTRACK)
