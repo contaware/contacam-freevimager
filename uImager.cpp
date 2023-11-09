@@ -1341,7 +1341,7 @@ void CUImagerApp::OnAppLicense()
 							TDCBF_OK_BUTTON,
 							TDF_ENABLE_HYPERLINKS | TDF_USE_COMMAND_LINKS | TDF_SIZE_TO_CONTENT);
 			dlg.SetMainIcon(TD_ERROR_ICON);
-			dlg.DoModal();
+			dlg.DoModal(::AfxGetMainFrame()->GetSafeHwnd());
 		}
 		else if (ret == -1)
 		{
@@ -1351,7 +1351,7 @@ void CUImagerApp::OnAppLicense()
 							TDCBF_OK_BUTTON,
 							TDF_ENABLE_HYPERLINKS | TDF_USE_COMMAND_LINKS | TDF_SIZE_TO_CONTENT);
 			dlg.SetMainIcon(TD_ERROR_ICON);
-			dlg.DoModal();
+			dlg.DoModal(::AfxGetMainFrame()->GetSafeHwnd());
 		}
 	}
 }
