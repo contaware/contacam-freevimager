@@ -331,7 +331,7 @@ void CSendMailConfigurationDlg::OnButtonTest()
 			// file:/// and have a path with forward slashes only.
 			CString sMailerLogFile = CUImagerApp::GetConfigFilesDir();
 			sMailerLogFile += CString(_T("\\")) + MAILPROG_LOGNAME_EXT;
-			sContent.Format(_T("<a href=\"%s\">%s</a>"), sMailerLogFile, ML_STRING(1830, "check email log file"));
+			sContent.Format(_T("<a href=\"%s\">%s</a>"), sMailerLogFile, ML_STRING(1830, "check log file"));
 			EndWaitCursor();
 		}
 		else
@@ -346,7 +346,7 @@ void CSendMailConfigurationDlg::OnButtonTest()
 						TDCBF_OK_BUTTON,
 						TDF_ENABLE_HYPERLINKS | TDF_USE_COMMAND_LINKS | TDF_SIZE_TO_CONTENT);
 		dlg.SetMainIcon(DlgMainIcon);
-		dlg.DoModal();
+		dlg.DoModal(GetSafeHwnd());
 	}
 }
 

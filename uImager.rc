@@ -3246,7 +3246,7 @@ END
 STRINGTABLE
 BEGIN
     IDS_MULTILANG_1473      "Camera folder must reside inside the document root directory!"
-    IDS_MULTILANG_1475      "Failed to start the web server, try other HTTP(S) ports and allow them in your firewall!"
+    IDS_MULTILANG_1475      "Failed to start the web server!"
     IDS_MULTILANG_1483      "*** CTRL: Draw <-> Erase ***"
     IDS_MULTILANG_1484      "&Copying...\tCtrl+C"
     IDS_MULTILANG_1485      "&Copy\tCtrl+C"
@@ -3960,7 +3960,7 @@ BEGIN
     IDS_STRING1826          "GB"
     IDS_STRING1828          "Email sent"
     IDS_STRING1829          "Email send failed!"
-    IDS_STRING1830          "check email log file"
+    IDS_STRING1830          "check log file"
     IDS_STRING1831          "%s missing"
     IDS_STRING1832          "Please re-install %s."
     IDS_STRING1833          "Plain Text (Port 25 or 587)"

@@ -1148,9 +1148,13 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			// Go
 			if (!CVideoDeviceDoc::MicroApacheStart(MICROAPACHE_TIMEOUT_MS))
 			{
-				sMsg = ML_STRING(1475, "Failed to start the web server, try other HTTP(S) ports and allow them in your firewall!");
+				sMsg = ML_STRING(1475, "Failed to start the web server!");
 				if (!m_bServiceProcess)
-					::AfxGetMainFrame()->PopupNotificationWnd(APPNAME_NOEXT, sMsg, 0);
+				{
+					CString sMicroApacheLogFile = GetConfigFilesDir();
+					sMicroApacheLogFile += CString(_T("\\")) + MICROAPACHE_LOGNAME_EXT;
+					::AfxGetMainFrame()->PopupNotificationWnd(sMsg, sMicroApacheLogFile, 0);
+				}
 				::LogLine(_T("%s"), sMsg);
 			}
 		}

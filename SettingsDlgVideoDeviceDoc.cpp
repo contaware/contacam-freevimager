@@ -226,7 +226,21 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsEnd()
 		if (m_bStartMicroApache && !CVideoDeviceDoc::MicroApacheStart(MICROAPACHE_TIMEOUT_MS))
 		{
 			EndWaitCursor();
-			::AfxMessageBox(ML_STRING(1475, "Failed to start the web server, try other HTTP(S) ports and allow them in your firewall!"), MB_ICONSTOP);
+			CString sContent;
+			CString sMainInstruction(ML_STRING(1475, "Failed to start the web server!"));
+			// A href without file:/// works because CTaskDialog calls OnHyperlinkClick() 
+			// which invokes ShellExecute(). Note that a correct url would start with
+			// file:/// and have a path with forward slashes only.
+			CString sMicroApacheLogFile = CUImagerApp::GetConfigFilesDir();
+			sMicroApacheLogFile += CString(_T("\\")) + MICROAPACHE_LOGNAME_EXT;
+			sContent.Format(_T("<a href=\"%s\">%s</a>"), sMicroApacheLogFile, ML_STRING(1830, "check log file"));
+			CTaskDialog dlg(sContent,
+							sMainInstruction,
+							APPNAME_NOEXT,
+							TDCBF_OK_BUTTON,
+							TDF_ENABLE_HYPERLINKS | TDF_USE_COMMAND_LINKS | TDF_SIZE_TO_CONTENT);
+			dlg.SetMainIcon(TD_ERROR_ICON);
+			dlg.DoModal(GetSafeHwnd());
 			BeginWaitCursor();
 		}
 	}
