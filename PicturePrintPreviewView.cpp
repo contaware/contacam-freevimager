@@ -990,13 +990,6 @@ BOOL CPicturePrintPreviewView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt
 	CPictureDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-	// When hovering the scale edit box avoid processing wheel 
-	// messages here as the control itself processes them
-	CRect rcScaleEdit;
-	m_pScaleEdit->GetWindowRect(&rcScaleEdit);
-	if (rcScaleEdit.PtInRect(pt))
-		return FALSE;
-
 	// Scroll Horizontal or Vertical?
 	BOOL bScrollHoriz = (MK_SHIFT & nFlags) ? TRUE : FALSE;
 

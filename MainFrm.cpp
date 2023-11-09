@@ -947,42 +947,9 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 		return TRUE; // TWAIN message processed
 	}
 
-	// For Print Preview Mouse Scroll
-	if (pMsg->message == WM_MOUSEWHEEL)
-	{
-		CMDIChildWnd* pChild = MDIGetActive();
-		if (pChild)
-		{
-			CView* pView = pChild->GetActiveView();
-			if (pView && pView->IsKindOf(RUNTIME_CLASS(CPicturePrintPreviewView)))
-			{
-				if (((CPicturePrintPreviewView*)pView)->m_pScaleEdit && 
-					(CWnd::GetFocus() == (CWnd*)(((CPicturePrintPreviewView*)pView)->m_pScaleEdit)))
-				{
-					pView->SetFocus(); // To Remove Focus From CDialogBar's Edit Box in Print Preview Mode
-					pView->SendMessage(WM_MOUSEWHEEL, pMsg->wParam, pMsg->lParam);
-					return TRUE; // Do Not Dispatch
-				}
-				else
-					pView->SendMessage(WM_MOUSEWHEEL, pMsg->wParam, pMsg->lParam);
-			}
-		}
-	}
-	// To Remove Focus From CDialogBar's Edit Box in Print Preview Mode
-	else if (	pMsg->message == WM_LBUTTONDBLCLK ||
-				pMsg->message == WM_LBUTTONDOWN)
-	{
-		CMDIChildWnd* pChild = MDIGetActive();
-		if (pChild)
-		{
-			CView* pView = pChild->GetActiveView();
-			if (pView && pView->IsKindOf(RUNTIME_CLASS(CPicturePrintPreviewView)))
-				pView->SetFocus();
-		}
-	}
 	// App Exit Pressing ESC
 #ifndef VIDEODEVICEDOC
-	else if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_ESCAPE)
+	if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_ESCAPE)
 	{
 		if (!((CUImagerApp*)::AfxGetApp())->AreDocsOpen())
 			PostMessage(WM_CLOSE, 0, 0);
