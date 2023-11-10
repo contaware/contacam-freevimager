@@ -231,9 +231,12 @@ void CSettingsDlgVideoDeviceDoc::ApplySettingsEnd()
 			// A href without file:/// works because CTaskDialog calls OnHyperlinkClick() 
 			// which invokes ShellExecute(). Note that a correct url would start with
 			// file:/// and have a path with forward slashes only.
-			CString sMicroApacheLogFile = CUImagerApp::GetConfigFilesDir();
-			sMicroApacheLogFile += CString(_T("\\")) + MICROAPACHE_LOGNAME_EXT;
-			sContent.Format(_T("<a href=\"%s\">%s</a>"), sMicroApacheLogFile, ML_STRING(1830, "check log file"));
+			CString sMicroapacheConfigFile = CVideoDeviceDoc::MicroApacheGetConfigFileName();
+			CString sMicroapacheLogFile = ::GetDriveAndDirName(sMicroapacheConfigFile) + MICROAPACHE_LOGNAME_EXT;
+			if (::IsExistingFile(sMicroapacheConfigFile) && ::IsExistingFile(sMicroapacheLogFile))
+				sContent.Format(_T("<a href=\"%s\">%s</a>"), sMicroapacheLogFile, ML_STRING(1830, "check log file"));
+			else
+				sContent.Format(ML_STRING(1832, "Please re-install %s."), APPNAME_NOEXT);
 			CTaskDialog dlg(sContent,
 							sMainInstruction,
 							APPNAME_NOEXT,

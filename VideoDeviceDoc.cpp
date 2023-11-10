@@ -6248,7 +6248,7 @@ BOOL CVideoDeviceDoc::MicroApacheStart(DWORD dwTimeoutMs)
 	CString sMicroapachePidFile = sConfigDir + MICROAPACHE_PIDNAME_EXT;
 	::DeleteFile(sMicroapachePidFile);
 
-	// Delete old log file to avoid growing it too much
+	// Delete old log file to only have the entries generated with this start
 	CString sMicroapacheLogFile = sConfigDir + MICROAPACHE_LOGNAME_EXT;
 	::DeleteFile(sMicroapacheLogFile);
 	

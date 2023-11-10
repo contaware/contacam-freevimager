@@ -1151,9 +1151,16 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 				sMsg = ML_STRING(1475, "Failed to start the web server!");
 				if (!m_bServiceProcess)
 				{
-					CString sMicroApacheLogFile = GetConfigFilesDir();
-					sMicroApacheLogFile += CString(_T("\\")) + MICROAPACHE_LOGNAME_EXT;
-					::AfxGetMainFrame()->PopupNotificationWnd(sMsg, sMicroApacheLogFile, 0);
+					CString sMicroapacheConfigFile = CVideoDeviceDoc::MicroApacheGetConfigFileName();
+					CString sMicroapacheLogFile = ::GetDriveAndDirName(sMicroapacheConfigFile) + MICROAPACHE_LOGNAME_EXT;
+					if (::IsExistingFile(sMicroapacheConfigFile) && ::IsExistingFile(sMicroapacheLogFile))
+						::AfxGetMainFrame()->PopupNotificationWnd(sMsg, sMicroapacheLogFile, 0);
+					else
+					{
+						CString sReInstall;
+						sReInstall.Format(ML_STRING(1832, "Please re-install %s."), APPNAME_NOEXT);
+						::AfxGetMainFrame()->PopupNotificationWnd(sMsg, sReInstall, 0);
+					}
 				}
 				::LogLine(_T("%s"), sMsg);
 			}
