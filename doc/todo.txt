@@ -114,7 +114,7 @@ ContaCam open tasks
   
 - Delete button directly on the page where a video is displayed and switch to the
   next video or go back
-  (joerg@joergmahn.de, gthaavik@outlook.com)
+  (joerg@joergmahn.de, gthaavik@outlook.com, vortex2013@hotmail.co.nz)
   
 - More fine tunable relative sensitivity, maybe instead of fixed relative sensitivity,
   make them configurable in absolute value or relative. 
