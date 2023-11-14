@@ -1223,6 +1223,8 @@ BOOL CVideoDeviceDoc::SendMail(	const SendMailConfigurationStruct& Config,
 		sSubject.Replace(_T("%note%"), sNote);
 		if (sBody.IsEmpty())
 			sBody = sName + _T(": ") + ::MakeDateLocalFormat(Time) + _T(" ") + ::MakeTimeLocalFormat(Time, TRUE) + _T(" ") + sNote;
+		if (sBody.GetLength() > MAILPROG_MAX_BODY_LENGTH)
+			sBody.Truncate(MAILPROG_MAX_BODY_LENGTH);
 		switch (Config.m_ConnectionType)
 		{
 			case 0 : sConnectionTypeOption = _T(""); break;				// there is no "Plain Text" mode, the mail program uses STARTTLS if available
@@ -1238,9 +1240,15 @@ BOOL CVideoDeviceDoc::SendMail(	const SendMailConfigurationStruct& Config,
 						Config.m_sHost,
 						sSubject,
 						sBody);
+		
+		// Attachment?
 		if (::GetFileSize64(sFileName).QuadPart > 0)
 			sOptions += _T(" attach -file \"") + sFileName + _T("\"");
-		if (!Config.m_sUsername.IsEmpty() || !Config.m_sPassword.IsEmpty())
+		
+		// Authentication?
+		// Attention: when providing auth, both the -user and the -pass parameters must 
+		//            not be empty, otherwise mailsend fails with no log file created!
+		if (!Config.m_sUsername.IsEmpty() && !Config.m_sPassword.IsEmpty())
 			sOptions += _T(" auth -user \"") + Config.m_sUsername + _T("\" -pass \"") + Config.m_sPassword + _T("\"");
 
 		// Send

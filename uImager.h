@@ -66,6 +66,7 @@
 #define MAILPROG_RELPATH								(CString(MAILPROG_DIR) + CString(_T("\\")) + CString(MAILPROG_FILENAME))
 #define MAILPROG_LOGNAME_EXT							_T("mailsend_test.txt")
 #define MAILPROG_TEST_TIMEOUT_MS						20000U
+#define MAILPROG_MAX_BODY_LENGTH						30000 // params + body length < CreateProcess() limit of 32768
 
 // Php, Css and icons
 #define	PHP_CONFIGNAME_EXT								_T("configuration.php")
