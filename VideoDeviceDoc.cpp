@@ -9149,8 +9149,9 @@ void CVideoDeviceDoc::ConnectRtsp()
 			sPathAndQuery = _T("/h264");
 			break;
 
-		case AMCREST_RTSP:			
-			sPathAndQuery = _T("/cam/realmonitor?channel=1&subtype=0");
+		case AMCREST_RTSP:
+		case LOREX_RTSP:
+			sPathAndQuery = _T("/cam/realmonitor?channel=1&subtype=0"); // channel number starts from 1, for substream use: subtype=1 
 			break;
 
 		case ARECONT_RTSP:			

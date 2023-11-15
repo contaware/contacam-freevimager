@@ -5,6 +5,7 @@ CONTACAM HISTORY
 - Disallow connecting multiple times to the same Camera
 - Restart audio input device in case no audio data reaches us for 30s
 - New settings menu entry to change IP/Host of a network camera
+- Added support for Lorex
 - Updated internal web server to Apache 2.4.57 and PHP 8.2.10
   (Apache and PHP both with OpenSSL 3.1.2)
 - Hardened Apache security by disabling the HTTP TRACE method 

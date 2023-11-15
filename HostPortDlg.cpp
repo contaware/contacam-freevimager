@@ -103,6 +103,7 @@ void CHostPortDlg::InitDeviceTypeModeArrayForCB(CArray<CDeviceTypeModePair>& a)
 	a.Add(CDeviceTypeModePair(_T("Kucam (RTSP)"), (DWORD)CVideoDeviceDoc::KUCAM_RTSP));
 	a.Add(CDeviceTypeModePair(_T("Linksys (RTSP)"), (DWORD)CVideoDeviceDoc::LINKSYS_RTSP));
 	a.Add(CDeviceTypeModePair(_T("Logitech (RTSP)"), (DWORD)CVideoDeviceDoc::LOGITECH_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Lorex (RTSP)"), (DWORD)CVideoDeviceDoc::LOREX_RTSP));
 	a.Add(CDeviceTypeModePair(_T("Monacor 3MP/4MP/5MP/.. Series (RTSP)"), (DWORD)CVideoDeviceDoc::MONACOR_RTSP));
 	a.Add(CDeviceTypeModePair(_T("Monacor 2MP Series (RTSP)"), (DWORD)CVideoDeviceDoc::MONACOR_2MP_RTSP));
 	a.Add(CDeviceTypeModePair(_T("NexGadget (RTSP)"), (DWORD)CVideoDeviceDoc::NEXGADGET_RTSP));

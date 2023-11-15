@@ -584,6 +584,7 @@ public:
 		KUCAM_RTSP = 1135,				// Kucam RTSP
 		LINKSYS_RTSP = 1140,			// Linksys RTSP
 		LOGITECH_RTSP = 1150,			// Logitech RTSP
+		LOREX_RTSP = 1151,				// Lorex RTSP
 		MONACOR_RTSP = 1154,			// Monacor 3MP/4MP/5MP/.. Series RTSP
 		MONACOR_2MP_RTSP = 1155,		// Monacor 2MP Series RTSP
 		NEXGADGET_RTSP = 1157,			// NexGadget RTSP
