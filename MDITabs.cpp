@@ -443,6 +443,12 @@ void CMDITabs::OnMouseMove(UINT nFlags, CPoint point)
 	}
 
 	// Get a message when leaving the client area
+	// Note: newer tab control versions have tab hover display. In their
+	// CTabCtrl::OnMouseMove(), the TrackMouseEvent() function is already
+	// called, so that the following TrackMouseEvent() would not be 
+	// necessary. But to remain compatible with older control versions, 
+	// it does not harm to call TrackMouseEvent() multiple time (only
+	// one OnMouseLeave() gets fired).
 	if (!m_bTracking)
 	{
 		TRACKMOUSEEVENT tme;
@@ -455,7 +461,10 @@ void CMDITabs::OnMouseMove(UINT nFlags, CPoint point)
 }
 
 void CMDITabs::OnMouseLeave()
-{
+{	
+	// Remove the tab hover
+	CTabCtrl::OnMouseLeave();
+
 	m_bTracking = FALSE;
 	m_nCloseHotTabIndex = -1;
 	Invalidate(FALSE);
