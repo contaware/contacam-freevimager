@@ -183,7 +183,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_MDISnap.SetSnapWidth(::SystemDPIScale(8));
 
 	// Create tab control
-	m_wndMDITabs.Create(this, MT_TOP | MT_HIDEWLT2VIEWS);
+	m_wndMDITabs.Create(this, MT_TOP | MT_HIDEWLT2VIEWS); // add MT_IMAGES to display the document icons in the tabs
 
 	// Enable Drag'n'Drop
 	DragAcceptFiles(TRUE);

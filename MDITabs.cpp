@@ -1,11 +1,27 @@
 // Credits: inspired by Christian Rodemeyer's CMDITabs
 
-// BUG
-// In rare cases the tabs are not drawn correctly, only my custom drawn X is shown.
-// Two users reported about that and one time I could experience the problem while
-// running in the debugger: I saw that the title strings were taken correctly, I then
-// tried to redraw, maximize, full-screen, nothing fixed it. But adding a new document
-// fixed the tabs (the difference is that an InsertItem() gets called).
+/* 
+	Open BUG
+
+	In rare cases the tabs are not drawn correctly, only my custom drawn X is shown.
+	Two users reported about that and one time I could experience the problem while
+	running in the debugger: I saw that the title strings were taken correctly from 
+	the documents, I then tried to redraw, maximize, full-screen, nothing fixed it. 
+	Only adding a new document fixed the tabs (the difference is that an InsertItem() 
+	gets called).
+
+	The Win32 documentation for the TCM_GETITEM message under the Remarks section 
+	writes about a curious behaviour:
+	"If the TCIF_TEXT flag is set in the mask member of the TCITEM structure, the 
+	control may change the pszText member of the structure to point to the new text 
+	instead of filling the buffer with the requested text. The control may set the 
+	pszText member to NULL to indicate that no text is associated with the item."
+	https://learn.microsoft.com/windows/win32/controls/tcm-getitem
+	->	could it be that the control's own OnPaint() handler sends a TCM_GETITEM 
+		message to read the text, but it does not take into account that the pointer 
+		it passes can be replaced? Probably not, because when the bug appears, not 
+		only the tab text are missing, but also all the separators are not drawn.
+*/
 
 #include "stdafx.h"
 #include "MainFrm.h"
@@ -88,7 +104,7 @@ afx_msg LRESULT CMDITabs::OnSizeParent(WPARAM, LPARAM lParam)
 
 void CMDITabs::OnSelChange(NMHDR* pNMHDR, LRESULT* pResult)
 {
-	TCITEM item;
+	TCITEM item = {};
 	item.mask = TCIF_PARAM;
 	GetItem(GetCurSel(), &item);
 	::BringWindowToTop(HWND(item.lParam));
@@ -139,15 +155,16 @@ void CMDITabs::Update()
 		}
 	}
 
-	// Loop through all tabs
-	TCITEM item = {};
-	item.iImage = -1;
-	TCHAR szTitle[MAX_PATH] = {};
-	item.pszText = szTitle;
+	// Vars used in the following two loops
+	TCITEM item;
+	TCHAR szTitle[MAX_PATH];
 	int i;
+
+	// Loop through all tabs
 	for (i = GetItemCount(); i--;)
 	{
 		// Get the tab and search it in the child frame windows array
+		memset(&item, 0, sizeof(TCITEM));
 		item.mask = TCIF_PARAM;
 		GetItem(i, &item);
 		int nTabInChildFrameWndArrayPos = -1;
@@ -171,7 +188,8 @@ void CMDITabs::Update()
 		else
 		{
 			// Get tab title from document
-			szTitle[0] = _T('\0');
+			_tcsncpy(szTitle, ML_STRING(1384, "Loading..."), MAX_PATH);
+			szTitle[MAX_PATH - 1] = _T('\0');
 			CMDIChildWnd* pChildFrameWnd = (CMDIChildWnd*)FromHandlePermanent(ChildFrameWndArray[nTabInChildFrameWndArrayPos]);
 			if (pChildFrameWnd != NULL)
 			{
@@ -188,7 +206,14 @@ void CMDITabs::Update()
 				m_images.Replace(i, (HICON)::GetClassLongPtr(ChildFrameWndArray[nTabInChildFrameWndArrayPos], GCLP_HICON));
 
 			// Update tab item
-			item.mask = TCIF_TEXT;
+			memset(&item, 0, sizeof(TCITEM));
+			item.mask = TCIF_TEXT | TCIF_IMAGE | TCIF_PARAM;
+			item.pszText = szTitle;
+			if (m_bImages)
+				item.iImage = i;
+			else
+				item.iImage = -1;
+			item.lParam = LPARAM(ChildFrameWndArray[nTabInChildFrameWndArrayPos]);
 			SetItem(i, &item);
 
 			// If associated view is active make it the current selection
@@ -201,11 +226,12 @@ void CMDITabs::Update()
 	}
 
 	// All remaining child frame windows have to be added as new tabs
-	i = GetItemCount();
+	i = GetItemCount(); // insertion index
 	for (int n = 0; n < ChildFrameWndArray.GetCount(); n++)
 	{
 		// Get tab title from document
-		szTitle[0] = _T('\0');
+		_tcsncpy(szTitle, ML_STRING(1384, "Loading..."), MAX_PATH);
+		szTitle[MAX_PATH - 1] = _T('\0');
 		CMDIChildWnd* pChildFrameWnd = (CMDIChildWnd*)FromHandlePermanent(ChildFrameWndArray[n]);
 		if (pChildFrameWnd != NULL)
 		{
@@ -222,9 +248,13 @@ void CMDITabs::Update()
 			m_images.Add((HICON)::GetClassLongPtr(ChildFrameWndArray[n], GCLP_HICON));
 
 		// Add tab item
-		item.mask = TCIF_TEXT | TCIF_PARAM | (m_bImages ? TCIF_IMAGE : 0);
+		memset(&item, 0, sizeof(TCITEM));
+		item.mask = TCIF_TEXT | TCIF_IMAGE | TCIF_PARAM;
+		item.pszText = szTitle;
 		if (m_bImages)
 			item.iImage = i;
+		else
+			item.iImage = -1;
 		item.lParam = LPARAM(ChildFrameWndArray[n]);
 		InsertItem(i, &item);
 
@@ -351,14 +381,10 @@ void CMDITabs::Create(CMainFrame* pMainFrame, DWORD dwStyle)
 	m_bImages = (dwStyle & MT_IMAGES) != 0;
 	if (m_bImages)
 	{
-		if (m_images.GetSafeHandle()) 
-		{
+		if (m_images.GetSafeHandle())
 			m_images.SetImageCount(0);
-		}
 		else    
-		{
 			m_images.Create(::SystemDPIScale(16), ::SystemDPIScale(16), ILC_COLORDDB | ILC_MASK, 1, 1);
-		}
 		SetImageList(&m_images);
 	}
 
@@ -388,7 +414,7 @@ void CMDITabs::OnLButtonDown(UINT nFlags, CPoint point)
 	int nTabIndex = HitTest(&tcHit);
 	if (GetCloseBkgRect(nTabIndex).PtInRect(point))
 	{
-		TCITEM item;
+		TCITEM item = {};
 		item.mask = TCIF_PARAM;
 		GetItem(nTabIndex, &item);
 		HWND hWnd = HWND(item.lParam);
@@ -443,10 +469,9 @@ void CMDITabs::OnContextMenu(CWnd* pWnd, CPoint point)
 	int i = HitTest(&hit);
 	if (i >= 0) 
 	{
-		TCITEM item;
+		TCITEM item = {};
 		item.mask = TCIF_PARAM;
 		GetItem(i, &item);
-
 		HWND hWnd = HWND(item.lParam);
 		SetCurSel(i);
 		::BringWindowToTop(hWnd);
