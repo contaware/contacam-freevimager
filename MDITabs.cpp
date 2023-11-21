@@ -289,11 +289,9 @@ void CMDITabs::OnPaint()
 		return;
 
 	// Draw the control as usual
-	int nSavedDC = dc.SaveDC();
 	_AFX_THREAD_STATE* pThreadState = ::AfxGetThreadState();
 	pThreadState->m_lastSentMsg.wParam = WPARAM(HDC(dc));
 	Default();
-	dc.RestoreDC(nSavedDC);
 
 	// And paint also the Close Cross
 	int nPadding = ::SystemDPIScale(CLOSE_CROSS_PADDING);
