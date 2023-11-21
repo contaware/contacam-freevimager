@@ -363,7 +363,7 @@ void CMDITabs::Create(CMainFrame* pMainFrame, DWORD dwStyle)
 	m_nMinViews = (dwStyle & MT_HIDEWLT2VIEWS) ? 2 : 1;
 
 	// Create tab
-	CTabCtrl::Create(WS_CHILD | WS_VISIBLE | (m_bTop ? 0 : TCS_BOTTOM) | TCS_SINGLELINE | TCS_FOCUSNEVER | TCS_FORCEICONLEFT | WS_CLIPSIBLINGS,
+	CTabCtrl::Create(WS_CHILD | WS_VISIBLE | (m_bTop ? 0 : TCS_BOTTOM) | TCS_SINGLELINE | TCS_FOCUSNEVER | TCS_FORCEICONLEFT | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
 					CRect(0, 0, 0, 0), pMainFrame, 42);
 	ModifyStyleEx(0, WS_EX_CLIENTEDGE);
 	
