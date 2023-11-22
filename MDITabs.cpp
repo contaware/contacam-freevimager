@@ -27,6 +27,7 @@
 #include "MainFrm.h"
 #include "uImagerDoc.h"
 #include "MDITabs.h"
+#include <afxpriv.h> // for WM_SIZEPARENT
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -356,6 +357,8 @@ void CMDITabs::OnNcPaint()
 
 void CMDITabs::Create(CMainFrame* pMainFrame, DWORD dwStyle)
 {
+	ASSERT_VALID(pMainFrame);
+
 	// Init vars
 	m_bTop = (dwStyle & MT_TOP);
 	m_nMinViews = (dwStyle & MT_HIDEWLT2VIEWS) ? 2 : 1;
@@ -368,12 +371,14 @@ void CMDITabs::Create(CMainFrame* pMainFrame, DWORD dwStyle)
 	// Set font
 	NONCLIENTMETRICS ncm = {sizeof(NONCLIENTMETRICS)};
 	VERIFY(::SystemParametersInfo(SPI_GETNONCLIENTMETRICS, ncm.cbSize, &ncm, 0));
+	if ((HFONT)m_Font)
+		m_Font.DeleteObject();
 	m_Font.CreateFontIndirect(&(ncm.lfMessageFont));
 	SetFont(&m_Font, FALSE);
 
 	// Manipulate Z-order so, that our tabctrl is above the mdi client, but below any status bar
 	::SetWindowPos(m_hWnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-	::SetWindowPos(pMainFrame->m_MDIClientWnd.GetSafeHwnd(), m_hWnd, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+	::SetWindowPos(pMainFrame->m_hWndMDIClient, m_hWnd, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
 	// Init images
 	m_bImages = (dwStyle & MT_IMAGES) != 0;
