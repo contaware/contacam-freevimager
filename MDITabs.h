@@ -42,6 +42,8 @@ private:
 	BOOL       m_bTop;
 	BOOL       m_bTracking;
 	int        m_nCloseHotTabIndex;
+	BOOL       m_bDragOnHold;
+	int        m_nDragTabIndex;
 	CFont      m_Font;
 	BOOL       m_bInUpdate;
 
@@ -52,6 +54,8 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg void OnNcPaint();
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+	afx_msg void OnCaptureChanged(CWnd*);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnMouseLeave();
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);

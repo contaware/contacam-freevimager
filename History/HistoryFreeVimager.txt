@@ -2,6 +2,7 @@ FREEVIMAGER HISTORY
 
 9.9.23 (Month XXth 2023)
 
+- Possibility to change the tabs order by dragging them
 - Fixed "Invalid crop request" error happening for some odd sized jpegs
 - Horizontal scroll support for Logitech MX Master and MX Anywhere
 

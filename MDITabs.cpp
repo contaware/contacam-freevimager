@@ -52,6 +52,8 @@ CMDITabs::CMDITabs()
 	m_bTop    = FALSE;
 	m_bTracking = FALSE;
 	m_nCloseHotTabIndex = -1;
+	m_bDragOnHold = FALSE;
+	m_nDragTabIndex = -1;
 	m_bInUpdate = FALSE;
 }
 
@@ -61,6 +63,8 @@ BEGIN_MESSAGE_MAP(CMDITabs, CTabCtrl)
 	ON_WM_PAINT()
 	ON_WM_NCPAINT()
 	ON_WM_LBUTTONDOWN()
+	ON_WM_LBUTTONUP()
+	ON_WM_CAPTURECHANGED()
 	ON_WM_MOUSEMOVE()
 	ON_WM_MOUSELEAVE()
 	ON_WM_CONTEXTMENU()
@@ -415,6 +419,8 @@ void CMDITabs::OnLButtonDown(UINT nFlags, CPoint point)
 	TCHITTESTINFO tcHit;
 	tcHit.pt = point;
 	int nTabIndex = HitTest(&tcHit);
+
+	// Close?
 	if (GetCloseBkgRect(nTabIndex).PtInRect(point))
 	{
 		TCITEM item = {};
@@ -424,7 +430,44 @@ void CMDITabs::OnLButtonDown(UINT nFlags, CPoint point)
 		::SendMessage(hWnd, WM_SYSCOMMAND, SC_CLOSE, 0);
 		return; // return without calling base class handler
 	}
-	CTabCtrl::OnLButtonDown(nFlags, point); // activate tab
+
+	// Start the tab drag?
+	if (nTabIndex >= 0)
+	{
+		m_nDragTabIndex = nTabIndex;
+		m_bDragOnHold = FALSE;
+		SetCapture();
+	}
+
+	// Activate tab
+	CTabCtrl::OnLButtonDown(nFlags, point);
+}
+
+void CMDITabs::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	// Release the mouse capture
+	if (m_nDragTabIndex >= 0)
+		ReleaseCapture();
+
+	CTabCtrl::OnLButtonUp(nFlags, point);
+}
+
+void CMDITabs::OnCaptureChanged(CWnd *pWnd)
+{
+	/*
+		Sent to this window when losing the mouse capture,
+		for example when pressing ALT+TAB, but also received
+		in response to our ReleaseCapture() call.
+	*/
+
+	// Stop the tab drag
+	if (m_nDragTabIndex >= 0)
+	{
+		m_nDragTabIndex = -1;
+		m_bDragOnHold = FALSE;
+	}
+
+	CTabCtrl::OnCaptureChanged(pWnd);
 }
 
 void CMDITabs::OnMouseMove(UINT nFlags, CPoint point)
@@ -432,34 +475,82 @@ void CMDITabs::OnMouseMove(UINT nFlags, CPoint point)
 	// Do the tab hover
 	CTabCtrl::OnMouseMove(nFlags, point);
 		
-	// Update m_nCloseHotTabIndex and invalidate for painting 
 	TCHITTESTINFO tcHit;
-	tcHit.pt = point;
-	int nTabIndex = HitTest(&tcHit);
-	int nCloseHotTabIndex = -1;
-	if (GetCloseBkgRect(nTabIndex).PtInRect(point))
-		nCloseHotTabIndex = nTabIndex;
-	if (nCloseHotTabIndex != m_nCloseHotTabIndex)
-	{
-		m_nCloseHotTabIndex = nCloseHotTabIndex;
-		Invalidate(FALSE);
-	}
+	int nTabIndex;
 
-	// Get a message when leaving the client area
-	// Note: newer tab control versions have tab hover display. In their
-	// CTabCtrl::OnMouseMove(), the TrackMouseEvent() function is already
-	// called, so that the following TrackMouseEvent() would not be 
-	// necessary. But to remain compatible with older control versions, 
-	// it does not harm to call TrackMouseEvent() multiple time (only
-	// one OnMouseLeave() gets fired).
-	if (!m_bTracking)
+	// Do the tab drag
+	if (m_nDragTabIndex >= 0)
 	{
-		TRACKMOUSEEVENT tme;
-		tme.cbSize = sizeof(tme);
-		tme.hwndTrack = m_hWnd;
-		tme.dwFlags = TME_LEAVE;
-		tme.dwHoverTime = 0;
-		m_bTracking = ::TrackMouseEvent(&tme);
+		tcHit.pt.x = point.x;
+		tcHit.pt.y = m_height / 2; // in the middle of the tab
+		nTabIndex = HitTest(&tcHit);
+		if (nTabIndex >= 0)
+		{
+			if (nTabIndex == m_nDragTabIndex)
+				m_bDragOnHold = FALSE; // ok we are over our tab, re-enable dragging
+			else if (!m_bDragOnHold)
+			{
+				// Init items
+				TCITEM itemEnd = {};
+				TCHAR szEnd[MAX_PATH];
+				itemEnd.cchTextMax = MAX_PATH;
+				itemEnd.pszText = szEnd;
+				itemEnd.mask = TCIF_TEXT | TCIF_IMAGE | TCIF_PARAM;
+				TCITEM itemStart = {};
+				TCHAR szStart[MAX_PATH];
+				itemStart.cchTextMax = MAX_PATH;
+				itemStart.pszText = szStart;
+				itemStart.mask = TCIF_TEXT | TCIF_IMAGE | TCIF_PARAM;
+
+				// Swap items
+				BOOL bItemEndOK = GetItem(nTabIndex, &itemEnd);
+				BOOL bItemStartOK = GetItem(m_nDragTabIndex, &itemStart);
+				if (bItemEndOK)
+					SetItem(m_nDragTabIndex, &itemEnd);
+				if (bItemStartOK)
+					SetItem(nTabIndex, &itemStart);
+
+				// Update drag tab index and suspend dragging
+				m_nDragTabIndex = nTabIndex;
+				m_bDragOnHold = TRUE;
+
+				// Update current selection
+				SetCurSel(nTabIndex);
+			}
+		}
+	}
+	// Do the close button hover
+	else
+	{
+		tcHit.pt = point;
+		nTabIndex = HitTest(&tcHit);
+
+		// Update m_nCloseHotTabIndex and invalidate for painting 
+		int nCloseHotTabIndex = -1;
+		if (GetCloseBkgRect(nTabIndex).PtInRect(point))
+			nCloseHotTabIndex = nTabIndex;
+		if (nCloseHotTabIndex != m_nCloseHotTabIndex)
+		{
+			m_nCloseHotTabIndex = nCloseHotTabIndex;
+			Invalidate(FALSE);
+		}
+
+		// Get a message when leaving the client area
+		// Note: newer tab control versions have tab hover display. In their
+		// CTabCtrl::OnMouseMove(), the TrackMouseEvent() function is already
+		// called, so that the following TrackMouseEvent() would not be 
+		// necessary. But to remain compatible with older control versions, 
+		// it does not harm to call TrackMouseEvent() multiple time (only
+		// one OnMouseLeave() gets fired).
+		if (!m_bTracking)
+		{
+			TRACKMOUSEEVENT tme;
+			tme.cbSize = sizeof(tme);
+			tme.hwndTrack = m_hWnd;
+			tme.dwFlags = TME_LEAVE;
+			tme.dwHoverTime = 0;
+			m_bTracking = ::TrackMouseEvent(&tme);
+		}
 	}
 }
 
