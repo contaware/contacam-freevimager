@@ -52,7 +52,7 @@ CMDITabs::CMDITabs()
 	m_bTop    = FALSE;
 	m_bTracking = FALSE;
 	m_nCloseHotTabIndex = -1;
-	m_bDragOnHold = FALSE;
+	m_bDragOnHold = TRUE;
 	m_nDragTabIndex = -1;
 	m_bInUpdate = FALSE;
 }
@@ -431,11 +431,16 @@ void CMDITabs::OnLButtonDown(UINT nFlags, CPoint point)
 		return; // return without calling base class handler
 	}
 
-	// Start the tab drag?
+	// Prepare for tab drag?
 	if (nTabIndex >= 0)
 	{
+		// Store the tab to drag, and before starting, wait until OnMouseMove() 
+		// confirms that we really are over that tab. This check is necessary, 
+		// because the below CTabCtrl::OnLButtonDown() may scroll the tabs and
+		// then also fire OnMouseMove() messages, but we do not want dragging 
+		// happening with only a click!
 		m_nDragTabIndex = nTabIndex;
-		m_bDragOnHold = FALSE;
+		m_bDragOnHold = TRUE;
 		SetCapture();
 	}
 
@@ -464,7 +469,7 @@ void CMDITabs::OnCaptureChanged(CWnd *pWnd)
 	if (m_nDragTabIndex >= 0)
 	{
 		m_nDragTabIndex = -1;
-		m_bDragOnHold = FALSE;
+		m_bDragOnHold = TRUE;
 	}
 
 	CTabCtrl::OnCaptureChanged(pWnd);
@@ -487,7 +492,7 @@ void CMDITabs::OnMouseMove(UINT nFlags, CPoint point)
 		if (nTabIndex >= 0)
 		{
 			if (nTabIndex == m_nDragTabIndex)
-				m_bDragOnHold = FALSE; // ok we are over our tab, re-enable dragging
+				m_bDragOnHold = FALSE; // ok we are over our tab, enable dragging
 			else if (!m_bDragOnHold)
 			{
 				// Init items
