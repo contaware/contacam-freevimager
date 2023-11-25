@@ -530,14 +530,28 @@ void CMDITabs::OnMouseMove(UINT nFlags, CPoint point)
 		tcHit.pt = point;
 		nTabIndex = HitTest(&tcHit);
 
-		// Update m_nCloseHotTabIndex and invalidate for painting 
-		int nCloseHotTabIndex = -1;
-		if (GetCloseBkgRect(nTabIndex).PtInRect(point))
-			nCloseHotTabIndex = nTabIndex;
-		if (nCloseHotTabIndex != m_nCloseHotTabIndex)
+		// Update m_nCloseHotTabIndex and invalidate for painting
+		int nPrevCloseHotTabIndex = m_nCloseHotTabIndex;
+		int nNewCloseHotTabIndex;
+		CRect rcNewCloseBkgRect(GetCloseBkgRect(nTabIndex));
+		if (rcNewCloseBkgRect.PtInRect(point))
+			nNewCloseHotTabIndex = nTabIndex;
+		else
+			nNewCloseHotTabIndex = -1;
+		if (nNewCloseHotTabIndex != nPrevCloseHotTabIndex)
 		{
-			m_nCloseHotTabIndex = nCloseHotTabIndex;
-			Invalidate(FALSE);
+			m_nCloseHotTabIndex = nNewCloseHotTabIndex;
+			if (nPrevCloseHotTabIndex >= 0)
+			{
+				// Invalidate rect to remove the previous close button hover
+				CRect rcPrevCloseBkgRect(GetCloseBkgRect(nPrevCloseHotTabIndex));
+				InvalidateRect(&rcPrevCloseBkgRect, FALSE);
+			}
+			if (nNewCloseHotTabIndex >= 0)
+			{
+				// Invalidate rect to show the new close button hover
+				InvalidateRect(&rcNewCloseBkgRect, FALSE);
+			}
 		}
 
 		// Get a message when leaving the client area
@@ -564,9 +578,20 @@ void CMDITabs::OnMouseLeave()
 	// Remove the tab hover
 	CTabCtrl::OnMouseLeave();
 
+	// Clear tracking flag
 	m_bTracking = FALSE;
-	m_nCloseHotTabIndex = -1;
-	Invalidate(FALSE);
+
+	// Remove the previous close button hover
+	int nPrevCloseHotTabIndex = m_nCloseHotTabIndex;
+	if (nPrevCloseHotTabIndex >= 0)
+	{
+		// Clear index
+		m_nCloseHotTabIndex = -1;
+
+		// Invalidate rect to remove the previous close button hover
+		CRect rcPrevCloseBkgRect(GetCloseBkgRect(nPrevCloseHotTabIndex));
+		InvalidateRect(&rcPrevCloseBkgRect, FALSE);
+	}
 }
 
 void CMDITabs::OnContextMenu(CWnd* pWnd, CPoint point) 
