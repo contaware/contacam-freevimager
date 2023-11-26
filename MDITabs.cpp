@@ -39,7 +39,6 @@ static char THIS_FILE[] = __FILE__;
 #define TABS_PADDING_X			26
 #define TABS_PADDING_Y			5
 #define CLOSE_THICKNESS			1
-#define CLOSE_COLOR				RGB(0x30,0x30,0x30)
 #define CLOSE_HOT_COLOR			RGB(0xff,0xff,0xff)
 #define CLOSE_HOT_BKGCOLOR		RGB(0xe8,0x11,0x23)
 #define CLOSE_BKG_PADDING		4
@@ -312,7 +311,7 @@ void CMDITabs::OnPaint()
 			Pen.CreatePen(PS_SOLID, nPenThickness, CLOSE_HOT_COLOR);
 		}
 		else
-			Pen.CreatePen(PS_SOLID, nPenThickness, CLOSE_COLOR);
+			Pen.CreatePen(PS_SOLID, nPenThickness, ::GetSysColor(COLOR_WINDOWTEXT));
 		CPen* pOldPen = dc.SelectObject(&Pen);
 		int left = rcItem.right - rcItem.Height() + nPadding;
 		int top = rcItem.top + nPadding;
