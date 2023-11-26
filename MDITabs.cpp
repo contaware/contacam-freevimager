@@ -42,7 +42,7 @@ static char THIS_FILE[] = __FILE__;
 #define CLOSE_HOT_COLOR			RGB(0xff,0xff,0xff)
 #define CLOSE_HOT_BKGCOLOR		RGB(0xe8,0x11,0x23)
 #define CLOSE_BKG_PADDING		4
-#define CLOSE_CROSS_PADDING		7
+#define CLOSE_CROSS_PADDING		8
 
 CMDITabs::CMDITabs()
 {
