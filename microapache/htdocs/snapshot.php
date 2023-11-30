@@ -101,7 +101,7 @@ if (!isset($_GET['menu']) || $_GET['menu'] != 'no') {
 	if (isset($_SESSION['username'])) {
 		echo "<a href=\"" . getParentUrl() . "authenticate.php\">[&#x2192;</a>&nbsp;";
 	}
-	echo "<a style=\"font-size: 20px;\" href=\"" . getParentUrl() . "\" target=\"_top\">&#x2302;</a>&nbsp;";
+	echo "<a style=\"font-size: 20px;\" href=\"" . getParentUrl() . "\">&#x2302;</a>&nbsp;";
 	echo "</span>\n";
 	echo "</div>\n";
 }
