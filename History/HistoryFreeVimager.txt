@@ -4,7 +4,8 @@ FREEVIMAGER HISTORY
 
 - Possibility to change the tabs order by dragging them
 - Fixed "Invalid crop request" error happening for some odd sized jpegs
-- Horizontal scroll support for Logitech MX Master and MX Anywhere
+- Horizontal scroll support for Logitech MX Master, Logitech MX Anywhere, 
+  Logitech G502 Lightspeed, ...
 
 9.9.22 (May 16th 2022)
 
