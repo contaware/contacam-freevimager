@@ -88,9 +88,9 @@ if (isset($_GET['clickurl']))
 else
 	$clickurl = getParentUrl();
 if ($full_stretch)
-	echo "<img id=\"campictureid\" src=\"" . htmlspecialchars($pollfilename . time()) . "\" onclick=\"window.top.location.href = '" . javascriptspecialchars($clickurl) . "';\" alt=\"Snapshot Image\" />\n";
+	echo "<img id=\"campictureid\" src=\"" . htmlspecialchars($pollfilename . time()) . "\" onclick=\"window.location.href = '" . javascriptspecialchars($clickurl) . "';\" alt=\"Snapshot Image\" />\n";
 else
-	echo "<img style=\"object-fit: contain\" id=\"campictureid\" src=\"" . htmlspecialchars($pollfilename . time()) . "\" onclick=\"window.top.location.href = '" . javascriptspecialchars($clickurl) . "';\" alt=\"Snapshot Image\" />\n";
+	echo "<img style=\"object-fit: contain\" id=\"campictureid\" src=\"" . htmlspecialchars($pollfilename . time()) . "\" onclick=\"window.location.href = '" . javascriptspecialchars($clickurl) . "';\" alt=\"Snapshot Image\" />\n";
 echo "<script type=\"text/javascript\">\n";
 echo "//<![CDATA[\n";
 echo "startClock();\n";
