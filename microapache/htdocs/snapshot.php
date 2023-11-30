@@ -113,7 +113,17 @@ else
 	$clickurl = "snapshotfull.php?clickurl=" . urlencode(urldecode($_SERVER['REQUEST_URI']));
 echo "<form name=\"form1\">\n";
 echo "<div id=\"imgcontainer\">\n";
-echo "<img id=\"campictureid\" src=\"" . htmlspecialchars($pollfilename . time()) . "\" onclick=\"window.top.location.href = '" . javascriptspecialchars($clickurl) . "';\" alt=\"Snapshot Image\" width=\"$width\" height=\"$height\" />\n";
+if (isset($_GET['menu']) && $_GET['menu'] == 'no'	&& 
+	isset($_GET['title']) && $_GET['title'] == 'no'	&&
+	isset($_GET['countdown']) && $_GET['countdown'] == 'no') {
+	// When not showing menu, title and countdown we are iframed
+	// and thus we must use the parent window as click target
+	echo "<img id=\"campictureid\" src=\"" . htmlspecialchars($pollfilename . time()) . "\" onclick=\"window.parent.location.href = '" . javascriptspecialchars($clickurl) . "';\" alt=\"Snapshot Image\" width=\"$width\" height=\"$height\" />\n";
+}
+else {
+	// Use the same window level as click target
+	echo "<img id=\"campictureid\" src=\"" . htmlspecialchars($pollfilename . time()) . "\" onclick=\"window.location.href = '" . javascriptspecialchars($clickurl) . "';\" alt=\"Snapshot Image\" width=\"$width\" height=\"$height\" />\n";
+}
 echo "</div>\n";
 if (!isset($_GET['countdown']) || $_GET['countdown'] != 'no')
 	echo "<div id=\"imagereloading\">" . IMAGERELOADIN . " <input type=\"text\" readonly=\"readonly\" id=\"clock\" name=\"clock\" size=\"3\" value=\"\" /> " . SECONDS . "</div>\n";
