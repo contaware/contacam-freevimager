@@ -1,6 +1,6 @@
 CONTACAM HISTORY
 
-9.9.23 (Month XXth 2023)
+9.9.23 (December 11th 2023)
 
 - Disallow connecting multiple times to the same Camera
 - Restart audio input device in case no audio data reaches us for 30s

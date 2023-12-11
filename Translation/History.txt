@@ -1,6 +1,6 @@
 TRANSLATIONS HISTORY
 
-9.9.23 (Month XXth 2023)
+9.9.23 (December 11th 2023)
 
 - Minor changes
 
