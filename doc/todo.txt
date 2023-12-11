@@ -131,3 +131,6 @@ ContaCam open tasks
   I want to know when it stops blinking or recording a lawn sprinkler, I want to know 
   when it turns off and send me a notification.
   (jgalegz@gmail.com)
+
+- Support Windows 10 Dark mode
+  (honeydaler@gmail.com)
