@@ -5,9 +5,6 @@ FreeVimager open tasks
   possible to save to pdf and print all pages from the pdf viewer.
   (stanislav.soyko@gmail.com)
 
-- Possibility to re-order the tabs, that's obviously also for ContaCam.
-  (kryden@gmail.com)
-  
 
 ContaCam "will not implement" list
 ----------------------------------
@@ -16,9 +13,10 @@ ContaCam "will not implement" list
   -> directshow graph building for H.264 support is intentionally
   crap and difficult, not wanting to play their game...
   
-- Rotate by 0,90,180,270 degrees
+- Rotate by 90 or 270 degrees
   (robert.heberlein@gmx.de, GVLLakefront+contacam@gmail.com, 
-  javier.sevilla@dlongwood.com, khz-it@yandex.ru, thex.rob@gmail.com)
+  javier.sevilla@dlongwood.com, khz-it@yandex.ru, thex.rob@gmail.com,
+  esbdarko@gmail.com)
   -> this would imply a lot of changes to the source code, it's not worth
   the effort given the fact that most cams can do that in their web interfaces
   
@@ -120,6 +118,10 @@ ContaCam open tasks
   make them configurable in absolute value or relative. 
   Important to remain backwards compatible!
   
+- Would it be possible to make an option in ContaCam to look for fast moving meteors, 
+  and not slow moving airplanes and satellites, or slow clouds moving against the moon?
+  (bigelowisland@gmail.com)
+
 - Directional motion detection: only trigger if rectangles are detected
   sequentially like G1 -> G5 -> G8. It could be used to distinguish between entering or
   existing a gate/property.
@@ -134,3 +136,6 @@ ContaCam open tasks
 
 - Support Windows 10 Dark mode
   (honeydaler@gmail.com)
+  
+- For 100% motion rectangles write 100 when drawing them, otherwise it's 
+  difficult to distinguish them from the ones with no motion sensitivity.
