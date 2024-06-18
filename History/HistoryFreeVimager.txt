@@ -1,5 +1,9 @@
 FREEVIMAGER HISTORY
 
+9.9.24 (Month XXth 2024)
+
+- ...
+
 9.9.23 (December 11th 2023)
 
 - Possibility to change the tabs order by dragging them
