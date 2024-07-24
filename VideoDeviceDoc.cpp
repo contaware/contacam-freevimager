@@ -9214,8 +9214,12 @@ void CVideoDeviceDoc::ConnectRtsp()
 			break;
 
 		case HIKVISION_RTSP:
+			sPathAndQuery = _T("/Streaming/Channels/101"); // substream is: /Streaming/Channels/102
+			break;                                         // Note: the first number is the channel
+
+		case HIKVISION_OLD_RTSP:
 		case TRENDNET_RTSP:			
-			sPathAndQuery = _T("/Streaming/Channels/1");
+			sPathAndQuery = _T("/Streaming/Channels/1"); // substream is: /Streaming/Channels/2
 			break;
 
 		// av_h264_jpeg_ulaw.sdp will serve H.264 if OpenH264 has been downloaded

@@ -578,7 +578,8 @@ public:
 		GEOVISION_RTSP = 1125,			// GeoVision RTSP
 		HEIMVISION_RTSP = 1127,			// HeimVision RTSP
 		HIKAM_RTSP = 1128,				// HiKam RTSP
-		HIKVISION_RTSP = 1130,			// Hikvision RTSP
+		HIKVISION_RTSP = 1129,			// Hikvision RTSP
+		HIKVISION_OLD_RTSP = 1130,		// Hikvision old RTSP
 		IPWEBCAM_ANDROID_RTSP = 1132,	// IP Webcam (Pro) for Android RTSP
 		JIDETECH_RTSP = 1133,			// JideTech RTSP
 		KUCAM_RTSP = 1135,				// Kucam RTSP
