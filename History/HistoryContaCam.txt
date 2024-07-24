@@ -2,6 +2,7 @@ CONTACAM HISTORY
 
 9.9.24 (Month XXth 2024)
 
+- Added support for Dekco
 - Updated internal web server to Apache 2.4.59 and PHP 8.2.20
   (Apache and PHP both with OpenSSL 3.1.6)
 

@@ -9213,6 +9213,7 @@ void CVideoDeviceDoc::ConnectRtsp()
 			sPathAndQuery = _T("/0/av0"); // substream is: /0/av1
 			break;
 
+		case DEKCO_RTSP:
 		case HIKVISION_RTSP:
 			sPathAndQuery = _T("/Streaming/Channels/101"); // substream is: /Streaming/Channels/102
 			break;                                         // Note: the first number is the channel
