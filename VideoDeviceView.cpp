@@ -333,117 +333,44 @@ int CVideoDeviceView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 }
 
-__forceinline void CVideoDeviceView::DrawZoneSensitivity(int i, HDC hDC, const RECT& rcDetZone, int n, int m, int s, HBRUSH hBkgndBrush)
+__forceinline void CVideoDeviceView::DrawZoneSensitivity(int i, HDC hDC, const RECT& rcDetZone, int n, int m,
+		HBRUSH hBkgndBrush, HBRUSH hBrush5, HBRUSH hBrush10, HBRUSH hBrush25, HBRUSH hBrush50, HBRUSH hBrush100)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-	// Note: digits size n can be 0, 2, 4, 6, 8, 10, ...
-	//       margin m can be 0, 1, 2, 3, ...
-	//       digits spacing s can be 0, 1, 2, 3, ...
-
+	// Center
 	RECT rc;
 	POINT ptCenter;
 	ptCenter.x = rcDetZone.left + (rcDetZone.right - rcDetZone.left) / 2;
 	ptCenter.y = rcDetZone.top + (rcDetZone.bottom - rcDetZone.top) / 2;
 
-	// 5 %
-	if (pDoc->m_DoMovementDetection[i] >= 20)
+	// Fill
+	// - size n:    can be 0, 1, 2, 3, ...
+	// - margin m:  can be 0, 1, 2, 3, ...
+	// - FillRect() includes left and top, but excludes right and bottom.
+	if (pDoc->m_DoMovementDetection[i] >= 1)
 	{
-		// Fill background		
-		rc.left = ptCenter.x - (3+n+m+s);
-		rc.top = ptCenter.y - (3+n+m+s);
-		rc.right = ptCenter.x + (4+n+m+s);
-		rc.bottom = ptCenter.y + (4+n+m+s);
+		rc.left = ptCenter.x - (3+n+m);
+		rc.top = ptCenter.y - (3+n+m);
+		rc.right = ptCenter.x + (4+n+m);
+		rc.bottom = ptCenter.y + (4+n+m);
 		::FillRect(hDC, &rc, hBkgndBrush);
-
-		// Draw a 5
-		::MoveToEx(hDC, ptCenter.x + 1 + (n/2), ptCenter.y - (2+n), NULL);
-		::LineTo(hDC, ptCenter.x - (n/2), ptCenter.y - (2+n));
-		::LineTo(hDC, ptCenter.x - (n/2), ptCenter.y);
-		::LineTo(hDC, ptCenter.x + 1 + (n/2), ptCenter.y);
-		::LineTo(hDC, ptCenter.x + 1 + (n/2), ptCenter.y + (2+n));
-		::LineTo(hDC, ptCenter.x - 1 - (n/2), ptCenter.y + (2+n));
+		rc.left = ptCenter.x - (2+n);
+		rc.top = ptCenter.y - (2+n);
+		rc.right = ptCenter.x + (3+n);
+		rc.bottom = ptCenter.y + (3+n);
 	}
-	// 10 %
-	else if (pDoc->m_DoMovementDetection[i] >= 10)
-	{
-		// Fill background		
-		rc.left = ptCenter.x - (3+n+m+s);
-		rc.top = ptCenter.y - (3+n+m+s);
-		rc.right = ptCenter.x + (4+n+m+s);
-		rc.bottom = ptCenter.y + (4+n+m+s);
-		::FillRect(hDC, &rc, hBkgndBrush);
-
-		// Draw a 1
-		ptCenter.x -= s; // spacing between digits
-		::MoveToEx(hDC, ptCenter.x - (2+n/2), ptCenter.y - (1+n/2), NULL);
-		::LineTo(hDC, ptCenter.x - 1, ptCenter.y - (2+n));
-		::LineTo(hDC, ptCenter.x - 1, ptCenter.y + (3+n));
-
-		// Draw a 0
-		ptCenter.x += 2 * s; // spacing between digits
-		::MoveToEx(hDC, ptCenter.x + (2+n), ptCenter.y - (2+n), NULL);
-		::LineTo(hDC, ptCenter.x + 1, ptCenter.y - (2+n));
-		::LineTo(hDC, ptCenter.x + 1, ptCenter.y + (2+n));
-		::LineTo(hDC, ptCenter.x + (2+n), ptCenter.y + (2+n));
-		::LineTo(hDC, ptCenter.x + (2+n), ptCenter.y - (2+n));
-	}
-	// 25 %
-	else if (pDoc->m_DoMovementDetection[i] >= 4)
-	{
-		// Fill background		
-		rc.left = ptCenter.x - (3+n+m+s);
-		rc.top = ptCenter.y - (3+n+m+s);
-		rc.right = ptCenter.x + (4+n+m+s);
-		rc.bottom = ptCenter.y + (4+n+m+s);
-		::FillRect(hDC, &rc, hBkgndBrush);
-
-		// Draw a 2
-		ptCenter.x -= s; // spacing between digits
-		::MoveToEx(hDC, ptCenter.x - (2+n), ptCenter.y - (2+n), NULL);
-		::LineTo(hDC, ptCenter.x - 1, ptCenter.y - (2+n));
-		::LineTo(hDC, ptCenter.x - 1, ptCenter.y);
-		::LineTo(hDC, ptCenter.x - (2+n), ptCenter.y);
-		::LineTo(hDC, ptCenter.x - (2+n), ptCenter.y + (2+n));
-		::LineTo(hDC, ptCenter.x, ptCenter.y + (2+n));
-
-		// Draw a 5
-		ptCenter.x += 2 * s; // spacing between digits
-		::MoveToEx(hDC, ptCenter.x + (2+n), ptCenter.y - (2+n), NULL);
-		::LineTo(hDC, ptCenter.x + 1, ptCenter.y - (2+n));
-		::LineTo(hDC, ptCenter.x + 1, ptCenter.y);
-		::LineTo(hDC, ptCenter.x + (2+n), ptCenter.y);
-		::LineTo(hDC, ptCenter.x + (2+n), ptCenter.y + (2+n));
-		::LineTo(hDC, ptCenter.x, ptCenter.y + (2+n));
-	}
-	// 50 %
-	else if (pDoc->m_DoMovementDetection[i] >= 2)
-	{
-		// Fill background		
-		rc.left = ptCenter.x - (3+n+m+s);
-		rc.top = ptCenter.y - (3+n+m+s);
-		rc.right = ptCenter.x + (4+n+m+s);
-		rc.bottom = ptCenter.y + (4+n+m+s);
-		::FillRect(hDC, &rc, hBkgndBrush);
-
-		// Draw a 5
-		ptCenter.x -= s; // spacing between digits
-		::MoveToEx(hDC, ptCenter.x - 1, ptCenter.y - (2+n), NULL);
-		::LineTo(hDC, ptCenter.x - (2+n), ptCenter.y - (2+n));
-		::LineTo(hDC, ptCenter.x - (2+n), ptCenter.y);
-		::LineTo(hDC, ptCenter.x - 1 , ptCenter.y);
-		::LineTo(hDC, ptCenter.x - 1, ptCenter.y + (2+n));
-		::LineTo(hDC, ptCenter.x - (3+n), ptCenter.y + (2+n));
-
-		// Draw a 0
-		ptCenter.x += 2 * s; // spacing between digits
-		::MoveToEx(hDC, ptCenter.x + (2+n), ptCenter.y - (2+n), NULL);
-		::LineTo(hDC, ptCenter.x + 1, ptCenter.y - (2+n));
-		::LineTo(hDC, ptCenter.x + 1, ptCenter.y + (2+n));
-		::LineTo(hDC, ptCenter.x + (2+n), ptCenter.y + (2+n));
-		::LineTo(hDC, ptCenter.x + (2+n), ptCenter.y - (2+n));
-	}
+	if (pDoc->m_DoMovementDetection[i] >= 20)		// 5 %
+		::FillRect(hDC, &rc, hBrush5);
+	else if (pDoc->m_DoMovementDetection[i] >= 10)	// 10 %
+		::FillRect(hDC, &rc, hBrush10);
+	else if (pDoc->m_DoMovementDetection[i] >= 4)	// 25 %
+		::FillRect(hDC, &rc, hBrush25);
+	else if (pDoc->m_DoMovementDetection[i] >= 2)	// 50 %
+		::FillRect(hDC, &rc, hBrush50);
+	else if (pDoc->m_DoMovementDetection[i] >= 1)	// 100 %
+		::FillRect(hDC, &rc, hBrush100);
 }
 
 void CVideoDeviceView::DrawZones(HDC hDC, const CRect& rcClient)
@@ -456,50 +383,48 @@ void CVideoDeviceView::DrawZones(HDC hDC, const CRect& rcClient)
 		RECT rcDetZone;
 		double dZoneWidth = (double)rcClient.Width() / (double)pDoc->m_nMovDetXZonesCount;
 		double dZoneHeight = (double)rcClient.Height() / (double)pDoc->m_nMovDetYZonesCount;
-		int nSensitivityTextSize;
-		int nSensitivityTextMargin;
-		int nSensitivityTextSpacing;
+		int nSensitivityRectSize;
+		int nSensitivityRectMargin;
 		if (dZoneWidth <= 16.0 || dZoneHeight <= 16.0)
 		{
-			nSensitivityTextSize = 0;
-			nSensitivityTextMargin = 0;
-			nSensitivityTextSpacing = 0;
+			nSensitivityRectSize = 0;
+			nSensitivityRectMargin = 0;
 		}
 		else if (dZoneWidth <= 32.0 || dZoneHeight <= 32.0)
 		{
-			nSensitivityTextSize = 2;
-			nSensitivityTextMargin = 0;
-			nSensitivityTextSpacing = 0;
+			nSensitivityRectSize = 1;
+			nSensitivityRectMargin = 0;
 		}
 		else if (dZoneWidth <= 64.0 || dZoneHeight <= 64.0)
 		{
-			nSensitivityTextSize = 4;
-			nSensitivityTextMargin = 1;
-			nSensitivityTextSpacing = 1;
+			nSensitivityRectSize = 2;
+			nSensitivityRectMargin = 1;
 		}
 		else if (dZoneWidth <= 96.0 || dZoneHeight <= 96.0)
 		{
-			nSensitivityTextSize = 6;
-			nSensitivityTextMargin = 2;
-			nSensitivityTextSpacing = 1;
+			nSensitivityRectSize = 4;
+			nSensitivityRectMargin = 2;
 		}
 		else if (dZoneWidth <= 128.0 || dZoneHeight <= 128.0)
 		{
-			nSensitivityTextSize = 8;
-			nSensitivityTextMargin = 2;
-			nSensitivityTextSpacing = 2;
+			nSensitivityRectSize = 6;
+			nSensitivityRectMargin = 2;
 		}
 		else
 		{
-			nSensitivityTextSize = 10;
-			nSensitivityTextMargin = 3;
-			nSensitivityTextSpacing = 2;
+			nSensitivityRectSize = 8;
+			nSensitivityRectMargin = 3;
 		}
 
 		if (pDoc->m_nShowEditDetectionZones)
 		{
 			// Common
-			HBRUSH hSensitivityTextBrush = ::CreateSolidBrush(MOVDET_SENSITIVITY_BKGCOLOR);
+			HBRUSH hSensitivityBkgndBrush = ::CreateSolidBrush(MOVDET_SENSITIVITY_BKGCOLOR);
+			HBRUSH hSensitivityBrush5 = ::CreateSolidBrush(MOVDET_SENSITIVITY_COLOR5);
+			HBRUSH hSensitivityBrush10 = ::CreateSolidBrush(MOVDET_SENSITIVITY_COLOR10);
+			HBRUSH hSensitivityBrush25 = ::CreateSolidBrush(MOVDET_SENSITIVITY_COLOR25);
+			HBRUSH hSensitivityBrush50 = ::CreateSolidBrush(MOVDET_SENSITIVITY_COLOR50);
+			HBRUSH hSensitivityBrush100 = ::CreateSolidBrush(MOVDET_SENSITIVITY_COLOR100);
 			HGDIOBJ hOldBrush = ::SelectObject(hDC, ::GetStockObject(NULL_BRUSH));
 			int nLastBottomEdge;
 
@@ -521,10 +446,10 @@ void CVideoDeviceView::DrawZones(HDC hDC, const CRect& rcClient)
 					int i = x + y * pDoc->m_nMovDetXZonesCount;
 					if (pDoc->m_DoMovementDetection[i])
 					{
-						DrawZoneSensitivity(i, hDC, rcDetZone, nSensitivityTextSize, nSensitivityTextMargin, nSensitivityTextSpacing, hSensitivityTextBrush);
+						DrawZoneSensitivity(i, hDC, rcDetZone, nSensitivityRectSize, nSensitivityRectMargin,
+							hSensitivityBkgndBrush, hSensitivityBrush5, hSensitivityBrush10, 
+							hSensitivityBrush25, hSensitivityBrush50, hSensitivityBrush100);
 						::Rectangle(hDC, rcDetZone.left, rcDetZone.top, rcDetZone.right, rcDetZone.bottom);
-						::MoveToEx(hDC, rcDetZone.left + (rcDetZone.right - rcDetZone.left) / 4, rcDetZone.top, NULL);
-						::LineTo(hDC, rcDetZone.left, rcDetZone.top + (rcDetZone.right - rcDetZone.left) / 4);
 					}
 					nLastRightEdge = rcDetZone.right;
 				}
@@ -551,7 +476,9 @@ void CVideoDeviceView::DrawZones(HDC hDC, const CRect& rcClient)
 					int i = x + y * pDoc->m_nMovDetXZonesCount;
 					if (pDoc->m_MovementDetections[i])
 					{
-						DrawZoneSensitivity(i, hDC, rcDetZone, nSensitivityTextSize, nSensitivityTextMargin, nSensitivityTextSpacing, hSensitivityTextBrush);
+						DrawZoneSensitivity(i, hDC, rcDetZone, nSensitivityRectSize, nSensitivityRectMargin,
+							hSensitivityBkgndBrush, hSensitivityBrush5, hSensitivityBrush10, 
+							hSensitivityBrush25, hSensitivityBrush50, hSensitivityBrush100);
 						::Rectangle(hDC, rcDetZone.left, rcDetZone.top, rcDetZone.right, rcDetZone.bottom);
 						::MoveToEx(hDC, rcDetZone.left + (rcDetZone.right - rcDetZone.left) / 4, rcDetZone.top, NULL);
 						::LineTo(hDC, rcDetZone.left, rcDetZone.top + (rcDetZone.right - rcDetZone.left) / 4);
@@ -565,7 +492,12 @@ void CVideoDeviceView::DrawZones(HDC hDC, const CRect& rcClient)
 
 			// Clean-up common
 			::SelectObject(hDC, hOldBrush);
-			::DeleteObject(hSensitivityTextBrush);
+			::DeleteObject(hSensitivityBrush100);
+			::DeleteObject(hSensitivityBrush50);
+			::DeleteObject(hSensitivityBrush25);
+			::DeleteObject(hSensitivityBrush10);
+			::DeleteObject(hSensitivityBrush5);
+			::DeleteObject(hSensitivityBkgndBrush);
 		}
 	}
 }
@@ -1108,7 +1040,7 @@ void CVideoDeviceView::OnMouseMove(UINT nFlags, CPoint point)
 	ASSERT_VALID(pDoc);
 
 	if (pDoc->m_nShowEditDetectionZones)
-		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** CTRL: Draw <-> Erase ***"));
+		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** Red=100% Orange=50% Yellow=25% Green=10% Blue=5% ***"));
 	else
 		::AfxGetMainFrame()->StatusText();
 

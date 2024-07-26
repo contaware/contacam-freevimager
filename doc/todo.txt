@@ -136,6 +136,3 @@ ContaCam open tasks
 
 - Support Windows 10 Dark mode
   (honeydaler@gmail.com)
-  
-- For 100% motion rectangles write 100 when drawing them, otherwise it's 
-  difficult to distinguish them from the ones with no motion sensitivity.

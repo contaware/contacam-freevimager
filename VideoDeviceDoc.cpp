@@ -8514,7 +8514,7 @@ void CVideoDeviceDoc::OnEditZoneSensitivity(int nSingleZoneSensitivity)
 		GetView()->m_MovDetSingleZoneSensitivity = nSingleZoneSensitivity;
 		GetView()->ForceCursor();
 		GetView()->Invalidate(FALSE);
-		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** CTRL: Draw <-> Erase ***"));
+		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** Red=100% Orange=50% Yellow=25% Green=10% Blue=5% ***"));
 	}
 	else if (m_nShowEditDetectionZones == 1)
 	{
@@ -8596,7 +8596,7 @@ void CVideoDeviceDoc::OnEditZoneRemove()
 		m_nShowEditDetectionZones = 2;
 		GetView()->ForceCursor();
 		GetView()->Invalidate(FALSE);
-		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** CTRL: Draw <-> Erase ***"));
+		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** Red=100% Orange=50% Yellow=25% Green=10% Blue=5% ***"));
 	}
 	// Switch from Add to Remove
 	else if (m_nShowEditDetectionZones == 1)

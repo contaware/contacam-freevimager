@@ -141,6 +141,11 @@ class CCameraAdvancedSettingsDlg;
 #define MOVDET_DETECTING_ZONES_COLOR			RGB(0xFF,0x00,0x00)
 #define MOVDET_SELECTED_ZONES_COLOR				RGB(0x00,0x00,0xFF)
 #define MOVDET_SENSITIVITY_BKGCOLOR				RGB(0xEE,0xEE,0xEE)
+#define MOVDET_SENSITIVITY_COLOR5				RGB(0x99, 0xCC, 0xFF)
+#define MOVDET_SENSITIVITY_COLOR10				RGB(0x33, 0x99, 0x00)
+#define MOVDET_SENSITIVITY_COLOR25				RGB(0xFF, 0xFF, 0x00)
+#define MOVDET_SENSITIVITY_COLOR50				RGB(0xFF, 0xA8, 0x00)
+#define MOVDET_SENSITIVITY_COLOR100				RGB(0xFF, 0x00, 0x00)
 #define MOVDET_MIX_THRESHOLD					4.0				// Above this engine frequency switch from 3To1 to the 7To1 mixer
 #define MOVDET_WANTED_FREQ						5.0				// Wanted motion detection engine frequency (calculations / sec)
 																// Half of DEFAULT_FRAMERATE
