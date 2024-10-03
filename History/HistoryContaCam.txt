@@ -4,7 +4,7 @@ CONTACAM HISTORY
 
 - The Motion Zones (Mask) editor has got colors to better distinguish 
   the relative sensitivities
-- Added support for Dekco
+- Added support for Dekco and Dericam
 - Updated internal web server to Apache 2.4.59 and PHP 8.2.20
   (Apache and PHP both with OpenSSL 3.1.6)
 

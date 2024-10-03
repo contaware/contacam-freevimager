@@ -9094,6 +9094,7 @@ void CVideoDeviceDoc::ConnectRtsp()
 			break;
 
 		case GENERIC_1_RTSP:		// Ctronics, Escam, FDT, HooToo, IdeaNext, INSTAR, KKmoon, Microseven, SV3C, Wansview, WBox
+		case DERICAM_RTSP:
 		case WANSCAM_RTSP:
 			sPathAndQuery = _T("/11");
 			break;

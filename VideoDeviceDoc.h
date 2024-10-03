@@ -573,6 +573,7 @@ public:
 		DLINK_PLAY1_RTSP = 1081,		// D-Link play1.sdp RTSP
 		DAHUA_RTSP = 1090,				// Dahua RTSP
 		DEKCO_RTSP = 1095,				// Dekco RTSP
+		DERICAM_RTSP = 1097,			// Dericam RTSP
 		DIGOO_RTSP = 1100,				// Digoo RTSP
 		EDIMAX_H264_RTSP = 1110,		// Edimax H.264 RTSP
 		EDIMAX_MPEG4_RTSP = 1111,		// Edimax MPEG4 RTSP
