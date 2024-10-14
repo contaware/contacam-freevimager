@@ -4866,7 +4866,21 @@ void CVideoDeviceDoc::OpenDxVideoDevice(int nId, CString sDevicePathName, CStrin
 	m_llCurrentInitUpTime = m_llNextSnapshotUpTime;
 
 	// Open Dx Capture
-	BOOL bOpened = m_pDxCapture->Open(	GetView()->GetSafeHwnd(),
+	BOOL bOpened = FALSE;
+	// OBS Virtual Camera (30.2.3) returns a single frame when rendered with the default 
+	// PIN_CATEGORY_CAPTURE, moreover only NV12 works and YUY2 crashes. We need to render
+	// with PIN_CATEGORY_PREVIEW and limit the pixel format to NV12, fortunately that's
+	// exactly what happens when passing the NV12 media subtype to m_pDxCapture->Open().
+	if (sDeviceName == _T("OBS Virtual Camera"))
+		bOpened = m_pDxCapture->Open(	GetView()->GetSafeHwnd(),
+										nId,
+										m_dFrameRate,
+										m_nDeviceFormatId,
+										m_nDeviceFormatWidth,
+										m_nDeviceFormatHeight,
+										&MEDIASUBTYPE_NV12);
+	if (!bOpened)
+		bOpened = m_pDxCapture->Open(	GetView()->GetSafeHwnd(),
 										nId,
 										m_dFrameRate,
 										m_nDeviceFormatId,

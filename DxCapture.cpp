@@ -1196,7 +1196,7 @@ BOOL CDxCapture::BindFilter(const CString& sDeviceName, const CString& sDevicePa
 // - If nFormatId is -1, the format is chosen in the following order:
 //   I420, IYUV, YV12, NV12, NV21, M420, YUY2, YUNV, VYUY, V422, YUYV, RGB32, RGB24, RGB16, MJPG, then the first format is used
 // - If Width or Height are <= 0 the sizes are tried in the following order: 640x480, 352x288, 352x240, 320x240
-// - With pMediaSubTypeSet it's possible to set the media subtype for the frame grabber
+// - With pMediaSubType it's possible to set the media subtype for the frame grabber
 //   (for DV devices the media subtype is fixed to YUY2)
 BOOL CDxCapture::Open(	HWND hWnd,
 						int nId,
@@ -1422,7 +1422,6 @@ BOOL CDxCapture::Open(	HWND hWnd,
 		}
 		else
 		{
-			
 			hr = m_pCaptureGraphBuilder->RenderStream(	&PIN_CATEGORY_PREVIEW,
 														&MEDIATYPE_Interleaved,
 														m_pSrcFilter, m_pGrabberFilter, m_pNullRendererFilter);

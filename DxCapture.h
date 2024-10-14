@@ -91,7 +91,7 @@ public:
 														// MJPG, I420, IYUV, YV12, NV12, NV21, M420, YUY2, YUNV, VYUY, V422, YUYV, RGB32, RGB24, RGB16, then the first format is used
 				int nWidth,								// If Width or Height are <= 0 the sizes are tried in the following order:
 				int nHeight,							// 640x480, 352x288, 352x240, 320x240
-				const GUID *pMediaSubType = NULL);		// With pMediaSubTypeSet it's possible to set the media subtype for the frame grabber
+				const GUID *pMediaSubType = NULL);		// With pMediaSubType it's possible to set the media subtype for the frame grabber
 														// (for DV devices the media subtype is fixed to YUY2)
 	void Close();										// Close Capture & Clean-Up
 	__forceinline BOOL IsDV() const {return m_bDV;};	// Is the output DV
