@@ -7,7 +7,7 @@ CONTACAM HISTORY
 - Fixed the OBS Virtual Camera which was only showing the first frame 
   and crashed when selecting the YUY2 pixel format
 - Added support for Dekco and Dericam
-- Updated internal web server to Apache 2.4.62 and PHP 8.3.12
+- Updated internal web server to Apache 2.4.62 and PHP 8.2.24
   (Apache and PHP both with OpenSSL 3.1.7)
 
 9.9.23 (December 11th 2023)
