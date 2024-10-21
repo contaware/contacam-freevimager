@@ -1,12 +1,12 @@
 apachelounge.com and php.net
 ----------------------------
  
-- apache 2.4.59 VS17 x86 with OpenSSL 3.1.6
+- apache 2.4.62 VS17 x86 with OpenSSL 3.1.7
   https://www.apachelounge.com/download/
   Note: in ContaCam the mapache.exe file is the renamed httpd.exe file 
         from the apache distribution (that's so for historical reasons).
 
-- PHP 8.2.20 VS16 x86 with OpenSSL 3.0.13
+- PHP 8.3.12 VS16 x86 with OpenSSL 3.0.15
   https://windows.php.net/download/
   Note: we must download the thread safe PHP version.
 
