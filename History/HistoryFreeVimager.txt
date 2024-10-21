@@ -1,8 +1,8 @@
 FREEVIMAGER HISTORY
 
-9.9.24 (Month XXth 2024)
+9.9.24 (October 21st 2024)
 
-- ...
+- No changes (be in sync with ContaCam version)
 
 9.9.23 (December 11th 2023)
 

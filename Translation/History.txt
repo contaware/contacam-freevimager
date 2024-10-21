@@ -1,6 +1,6 @@
 TRANSLATIONS HISTORY
 
-9.9.24 (Month XXth 2024)
+9.9.24 (October 21st 2024)
 
 - Minor changes
 

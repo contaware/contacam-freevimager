@@ -1,6 +1,6 @@
 CONTACAM HISTORY
 
-9.9.24 (Month XXth 2024)
+9.9.24 (October 21st 2024)
 
 - The Motion Zones (Mask) editor has got colors to better distinguish 
   the relative sensitivities
