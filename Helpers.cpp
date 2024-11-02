@@ -393,6 +393,47 @@ CString MakeExtendedLengthPath(CString sPath)
 	return sPath;
 }
 
+CString UNCServer(CString sUNCPath)
+{
+	// Convert to backslashes
+	sUNCPath.Replace(_T('/'), _T('\\'));
+
+	// Test for path starting with two backslashes
+	if (sUNCPath.GetLength() >= 2 && sUNCPath[0] == _T('\\') && sUNCPath[1] == _T('\\'))
+	{
+		// Remove the two leading backslashes
+		sUNCPath = sUNCPath.Mid(2);
+
+		// Test for the special \\?\UNC\server\share or \\.\UNC\server\share paths
+		if (sUNCPath.GetLength() >= 2							&& 
+			(sUNCPath[0] == _T('?') || sUNCPath[0] == _T('.'))	&& 
+			sUNCPath[1] == _T('\\'))
+		{
+			// Remove '?' or '.' + backslash
+			sUNCPath = sUNCPath.Mid(2);
+			
+			// Case insensitive test for "UNC\\"
+			int nUNCEnd = sUNCPath.Find(_T('\\'));
+			if (nUNCEnd < 0)
+				return _T("");
+			CString sUNC = sUNCPath.Left(nUNCEnd);
+			if (sUNC.CompareNoCase(_T("UNC")) != 0)
+				return _T("");
+
+			// Remove "UNC\\"
+			sUNCPath = sUNCPath.Mid(4);
+		}
+
+		// Return server part
+		int nServerEnd = sUNCPath.Find(_T('\\'));
+		if (nServerEnd >= 0)
+			sUNCPath = sUNCPath.Left(nServerEnd);
+		return sUNCPath;
+	}
+	else
+		return _T("");
+}
+
 CString UNCPath(const CString& sPath)
 {
 	// Check

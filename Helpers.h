@@ -109,7 +109,11 @@ extern BOOL HasWriteAccess(LPCTSTR lpszFileName);
 // Make extended length path supporting more than MAX_PATH
 extern CString MakeExtendedLengthPath(CString sPath);
 
-// If it's a valid drive mount path convert it to a UNC path,
+// Return the host part of a UNC path, 
+// or the empty string if it's not an UNC path
+extern CString UNCServer(CString sUNCPath);
+
+// If it's a valid drive mount path, convert it to a UNC path,
 // otherwise return the given sPath unchanged
 extern CString UNCPath(const CString& sPath);
 
