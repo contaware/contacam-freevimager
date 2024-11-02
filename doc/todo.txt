@@ -136,3 +136,7 @@ ContaCam open tasks
 
 - Support Windows 10 Dark mode
   (honeydaler@gmail.com)
+
+- Disable assembler optimization for video sizes which are not divisible by 8.
+  (gthumberger@gmail.com)
+  
