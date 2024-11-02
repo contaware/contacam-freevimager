@@ -2,7 +2,8 @@ CONTACAM HISTORY
 
 9.9.25 (Month XXth 2024)
 
-- ...
+- Fixed Apache not starting for UNC DocRoot paths
+  (since Apache 2.4.60 a UNCList directive is needed)
 
 9.9.24 (October 21st 2024)
 
