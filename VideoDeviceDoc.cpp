@@ -5766,6 +5766,12 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	// only ASCII characters because the following GetASCIICompatiblePath(sDocRoot)
 	// call is not enough for non-static pages.
 	sDocRoot = ::GetASCIICompatiblePath(sDocRoot);				// directory must exist!
+	CString sDocRootUNCServer = ::UNCServer(sDocRoot);			// get server if sDocRoot is a UNC path 
+	if (!sDocRootUNCServer.IsEmpty())
+	{
+		sFormat.Format(_T("UNCList %s\r\n"), sDocRootUNCServer);// add UNCList directive 
+		sConfig += sFormat;
+	}
 	sDocRoot.Replace(_T('\\'), _T('/'));						// change path from \ to / (otherwise apache is not happy)
 	sFormat.Format(_T("DocumentRoot \"%s/\"\r\n"), sDocRoot);	// even if the apache docu says that the DocumentRoot
 	sConfig += sFormat;											// should be specified without a trailing slash, add it
