@@ -86,6 +86,7 @@ mkdir .\%CURRENTVERSION%\ContaCam\spanish
 mkdir .\%CURRENTVERSION%\ContaCam\french
 mkdir .\%CURRENTVERSION%\ContaCam\portuguese
 mkdir .\%CURRENTVERSION%\ContaCam\chinese
+mkdir .\%CURRENTVERSION%\ContaCam\japanese
 mkdir .\%CURRENTVERSION%\FreeVimager
 mkdir .\%CURRENTVERSION%\FreeVimager\english
 mkdir .\%CURRENTVERSION%\FreeVimager\german
@@ -95,6 +96,7 @@ mkdir .\%CURRENTVERSION%\FreeVimager\spanish
 mkdir .\%CURRENTVERSION%\FreeVimager\french
 mkdir .\%CURRENTVERSION%\FreeVimager\portuguese
 mkdir .\%CURRENTVERSION%\FreeVimager\chinese
+mkdir .\%CURRENTVERSION%\FreeVimager\japanese
 
 REM copy executables to input folder
 echo:
@@ -110,6 +112,7 @@ copy ..\Translation\ContaCamESN.exe .\input\
 copy ..\Translation\ContaCamFRA.exe .\input\
 copy ..\Translation\ContaCamPTB.exe .\input\
 copy ..\Translation\ContaCamCHS.exe .\input\
+copy ..\Translation\ContaCamJPN.exe .\input\
 copy ..\Bin\FreeVimager\FreeVimager.exe .\input\
 copy ..\Translation\FreeVimagerDEU.exe .\input\
 copy ..\Translation\FreeVimagerITA.exe .\input\
@@ -118,6 +121,7 @@ copy ..\Translation\FreeVimagerESN.exe .\input\
 copy ..\Translation\FreeVimagerFRA.exe .\input\
 copy ..\Translation\FreeVimagerPTB.exe .\input\
 copy ..\Translation\FreeVimagerCHS.exe .\input\
+copy ..\Translation\FreeVimagerJPN.exe .\input\
 
 REM sign executables
 echo:
@@ -134,6 +138,7 @@ signtool sign /n "Open Source Developer, Oliver Pfister" /t http://time.certum.p
 .\input\ContaCamFRA.exe ^
 .\input\ContaCamPTB.exe ^
 .\input\ContaCamCHS.exe ^
+.\input\ContaCamJPN.exe ^
 .\input\FreeVimager.exe ^
 .\input\FreeVimagerDEU.exe ^
 .\input\FreeVimagerITA.exe ^
@@ -141,7 +146,8 @@ signtool sign /n "Open Source Developer, Oliver Pfister" /t http://time.certum.p
 .\input\FreeVimagerESN.exe ^
 .\input\FreeVimagerFRA.exe ^
 .\input\FreeVimagerPTB.exe ^
-.\input\FreeVimagerCHS.exe
+.\input\FreeVimagerCHS.exe ^
+.\input\FreeVimagerJPN.exe
 
 REM make installers
 echo:
@@ -164,6 +170,8 @@ echo ContaCamPtb installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Portuguese ContaCam.nsi
 echo ContaCamChs installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=SimpChinese ContaCam.nsi
+echo ContaCamJpn installer
+"%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Japanese ContaCam.nsi
 echo FreeVimager installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=English FreeVimager.nsi
 echo FreeVimagerDeu installer
@@ -180,6 +188,8 @@ echo FreeVimagerPtb installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Portuguese FreeVimager.nsi
 echo FreeVimagerChs installer
 "%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=SimpChinese FreeVimager.nsi
+echo FreeVimagerJpn installer
+"%NSISDIR%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Japanese FreeVimager.nsi
 
 REM sign installers
 echo:
@@ -195,6 +205,7 @@ signtool sign /n "Open Source Developer, Oliver Pfister" /t http://time.certum.p
 .\ContaCam-%CURRENTVERSION%-Setup-Fra.exe ^
 .\ContaCam-%CURRENTVERSION%-Setup-Ptb.exe ^
 .\ContaCam-%CURRENTVERSION%-Setup-Chs.exe ^
+.\ContaCam-%CURRENTVERSION%-Setup-Jpn.exe ^
 .\FreeVimager-%CURRENTVERSION%-Setup.exe ^
 .\FreeVimager-%CURRENTVERSION%-Setup-Deu.exe ^
 .\FreeVimager-%CURRENTVERSION%-Setup-Ita.exe ^
@@ -202,7 +213,8 @@ signtool sign /n "Open Source Developer, Oliver Pfister" /t http://time.certum.p
 .\FreeVimager-%CURRENTVERSION%-Setup-Esn.exe ^
 .\FreeVimager-%CURRENTVERSION%-Setup-Fra.exe ^
 .\FreeVimager-%CURRENTVERSION%-Setup-Ptb.exe ^
-.\FreeVimager-%CURRENTVERSION%-Setup-Chs.exe
+.\FreeVimager-%CURRENTVERSION%-Setup-Chs.exe ^
+.\FreeVimager-%CURRENTVERSION%-Setup-Jpn.exe
 
 REM place all files into version folder
 echo:
@@ -220,6 +232,7 @@ move .\input\FreeVimagerESN.exe .\%CURRENTVERSION%\FreeVimager\spanish\FreeVimag
 move .\input\FreeVimagerFRA.exe .\%CURRENTVERSION%\FreeVimager\french\FreeVimager-%CURRENTVERSION%-Portable-Fra.exe
 move .\input\FreeVimagerPTB.exe .\%CURRENTVERSION%\FreeVimager\portuguese\FreeVimager-%CURRENTVERSION%-Portable-Ptb.exe
 move .\input\FreeVimagerCHS.exe .\%CURRENTVERSION%\FreeVimager\chinese\FreeVimager-%CURRENTVERSION%-Portable-Chs.exe
+move .\input\FreeVimagerJPN.exe .\%CURRENTVERSION%\FreeVimager\japanese\FreeVimager-%CURRENTVERSION%-Portable-Jpn.exe
 move .\ContaCam-%CURRENTVERSION%-Setup.exe .\%CURRENTVERSION%\ContaCam\english\
 move .\ContaCam-%CURRENTVERSION%-Setup-Deu.exe .\%CURRENTVERSION%\ContaCam\german\
 move .\ContaCam-%CURRENTVERSION%-Setup-Ita.exe .\%CURRENTVERSION%\ContaCam\italian\
@@ -228,6 +241,7 @@ move .\ContaCam-%CURRENTVERSION%-Setup-Esn.exe .\%CURRENTVERSION%\ContaCam\spani
 move .\ContaCam-%CURRENTVERSION%-Setup-Fra.exe .\%CURRENTVERSION%\ContaCam\french\
 move .\ContaCam-%CURRENTVERSION%-Setup-Ptb.exe .\%CURRENTVERSION%\ContaCam\portuguese\
 move .\ContaCam-%CURRENTVERSION%-Setup-Chs.exe .\%CURRENTVERSION%\ContaCam\chinese\
+move .\ContaCam-%CURRENTVERSION%-Setup-Jpn.exe .\%CURRENTVERSION%\ContaCam\japanese\
 move .\FreeVimager-%CURRENTVERSION%-Setup.exe .\%CURRENTVERSION%\FreeVimager\english\
 move .\FreeVimager-%CURRENTVERSION%-Setup-Deu.exe .\%CURRENTVERSION%\FreeVimager\german\
 move .\FreeVimager-%CURRENTVERSION%-Setup-Ita.exe .\%CURRENTVERSION%\FreeVimager\italian\
@@ -236,6 +250,7 @@ move .\FreeVimager-%CURRENTVERSION%-Setup-Esn.exe .\%CURRENTVERSION%\FreeVimager
 move .\FreeVimager-%CURRENTVERSION%-Setup-Fra.exe .\%CURRENTVERSION%\FreeVimager\french\
 move .\FreeVimager-%CURRENTVERSION%-Setup-Ptb.exe .\%CURRENTVERSION%\FreeVimager\portuguese\
 move .\FreeVimager-%CURRENTVERSION%-Setup-Chs.exe .\%CURRENTVERSION%\FreeVimager\chinese\
+move .\FreeVimager-%CURRENTVERSION%-Setup-Jpn.exe .\%CURRENTVERSION%\FreeVimager\japanese\
 
 REM delete input folder
 echo:
