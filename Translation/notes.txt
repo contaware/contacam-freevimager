@@ -43,6 +43,7 @@ Chinese       2052
 French        1036
 German        1031
 Italian       1040
+Japanese      1041
 Portuguese    1046
 Russian       1049
 Spanish       3082
