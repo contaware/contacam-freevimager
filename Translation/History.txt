@@ -2,7 +2,7 @@ TRANSLATIONS HISTORY
 
 9.9.25 (Month XXth 2024)
 
-- Full Japanese language support
+- Full Japanese language support (thanks to coolvitto)
 
 9.9.24 (October 21st 2024)
 
