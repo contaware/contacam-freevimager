@@ -3433,9 +3433,9 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 	CSortableFileFind FileFind;
 	CTime CurrentTime, OldestDirTime;
 	CTimeSpan TimeDiff;
-	LONGLONG llDaysAgo, llStartDiskFreeSpaceDaysAgo, llStartCameraFolderSizeDaysAgo;
-	ULONGLONG ullStartDiskFreeSpace, ullDiskFreeSpace, ullMinDiskFreeSpace;
-	ULONGLONG ullStartCameraFolderSize, ullCameraFolderSize, ullMaxCameraFolderSize;
+	LONGLONG llDaysAgo;
+	ULONGLONG ullDiskFreeSpace, ullMinDiskFreeSpace;
+	ULONGLONG ullCameraFolderSize, ullMaxCameraFolderSize;
 	std::random_device TrueRandom; // non-deterministic generator implemented as crypto-secure in Visual C++
 	std::mt19937 PseudoRandom(TrueRandom());
 	std::uniform_int_distribution<DWORD> Distribution(FILES_DELETE_INTERVAL_MIN, FILES_DELETE_INTERVAL_MAX); // distribute results: [FILES_DELETE_INTERVAL_MIN, FILES_DELETE_INTERVAL_MAX]
@@ -3491,26 +3491,28 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 					TimeDiff = CurrentTime - OldestDirTime;
 					llDaysAgo = TimeDiff.GetDays();
 
-					// Delete oldest dirs if space limit reached 
-					llStartDiskFreeSpaceDaysAgo = 0;
-					llStartCameraFolderSizeDaysAgo = 0;
+					// Delete the oldest directory if space limit reached
 					ullDiskFreeSpace = ::GetDiskAvailableFreeSpace(sAutoSaveDir);
 					ullCameraFolderSize = ::GetDirContentSize(sAutoSaveDir, NULL, this).QuadPart;
 					if (DoExit())
 						return 0; // GetDirContentSize() may return before finishing calculating the size
-					while (	llDaysAgo > 0 &&
-							(ullDiskFreeSpace < ullMinDiskFreeSpace ||		// 'less than' is mandatory because both vars may be 0
-							ullCameraFolderSize > ullMaxCameraFolderSize))	// 'greater than' is mandatory because ullMaxCameraFolderSize may be ULLONG_MAX 
+					if (llDaysAgo > 0 &&
+						(ullDiskFreeSpace < ullMinDiskFreeSpace ||		// 'less than' is mandatory because both vars may be 0
+						ullCameraFolderSize > ullMaxCameraFolderSize))	// 'greater than' is mandatory because ullMaxCameraFolderSize may be ULLONG_MAX 
 					{
 						// Store start vars
-						if (llStartDiskFreeSpaceDaysAgo == 0 && ullDiskFreeSpace < ullMinDiskFreeSpace)
+						BOOL bDiskFreeSpace = FALSE;
+						ULONGLONG ullStartDiskFreeSpace;
+						BOOL bCameraFolderSize = FALSE;
+						ULONGLONG ullStartCameraFolderSize;
+						if (ullDiskFreeSpace < ullMinDiskFreeSpace)
 						{
-							llStartDiskFreeSpaceDaysAgo = llDaysAgo;
+							bDiskFreeSpace = TRUE;
 							ullStartDiskFreeSpace = ullDiskFreeSpace;
 						}
-						if (llStartCameraFolderSizeDaysAgo == 0 && ullCameraFolderSize > ullMaxCameraFolderSize)
+						if (ullCameraFolderSize > ullMaxCameraFolderSize)
 						{
-							llStartCameraFolderSizeDaysAgo = llDaysAgo;
+							bCameraFolderSize = TRUE;
 							ullStartCameraFolderSize = ullCameraFolderSize;
 						}
 
@@ -3519,41 +3521,34 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 							return 0; // Exit Thread
 
 						// Update vars
-						llDaysAgo--;
 						ullDiskFreeSpace = ::GetDiskAvailableFreeSpace(sAutoSaveDir);
 						ullCameraFolderSize = ::GetDirContentSize(sAutoSaveDir, NULL, this).QuadPart;
 						if (DoExit())
 							return 0; // GetDirContentSize() may return before finishing calculating the size
-					}
 
-					// Log
-					if (llStartDiskFreeSpaceDaysAgo != 0)
-					{
-						CString sDaysAgo;
-						if (llStartDiskFreeSpaceDaysAgo == (llDaysAgo + 1))
-							sDaysAgo.Format(_T("%I64d day%s ago"), llStartDiskFreeSpaceDaysAgo, llStartDiskFreeSpaceDaysAgo == 1 ? _T("") : _T("s"));
-						else
-							sDaysAgo.Format(_T("%I64d->%I64d days ago"), llStartDiskFreeSpaceDaysAgo, llDaysAgo + 1);
-						::LogLine(	_T("%s, deleted %s: HD space %s->%s (set min %s)"),
-									m_pDoc->GetAssignedDeviceName(),
-									sDaysAgo,
-									::FormatBytes(ullStartDiskFreeSpace),
-									::FormatBytes(ullDiskFreeSpace),
-									::FormatBytes(ullMinDiskFreeSpace));
-					}
-					if (llStartCameraFolderSizeDaysAgo != 0)
-					{
-						CString sDaysAgo;
-						if (llStartCameraFolderSizeDaysAgo == (llDaysAgo + 1))
-							sDaysAgo.Format(_T("%I64d day%s ago"), llStartCameraFolderSizeDaysAgo, llStartCameraFolderSizeDaysAgo == 1 ? _T("") : _T("s"));
-						else
-							sDaysAgo.Format(_T("%I64d->%I64d days ago"), llStartCameraFolderSizeDaysAgo, llDaysAgo + 1);
-						::LogLine(	_T("%s, deleted %s: camera folder size %s->%s (set max %s)"),
-									m_pDoc->GetAssignedDeviceName(),
-									sDaysAgo,
-									::FormatBytes(ullStartCameraFolderSize),
-									::FormatBytes(ullCameraFolderSize),
-									::FormatBytes(ullMaxCameraFolderSize));
+						// Log
+						if (bDiskFreeSpace)
+						{
+							CString sDaysAgo;
+							sDaysAgo.Format(_T("%I64d day%s ago"), llDaysAgo, llDaysAgo == 1 ? _T("") : _T("s"));
+							::LogLine(	_T("%s, deleted %s: HD space %s->%s (set min %s)"),
+										m_pDoc->GetAssignedDeviceName(),
+										sDaysAgo,
+										::FormatBytes(ullStartDiskFreeSpace),
+										::FormatBytes(ullDiskFreeSpace),
+										::FormatBytes(ullMinDiskFreeSpace));
+						}
+						if (bCameraFolderSize)
+						{
+							CString sDaysAgo;
+							sDaysAgo.Format(_T("%I64d day%s ago"), llDaysAgo, llDaysAgo == 1 ? _T("") : _T("s"));
+							::LogLine(	_T("%s, deleted %s: camera folder size %s->%s (set max %s)"),
+										m_pDoc->GetAssignedDeviceName(),
+										sDaysAgo,
+										::FormatBytes(ullStartCameraFolderSize),
+										::FormatBytes(ullCameraFolderSize),
+										::FormatBytes(ullMaxCameraFolderSize));
+						}
 					}
 				}
 				break;
