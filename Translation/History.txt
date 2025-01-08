@@ -1,6 +1,6 @@
 TRANSLATIONS HISTORY
 
-9.9.25 (Month XXth 2024)
+9.9.25 (Month XXth 2025)
 
 - Full Japanese language support (thanks to coolvitto)
 
