@@ -140,3 +140,10 @@ ContaCam open tasks
 - Disable assembler optimization for video sizes which are not divisible by 8.
   (gthumberger@gmail.com)
   
+- Run a user script on Camera failure, add option to "Command" in "Camera Advanced Settings".
+  (gvanwoerkom@ziggo.nl)
+
+- Update to 64-bit PHP and Apache to permit the download of files bigger than 2GB
+  and to fix the year 2038 bug.
+  (webmaster@werdecker.com)
+  
