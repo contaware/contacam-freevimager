@@ -3426,16 +3426,10 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 	if (!m_pDoc)
 		return 0;
 
-	DWORD Event;
 	CString sAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
 	sAutoSaveDir.TrimRight(_T('\\'));
 	DWORD dwAttrib;
 	CSortableFileFind FileFind;
-	CTime CurrentTime, OldestDirTime;
-	CTimeSpan TimeDiff;
-	LONGLONG llDaysAgo;
-	ULONGLONG ullDiskFreeSpace, ullMinDiskFreeSpace;
-	ULONGLONG ullCameraFolderSize, ullMaxCameraFolderSize;
 	std::random_device TrueRandom; // non-deterministic generator implemented as crypto-secure in Visual C++
 	std::mt19937 PseudoRandom(TrueRandom());
 	std::uniform_int_distribution<DWORD> Distribution(FILES_DELETE_INTERVAL_MIN, FILES_DELETE_INTERVAL_MAX); // distribute results: [FILES_DELETE_INTERVAL_MIN, FILES_DELETE_INTERVAL_MAX]
@@ -3446,7 +3440,7 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 		// the first started one would be cleared more than the last one. To fix that
 		// we use a random generator for the deletion interval
 		DWORD dwDeleteInMs = Distribution(PseudoRandom);
-		Event = ::WaitForSingleObject(GetKillEvent(), dwDeleteInMs);
+		DWORD Event = ::WaitForSingleObject(GetKillEvent(), dwDeleteInMs);
 		switch (Event)
 		{
 			// Shutdown Event
@@ -3466,7 +3460,7 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 					}
 
 					// Get current time
-					CurrentTime = CTime::GetCurrentTime();
+					CTime CurrentTime(CTime::GetCurrentTime());
 
 					// Delete dirs which are older than the given days amount
 					int nDeleteRecordingsOlderThanDays = m_pDoc->m_nDeleteRecordingsOlderThanDays;
@@ -3476,70 +3470,44 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 							return 0; // Exit Thread
 					}
 
-					// Minimum wanted disk free space
-					ullMinDiskFreeSpace = ::GetDiskTotalSize(sAutoSaveDir) / 1000000 * m_pDoc->m_nMinDiskFreePermillion;
-
-					// Maximum allowed camera folder size
-					ullMaxCameraFolderSize = m_pDoc->m_nMaxCameraFolderSizeMB;
-					ullMaxCameraFolderSize <<= 20; // MB to Bytes
-					if (ullMaxCameraFolderSize == 0) // 0 means no limit
-						ullMaxCameraFolderSize = ULLONG_MAX;
-
 					// Oldest existing directory
+					CTime OldestDirTime;
 					if (!CalcOldestDir(FileFind, OldestDirTime, CurrentTime))
 						return 0; // Exit Thread
-					TimeDiff = CurrentTime - OldestDirTime;
-					llDaysAgo = TimeDiff.GetDays();
+					CTimeSpan TimeDiff(CurrentTime - OldestDirTime);
+					LONGLONG llDaysAgo = TimeDiff.GetDays();
 
 					// Delete the oldest directory if space limit reached
-					ullDiskFreeSpace = ::GetDiskAvailableFreeSpace(sAutoSaveDir);
-					ullCameraFolderSize = ::GetDirContentSize(sAutoSaveDir, NULL, this).QuadPart;
-					if (DoExit())
-						return 0; // GetDirContentSize() may return before finishing calculating the size
-					if (llDaysAgo > 0 &&
-						(ullDiskFreeSpace < ullMinDiskFreeSpace ||		// 'less than' is mandatory because both vars may be 0
-						ullCameraFolderSize > ullMaxCameraFolderSize))	// 'greater than' is mandatory because ullMaxCameraFolderSize may be ULLONG_MAX 
+					if (llDaysAgo > 0)
 					{
-						// Store start vars
-						BOOL bDiskFreeSpace = FALSE;
-						ULONGLONG ullStartDiskFreeSpace;
-						BOOL bCameraFolderSize = FALSE;
-						ULONGLONG ullStartCameraFolderSize;
-						if (ullDiskFreeSpace < ullMinDiskFreeSpace)
-						{
-							bDiskFreeSpace = TRUE;
-							ullStartDiskFreeSpace = ullDiskFreeSpace;
-						}
-						if (ullCameraFolderSize > ullMaxCameraFolderSize)
-						{
-							bCameraFolderSize = TRUE;
-							ullStartCameraFolderSize = ullCameraFolderSize;
-						}
+						// Maximum allowed camera folder size
+						ULONGLONG ullMaxCameraFolderSize = m_pDoc->m_nMaxCameraFolderSizeMB;
+						ullMaxCameraFolderSize <<= 20; // MB to Bytes
+						if (ullMaxCameraFolderSize == 0) // 0 means no limit
+							ullMaxCameraFolderSize = ULLONG_MAX;
 
-						// Delete old
-						if (!DeleteOld(FileFind, llDaysAgo, CurrentTime))
-							return 0; // Exit Thread
-
-						// Update vars
-						ullDiskFreeSpace = ::GetDiskAvailableFreeSpace(sAutoSaveDir);
-						ullCameraFolderSize = ::GetDirContentSize(sAutoSaveDir, NULL, this).QuadPart;
+						// Get current camera folder size
+						ULONGLONG ullCameraFolderSize = ::GetDirContentSize(sAutoSaveDir, NULL, this).QuadPart;
 						if (DoExit())
 							return 0; // GetDirContentSize() may return before finishing calculating the size
 
-						// Log
-						if (bDiskFreeSpace)
+						// 'greater than' is mandatory because ullMaxCameraFolderSize is set to ULLONG_MAX
+						//  to disable the deletion (see above)
+						if (ullCameraFolderSize > ullMaxCameraFolderSize)
 						{
-							CString sDaysAgo;
-							sDaysAgo.Format(_T("%I64d day%s ago"), llDaysAgo, llDaysAgo == 1 ? _T("") : _T("s"));
-							::LogLine(	_T("%s, deleted %s: HD space %s->%s (set min %s)"),
-										m_pDoc->GetAssignedDeviceName(),
-										sDaysAgo,
-										::FormatBytes(ullStartDiskFreeSpace),
-										::FormatBytes(ullDiskFreeSpace),
-										::FormatBytes(ullMinDiskFreeSpace));
-						}
-						if (bCameraFolderSize)
-						{
+							// Store start var
+							ULONGLONG ullStartCameraFolderSize = ullCameraFolderSize;
+
+							// Delete old
+							if (!DeleteOld(FileFind, llDaysAgo, CurrentTime))
+								return 0; // Exit Thread
+
+							// Update var
+							ullCameraFolderSize = ::GetDirContentSize(sAutoSaveDir, NULL, this).QuadPart;
+							if (DoExit())
+								return 0; // GetDirContentSize() may return before finishing calculating the size
+
+							// Log
 							CString sDaysAgo;
 							sDaysAgo.Format(_T("%I64d day%s ago"), llDaysAgo, llDaysAgo == 1 ? _T("") : _T("s"));
 							::LogLine(	_T("%s, deleted %s: camera folder size %s->%s (set max %s)"),
@@ -3548,6 +3516,38 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 										::FormatBytes(ullStartCameraFolderSize),
 										::FormatBytes(ullCameraFolderSize),
 										::FormatBytes(ullMaxCameraFolderSize));
+						}
+						else
+						{
+							// Minimum wanted disk free space
+							ULONGLONG ullMinDiskFreeSpace = ::GetDiskTotalSize(sAutoSaveDir) / 1000000 * m_pDoc->m_nMinDiskFreePermillion;
+
+							// Get current disk free space
+							ULONGLONG ullDiskFreeSpace = ::GetDiskAvailableFreeSpace(sAutoSaveDir);
+							
+							// 'less than' is mandatory because both vars may be 0
+							if (ullDiskFreeSpace < ullMinDiskFreeSpace)
+							{
+								// Store start var
+								ULONGLONG ullStartDiskFreeSpace = ullDiskFreeSpace;
+
+								// Delete old
+								if (!DeleteOld(FileFind, llDaysAgo, CurrentTime))
+									return 0; // Exit Thread
+
+								// Update var
+								ullDiskFreeSpace = ::GetDiskAvailableFreeSpace(sAutoSaveDir);
+
+								// Log
+								CString sDaysAgo;
+								sDaysAgo.Format(_T("%I64d day%s ago"), llDaysAgo, llDaysAgo == 1 ? _T("") : _T("s"));
+								::LogLine(	_T("%s, deleted %s: HD space %s->%s (set min %s)"),
+											m_pDoc->GetAssignedDeviceName(),
+											sDaysAgo,
+											::FormatBytes(ullStartDiskFreeSpace),
+											::FormatBytes(ullDiskFreeSpace),
+											::FormatBytes(ullMinDiskFreeSpace));
+							}
 						}
 					}
 				}
