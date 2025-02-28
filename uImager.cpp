@@ -153,6 +153,10 @@ CUImagerApp::CUImagerApp()
 	m_nDetectionMaxMaxFrames = MOVDET_MAX_MAX_FRAMES_IN_LIST;
 	m_bMovDetDropFrames = FALSE;
 	::InitializeCriticalSection(&m_csSaveReservation);
+	m_sDeleteDaysAgoDir = _T("");
+	m_llDeleteDaysAgoUptime = 0;
+	m_llDeleteDaysAgo = 0;
+	::InitializeCriticalSection(&m_csDeleteDaysAgo);
 	m_bSingleInstance = TRUE;
 	m_bServiceProcess = FALSE;
 	m_bDoStartFromService = FALSE;
@@ -192,6 +196,7 @@ CUImagerApp::~CUImagerApp()
 {
 #ifdef VIDEODEVICEDOC
 	::DeleteCriticalSection(&m_csSaveReservation);
+	::DeleteCriticalSection(&m_csDeleteDaysAgo);
 #endif
 }
 

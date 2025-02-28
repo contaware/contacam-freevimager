@@ -594,6 +594,12 @@ public:
 	SAVERESERVATIONQUEUE m_SaveReservationQueue;
 	CRITICAL_SECTION m_csSaveReservation;
 
+	// Coordination between cams to delete the oldest recording day
+	CString m_sDeleteDaysAgoDir;
+	volatile LONGLONG m_llDeleteDaysAgoUptime;
+	volatile LONGLONG m_llDeleteDaysAgo;
+	CRITICAL_SECTION m_csDeleteDaysAgo;
+
 	// Service
 	// - Window placement store/restore disabled if this set
 	// - Start/stop ContaCam.exe from service disabled if this set

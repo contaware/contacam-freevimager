@@ -3430,17 +3430,10 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 	sAutoSaveDir.TrimRight(_T('\\'));
 	DWORD dwAttrib;
 	CSortableFileFind FileFind;
-	std::random_device TrueRandom; // non-deterministic generator implemented as crypto-secure in Visual C++
-	std::mt19937 PseudoRandom(TrueRandom());
-	std::uniform_int_distribution<DWORD> Distribution(FILES_DELETE_INTERVAL_MIN, FILES_DELETE_INTERVAL_MAX); // distribute results: [FILES_DELETE_INTERVAL_MIN, FILES_DELETE_INTERVAL_MAX]
 
 	for (;;)
 	{
-		// If using a constant deletion time interval in case of multiple devices running
-		// the first started one would be cleared more than the last one. To fix that
-		// we use a random generator for the deletion interval
-		DWORD dwDeleteInMs = Distribution(PseudoRandom);
-		DWORD Event = ::WaitForSingleObject(GetKillEvent(), dwDeleteInMs);
+		DWORD Event = ::WaitForSingleObject(GetKillEvent(), FILES_DELETE_INTERVAL_MS);
 		switch (Event)
 		{
 			// Shutdown Event
@@ -3495,27 +3488,14 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 						//  to disable the deletion (see above)
 						if (ullCameraFolderSize > ullMaxCameraFolderSize)
 						{
-							// Store start var
-							ULONGLONG ullStartCameraFolderSize = ullCameraFolderSize;
-
 							// Delete old
 							if (!DeleteOld(FileFind, llDaysAgo, CurrentTime))
 								return 0; // Exit Thread
 
-							// Update var
-							ullCameraFolderSize = ::GetDirContentSize(sAutoSaveDir, NULL, this).QuadPart;
-							if (DoExit())
-								return 0; // GetDirContentSize() may return before finishing calculating the size
-
 							// Log
 							CString sDaysAgo;
 							sDaysAgo.Format(_T("%I64d day%s ago"), llDaysAgo, llDaysAgo == 1 ? _T("") : _T("s"));
-							::LogLine(	_T("%s, deleted %s: camera folder size %s->%s (set max %s)"),
-										m_pDoc->GetAssignedDeviceName(),
-										sDaysAgo,
-										::FormatBytes(ullStartCameraFolderSize),
-										::FormatBytes(ullCameraFolderSize),
-										::FormatBytes(ullMaxCameraFolderSize));
+							::LogLine(_T("%s, deleted %s"), m_pDoc->GetAssignedDeviceName(), sDaysAgo);
 						}
 						else
 						{
@@ -3524,29 +3504,64 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 
 							// Get current disk free space
 							ULONGLONG ullDiskFreeSpace = ::GetDiskAvailableFreeSpace(sAutoSaveDir);
+
+							// Get current uptime
+							LONGLONG llCurrentUpTime = (LONGLONG)::GetTickCount64();
 							
-							// 'less than' is mandatory because both vars may be 0
-							if (ullDiskFreeSpace < ullMinDiskFreeSpace)
+							// Enter critical section
+							CUImagerApp* pApp = (CUImagerApp*)::AfxGetApp();
+							::EnterCriticalSection(&pApp->m_csDeleteDaysAgo);
+							
+							// Clear old entry from closed or renamed cams
+							if (llCurrentUpTime - pApp->m_llDeleteDaysAgoUptime > 4*FILES_DELETE_INTERVAL_MS)
 							{
-								// Store start var
-								ULONGLONG ullStartDiskFreeSpace = ullDiskFreeSpace;
+								pApp->m_sDeleteDaysAgoDir.Empty();
+								pApp->m_llDeleteDaysAgoUptime = llCurrentUpTime;
+								pApp->m_llDeleteDaysAgo = 0;
+							}
 
-								// Delete old
-								if (!DeleteOld(FileFind, llDaysAgo, CurrentTime))
-									return 0; // Exit Thread
+							// Are we the one with the oldest entry?
+							if (pApp->m_sDeleteDaysAgoDir.Compare(sAutoSaveDir) == 0)
+							{
+								// Make sure we are the oldest entry since at least 1.5 x FILES_DELETE_INTERVAL_MS
+								if (llCurrentUpTime - pApp->m_llDeleteDaysAgoUptime > 3*FILES_DELETE_INTERVAL_MS/2)
+								{
+									// Clear entry
+									pApp->m_sDeleteDaysAgoDir.Empty();
+									pApp->m_llDeleteDaysAgoUptime = llCurrentUpTime;
+									pApp->m_llDeleteDaysAgo = 0;
 
-								// Update var
-								ullDiskFreeSpace = ::GetDiskAvailableFreeSpace(sAutoSaveDir);
+									// Leave critical section
+									::LeaveCriticalSection(&pApp->m_csDeleteDaysAgo);
 
-								// Log
-								CString sDaysAgo;
-								sDaysAgo.Format(_T("%I64d day%s ago"), llDaysAgo, llDaysAgo == 1 ? _T("") : _T("s"));
-								::LogLine(	_T("%s, deleted %s: HD space %s->%s (set min %s)"),
-											m_pDoc->GetAssignedDeviceName(),
-											sDaysAgo,
-											::FormatBytes(ullStartDiskFreeSpace),
-											::FormatBytes(ullDiskFreeSpace),
-											::FormatBytes(ullMinDiskFreeSpace));
+									// Delete old
+									if (!DeleteOld(FileFind, llDaysAgo, CurrentTime))
+										return 0; // Exit Thread
+
+									// Log
+									CString sDaysAgo;
+									sDaysAgo.Format(_T("%I64d day%s ago"), llDaysAgo, llDaysAgo == 1 ? _T("") : _T("s"));
+									::LogLine(_T("%s, deleted %s"), m_pDoc->GetAssignedDeviceName(), sDaysAgo);
+								}
+								else
+								{
+									// Leave critical section
+									::LeaveCriticalSection(&pApp->m_csDeleteDaysAgo);
+								}
+							}
+							else
+							{
+								// Enter us in case of low disk free space and if we have the oldest directory
+								if (ullDiskFreeSpace < ullMinDiskFreeSpace && // 'less than' is mandatory because both vars may be 0
+									llDaysAgo > pApp->m_llDeleteDaysAgo)
+								{
+									pApp->m_sDeleteDaysAgoDir = sAutoSaveDir;
+									pApp->m_llDeleteDaysAgoUptime = llCurrentUpTime;
+									pApp->m_llDeleteDaysAgo = llDaysAgo;
+								}
+
+								// Leave critical section
+								::LeaveCriticalSection(&pApp->m_csDeleteDaysAgo);
 							}
 						}
 					}
