@@ -3362,7 +3362,15 @@ BOOL CVideoDeviceDoc::CDeleteThread::DeleteOld(	CSortableFileFind& FileFind,
 		CTimeSpan TimeDiff = CurrentTime - DirTime;
 		if (TimeDiff.GetDays() >= llDeleteOlderThanDays &&
 			::IsExistingDir(FileFind.GetDirName(pos)))
-			::DeleteDir(FileFind.GetDirName(pos));
+		{
+			if (::DeleteDir(FileFind.GetDirName(pos)))
+			{
+				if (g_nLogLevel > 0)
+					::LogLine(_T("%s, deleted \"%s\""), m_pDoc->GetAssignedDeviceName(), FileFind.GetDirName(pos));
+			}
+			else
+				::LogLine(_T("%s, failed to delete \"%s\""), m_pDoc->GetAssignedDeviceName(), FileFind.GetDirName(pos));
+		}
 
 		// Do Exit?
 		if (DoExit())
@@ -3491,11 +3499,6 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 							// Delete old
 							if (!DeleteOld(FileFind, llDaysAgo, CurrentTime))
 								return 0; // Exit Thread
-
-							// Log
-							CString sDaysAgo;
-							sDaysAgo.Format(_T("%I64d day%s ago"), llDaysAgo, llDaysAgo == 1 ? _T("") : _T("s"));
-							::LogLine(_T("%s, deleted %s"), m_pDoc->GetAssignedDeviceName(), sDaysAgo);
 						}
 						else
 						{
@@ -3537,11 +3540,6 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 									// Delete old
 									if (!DeleteOld(FileFind, llDaysAgo, CurrentTime))
 										return 0; // Exit Thread
-
-									// Log
-									CString sDaysAgo;
-									sDaysAgo.Format(_T("%I64d day%s ago"), llDaysAgo, llDaysAgo == 1 ? _T("") : _T("s"));
-									::LogLine(_T("%s, deleted %s"), m_pDoc->GetAssignedDeviceName(), sDaysAgo);
 								}
 								else
 								{
