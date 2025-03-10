@@ -2,10 +2,12 @@ CONTACAM HISTORY
 
 9.9.25 (Month XXth 2025)
 
-- Fixed Apache not starting for UNC DocRoot paths
-  (since Apache 2.4.60 a UNCList directive is needed)
 - When the available harddisk space becomes low, delete the oldest 
   recordings from all cameras equally
+- Fixed Apache not starting for UNC DocRoot paths
+  (since Apache 2.4.60 a UNCList directive is needed)
+- Updated internal web server to Apache 2.4.63 and PHP 8.2.27
+  (Apache and PHP both with OpenSSL 3.3.2)
 - Japanese translation (thanks to coolvitto)
 
 9.9.24 (October 21st 2024)
