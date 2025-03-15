@@ -5,7 +5,6 @@
 #include "stdafx.h"
 #include "XMLite.h"
 #include <iostream>
-#include <sstream>
 #include <string>
 
 #ifdef _DEBUG

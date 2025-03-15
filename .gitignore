@@ -6,8 +6,11 @@
 *.log
 *.tlog
 *.obj
+*.iobj
 *.o
 *.d
+*.recipe
+*.FileListAbsolute.txt
 /Bin/
 /Obj/
 /ContaCamService/Release/ContaCamService.exe
