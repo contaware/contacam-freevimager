@@ -44,6 +44,9 @@ $ CC=cl ./configure --prefix=/c/Users/Utente/source/repos/contacam-freevimager/f
 $ make
 $ make install
 
+To update get from https://www.videolan.org/developers/x264.html and replace:
+C:\Users\Utente\source\repos\contacam-freevimager\ffmpeg\msvc\src\x264-master
+
 
 Open config_msvc_prompt.bat to build ffmpeg
 -------------------------------------------
