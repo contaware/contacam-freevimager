@@ -1,6 +1,6 @@
 @echo off
 
-rem call Visual Studio Command Prompt
+REM call Visual Studio Command Prompt
 if exist "%PROGRAMFILES(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" (
 	for /f "usebackq tokens=*" %%i in (`"%PROGRAMFILES(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath`) do (
 		set LatestVSInstallDir=%%i
@@ -26,17 +26,17 @@ if exist "%LatestVSInstallDir%\VC\Auxiliary\Build\vcvarsall.bat" (
 	goto :EOF
 )
 
-rem wait 2 seconds to let the user read the output from the above command
+REM wait 2 seconds to let the user read the output from the above command
 echo Wait that msys2 starts...
 ping -n 3 127.0.0.1>nul
 
-rem set path to external include and lib (libx264)
+REM set path to external include and lib (libx264)
 @set BATCHDIR=%~dp0
 @set INCLUDE=%BATCHDIR%msvc\include;%INCLUDE%
 @set LIB=%BATCHDIR%msvc\lib;%LIB%
 
-rem call msys2_shell.cmd trying common places
-rem -use-full-path will inherit also the PATH environment variable
+REM call msys2_shell.cmd trying common places
+REM -use-full-path will inherit also the PATH environment variable
 if exist "c:\msys64\msys2_shell.cmd" (
 	call "c:\msys64\msys2_shell.cmd" -mingw32 -use-full-path
 ) else if exist "d:\msys64\msys2_shell.cmd" (
