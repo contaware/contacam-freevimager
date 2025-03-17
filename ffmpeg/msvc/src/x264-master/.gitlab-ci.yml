@@ -17,13 +17,13 @@ stages:
     _TRIPLET: "i686-w64-mingw32"
     _PLATFORMSUFFIX: ".exe"
     _WRAPPER: "wine"
-    _CONTRIB_URL: "https://artifacts.videolan.org/vlc/win32/"
+    _CONTRIB_URL: "https://artifacts.videolan.org/vlc/win32-llvm/"
 
 .variables-win64: &variables-win64
     _TRIPLET: "x86_64-w64-mingw32"
     _PLATFORMSUFFIX: ".exe"
-    _WRAPPER: "wine64"
-    _CONTRIB_URL: "https://artifacts.videolan.org/vlc/win64/"
+    _WRAPPER: "wine"
+    _CONTRIB_URL: "https://artifacts.videolan.org/vlc/win64-llvm/"
 
 .variables-win-armv7: &variables-win-armv7
     _TRIPLET: "armv7-w64-mingw32"
@@ -42,6 +42,7 @@ stages:
     _CONTRIB_URL: "https://artifacts.videolan.org/vlc/macos-x86_64/"
     _XCFLAGS: "-arch x86_64"
     _XLDFLAGS: "-arch x86_64"
+    _BIN_PATH: /Users/videolanci/sandbox/bin
 
 .variables-macos-arm64: &variables-macos-arm64
     _TRIPLET: "aarch64-apple-darwin19"
@@ -50,6 +51,21 @@ stages:
     _CONTRIB_URL: "https://artifacts.videolan.org/vlc/macos-arm64/"
     _XCFLAGS: "-arch arm64"
     _XLDFLAGS: "-arch arm64"
+    _BIN_PATH: /Users/videolanci/sandbox/bin
+
+.variables-android-arm: &variables-android-arm
+    _TRIPLET: "arm-linux-androideabi"
+    _CLANG_TRIPLET: "armv7a-linux-androideabi"
+    _ANDROID_VERSION: "21"
+    _PLATFORMSUFFIX: ""
+    _WRAPPER: ""
+
+.variables-android-aarch64: &variables-android-aarch64
+    _TRIPLET: "aarch64-linux-android"
+    _CLANG_TRIPLET: "aarch64-linux-android"
+    _ANDROID_VERSION: "21"
+    _PLATFORMSUFFIX: ""
+    _WRAPPER: ""
 
 .build:
     stage: build
@@ -77,11 +93,12 @@ stages:
             - x264${_PLATFORMSUFFIX}
             - checkasm8${_PLATFORMSUFFIX}
             - checkasm10${_PLATFORMSUFFIX}
+            - config.log
         expire_in: 1 week
 
 build-debian-amd64:
     extends: .build
-    image: registry.videolan.org/x264-debian-unstable:20190404162201
+    image: registry.videolan.org/vlc-debian-unstable:20240212151604
     tags:
         - docker
         - amd64
@@ -89,7 +106,7 @@ build-debian-amd64:
 
 build-debian-aarch64:
     extends: .build
-    image: registry.videolan.org/x264-debian-unstable-aarch64:20190716192245
+    image: registry.videolan.org/x264-debian-unstable-aarch64:20211206141032
     tags:
         - docker
         - aarch64
@@ -97,16 +114,18 @@ build-debian-aarch64:
 
 .build-win:
     extends: build-debian-amd64
+    image: registry.videolan.org/vlc-debian-llvm-msvcrt:20240212151604
     script: |
         set -x
         LOCAL_INSTALL_DIR=`pwd`/${_TRIPLET}
+        export PKGCONFIG=pkg-config
         export PKG_CONFIG_LIBDIR=${LOCAL_INSTALL_DIR}/lib/pkgconfig
         curl -f -o vlc-contrib.txt ${_CONTRIB_URL}
         CONTRIB_NAME=$(sed -n -e "s@.*href=\"\(vlc-contrib-${_TRIPLET}-[^\"]*\.tar\.bz2\)\".*@\1@p" vlc-contrib.txt | sed -n -e '1p')
         curl -f -o vlc-contrib-${_TRIPLET}-latest.tar.bz2 ${_CONTRIB_URL}${CONTRIB_NAME}
         bunzip2 vlc-contrib-${_TRIPLET}-latest.tar.bz2
         tar xvf vlc-contrib-${_TRIPLET}-latest.tar
-        sed -i.bak -e "s#@@CONTRIB_PREFIX@@#${LOCAL_INSTALL_DIR}#g" ${PKG_CONFIG_LIBDIR}/*.pc
+        perl -pi -e "s'@@CONTRIB_PREFIX@@'$(sed -e "s/'/\\\\'/g" <<< "${LOCAL_INSTALL_DIR}")'g" ${PKG_CONFIG_LIBDIR}/*.pc
         git clone --depth 1 --branch master https://github.com/l-smash/l-smash.git lsmash
         cd lsmash
         ./configure --prefix="${LOCAL_INSTALL_DIR}" --target-os="${_TRIPLET}" --cross-prefix="${_TRIPLET}-"
@@ -126,7 +145,7 @@ build-win64:
 
 .build-llvm-mingw:
     extends: .build
-    image: registry.videolan.org/vlc-debian-llvm-mingw:20200703084018
+    image: registry.videolan.org/vlc-debian-llvm-ucrt:20240212151604
     tags:
         - docker
         - amd64
@@ -147,6 +166,7 @@ build-llvm-mingw-aarch64:
     extends: .build
     script: |
         set -x
+        export PATH="${_BIN_PATH}:$PATH"
         LOCAL_INSTALL_DIR=`pwd`/${_TRIPLET}
         export PKG_CONFIG_LIBDIR=${LOCAL_INSTALL_DIR}/lib/pkgconfig
         curl -f -o vlc-contrib.txt ${_CONTRIB_URL}
@@ -154,7 +174,7 @@ build-llvm-mingw-aarch64:
         curl -f -o vlc-contrib-${_TRIPLET}-latest.tar.bz2 ${_CONTRIB_URL}${CONTRIB_NAME}
         bunzip2 vlc-contrib-${_TRIPLET}-latest.tar.bz2
         tar xvf vlc-contrib-${_TRIPLET}-latest.tar
-        sed -i.bak -e "s#@@CONTRIB_PREFIX@@#${LOCAL_INSTALL_DIR}#g" ${PKG_CONFIG_LIBDIR}/*.pc
+        perl -pi -e "s'@@CONTRIB_PREFIX@@'$(sed -e "s/'/\\\\'/g" <<< "${LOCAL_INSTALL_DIR}")'g" ${PKG_CONFIG_LIBDIR}/*.pc
         git clone --depth 1 --branch master https://github.com/l-smash/l-smash.git lsmash
         cd lsmash
         ./configure --prefix="${LOCAL_INSTALL_DIR}" --target-os="${_TRIPLET}" --extra-cflags="${_XCFLAGS}" --extra-ldflags="${_XLDFLAGS}"
@@ -168,15 +188,34 @@ build-macos-x86_64:
     extends: .build-macos
     tags:
         - amd64
-        - catalina
+        - monterey
     variables: *variables-macos-x86_64
 
 build-macos-arm64:
     extends: .build-macos
     tags:
         - amd64
-        - catalina
+        - monterey
     variables: *variables-macos-arm64
+
+.build-android:
+    extends: .build
+    image: registry.videolan.org/vlc-debian-android:20241118101328
+    tags:
+        - docker
+        - amd64
+    script: |
+        set -x
+        CC=${_CLANG_TRIPLET}${_ANDROID_VERSION}-clang AR=llvm-ar RANLIB=llvm-ranlib STRIP=llvm-strip PKGCONFIG=pkg-config ./configure --host="${_TRIPLET}" --enable-pic --enable-strip
+        make -j$(getconf _NPROCESSORS_ONLN) x264 checkasm
+
+build-android-arm:
+    extends: .build-android
+    variables: *variables-android-arm
+
+build-android-aarch64:
+    extends: .build-android
+    variables: *variables-android-aarch64
 
 .test: &test
     stage: test
@@ -221,6 +260,21 @@ test-macos-x86_64:
     dependencies:
         - build-macos-x86_64
     variables: *variables-macos-x86_64
+
+test-aarch64-qemu:
+    <<: *test
+    extends: build-debian-amd64
+    image: registry.videolan.org/x264-debian-unstable:20231113190916
+    dependencies:
+        - build-debian-aarch64
+    variables: *variables-debian-amd64
+    script: |
+        set -x
+        for size in 128 256 512 1024 2048; do
+            for tool in checkasm8 checkasm10; do
+                qemu-aarch64 -cpu max,sve-default-vector-length=256,sve$size=on -L /usr/aarch64-linux-gnu ./$tool
+            done
+        done
 
 .release: &release
     stage: release

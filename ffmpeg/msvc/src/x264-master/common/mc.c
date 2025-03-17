@@ -1,7 +1,7 @@
 /*****************************************************************************
  * mc.c: motion compensation
  *****************************************************************************
- * Copyright (C) 2003-2021 x264 project
+ * Copyright (C) 2003-2025 x264 project
  *
  * Authors: Laurent Aimar <fenrir@via.ecp.fr>
  *          Loren Merritt <lorenm@u.washington.edu>
@@ -40,6 +40,9 @@
 #endif
 #if HAVE_MSA
 #include "mips/mc.h"
+#endif
+#if HAVE_LSX
+#   include "loongarch/mc.h"
 #endif
 
 
@@ -423,7 +426,7 @@ static void integral_init4h( uint16_t *sum, pixel *pix, intptr_t stride )
     int v = pix[0]+pix[1]+pix[2]+pix[3];
     for( int x = 0; x < stride-4; x++ )
     {
-        sum[x] = v + sum[x-stride];
+        sum[x] = (uint16_t)(v + sum[x-stride]);
         v += pix[x+4] - pix[x];
     }
 }
@@ -433,7 +436,7 @@ static void integral_init8h( uint16_t *sum, pixel *pix, intptr_t stride )
     int v = pix[0]+pix[1]+pix[2]+pix[3]+pix[4]+pix[5]+pix[6]+pix[7];
     for( int x = 0; x < stride-8; x++ )
     {
-        sum[x] = v + sum[x-stride];
+        sum[x] = (uint16_t)(v + sum[x-stride]);
         v += pix[x+8] - pix[x];
     }
 }
@@ -441,15 +444,15 @@ static void integral_init8h( uint16_t *sum, pixel *pix, intptr_t stride )
 static void integral_init4v( uint16_t *sum8, uint16_t *sum4, intptr_t stride )
 {
     for( int x = 0; x < stride-8; x++ )
-        sum4[x] = sum8[x+4*stride] - sum8[x];
+        sum4[x] = (uint16_t)(sum8[x+4*stride] - sum8[x]);
     for( int x = 0; x < stride-8; x++ )
-        sum8[x] = sum8[x+8*stride] + sum8[x+8*stride+4] - sum8[x] - sum8[x+4];
+        sum8[x] = (uint16_t)(sum8[x+8*stride] + sum8[x+8*stride+4] - sum8[x] - sum8[x+4]);
 }
 
 static void integral_init8v( uint16_t *sum8, intptr_t stride )
 {
     for( int x = 0; x < stride-8; x++ )
-        sum8[x] = sum8[x+8*stride] - sum8[x];
+        sum8[x] = (uint16_t)(sum8[x+8*stride] - sum8[x]);
 }
 
 void x264_frame_init_lowres( x264_t *h, x264_frame_t *frame )
@@ -550,8 +553,8 @@ static void mbtree_propagate_list( x264_t *h, uint16_t *ref_costs, int16_t (*mvs
 
         int x = mvs[i][0];
         int y = mvs[i][1];
-        unsigned mbx = (x>>5)+i;
-        unsigned mby = (y>>5)+mb_y;
+        unsigned mbx = (unsigned)((x>>5)+i);
+        unsigned mby = (unsigned)((y>>5)+mb_y);
         unsigned idx0 = mbx + mby * stride;
         unsigned idx2 = idx0 + stride;
         x &= 31;
@@ -686,6 +689,9 @@ void x264_mc_init( uint32_t cpu, x264_mc_functions_t *pf, int cpu_independent )
 #if HAVE_MSA
     if( cpu&X264_CPU_MSA )
         x264_mc_init_mips( cpu, pf );
+#endif
+#if HAVE_LSX
+    x264_mc_init_loongarch( cpu, pf );
 #endif
 
     if( cpu_independent )

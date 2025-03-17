@@ -1,7 +1,7 @@
 /****************************************************************************
  * checkasm-aarch64.S: assembly check tool
  *****************************************************************************
- * Copyright (C) 2015-2021 x264 project
+ * Copyright (C) 2015-2025 x264 project
  *
  * Authors: Martin Storsjo <martin@martin.st>
  *
@@ -164,3 +164,15 @@ function checkasm_call, export=1
     ldp         x29, x30, [sp], #16
     ret
 endfunc
+
+#if HAVE_SVE
+ENABLE_SVE
+
+function checkasm_sve_length, export=1
+    cntb        x0
+    lsl         x0,  x0,  #3
+    ret
+endfunc
+
+DISABLE_SVE
+#endif

@@ -1,7 +1,7 @@
 /*****************************************************************************
  * osdep.h: platform-specific code
  *****************************************************************************
- * Copyright (C) 2007-2021 x264 project
+ * Copyright (C) 2007-2025 x264 project
  *
  * Authors: Loren Merritt <lorenm@u.washington.edu>
  *          Laurent Aimar <fenrir@via.ecp.fr>
@@ -314,7 +314,7 @@ static inline int x264_is_regular_file( FILE *filehandle )
 
 #define EXPAND(x) x
 
-#if ARCH_X86 || ARCH_X86_64
+#if ARCH_X86 || ARCH_X86_64 || ARCH_LOONGARCH
 #define NATIVE_ALIGN 64
 #define ALIGNED_32( var ) DECLARE_ALIGNED( var, 32 )
 #define ALIGNED_64( var ) DECLARE_ALIGNED( var, 64 )
@@ -434,7 +434,7 @@ X264_API int x264_threading_init( void );
 static ALWAYS_INLINE int x264_pthread_fetch_and_add( int *val, int add, x264_pthread_mutex_t *mutex )
 {
 #if HAVE_THREAD
-#if defined(__GNUC__) && (__GNUC__ > 4 || __GNUC__ == 4 && __GNUC_MINOR__ > 0) && (ARCH_X86 || ARCH_X86_64)
+#if defined(__GNUC__) && (__GNUC__ > 4 || __GNUC__ == 4 && __GNUC_MINOR__ > 0) && HAVE_SYNC_FETCH_AND_ADD
     return __sync_fetch_and_add( val, add );
 #else
     x264_pthread_mutex_lock( mutex );
@@ -496,7 +496,7 @@ static ALWAYS_INLINE uintptr_t endian_fix( uintptr_t x )
 }
 static ALWAYS_INLINE uint16_t endian_fix16( uint16_t x )
 {
-    return (x<<8)|(x>>8);
+    return (uint16_t)((x<<8)|(x>>8));
 }
 #endif
 
@@ -550,31 +550,6 @@ static ALWAYS_INLINE void x264_prefetch( void *p )
 #define x264_prefetch(x) __builtin_prefetch(x)
 #else
 #define x264_prefetch(x)
-#endif
-
-#if HAVE_POSIXTHREAD
-#if SYS_WINDOWS
-#define x264_lower_thread_priority(p)\
-{\
-    x264_pthread_t handle = pthread_self();\
-    struct sched_param sp;\
-    int policy = SCHED_OTHER;\
-    pthread_getschedparam( handle, &policy, &sp );\
-    sp.sched_priority -= p;\
-    pthread_setschedparam( handle, policy, &sp );\
-}
-#elif SYS_HAIKU
-#include <OS.h>
-#define x264_lower_thread_priority(p)\
-    { UNUSED status_t nice_ret = set_thread_priority( find_thread( NULL ), B_LOW_PRIORITY ); }
-#else
-#include <unistd.h>
-#define x264_lower_thread_priority(p) { UNUSED int nice_ret = nice(p); }
-#endif /* SYS_WINDOWS */
-#elif HAVE_WIN32THREAD
-#define x264_lower_thread_priority(p) SetThreadPriority( GetCurrentThread(), X264_MAX( -2, -p ) )
-#else
-#define x264_lower_thread_priority(p)
 #endif
 
 #endif /* X264_OSDEP_H */

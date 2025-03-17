@@ -1,7 +1,7 @@
 /*****************************************************************************
  * x264: top-level x264cli functions
  *****************************************************************************
- * Copyright (C) 2003-2021 x264 project
+ * Copyright (C) 2003-2025 x264 project
  *
  * Authors: Loren Merritt <lorenm@u.washington.edu>
  *          Laurent Aimar <fenrir@via.ecp.fr>
@@ -32,6 +32,11 @@
 /* The following two defines must be located before the inclusion of any system header files. */
 #define WINVER       0x0500
 #define _WIN32_WINNT 0x0500
+#endif
+
+#include "x264cli.h"
+
+#ifdef _WIN32
 #include <windows.h>
 #include <io.h>       /* _setmode() */
 #include <fcntl.h>    /* _O_BINARY */
@@ -39,7 +44,6 @@
 
 #include <signal.h>
 #include <getopt.h>
-#include "x264cli.h"
 #include "input/input.h"
 #include "output/output.h"
 #include "filters/filters.h"
@@ -495,7 +499,7 @@ static void help( x264_param_t *defaults, int longhelp )
         " .mkv -> Matroska\n"
         " .flv -> Flash Video\n"
         " .mp4 -> MP4 if compiled with GPAC or L-SMASH support (%s)\n"
-        "Output bit depth: %s\n."
+        "Output bit depth: %s\n"
         "\n"
         "Options:\n"
         "\n"
@@ -1673,11 +1677,16 @@ generic_option:
     /* init threaded input while the information about the input video is unaltered by filtering */
 #if HAVE_THREAD
     const cli_input_t *thread_input;
-    if( HAVE_BITDEPTH8 && param->i_bitdepth == 8 )
+#if HAVE_BITDEPTH8
+    if( param->i_bitdepth == 8 )
         thread_input = &thread_8_input;
-    else if( HAVE_BITDEPTH10 && param->i_bitdepth == 10 )
+    else
+#endif
+#if HAVE_BITDEPTH10
+    if( param->i_bitdepth == 10 )
         thread_input = &thread_10_input;
     else
+#endif
         thread_input = NULL;
 
     if( thread_input && info.thread_safe && (b_thread_input || param->i_threads > 1
@@ -1797,18 +1806,26 @@ static void parse_qpfile( cli_opt_t *opt, x264_picture_t *pic, int i_frame )
 {
     int num = -1;
     char type;
+    char buf[100];
     while( num < i_frame )
     {
         int64_t file_pos = ftell( opt->qpfile );
         int qp = -1;
-        int ret = fscanf( opt->qpfile, "%d %c%*[ \t]%d\n", &num, &type, &qp );
+        int ret = fscanf( opt->qpfile, " %99[^\n]\n", buf );
+        if( ret == 1 )
+        {
+            ret = sscanf( buf, "%d %c %d", &num, &type, &qp );
+            if( ret == EOF )
+                ret = 0;
+        }
         pic->i_type = X264_TYPE_AUTO;
         pic->i_qpplus1 = X264_QP_AUTO;
         if( num > i_frame || ret == EOF )
         {
-            if( file_pos < 0 || fseek( opt->qpfile, file_pos, SEEK_SET ) )
+            if( ret == EOF || file_pos < 0 || fseek( opt->qpfile, file_pos, SEEK_SET ) )
             {
-                x264_cli_log( "x264", X264_LOG_ERROR, "qpfile seeking failed\n" );
+                if( ret != EOF )
+                    x264_cli_log( "x264", X264_LOG_ERROR, "qpfile seeking failed\n" );
                 fclose( opt->qpfile );
                 opt->qpfile = NULL;
             }
@@ -1816,8 +1833,6 @@ static void parse_qpfile( cli_opt_t *opt, x264_picture_t *pic, int i_frame )
         }
         if( num < i_frame && ret >= 2 )
             continue;
-        if( ret == 3 && qp >= 0 )
-            pic->i_qpplus1 = qp+1;
         if     ( type == 'I' ) pic->i_type = X264_TYPE_IDR;
         else if( type == 'i' ) pic->i_type = X264_TYPE_I;
         else if( type == 'K' ) pic->i_type = X264_TYPE_KEYFRAME;
@@ -1832,6 +1847,8 @@ static void parse_qpfile( cli_opt_t *opt, x264_picture_t *pic, int i_frame )
             opt->qpfile = NULL;
             break;
         }
+        if( ret == 3 && qp >= 0 )
+            pic->i_qpplus1 = qp+1;
     }
 }
 
