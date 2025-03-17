@@ -1285,14 +1285,18 @@ BOOL CAboutDlg::OnInitDialog()
 	CEdit* pPhysMem = (CEdit*)GetDlgItem(IDC_PHYSMEM);
 	pPhysMem->SetWindowText(sPhysMem);
 
-	// Compilation Time & Date
-	CString sCompilationTime;
-	sCompilationTime =	CString(_T("(")) +
-						CString(_T(__TIME__)) +
-						CString(_T("  ")) +
-						CString(_T(__DATE__)) +
-						CString(_T(")"));
-	SetDlgItemText(IDC_VERSION, sCompilationTime);
+	// Compilation Time and Compiler Version
+	CString sCompVer;
+	sCompVer.Format(_T("%02d.%02d.%05d"), _MSC_VER / 100, _MSC_VER % 100, _MSC_FULL_VER % 100000);
+	CString sCompilation;
+	sCompilation =	CString(_T("(")) +
+					CString(_T(__TIME__)) +
+					CString(_T("  ")) +
+					CString(_T(__DATE__)) +
+					CString(_T("  ")) +
+					sCompVer +
+					CString(_T(")"));
+	SetDlgItemText(IDC_VERSION, sCompilation);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
