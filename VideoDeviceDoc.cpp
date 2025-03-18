@@ -2800,7 +2800,7 @@ int CVideoDeviceDoc::CRtspThread::Work()
 
 			// Get underlying transport, that may change while streaming,
 			// so poll it regularly.
-			// The offset of lower_transport from RTSPState in rtsp.h
+			// The offset of lower_transport from RTSPState in ffmpeg\libavformat\rtsp.h
 			// (cannot include rtsp.h here as it doesn't compile)
 			// has been calculated taking into account the padding/alignment
 			// for the int64_t variables.
