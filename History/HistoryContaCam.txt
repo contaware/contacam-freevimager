@@ -40,7 +40,7 @@ CONTACAM HISTORY
 9.9.22 (May 16th 2022)
 
 - Fixed a color shift problem happening with some cameras (thanks to
-  Ján Kovác for notifying the issue)
+  JÃ¡n KovÃ¡c for notifying the issue)
 - Added support for HeimVision
 - Added support for DroidCam and DroidCamX which are Android mjpeg 
   camera streaming Apps
@@ -213,7 +213,7 @@ CONTACAM HISTORY
   to control ContaCam through the Windows Task Scheduler
 - Added example buttons for typical external commands
 - Web interface multiple selection deletion
-  (sponsored by Grün Stadt Zürich)
+  (sponsored by GrÃ¼n Stadt ZÃ¼rich)
 - The web interface video player was enhanced with a 2.0x play speed
 - In web interface we have now only one camera source obscure button
   (like in ContaCam program)
@@ -263,7 +263,7 @@ CONTACAM HISTORY
 - Building the application with LARGEADDRESSAWARE set to have up to
   the double of address space
 - Added support for flipping video horizontally and vertically
-  (rotating by 180° can be achieved by enabling both flips)
+  (rotating by 180Â° can be achieved by enabling both flips)
 - Scheduler is now only for the recordings and not for the
   snapshots (scheduling for the snapshots can be achieved with
   a batch script executed on snapshot)
@@ -650,8 +650,8 @@ CONTACAM HISTORY
 
 3.9.9 (May 1st 2012)
 
-- Possibility to rotate the video source by 180°
-- Moved the De-Interlace and the Rotate 180° commands from
+- Possibility to rotate the video source by 180Â°
+- Moved the De-Interlace and the Rotate 180Â° commands from
   the Capture menu to Device Settings - General Tab
 - The Device Assistant dialog was not storing the changes to the
   registry (or INI file) when pressing OK. These settings were
@@ -746,7 +746,7 @@ CONTACAM HISTORY
 - New compile with MFC security update (MS11-025 and KB2538241)
 - Fixed important bug which prevented the internal web server to
   start on localizations with a non-ASCII application data path
-  (for example: "Data aplikací", many thanks to Majo)
+  (for example: "Data aplikacÃ­", many thanks to Majo)
 - Fixed next/prev. buttons of swf player when also avi recs
   or gifs only shown
 - Updated web interface to Prototype 1.7 / Scriptaculous 1.9.0
