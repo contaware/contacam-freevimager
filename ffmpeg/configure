@@ -2970,7 +2970,7 @@ libopus_encoder_deps="libopus"
 libopus_encoder_select="audio_frame_queue"
 librsvg_decoder_deps="librsvg"
 libshine_encoder_deps="libshine"
-libshine_encoder_select="audio_frame_queue"
+libshine_encoder_select="audio_frame_queue mpegaudioheader"
 libspeex_decoder_deps="libspeex"
 libspeex_encoder_deps="libspeex"
 libspeex_encoder_select="audio_frame_queue"
@@ -4941,6 +4941,7 @@ case $target_os in
         ;;
     netbsd)
         disable symver
+        enable section_data_rel_ro
         oss_indev_extralibs="-lossaudio"
         oss_outdev_extralibs="-lossaudio"
         enabled gcc || check_ldflags -Wl,-zmuldefs
@@ -4957,6 +4958,7 @@ case $target_os in
         disable symver
         ;;
     freebsd)
+        enable section_data_rel_ro
         ;;
     bsd/os)
         add_extralibs -lpoll -lgnugetopt
@@ -6915,7 +6917,6 @@ LD_LIB=$LD_LIB
 LD_PATH=$LD_PATH
 DLLTOOL=$dlltool
 WINDRES=$windres
-DEPWINDRES=$dep_cc
 DOXYGEN=$doxygen
 LDFLAGS=$LDFLAGS
 LDEXEFLAGS=$LDEXEFLAGS
@@ -7000,7 +7001,7 @@ cat > $TMPH <<EOF
 #define FFMPEG_CONFIG_H
 #define FFMPEG_CONFIGURATION "$(c_escape $FFMPEG_CONFIGURATION)"
 #define FFMPEG_LICENSE "$(c_escape $license)"
-#define CONFIG_THIS_YEAR 2021
+#define CONFIG_THIS_YEAR 2025
 #define FFMPEG_DATADIR "$(eval c_escape $datadir)"
 #define AVCONV_DATADIR "$(eval c_escape $datadir)"
 #define CC_IDENT "$(c_escape ${cc_ident:-Unknown compiler})"

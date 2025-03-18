@@ -131,10 +131,6 @@ static int rm_read_audio_stream_info(AVFormatContext *s, AVIOContext *pb,
     uint32_t version;
     int ret;
 
-    // Duplicate tags
-    if (st->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)
-        return AVERROR_INVALIDDATA;
-
     /* ra type header */
     version = avio_rb16(pb); /* version */
     if (version == 3) {
@@ -196,7 +192,8 @@ static int rm_read_audio_stream_info(AVFormatContext *s, AVIOContext *pb,
         st->codecpar->channels = avio_rb16(pb);
         if (version == 5) {
             ast->deint_id = avio_rl32(pb);
-            avio_read(pb, buf, 4);
+            if (avio_read(pb, buf, 4) != 4)
+                return AVERROR_INVALIDDATA;
             buf[4] = 0;
         } else {
             AV_WL32(buf, 0);
@@ -276,9 +273,9 @@ static int rm_read_audio_stream_info(AVFormatContext *s, AVIOContext *pb,
         case DEINT_ID_INT4:
             if (ast->coded_framesize > ast->audio_framesize ||
                 sub_packet_h <= 1 ||
-                ast->coded_framesize * (uint64_t)sub_packet_h > (2 + (sub_packet_h & 1)) * ast->audio_framesize)
+                ast->coded_framesize * (uint64_t)sub_packet_h > (2LL + (sub_packet_h & 1)) * ast->audio_framesize)
                 return AVERROR_INVALIDDATA;
-            if (ast->coded_framesize * (uint64_t)sub_packet_h != 2*ast->audio_framesize) {
+            if (ast->coded_framesize * (uint64_t)sub_packet_h != 2LL*ast->audio_framesize) {
                 avpriv_request_sample(s, "mismatching interleaver parameters");
                 return AVERROR_INVALIDDATA;
             }
@@ -333,6 +330,11 @@ int ff_rm_read_mdpr_codecdata(AVFormatContext *s, AVIOContext *pb,
         return AVERROR_INVALIDDATA;
     if (codec_data_size == 0)
         return 0;
+
+    // Duplicate tags
+    if (   st->codecpar->codec_type != AVMEDIA_TYPE_UNKNOWN
+        && st->codecpar->codec_type != AVMEDIA_TYPE_DATA)
+        return AVERROR_INVALIDDATA;
 
     avpriv_set_pts_info(st, 64, 1, 1000);
     codec_pos = avio_tell(pb);
@@ -567,6 +569,8 @@ static int rm_read_header(AVFormatContext *s)
     }
 
     tag_size = avio_rb32(pb);
+    if (tag_size < 0)
+        return AVERROR_INVALIDDATA;
     avio_skip(pb, tag_size - 8);
 
     for(;;) {

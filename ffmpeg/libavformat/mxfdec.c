@@ -197,7 +197,7 @@ typedef struct MXFDescriptor {
 typedef struct MXFIndexTableSegment {
     UID uid;
     enum MXFMetadataSetType type;
-    int edit_unit_byte_count;
+    unsigned edit_unit_byte_count;
     int index_sid;
     int body_sid;
     AVRational index_edit_rate;
@@ -472,7 +472,8 @@ static int mxf_decrypt_triplet(AVFormatContext *s, AVPacket *pkt, KLVPacket *klv
     if (size < 32 || size - 32 < orig_size || (int)orig_size != orig_size)
         return AVERROR_INVALIDDATA;
     avio_read(pb, ivec, 16);
-    avio_read(pb, tmpbuf, 16);
+    if (avio_read(pb, tmpbuf, 16) != 16)
+        return AVERROR_INVALIDDATA;
     if (mxf->aesc)
         av_aes_crypt(mxf->aesc, tmpbuf, tmpbuf, 1, ivec, 1);
     if (memcmp(tmpbuf, checkv, 16))
@@ -900,6 +901,9 @@ static int mxf_read_index_entry_array(AVIOContext *pb, MXFIndexTableSegment *seg
 {
     int i, length;
 
+    if (segment->temporal_offset_entries)
+        return AVERROR_INVALIDDATA;
+
     segment->nb_index_entries = avio_rb32(pb);
 
     length = avio_rb32(pb);
@@ -948,6 +952,9 @@ static int mxf_read_index_table_segment(void *arg, AVIOContext *pb, int tag, int
     case 0x3F0B:
         segment->index_edit_rate.num = avio_rb32(pb);
         segment->index_edit_rate.den = avio_rb32(pb);
+        if (segment->index_edit_rate.num <= 0 ||
+            segment->index_edit_rate.den <= 0)
+            return AVERROR_INVALIDDATA;
         av_log(NULL, AV_LOG_TRACE, "IndexEditRate %d/%d\n", segment->index_edit_rate.num,
                 segment->index_edit_rate.den);
         break;
@@ -1095,7 +1102,8 @@ static int mxf_read_indirect_value(void *arg, AVIOContext *pb, int size)
     if (size <= 17)
         return 0;
 
-    avio_read(pb, key, 17);
+    if (avio_read(pb, key, 17) != 17)
+        return AVERROR_INVALIDDATA;
     /* TODO: handle other types of of indirect values */
     if (memcmp(key, mxf_indirect_value_utf16le, 17) == 0) {
         return mxf_read_utf16le_string(pb, size - 17, &tagged_value->value);
@@ -1343,9 +1351,13 @@ static int mxf_edit_unit_absolute_offset(MXFContext *mxf, MXFIndexTable *index_t
         if (edit_unit < s->index_start_position + s->index_duration) {
             int64_t index = edit_unit - s->index_start_position;
 
-            if (s->edit_unit_byte_count)
+            if (s->edit_unit_byte_count) {
+                if (index > INT64_MAX / s->edit_unit_byte_count ||
+                    s->edit_unit_byte_count * index > INT64_MAX - offset_temp)
+                    return AVERROR_INVALIDDATA;
+
                 offset_temp += s->edit_unit_byte_count * index;
-            else if (s->nb_index_entries) {
+            } else if (s->nb_index_entries) {
                 if (s->nb_index_entries == 2 * s->index_duration + 1)
                     index *= 2;     /* Avid index */
 
@@ -1368,6 +1380,11 @@ static int mxf_edit_unit_absolute_offset(MXFContext *mxf, MXFIndexTable *index_t
             return mxf_absolute_bodysid_offset(mxf, index_table->body_sid, offset_temp, offset_out);
         } else {
             /* EditUnitByteCount == 0 for VBR indexes, which is fine since they use explicit StreamOffsets */
+            if (s->edit_unit_byte_count && (s->index_duration > INT64_MAX / s->edit_unit_byte_count ||
+                s->edit_unit_byte_count * s->index_duration > INT64_MAX - offset_temp)
+            )
+                return AVERROR_INVALIDDATA;
+
             offset_temp += s->edit_unit_byte_count * s->index_duration;
         }
     }

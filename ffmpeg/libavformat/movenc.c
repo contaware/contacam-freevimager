@@ -1470,6 +1470,10 @@ static int mov_get_codec_tag(AVFormatContext *s, MOVTrack *track)
 {
     int tag = track->par->codec_tag;
 
+    // "rtp " is used to distinguish internally created RTP-hint tracks
+    // (with rtp_ctx) from other tracks.
+    if (tag == MKTAG('r','t','p',' '))
+        tag = 0;
     if (!tag || (s->strict_std_compliance >= FF_COMPLIANCE_NORMAL &&
                  (track->par->codec_id == AV_CODEC_ID_DVVIDEO ||
                   track->par->codec_id == AV_CODEC_ID_RAWVIDEO ||
@@ -5034,6 +5038,12 @@ int ff_mov_write_packet(AVFormatContext *s, AVPacket *pkt)
     if (ret < 0)
         return ret;
 
+    if (pkt->pts != AV_NOPTS_VALUE &&
+        (uint64_t)pkt->dts - pkt->pts != (int32_t)((uint64_t)pkt->dts - pkt->pts)) {
+        av_log(s, AV_LOG_WARNING, "pts/dts pair unsupported\n");
+        return AVERROR_PATCHWELCOME;
+    }
+
     if (mov->flags & FF_MOV_FLAG_FRAGMENT) {
         int ret;
         if (mov->moov_written || mov->flags & FF_MOV_FLAG_EMPTY_MOOV) {
@@ -5090,12 +5100,13 @@ int ff_mov_write_packet(AVFormatContext *s, AVPacket *pkt)
         !TAG_IS_AVCI(trk->tag) &&
         (par->codec_id != AV_CODEC_ID_DNXHD)) {
         trk->vos_len  = par->extradata_size;
-        trk->vos_data = av_malloc(trk->vos_len);
+        trk->vos_data = av_malloc(trk->vos_len + AV_INPUT_BUFFER_PADDING_SIZE);
         if (!trk->vos_data) {
             ret = AVERROR(ENOMEM);
             goto err;
         }
         memcpy(trk->vos_data, par->extradata, trk->vos_len);
+        memset(trk->vos_data + trk->vos_len, 0, AV_INPUT_BUFFER_PADDING_SIZE);
     }
 
     if (par->codec_id == AV_CODEC_ID_AAC && pkt->size > 2 &&
@@ -5165,12 +5176,13 @@ int ff_mov_write_packet(AVFormatContext *s, AVPacket *pkt)
          par->codec_id == AV_CODEC_ID_AC3) && !trk->vos_len) {
         /* copy frame to create needed atoms */
         trk->vos_len  = size;
-        trk->vos_data = av_malloc(size);
+        trk->vos_data = av_malloc(size + AV_INPUT_BUFFER_PADDING_SIZE);
         if (!trk->vos_data) {
             ret = AVERROR(ENOMEM);
             goto err;
         }
         memcpy(trk->vos_data, pkt->data, size);
+        memset(trk->vos_data + size, 0, AV_INPUT_BUFFER_PADDING_SIZE);
     }
 
     if (trk->entry >= trk->cluster_capacity) {
@@ -5760,12 +5772,13 @@ static int mov_create_dvd_sub_decoder_specific_info(MOVTrack *track,
         cur += strspn(cur, "\n\r");
     }
     if (have_palette) {
-        track->vos_data = av_malloc(16*4);
+        track->vos_data = av_malloc(16*4 + AV_INPUT_BUFFER_PADDING_SIZE);
         if (!track->vos_data)
             return AVERROR(ENOMEM);
         for (i = 0; i < 16; i++) {
             AV_WB32(track->vos_data + i * 4, palette[i]);
         }
+        memset(track->vos_data + 16*4, 0, AV_INPUT_BUFFER_PADDING_SIZE);
         track->vos_len = 16 * 4;
     }
     st->codecpar->width = width;
@@ -6120,11 +6133,12 @@ static int mov_write_header(AVFormatContext *s)
                 mov_create_dvd_sub_decoder_specific_info(track, st);
             else if (!TAG_IS_AVCI(track->tag) && st->codecpar->codec_id != AV_CODEC_ID_DNXHD) {
                 track->vos_len  = st->codecpar->extradata_size;
-                track->vos_data = av_malloc(track->vos_len);
+                track->vos_data = av_malloc(track->vos_len + AV_INPUT_BUFFER_PADDING_SIZE);
                 if (!track->vos_data) {
                     return AVERROR(ENOMEM);
                 }
                 memcpy(track->vos_data, st->codecpar->extradata, track->vos_len);
+                memset(track->vos_data + track->vos_len, 0, AV_INPUT_BUFFER_PADDING_SIZE);
             }
         }
 
@@ -6382,10 +6396,11 @@ static int mov_write_trailer(AVFormatContext *s)
             AVCodecParameters *par = track->par;
 
             track->vos_len  = par->extradata_size;
-            track->vos_data = av_malloc(track->vos_len);
+            track->vos_data = av_malloc(track->vos_len + AV_INPUT_BUFFER_PADDING_SIZE);
             if (!track->vos_data)
                 return AVERROR(ENOMEM);
             memcpy(track->vos_data, par->extradata, track->vos_len);
+            memset(track->vos_data + track->vos_len, 0, AV_INPUT_BUFFER_PADDING_SIZE);
         }
         mov->need_rewrite_extradata = 0;
     }

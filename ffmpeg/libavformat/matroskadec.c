@@ -1393,7 +1393,7 @@ static int matroska_decode_buffer(uint8_t **buf, int *buf_size,
     case MATROSKA_TRACK_ENCODING_COMP_ZLIB:
     {
         z_stream zstream = { 0 };
-        if (inflateInit(&zstream) != Z_OK)
+        if (!pkt_size || inflateInit(&zstream) != Z_OK)
             return -1;
         zstream.next_in  = data;
         zstream.avail_in = isize;
@@ -1426,7 +1426,7 @@ static int matroska_decode_buffer(uint8_t **buf, int *buf_size,
     case MATROSKA_TRACK_ENCODING_COMP_BZLIB:
     {
         bz_stream bzstream = { 0 };
-        if (BZ2_bzDecompressInit(&bzstream, 0, 0) != BZ_OK)
+        if (!pkt_size || BZ2_bzDecompressInit(&bzstream, 0, 0) != BZ_OK)
             return -1;
         bzstream.next_in  = data;
         bzstream.avail_in = isize;
@@ -2412,6 +2412,10 @@ static int matroska_parse_tracks(AVFormatContext *s)
 
         if (track->time_scale < 0.01)
             track->time_scale = 1.0;
+
+        if (matroska->time_scale * track->time_scale > UINT_MAX)
+            return AVERROR_INVALIDDATA;
+
         avpriv_set_pts_info(st, 64, matroska->time_scale * track->time_scale,
                             1000 * 1000 * 1000);    /* 64 bit pts in ns */
 
@@ -2628,6 +2632,8 @@ static int matroska_read_header(AVFormatContext *s)
 
     if (!matroska->time_scale)
         matroska->time_scale = 1000000;
+    if (isnan(matroska->duration))
+        matroska->duration = 0;
     if (matroska->duration)
         matroska->ctx->duration = matroska->duration * matroska->time_scale *
                                   1000 / AV_TIME_BASE;
@@ -3625,7 +3631,9 @@ static CueDesc get_cue_desc(AVFormatContext *s, int64_t ts, int64_t cues_start) 
     int i;
     int nb_index_entries = s->streams[0]->nb_index_entries;
     AVIndexEntry *index_entries = s->streams[0]->index_entries;
-    if (ts >= matroska->duration * matroska->time_scale) return (CueDesc) {-1, -1, -1, -1};
+
+    if (ts >= (int64_t)(matroska->duration * matroska->time_scale))
+        return (CueDesc) {-1, -1, -1, -1};
     for (i = 1; i < nb_index_entries; i++) {
         if (index_entries[i - 1].timestamp * matroska->time_scale <= ts &&
             index_entries[i].timestamp * matroska->time_scale > ts) {
@@ -3779,15 +3787,18 @@ static int64_t webm_dash_manifest_compute_bandwidth(AVFormatContext *s, int64_t 
         int64_t prebuffer_ns = 1000000000;
         int64_t time_ns = st->index_entries[i].timestamp * matroska->time_scale;
         double nano_seconds_per_second = 1000000000.0;
-        int64_t prebuffered_ns = time_ns + prebuffer_ns;
+        int64_t prebuffered_ns;
         double prebuffer_bytes = 0.0;
         int64_t temp_prebuffer_ns = prebuffer_ns;
         int64_t pre_bytes, pre_ns;
         double pre_sec, prebuffer, bits_per_second;
         CueDesc desc_beg = get_cue_desc(s, time_ns, cues_start);
-
         // Start with the first Cue.
         CueDesc desc_end = desc_beg;
+
+        if (time_ns > INT64_MAX - prebuffer_ns)
+            return -1;
+        prebuffered_ns = time_ns + prebuffer_ns;
 
         // Figure out how much data we have downloaded for the prebuffer. This will
         // be used later to adjust the bits per sample to try.
@@ -3806,6 +3817,9 @@ static int64_t webm_dash_manifest_compute_bandwidth(AVFormatContext *s, int64_t 
             // The prebuffer ends in the last Cue. Estimate how much data was
             // prebuffered.
             pre_bytes = desc_end.end_offset - desc_end.start_offset;
+            if (desc_end.end_time_ns <= desc_end.start_time_ns ||
+                desc_end.end_time_ns - (uint64_t)desc_end.start_time_ns > INT64_MAX)
+                return -1;
             pre_ns = desc_end.end_time_ns - desc_end.start_time_ns;
             pre_sec = pre_ns / nano_seconds_per_second;
             prebuffer_bytes +=
@@ -3818,12 +3832,16 @@ static int64_t webm_dash_manifest_compute_bandwidth(AVFormatContext *s, int64_t 
             do {
                 int64_t desc_bytes = desc_end.end_offset - desc_beg.start_offset;
                 int64_t desc_ns = desc_end.end_time_ns - desc_beg.start_time_ns;
-                double desc_sec = desc_ns / nano_seconds_per_second;
-                double calc_bits_per_second = (desc_bytes * 8) / desc_sec;
+                double desc_sec, calc_bits_per_second, percent, mod_bits_per_second;
+                if (desc_bytes <= 0 || desc_bytes > INT64_MAX/8)
+                    return -1;
+
+                desc_sec = desc_ns / nano_seconds_per_second;
+                calc_bits_per_second = (desc_bytes * 8) / desc_sec;
 
                 // Drop the bps by the percentage of bytes buffered.
-                double percent = (desc_bytes - prebuffer_bytes) / desc_bytes;
-                double mod_bits_per_second = calc_bits_per_second * percent;
+                percent = (desc_bytes - prebuffer_bytes) / desc_bytes;
+                mod_bits_per_second = calc_bits_per_second * percent;
 
                 if (prebuffer < desc_sec) {
                     double search_sec =

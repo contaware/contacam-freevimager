@@ -125,6 +125,14 @@ static av_cold int init(AVFilterContext *ctx)
     if (ret < 0)
         goto fail;
 
+    if (pan->nb_output_channels > MAX_CHANNELS) {
+        av_log(ctx, AV_LOG_ERROR,
+               "af_pan supports a maximum of %d channels. "
+               "Feel free to ask for a higher limit.\n", MAX_CHANNELS);
+        ret = AVERROR_PATCHWELCOME;
+        goto fail;
+    }
+
     /* parse channel specifications */
     while ((arg = arg0 = av_strtok(NULL, "|", &tokenizer))) {
         /* channel name */
@@ -169,7 +177,7 @@ static av_cold int init(AVFilterContext *ctx)
         sign = 1;
         while (1) {
             gain = 1;
-            if (sscanf(arg, "%lf%n *%n", &gain, &len, &len))
+            if (sscanf(arg, "%lf%n *%n", &gain, &len, &len) >= 1)
                 arg += len;
             if (parse_channel_name(&arg, &in_ch_id, &named)){
                 av_log(ctx, AV_LOG_ERROR,

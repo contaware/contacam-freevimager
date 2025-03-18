@@ -647,6 +647,10 @@ smv_retry:
                 goto smv_out;
             }
             size = avio_rl24(s->pb);
+            if (size > wav->smv_block_size) {
+                ret = AVERROR_EOF;
+                goto smv_out;
+            }
             ret  = av_get_packet(s->pb, pkt, size);
             if (ret < 0)
                 goto smv_out;
@@ -685,6 +689,8 @@ smv_out:
                 goto smv_retry;
             return AVERROR_EOF;
         }
+        if (INT64_MAX - left < avio_tell(s->pb))
+            return AVERROR_INVALIDDATA;
         wav->data_end = avio_tell(s->pb) + left;
     }
 
@@ -785,8 +791,7 @@ static int w64_read_header(AVFormatContext *s)
     uint8_t guid[16];
     int ret;
 
-    avio_read(pb, guid, 16);
-    if (memcmp(guid, ff_w64_guid_riff, 16))
+    if (avio_read(pb, guid, 16) != 16 || memcmp(guid, ff_w64_guid_riff, 16))
         return AVERROR_INVALIDDATA;
 
     /* riff + wave + fmt + sizes */

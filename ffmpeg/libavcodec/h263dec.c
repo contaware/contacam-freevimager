@@ -289,7 +289,7 @@ static int decode_slice(MpegEncContext *s)
                 ff_er_add_slice(&s->er, s->resync_mb_x, s->resync_mb_y,
                                 s->mb_x, s->mb_y, ER_MB_ERROR & part_mask);
 
-                if (s->avctx->err_recognition & AV_EF_IGNORE_ERR)
+                if ((s->avctx->err_recognition & AV_EF_IGNORE_ERR) && get_bits_left(&s->gb) > 0)
                     continue;
                 return AVERROR_INVALIDDATA;
             }
@@ -414,7 +414,9 @@ int ff_h263_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
     MpegEncContext *s  = avctx->priv_data;
     int ret;
     int slice_ret = 0;
+
     AVFrame *pict = data;
+    int bak_width, bak_height;
 
     /* no supplementary picture */
     if (buf_size == 0) {
@@ -478,6 +480,9 @@ retry:
         // we need the idct permutation for reading a custom matrix
         ff_mpv_idct_init(s);
 
+    bak_width  = s->width;
+    bak_height = s->height;
+
     /* let's go :-) */
     if (CONFIG_WMV2_DECODER && s->msmpeg4_version == 5) {
         ret = ff_wmv2_decode_picture_header(s);
@@ -500,11 +505,12 @@ retry:
     }
 
     if (ret < 0 || ret == FRAME_SKIPPED) {
-        if (   s->width  != avctx->coded_width
-            || s->height != avctx->coded_height) {
+        if (   s->width  != bak_width
+            || s->height != bak_height) {
                 av_log(s->avctx, AV_LOG_WARNING, "Reverting picture dimensions change due to header decoding failure\n");
-                s->width = avctx->coded_width;
-                s->height= avctx->coded_height;
+                s->width = bak_width;
+                s->height= bak_height;
+
         }
     }
     if (ret == FRAME_SKIPPED)
@@ -532,6 +538,8 @@ retry:
     avctx->has_b_frames = !s->low_delay;
 
     if (CONFIG_MPEG4_DECODER && avctx->codec_id == AV_CODEC_ID_MPEG4) {
+        if (s->pict_type != AV_PICTURE_TYPE_B && s->mb_num/2 > get_bits_left(&s->gb))
+            return AVERROR_INVALIDDATA;
         if (ff_mpeg4_workaround_bugs(avctx) == 1)
             goto retry;
     }

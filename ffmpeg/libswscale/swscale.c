@@ -219,7 +219,7 @@ static void lumRangeFromJpeg16_c(int16_t *_dst, int width)
     int i;
     int32_t *dst = (int32_t *) _dst;
     for (i = 0; i < width; i++)
-        dst[i] = (dst[i]*(14071/4) + (33561947<<4)/4)>>12;
+        dst[i] = ((int)(dst[i]*(14071U/4) + (33561947<<4)/4)) >> 12;
 }
 
 
@@ -778,7 +778,8 @@ int attribute_align_arg sws_scale(struct SwsContext *c,
 
     if ((srcSliceY & (macro_height-1)) ||
         ((srcSliceH& (macro_height-1)) && srcSliceY + srcSliceH != c->srcH) ||
-        srcSliceY + srcSliceH > c->srcH) {
+        srcSliceY + srcSliceH > c->srcH ||
+        (isBayer(c->srcFormat) && srcSliceH <= 1)) {
         av_log(c, AV_LOG_ERROR, "Slice parameters %d, %d are invalid\n", srcSliceY, srcSliceH);
         return AVERROR(EINVAL);
     }

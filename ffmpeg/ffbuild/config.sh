@@ -10,10 +10,10 @@ LIBPREF=lib
 LIBSUF=.a
 
 extralibs_avutil="  "
-extralibs_avcodec="user32.lib ws2_32.lib vfw32.lib user32.lib secur32.lib -libpath:C:/uimager/ffmpeg/msvc/lib libx264.lib psapi.lib advapi32.lib shell32.lib ole32.lib "
-extralibs_avformat="user32.lib ws2_32.lib vfw32.lib user32.lib secur32.lib -libpath:C:/uimager/ffmpeg/msvc/lib libx264.lib psapi.lib advapi32.lib shell32.lib ole32.lib "
-extralibs_avdevice="user32.lib ws2_32.lib vfw32.lib user32.lib secur32.lib -libpath:C:/uimager/ffmpeg/msvc/lib libx264.lib psapi.lib advapi32.lib shell32.lib ole32.lib "
-extralibs_avfilter="user32.lib ws2_32.lib vfw32.lib user32.lib secur32.lib -libpath:C:/uimager/ffmpeg/msvc/lib libx264.lib psapi.lib advapi32.lib shell32.lib ole32.lib "
+extralibs_avcodec="user32.lib ws2_32.lib vfw32.lib user32.lib secur32.lib -libpath:C:/Users/Utente/source/repos/contacam-freevimager/ffmpeg/msvc/lib libx264.lib psapi.lib advapi32.lib shell32.lib ole32.lib "
+extralibs_avformat="user32.lib ws2_32.lib vfw32.lib user32.lib secur32.lib -libpath:C:/Users/Utente/source/repos/contacam-freevimager/ffmpeg/msvc/lib libx264.lib psapi.lib advapi32.lib shell32.lib ole32.lib "
+extralibs_avdevice="user32.lib ws2_32.lib vfw32.lib user32.lib secur32.lib -libpath:C:/Users/Utente/source/repos/contacam-freevimager/ffmpeg/msvc/lib libx264.lib psapi.lib advapi32.lib shell32.lib ole32.lib "
+extralibs_avfilter="user32.lib ws2_32.lib vfw32.lib user32.lib secur32.lib -libpath:C:/Users/Utente/source/repos/contacam-freevimager/ffmpeg/msvc/lib libx264.lib psapi.lib advapi32.lib shell32.lib ole32.lib "
 extralibs_avresample=""
 extralibs_postproc=""
 extralibs_swscale=""

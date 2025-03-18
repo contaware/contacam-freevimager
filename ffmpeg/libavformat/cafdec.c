@@ -222,7 +222,7 @@ static int read_pakt_chunk(AVFormatContext *s, int64_t size)
         }
     }
 
-    if (avio_tell(pb) - ccount > size) {
+    if (avio_tell(pb) - ccount > size || size > INT64_MAX - ccount) {
         av_log(s, AV_LOG_ERROR, "error reading packet table\n");
         return AVERROR_INVALIDDATA;
     }
@@ -243,6 +243,8 @@ static void read_info_chunk(AVFormatContext *s, int64_t size)
         char value[1024];
         avio_get_str(pb, INT_MAX, key, sizeof(key));
         avio_get_str(pb, INT_MAX, value, sizeof(value));
+        if (!*key)
+            continue;
         av_dict_set(&s->metadata, key, value, 0);
     }
 }
@@ -292,6 +294,9 @@ static int read_header(AVFormatContext *s)
             avio_skip(pb, 4); /* edit count */
             caf->data_start = avio_tell(pb);
             caf->data_size  = size < 0 ? -1 : size - 4;
+            if (caf->data_start < 0 || caf->data_size > INT64_MAX - caf->data_start)
+                return AVERROR_INVALIDDATA;
+
             if (caf->data_size > 0 && (pb->seekable & AVIO_SEEKABLE_NORMAL))
                 avio_skip(pb, caf->data_size);
             found_data = 1;
@@ -339,7 +344,7 @@ static int read_header(AVFormatContext *s)
         return AVERROR_INVALIDDATA;
 
     if (caf->bytes_per_packet > 0 && caf->frames_per_packet > 0) {
-        if (caf->data_size > 0)
+        if (caf->data_size > 0 && caf->data_size / caf->bytes_per_packet < INT64_MAX / caf->frames_per_packet)
             st->nb_frames = (caf->data_size / caf->bytes_per_packet) * caf->frames_per_packet;
     } else if (st->nb_index_entries && st->duration > 0) {
         if (st->codecpar->sample_rate && caf->data_size / st->duration > INT64_MAX / st->codecpar->sample_rate / 8) {

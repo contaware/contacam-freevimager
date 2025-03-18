@@ -149,7 +149,7 @@ static int filter_vertically_##name(AVFilterContext *ctx, void *arg, int jobnr, 
                                                                                               \
         src = s->buffer + x;                                                                  \
         ptr = buffer + x;                                                                     \
-        for (i = 0; i <= radius; i++) {                                                       \
+        for (i = 0; i + radius < height && i <= radius; i++) {                                \
             acc += src[(i + radius) * width];                                                 \
             count++;                                                                          \
             ptr[i * linesize] = acc / count;                                                  \
@@ -273,7 +273,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         const int width = s->planewidth[plane];
 
         if (!(s->planes & (1 << plane))) {
-            if (out != in)
+            if (out->data[plane] != in->data[plane])
                 av_image_copy_plane(out->data[plane], out->linesize[plane],
                                     in->data[plane], in->linesize[plane],
                                     width * ((s->depth + 7) / 8), height);

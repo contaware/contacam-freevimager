@@ -228,8 +228,8 @@ static int read_high_coeffs(AVCodecContext *avctx, uint8_t *src, int16_t *dst, i
         if (cnt1 >= length) {
             cnt1 = get_bits(b, nbits);
         } else {
-            pfx = 14 + ((((uint64_t)(value - 14)) >> 32) & (value - 14));
-            if (pfx < 1 || pfx > 25)
+            pfx = FFMIN(value, 14);
+            if (pfx < 1)
                 return AVERROR_INVALIDDATA;
             cnt1 *= (1 << pfx) - 1;
             shbits = show_bits(b, pfx);
@@ -396,7 +396,7 @@ static void filterfn(int16_t *dest, int16_t *tmp, unsigned size, int64_t scale)
                 (int64_t) low [i - 1] * -INT64_C(325392907)  +
                 (int64_t) high[i + 0] *  INT64_C(1518500249) +
                 (int64_t) high[i - 1] *  INT64_C(1518500249);
-        dest[i * 2] = av_clip_int16(((value >> 32) * scale) >> 32);
+        dest[i * 2] = av_clip_int16(((value >> 32) * (uint64_t)scale) >> 32);
     }
 
     for (i = 0; i < hsize; i++) {
@@ -407,7 +407,7 @@ static void filterfn(int16_t *dest, int16_t *tmp, unsigned size, int64_t scale)
                 (int64_t) high[i + 1] *  INT64_C(303700064)  +
                 (int64_t) high[i + 0] * -INT64_C(3644400640) +
                 (int64_t) high[i - 1] *  INT64_C(303700064);
-        dest[i * 2 + 1] = av_clip_int16(((value >> 32) * scale) >> 32);
+        dest[i * 2 + 1] = av_clip_int16(((value >> 32) * (uint64_t)scale) >> 32);
     }
 }
 

@@ -2121,7 +2121,7 @@ int ff_seek_frame_binary(AVFormatContext *s, int stream_index,
                          int64_t target_ts, int flags)
 {
     AVInputFormat *avif = s->iformat;
-    int64_t av_uninit(pos_min), av_uninit(pos_max), pos, pos_limit;
+    int64_t pos_min = 0, pos_max = 0, pos, pos_limit;
     int64_t ts_min, ts_max, ts;
     int index;
     int64_t ret;
@@ -4808,7 +4808,7 @@ void ff_parse_key_value(const char *str, ff_parse_key_val_cb callback_get_buf,
         key_len = ptr - key;
 
         callback_get_buf(context, key, key_len, &dest, &dest_len);
-        dest_end = dest + dest_len - 1;
+        dest_end = dest ? dest + dest_len - 1 : NULL;
 
         if (*ptr == '\"') {
             ptr++;

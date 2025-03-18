@@ -267,6 +267,7 @@ static int encode_q_branch(SnowContext *s, int level, int x, int y){
     int my_context= av_log2(2*FFABS(left->my - top->my));
     int s_context= 2*left->level + 2*top->level + tl->level + tr->level;
     int ref, best_ref, ref_score, ref_mx, ref_my;
+    int range = MAX_MV >> (1 + qpel);
 
     av_assert0(sizeof(s->block_state) >= 256);
     if(s->keyframe){
@@ -307,6 +308,11 @@ static int encode_q_branch(SnowContext *s, int level, int x, int y){
     c->ymin = - y*block_w - 16+3;
     c->xmax = - (x+1)*block_w + (w<<(LOG2_MB_SIZE - s->block_max_depth)) + 16-3;
     c->ymax = - (y+1)*block_w + (h<<(LOG2_MB_SIZE - s->block_max_depth)) + 16-3;
+
+    c->xmin = FFMAX(c->xmin,-range);
+    c->xmax = FFMIN(c->xmax, range);
+    c->ymin = FFMAX(c->ymin,-range);
+    c->ymax = FFMIN(c->ymax, range);
 
     if(P_LEFT[0]     > (c->xmax<<shift)) P_LEFT[0]    = (c->xmax<<shift);
     if(P_LEFT[1]     > (c->ymax<<shift)) P_LEFT[1]    = (c->ymax<<shift);
@@ -1542,10 +1548,10 @@ static void calculate_visual_weight(SnowContext *s, Plane *p){
     int level, orientation, x, y;
 
     for(level=0; level<s->spatial_decomposition_count; level++){
+        int64_t error=0;
         for(orientation=level ? 1 : 0; orientation<4; orientation++){
             SubBand *b= &p->band[level][orientation];
             IDWTELEM *ibuf= b->ibuf;
-            int64_t error=0;
 
             memset(s->spatial_idwt_buffer, 0, sizeof(*s->spatial_idwt_buffer)*width*height);
             ibuf[b->width/2 + b->height/2*b->stride]= 256*16;
@@ -1556,9 +1562,13 @@ static void calculate_visual_weight(SnowContext *s, Plane *p){
                     error += d*d;
                 }
             }
-
+            if (orientation == 2)
+                error /= 2;
             b->qlog= (int)(QROOT * log2(352256.0/sqrt(error)) + 0.5);
+            if (orientation != 1)
+                error = 0;
         }
+        p->band[level][1].qlog = p->band[level][2].qlog;
     }
 }
 

@@ -17,7 +17,7 @@ SRC_LINK=.
 ifndef MAIN_MAKEFILE
 SRC_PATH:=$(SRC_PATH:.%=..%)
 endif
-CC_IDENT=Microsoft (R) C/C++ Optimizing Compiler Version 19.16.27045 for x86
+CC_IDENT=Microsoft (R) C/C++ Optimizing Compiler Version 19.29.30159 for x86
 ARCH=x86
 INTRINSICS=none
 CC=cl
@@ -42,7 +42,7 @@ NVCC=nvcc
 CP=cp -p
 LN_S=ln -s -f
 CPPFLAGS= -D_ISOC99_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_USE_MATH_DEFINES -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS -D_WIN32_WINNT=0x0502 -I$(SRC_PATH)/compat/atomics/win32
-CFLAGS= -nologo     -IC:/uimager/ffmpeg/msvc/include -W3 -wd4018 -wd4146 -wd4244 -wd4305 -wd4554 -O2   -utf-8
+CFLAGS= -nologo     -IC:/Users/Utente/source/repos/contacam-freevimager/ffmpeg/msvc/include -W3 -wd4018 -wd4146 -wd4244 -wd4305 -wd4554 -O2   -utf-8
 CXXFLAGS=  -D__STDC_CONSTANT_MACROS -std=c++11
 OBJCFLAGS= -nologo 
 ASFLAGS= -nologo  
@@ -65,7 +65,6 @@ LD_LIB=lib%.a
 LD_PATH=-libpath:
 DLLTOOL=
 WINDRES=windres
-DEPWINDRES=cl
 DOXYGEN=doxygen
 LDFLAGS= -nologo  -LARGEADDRESSAWARE
 LDEXEFLAGS=
@@ -115,7 +114,7 @@ CFLAGS-ffplay=
 CFLAGS_HEADERS=
 ZLIB=zlib.lib
 LIB_INSTALL_EXTRA_CMD=$$(RANLIB) "$(LIBDIR)/$(LIBNAME)"
-EXTRALIBS=user32.lib ws2_32.lib vfw32.lib user32.lib secur32.lib -libpath:C:/uimager/ffmpeg/msvc/lib libx264.lib psapi.lib advapi32.lib shell32.lib ole32.lib 
+EXTRALIBS=user32.lib ws2_32.lib vfw32.lib user32.lib secur32.lib -libpath:C:/Users/Utente/source/repos/contacam-freevimager/ffmpeg/msvc/lib libx264.lib psapi.lib advapi32.lib shell32.lib ole32.lib 
 COMPAT_OBJS=
 INSTALL=install
 LIBTARGET=

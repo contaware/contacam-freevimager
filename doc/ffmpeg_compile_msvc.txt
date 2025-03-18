@@ -51,7 +51,8 @@ C:\Users\Utente\source\repos\contacam-freevimager\ffmpeg\msvc\src\x264-master
 Open config_msvc_prompt.bat to build ffmpeg
 -------------------------------------------
 
-For our static linking it's necessary to comment these lines in libavcodec\libx264.c:
+For our static linking it's necessary to comment these lines in 
+libavcodec/libx264.c:
 /*
 #if defined(_MSC_VER)
 #define X264_API_IMPORTS 1
@@ -59,13 +60,17 @@ For our static linking it's necessary to comment these lines in libavcodec\libx2
 */
 
 ATTENTION: when updating the ffmpeg source make sure the offset to init 
-m_nUnderlyingTransport with the lower_transport from RTSPState in rtsp.h 
-is still correct!!
+m_nUnderlyingTransport with the lower_transport from RTSPState in 
+libavformat/rtsp.h is still correct!!
 
 $ cd /c/Users/Utente/source/repos/contacam-freevimager/ffmpeg
 $ make distclean
 $ PKG_CONFIG_PATH="/c/Users/Utente/source/repos/contacam-freevimager/ffmpeg/msvc/lib/pkgconfig" ./config_msvc
 $ make
+
+To update get from https://www.ffmpeg.org/download.html and replace:
+C:\Users\Utente\source\repos\contacam-freevimager\ffmpeg
+remember to leave msvc/, config_msvc and config_msvc_prompt.bat in place.
 
 Debug build: --enable-debug --extra-cflags="-Z7 -MTd" --extra-ldflags="-DEBUG"
 Note: if you do not make debug builds of ffmpeg then in Debug Target of 
@@ -83,7 +88,7 @@ Notes
 - We do not need the Raw HEVC and H264 demuxers if we already have the 
   RTSP demuxer (with HEVC and H264 parsers and decoders). The demuxer is 
   the thing which takes a container (a single 1-D vector of bytes) and 
-  splits (demuxes) these into several streams (1 or more audio streams, 1 
-  or more video streams, ...). The parser is the thing which takes a 
+  splits (demuxes) these into several streams (1 or more audio streams, 
+  1 or more video streams, ...). The parser is the thing which takes a 
   single stream as output by a demuxer and splits it into proper frames 
   (some demuxers already produce proper frames so no parser is needed). 
