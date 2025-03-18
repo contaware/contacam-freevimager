@@ -1,5 +1,9 @@
 FREEVIMAGER HISTORY
 
+9.9.26 (Month XXth 2025)
+
+- Show used compiler version in About dialog
+
 9.9.25 (March 10th 2025)
 
 - Japanese translation (thanks to coolvitto)

@@ -1,5 +1,9 @@
 TRANSLATIONS HISTORY
 
+9.9.26 (Month XXth 2025)
+
+- Minor changes
+
 9.9.25 (March 10th 2025)
 
 - Full Japanese language support (thanks to coolvitto)
