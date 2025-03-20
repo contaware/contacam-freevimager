@@ -1,1 +1,7 @@
-Save License.txt as UTF-8 without BOM
+The files in this directory are the licenses used by the programs and 
+the installers, while the LICENSE.txt in root directory is the original 
+GNU GENERAL PUBLIC LICENSE for the source code and github.
+
+Instructions:
+- Save License.txt as UTF-8 without BOM and CRLF line-ending.
+- Update License.rtf with Windows 10's WordPad.
