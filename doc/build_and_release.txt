@@ -1,7 +1,7 @@
 Build system
 ------------
 
-uImager.sln is the main solution file for Visual Studio 2017 (MFC 
+uImager.sln is the main solution file for Visual Studio 2019 (MFC 
 support is necessary). 
 
 Free tool to make the NSIS installers:
@@ -37,4 +37,6 @@ Release procedure
    
 4. Run Make_All.bat in Setup folder
    
-5. SVN Commit as: Final release x.x.x
+5. Commit as: Release x.y.z
+
+6. git tag -a -m "Release x.y.z" x.y.z
