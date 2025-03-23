@@ -4,6 +4,8 @@ CONTACAM HISTORY
 
 - Updated to ffmpeg 3.4.14
 - Show used compiler version in About dialog
+- Refinement of the Chinese translation quality 
+  (thanks to lifansama@gmail.com)
 
 9.9.25 (March 10th 2025)
 

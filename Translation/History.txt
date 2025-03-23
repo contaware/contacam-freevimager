@@ -2,7 +2,8 @@ TRANSLATIONS HISTORY
 
 9.9.26 (Month XXth 2025)
 
-- Minor changes
+- Refinement of the Chinese translation quality 
+  (thanks to lifansama@gmail.com)
 
 9.9.25 (March 10th 2025)
 
