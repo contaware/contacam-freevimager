@@ -2,6 +2,7 @@ CONTACAM HISTORY
 
 9.9.26 (Month XXth 2025)
 
+- Fallback to HTTP 1.0 when chunked transfer encoding is proposed
 - Updated to ffmpeg 3.4.14
 - Show used compiler version in About dialog
 - Refinement of the Chinese translation quality 

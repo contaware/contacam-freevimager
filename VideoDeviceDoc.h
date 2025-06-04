@@ -229,6 +229,7 @@ public:
 														m_AnswerAuthorizationType = AUTHNONE;
 														m_bAuthorized = FALSE;
 														m_bOldVersion = FALSE;
+														m_bOldVersionForce = FALSE;
 														m_bConnectionKeepAlive = FALSE;
 														m_pCodec = NULL;
 														m_pCodecCtx = NULL;
@@ -264,6 +265,7 @@ public:
 			volatile BOOL m_bConnectionKeepAlive;
 			volatile BOOL m_bPollNextJpeg;
 			volatile BOOL m_bOldVersion;
+			volatile BOOL m_bOldVersionForce;
 
 		protected:
 			int FindHttpHeader(	const CString& sFieldNameLowerCase,

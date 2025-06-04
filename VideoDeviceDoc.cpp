@@ -2371,6 +2371,7 @@ BOOL CVideoDeviceDoc::CHttpThread::PollAndClean(BOOL bDoNewPoll)
 
 		// Init http version, format type and sizes
 		pHttpVideoParseProcess->m_bOldVersion = m_pDoc->m_pHttpVideoParseProcess->m_bOldVersion;
+		pHttpVideoParseProcess->m_bOldVersionForce = m_pDoc->m_pHttpVideoParseProcess->m_bOldVersionForce;
 		pHttpVideoParseProcess->m_FormatType = m_pDoc->m_pHttpVideoParseProcess->m_FormatType;
 		for (int i = 0 ; i < m_pDoc->m_pHttpVideoParseProcess->m_Sizes.GetSize() ; i++)
 			pHttpVideoParseProcess->m_Sizes.Add(m_pDoc->m_pHttpVideoParseProcess->m_Sizes[i]);
@@ -9567,6 +9568,11 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 {
 	CString sLocation;
 	CString sRequest;
+	CString sHttpVersion;
+	if (m_bOldVersionForce || m_bOldVersion)
+		sHttpVersion = _T("1.0");
+	else
+		sHttpVersion = _T("1.1");
 
 	::EnterCriticalSection(&m_pDoc->m_csHttpParams);
 	switch (m_pDoc->m_nNetworkDeviceTypeMode)
@@ -9580,7 +9586,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 				sLocation = m_pDoc->m_HttpGetFrameLocations[0];
 			sRequest.Format(_T("GET %s HTTP/%s\r\n"),
 							sLocation,
-							m_bOldVersion ? _T("1.0") : _T("1.1"));
+							sHttpVersion);
 			break;
 		}
 		case AXIS_SP :		// Axis HTTP motion jpeg
@@ -9590,7 +9596,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 				sLocation = _T("/axis-cgi/view/param.cgi?action=list&group=Properties.Image");
 				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
 								sLocation,
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
+								sHttpVersion);
 			}
 			else
 			{
@@ -9606,7 +9612,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 							m_pDoc->m_nHttpVideoSizeY,
 							m_pDoc->m_nHttpVideoQuality,
 							nFrameRate,
-							m_bOldVersion ? _T("1.0") : _T("1.1"));
+							sHttpVersion);
 				}
 				else if (m_Sizes.GetSize() > 0)
 				{
@@ -9616,7 +9622,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 							m_Sizes[0].cy,
 							m_pDoc->m_nHttpVideoQuality,
 							nFrameRate,
-							m_bOldVersion ? _T("1.0") : _T("1.1"));
+							sHttpVersion);
 					m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
 					m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
 				}
@@ -9626,7 +9632,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 							sLocation,
 							m_pDoc->m_nHttpVideoQuality,
 							nFrameRate,
-							m_bOldVersion ? _T("1.0") : _T("1.1"));
+							sHttpVersion);
 				}
 			}
 			break;
@@ -9638,7 +9644,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 				sLocation = _T("/axis-cgi/view/param.cgi?action=list&group=Properties.Image");
 				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
 								sLocation,
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
+								sHttpVersion);
 			}
 			else
 			{
@@ -9650,7 +9656,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 									m_pDoc->m_nHttpVideoSizeX,
 									m_pDoc->m_nHttpVideoSizeY,
 									m_pDoc->m_nHttpVideoQuality,
-									m_bOldVersion ? _T("1.0") : _T("1.1"));		
+									sHttpVersion);		
 				}
 				else if (m_Sizes.GetSize() > 0)
 				{
@@ -9659,7 +9665,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 									m_Sizes[0].cx,
 									m_Sizes[0].cy,
 									m_pDoc->m_nHttpVideoQuality,
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
+									sHttpVersion);
 					m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
 					m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
 				}
@@ -9668,7 +9674,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 					sRequest.Format(_T("GET %s?clock=0&date=0&compression=%d HTTP/%s\r\n"),
 									sLocation,
 									m_pDoc->m_nHttpVideoQuality,
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
+									sHttpVersion);
 				}
 			}
 			break;
@@ -9687,7 +9693,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 								(m_pDoc->m_nHttpVideoQuality == 100 ?
 								_T("Motion") :
 								_T("Standard")),
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
+								sHttpVersion);
 			}
 			else if (m_Sizes.GetSize() > 0)
 			{
@@ -9700,7 +9706,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 								(m_pDoc->m_nHttpVideoQuality == 100 ?
 								_T("Motion") :
 								_T("Standard")),
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
+								sHttpVersion);
 				m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
 				m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
 			}
@@ -9713,7 +9719,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 								(m_pDoc->m_nHttpVideoQuality == 100 ?
 								_T("Motion") :
 								_T("Standard")),
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
+								sHttpVersion);
 			}
 			break;
 		}
@@ -9731,7 +9737,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 								(m_pDoc->m_nHttpVideoQuality == 100 ?
 								_T("Motion") :
 								_T("Standard")),
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
+								sHttpVersion);
 			}
 			else if (m_Sizes.GetSize() > 0)
 			{
@@ -9744,7 +9750,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 								(m_pDoc->m_nHttpVideoQuality == 100 ?
 								_T("Motion") :
 								_T("Standard")),
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
+								sHttpVersion);
 				m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
 				m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
 			}
@@ -9757,7 +9763,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 								(m_pDoc->m_nHttpVideoQuality == 100 ?
 								_T("Motion") :
 								_T("Standard")),
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
+								sHttpVersion);
 			}
 			break;
 		}
@@ -9774,7 +9780,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 								_T("sif") :
 								_T("full")),
 								Round(100.0 / m_pDoc->m_dFrameRate),
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
+								sHttpVersion);
 			}
 			else if (m_Sizes.GetSize() > 0)
 			{
@@ -9786,7 +9792,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 								_T("sif") :
 								_T("full")),
 								Round(100.0 / m_pDoc->m_dFrameRate),
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
+								sHttpVersion);
 				m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
 				m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
 			}
@@ -9795,7 +9801,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 				sRequest.Format(_T("GET %s?camera=1&delay=%d HTTP/%s\r\n"),
 								sLocation,
 								Round(100.0 / m_pDoc->m_dFrameRate),
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
+								sHttpVersion);
 			}
 			break;
 		}
@@ -9811,7 +9817,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 								(m_pDoc->m_nHttpVideoSizeX == 352 ?
 								_T("sif") :
 								_T("full")),
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
+								sHttpVersion);
 			}
 			else if (m_Sizes.GetSize() > 0)
 			{
@@ -9822,7 +9828,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 								(m_Sizes[0].cx == 352 ?
 								_T("sif") :
 								_T("full")),
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
+								sHttpVersion);
 				m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
 				m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
 			}
@@ -9831,7 +9837,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 				sRequest.Format(_T("GET %s%s HTTP/%s\r\n"),
 								sLocation,
 								_T("sif"),
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
+								sHttpVersion);
 			}
 			break;
 		}
@@ -9842,7 +9848,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 				sLocation = _T("/camera-cgi/admin/param.cgi?action=list&group=Properties.Image.I0");
 				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
 								sLocation,
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
+								sHttpVersion);
 			}
 			else if (m_bSetVideoResolution)
 			{
@@ -9853,7 +9859,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 									sLocation,
 									m_pDoc->m_nHttpVideoSizeX,
 									m_pDoc->m_nHttpVideoSizeY,
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
+									sHttpVersion);
 				}
 				else if (m_Sizes.GetSize() > 0)
 				{
@@ -9861,7 +9867,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 									sLocation,
 									m_Sizes[0].cx,
 									m_Sizes[0].cy,
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
+									sHttpVersion);
 					m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
 					m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
 				}
@@ -9871,7 +9877,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 									sLocation,
 									HTTP_DEFAULT_VIDEO_SIZE_CX,
 									HTTP_DEFAULT_VIDEO_SIZE_CY,
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
+									sHttpVersion);
 					m_pDoc->m_nHttpVideoSizeX = HTTP_DEFAULT_VIDEO_SIZE_CX;
 					m_pDoc->m_nHttpVideoSizeY = HTTP_DEFAULT_VIDEO_SIZE_CY;
 				}
@@ -9882,7 +9888,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 				sRequest.Format(_T("GET %s?action=update&Image.I0.Appearance.Compression=%d HTTP/%s\r\n"),
 								sLocation,
 								(100 - m_pDoc->m_nHttpVideoQuality) / 25, // value range is 0-4
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
+								sHttpVersion);
 			}
 			else if (m_bSetVideoFramerate)
 			{
@@ -9893,14 +9899,14 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 				sRequest.Format(_T("GET %s?action=update&Image.I0.Stream.FPS=%d HTTP/%s\r\n"),
 								sLocation,
 								nFrameRate, // (1, 3, 5, 10, 15, 30)
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
+								sHttpVersion);
 			}
 			else
 			{
 				sLocation = _T("/mjpg/video.mjpg");
 				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
 							sLocation,
-							m_bOldVersion ? _T("1.0") : _T("1.1"));
+							sHttpVersion);
 			}
 			break;
 		}
@@ -9911,7 +9917,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 				sLocation = _T("/camera-cgi/admin/param.cgi?action=list&group=Properties.Image.I0");
 				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
 								sLocation,
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
+								sHttpVersion);
 			}
 			else if (m_bSetVideoResolution)
 			{
@@ -9922,7 +9928,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 									sLocation,
 									m_pDoc->m_nHttpVideoSizeX,
 									m_pDoc->m_nHttpVideoSizeY,
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
+									sHttpVersion);
 				}
 				else if (m_Sizes.GetSize() > 0)
 				{
@@ -9930,7 +9936,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 									sLocation,
 									m_Sizes[0].cx,
 									m_Sizes[0].cy,
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
+									sHttpVersion);
 					m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
 					m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
 				}
@@ -9940,7 +9946,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 									sLocation,
 									HTTP_DEFAULT_VIDEO_SIZE_CX,
 									HTTP_DEFAULT_VIDEO_SIZE_CY,
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
+									sHttpVersion);
 					m_pDoc->m_nHttpVideoSizeX = HTTP_DEFAULT_VIDEO_SIZE_CX;
 					m_pDoc->m_nHttpVideoSizeY = HTTP_DEFAULT_VIDEO_SIZE_CY;
 				}
@@ -9951,14 +9957,14 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 				sRequest.Format(_T("GET %s?action=update&Image.I0.Appearance.Compression=%d HTTP/%s\r\n"),
 								sLocation,
 								(100 - m_pDoc->m_nHttpVideoQuality) / 25, // value range is 0-4
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
+								sHttpVersion);
 			}
 			else
 			{
 				sLocation = _T("/jpg/image.jpg");
 				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
 							sLocation,
-							m_bOldVersion ? _T("1.0") : _T("1.1"));
+							sHttpVersion);
 			}
 			break;
 		}
@@ -9967,7 +9973,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 			sLocation = _T("/video.mjpg");
 			sRequest.Format(_T("GET %s HTTP/%s\r\n"),
 						sLocation,
-						m_bOldVersion ? _T("1.0") : _T("1.1"));
+						sHttpVersion);
 			break;
 		}
 		case TPLINK_CP :	// TP-Link HTTP jpeg snapshots
@@ -9975,7 +9981,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 			sLocation = _T("/jpg/image.jpg");
 			sRequest.Format(_T("GET %s HTTP/%s\r\n"),
 						sLocation,
-						m_bOldVersion ? _T("1.0") : _T("1.1"));
+						sHttpVersion);
 			break;
 		}
 		case FOSCAM_SP :	// Foscam HTTP motion jpeg
@@ -10016,7 +10022,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 								sLocation,
 								m_pDoc->m_nHttpVideoSizeX == 640 ? 32 : 8,
 								nRate,
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
+								sHttpVersion);
 			}
 			else if (m_Sizes.GetSize() > 0)
 			{
@@ -10024,7 +10030,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 								sLocation,
 								m_Sizes[0].cx == 640 ? 32 : 8,
 								nRate,
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
+								sHttpVersion);
 				m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
 				m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
 			}
@@ -10033,7 +10039,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 				sRequest.Format(_T("GET %s&rate=%d HTTP/%s\r\n"),
 								sLocation,
 								nRate,
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
+								sHttpVersion);
 			}
 			break;
 		}
@@ -10047,14 +10053,14 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 				sRequest.Format(_T("GET %s&resolution=%d HTTP/%s\r\n"),
 								sLocation,
 								m_pDoc->m_nHttpVideoSizeX == 640 ? 32 : 8,
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
+								sHttpVersion);
 			}
 			else if (m_Sizes.GetSize() > 0)
 			{
 				sRequest.Format(_T("GET %s&resolution=%d HTTP/%s\r\n"),
 								sLocation,
 								m_Sizes[0].cx == 640 ? 32 : 8,
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
+								sHttpVersion);
 				m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
 				m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
 			}
@@ -10062,7 +10068,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 			{
 				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
 								sLocation,
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
+								sHttpVersion);
 			}
 			break;
 		}
@@ -10075,7 +10081,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 								sLocation,
 								m_pDoc->m_nHttpVideoSizeX,
 								m_pDoc->m_nHttpVideoSizeY,
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
+								sHttpVersion);
 			}
 			else if (m_Sizes.GetSize() > 0)
 			{
@@ -10083,7 +10089,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 								sLocation,
 								m_Sizes[0].cx,
 								m_Sizes[0].cy,
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
+								sHttpVersion);
 				m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
 				m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
 			}
@@ -10091,7 +10097,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::SendRequest()
 			{
 				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
 								sLocation,
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
+								sHttpVersion);
 			}
 			break;
 		}
@@ -10537,6 +10543,22 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 				m_bConnectionKeepAlive = TRUE;
 		}
 
+		// Parser does not support the chunked transfer encoding
+		if (CheckHttpHeaderValue(_T("chunked"), FindHttpHeader(_T("transfer-encoding"), sMsgLowerCase), sMsgLowerCase))
+		{
+			// Empty the buffers, so that parser stops calling us!
+			pNetCom->Read();
+
+			// Re-start connection with HTTP 1.0 which does not allow the chunked transfer encoding 
+			m_bOldVersionForce = TRUE;
+			m_pDoc->m_HttpThread.SetEventVideoConnect();
+
+			delete [] pMsg;
+			if (g_nLogLevel > 1)
+				::LogLine(_T("%s, fallback to HTTP 1.0 because 'Transfer-Encoding: chunked' is not supported"), m_pDoc->GetAssignedDeviceName());
+			return FALSE; // Do not call Processor
+		}
+
 		// OK
 		if (sCode == _T("200"))
 		{
@@ -10797,7 +10819,7 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 			{
 				sNewRequest.Format(	_T("GET %s HTTP/%s\r\n"),
 									sNewLocation,
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
+									(m_bOldVersionForce || m_bOldVersion) ? _T("1.0") : _T("1.1"));
 			}
 
 			// Empty the buffers, so that parser stops calling us!
