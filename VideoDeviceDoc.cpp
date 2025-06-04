@@ -5016,6 +5016,8 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 
 		m_HttpGetFrameLocations.Add(_T("/control/faststream.jpg?stream=full"));	// Mobotix
 
+		m_HttpGetFrameLocations.Add(_T("/ISAPI/Streaming/channels/102/httpPreview")); // Newer Hikvision (set sub-stream to MJPEG in web interface)
+
 		m_HttpGetFrameLocations.Add(_T("/Streaming/channels/1/httppreview"));	// Hikvision, ABUS (set main-stream to MJPEG in web interface)
 
 		m_HttpGetFrameLocations.Add(_T("/Streaming/channels/2/httppreview"));	// Hikvision, ABUS (set sub-stream to MJPEG in web interface)
@@ -5099,6 +5101,8 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 		m_HttpGetFrameLocations.Add(_T("/netcam.jpg"));						// Stardot
 
 		m_HttpGetFrameLocations.Add(_T("/cgi-bin/encoder?SNAPSHOT"));		// ACTi
+
+		m_HttpGetFrameLocations.Add(_T("/ISAPI/Streaming/channels/1/picture")); // Newer Hikvision
 
 		m_HttpGetFrameLocations.Add(_T("/Streaming/channels/1/picture"));	// Hikvision, ABUS
 
