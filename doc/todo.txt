@@ -147,3 +147,12 @@ ContaCam open tasks
   and to fix the year 2038 bug.
   (webmaster@werdecker.com)
   
+- Avoid insecure SSL ciphers by adding after "SSLEngine on":
+SSLProtocol -all +TLSv1.3
+
+- Audio ON/OFF button in camera's bottom toolbar.
+  (edicola.bignardi@gmail.com)
+
+- Update apache self-signed SSL certificate which expires:
+  Mon, 22 Feb 2027 20:59:41 GMT
+  
