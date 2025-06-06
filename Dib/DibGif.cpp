@@ -449,7 +449,6 @@ BOOL CDib::LoadFirstGIFRaw(	LPCTSTR lpszPathName,
 			m_Gif.GetColorMap(m_Gif.m_pLoadFile->SColorMap, m_Gif.m_pScreenBMI);
 			m_Gif.m_nBackgndColorIndex = m_Gif.m_pLoadFile->SBackGroundColor;
 			m_FileInfo.m_bHasBackgroundColor = TRUE;
-			m_pBMI->bmiHeader.biBitCount =      8;
 		}
 		else
 		{
@@ -3396,20 +3395,13 @@ void CGif::GetColorMap(ColorMapObject* pColorMap, LPBITMAPINFO pBMI)
 		pBMI->bmiColors[i].rgbBlue = pColorMap->Colors[i].Blue;
 		pBMI->bmiColors[i].rgbReserved = 0;
 	}
-	pBMI->bmiHeader.biClrUsed =       nColorsCount;
-	pBMI->bmiHeader.biClrImportant =  0;
+	pBMI->bmiHeader.biClrUsed = nColorsCount;
+	pBMI->bmiHeader.biClrImportant = 0;
 
-	// Get Bit Count
-	int nBitsPerPixel;
-	if ((pColorMap->BitsPerPixel < 4) && // 2,3
-		(pColorMap->BitsPerPixel > 1))
-		nBitsPerPixel = 4;
-	else if ((pColorMap->BitsPerPixel < 8) && // 5,6,7
-		(pColorMap->BitsPerPixel > 4))
-		nBitsPerPixel = 8;
-	else
-		nBitsPerPixel = pColorMap->BitsPerPixel; // 1,4,8
-	pBMI->bmiHeader.biBitCount = nBitsPerPixel;
+	// Set the maximum of 8bpp because a Gif image can have 
+	// multiple color maps with different pColorMap->ColorCount
+	// and different pColorMap->BitsPerPixel
+	pBMI->bmiHeader.biBitCount = 8;
 }
 
 // Copy Windows BITMAPINFO Colors to GIF ColorMap 
