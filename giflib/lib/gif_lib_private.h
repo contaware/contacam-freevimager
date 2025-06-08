@@ -17,6 +17,7 @@
 
 #define LZ_MAX_CODE         4095    /* Biggest code possible in 12 bits. */
 #define LZ_BITS             12
+#define LZ_SAFETY_MARGIN    4096    /* Oli Fix 08.06.2025 */
 
 #define FLUSH_OUTPUT        4096    /* Impossible code, to signal flush. */
 #define FIRST_CODE          4097    /* Impossible code, to signal first. */
@@ -49,8 +50,8 @@ typedef struct GifFilePrivateType {
     OutputFunc Write;   /* function to write gif output (MRB) */
     GifByteType Buf[256];   /* Compressed input is buffered here. */
     GifByteType Stack[LZ_MAX_CODE]; /* Decoded pixels are stacked here. */
-    GifByteType Suffix[LZ_MAX_CODE + 1];    /* So we can trace the codes. */
-    unsigned int Prefix[LZ_MAX_CODE + 1];
+    GifByteType Suffix[LZ_MAX_CODE + 1 + LZ_SAFETY_MARGIN];    /* So we can trace the codes. */ /* Oli Fix 08.06.2025 */
+    unsigned int Prefix[LZ_MAX_CODE + 1 + LZ_SAFETY_MARGIN];   /* Oli Fix 08.06.2025 */
     GifHashTableType *HashTable;
 } GifFilePrivateType;
 

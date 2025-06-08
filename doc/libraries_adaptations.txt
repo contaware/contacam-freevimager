@@ -121,6 +121,12 @@ giflib 4.1.3
 - Preprocessor defines: WIN32, _MBCS, _LIB, _OPEN_BINARY,
                         HAVE_IO_H, HAVE_STDARG_H, HAVE_FCNTL_H
 
+- Avoid writing out of buffers by buggy GIFs, in gif_lib_private.h 
+  added a safety margin:
+#define LZ_SAFETY_MARGIN    4096                           /* Oli Fix 08.06.2025 */
+GifByteType Suffix[LZ_MAX_CODE + 1 + LZ_SAFETY_MARGIN];    /* So we can trace the codes. */ /* Oli Fix 08.06.2025 */
+unsigned int Prefix[LZ_MAX_CODE + 1 + LZ_SAFETY_MARGIN];   /* Oli Fix 08.06.2025 */
+
 - Changes in DGifGetImageDesc(GifFileType * GifFile):
 
 From:
