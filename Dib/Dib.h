@@ -1295,7 +1295,7 @@ public:
 						BOOL bProgressSend = TRUE,		// Send Or Post Messages to The Progress Window
 						CWorkerThread* pThread = NULL);	// Optional Worker Thread pointer from which we call DoExit()
 														// to check whether interruption of the load is wanted
-	// Load animated gif to a 8bpp, 4bpp or 1bpp Dib
+	// Load animated gif to a 8 bpp Dib
 	BOOL LoadFirstGIF(	LPCTSTR lpszPathName,
 						BOOL bOnlyHeader = FALSE,
 						CWnd* pProgressWnd = NULL,		// Progress Messages Sent to This Window
