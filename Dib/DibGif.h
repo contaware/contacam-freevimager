@@ -194,7 +194,7 @@ public:
 						// in at least one pixel to a value which is different from 255 (fully opaque)
 	GifFileType* m_pLoadFile;
 	GifFileType* m_pSaveFile; 
-	LPBITMAPINFO m_pScreenBMI;		// Only used when loading!
+	LPBITMAPINFO m_pScreenBMI;		// Only used when loading and in SaveFirstGIFRaw()!
 	LPBITMAPINFO m_pCurrentImageBMI;// Only used when loading!
 };
 

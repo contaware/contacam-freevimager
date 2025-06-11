@@ -2990,7 +2990,7 @@ BOOL CPictureDoc::SaveAsFromAnimGIFToAnimGIF(	const CString& sFileName,
 			Dib.GetGif()->SetDelay(pDelaysArray->GetAt(0));
 
 		// Save First GIF
-		if (!Dib.SaveFirstGIF(sDstFileName))
+		if (!Dib.SaveFirstGIFRaw(sDstFileName))
 			return FALSE;
 	}
 

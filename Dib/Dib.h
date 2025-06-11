@@ -1284,7 +1284,7 @@ public:
 					CWorkerThread* pThread = NULL);		// Optional Worker Thread pointer from which we call DoExit()
 														// to check whether interruption of the load is wanted
 	
-	// Raw 8 bpp loading without disposal decoding,
+	// Raw 8 bpp gif handling without disposal decoding,
 	// used to open and directly save an animated gif.
 	BOOL LoadFirstGIFRaw(LPCTSTR lpszPathName,
 						CWnd* pProgressWnd = NULL,		// Progress Messages Sent to This Window
@@ -1295,6 +1295,13 @@ public:
 						BOOL bProgressSend = TRUE,		// Send Or Post Messages to The Progress Window
 						CWorkerThread* pThread = NULL);	// Optional Worker Thread pointer from which we call DoExit()
 														// to check whether interruption of the load is wanted
+	BOOL SaveFirstGIFRaw(LPCTSTR lpszPathName,
+						CWnd* pProgressWnd = NULL,		// Progress Messages Sent to This Window
+						BOOL bProgressSend = TRUE,		// Send Or Post Messages to The Progress Window
+						CWorkerThread* pThread = NULL);	// Optional Worker Thread pointer from which we call DoExit()
+														// to check whether interruption of the load is wanted
+	// Note: There is no SaveNextGIFRaw(), we use SaveNextGIF().
+
 	// Load animated gif to a 8 bpp Dib
 	BOOL LoadFirstGIF(	LPCTSTR lpszPathName,
 						BOOL bOnlyHeader = FALSE,
