@@ -1529,7 +1529,8 @@ BOOL CDib::LoadFirstGIF32(	LPCTSTR lpszPathName,
 		if (!m_pBits)
 			throw GIF_E_NOMEM;
 
-		// Fill in current and next image with background color
+		// Fill in current and next image with all transparent and 
+		// with the background color if available (0 if missing)
 		if (m_Gif.m_nBackgndColorIndex >= 0)
 		{
 			for (int y = 0 ; y < m_Gif.m_pLoadFile->SHeight * 2 ; y++)
@@ -1541,6 +1542,8 @@ BOOL CDib::LoadFirstGIF32(	LPCTSTR lpszPathName,
 								pScreenColors);
 			}
 		}
+		else
+			memset(m_pBits, 0, 2 * m_dwImageSize + uiDIBScanLineSize32);
 
 		// Load First Gif
 		m_Gif.m_nLoadImageCount = 0;
