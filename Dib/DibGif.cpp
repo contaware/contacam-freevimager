@@ -3523,6 +3523,9 @@ void CGif::FillLine(int nBitCount,
 	if (width < 0)
 		return;
 
+	if ((nBitCount > 8) && (pColors == NULL))
+		return;
+
 	for (int i = 0 ; i < width ; i++)
 	{
 		switch (nBitCount)
