@@ -722,10 +722,14 @@ EGifCloseFile(GifFileType * GifFile) {
     Buf = ';';
     WRITE(GifFile, &Buf, 1);
 
-    if (GifFile->Image.ColorMap)
+    if (GifFile->Image.ColorMap) {
         FreeMapObject(GifFile->Image.ColorMap);
-    if (GifFile->SColorMap)
+        GifFile->Image.ColorMap = NULL; // Oli Fix 12.06.2025
+    }
+    if (GifFile->SColorMap) {
         FreeMapObject(GifFile->SColorMap);
+        GifFile->SColorMap = NULL; // Oli Fix 12.06.2025
+    }
     if (Private) {
         if (Private->HashTable) {
             free((char *) Private->HashTable);

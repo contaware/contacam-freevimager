@@ -309,8 +309,10 @@ FreeLastSavedImage(GifFileType *GifFile) {
     sp = &GifFile->SavedImages[GifFile->ImageCount];
 
     /* Deallocate its Colormap */
-    if (sp->ImageDesc.ColorMap)
+    if (sp->ImageDesc.ColorMap) {
         FreeMapObject(sp->ImageDesc.ColorMap);
+        sp->ImageDesc.ColorMap = NULL; // Oli Fix 12.06.2025
+    }
 
     /* Deallocate the image data */
     if (sp->RasterBits)
@@ -420,8 +422,10 @@ FreeSavedImages(GifFileType * GifFile) {
     }
     for (sp = GifFile->SavedImages;
          sp < GifFile->SavedImages + GifFile->ImageCount; sp++) {
-        if (sp->ImageDesc.ColorMap)
+        if (sp->ImageDesc.ColorMap) {
             FreeMapObject(sp->ImageDesc.ColorMap);
+            sp->ImageDesc.ColorMap = NULL; // Oli Fix 12.06.2025
+        }
 
         if (sp->RasterBits)
             free((char *)sp->RasterBits);

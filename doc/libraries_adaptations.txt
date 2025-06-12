@@ -128,30 +128,26 @@ GifByteType Suffix[LZ_MAX_CODE + 1 + LZ_SAFETY_MARGIN];    /* So we can trace th
 unsigned int Prefix[LZ_MAX_CODE + 1 + LZ_SAFETY_MARGIN];   /* Oli Fix 08.06.2025 */
 
 - Changes in DGifGetImageDesc(GifFileType * GifFile):
-
-From:
-
+FROM:
 /*** FIXME: Why do we check both of these in order to do this?
  * Why do we have both Image and SavedImages? */     
 if (GifFile->Image.ColorMap && GifFile->SavedImages == NULL)      
     FreeMapObject(GifFile->Image.ColorMap);
-
-To:
-
+TO:
 /*** FIXME: Why do we check both of these in order to do this?
  * Why do we have both Image and SavedImages? */     
 if (GifFile->Image.ColorMap/* && GifFile->SavedImages == NULL*/) // Oli Fix 02.01.2005  
     FreeMapObject(GifFile->Image.ColorMap);
 
-
-Add in EGifPutImageDesc(...):
-
+- The current FreeMapObject() API does not set the passed pointer to NULL, 
+  manually set it to NULL in dgif_lib.c, egif_lib.c and gifalloc.c.
+  
+- Add in EGifPutImageDesc(...):
 // Oli Fix 02.01.2005
 if (GifFile->Image.ColorMap)
     FreeMapObject(GifFile->Image.ColorMap);
 
 - In many places I added defined(_OPEN_BINARY) to open in binary mode:
-
 open(FileName, O_RDONLY
 #if defined(__MSDOS__) || defined(_OPEN_BINARY)                      
  | O_BINARY
@@ -160,8 +156,8 @@ open(FileName, O_RDONLY
 - Changed DGifOpenFileName() and DGifOpenFileHandle() because if
   the latter one fails the file should not be closed two times with
   fclose and close, but just with fclose!
-  
 
+  
 libtiff 3.8.2
 -------------
 

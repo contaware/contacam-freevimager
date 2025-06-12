@@ -273,6 +273,7 @@ DGifGetScreenDesc(GifFileType * GifFile) {
         for (i = 0; i < GifFile->SColorMap->ColorCount; i++) {
             if (READ(GifFile, Buf, 3) != 3) {
                 FreeMapObject(GifFile->SColorMap);
+                GifFile->SColorMap = NULL; // Oli Fix 12.06.2025
                 _GifError = D_GIF_ERR_READ_FAILED;
                 return GIF_ERROR;
             }
@@ -373,6 +374,7 @@ DGifGetImageDesc(GifFileType * GifFile) {
         for (i = 0; i < GifFile->Image.ColorMap->ColorCount; i++) {
             if (READ(GifFile, Buf, 3) != 3) {
                 FreeMapObject(GifFile->Image.ColorMap);
+                GifFile->Image.ColorMap = NULL; // Oli Fix 12.06.2025
                 _GifError = D_GIF_ERR_READ_FAILED;
                 return GIF_ERROR;
             }
