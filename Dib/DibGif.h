@@ -143,7 +143,6 @@ public:
 	BOOL Save(	GifByteType *OutputBuffer,
 				int nBufLineLen,
 				ColorMapObject *OutputColorMap,
-				int ExpColorMapSize,
 				int Left, int Top,
 				int Width, int Height,
 				CWnd* pProgressWnd = NULL,
