@@ -697,7 +697,7 @@ public:
 							CWnd* pProgressWnd = NULL,
 							BOOL bProgressSend = TRUE,
 							CWorkerThread* pThread = NULL);	// Optional Worker Thread pointer from which we call DoExit()
-															// to check whether interruption of the load is wanted);
+															// to check whether interruption of the creation is wanted
 	
 	// Deletes the Thumbnail Dib
 	void DeleteThumbnailDib();
@@ -712,7 +712,7 @@ public:
 							CWnd* pProgressWnd = NULL,
 							BOOL bProgressSend = TRUE,
 							CWorkerThread* pThread = NULL);	// Optional Worker Thread pointer from which we call DoExit()
-															// to check whether interruption of the load is wanted);
+															// to check whether interruption of the creation is wanted
 	
 	// Deletes the Preview Dib
 	void DeletePreviewDib();
@@ -831,7 +831,7 @@ public:
 					CWnd* pProgressWnd = NULL,
 					BOOL bProgressSend = TRUE,
 					CWorkerThread* pThread = NULL);	// Optional Worker Thread pointer from which we call DoExit()
-													// to check whether interruption of the load is wanted
+													// to check whether interruption of the adding is wanted
 
 	// Soft Borders of Alpha Channel
 	BOOL SoftBorders(int nBorder,
@@ -851,7 +851,7 @@ public:
 						CWnd* pProgressWnd = NULL,
 						BOOL bProgressSend = TRUE,
 						CWorkerThread* pThread = NULL,	// Optional Worker Thread pointer from which we call DoExit()
-														// to check whether interruption of the load is wanted
+														// to check whether interruption of the stretching is wanted
 						BOOL bForceNearestNeighbor = FALSE);
 
 
@@ -864,7 +864,7 @@ public:
 								CWnd* pProgressWnd = NULL,
 								BOOL bProgressSend = TRUE,
 								CWorkerThread* pThread = NULL,	// Optional Worker Thread pointer from which we call DoExit()
-																// to check whether interruption of the load is wanted
+																// to check whether interruption of the stretching is wanted
 								BOOL bForceNearestNeighbor = FALSE);
 
 	// If bForceNearestNeighbor not set, it selects the best method.
@@ -877,7 +877,7 @@ public:
 											CWnd* pProgressWnd = NULL,
 											BOOL bProgressSend = TRUE,
 											CWorkerThread* pThread = NULL,	// Optional Worker Thread pointer from which we call DoExit()
-																			// to check whether interruption of the load is wanted
+																			// to check whether interruption of the stretching is wanted
 											BOOL bForceNearestNeighbor = FALSE);
 
 	// Convolution Filter
@@ -889,7 +889,7 @@ public:
 					CWnd* pProgressWnd = NULL,
 					BOOL bProgressSend = TRUE,
 					CWorkerThread* pThread = NULL);		// Optional Worker Thread pointer from which we call DoExit()
-														// to check whether interruption of the load is wanted
+														// to check whether interruption of the filtering is wanted
 
 	// Fast Convolution Filter with a fixed Kernel
 	// Size of 3, a Kernel Factor which cannot be 0
@@ -900,7 +900,7 @@ public:
 						CWnd* pProgressWnd = NULL,
 						BOOL bProgressSend = TRUE,
 						CWorkerThread* pThread = NULL);	// Optional Worker Thread pointer from which we call DoExit()
-														// to check whether interruption of the load is wanted
+														// to check whether interruption of the filtering is wanted
 
 	// Convolution Filter for Alpha Channel Only
 	// Rectangle Coordinates are Top-Down!
@@ -913,7 +913,7 @@ public:
 						CWnd* pProgressWnd = NULL,
 						BOOL bProgressSend = TRUE,
 						CWorkerThread* pThread = NULL);	// Optional Worker Thread pointer from which we call DoExit()
-														// to check whether interruption of the load is wanted
+														// to check whether interruption of the filtering is wanted
 
 	// Fast version for alpha channel only
 	// with a fixed Kernel Size of 3,
@@ -925,7 +925,7 @@ public:
 						CWnd* pProgressWnd = NULL,
 						BOOL bProgressSend = TRUE,
 						CWorkerThread* pThread = NULL);	// Optional Worker Thread pointer from which we call DoExit()
-														// to check whether interruption of the load is wanted
+														// to check whether interruption of the filtering is wanted
 
 
 	// Unique Colors Count
@@ -1216,7 +1216,7 @@ public:
 					CWnd* pProgressWnd = NULL,			// Progress Messages Sent to This Window
 					BOOL bProgressSend = TRUE,			// Send Or Post Messages to The Progress Window
 					CWorkerThread* pThread = NULL);		// Optional Worker Thread pointer from which we call DoExit()
-														// to check whether interruption of the load is wante
+														// to check whether interruption of the load is wanted
 
 	// Load through WIC
 	HRESULT LoadWIC(LPCTSTR lpszPathName, BOOL bOnlyHeader = FALSE);
@@ -1248,7 +1248,7 @@ public:
 					CWnd* pProgressWnd = NULL,			// Progress Messages Sent to This Window
 					BOOL bProgressSend = TRUE,			// Send Or Post Messages to The Progress Window
 					CWorkerThread* pThread = NULL);		// Optional Worker Thread pointer from which we call DoExit()
-														// to check whether interruption of the load is wanted
+														// to check whether interruption of the save is wanted
 
 	BOOL LoadBMPNoFileHeader(CFile& file,
 							BOOL bDecompress = TRUE);	// If Set Decompress RLE4 and RLE8 to RGB4 and RGB8
@@ -1265,7 +1265,7 @@ public:
 					CWnd* pProgressWnd = NULL,			// Progress Messages Sent to This Window
 					BOOL bProgressSend = TRUE,			// Send Or Post Messages to The Progress Window
 					CWorkerThread* pThread = NULL);		// Optional Worker Thread pointer from which we call DoExit()
-														// to check whether interruption of the load is wanted
+														// to check whether interruption of the save is wanted
 
 	// EMF Support
 	BOOL LoadEMF(LPCTSTR lpszPathName);
@@ -1299,11 +1299,11 @@ public:
 						CWnd* pProgressWnd = NULL,		// Progress Messages Sent to This Window
 						BOOL bProgressSend = TRUE,		// Send Or Post Messages to The Progress Window
 						CWorkerThread* pThread = NULL);	// Optional Worker Thread pointer from which we call DoExit()
-														// to check whether interruption of the load is wanted
+														// to check whether interruption of the save is wanted
 	BOOL SaveNextGIFRaw(CWnd* pProgressWnd = NULL,		// Progress Messages Sent to This Window
 						BOOL bProgressSend = TRUE,		// Send Or Post Messages to The Progress Window
 						CWorkerThread* pThread = NULL);	// Optional Worker Thread pointer from which we call DoExit()
-														// to check whether interruption of the load is wanted
+														// to check whether interruption of the save is wanted
 
 	// Load animated gif to a 8 bpp Dib
 	BOOL LoadFirstGIF(	LPCTSTR lpszPathName,
@@ -1340,17 +1340,17 @@ public:
 					CWnd* pProgressWnd = NULL,			// Progress Messages Sent to This Window
 					BOOL bProgressSend = TRUE,			// Send Or Post Messages to The Progress Window
 					CWorkerThread* pThread = NULL);		// Optional Worker Thread pointer from which we call DoExit()
-														// to check whether interruption of the load is wanted
+														// to check whether interruption of the save is wanted
 	BOOL SaveFirstGIF(	LPCTSTR lpszPathName,
 						CWnd* pProgressWnd = NULL,		// Progress Messages Sent to This Window
 						BOOL bProgressSend = TRUE,		// Send Or Post Messages to The Progress Window
 						CWorkerThread* pThread = NULL);	// Optional Worker Thread pointer from which we call DoExit()
-														// to check whether interruption of the load is wanted
+														// to check whether interruption of the save is wanted
 	BOOL SaveNextGIF(	CDib* pDib = NULL,
 						CWnd* pProgressWnd = NULL,		// Progress Messages Sent to This Window
 						BOOL bProgressSend = TRUE,		// Send Or Post Messages to The Progress Window
 						CWorkerThread* pThread = NULL);	// Optional Worker Thread pointer from which we call DoExit()
-														// to check whether interruption of the load is wanted
+														// to check whether interruption of the save is wanted
 
 	// Write Comment inside the gif file,
 	// to frame number nFrame
@@ -1371,7 +1371,7 @@ public:
 					CWnd* pProgressWnd = NULL,			// Progress Messages Sent to This Window
 					BOOL bProgressSend = TRUE,			// Send Or Post Messages to The Progress Window
 					CWorkerThread* pThread = NULL);		// Optional Worker Thread pointer from which we call DoExit()
-														// to check whether interruption of the load is wanted
+														// to check whether interruption of the save is wanted
 
 	// PNG Support
 	BOOL LoadPNG(	LPCTSTR lpszPathName,
@@ -1387,7 +1387,7 @@ public:
 					CWnd* pProgressWnd = NULL,			// Progress Messages Sent to This Window
 					BOOL bProgressSend = TRUE,			// Send Or Post Messages to The Progress Window
 					CWorkerThread* pThread = NULL);		// Optional Worker Thread pointer from which we call DoExit()
-														// to check whether interruption of the load is wanted
+														// to check whether interruption of the save is wanted
 
 	// TIFF Support
 	//
@@ -1418,7 +1418,7 @@ public:
 					CWnd* pProgressWnd = NULL,			// Progress Messages Sent to This Window
 					BOOL bProgressSend = TRUE,			// Send Or Post Messages to The Progress Window
 					CWorkerThread* pThread = NULL);		// Optional Worker Thread pointer from which we call DoExit()
-														// to check whether interruption of the load is wanted
+														// to check whether interruption of the save is wanted
 
 	BOOL SaveFirstTIFF(	LPCTSTR lpszPathName,
 						TIFF** ptif,
