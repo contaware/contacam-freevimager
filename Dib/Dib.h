@@ -1300,7 +1300,10 @@ public:
 						BOOL bProgressSend = TRUE,		// Send Or Post Messages to The Progress Window
 						CWorkerThread* pThread = NULL);	// Optional Worker Thread pointer from which we call DoExit()
 														// to check whether interruption of the load is wanted
-	// Note: There is no SaveNextGIFRaw(), we use SaveNextGIF().
+	BOOL SaveNextGIFRaw(CWnd* pProgressWnd = NULL,		// Progress Messages Sent to This Window
+						BOOL bProgressSend = TRUE,		// Send Or Post Messages to The Progress Window
+						CWorkerThread* pThread = NULL);	// Optional Worker Thread pointer from which we call DoExit()
+														// to check whether interruption of the load is wanted
 
 	// Load animated gif to a 8 bpp Dib
 	BOOL LoadFirstGIF(	LPCTSTR lpszPathName,

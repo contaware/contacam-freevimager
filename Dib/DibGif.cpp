@@ -932,7 +932,10 @@ BOOL CDib::SaveFirstGIFRaw(	LPCTSTR lpszPathName,
 		int ExpSColorMapSize = 8;
 		if (m_Gif.m_bHasScreenColorTable && m_Gif.m_pScreenBMI)
 		{
-			ExpSColorMapSize = LogNumColors(GetNumColors(m_Gif.m_pScreenBMI));
+			// GIF's encoding functions get the indices range from the color map size,
+			// there exist GIFs with the transparent index pointing after the color map
+			// Note: an undefined m_nTransparencyColorIndex is -1
+			ExpSColorMapSize = LogNumColors(MAX(m_Gif.m_nTransparencyColorIndex + 1, GetNumColors(m_Gif.m_pScreenBMI)));
 			if ((OutputSColorMap = ::MakeMapObject(1 << ExpSColorMapSize/*has to be a power of two*/, NULL)) == NULL)
 				throw (int)GIF_E_NOMEM;
 			m_Gif.SetColorMap(OutputSColorMap, m_Gif.m_pScreenBMI);
@@ -941,7 +944,11 @@ BOOL CDib::SaveFirstGIFRaw(	LPCTSTR lpszPathName,
 		// Init Image Color Map
 		if (m_Gif.m_bHasImageColorTable)
 		{
-			if ((OutputColorMap = ::MakeMapObject(1 << LogNumColors(GetNumColors())/*has to be a power of two*/, NULL)) == NULL)
+			// GIF's encoding functions get the indices range from the color map size,
+			// there exist GIFs with the transparent index pointing after the color map
+			// Note: an undefined m_nTransparencyColorIndex is -1
+			int ExpColorMapSize = LogNumColors(MAX(m_Gif.m_nTransparencyColorIndex + 1, GetNumColors()));
+			if ((OutputColorMap = ::MakeMapObject(1 << ExpColorMapSize/*has to be a power of two*/, NULL)) == NULL)
 				throw (int)GIF_E_NOMEM;
 			m_Gif.SetColorMap(OutputColorMap, m_pBMI);
 		}
@@ -1011,6 +1018,119 @@ BOOL CDib::SaveFirstGIFRaw(	LPCTSTR lpszPathName,
 			case GIF_E_GIFLIB :			str += _T("Cannot save file\n");
 			break;
 			default:					str += _T("Unspecified error\n");
+			break;
+		}
+		
+		TRACE(str);
+		if (m_bShowMessageBoxOnError)
+			::AfxMessageBox(str, MB_ICONSTOP);
+
+		return FALSE;
+	}
+}
+
+BOOL CDib::SaveNextGIFRaw(CWnd* pProgressWnd/*=NULL*/,
+						BOOL bProgressSend/*=TRUE*/,
+						CWorkerThread* pThread/*=NULL*/)
+{
+	GifByteType* OutputBuffer = NULL;
+	ColorMapObject* OutputColorMap = NULL;
+
+	try
+	{
+		if (!m_pBits)
+		{
+			if (!DibSectionToBits())
+				throw (int)GIF_E_BADBMP;
+		}
+
+		if (!m_pBits || !m_pBMI)
+			throw (int)GIF_E_BADBMP;
+
+		if (IsCompressed())
+		{
+			if (!Decompress(GetBitCount())) // Decompress
+				throw (int)GIF_E_BADBMP;
+		}
+
+		// Scan Line Sizes
+		DWORD uiInputDIBScanLineSize = DWALIGNEDWIDTHBYTES(GetWidth() * GetBitCount());
+
+		// In the gif file the scan lines are top / down 
+		// In a DIB the scan lines are stored bottom / up
+		LPBYTE lpBits = m_pBits;
+		lpBits += uiInputDIBScanLineSize*(GetHeight()-1);
+
+		// Allocate Output Buffer
+		if ((OutputBuffer = (GifByteType*) new GifByteType[GetWidth() * GetHeight()]) == NULL)
+			throw (int)GIF_E_NOMEM;
+
+		// Check
+		if (GetBitCount() != 8)
+			throw (int)GIF_E_BADBMP;
+		
+		// Init Image Color Map
+		if (m_Gif.m_bHasImageColorTable)
+		{
+			// GIF's encoding functions get the indices range from the color map size,
+			// there exist GIFs with the transparent index pointing after the color map
+			// Note: an undefined m_nTransparencyColorIndex is -1
+			int ExpColorMapSize = LogNumColors(MAX(m_Gif.m_nTransparencyColorIndex + 1, GetNumColors()));
+			if ((OutputColorMap = ::MakeMapObject(1 << ExpColorMapSize/*has to be a power of two*/, NULL)) == NULL)
+				throw (int)GIF_E_NOMEM;
+			m_Gif.SetColorMap(OutputColorMap, m_pBMI);
+		}
+
+		// Copy bits
+		for (unsigned int line = 0 ; line < GetHeight() ; line++)
+			memcpy(	OutputBuffer + line*GetWidth(),
+					lpBits - line*uiInputDIBScanLineSize, GetWidth());
+
+		// Save
+		if (!m_Gif.Save(OutputBuffer,
+						GetWidth(),
+						OutputColorMap,
+						m_Gif.m_nLeft,
+						m_Gif.m_nTop,
+						m_Gif.m_nWidth,
+						m_Gif.m_nHeight,
+						pProgressWnd,
+						bProgressSend,
+						pThread))
+			throw (int)GIF_E_GIFLIB;
+
+		// Clean-up
+		if (OutputBuffer)
+			delete [] OutputBuffer;
+		if (OutputColorMap)
+			::FreeMapObject(OutputColorMap);
+
+		return TRUE;
+	}
+	catch (int error_code)
+	{
+		if (OutputBuffer)
+			delete [] OutputBuffer;
+		if (OutputColorMap)
+			::FreeMapObject(OutputColorMap);
+
+		// Just Exit
+		if (pThread && pThread->DoExit())
+			return FALSE;
+
+		CString str;
+#ifdef _DEBUG
+		str = _T("SaveNextGIFRaw: ");
+#endif
+		switch (error_code)
+		{
+			case GIF_E_NOMEM :		str += _T("Could not alloc memory\n");
+			break;
+			case GIF_E_BADBMP :		str += _T("Corrupted or unsupported DIB\n");
+			break;
+			case GIF_E_GIFLIB :		str += _T("Cannot save file\n");
+			break;
+			default:				str += _T("Unspecified error\n");
 			break;
 		}
 		
@@ -3232,7 +3352,7 @@ BOOL CDib::GIFWriteComment(	int nFrame,
 			}
 
 			// Save Next GIF
-			if (!Dib.SaveNextGIF())
+			if (!Dib.SaveNextGIFRaw())
 				return FALSE;
 		}
 

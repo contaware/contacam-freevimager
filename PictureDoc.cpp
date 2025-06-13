@@ -3006,7 +3006,7 @@ BOOL CPictureDoc::SaveAsFromAnimGIFToAnimGIF(	const CString& sFileName,
 			Dib.GetGif()->SetDelay(pDelaysArray->GetAt(i));
 
 		// Save Next GIF
-		if (!Dib.SaveNextGIF())
+		if (!Dib.SaveNextGIFRaw())
 		{
 			DIB_END_PROGRESS(GetView()->GetSafeHwnd());
 			return FALSE;
