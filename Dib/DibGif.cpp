@@ -101,8 +101,8 @@ BOOL CDib::LoadGIFHeader(LPCTSTR lpszPathName)
 		if (m_Gif.m_pLoadFile->SColorMap)
 		{
 			m_Gif.m_bHasScreenColorTable = TRUE;
-			m_Gif.GetColorMap(m_Gif.m_pLoadFile->SColorMap, m_pBMI);
-			m_Gif.GetColorMap(m_Gif.m_pLoadFile->SColorMap, m_Gif.m_pScreenBMI);
+			CGif::GetColorMap(m_Gif.m_pLoadFile->SColorMap, m_pBMI);
+			CGif::GetColorMap(m_Gif.m_pLoadFile->SColorMap, m_Gif.m_pScreenBMI);
 			m_Gif.m_nBackgndColorIndex = m_Gif.m_pLoadFile->SBackGroundColor;
 			m_FileInfo.m_bHasBackgroundColor = TRUE;
 		}
@@ -445,8 +445,8 @@ BOOL CDib::LoadFirstGIFRaw(	LPCTSTR lpszPathName,
 		if (m_Gif.m_pLoadFile->SColorMap)
 		{
 			m_Gif.m_bHasScreenColorTable = TRUE;
-			m_Gif.GetColorMap(m_Gif.m_pLoadFile->SColorMap, m_pBMI);
-			m_Gif.GetColorMap(m_Gif.m_pLoadFile->SColorMap, m_Gif.m_pScreenBMI);
+			CGif::GetColorMap(m_Gif.m_pLoadFile->SColorMap, m_pBMI);
+			CGif::GetColorMap(m_Gif.m_pLoadFile->SColorMap, m_Gif.m_pScreenBMI);
 			m_Gif.m_nBackgndColorIndex = m_Gif.m_pLoadFile->SBackGroundColor;
 			m_FileInfo.m_bHasBackgroundColor = TRUE;
 		}
@@ -692,7 +692,7 @@ int CDib::LoadNextGIFRaw(	CWnd* pProgressWnd/*=NULL*/,
 					else
 					{
 						m_Gif.m_bHasImageColorTable = TRUE;
-						m_Gif.GetColorMap(m_Gif.m_pLoadFile->Image.ColorMap, m_pBMI);
+						CGif::GetColorMap(m_Gif.m_pLoadFile->Image.ColorMap, m_pBMI);
 					}
 					DWORD uiDIBScanLineSize = DWALIGNEDWIDTHBYTES(	m_pBMI->bmiHeader.biWidth *
 																	m_pBMI->bmiHeader.biBitCount);
@@ -938,7 +938,7 @@ BOOL CDib::SaveFirstGIFRaw(	LPCTSTR lpszPathName,
 			ExpSColorMapSize = LogNumColors(MAX(m_Gif.m_nTransparencyColorIndex + 1, GetNumColors(m_Gif.m_pScreenBMI)));
 			if ((OutputSColorMap = ::MakeMapObject(1 << ExpSColorMapSize/*has to be a power of two*/, NULL)) == NULL)
 				throw (int)GIF_E_NOMEM;
-			m_Gif.SetColorMap(OutputSColorMap, m_Gif.m_pScreenBMI);
+			CGif::SetColorMap(OutputSColorMap, m_Gif.m_pScreenBMI);
 		}
 
 		// Init Image Color Map
@@ -950,7 +950,7 @@ BOOL CDib::SaveFirstGIFRaw(	LPCTSTR lpszPathName,
 			int ExpColorMapSize = LogNumColors(MAX(m_Gif.m_nTransparencyColorIndex + 1, GetNumColors()));
 			if ((OutputColorMap = ::MakeMapObject(1 << ExpColorMapSize/*has to be a power of two*/, NULL)) == NULL)
 				throw (int)GIF_E_NOMEM;
-			m_Gif.SetColorMap(OutputColorMap, m_pBMI);
+			CGif::SetColorMap(OutputColorMap, m_pBMI);
 		}
 
 		// Copy bits
@@ -1078,7 +1078,7 @@ BOOL CDib::SaveNextGIFRaw(CWnd* pProgressWnd/*=NULL*/,
 			int ExpColorMapSize = LogNumColors(MAX(m_Gif.m_nTransparencyColorIndex + 1, GetNumColors()));
 			if ((OutputColorMap = ::MakeMapObject(1 << ExpColorMapSize/*has to be a power of two*/, NULL)) == NULL)
 				throw (int)GIF_E_NOMEM;
-			m_Gif.SetColorMap(OutputColorMap, m_pBMI);
+			CGif::SetColorMap(OutputColorMap, m_pBMI);
 		}
 
 		// Copy bits
@@ -1186,8 +1186,8 @@ BOOL CDib::LoadFirstGIF(LPCTSTR lpszPathName,
 		if (m_Gif.m_pLoadFile->SColorMap)
 		{
 			m_Gif.m_bHasScreenColorTable = TRUE;
-			m_Gif.GetColorMap(m_Gif.m_pLoadFile->SColorMap, m_pBMI);
-			m_Gif.GetColorMap(m_Gif.m_pLoadFile->SColorMap, m_Gif.m_pScreenBMI);
+			CGif::GetColorMap(m_Gif.m_pLoadFile->SColorMap, m_pBMI);
+			CGif::GetColorMap(m_Gif.m_pLoadFile->SColorMap, m_Gif.m_pScreenBMI);
 			m_Gif.m_nBackgndColorIndex = m_Gif.m_pLoadFile->SBackGroundColor;
 			m_FileInfo.m_bHasBackgroundColor = TRUE;
 		}
@@ -1449,7 +1449,7 @@ int CDib::LoadNextGIF(	CWnd* pProgressWnd/*=NULL*/,
 					else
 					{
 						m_Gif.m_bHasImageColorTable = TRUE;
-						m_Gif.GetColorMap(m_Gif.m_pLoadFile->Image.ColorMap, m_pBMI);
+						CGif::GetColorMap(m_Gif.m_pLoadFile->Image.ColorMap, m_pBMI);
 					}
 					DWORD uiDIBScanLineSize = DWALIGNEDWIDTHBYTES(	m_pBMI->bmiHeader.biWidth *
 																	m_pBMI->bmiHeader.biBitCount);
@@ -1728,7 +1728,7 @@ BOOL CDib::LoadFirstGIF32(	LPCTSTR lpszPathName,
 		if (m_Gif.m_pLoadFile->SColorMap)
 		{
 			m_Gif.m_bHasScreenColorTable = TRUE;
-			m_Gif.GetColorMap(m_Gif.m_pLoadFile->SColorMap, m_Gif.m_pScreenBMI);
+			CGif::GetColorMap(m_Gif.m_pLoadFile->SColorMap, m_Gif.m_pScreenBMI);
 			m_Gif.m_nBackgndColorIndex = m_Gif.m_pLoadFile->SBackGroundColor;
 			m_FileInfo.m_bHasBackgroundColor = TRUE;
 		}
@@ -1992,7 +1992,7 @@ int CDib::LoadNextGIF32(CWnd* pProgressWnd/*=NULL*/,
 					else
 					{
 						m_Gif.m_bHasImageColorTable = TRUE;
-						m_Gif.GetColorMap(m_Gif.m_pLoadFile->Image.ColorMap, m_Gif.m_pCurrentImageBMI);
+						CGif::GetColorMap(m_Gif.m_pLoadFile->Image.ColorMap, m_Gif.m_pCurrentImageBMI);
 					}
 					DWORD uiDIBScanLineSize = DWALIGNEDWIDTHBYTES(	m_Gif.m_pCurrentImageBMI->bmiHeader.biWidth *
 																	m_Gif.m_pCurrentImageBMI->bmiHeader.biBitCount);
@@ -2316,7 +2316,7 @@ BOOL CDib::SaveGIF(	LPCTSTR lpszPathName,
 			{
 				if ((OutputColorMap = ::MakeMapObject(1 << LogNumColors(GetNumColors())/*has to be a power of two*/, NULL)) == NULL)
 					throw (int)GIF_E_NOMEM;
-				m_Gif.SetColorMap(OutputColorMap, m_pBMI);
+				CGif::SetColorMap(OutputColorMap, m_pBMI);
 
 				for (unsigned int line = 0 ; line < GetHeight() ; line++)
 				{
@@ -2352,7 +2352,7 @@ BOOL CDib::SaveGIF(	LPCTSTR lpszPathName,
 			{
 				if ((OutputColorMap = ::MakeMapObject(1 << LogNumColors(GetNumColors())/*has to be a power of two*/, NULL)) == NULL)
 					throw (int)GIF_E_NOMEM;
-				m_Gif.SetColorMap(OutputColorMap, m_pBMI);
+				CGif::SetColorMap(OutputColorMap, m_pBMI);
 
 				for (unsigned int line = 0 ; line < GetHeight() ; line++)
 				{
@@ -2391,7 +2391,7 @@ BOOL CDib::SaveGIF(	LPCTSTR lpszPathName,
 			{
 				if ((OutputColorMap = ::MakeMapObject(1 << LogNumColors(GetNumColors())/*has to be a power of two*/, NULL)) == NULL)
 					throw (int)GIF_E_NOMEM;
-				m_Gif.SetColorMap(OutputColorMap, m_pBMI);
+				CGif::SetColorMap(OutputColorMap, m_pBMI);
 
 				for (unsigned int line = 0 ; line < GetHeight() ; line++)
 					memcpy(	OutputBuffer + line*GetWidth(),
@@ -2685,7 +2685,7 @@ BOOL CDib::SaveFirstGIF(LPCTSTR lpszPathName,
 			{
 				if ((OutputColorMap = ::MakeMapObject(1 << LogNumColors(GetNumColors())/*has to be a power of two*/, NULL)) == NULL)
 					throw (int)GIF_E_NOMEM;
-				m_Gif.SetColorMap(OutputColorMap, m_pBMI);
+				CGif::SetColorMap(OutputColorMap, m_pBMI);
 
 				for (unsigned int line = 0 ; line < GetHeight() ; line++)
 				{
@@ -2721,7 +2721,7 @@ BOOL CDib::SaveFirstGIF(LPCTSTR lpszPathName,
 			{
 				if ((OutputColorMap = ::MakeMapObject(1 << LogNumColors(GetNumColors())/*has to be a power of two*/, NULL)) == NULL)
 					throw (int)GIF_E_NOMEM;
-				m_Gif.SetColorMap(OutputColorMap, m_pBMI);
+				CGif::SetColorMap(OutputColorMap, m_pBMI);
 
 				for (unsigned int line = 0 ; line < GetHeight() ; line++)
 				{
@@ -2760,7 +2760,7 @@ BOOL CDib::SaveFirstGIF(LPCTSTR lpszPathName,
 			{
 				if ((OutputColorMap = ::MakeMapObject(1 << LogNumColors(GetNumColors())/*has to be a power of two*/, NULL)) == NULL)
 					throw (int)GIF_E_NOMEM;
-				m_Gif.SetColorMap(OutputColorMap, m_pBMI);
+				CGif::SetColorMap(OutputColorMap, m_pBMI);
 
 				for (unsigned int line = 0 ; line < GetHeight() ; line++)
 					memcpy(	OutputBuffer + line*GetWidth(),
@@ -3045,7 +3045,7 @@ BOOL CDib::SaveNextGIF(	CDib* pDib/*=NULL*/,
 			{
 				if ((OutputColorMap = ::MakeMapObject(1 << LogNumColors(pDib->GetNumColors())/*has to be a power of two*/, NULL)) == NULL)
 					throw (int)GIF_E_NOMEM;
-				m_Gif.SetColorMap(OutputColorMap, pDib->m_pBMI);
+				CGif::SetColorMap(OutputColorMap, pDib->m_pBMI);
 
 				for (unsigned int line = 0 ; line < pDib->GetHeight() ; line++)
 				{
@@ -3074,7 +3074,7 @@ BOOL CDib::SaveNextGIF(	CDib* pDib/*=NULL*/,
 			{
 				if ((OutputColorMap = ::MakeMapObject(1 << LogNumColors(pDib->GetNumColors())/*has to be a power of two*/, NULL)) == NULL)
 					throw (int)GIF_E_NOMEM;
-				m_Gif.SetColorMap(OutputColorMap, pDib->m_pBMI);
+				CGif::SetColorMap(OutputColorMap, pDib->m_pBMI);
 
 				for (unsigned int line = 0 ; line < pDib->GetHeight() ; line++)
 				{
@@ -3106,7 +3106,7 @@ BOOL CDib::SaveNextGIF(	CDib* pDib/*=NULL*/,
 			{
 				if ((OutputColorMap = ::MakeMapObject(1 << LogNumColors(pDib->GetNumColors())/*has to be a power of two*/, NULL)) == NULL)
 					throw (int)GIF_E_NOMEM;
-				m_Gif.SetColorMap(OutputColorMap, pDib->m_pBMI);
+				CGif::SetColorMap(OutputColorMap, pDib->m_pBMI);
 
 				for (unsigned int line = 0 ; line < pDib->GetHeight() ; line++)
 					memcpy(	OutputBuffer + line*pDib->GetWidth(),
