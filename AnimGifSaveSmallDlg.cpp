@@ -32,7 +32,7 @@ void CAnimGifSaveSmallDlg::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CAnimGifSaveSmallDlg)
 	DDX_Control(pDX, IDC_LIST_DELAYS, m_ListDelays);
 	DDX_Text(pDX, IDC_EDIT_PLAY_TIMES, m_uiPlayTimes);
-	DDV_MinMaxUInt(pDX, m_uiPlayTimes, 1, 10000);
+	DDV_MinMaxUInt(pDX, m_uiPlayTimes, 1, 65536);
 	DDX_Radio(pDX, IDC_RADIO_LOOP, m_nLoopInfinite);
 	//}}AFX_DATA_MAP
 }
@@ -54,7 +54,7 @@ BOOL CAnimGifSaveSmallDlg::OnInitDialog()
 	
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PLAY_TIMES);
 	CSpinButtonCtrl* pSpin = (CSpinButtonCtrl*)GetDlgItem(IDC_SPIN_PLAY_TIMES);
-	pSpin->SetRange(1, 10000);
+	pSpin->SetRange32(1, 65536);
 
 	if (m_nLoopInfinite == 1)
 	{
