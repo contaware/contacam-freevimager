@@ -23,6 +23,7 @@
 
 #define OEMRESOURCE
 
+#include "malloc_leak_dump.h" // must be included before the inclusion of afx.h
 #include <afxwin.h>         // MFC core and standard components
 #include <afxext.h>         // MFC extensions
 #include <afxdisp.h>        // MFC Automation classes

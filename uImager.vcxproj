@@ -1277,6 +1277,7 @@
     <ClInclude Include="LicenseHelper.h" />
     <ClInclude Include="ListCtrlEx.h" />
     <ClInclude Include="MainFrm.h" />
+    <ClInclude Include="malloc_leak_dump.h" />
     <ClInclude Include="MDIClientWnd.h" />
     <ClInclude Include="MDISnapper.h" />
     <ClInclude Include="MDITabs.h" />

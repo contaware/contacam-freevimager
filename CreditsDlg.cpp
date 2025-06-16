@@ -4,7 +4,15 @@
 #include "stdafx.h"
 #include "uimager.h"
 #include "CreditsDlg.h"
+
+// Unfortunately avir.h defines one of its member functions as free(), 
+// but that conflicts with the free debug macro defined in crtdbg.h,
+// thus we have to undef the free macro during the inclusion of avir.h.
+#pragma push_macro("free")
+#undef free
 #include "avir.h"
+#pragma pop_macro("free")
+
 extern "C"
 {
 #ifdef VIDEODEVICEDOC

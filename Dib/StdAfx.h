@@ -10,6 +10,7 @@
 
 #define VC_EXTRALEAN		// Exclude rarely-used stuff from Windows headers
 
+#include "..\malloc_leak_dump.h" // must be included before the inclusion of afx.h
 #include <afx.h>
 #include <afxwin.h>
 #include <afxadv.h>
