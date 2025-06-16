@@ -278,14 +278,23 @@ libpng 1.2.59
 - Preprocessor defines for debug:   WIN32, DEBUG, _DEBUG, PNG_DEBUG=1,
                                     PNG_LIBPNG_SPECIALBUILD
                                     PNG_USER_CHUNK_MALLOC_MAX=80000000  <- 10x the default value
-									
-									
+
+
 AVIR image resizing algorithm designed by Aleksey Vaneev
 --------------------------------------------------------
 
 - The code is thread-safe
+
 - Using only avir.h
-https://github.com/avaneev/avir
+  https://github.com/avaneev/avir
+
+- Unfortunately avir.h defines one of its member functions as free(), 
+  but that conflicts with the free debug macro defined in crtdbg.h,
+  thus we have to undef the free macro during the inclusion of avir.h:
+  #pragma push_macro("free")
+  #undef free
+  #include "avir.h"
+  #pragma pop_macro("free")
 
 
 UAC NSIS installer plugin

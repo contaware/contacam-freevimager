@@ -3,6 +3,7 @@ FREEVIMAGER HISTORY
 9.9.26 (Month XXth 2025)
 
 - Resolved rare issues with GIF files opening and saving
+- Updated the avir library to version 3.1
 - Show used compiler version in About dialog
 - Refinement of the Chinese translation quality 
   (thanks to lifansama@gmail.com)
