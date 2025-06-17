@@ -3204,7 +3204,7 @@ BEGIN
     IDS_MULTILANG_1360      "Please Select a Valid Input Directory."
     IDS_MULTILANG_1361      "Please Add Input Files."
     IDS_MULTILANG_1362      "Please Enter an Output Directory."
-    IDS_MULTILANG_1363      "Please Enter an Output File Name."
+    IDS_MULTILANG_1363      "Please Enter a Valid Output File Name."
     IDS_MULTILANG_1364      "Rename string is incorrect.\n"
     IDS_MULTILANG_1365      "It must contain at least a # char or the $file place holder."
     IDS_MULTILANG_1366      "You have chosen the Same Path for Input and Output!\n"

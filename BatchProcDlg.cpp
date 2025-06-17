@@ -1982,10 +1982,20 @@ void CBatchProcDlg::OnOK()
 		// Output File?
 		else
 		{
-			if (m_sOutputFileName == _T(""))
+			if (::GetFileExt(m_sOutputFileName) != _T(".zip")	&&
+				::GetFileExt(m_sOutputFileName) != _T(".gif")	&&
+				!CDib::IsTIFF(m_sOutputFileName)				&&
+				::GetFileExt(m_sOutputFileName) != _T(".pdf"))
 			{
-				::AfxMessageBox(ML_STRING(1363, "Please Enter an Output File Name."),
+				::AfxMessageBox(ML_STRING(1363, "Please Enter a Valid Output File Name."),
 												MB_OK | MB_ICONSTOP);
+				return;
+			}
+			CString sOutputFileNameDir(::GetDriveAndDirName(m_sOutputFileName));
+			if (!::IsExistingDir(sOutputFileNameDir) &&
+				!::CreateDir(sOutputFileNameDir))
+			{
+				::ShowErrorMsg(::GetLastError(), TRUE);
 				return;
 			}
 			sOutputDirectory = _T("");
