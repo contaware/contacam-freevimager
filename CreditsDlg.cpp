@@ -8,6 +8,8 @@
 // Unfortunately avir.h defines one of its member functions as free(), 
 // but that conflicts with the free debug macro defined in crtdbg.h,
 // thus we have to undef the free macro during the inclusion of avir.h.
+// Note: if free is not defined, push_macro does nothing, and if the 
+//       macro stack is empty, pop_macro defines nothing.
 #pragma push_macro("free")
 #undef free
 #include "avir.h"
