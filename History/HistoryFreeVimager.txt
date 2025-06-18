@@ -1,6 +1,6 @@
 FREEVIMAGER HISTORY
 
-9.9.26 (Month XXth 2025)
+9.9.26 (June 18th 2025)
 
 - Resolved rare issues with GIF files opening and saving
 - Updated the avir library to version 3.1

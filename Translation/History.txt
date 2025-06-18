@@ -1,6 +1,6 @@
 TRANSLATIONS HISTORY
 
-9.9.26 (Month XXth 2025)
+9.9.26 (June 18th 2025)
 
 - Refinement of the Chinese translation quality 
   (thanks to lifansama@gmail.com)

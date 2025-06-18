@@ -30,13 +30,14 @@ Release procedure
    - CurrentVersion.nsh
    - HistoryFreeVimager.txt, HistoryContaCam.txt and translation History.txt
 
-2. Build release target of FreeVimager and ContaCam with Visual Studio
+2. Build release target of FreeVimager, ContaCam and ContaCamService 
+   with Visual Studio
 
 3. Copy FreeVimager.exe and ContaCam.exe to Translation directory,
    call Update Source in appTranslator and Build all Target Files
    
-4. Run Make_All.bat in Setup folder
-   
-5. Commit as: Release x.y.z
+4. Commit as: Release x.y.z
 
-6. git tag -a -m "Release x.y.z" x.y.z
+5. git tag -a -m "Release x.y.z" x.y.z
+
+6. Run Make_All.bat in Setup folder
