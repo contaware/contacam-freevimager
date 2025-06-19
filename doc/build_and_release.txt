@@ -39,5 +39,6 @@ Release procedure
 4. Commit as: Release x.y.z
 
 5. git tag -a -m "Release x.y.z" x.y.z
+   git push origin x.y.z
 
 6. Run Make_All.bat in Setup folder
