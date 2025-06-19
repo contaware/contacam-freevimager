@@ -17,8 +17,10 @@ Necessary x86-unicode Plugins:
 - SysCompImg
   http://forums.winamp.com/showthread.php?t=443754
 
-Non-free tool to make the translations:
-- http://www.apptranslator.com
+Non-free tool to make the translations, it no longer exists, last snapshots:
+- https://web.archive.org/web/20160719011434/http://www.apptranslator.com/
+  https://web.archive.org/web/20160720063024/http://www.apptranslator.com/features.html
+  https://web.archive.org/web/20160701184504/http://www.apptranslator.com/misconceptions.html
 
 
 Release procedure
