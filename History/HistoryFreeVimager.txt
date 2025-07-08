@@ -1,5 +1,9 @@
 FREEVIMAGER HISTORY
 
+9.9.27 (Month XXth 2025)
+
+- Increase max allowed image width or height to 32767 pixels
+
 9.9.26 (June 18th 2025)
 
 - Resolved rare issues with GIF files opening and saving
