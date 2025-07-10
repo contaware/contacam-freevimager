@@ -6887,8 +6887,8 @@ BOOL CDib::CreatePreviewDib(int nMaxSizeX,
 	m_dPreviewDibRatio = max(dPreviewDibRatioX, dPreviewDibRatioY);
 
 	// Stretch Bits
-	return m_pPreviewDib->StretchBits(	Round(pSrcDib->GetWidth() / m_dPreviewDibRatio),
-										Round(pSrcDib->GetHeight() / m_dPreviewDibRatio),
+	return m_pPreviewDib->StretchBits(	MAX(1, Round(pSrcDib->GetWidth() / m_dPreviewDibRatio)), // at least 1 pixel width
+										MAX(1, Round(pSrcDib->GetHeight() / m_dPreviewDibRatio)),// at least 1 pixel height
 										pSrcDib,
 										pProgressWnd,
 										bProgressSend,
@@ -6934,8 +6934,8 @@ BOOL CDib::CreateThumbnailDib(	int nMaxSizeX,
 	m_dThumbnailDibRatio = max(dThumbnailDibRatioX, dThumbnailDibRatioY);
 
 	// Stretch Bits
-	return m_pThumbnailDib->StretchBits(Round(pSrcDib->GetWidth() / m_dThumbnailDibRatio),
-										Round(pSrcDib->GetHeight() / m_dThumbnailDibRatio),
+	return m_pThumbnailDib->StretchBits(MAX(1, Round(pSrcDib->GetWidth() / m_dThumbnailDibRatio)), // at least 1 pixel width
+										MAX(1, Round(pSrcDib->GetHeight() / m_dThumbnailDibRatio)),// at least 1 pixel height
 										pSrcDib,
 										pProgressWnd,
 										bProgressSend,

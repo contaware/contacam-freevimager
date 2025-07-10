@@ -157,8 +157,8 @@ BOOL CDib::StretchBitsFitRect(	DWORD dwMaxWidth,
 	double dRatioMax = max(dRatioX, dRatioY);
 
 	// Stretch
-	return StretchBits(	Round(pSrcDib->GetWidth() / dRatioMax),
-						Round(pSrcDib->GetHeight() / dRatioMax),
+	return StretchBits(	MAX(1, Round(pSrcDib->GetWidth() / dRatioMax)), // at least 1 pixel width
+						MAX(1, Round(pSrcDib->GetHeight() / dRatioMax)),// at least 1 pixel height
 						pSrcDib,
 						pProgressWnd,
 						bProgressSend,
@@ -184,8 +184,8 @@ BOOL CDib::StretchBitsMaintainAspectRatio(	DWORD dwNewWidth,
 	double dRatioMax = max(dRatioX, dRatioY);
 
 	// Stretch
-	if (!StretchBits(	Round(pSrcDib->GetWidth() / dRatioMax),
-						Round(pSrcDib->GetHeight() / dRatioMax),
+	if (!StretchBits(	MAX(1, Round(pSrcDib->GetWidth() / dRatioMax)), // at least 1 pixel width
+						MAX(1, Round(pSrcDib->GetHeight() / dRatioMax)),// at least 1 pixel height
 						pSrcDib,
 						pProgressWnd,
 						bProgressSend,

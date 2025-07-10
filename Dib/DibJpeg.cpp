@@ -2975,8 +2975,8 @@ BOOL CDib::MakeEXIFThumbnail(CDib* pDib, LPBYTE* ppJpegThumbData, int* pJpegThum
 		dFinalRatio = dLongRatio;
 	else
 		dFinalRatio = dShortRatio;
-	pDib->StretchBits(	Round(pDib->GetWidth() / dFinalRatio),
-						Round(pDib->GetHeight() / dFinalRatio));
+	pDib->StretchBits(	MAX(1, Round(pDib->GetWidth() / dFinalRatio)),   // at least 1 pixel width
+						MAX(1, Round(pDib->GetHeight() / dFinalRatio))); // at least 1 pixel height
 
 	// Add Black Borders
 	DWORD dwLeft, dwTop, dwRight, dwBottom;
