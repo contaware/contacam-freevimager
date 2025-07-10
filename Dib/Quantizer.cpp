@@ -32,7 +32,7 @@ BOOL CQuantizer::ProcessImage(	CDib* pDib,
 								BOOL bProgressSend/*=TRUE*/)
 {
 	BYTE R,	G, B, A;
-	unsigned int line, i;
+	unsigned int line, lineinc, i;
 
 	if (!pDib)
 		return FALSE;
@@ -49,6 +49,18 @@ BOOL CQuantizer::ProcessImage(	CDib* pDib,
 	DWORD uiDIBSourceScanLineSize = DWALIGNEDWIDTHBYTES(pDib->GetWidth() * pDib->GetBitCount());
 	LPBYTE lpBits = pDib->GetBits();
 
+	// Calculate the line increment to skip lines if image is too big.
+	// The reason for that is to avoid overflowing NODE::nRedSum, NODE::nGreenSum, 
+	// NODE::nBlueSum and NODE::nAlphaSum by limiting the added pixels to 16000000
+	// (16000000 * 256 < UINT_MAX)
+	lineinc = 1;
+	if (pDib->GetWidth() > 0)
+	{
+		unsigned int uiHeightLimit = 16000000 / pDib->GetWidth();
+		if (uiHeightLimit > 0)
+			lineinc = pDib->GetHeight() / uiHeightLimit + 1;
+	}
+
 	DIB_INIT_PROGRESS;
 
 	switch (pDib->GetBitCount())
@@ -56,7 +68,7 @@ BOOL CQuantizer::ProcessImage(	CDib* pDib,
 		case 1:	// 1-bit DIB
 		case 4:	// 4-bit DIB
 		case 8:	// 8-bit DIB
-			for (line = 0 ; line < pDib->GetHeight() ; line++)
+			for (line = 0 ; line < pDib->GetHeight() ; line += lineinc)
 			{
 				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, pDib->GetHeight());
 
@@ -77,7 +89,7 @@ BOOL CQuantizer::ProcessImage(	CDib* pDib,
 			break;
 
 		case 16:
-			for (line = 0 ; line < pDib->GetHeight() ; line++)
+			for (line = 0 ; line < pDib->GetHeight() ; line += lineinc)
 			{
 				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, pDib->GetHeight());
 
@@ -88,12 +100,12 @@ BOOL CQuantizer::ProcessImage(	CDib* pDib,
 					while (m_nLeafCount	> m_nMaxColors)
 						ReduceTree(m_nColorBits, &m_nLeafCount, m_pReducibleNodes);
 				}
-				lpBits += uiDIBSourceScanLineSize;
+				lpBits += lineinc * uiDIBSourceScanLineSize;
 			}
 			break;
 	
 		case 24:
-			for (line = 0 ; line < pDib->GetHeight() ; line++)
+			for (line = 0 ; line < pDib->GetHeight() ; line += lineinc)
 			{
 				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, pDib->GetHeight());
 
@@ -106,14 +118,14 @@ BOOL CQuantizer::ProcessImage(	CDib* pDib,
 					while (m_nLeafCount	> m_nMaxColors)
 						ReduceTree(m_nColorBits, &m_nLeafCount, m_pReducibleNodes);
 				}
-				lpBits += uiDIBSourceScanLineSize;
+				lpBits += lineinc * uiDIBSourceScanLineSize;
 			}
 			break;
 
 		case 32 :
 			if (!pDib->HasAlpha() && pDib->IsFast32bpp())
 			{
-				for (line = 0 ; line < pDib->GetHeight() ; line++)
+				for (line = 0 ; line < pDib->GetHeight() ; line += lineinc)
 				{
 					DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, pDib->GetHeight());
 
@@ -126,12 +138,12 @@ BOOL CQuantizer::ProcessImage(	CDib* pDib,
 						while (m_nLeafCount	> m_nMaxColors)
 							ReduceTree(m_nColorBits, &m_nLeafCount, m_pReducibleNodes);
 					}
-					lpBits += uiDIBSourceScanLineSize;
+					lpBits += lineinc * uiDIBSourceScanLineSize;
 				}
 			}
 			else if (pDib->HasAlpha())
 			{
-				for (line = 0 ; line < pDib->GetHeight() ; line++)
+				for (line = 0 ; line < pDib->GetHeight() ; line += lineinc)
 				{
 					DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, pDib->GetHeight());
 
@@ -148,12 +160,12 @@ BOOL CQuantizer::ProcessImage(	CDib* pDib,
 								ReduceTree(m_nColorBits, &m_nLeafCount, m_pReducibleNodes);
 						}
 					}
-					lpBits += uiDIBSourceScanLineSize;
+					lpBits += lineinc * uiDIBSourceScanLineSize;
 				}
 			}
 			else
 			{
-				for (line = 0 ; line < pDib->GetHeight() ; line++)
+				for (line = 0 ; line < pDib->GetHeight() ; line += lineinc)
 				{
 					DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, line, pDib->GetHeight());
 
@@ -164,7 +176,7 @@ BOOL CQuantizer::ProcessImage(	CDib* pDib,
 						while (m_nLeafCount	> m_nMaxColors)
 							ReduceTree(m_nColorBits, &m_nLeafCount, m_pReducibleNodes);
 					}
-					lpBits += uiDIBSourceScanLineSize;
+					lpBits += lineinc * uiDIBSourceScanLineSize;
 				}
 			}
 			break;
