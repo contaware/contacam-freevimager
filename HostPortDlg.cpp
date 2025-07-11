@@ -119,8 +119,11 @@ void CHostPortDlg::InitDeviceTypeModeArrayForCB(CArray<CDeviceTypeModePair>& a)
 	a.Add(CDeviceTypeModePair(_T("Planet (RTSP)"), (DWORD)CVideoDeviceDoc::PLANET_RTSP));
 	a.Add(CDeviceTypeModePair(_T("Reolink H.265 (RTSP)"), (DWORD)CVideoDeviceDoc::REOLINK_H265_RTSP));
 	a.Add(CDeviceTypeModePair(_T("Reolink H.264 (RTSP)"), (DWORD)CVideoDeviceDoc::REOLINK_H264_RTSP));
-	a.Add(CDeviceTypeModePair(_T("Samsung 1080P (RTSP)"), (DWORD)CVideoDeviceDoc::SAMSUNG_PROFILE5_RTSP));
-	a.Add(CDeviceTypeModePair(_T("Samsung 720P (RTSP)"), (DWORD)CVideoDeviceDoc::SAMSUNG_PROFILE4_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Samsung/Wisenet/Hanwha profile5 (RTSP)"), (DWORD)CVideoDeviceDoc::SAMSUNG_PROFILE5_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Samsung/Wisenet/Hanwha profile4 (RTSP)"), (DWORD)CVideoDeviceDoc::SAMSUNG_PROFILE4_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Samsung/Wisenet/Hanwha profile3 (RTSP)"), (DWORD)CVideoDeviceDoc::SAMSUNG_PROFILE3_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Samsung/Wisenet/Hanwha profile2 (RTSP)"), (DWORD)CVideoDeviceDoc::SAMSUNG_PROFILE2_RTSP));
+	a.Add(CDeviceTypeModePair(_T("Samsung/Wisenet/Hanwha profile1 (RTSP)"), (DWORD)CVideoDeviceDoc::SAMSUNG_PROFILE1_RTSP));
 	a.Add(CDeviceTypeModePair(_T("Sony (RTSP)"), (DWORD)CVideoDeviceDoc::SONY_RTSP));
 	a.Add(CDeviceTypeModePair(_T("Sricam (RTSP)"), (DWORD)CVideoDeviceDoc::SRICAM_RTSP));
 	a.Add(CDeviceTypeModePair(_T("Srihome (RTSP)"), (DWORD)CVideoDeviceDoc::SRIHOME_RTSP));

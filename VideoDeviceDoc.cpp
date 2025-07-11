@@ -9302,11 +9302,23 @@ void CVideoDeviceDoc::ConnectRtsp()
 			break;
 
 		case SAMSUNG_PROFILE5_RTSP:
-			sPathAndQuery = _T("/profile5/media.smp"); // 1080P
+			sPathAndQuery = _T("/profile5/media.smp");
 			break;
 
 		case SAMSUNG_PROFILE4_RTSP:
-			sPathAndQuery = _T("/profile4/media.smp"); // 720P
+			sPathAndQuery = _T("/profile4/media.smp");
+			break;
+
+		case SAMSUNG_PROFILE3_RTSP:
+			sPathAndQuery = _T("/profile3/media.smp");
+			break;
+
+		case SAMSUNG_PROFILE2_RTSP:
+			sPathAndQuery = _T("/profile2/media.smp");
+			break;
+
+		case SAMSUNG_PROFILE1_RTSP:
+			sPathAndQuery = _T("/profile1/media.smp");
 			break;
 
 		case SONY_RTSP:				

@@ -2,7 +2,7 @@ CONTACAM HISTORY
 
 9.9.27 (Month XXth 2025)
 
-- ...
+- Add Samsung/Wisenet/Hanwha profile5, profile4 ... profile1
 
 9.9.26 (June 18th 2025)
 

@@ -602,8 +602,11 @@ public:
 		PLANET_RTSP = 1180,				// Planet RTSP
 		REOLINK_H265_RTSP = 1184,		// Reolink H.265 RTSP
 		REOLINK_H264_RTSP = 1185,		// Reolink H.264 RTSP
-		SAMSUNG_PROFILE5_RTSP = 1190,	// Samsung Profile5 RTSP
-		SAMSUNG_PROFILE4_RTSP = 1191,	// Samsung Profile4 RTSP
+		SAMSUNG_PROFILE5_RTSP = 1190,	// Samsung/Wisenet/Hanwha profile5 RTSP
+		SAMSUNG_PROFILE4_RTSP = 1191,	// Samsung/Wisenet/Hanwha profile4 RTSP
+		SAMSUNG_PROFILE3_RTSP = 1192,	// Samsung/Wisenet/Hanwha profile3 RTSP
+		SAMSUNG_PROFILE2_RTSP = 1193,	// Samsung/Wisenet/Hanwha profile2 RTSP
+		SAMSUNG_PROFILE1_RTSP = 1194,	// Samsung/Wisenet/Hanwha profile1 RTSP
 		SONY_RTSP = 1200,				// Sony RTSP
 		SRICAM_RTSP = 1205,				// Sricam RTSP
 		SRIHOME_RTSP = 1206,			// Srihome series from Sricam RTSP (SH020, SH025, SH029 do not support RTSP)
