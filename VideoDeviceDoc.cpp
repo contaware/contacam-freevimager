@@ -10559,8 +10559,13 @@ BOOL CVideoDeviceDoc::CHttpParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 				m_bConnectionKeepAlive = TRUE;
 		}
 
-		// Parser does not support the chunked transfer encoding
-		if (CheckHttpHeaderValue(_T("chunked"), FindHttpHeader(_T("transfer-encoding"), sMsgLowerCase), sMsgLowerCase))
+		// Our parser does not support the chunked transfer encoding
+		// Note: if we already switched to HTTP 1.0 to prevent the 
+		//       chunked transfer-encoding, but the camera keeps 
+		//       sending us chunked transfer-encoding answers, we 
+		//       ignore it to avoid re-connecting infinitely.
+		if (!m_bOldVersionForce &&
+			CheckHttpHeaderValue(_T("chunked"), FindHttpHeader(_T("transfer-encoding"), sMsgLowerCase), sMsgLowerCase))
 		{
 			// Empty the buffers, so that parser stops calling us!
 			pNetCom->Read();
