@@ -1647,7 +1647,7 @@ BOOL CUImagerApp::PasteToFile(LPCTSTR lpszFileName, COLORREF crBackgroundColor/*
 	Dib.EditPaste();
 	if (!Dib.IsValid())
 		Dib.AllocateBits(32, BI_RGB, 1, 1, crBackgroundColor);
-	CString sExt = ::GetFileExt(lpszFileName);
+	CString sExt = ::GetFileExtLower(lpszFileName);
 	if (CDib::IsJPEGExt(sExt))
 	{
 		if (Dib.HasAlpha() && Dib.GetBitCount() == 32)
@@ -1705,7 +1705,7 @@ void CUImagerApp::RichEditCtrlAppendText(	CRichEditCtrl* pRichEditCtrl,
 void CUImagerApp::FileTypeNotSupportedMessageBox(LPCTSTR lpszFileName)
 {
 	CString sMsg;
-	CString sExt = ::GetFileExt(lpszFileName);
+	CString sExt = ::GetFileExtLower(lpszFileName);
 	sMsg.Format(ML_STRING(1174, "Failed to Open:\n%s\nThe following extension is not supported:\n%s"),
 				lpszFileName,
 				sExt);
@@ -2780,12 +2780,12 @@ void CUImagerApp::ShrinkOpenDocs(LPCTSTR szDstDirPath,
 		CString sOrigDstFileName = sDstFileName;
 		int i = 0;
 		while (DstFileNames.InStringArrayNoCase(sDstFileName))
-			sDstFileName.Format(_T("%s(%d)%s"), ::GetFileNameNoExt(sOrigDstFileName), ++i, ::GetFileExt(sOrigDstFileName));
+			sDstFileName.Format(_T("%s(%d)%s"), ::GetFileNameNoExt(sOrigDstFileName), ++i, ::GetFileExtLower(sOrigDstFileName));
 		DstFileNames.Add(sDstFileName);
 		sDstFileName = sDstDirPath + _T("\\") + sDstFileName;
 		if (!bOnlyCopyFiles)
 		{
-			CString sDstExt = ShrinkGetDstExt(::GetFileExt(sSrcFileName));
+			CString sDstExt = ShrinkGetDstExt(::GetFileExtLower(sSrcFileName));
 			sDstFileName = ::GetFileNameNoExt(sDstFileName) + sDstExt;
 		}
 
@@ -2913,12 +2913,12 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 	// - Not Shrinking Picture Size
 	//   and not Jpeg with Force Quality
 	//   and not Tiff with Force Compression
-	if (::GetFileExt(szSrcFileName) == ::GetFileExt(szDstFileName)		&&
+	if (::GetFileExtLower(szSrcFileName) == ::GetFileExtLower(szDstFileName)	&&
 
-		(CDib::IsAnimatedGIF(szSrcFileName, FALSE)						||
+		(CDib::IsAnimatedGIF(szSrcFileName, FALSE)								||
 
-		(!bShrinkPictureSize											&&
-		!(CDib::IsJPEG(szSrcFileName) && bForceJpegQuality)				&&
+		(!bShrinkPictureSize													&&
+		!(CDib::IsJPEG(szSrcFileName) && bForceJpegQuality)						&&
 		!(CDib::IsTIFF(szSrcFileName) && bTiffForceCompression))))
 	{
 		if (!::CopyFile(szSrcFileName, szDstFileName, FALSE))
@@ -2977,8 +2977,8 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 		if (bDoShrink)
 		{
 			// Use Memory Mapped Load if Not Compressed and Not Old OS/2 Bmp and Not top-down Bmp
-			if (::GetFileExt(szSrcFileName) == _T(".bmp") ||
-				::GetFileExt(szSrcFileName) == _T(".dib"))
+			if (::GetFileExtLower(szSrcFileName) == _T(".bmp") ||
+				::GetFileExtLower(szSrcFileName) == _T(".dib"))
 			{
 				if (!SrcDib.IsCompressed()			&&
 					!SrcDib.m_FileInfo.m_bBmpOS2Hdr	&&
@@ -3038,9 +3038,9 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 			// - Not Jpeg with Force Quality
 			//   and not Tiff with Force Compression
 			//   and Same Extension
-			if (!(CDib::IsJPEG(szSrcFileName) && bForceJpegQuality) &&
-				!(CDib::IsTIFF(szSrcFileName) && bTiffForceCompression) &&
-				(::GetFileExt(szSrcFileName) == ::GetFileExt(szDstFileName)))
+			if (!(CDib::IsJPEG(szSrcFileName) && bForceJpegQuality)		&&
+				!(CDib::IsTIFF(szSrcFileName) && bTiffForceCompression)	&&
+				(::GetFileExtLower(szSrcFileName) == ::GetFileExtLower(szDstFileName)))
 			{
 				if (!::CopyFile(szSrcFileName, szDstFileName, FALSE))
 				{
@@ -3061,8 +3061,8 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 	if (!res)
 	{
 		// Use Memory Mapped Load if Not Compressed and Not Old OS/2 Bmp and Not top-down Bmp
-		if (::GetFileExt(szSrcFileName) == _T(".bmp") ||
-			::GetFileExt(szSrcFileName) == _T(".dib"))
+		if (::GetFileExtLower(szSrcFileName) == _T(".bmp") ||
+			::GetFileExtLower(szSrcFileName) == _T(".dib"))
 		{
 			if (!SrcDib.IsCompressed()			&&
 				!SrcDib.m_FileInfo.m_bBmpOS2Hdr	&&
@@ -3096,10 +3096,8 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 	pSaveDib->GetExifInfo()->Orientation = 1;
 
 	// Save Image
-	CString sSrcExt = ::GetFileExt(szSrcFileName);
-	CString sDstExt = ::GetFileExt(szDstFileName);
-	sSrcExt.MakeLower();
-	sDstExt.MakeLower();
+	CString sSrcExt = ::GetFileExtLower(szSrcFileName);
+	CString sDstExt = ::GetFileExtLower(szDstFileName);
 	if (CDib::IsJPEGExt(sDstExt))
 	{
 		// Flatten
@@ -3944,7 +3942,7 @@ PROCESS_LOCAL(CMailState, MailState)
 
 BOOL CUImagerApp::IsSupportedPictureFile(CString sFileName)
 {
-	CString sExt = ::GetFileExt(sFileName);
+	CString sExt = ::GetFileExtLower(sFileName);
 	if ((sExt == _T(".bmp"))	||
 		(sExt == _T(".dib"))	||
 		(sExt == _T(".emf"))	||
@@ -3964,7 +3962,7 @@ BOOL CUImagerApp::IsSupportedPictureFile(CString sFileName)
 
 BOOL CUImagerApp::IsLoadOnlyPictureFile(CString sFileName)
 {
-	CString sExt = ::GetFileExt(sFileName);
+	CString sExt = ::GetFileExtLower(sFileName);
 	if ((sExt == _T(".jxr"))	||
 		(sExt == _T(".webp"))	||
 		(sExt == _T(".heic"))	||

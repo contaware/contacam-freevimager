@@ -181,16 +181,16 @@ int CBatchProcDlg::CProcessThread::Work()
 			sDstFileNameSameExt = sTempDstDirPath + _T("\\") + sDstFileNameSameExt;
 			CString sDstFileName;
 			if (m_pDlg->m_bConversion &&
-				!(m_pDlg->m_nOutputSelection == OUTPUT_FILE && ::GetFileExt(m_pDlg->m_sOutputFileName) != _T(".zip")))
+				!(m_pDlg->m_nOutputSelection == OUTPUT_FILE && ::GetFileExtLower(m_pDlg->m_sOutputFileName) != _T(".zip")))
 			{
 				if (m_pDlg->m_nOptimizationSelection == AUTO_OPT)
-					sDstFileName = ::GetFileNameNoExt(sDstFileNameSameExt) + CUImagerApp::ShrinkGetDstExt(::GetFileExt(sSrcFileName));
+					sDstFileName = ::GetFileNameNoExt(sDstFileNameSameExt) + CUImagerApp::ShrinkGetDstExt(::GetFileExtLower(sSrcFileName));
 				else
 				{
 					switch (m_pDlg->m_GeneralTab.m_nExtChangeType)
 					{
 						case CBatchProcGeneralTab::AUTO_CHANGE :
-							sDstFileName = ::GetFileNameNoExt(sDstFileNameSameExt) + CUImagerApp::ShrinkGetDstExt(::GetFileExt(sSrcFileName));
+							sDstFileName = ::GetFileNameNoExt(sDstFileNameSameExt) + CUImagerApp::ShrinkGetDstExt(::GetFileExtLower(sSrcFileName));
 							break;
 
 						case CBatchProcGeneralTab::ALL_JPEG :
@@ -407,11 +407,11 @@ int CBatchProcDlg::CProcessThread::Work()
 
 void CBatchProcDlg::CProcessThread::OpenOutputFile(int nFilesCount)
 {			
-	if (::GetFileExt(m_pDlg->m_sOutputFileName) == _T(".zip"))
+	if (::GetFileExtLower(m_pDlg->m_sOutputFileName) == _T(".zip"))
 	{
 		((CUImagerApp*)::AfxGetApp())->m_Zip.Open(m_pDlg->m_sOutputFileName, CZipArchive::create, 0);
 	}
-	else if (::GetFileExt(m_pDlg->m_sOutputFileName) == _T(".gif"))
+	else if (::GetFileExtLower(m_pDlg->m_sOutputFileName) == _T(".gif"))
 	{
 		m_pAnimGifSave = new CAnimGifSave (	m_pDlg->m_sOutputFileName,
 											((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
@@ -424,7 +424,7 @@ void CBatchProcDlg::CProcessThread::OpenOutputFile(int nFilesCount)
 		if (!m_pAnimGifSave)
 			throw (int)0;
 	}
-	else if (::GetFileExt(m_pDlg->m_sOutputFileName) == _T(".pdf"))
+	else if (::GetFileExtLower(m_pDlg->m_sOutputFileName) == _T(".pdf"))
 	{
 		m_sTempOutputFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
 													::GetFileNameNoExt(m_pDlg->m_sOutputFileName) + _T(".tif"));
@@ -433,11 +433,11 @@ void CBatchProcDlg::CProcessThread::OpenOutputFile(int nFilesCount)
 
 void CBatchProcDlg::CProcessThread::CloseOutputFile(bool bException)
 {
-	if (::GetFileExt(m_pDlg->m_sOutputFileName) == _T(".zip"))
+	if (::GetFileExtLower(m_pDlg->m_sOutputFileName) == _T(".zip"))
 	{
 		((CUImagerApp*)::AfxGetApp())->m_Zip.Close(bException);
 	}
-	else if (::GetFileExt(m_pDlg->m_sOutputFileName) == _T(".gif"))
+	else if (::GetFileExtLower(m_pDlg->m_sOutputFileName) == _T(".gif"))
 	{
 		if (m_pAnimGifSave)
 		{
@@ -453,7 +453,7 @@ void CBatchProcDlg::CProcessThread::CloseOutputFile(bool bException)
 			m_TiffOutFile = NULL;
 		}
 	}
-	else if (::GetFileExt(m_pDlg->m_sOutputFileName) == _T(".pdf"))
+	else if (::GetFileExtLower(m_pDlg->m_sOutputFileName) == _T(".pdf"))
 	{
 		if (m_TiffOutFile)
 		{
@@ -478,7 +478,7 @@ void CBatchProcDlg::CProcessThread::AddToOutputFile(int nFilesCount,
 													CString sDirPath,
 													CString sFileName)
 {
-	if (::GetFileExt(m_pDlg->m_sOutputFileName) == _T(".zip"))
+	if (::GetFileExtLower(m_pDlg->m_sOutputFileName) == _T(".zip"))
 	{
 		if (m_pDlg->m_bRecursive)
 		{
@@ -500,7 +500,7 @@ void CBatchProcDlg::CProcessThread::AddToOutputFile(int nFilesCount,
 		if (!CUImagerApp::IsSupportedPictureFile(sFileName))
 			return; 
 		
-		if (::GetFileExt(m_pDlg->m_sOutputFileName) == _T(".gif"))
+		if (::GetFileExtLower(m_pDlg->m_sOutputFileName) == _T(".gif"))
 		{
 			// Load Image
 			if (!m_Dib.LoadImage(	sFileName,
@@ -538,7 +538,7 @@ void CBatchProcDlg::CProcessThread::AddToOutputFile(int nFilesCount,
 							sFileName,
 							m_pDlg->m_sOutputFileName);
 		}
-		else if (::GetFileExt(m_pDlg->m_sOutputFileName) == _T(".pdf"))
+		else if (::GetFileExtLower(m_pDlg->m_sOutputFileName) == _T(".pdf"))
 		{
 			AddToOutputPdf(	nFilesCount,
 							sFileName,
@@ -846,9 +846,9 @@ void CBatchProcDlg::CProcessThread::DoRename(	int& num,
 	// Final Destination File Names
 	sDstFileName =	::GetDriveAndDirName(sDstFileName) +
 					sRenamed +
-					::GetFileExt(sDstFileName);
+					::GetFileExtLower(sDstFileName);
 	sDstFileNameSameExt =	::GetFileNameNoExt(sDstFileName) +
-							::GetFileExt(sSrcFileName);
+							::GetFileExtLower(sSrcFileName);
 }
 
 BOOL CBatchProcDlg::CProcessThread::Copy(	const CString& sSrcFileName,
@@ -1982,10 +1982,10 @@ void CBatchProcDlg::OnOK()
 		// Output File?
 		else
 		{
-			if (::GetFileExt(m_sOutputFileName) != _T(".zip")	&&
-				::GetFileExt(m_sOutputFileName) != _T(".gif")	&&
-				!CDib::IsTIFF(m_sOutputFileName)				&&
-				::GetFileExt(m_sOutputFileName) != _T(".pdf"))
+			if (::GetFileExtLower(m_sOutputFileName) != _T(".zip")	&&
+				::GetFileExtLower(m_sOutputFileName) != _T(".gif")	&&
+				!CDib::IsTIFF(m_sOutputFileName)					&&
+				::GetFileExtLower(m_sOutputFileName) != _T(".pdf"))
 			{
 				::AfxMessageBox(ML_STRING(1363, "Please Enter a Valid Output File Name."),
 												MB_OK | MB_ICONSTOP);
@@ -4545,7 +4545,7 @@ void CBatchProcDlg::OnDropFiles(HDROP hDropInfo)
 		// If is File -> Append to List
 		if (::IsExistingFile(sPath))
 		{
-			if (::GetFileExt(sPath) == _T(".txt"))
+			if (::GetFileExtLower(sPath) == _T(".txt"))
 			{
 				m_bEnableUpdateDibs = TRUE;
 				ListLoad(sPath);
@@ -5050,7 +5050,7 @@ void CBatchProcDlg::UpdateDstFileSize()
 		if (::IsExistingFile(m_sOutputFileName))
 		{
 			FileSize = ::GetFileSize64(m_sOutputFileName);
-			if (::GetFileExt(m_sOutputFileName) == _T(".zip"))
+			if (::GetFileExtLower(m_sOutputFileName) == _T(".zip"))
 			{
 				BOOL bZipNotOpen;	
 				if (bZipNotOpen = ((CUImagerApp*)::AfxGetApp())->m_Zip.IsClosed())

@@ -75,7 +75,7 @@ BOOL CDib::IsTIFFExt(CString sExt)
 
 BOOL CDib::IsTIFF(const CString& sFileName)
 {
-	return IsTIFFExt(::GetFileExt(sFileName));
+	return IsTIFFExt(::GetFileExtLower(sFileName));
 }
 
 BOOL CDib::LoadTIFF(LPCTSTR lpszPathName,
@@ -2640,7 +2640,7 @@ CString CDib::TIFFExtractPages(	LPCTSTR szDstFileName,
 			sCurrentFileName.Format(_T("%s") + sFormat + _T("%s"),
 									::GetFileNameNoExt(szDstFileName),
 									i + 1,
-									::GetFileExt(szDstFileName));
+									::GetFileExtLower(szDstFileName));
 			int iCopy = 0;
 			while (::IsExistingFile(sCurrentFileName))
 			{
@@ -2648,7 +2648,7 @@ CString CDib::TIFFExtractPages(	LPCTSTR szDstFileName,
 									::GetFileNameNoExt(szDstFileName),
 									i + 1,
 									++iCopy,
-									::GetFileExt(szDstFileName));
+									::GetFileExtLower(szDstFileName));
 			}
 			TIFF* out = ::TIFFOpenW(sCurrentFileName, "w");   
 			if (!out)

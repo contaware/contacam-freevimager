@@ -296,7 +296,7 @@ CString GetFileNameNoExt(const CString& sFullFilePath)
 	return sDrive + sDir + sName;
 }
 
-CString GetFileExt(const CString& sFullFilePath)
+CString GetFileExtLower(const CString& sFullFilePath)
 {
 	CString sExt;
 	SplitPath(sFullFilePath, NULL, NULL, NULL, &sExt);
@@ -1437,7 +1437,7 @@ CString MakeTempFileName(CString sTempPath, LPCTSTR lpszFileName)
 	//       and when it reaches 0xFFFFFFFF it correctly wraps-around starting again from 0
 	CString sSeq;
 	sSeq.Format(_T("%X_%I64X_%X"), GetCurrentProcessId(), (ULONGLONG)time(NULL), (DWORD)InterlockedIncrement(&g_lTempFilesCount));
-	return sTempPath + GetShortFileNameNoExt(lpszFileName) + _T("_") + sSeq + GetFileExt(lpszFileName);
+	return sTempPath + GetShortFileNameNoExt(lpszFileName) + _T("_") + sSeq + GetFileExtLower(lpszFileName);
 }
 
 BOOL IsExistingFile(LPCTSTR lpszFileName)
@@ -1567,7 +1567,7 @@ CString GetSpecialFolderPath(int nSpecialFolder)
 CString GetShortcutTarget(const CString& sLinkPath)
 {
 	// Check
-	if (GetFileExt(sLinkPath) != _T(".lnk"))
+	if (GetFileExtLower(sLinkPath) != _T(".lnk"))
 		return sLinkPath;
 
 	// Init COM

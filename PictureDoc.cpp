@@ -2213,7 +2213,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 
 	// Init Save As Dialog
 	TCHAR FileName[MAX_PATH] = _T("");
-	CString sSrcExt(::GetFileExt(m_sFileName));
+	CString sSrcExt(::GetFileExtLower(m_sFileName));
 	CString sDefExt;
 	if (m_sFileName == _T(""))
 	{
@@ -2278,7 +2278,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 	if (dlgFile.DoModal() == IDOK)
 	{
 		// Store chosen extension for new files
-		CString sDstExt(::GetFileExt(FileName));
+		CString sDstExt(::GetFileExtLower(FileName));
 		if (m_sFileName == _T(""))
 			::AfxGetApp()->WriteProfileString(_T("PictureDoc"), _T("LastNewFileSaveAsExt"), sDstExt);
 
@@ -3077,7 +3077,7 @@ CString CPictureDoc::ExtractFromAnimGIFToBMP(const CString& sFileName)
 			sCurrentFileName.Format(_T("%s") + sFormat + _T("%s"),
 									::GetFileNameNoExt(sFileName),
 									i + 1,
-									::GetFileExt(sFileName));
+									::GetFileExtLower(sFileName));
 			int iCopy = 0;
 			while (::IsExistingFile(sCurrentFileName))
 			{
@@ -3085,7 +3085,7 @@ CString CPictureDoc::ExtractFromAnimGIFToBMP(const CString& sFileName)
 									::GetFileNameNoExt(sFileName),
 									i + 1,
 									++iCopy,
-									::GetFileExt(sFileName));
+									::GetFileExtLower(sFileName));
 			}
 			if (pDib->HasAlpha() && pDib->GetBitCount() == 32)
 			{
@@ -3159,7 +3159,7 @@ BOOL CPictureDoc::Save()
 			return FALSE;
 		}
 
-		CString extension(::GetFileExt(m_sFileName));
+		CString extension(::GetFileExtLower(m_sFileName));
 		if ((extension == _T(".bmp")) || (extension == _T(".dib")))
 		{
 			BeginWaitCursor();
@@ -3351,7 +3351,7 @@ void CPictureDoc::OnFileCopyTo()
 		InitDir[0] = _T('\0');
 		if (::IsExistingDir(m_sCopyOrMoveDirName))
 			_tcscpy(InitDir, (LPCTSTR)m_sCopyOrMoveDirName);
-		CString sExt = ::GetFileExt(m_sFileName);
+		CString sExt = ::GetFileExtLower(m_sFileName);
 		sExt.TrimLeft(_T('.'));
 		CNoVistaFileDlg fd(	FALSE,
 							sExt,
@@ -3395,7 +3395,7 @@ void CPictureDoc::OnFileMoveTo()
 		InitDir[0] = _T('\0');
 		if (::IsExistingDir(m_sCopyOrMoveDirName))
 			_tcscpy(InitDir, (LPCTSTR)m_sCopyOrMoveDirName);
-		CString sExt = ::GetFileExt(m_sFileName);
+		CString sExt = ::GetFileExtLower(m_sFileName);
 		sExt.TrimLeft(_T('.'));
 		CNoVistaFileDlg fd(	FALSE,
 							sExt,
@@ -3899,7 +3899,7 @@ void CPictureDoc::OnEditRename()
 			// New file name
 			CString sNewFileName =	::GetDriveAndDirName(m_sFileName) +
 									dlg.m_sFileName +
-									::GetFileExt(m_sFileName);
+									::GetFileExtLower(m_sFileName);
 
 			// Be Sure We Are Not Working On This File
 			m_JpegThread.Kill();
@@ -7973,7 +7973,7 @@ void CPictureDoc::UpdateImageInfo(BOOL bUpdateFileInfoOnly/*=FALSE*/)
 				}
 			}
 			// Note: The Gif File Format Doesn't Support Dpi Storing
-			else if (::GetFileExt(m_sFileName) == _T(".gif"))
+			else if (::GetFileExtLower(m_sFileName) == _T(".gif"))
 			{
 				// Animated GIF
 				if (m_GifAnimationThread.IsAlive() && m_GifAnimationThread.m_dwDibAnimationCount > 1)
@@ -9110,7 +9110,7 @@ void CPictureDoc::OnUpdatePlayStopAnimation(CCmdUI* pCmdUI)
 
 BOOL CPictureDoc::ViewNextPageFrame() 
 {
-	if (::GetFileExt(m_sFileName) == _T(".gif"))
+	if (::GetFileExtLower(m_sFileName) == _T(".gif"))
 	{
 		if (m_GifAnimationThread.IsAlive()		&&
 			!m_GifAnimationThread.IsRunning()	&&
@@ -9142,7 +9142,7 @@ void CPictureDoc::OnViewNextPageFrame()
 {
 	if (((CUImagerApp*)::AfxGetApp())->IsDocReadyToSlide(this, TRUE))
 	{
-		if (::GetFileExt(m_sFileName) == _T(".gif"))
+		if (::GetFileExtLower(m_sFileName) == _T(".gif"))
 		{
 			if (m_GifAnimationThread.IsAlive()		&&
 				m_GifAnimationThread.IsRunning()	&&
@@ -9163,7 +9163,7 @@ void CPictureDoc::OnUpdateViewNextPageFrame(CCmdUI* pCmdUI)
 
 BOOL CPictureDoc::ViewPreviousPageFrame() 
 {
-	if (::GetFileExt(m_sFileName) == _T(".gif"))
+	if (::GetFileExtLower(m_sFileName) == _T(".gif"))
 	{
 		if (m_GifAnimationThread.IsAlive()		&&
 			!m_GifAnimationThread.IsRunning()	&&
@@ -9195,7 +9195,7 @@ void CPictureDoc::OnViewPreviousPageFrame()
 {
 	if (((CUImagerApp*)::AfxGetApp())->IsDocReadyToSlide(this, TRUE))
 	{
-		if (::GetFileExt(m_sFileName) == _T(".gif"))
+		if (::GetFileExtLower(m_sFileName) == _T(".gif"))
 		{
 			if (m_GifAnimationThread.IsAlive()		&&
 				m_GifAnimationThread.IsRunning()	&&
@@ -9216,7 +9216,7 @@ void CPictureDoc::OnUpdateViewPreviousPageFrame(CCmdUI* pCmdUI)
 
 BOOL CPictureDoc::ViewFirstPageFrame() 
 {
-	if (::GetFileExt(m_sFileName) == _T(".gif"))
+	if (::GetFileExtLower(m_sFileName) == _T(".gif"))
 	{
 		if (m_GifAnimationThread.IsAlive()		&&
 			!m_GifAnimationThread.IsRunning()	&&
@@ -9243,7 +9243,7 @@ BOOL CPictureDoc::ViewFirstPageFrame()
 
 BOOL CPictureDoc::ViewLastPageFrame() 
 {
-	if (::GetFileExt(m_sFileName) == _T(".gif"))
+	if (::GetFileExtLower(m_sFileName) == _T(".gif"))
 	{
 		if (m_GifAnimationThread.IsAlive()		&&
 			!m_GifAnimationThread.IsRunning()	&&
@@ -9373,7 +9373,7 @@ void CPictureDoc::OnViewMap()
 			sQuery = ::FromUTF8((const unsigned char*)(LPCSTR)(m_pDib->GetMetadata()->m_sJpegComment),
 								m_pDib->GetMetadata()->m_sJpegComment.GetLength());
 		}
-		if (sQuery == _T("") && ::GetFileExt(m_sFileName) == _T(".gif"))
+		if (sQuery == _T("") && ::GetFileExtLower(m_sFileName) == _T(".gif"))
 		{
 			if (m_GifAnimationThread.IsAlive() &&
 				m_GifAnimationThread.m_dwDibAnimationCount > 1 &&
@@ -9441,8 +9441,8 @@ void CPictureDoc::OnBackgroundColor()
 		m_crImageBackgroundColor = m_crBackgroundColor = pBkgColorButtonPicker->GetColor();
 
 	// Re-Render Animated Gif frames with new background color
-	if (::GetFileExt(m_sFileName) == _T(".gif")	&&
-		m_GifAnimationThread.IsAlive()			&&
+	if (::GetFileExtLower(m_sFileName) == _T(".gif")	&&
+		m_GifAnimationThread.IsAlive()					&&
 		m_GifAnimationThread.m_dwDibAnimationCount > 1)
 	{
 		m_GifAnimationThread.AlphaRender(m_crBackgroundColor);

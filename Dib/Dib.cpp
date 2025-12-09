@@ -3109,7 +3109,7 @@ BOOL CDib::LoadImage(LPCTSTR lpszPathName,
 	// Load it
 	CString sExt(FileSignatureToExtension(lpszPathName));
 	if (sExt == _T(""))
-		sExt = ::GetFileExt(lpszPathName);
+		sExt = ::GetFileExtLower(lpszPathName);
 	if ((sExt == _T(".bmp")) || (sExt == _T(".dib")))
 	{
 		return LoadBMP(	lpszPathName,					// Loads bmp as BMI + bits
@@ -3275,7 +3275,7 @@ HRESULT CDib::LoadWIC(LPCTSTR lpszPathName, BOOL bOnlyHeader/*=FALSE*/)
 
 		// Special treatment for .heic
 		BOOL bDoCreateStream = FALSE;
-		CString sExt(::GetFileExt(lpszPathName));
+		CString sExt(::GetFileExtLower(lpszPathName));
 		if (sExt == _T(".heic"))
 		{
 			// Higher priority for CopyTrans because the Microsoft Heif may not

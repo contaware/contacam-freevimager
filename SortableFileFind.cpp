@@ -52,8 +52,8 @@ BOOL CSortableFileFind::Init(const CString& strName, BOOL bDoSort/*=TRUE*/)
 			if (bDoExtensionFiltering)
 			{
 				BOOL bAllowed = FALSE;
-				CString sExt(::GetFileExt(sFileName));	// returns lower case extension with dot
-				sExt.TrimLeft(_T('.'));					// extension without dot
+				CString sExt(::GetFileExtLower(sFileName));	// returns lower case extension with dot
+				sExt.TrimLeft(_T('.'));						// extension without dot
 				for (int pos = 0 ; pos < m_AllowedExtensions.GetSize() ; pos++)
 				{
 					if (sExt == m_AllowedExtensions[pos]) // extension in array is lower case without dot
@@ -725,8 +725,8 @@ BOOL CSortableFileFind::CFileFindThread::Recurse(const CString& strName)
 			if (bDoExtensionFiltering)
 			{
 				BOOL bAllowed = FALSE;
-				CString sExt(::GetFileExt(sFileName));	// returns lower case extension with dot
-				sExt.TrimLeft(_T('.'));					// extension without dot
+				CString sExt(::GetFileExtLower(sFileName));	// returns lower case extension with dot
+				sExt.TrimLeft(_T('.'));						// extension without dot
 				for (int pos = 0 ; pos < m_p->m_AllowedExtensions.GetSize() ; pos++)
 				{
 					if (sExt == m_p->m_AllowedExtensions[pos]) // extension in array is lower case without dot

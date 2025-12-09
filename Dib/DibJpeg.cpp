@@ -61,7 +61,7 @@ BOOL CDib::IsJPEGExt(CString sExt)
 
 BOOL CDib::IsJPEG(const CString& sFileName)
 {
-	return IsJPEGExt(::GetFileExt(sFileName));
+	return IsJPEGExt(::GetFileExtLower(sFileName));
 }
 
 // Possible values for ScaleFactore are : 1,2,4,8

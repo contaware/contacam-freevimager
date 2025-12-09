@@ -9,7 +9,7 @@ static char THIS_FILE[] = __FILE__;
 
 CString CDib::GIFGetVersion(LPCTSTR lpszPathName, BOOL bShowMessageBoxOnError)
 {
-	if (::GetFileExt(lpszPathName) != _T(".gif"))
+	if (::GetFileExtLower(lpszPathName) != _T(".gif"))
 		return _T("");
 
 	try
@@ -48,7 +48,7 @@ CString CDib::GIFGetVersion(LPCTSTR lpszPathName, BOOL bShowMessageBoxOnError)
 
 BOOL CDib::IsAnimatedGIF(LPCTSTR lpszPathName, BOOL bShowMessageBoxOnError)
 {	
-	if (::GetFileExt(lpszPathName) != _T(".gif"))
+	if (::GetFileExtLower(lpszPathName) != _T(".gif"))
 		return FALSE;
 
 	CDib Dib;
@@ -3315,7 +3315,7 @@ BOOL CDib::GIFWriteComment(	int nFrame,
 							LPCTSTR szComment,
 							BOOL bShowMessageBoxOnError)
 {
-	if (::GetFileExt(szFileName) == _T(".gif"))
+	if (::GetFileExtLower(szFileName) == _T(".gif"))
 	{
 		// Temporary File
 		CString sTempFileName = ::MakeTempFileName(szTempDir, szFileName);

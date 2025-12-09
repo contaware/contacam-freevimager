@@ -366,7 +366,7 @@ void CImageInfoDlg::OnChangeMetadata()
 		// Enable / disable save button for gif files.
 		// For jpegs & tiffs the button is always enabled,
 		// for other file types it is disabled.
-		if (::GetFileExt(m_pDoc->m_sFileName) == _T(".gif"))
+		if (::GetFileExtLower(m_pDoc->m_sFileName) == _T(".gif"))
 		{
 			CButton* pButton = (CButton*)GetDlgItem(IDC_BUTTON_SAVE_METADATA);
 			if (pButton)
@@ -399,7 +399,7 @@ void CImageInfoDlg::SetEditMetadataText()
 
 	// Enable Comment
 	if (CDib::IsJPEG(m_pDoc->m_sFileName) ||
-		::GetFileExt(m_pDoc->m_sFileName) == _T(".gif"))
+		::GetFileExtLower(m_pDoc->m_sFileName) == _T(".gif"))
 		bEnableComment = TRUE;
 
 	// Enable Iptc
@@ -868,7 +868,7 @@ BOOL CImageInfoDlg::SaveMetadata()
 				return FALSE;
 			}
 		}
-		else if (::GetFileExt(m_pDoc->m_sFileName) == _T(".gif"))
+		else if (::GetFileExtLower(m_pDoc->m_sFileName) == _T(".gif"))
 		{
 			BeginWaitCursor();
 
@@ -1377,7 +1377,7 @@ void CImageInfoDlg::DisplayMetadata()
 		if (m_sOrigComment != _T(""))
 		{
 			t.Format(ML_STRING(1656, "%s comment:\t%s"),
-				::GetFileExt(m_pDoc->m_sFileName) == _T(".gif") ? _T("Gif") : _T("Jpeg"),
+				::GetFileExtLower(m_pDoc->m_sFileName) == _T(".gif") ? _T("Gif") : _T("Jpeg"),
 				m_sOrigComment);
 			t.Replace(_T("\n"), _T("\n\t"));
 			t += _T("\r\n");
@@ -2611,7 +2611,7 @@ void CImageInfoDlg::UpdateMetadata()
 	}
 
 	// Gif
-	if (::GetFileExt(m_pDoc->m_sFileName) == _T(".gif"))
+	if (::GetFileExtLower(m_pDoc->m_sFileName) == _T(".gif"))
 	{
 		CString sGifComment;
 		if (m_pDoc->m_GifAnimationThread.IsAlive() &&

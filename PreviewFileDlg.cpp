@@ -311,7 +311,7 @@ LONG CPreviewFileDlg::OnLoadDone(WPARAM wparam, LPARAM lparam)
 		s += t;
 
 		// Gif
-		if (::GetFileExt(sLastFileName) == _T(".gif"))
+		if (::GetFileExtLower(sLastFileName) == _T(".gif"))
 		{
 			t.Format(_T("%s"), CDib::GIFGetVersion(sLastFileName, FALSE));
 			s += t;
