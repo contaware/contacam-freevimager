@@ -75,7 +75,7 @@ BOOL CDib::IsTIFFExt(CString sExt)
 
 BOOL CDib::IsTIFF(const CString& sFileName)
 {
-	return IsTIFFExt(::GetFileExtLower(sFileName));
+	return IsTIFFExt(::GetFileExt(sFileName));
 }
 
 BOOL CDib::LoadTIFF(LPCTSTR lpszPathName,

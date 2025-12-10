@@ -296,10 +296,16 @@ CString GetFileNameNoExt(const CString& sFullFilePath)
 	return sDrive + sDir + sName;
 }
 
-CString GetFileExtLower(const CString& sFullFilePath)
+CString GetFileExt(const CString& sFullFilePath)
 {
 	CString sExt;
 	SplitPath(sFullFilePath, NULL, NULL, NULL, &sExt);
+	return sExt;
+}
+
+CString GetFileExtLower(const CString& sFullFilePath)
+{
+	CString sExt(GetFileExt(sFullFilePath));
 	sExt.MakeLower();
 	return sExt;
 }

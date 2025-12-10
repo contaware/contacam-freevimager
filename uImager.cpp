@@ -1705,7 +1705,7 @@ void CUImagerApp::RichEditCtrlAppendText(	CRichEditCtrl* pRichEditCtrl,
 void CUImagerApp::FileTypeNotSupportedMessageBox(LPCTSTR lpszFileName)
 {
 	CString sMsg;
-	CString sExt = ::GetFileExtLower(lpszFileName);
+	CString sExt = ::GetFileExt(lpszFileName);
 	sMsg.Format(ML_STRING(1174, "Failed to Open:\n%s\nThe following extension is not supported:\n%s"),
 				lpszFileName,
 				sExt);
@@ -2780,12 +2780,12 @@ void CUImagerApp::ShrinkOpenDocs(LPCTSTR szDstDirPath,
 		CString sOrigDstFileName = sDstFileName;
 		int i = 0;
 		while (DstFileNames.InStringArrayNoCase(sDstFileName))
-			sDstFileName.Format(_T("%s(%d)%s"), ::GetFileNameNoExt(sOrigDstFileName), ++i, ::GetFileExtLower(sOrigDstFileName));
+			sDstFileName.Format(_T("%s(%d)%s"), ::GetFileNameNoExt(sOrigDstFileName), ++i, ::GetFileExt(sOrigDstFileName));
 		DstFileNames.Add(sDstFileName);
 		sDstFileName = sDstDirPath + _T("\\") + sDstFileName;
 		if (!bOnlyCopyFiles)
 		{
-			CString sDstExt = ShrinkGetDstExt(::GetFileExtLower(sSrcFileName));
+			CString sDstExt = ShrinkGetDstExt(::GetFileExt(sSrcFileName));
 			sDstFileName = ::GetFileNameNoExt(sDstFileName) + sDstExt;
 		}
 

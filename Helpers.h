@@ -98,6 +98,7 @@ extern CString GetDriveAndDirName(const CString& sFullFilePath);
 extern CString GetShortFileName(const CString& sFullFilePath);
 extern CString GetShortFileNameNoExt(const CString& sFullFilePath);
 extern CString GetFileNameNoExt(const CString& sFullFilePath);
+extern CString GetFileExt(const CString& sFullFilePath);	  // original-case file extension with dot
 extern CString GetFileExtLower(const CString& sFullFilePath); // lower-case file extension with dot
 
 // Is readonly flag set

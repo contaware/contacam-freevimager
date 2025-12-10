@@ -184,13 +184,13 @@ int CBatchProcDlg::CProcessThread::Work()
 				!(m_pDlg->m_nOutputSelection == OUTPUT_FILE && ::GetFileExtLower(m_pDlg->m_sOutputFileName) != _T(".zip")))
 			{
 				if (m_pDlg->m_nOptimizationSelection == AUTO_OPT)
-					sDstFileName = ::GetFileNameNoExt(sDstFileNameSameExt) + CUImagerApp::ShrinkGetDstExt(::GetFileExtLower(sSrcFileName));
+					sDstFileName = ::GetFileNameNoExt(sDstFileNameSameExt) + CUImagerApp::ShrinkGetDstExt(::GetFileExt(sSrcFileName));
 				else
 				{
 					switch (m_pDlg->m_GeneralTab.m_nExtChangeType)
 					{
 						case CBatchProcGeneralTab::AUTO_CHANGE :
-							sDstFileName = ::GetFileNameNoExt(sDstFileNameSameExt) + CUImagerApp::ShrinkGetDstExt(::GetFileExtLower(sSrcFileName));
+							sDstFileName = ::GetFileNameNoExt(sDstFileNameSameExt) + CUImagerApp::ShrinkGetDstExt(::GetFileExt(sSrcFileName));
 							break;
 
 						case CBatchProcGeneralTab::ALL_JPEG :
@@ -846,9 +846,9 @@ void CBatchProcDlg::CProcessThread::DoRename(	int& num,
 	// Final Destination File Names
 	sDstFileName =	::GetDriveAndDirName(sDstFileName) +
 					sRenamed +
-					::GetFileExtLower(sDstFileName);
+					::GetFileExt(sDstFileName);
 	sDstFileNameSameExt =	::GetFileNameNoExt(sDstFileName) +
-							::GetFileExtLower(sSrcFileName);
+							::GetFileExt(sSrcFileName);
 }
 
 BOOL CBatchProcDlg::CProcessThread::Copy(	const CString& sSrcFileName,

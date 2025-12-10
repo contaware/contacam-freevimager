@@ -3351,7 +3351,7 @@ void CPictureDoc::OnFileCopyTo()
 		InitDir[0] = _T('\0');
 		if (::IsExistingDir(m_sCopyOrMoveDirName))
 			_tcscpy(InitDir, (LPCTSTR)m_sCopyOrMoveDirName);
-		CString sExt = ::GetFileExtLower(m_sFileName);
+		CString sExt = ::GetFileExt(m_sFileName);
 		sExt.TrimLeft(_T('.'));
 		CNoVistaFileDlg fd(	FALSE,
 							sExt,
@@ -3395,7 +3395,7 @@ void CPictureDoc::OnFileMoveTo()
 		InitDir[0] = _T('\0');
 		if (::IsExistingDir(m_sCopyOrMoveDirName))
 			_tcscpy(InitDir, (LPCTSTR)m_sCopyOrMoveDirName);
-		CString sExt = ::GetFileExtLower(m_sFileName);
+		CString sExt = ::GetFileExt(m_sFileName);
 		sExt.TrimLeft(_T('.'));
 		CNoVistaFileDlg fd(	FALSE,
 							sExt,
@@ -3899,7 +3899,7 @@ void CPictureDoc::OnEditRename()
 			// New file name
 			CString sNewFileName =	::GetDriveAndDirName(m_sFileName) +
 									dlg.m_sFileName +
-									::GetFileExtLower(m_sFileName);
+									::GetFileExt(m_sFileName);
 
 			// Be Sure We Are Not Working On This File
 			m_JpegThread.Kill();
