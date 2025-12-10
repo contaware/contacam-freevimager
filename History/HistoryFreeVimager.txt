@@ -3,6 +3,7 @@ FREEVIMAGER HISTORY
 9.9.27 (Month XXth 2025)
 
 - Increase max allowed image width or height to 32767 pixels
+- Fix "Send by Email" so that it works when images have the same name
 
 9.9.26 (June 18th 2025)
 

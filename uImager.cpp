@@ -2763,31 +2763,20 @@ void CUImagerApp::ShrinkOpenDocs(LPCTSTR szDstDirPath,
 	{
 		CPictureDoc* pDoc = (CPictureDoc*)curTemplate->GetNextDoc(pos);
 
-		// Source Directory Path
-		TCHAR szDrive[_MAX_DRIVE];
-		TCHAR szDir[_MAX_DIR];
-		_tsplitpath(pDoc->m_sFileName, szDrive, szDir, NULL, NULL);
-		CString sSrcDirPath = CString(szDrive) + CString(szDir);
-		sSrcDirPath.TrimRight(_T('\\'));
-
 		// Source File Name
-		CString sSrcFileName = pDoc->m_sFileName;
-		sSrcFileName.TrimRight(_T('\\'));
+		CString sSrcFileName(pDoc->m_sFileName);
 
 		// Destination File Name
-		CString sDstFileName = sSrcFileName;
-		sDstFileName = sDstFileName.Mid(sSrcDirPath.GetLength() + 1);
-		CString sOrigDstFileName = sDstFileName;
+		CString sDstFileName(sSrcFileName);
+		if (!bOnlyCopyFiles)
+			sDstFileName = ::GetFileNameNoExt(sDstFileName) + ShrinkGetDstExt(::GetFileExt(sSrcFileName));
+		sDstFileName = ::GetShortFileName(sDstFileName);
+		CString sOrigDstFileName(sDstFileName);
 		int i = 0;
 		while (DstFileNames.InStringArrayNoCase(sDstFileName))
 			sDstFileName.Format(_T("%s(%d)%s"), ::GetFileNameNoExt(sOrigDstFileName), ++i, ::GetFileExt(sOrigDstFileName));
 		DstFileNames.Add(sDstFileName);
 		sDstFileName = sDstDirPath + _T("\\") + sDstFileName;
-		if (!bOnlyCopyFiles)
-		{
-			CString sDstExt = ShrinkGetDstExt(::GetFileExt(sSrcFileName));
-			sDstFileName = ::GetFileNameNoExt(sDstFileName) + sDstExt;
-		}
 
 		// Status Text
 		CString sStatusText;
