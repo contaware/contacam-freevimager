@@ -101,7 +101,7 @@ ContaCam open tasks
   -> attention, many HLS streams are loading in bursts, we need to store pts in the frames
   
 - Execute command on camera failure, add the option of "camera failure" to the command execute area
-  (n1fbg@arrl.net) 
+  (n1fbg@arrl.net, tomasi.elmar@virgilio.it) 
   
 - When entering the email send configuration details perhaps have buttons
   to copy and paste; when copying the password remember to leave it encrypted! 
@@ -152,6 +152,9 @@ SSLProtocol -all +TLSv1.3
 
 - Audio ON/OFF button in camera's bottom toolbar.
   (edicola.bignardi@gmail.com)
+
+- Timestamp and annotation ON/OFF independently
+  (tomasi.elmar@virgilio.it)
 
 - Update apache self-signed SSL certificate which expires:
   Mon, 22 Feb 2027 20:59:41 GMT

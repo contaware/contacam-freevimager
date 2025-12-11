@@ -1,6 +1,6 @@
 TRANSLATIONS HISTORY
 
-9.9.27 (Month XXth 2025)
+9.9.27 (December 11th 2025)
 
 - Minor changes
 
