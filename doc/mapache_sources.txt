@@ -1,7 +1,7 @@
 apachelounge.com and php.net
 ----------------------------
  
-- apache 2.4.65 VS17 x86 with OpenSSL 3.5.1
+- apache 2.4.66 VS17 x86 with OpenSSL 3.6.0
   https://www.apachelounge.com/download/
   Note: in ContaCam the mapache.exe file is the renamed httpd.exe file 
         from the apache distribution (that's so for historical reasons).

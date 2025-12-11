@@ -4,8 +4,8 @@ CONTACAM HISTORY
 
 - Add Samsung/Wisenet/Hanwha profile5, profile4 ... profile1
 - Fix fallback to HTTP 1.0 when chunked transfer encoding is proposed
-- Updated internal web server to Apache 2.4.65 and PHP 8.2.29
-  (Apache and PHP both with OpenSSL 3.5.1)
+- Updated internal web server to Apache 2.4.66 and PHP 8.2.29
+  (Apache and PHP both with OpenSSL 3.6.0)
   
 9.9.26 (June 18th 2025)
 
