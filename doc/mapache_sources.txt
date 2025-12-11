@@ -17,7 +17,9 @@ apachelounge.com and php.net
   https://aka.ms/vs/17/release/VC_redist.x86.exe
   https://www.apachelounge.com/viewtopic.php?p=38205
   https://docs.microsoft.com/cpp/windows/latest-supported-vc-redist
-
+  ATTENTION: do not use the redistributables for 2026, they do not 
+  support Windows 7: https://aka.ms/vs/18/release/VC_redist.x86.exe
+  
 Note: libcrypto-3.dll and libssl-3.dll from the thread safe and from the
       non thread safe php builds are identical, so it's ok to take the 
       newer ones between the apache and the php builds.
