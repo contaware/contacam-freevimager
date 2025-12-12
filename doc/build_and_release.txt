@@ -44,3 +44,12 @@ Release procedure
    git push origin x.y.z
 
 6. Run Make_All.bat in Setup folder
+
+
+Release problem
+---------------
+
+If just after a release we find a problem, either do another release 
+incrementing the release number, or commit the fix and add a tag to it:
+git tag -a -m "Release x.y.z fixed" x.y.zfix
+git push origin x.y.zfix
