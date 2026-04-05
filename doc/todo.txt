@@ -159,3 +159,7 @@ SSLProtocol -all +TLSv1.3
 - Update apache self-signed SSL certificate which expires:
   Mon, 22 Feb 2027 20:59:41 GMT
   
+- When you minimize the camera windows, the font size always stays the 
+  same. With many cameras and therefore many windows that you have 
+  minimized, the text no longer fits in the window.
+  (tomasi.elmar@virgilio.it)
