@@ -128,7 +128,7 @@ echo:
 echo **********************************************************************
 echo ** Sign executables
 echo **********************************************************************
-signtool sign /n "Open Source Developer, Oliver Pfister" /t http://time.certum.pl/ /fd sha256 /v ^
+signtool sign /n "Open Source Developer Oliver Tobias Pfister" /t http://time.certum.pl/ /fd sha256 /v ^
 .\input\ContaCamService.exe ^
 .\input\ContaCam.exe ^
 .\input\ContaCamDEU.exe ^
@@ -196,7 +196,7 @@ echo:
 echo **********************************************************************
 echo ** Sign installers
 echo **********************************************************************
-signtool sign /n "Open Source Developer, Oliver Pfister" /t http://time.certum.pl/ /fd sha256 /v ^
+signtool sign /n "Open Source Developer Oliver Tobias Pfister" /t http://time.certum.pl/ /fd sha256 /v ^
 .\ContaCam-%CURRENTVERSION%-Setup.exe ^
 .\ContaCam-%CURRENTVERSION%-Setup-Deu.exe ^
 .\ContaCam-%CURRENTVERSION%-Setup-Ita.exe ^
