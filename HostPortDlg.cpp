@@ -91,6 +91,8 @@ void CHostPortDlg::InitDeviceTypeModeArrayForCB(CArray<CDeviceTypeModePair>& a)
 	a.Add(CDeviceTypeModePair(_T("Ezviz /H.264 (RTSP)"), (DWORD)CVideoDeviceDoc::EZVIZ_H264_RTSP));
 	a.Add(CDeviceTypeModePair(_T("Ezviz /h264_stream (RTSP)"), (DWORD)CVideoDeviceDoc::EZVIZ_H264STREAM_RTSP));
 	a.Add(CDeviceTypeModePair(_T("FalconEye (RTSP)"), (DWORD)CVideoDeviceDoc::FALCONEYE_RTSP));
+	a.Add(CDeviceTypeModePair(_T("FLIR (RTSP)"), (DWORD)CVideoDeviceDoc::FLIR_RTSP));
+	a.Add(CDeviceTypeModePair(_T("FLIR no overlay (RTSP)"), (DWORD)CVideoDeviceDoc::FLIR_NO_OVERLAY_RTSP));
 	a.Add(CDeviceTypeModePair(_T("Floureon (RTSP)"), (DWORD)CVideoDeviceDoc::FLOUREON_RTSP));
 	a.Add(CDeviceTypeModePair(_T("Foscam (RTSP)"), (DWORD)CVideoDeviceDoc::FOSCAM_RTSP));
 	a.Add(CDeviceTypeModePair(_T("Foscam (") + ML_STRING(1865, "HTTP motion jpeg") + _T(")"), (DWORD)CVideoDeviceDoc::FOSCAM_SP));

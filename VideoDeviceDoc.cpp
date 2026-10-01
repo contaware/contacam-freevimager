@@ -9233,6 +9233,14 @@ void CVideoDeviceDoc::ConnectRtsp()
 			sPathAndQuery = _T("/h264_stream");
 			break;
 
+		case FLIR_RTSP:
+			sPathAndQuery = _T("/avc");
+			break;
+
+		case FLIR_NO_OVERLAY_RTSP:
+			sPathAndQuery = _T("/avc?overlay=off");
+			break;
+
 		case FLOUREON_RTSP:
 		case JIDETECH_RTSP:
 		case SRIHOME_RTSP:

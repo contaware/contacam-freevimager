@@ -580,6 +580,8 @@ public:
 		EDIMAX_MPEG4_RTSP = 1111,		// Edimax MPEG4 RTSP
 		ESCAM_RTSP = 1113,				// Escam RTSP
 		FALCONEYE_RTSP = 1115,			// FalconEye RTSP
+		FLIR_RTSP = 1116,				// FLIR RTSP
+		FLIR_NO_OVERLAY_RTSP = 1117,	// FLIR no overlay RTSP
 		FLOUREON_RTSP = 1118,			// Floureon RTSP
 		FOSCAM_RTSP = 1120,				// Foscam RTSP
 		GEMBIRD_RTSP = 1123,			// Gembird RTSP
