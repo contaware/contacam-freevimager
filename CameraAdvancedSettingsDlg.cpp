@@ -358,7 +358,8 @@ BOOL CCameraAdvancedSettingsDlg::OnInitDialog()
 	pComboBoxExecCommandMode->AddString(ML_STRING(1842, "Rec start"));
 	pComboBoxExecCommandMode->AddString(ML_STRING(1843, "Rec saving done"));
 	pComboBoxExecCommandMode->AddString(ML_STRING(1844, "Live snapshot"));
-	pComboBoxExecCommandMode->AddString(ML_STRING(1845, "Daily summary"));
+	pComboBoxExecCommandMode->AddString(ML_STRING(1845, "Daily summary video"));
+	pComboBoxExecCommandMode->AddString(ML_STRING(1846, "Daily summary snapshot"));
 
 	// This calls UpdateData(FALSE)
 	CDialog::OnInitDialog();

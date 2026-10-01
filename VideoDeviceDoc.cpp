@@ -1132,6 +1132,13 @@ int CVideoDeviceDoc::CSaveSnapshotHistoryThread::Work()
 	// (history jpgs are deleted in snapshot video thread)
 	CVideoDeviceDoc::SaveJpegFast(&m_Dib, &m_MJPEGEncoder, sFileName, GOOD_SNAPSHOT_COMPR_QUALITY);
 
+	// Execute Commands
+	for (int n = 0; n < MOVDET_EXECCMD_PROFILES; n++)
+	{
+		if (m_pDoc->m_bExecCommand[n] && m_pDoc->m_nExecCommandMode[n] == 4)
+			m_pDoc->ExecCommand(n, Time, sFileName);
+	}
+
 	return 0;
 }
 
