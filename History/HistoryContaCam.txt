@@ -1,5 +1,10 @@
 CONTACAM HISTORY
 
+9.9.28 (Month XXth 2026)
+
+- Support TP-Link Tapo 2nd Lens
+- Update mailsend to v1.0.13
+
 9.9.27 (December 11th 2025)
 
 - Add Samsung/Wisenet/Hanwha profile5, profile4 ... profile1

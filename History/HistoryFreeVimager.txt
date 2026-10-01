@@ -1,5 +1,9 @@
 FREEVIMAGER HISTORY
 
+9.9.28 (Month XXth 2026)
+
+- ...
+
 9.9.27 (December 11th 2025)
 
 - Increase max allowed image width or height to 32767 pixels
