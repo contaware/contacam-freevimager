@@ -9257,6 +9257,10 @@ void CVideoDeviceDoc::ConnectRtsp()
 			sPathAndQuery = _T("/Streaming/Channels/1"); // substream is: /Streaming/Channels/2
 			break;
 
+		case INSTAR_RTSP:	
+			sPathAndQuery = _T("/livestream/11"); // substreams are: /livestream/12 and /livestream/13
+			break;
+
 		// av_h264_jpeg_ulaw.sdp will serve H.264 if OpenH264 has been downloaded
 		// in the IP Webcam (Pro) for Android App and if not it will serve MJPEG
 		// (jpeg_ulaw.sdp will server MJPEG only and h264_ulaw.sdp H.264 only)
