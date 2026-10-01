@@ -9290,7 +9290,11 @@ void CVideoDeviceDoc::ConnectRtsp()
 
 		case PLANET_RTSP:			
 		case TPLINK_TAPO_RTSP:
-			sPathAndQuery = _T("/stream1");
+			sPathAndQuery = _T("/stream1"); // substream is: /stream2
+			break;
+
+		case TPLINK_TAPO_2ND_RTSP:
+			sPathAndQuery = _T("/stream6"); // substream is: /stream7
 			break;
 
 		case REOLINK_H265_RTSP:

@@ -615,6 +615,7 @@ public:
 		TPLINK_RTSP = 1220,				// TP-Link RTSP
 		TPLINK_NCXXX_RTSP = 1221,		// TP-Link NC2XX/NC4XX RTSP
 		TPLINK_TAPO_RTSP = 1222,		// TP-Link Tapo RTSP
+		TPLINK_TAPO_2ND_RTSP = 1223,    // TP-Link Tapo 2nd Lens RTSP
 		TRENDNET_RTSP = 1230,			// TrendNet RTSP
 		UBIQUITI_RTSP = 1235,			// Ubiquiti RTSP
 		UOKOO_RTSP = 1237,				// Uokoo RTSP

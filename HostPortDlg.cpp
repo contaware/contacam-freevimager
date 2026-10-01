@@ -132,6 +132,7 @@ void CHostPortDlg::InitDeviceTypeModeArrayForCB(CArray<CDeviceTypeModePair>& a)
 	a.Add(CDeviceTypeModePair(_T("TP-Link (RTSP)"), (DWORD)CVideoDeviceDoc::TPLINK_RTSP));
 	a.Add(CDeviceTypeModePair(_T("TP-Link NC2XX/NC4XX (RTSP)"), (DWORD)CVideoDeviceDoc::TPLINK_NCXXX_RTSP));
 	a.Add(CDeviceTypeModePair(_T("TP-Link Tapo (RTSP)"), (DWORD)CVideoDeviceDoc::TPLINK_TAPO_RTSP));
+	a.Add(CDeviceTypeModePair(_T("TP-Link Tapo 2nd Lens (RTSP)"), (DWORD)CVideoDeviceDoc::TPLINK_TAPO_2ND_RTSP));
 	a.Add(CDeviceTypeModePair(_T("TP-Link (") + ML_STRING(1865, "HTTP motion jpeg") + _T(")"), (DWORD)CVideoDeviceDoc::TPLINK_SP));
 	a.Add(CDeviceTypeModePair(_T("TP-Link (") + ML_STRING(1866, "HTTP jpeg snapshots") + _T(")"), (DWORD)CVideoDeviceDoc::TPLINK_CP));
 	a.Add(CDeviceTypeModePair(_T("TrendNet (RTSP)"), (DWORD)CVideoDeviceDoc::TRENDNET_RTSP));
