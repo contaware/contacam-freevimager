@@ -1,5 +1,5 @@
 Command to generate a self-signed certificate:
-openssl req -x509 -nodes -days 3560 -newkey rsa:4096 -sha256 -keyout https.key -out https.crt -subj "/CN=localhost" -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
+openssl req -x509 -noenc -days 3560 -newkey rsa:4096 -sha384 -keyout https.key -out https.crt -subj "/CN=localhost" -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
 
 req: this subcommand specifies that we want to use the certificate 
 signing request (CSR) management. We want to create a new X.509 cert, 
@@ -9,7 +9,7 @@ so we are using this subcommand.
 utility that we want to make a self-signed certificate instead of 
 generating a certificate signing request, as would normally happen.
 
--nodes: this tells OpenSSL to skip the option to secure our certificate 
+-noenc: this tells OpenSSL to skip the option to secure the private key 
 with a passphrase. We need Apache to be able to read the file, without 
 user intervention, when the server starts up. A passphrase would 
 prevent this from happening because we would have to enter it after 
@@ -24,8 +24,8 @@ that is required to sign the certificate in a previous step, so we need
 to create it along with the certificate. The rsa:4096 portion tells it 
 to make an RSA key that is 4096 bits long.
 
--sha256: is no longer strictly necessary on modern systems because 
-SHA-256 has been the default digest algorithm since OpenSSL 1.1.0.
+-sha384: use the SHA-384 hash (provides 192 bits of security) which 
+aligns with the 4096 key (provides 152 bits of security).
 
 -keyout: this line tells OpenSSL where to place the generated private 
 key file that we are creating.
