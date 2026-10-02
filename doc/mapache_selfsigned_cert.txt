@@ -1,0 +1,48 @@
+Command to generate a self-signed certificate:
+openssl req -x509 -nodes -days 3560 -newkey rsa:4096 -sha256 -keyout https.key -out https.crt -subj "/CN=localhost" -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
+
+req: this subcommand specifies that we want to use the certificate 
+signing request (CSR) management. We want to create a new X.509 cert, 
+so we are using this subcommand.
+
+-x509: this further modifies the previous subcommand by telling the 
+utility that we want to make a self-signed certificate instead of 
+generating a certificate signing request, as would normally happen.
+
+-nodes: this tells OpenSSL to skip the option to secure our certificate 
+with a passphrase. We need Apache to be able to read the file, without 
+user intervention, when the server starts up. A passphrase would 
+prevent this from happening because we would have to enter it after 
+every restart.
+
+-days 3560: this option sets the length of time that the certificate 
+will be considered valid.
+
+-newkey rsa:4096: this specifies that we want to generate a new 
+certificate and a new key at the same time. We did not create the key 
+that is required to sign the certificate in a previous step, so we need 
+to create it along with the certificate. The rsa:4096 portion tells it 
+to make an RSA key that is 4096 bits long.
+
+-sha256: is no longer strictly necessary on modern systems because 
+SHA-256 has been the default digest algorithm since OpenSSL 1.1.0.
+
+-keyout: this line tells OpenSSL where to place the generated private 
+key file that we are creating.
+
+-out: this tells OpenSSL where to place the certificate that we are 
+creating.
+
+-subj: when you define a subject line with multiple fields, each field 
+is separated by a slash and the leading slash signals OpenSSL that the 
+very first field is beginning.
+
+-addext: allows you to inject X.509v3 certificate extensions directly 
+from the command line with the syntax "ExtensionName=Value". Use the 
+flag multiple times for different extensions.
+
+*** ATTENTION ***
+If you are using openssl in Git Bash, MinGW or MSYS2 on Windows, 
+verify the result because "/CN=localhost" may have been converted 
+into a Windows paths (try a double-slash to prevent that):
+openssl x509 -in https.crt -text -noout
