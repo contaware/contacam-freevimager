@@ -1,28 +1,28 @@
 apachelounge.com and php.net
 ----------------------------
  
-- apache 2.4.66 VS17 x86 with OpenSSL 3.6.0
+- apache 2.4.69 VS18 x86 with OpenSSL 3.5.9
   https://www.apachelounge.com/download/
   Note: in ContaCam the mapache.exe file is the renamed httpd.exe file 
         from the apache distribution (that's so for historical reasons).
 
-- PHP 8.2.29 VS16 x86 with OpenSSL 3.0.15
+- PHP 8.4.26 VS17 x86 with OpenSSL 3.0.22
   https://windows.php.net/download/
-  Note: we must download the thread safe PHP version.
-  Attention: PHP 8.3 drops support for Windows 7
-             (PHP 8.2 will be supported until 31 Dec 2026)
+  Attention: we must download the thread safe PHP version!
+  PHP 8.3 dropper Windows 7 support:
   https://www.php.net/manual/en/migration83.windows-support.php
 
-- Visual C++ Redistributable working for Visual Studio 2015-2022
-  https://aka.ms/vs/17/release/VC_redist.x86.exe
-  https://www.apachelounge.com/viewtopic.php?p=38205
-  https://docs.microsoft.com/cpp/windows/latest-supported-vc-redist
-  ATTENTION: do not use the redistributables for 2026, they do not 
-  support Windows 7: https://aka.ms/vs/18/release/VC_redist.x86.exe
-  
+- Visual C++ Redistributable working for Visual Studio 2017-2026 (can only 
+  be installed on Windows 10, Windows Server 2016, and newer platforms)
+  https://aka.ms/vc14/vc_redist.x86.exe
+
 Note: libcrypto-3.dll and libssl-3.dll from the thread safe and from the
       non thread safe php builds are identical, so it's ok to take the 
       newer ones between the apache and the php builds.
+      If you want to get latest LTS, download: 
+      "Win32 OpenSSL v3.5.X Light" from:
+      https://slproweb.com/products/Win32OpenSSL.html
+      Install choosing the /bin option to get the two dlls.
 
 
 TS vs. NTS

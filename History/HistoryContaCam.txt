@@ -2,8 +2,17 @@ CONTACAM HISTORY
 
 9.9.28 (Month XXth 2026)
 
+- Possibility to execute a command when a "Daily summary snapshot" 
+  is taken
 - Support TP-Link Tapo 2nd Lens
+- Added support for FLIR
+- Added support for Instar
 - Update mailsend to v1.0.13
+- Apache self-signed certificate with 4096 key size and SHA-384 hash
+- Updated internal web server to Apache 2.4.69 and PHP 8.4.26
+  (Apache and PHP both with OpenSSL 3.5.9 which is a LTS version)
+- Minimum requirement is now Windows 10 or Windows Server 2016
+  (latest Apache build based on VS18 and PHP 8.4 require that)
 
 9.9.27 (December 11th 2025)
 
