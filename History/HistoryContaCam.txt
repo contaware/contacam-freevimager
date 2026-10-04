@@ -9,6 +9,7 @@ CONTACAM HISTORY
 - Added support for Instar
 - Update mailsend to v1.0.13
 - Apache self-signed certificate with 4096 key size and SHA-384 hash
+- Improve Apache security by only supporting TLSv1.3
 - Updated internal web server to Apache 2.4.69 and PHP 8.4.26
   (Apache and PHP both with OpenSSL 3.5.9 which is a LTS version)
 - Minimum requirement is now Windows 10 or Windows Server 2016

@@ -147,20 +147,20 @@ ContaCam open tasks
 - Update to 64-bit PHP and Apache to permit the download of files bigger than 2GB
   and to fix the year 2038 bug.
   (webmaster@werdecker.com)
-  
-- Avoid insecure SSL ciphers by adding after "SSLEngine on":
-SSLProtocol -all +TLSv1.3
 
 - Audio ON/OFF button in camera's bottom toolbar.
   (edicola.bignardi@gmail.com)
 
 - Timestamp and annotation ON/OFF independently
   (tomasi.elmar@virgilio.it)
-
-- Update apache self-signed SSL certificate which expires:
-  Mon, 22 Feb 2027 20:59:41 GMT
   
 - When you minimize the camera windows, the font size always stays the 
   same. With many cameras and therefore many windows that you have 
   minimized, the text no longer fits in the window.
   (tomasi.elmar@virgilio.it)
+  
+- How do I set the default start speed to a faster setting when I am 
+  playing back videos? It defaults to 1X, I sometimes move it up to 2x 
+  or 3X, but with each view as I go from box to box I have to hit the 
+  + button again. It would be nice if it would remember the speed.
+  (kencarr532@gmail.com)

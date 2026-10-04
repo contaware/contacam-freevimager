@@ -5877,6 +5877,7 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	sConfig += sFormat;
 	sConfig += _T("ServerName localhost\r\n");
 	sConfig += _T("SSLEngine on\r\n");
+	sConfig += _T("SSLProtocol -all +TLSv1.3\r\n"); // only support TLSv1.3
 	sConfig += _T("SSLCertificateFile \"") + sMicroApacheCertFileSSL + _T("\"\r\n");
 	sConfig += _T("SSLCertificateKeyFile \"") + sMicroApacheKeyFileSSL + _T("\"\r\n");
 	sConfig += _T("</VirtualHost>\r\n");
